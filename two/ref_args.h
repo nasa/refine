@@ -7,7 +7,8 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_args_inspect( REF_INT n, char **args );
-REF_STATUS ref_args_find( REF_INT n, char **args, char *target, REF_INT *pos );
+REF_STATUS ref_args_find( REF_INT n, char **args,
+			  const char *target, REF_INT *pos );
 
 END_C_DECLORATION
 

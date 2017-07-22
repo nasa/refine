@@ -15,7 +15,8 @@ REF_STATUS ref_args_inspect( REF_INT n, char **args )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_args_find( REF_INT n, char **args, char *target, REF_INT *pos )
+REF_STATUS ref_args_find( REF_INT n, char **args,
+			  const char *target, REF_INT *pos )
 {
   REF_INT i;
 
