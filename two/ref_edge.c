@@ -324,7 +324,7 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim )
 }
 
 REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge, REF_NODE ref_node,
-			     char *filename, REF_INT *data  )
+			     const char *filename, REF_INT *data  )
 {
   REF_INT edge;
   REF_INT node;
@@ -367,7 +367,7 @@ REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge, REF_NODE ref_node,
 }
 
 REF_STATUS ref_edge_tec_dbl( REF_EDGE ref_edge, REF_NODE ref_node,
-			     char *filename, REF_DBL *data  )
+			     const char *filename, REF_DBL *data  )
 {
   REF_INT edge;
   REF_INT node;
@@ -410,7 +410,7 @@ REF_STATUS ref_edge_tec_dbl( REF_EDGE ref_edge, REF_NODE ref_node,
 }
 
 REF_STATUS ref_edge_tec_ratio( REF_EDGE ref_edge, REF_NODE ref_node,
-			       char *filename  )
+			       const char *filename  )
 {
   REF_INT edge;
   REF_INT node;
