@@ -23,7 +23,7 @@ REF_STATUS ref_mpi_initialize( );
 REF_STATUS ref_mpi_stop( );
 
 REF_STATUS ref_mpi_stopwatch_start( );
-REF_STATUS ref_mpi_stopwatch_stop( char *message );
+REF_STATUS ref_mpi_stopwatch_stop( const char *message );
 
 REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type );
 

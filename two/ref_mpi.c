@@ -97,7 +97,7 @@ REF_STATUS ref_mpi_stopwatch_start( void )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_stop( char *message )
+REF_STATUS ref_mpi_stopwatch_stop( const char *message )
 {
 
 #ifdef HAVE_MPI
