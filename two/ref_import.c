@@ -9,7 +9,7 @@
 #include "ref_malloc.h"
 #include "ref_endian.h"
 
-REF_STATUS ref_import_examine_header( char *filename )
+REF_STATUS ref_import_examine_header( const char *filename )
 {
   FILE *file;
   int i4, i4_swapped;
@@ -47,7 +47,8 @@ REF_STATUS ref_import_examine_header( char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
+				    const char *filename )
 {
   size_t end_of_string;
 
@@ -100,7 +101,7 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -174,7 +175,7 @@ REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -381,7 +382,8 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
+static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr,
+					const char *filename,
 					REF_BOOL swap )
 {
   REF_GRID ref_grid;
@@ -466,21 +468,21 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, char *filename,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   RSS( ref_import_bin_ugrid( ref_grid_ptr, filename, REF_FALSE ),
        "import bin ugrid unswapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   RSS( ref_import_bin_ugrid( ref_grid_ptr, filename, REF_TRUE ),
        "import bin ugrid swapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -689,7 +691,7 @@ REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, char *filename )
 
  */
 
-REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -886,7 +888,7 @@ static REF_STATUS meshb_pos( FILE *file, REF_INT version, REF_INT *pos )
   return REF_SUCCESS;
 } 
 
-REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
+REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -1113,7 +1115,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_mapbc( REF_DICT *ref_dict_ptr, char *filename )
+REF_STATUS ref_import_mapbc( REF_DICT *ref_dict_ptr, const char *filename )
 {
   FILE *file;
   REF_INT n, i;
