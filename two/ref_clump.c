@@ -14,7 +14,7 @@
 static REF_STATUS ref_clump_zone_around( FILE *f,
 					 REF_CELL ref_cell,
 					 REF_DICT ref_dict,
-					 char *zonetype,
+					 const char *zonetype,
 					 REF_DICT node_dict,
 					 REF_NODE ref_node,
 					 REF_INT node )
@@ -70,7 +70,7 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
 }
 
 REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
-			     char *filename )
+			     const char *filename )
 {
   REF_DICT node_dict, tri_dict, tet_dict;
   REF_DICT ref_dict;
@@ -137,7 +137,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 }
 
 REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
-				 char *filename )
+				 const char *filename )
 {
   REF_DICT node_dict, tri_dict;
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
