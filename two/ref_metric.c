@@ -495,7 +495,11 @@ REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid )
   REF_DBL m[6];
   REF_INT node, im;
   
-  if ( NULL == ref_grid_geom(ref_grid) ) return REF_SUCCESS;
+  if ( !ref_geom_model_loaded(ref_grid_geom(ref_grid)) )
+    {
+      printf("No geometry model loaded, skipping curvature constraint.\n");
+      return REF_SUCCESS;
+    }
 
   ref_malloc( curvature_metric, 6*ref_node_max(ref_node), REF_DBL );
 
@@ -528,7 +532,11 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
   REF_DBL h, hr, hs, hn;
   REF_DBL curvature_ratio, norm_ratio;
 
-  RNS( ref_geom, "geometry association absent" );
+  if ( !ref_geom_model_loaded(ref_geom) )
+    {
+      printf("\nNo geometry model, did you forget to load it?\n\n");
+      RSS(REF_IMPLEMENT,"...or implement non-CAD curvature estimate")
+    }
 
   drad = 1.0/10.0; /* 1/segments per radian */
   RSS( ref_geom_egads_diagonal( ref_geom, &hmax ), "bbox diag");

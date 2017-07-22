@@ -37,6 +37,8 @@ BEGIN_C_DECLORATION
 #define ref_geom_blank(ref_geom) (( ref_geom )->blank )
 #define ref_geom_adj(ref_geom)   (( ref_geom )->ref_adj )
 
+#define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
+
 #define ref_geom_descr(ref_geom,attribute,geom) \
   (( ref_geom )->descr[( attribute )+3*( geom )] )
 
