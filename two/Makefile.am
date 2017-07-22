@@ -35,7 +35,6 @@ libref2_a_SOURCES = \
 	ref_mpi.c \
 	ref_node.c \
 	ref_part.c \
-	ref_plot3d.c \
 	ref_project.c \
 	ref_quality.c \
 	ref_shard.c \
@@ -56,7 +55,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_histogram.h ref_html.h ref_import.h ref_inflate.h ref_list.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
-	ref_node.h ref_part.h ref_plot3d.h ref_project.h ref_quality.h \
+	ref_node.h ref_part.h ref_project.h ref_quality.h \
 	ref_shard.h ref_smooth.h ref_sort.h ref_split.h ref_stitch.h \
 	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h 
 
@@ -261,11 +260,6 @@ TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
 ref_part_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
-
-TESTS += ref_plot3d_test
-noinst_PROGRAMS += ref_plot3d_test
-ref_plot3d_test_SOURCES = ref_plot3d_test.c
-ref_plot3d_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_project_test
 noinst_PROGRAMS += ref_project_test
