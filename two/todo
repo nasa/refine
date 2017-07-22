@@ -3,7 +3,6 @@ ellipsoid viz
 marshall debug
 
 docs?
-const char *
 provide dense api (or pack)
 provide 2D api
 
