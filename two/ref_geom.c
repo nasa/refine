@@ -861,6 +861,8 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
 
+  RNS(object,"EGADS object is NULL. Has the geometry been loaded?");
+  
   egads_status = EG_curvature(object, params, curvature);
   if ( EGADS_DEGEN == egads_status )
     {
