@@ -87,7 +87,7 @@ typedef int REF_STATUS;
 
 #define RNS(ptr,msg)							\
   {									\
-    if (NULL == (ptr)){							\
+    if (NULL == (void *)(ptr)){						\
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       return REF_NULL;							\
     }									\
@@ -95,7 +95,7 @@ typedef int REF_STATUS;
 
 #define RNB(ptr,msg,block)						\
   {									\
-    if (NULL == (ptr)){							\
+    if (NULL == (void *)(ptr)){						\
       printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,(msg));	\
       block;								\
       return REF_NULL;							\
@@ -173,7 +173,7 @@ typedef int REF_STATUS;
   }
 
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr)			\
-  if (NULL == (&(ptr)+1)) printf("unused macro failed\n");
+  if (NULL == (void *)(&(ptr)+1)) printf("unused macro failed\n");
 
 #define SKIP_BLOCK(why)							\
   printf(" *** %s *** at %s:%d\n",(why),__FILE__,__LINE__); if (REF_FALSE)
