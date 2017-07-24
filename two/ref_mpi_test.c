@@ -4,7 +4,7 @@
 
 #include "ref_mpi.h"
 
-
+#include "ref_malloc.h"
 
 int main( int argc, char *argv[] )
 {
@@ -19,11 +19,33 @@ int main( int argc, char *argv[] )
     }
   else
     {
+      REF_INT part;
+      REF_INT *a_size, *b_size;
       REF_INT bc = 5;
+
       if ( ref_mpi_master ) printf("number of processors %d \n",ref_mpi_n);
+
       RSS( ref_mpi_stopwatch_start(), "sw start");
       RSS( ref_mpi_bcast( &bc, 1, REF_INT_TYPE ), "bcast" );
       RSS( ref_mpi_stopwatch_stop( "integer broadcast" ), "sw start");
+
+      ref_malloc_init( a_size, ref_mpi_n, REF_INT, REF_EMPTY );
+      ref_malloc_init( b_size, ref_mpi_n, REF_INT, REF_EMPTY );
+
+      for ( part = 0; part<ref_mpi_n ; part++ )
+	a_size[part] = part;
+
+      RSS( ref_mpi_stopwatch_start(), "sw start");
+      RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+      RSS( ref_mpi_stopwatch_stop( "integer alltoall" ), "sw start");
+
+      for ( part = 0; part<ref_mpi_n ; part++ )
+	REIS(part, a_size[part], "a_size changed" );
+      for ( part = 0; part<ref_mpi_n ; part++ )
+	REIS(ref_mpi_id, b_size[part], "b_size wrong" );
+
+      ref_free( b_size );
+      ref_free( a_size );
     }
 
   RSS( ref_mpi_stop( ), "stop" );
