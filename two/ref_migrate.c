@@ -924,9 +924,14 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 		    ref_node_part(ref_node,nodes[i]);
 		}
 	      if ( ref_cell_last_node_is_an_id(ref_cell) )
-		a_c2n[ref_cell_node_per(ref_cell) + 
-		      ref_cell_size_per(ref_cell)*a_next[part]] =
-		  nodes[ref_cell_node_per(ref_cell)];
+		{
+		  a_c2n[ref_cell_node_per(ref_cell) + 
+			ref_cell_size_per(ref_cell)*a_next[part]] =
+		    nodes[ref_cell_node_per(ref_cell)];
+		  a_parts[ref_cell_node_per(ref_cell) + 
+			  ref_cell_size_per(ref_cell)*a_next[part]] =
+		    REF_EMPTY;
+		}
 	      a_next[part]++;
 	    }
 	}
