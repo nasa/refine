@@ -397,6 +397,14 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 	    }
 	}
 
+      for (i=0;i<n;i++)
+	if ( (ABS( local_xyzm[5+dim*i] - 1.0 ) > 0.1) &&
+	     (ABS( local_xyzm[5+dim*i] - 0.0 ) > 0.1) )
+	  {
+	    printf("error gather node before sum %d %f\n",
+		   first+i, local_xyzm[5+dim*i]);
+	  }
+
       RSS( ref_mpi_sum( local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
 
       if ( ref_mpi_master )
