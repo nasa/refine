@@ -21,13 +21,16 @@ int main( int argc, char *argv[] )
     {
       REF_INT part;
       REF_INT *a_size, *b_size;
-      REF_INT bc = 5;
+      REF_INT bc;
 
       if ( ref_mpi_master ) printf("number of processors %d \n",ref_mpi_n);
 
+      bc = REF_EMPTY;
+      if ( ref_mpi_master ) bc = 5;
       RSS( ref_mpi_stopwatch_start(), "sw start");
       RSS( ref_mpi_bcast( &bc, 1, REF_INT_TYPE ), "bcast" );
       RSS( ref_mpi_stopwatch_stop( "integer broadcast" ), "sw start");
+      REIS( 5, bc, "bc wrong" );
 
       ref_malloc_init( a_size, ref_mpi_n, REF_INT, REF_EMPTY );
       ref_malloc_init( b_size, ref_mpi_n, REF_INT, REF_EMPTY );
