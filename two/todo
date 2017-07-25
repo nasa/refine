@@ -53,6 +53,8 @@ interp metric on curved surface
  make debug tecplot status
  interpolate in u,v,s
 
+refactor ref_export to extract compact_n2o twod and cell
+
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
 -- create an embbeded surface as a debug measure,
