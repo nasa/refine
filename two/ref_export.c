@@ -658,9 +658,10 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
 					  const char *root_filename )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, node;
   REF_INT *o2n, *n2o;
-  REF_INT ncell;
+  REF_INT ncell, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL d[12];
   REF_DBL x,y,z;
   REF_DBL ex,ey;
@@ -681,15 +682,25 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
   fprintf(file, "title=\"tecplot refine metric axes\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
-  ncell = ref_node_n(ref_node)*n;
+  ref_malloc_init( o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+  nnode = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
+      if ( REF_EMPTY == o2n[nodes[node]] )
+	{ o2n[nodes[node]] = nnode; nnode++; }
+
+  ref_malloc( n2o, nnode, REF_INT );
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
+
+  ncell = nnode*n;
+  printf("nnode %d ncell %d\n",nnode,ncell);
 
   fprintf(file,
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  3*ncell, 3*ncell, "point", "felineseg" );
 
-  RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
-
-  for ( node = 0; node < ref_node_n(ref_node); node++ )
+  for ( node = 0; node < nnode; node++ )
     {
       RSS( ref_matrix_diag_m( ref_node_metric_ptr(ref_node,n2o[node]),
 			      d ), "diag" );
@@ -715,7 +726,7 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
     }
   
   for (e0=0;e0<3;e0++)
-    for ( node = 0; node < ref_node_n(ref_node); node++ )
+    for ( node = 0; node < nnode; node++ )
       {
 	for (i=0;i<n-1;i++)
 	  fprintf(file," %d %d\n",i+node*n+1+ncell*e0,i+1+node*n+1+ncell*e0);
