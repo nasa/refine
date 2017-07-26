@@ -694,7 +694,6 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
     if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
 
   ncell = nnode*n;
-  printf("nnode %d ncell %d\n",nnode,ncell);
 
   fprintf(file,
 	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
