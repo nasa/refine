@@ -464,6 +464,20 @@ REF_STATUS ref_node_rebuild_sorted_global( REF_NODE ref_node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_initialize_n_global_from_locals(  REF_NODE ref_node )
+{
+  REF_INT node, local_nnode, global_nnode;
+  local_nnode = 0;
+  each_ref_node_valid_node( ref_node, node)
+    if ( ref_mpi_id == ref_node_part(ref_node,node) ) 
+      local_nnode++;
+  RSS( ref_mpi_sum( &local_nnode, &global_nnode, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( &global_nnode, 1, REF_INT_TYPE ), "bcast");
+  RSS( ref_node_initialize_n_global(  ref_node, global_nnode ), "sub" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_initialize_n_global(  REF_NODE ref_node, REF_INT n_global )
 {
   ref_node->old_n_global = n_global;
