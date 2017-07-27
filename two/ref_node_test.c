@@ -75,6 +75,34 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* remove max node */
+    REF_INT global, node, max;
+    REF_NODE ref_node;
+    RSS(ref_node_create(&ref_node),"create");
+
+    max = ref_node_max(ref_node);
+    for ( global = 0; global < max ; global += 1 )
+      RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+    RSS(ref_node_remove(ref_node,max-1),"remove last node");
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* remove max node without global */
+    REF_INT global, node, max;
+    REF_NODE ref_node;
+    RSS(ref_node_create(&ref_node),"create");
+
+    max = ref_node_max(ref_node);
+    for ( global = 0; global < max ; global += 1 )
+      RSS(ref_node_add(ref_node,global,&node),"realloc");
+
+    RSS(ref_node_remove_without_global(ref_node,max-1),"remove last node");
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* add bunch testing realloc */
     REF_INT global, node, max;
     REF_NODE ref_node;
