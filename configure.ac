@@ -127,21 +127,37 @@ then
   AC_CHECK_FILE([$with_zoltan/include/zoltan.h],
                 [zoltan_h_path=$with_zoltan/include],[zoltan_h_path='no'])
   AC_CHECK_FILE([$with_zoltan/lib/libzoltan.a],
-                [zoltan_lib_path=$with_zoltan/lib],[zoltan_lib_path='no'])
+                [zoltan_a_path=$with_zoltan/lib],[zoltan_a_path='no'])
+  AC_CHECK_FILE([$with_zoltan/lib/libzoltan.so],
+                [zoltan_so_path=$with_zoltan/lib],[zoltan_so_path='no'])
+  AC_CHECK_FILE([$with_zoltan/lib/libzoltan.dylib],
+                [zoltan_dylib_path=$with_zoltan/lib],[zoltan_dylib_path='no'])
 
   if test "$zoltan_h_path" != 'no'
   then
-    if test "$zoltan_lib_path" != 'no'
-    then
-      AC_DEFINE([HAVE_ZOLTAN],[1],[Zoltan is available])
-      zoltan_include="-I$zoltan_h_path"
-      zoltan_ldadd="-L$zoltan_lib_path -lzoltan"
-    else
-      AC_MSG_ERROR([libzoltan.a not found in $with_zoltan/lib])
-    fi
+    AC_DEFINE([HAVE_ZOLTAN],[1],[Zoltan is available])
+    zoltan_include="-I$zoltan_h_path"
   else
     AC_MSG_ERROR([zoltan.h not found in $with_zoltan/include])
   fi
+  zoltan_ldadd=""
+  if test "$zoltan_a_path" != 'no'
+  then
+      zoltan_ldadd="-L$zoltan_a_path -lzoltan"
+  fi
+  if test "$zoltan_so_path" != 'no'
+  then
+      zoltan_ldadd="-L$zoltan_so_path -lzoltan"
+  fi
+  if test "$zoltan_dylib_path" != 'no'
+  then
+      zoltan_ldadd="-L$zoltan_dylib_path -lzoltan"
+  fi
+  if test "empty$zoltan_ldadd" == 'empty'
+  then
+    AC_MSG_ERROR([libzoltan.{a,so,dylib} not found in $with_zoltan/lib])
+  fi
+
   AC_SUBST([zoltan_include])
   AC_SUBST([zoltan_ldadd])
 fi
