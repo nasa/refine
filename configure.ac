@@ -223,7 +223,7 @@ then
   AC_CHECK_FILE([$with_egads/include/egads.h],
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
 
-  if test "$egads_h_path"	!= 'no'
+  if test "$egads_h_path" != 'no'
   then	  
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
     egads_include="-I${egads_h_path}"
