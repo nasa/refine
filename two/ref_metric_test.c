@@ -51,8 +51,11 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_INT curve_limit_pos = REF_EMPTY;
   REF_INT curvature_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--curve_limit", &curve_limit_pos ),
+       REF_NOT_FOUND, "arg search" );
   RXS( ref_args_find( argc, argv, "--curvature", &curvature_pos ),
        REF_NOT_FOUND, "arg search" );
   RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
@@ -63,7 +66,38 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       
       REIS( 1, curvature_pos,
-	    "required args: grid.ext --curvature grid.ext geom.egads assoc.gas");
+	    "required args: --curve_limit grid.ext input.metric geom.egads assoc.gas");
+      REIS( 6, curvature_pos,
+	    "required args: --curve_limit grid.ext input.metric geom.egads assoc.gas");
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ),
+	   "unable to load target grid in position 1" );
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
+	   "unable to load parent grid in position 2");
+      RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[4] ),
+	   "unable to load egads in position 3" );
+      RSS( ref_geom_load( ref_grid, argv[5] ),
+	   "unable to load geom assoc in position 4" );
+
+      RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+      RSS( ref_gather_metric( ref_grid, "ref_metric_test_curve_limit.metric" ), 
+	   "export curve limit metric");
+
+      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_curve_limit" ),
+	   "al");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      return 0;
+    }
+
+  if ( curvature_pos != REF_EMPTY )
+    {
+      REF_GRID ref_grid;
+      
+      REIS( 1, curvature_pos,
+	    "required args: --curvature grid.ext geom.egads assoc.gas");
+      REIS( 5, argc,
+	    "required args: --curvature grid.ext geom.egads assoc.gas");
       RSS( ref_import_by_extension( &ref_grid, argv[2] ),
 	   "unable to load target grid in position 1" );
       RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[3] ),
