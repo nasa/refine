@@ -16,6 +16,8 @@
 #include "ref_cell.h"
 #include "ref_node.h"
 #include "ref_list.h"
+#include "ref_geom.h"
+#include "ref_math.h"
 
 #include "ref_mpi.h"
 #include "ref_edge.h"
