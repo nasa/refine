@@ -1,8 +1,9 @@
  
 ellipsoid viz 
-marshall debug
 
-remove stitch
+remove stitch and deps
+add geom to meshb
+extract geom from meshb
 
 docs?
 provide dense api (or pack)
