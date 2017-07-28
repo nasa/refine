@@ -2,6 +2,8 @@
 ellipsoid viz 
 
 remove stitch and deps
+  ref_grid_replace_node
+  ref_node_remove_requiring_rebuild
 add geom to meshb
 extract geom from meshb
 
@@ -57,6 +59,7 @@ interp metric on curved surface
  interpolate in u,v,s
 
 refactor ref_export to extract compact_n2o twod and cell
+with ref_grid_boundary_nodes
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
