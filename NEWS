@@ -1,4 +1,5 @@
 
+- ref_stitch removed
 - ref_projectable removed, no longer supported
 - ref_plot3d and ref_quality removed
 

@@ -40,7 +40,6 @@ libref2_a_SOURCES = \
 	ref_smooth.c \
 	ref_sort.c \
 	ref_split.c \
-	ref_stitch.c \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_twod.c \
@@ -55,7 +54,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_project.h \
-	ref_shard.h ref_smooth.h ref_sort.h ref_split.h ref_stitch.h \
+	ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h 
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
@@ -280,11 +279,6 @@ TESTS += ref_split_test
 noinst_PROGRAMS += ref_split_test
 ref_split_test_SOURCES = ref_split_test.c
 ref_split_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
-
-TESTS += ref_stitch_test
-noinst_PROGRAMS += ref_stitch_test
-ref_stitch_test_SOURCES = ref_stitch_test.c
-ref_stitch_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_subdiv_test
 noinst_PROGRAMS += ref_subdiv_test

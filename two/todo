@@ -1,9 +1,6 @@
  
 ellipsoid viz 
 
-remove stitch and deps
-  ref_grid_replace_node
-  ref_node_remove_requiring_rebuild
 add geom to meshb
 extract geom from meshb
 

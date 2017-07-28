@@ -79,9 +79,6 @@ REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid,
 				    REF_INT *nnode, REF_INT *nface, 
 				    REF_INT **g2l, REF_INT **l2g );
 
-REF_STATUS ref_grid_replace_node( REF_GRID ref_grid, 
-				  REF_INT old_node, REF_INT new_node );
-
 REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
