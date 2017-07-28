@@ -1746,65 +1746,73 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   dim = 3;
   REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
 
-  next_position = 4+4+4+ref_node_n(ref_node)*(3*8+4)+ftell(file);
-  keyword_code = 4;
-  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
-  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-  REIS(1, fwrite(&(ref_node_n(ref_node)),sizeof(int),1,file),"nnode");
-
-  for ( node = 0; node < ref_node_n(ref_node); node++ )
+  if ( ref_node_n(ref_node) > 0 )
     {
-      REIS(1, fwrite(&(ref_node_xyz(ref_node,0,n2o[node])),
-		     sizeof(double),1,file),"x");
-      REIS(1, fwrite(&(ref_node_xyz(ref_node,1,n2o[node])),
-		     sizeof(double),1,file),"y");
-      REIS(1, fwrite(&(ref_node_xyz(ref_node,2,n2o[node])),
-		     sizeof(double),1,file),"z");
-      id = 0;
-      REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
+      next_position = 4+4+4+ref_node_n(ref_node)*(3*8+4)+ftell(file);
+      keyword_code = 4;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      REIS(1, fwrite(&(ref_node_n(ref_node)),sizeof(int),1,file),"nnode");
+
+      for ( node = 0; node < ref_node_n(ref_node); node++ )
+	{
+	  REIS(1, fwrite(&(ref_node_xyz(ref_node,0,n2o[node])),
+			 sizeof(double),1,file),"x");
+	  REIS(1, fwrite(&(ref_node_xyz(ref_node,1,n2o[node])),
+			 sizeof(double),1,file),"y");
+	  REIS(1, fwrite(&(ref_node_xyz(ref_node,2,n2o[node])),
+			 sizeof(double),1,file),"z");
+	  id = 0;
+	  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
+	}
     }
 
   ref_cell = ref_grid_tri(ref_grid);
+  if ( ref_cell_n(ref_cell) > 0 )
+    {
+      next_position = 4+4+4+ref_cell_n(ref_cell)*(4*4)+ftell(file);
+      keyword_code = 6;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
 
-  next_position = 4+4+4+ref_cell_n(ref_cell)*(4*4)+ftell(file);
-  keyword_code = 6;
-  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
-  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-  REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
+      RSS( ref_export_faceid_range( ref_grid,
+				    &min_faceid, &max_faceid), "range");
 
-  RSS( ref_export_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
+      node_per = ref_cell_node_per(ref_cell);
+      for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
+	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	  if ( nodes[node_per] == faceid )
+	    {
+	      for ( node = 0; node < node_per; node++ )
+		{
+		  nodes[node] = o2n[nodes[node]]+1;
+		  REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
+		}
+	      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
+	    }
+    }
 
-  node_per = ref_cell_node_per(ref_cell);
-  for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
-    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-      if ( nodes[node_per] == faceid )
+  ref_cell = ref_grid_tet(ref_grid);
+  if ( ref_cell_n(ref_cell) > 0 )
+    {
+      next_position = 4+4+4+ref_cell_n(ref_cell)*(4*5)+ftell(file);
+      keyword_code = 8;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
+      node_per = ref_cell_node_per(ref_cell);
+      id = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  for ( node = 0; node < node_per; node++ )
 	    {
 	      nodes[node] = o2n[nodes[node]]+1;
-	      REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"tri");
+	      REIS(1, fwrite(&(nodes[node]),sizeof(int),1,file),"cell");
 	    }
-	  REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"tri id");
+	  id = 0;
+	  REIS(1, fwrite(&(id),sizeof(int),1,file),"tet id");
 	}
-
-  ref_cell = ref_grid_tet(ref_grid);
-
-  next_position = 4+4+4+ref_cell_n(ref_cell)*(4*5)+ftell(file);
-  keyword_code = 8;
-  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
-  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-  REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
-  node_per = ref_cell_node_per(ref_cell);
-  id = 0;
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      for ( node = 0; node < node_per; node++ )
-	{
-	  nodes[node] = o2n[nodes[node]]+1;
-	  REIS(1, fwrite(&(nodes[node]),sizeof(int),1,file),"cell");
-	}
-      id = 0;
-      REIS(1, fwrite(&(id),sizeof(int),1,file),"tet id");
     }
 
   /* End */
