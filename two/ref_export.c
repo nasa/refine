@@ -1761,6 +1761,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT id;
+  REF_BOOL verbose = REF_FALSE;
 
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -1786,7 +1787,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
       REIS(1, fwrite(&(ref_node_n(ref_node)),sizeof(int),1,file),"nnode");
-
+      if (verbose) printf("vertex kw %d next %d n %d\n",
+			  keyword_code,next_position,ref_node_n(ref_node));
       for ( node = 0; node < ref_node_n(ref_node); node++ )
 	{
 	  REIS(1, fwrite(&(ref_node_xyz(ref_node,0,n2o[node])),
@@ -1798,6 +1800,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 	  id = 0;
 	  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
 	}
+      REIS( next_position, ftell(file), "vertex inconsistent");
     }
 
   ref_cell = ref_grid_edg(ref_grid);
@@ -1810,10 +1813,12 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
       REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
-
-      RSS( ref_export_faceid_range( ref_grid,
+      if (verbose) printf("edge kw %d next %d n %d node_per %d\n",
+			  keyword_code,next_position,
+			  ref_cell_n(ref_cell),node_per);
+      RSS( ref_export_edgeid_range( ref_grid,
 				    &min_faceid, &max_faceid), "range");
-
+      if (verbose) printf("edge id range %d %d\n",min_faceid,max_faceid);
       for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
 	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	  if ( nodes[node_per] == faceid )
@@ -1825,6 +1830,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 		}
 	      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"ele id");
 	    }
+      REIS( next_position, ftell(file), "edge inconsistent");
     }
 
   ref_cell = ref_grid_tri(ref_grid);
@@ -1837,7 +1843,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
       REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
-
+      if (verbose) printf("tri kw %d next %d n %d\n",
+			  keyword_code,next_position,ref_cell_n(ref_cell));
       RSS( ref_export_faceid_range( ref_grid,
 				    &min_faceid, &max_faceid), "range");
 
@@ -1857,13 +1864,14 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   ref_cell = ref_grid_tet(ref_grid);
   if ( ref_cell_n(ref_cell) > 0 )
     {
-      next_position = 4+4+4+ref_cell_n(ref_cell)*(4*5)+ftell(file);
+      node_per = ref_cell_node_per(ref_cell);
+      next_position = 4+4+4+ref_cell_n(ref_cell)*(4*(node_per+1))+ftell(file);
       keyword_code = 8;
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
       REIS(1, fwrite(&(ref_cell_n(ref_cell)),sizeof(int),1,file),"nnode");
-      node_per = ref_cell_node_per(ref_cell);
-      id = 0;
+      if (verbose) printf("tet kw %d next %d n %d\n",
+			  keyword_code,next_position,ref_cell_n(ref_cell));
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
 	  for ( node = 0; node < node_per; node++ )
@@ -1881,6 +1889,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
   next_position = 0;
   REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+  if (verbose) printf("end kw %d next %d\n",
+		      keyword_code,next_position);
 
   ref_free(n2o);
   ref_free(o2n);

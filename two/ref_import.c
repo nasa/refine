@@ -948,6 +948,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	   "keyword code");
       RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
       RSS( meshb_pos( file, version, &next_position), "pos");
+      if (verbose) printf("key %d at %d next %d\n",
+			  keyword_code, position, next_position);
     }  
 
   if (verbose) ref_dict_inspect(ref_dict);
@@ -998,10 +1000,11 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
-  if ( 2 == dim )
+  edge_keyword = 5;
+  code = ref_dict_value( ref_dict, edge_keyword, &position);
+  RXS( code, REF_NOT_FOUND, "kw pos");
+  if ( REF_NOT_FOUND != code)
     {
-      edge_keyword = 5;
-      RSS( ref_dict_value( ref_dict, edge_keyword, &position), "kw pos");
       fseek(file, (long)position, SEEK_SET);
       REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
 	   "keyword code");
@@ -1016,18 +1019,30 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
 	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
 	  n0--; n1--;
+	  if ( 2 == dim )
+	    {
+	      nodes[0]=n0;
+	      nodes[1]=n1;
+	      nodes[2]=n1+nnode;
+	      nodes[3]=n0+nnode;
+	      nodes[4]=id;
+	      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+		   "quad face for an edge");
+	    }
+	  else
+	    {
 	  nodes[0]=n0;
 	  nodes[1]=n1;
-	  nodes[2]=n1+nnode;
-	  nodes[3]=n0+nnode;
-	  nodes[4]=id;
-	  RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
-	       "quad face for an edge");
+	  nodes[2]=id;
+	  RSS( ref_cell_add( ref_grid_edg(ref_grid), nodes, &new_cell ), 
+	       "edg for edge");
+	    }
 	}
     }
 
   triangle_keyword = 6;
-  RSS( ref_dict_value( ref_dict, triangle_keyword, &position), "kw pos");
+  RSS( ref_dict_value( ref_dict, triangle_keyword, &position),
+       "tri kw missing");
   fseek(file, (long)position, SEEK_SET);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(triangle_keyword, keyword_code, "keyword code");
