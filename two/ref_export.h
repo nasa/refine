@@ -36,6 +36,8 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, const char *filename );
 
 REF_STATUS ref_export_faceid_range( REF_GRID ref_grid, 
 				    REF_INT *min_faceid, REF_INT *max_faceid );
+REF_STATUS ref_export_edgeid_range( REF_GRID ref_grid, 
+				    REF_INT *min_edgeid, REF_INT *max_edgeid );
 
 REF_STATUS ref_export_cogsg( REF_GRID ref_grid, const char *filename );
 
