@@ -87,12 +87,37 @@ int main( int argc, char *argv[] )
   { /* export import .meshb tet brick with geom */
     REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_GEOM ref_geom;
     char file[] = "ref_import_test.meshb";
     RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+    ref_geom = ref_grid_geom(export_grid);
+    REF_INT type, id, node;
+    REF_DBL param[2];
     nodes[0] = 0; nodes[1] = 1; nodes[2] = 15;
     RSS(ref_cell_add(ref_grid_edg(export_grid), nodes, &cell ), "add edge" );
+    type = REF_GEOM_NODE;
+    id = 1; node = 0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom node" );
+    id = 2; node = 1;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom node" );
+    type = REF_GEOM_EDGE;
+    id = 15; node = 0; param[0] = 10.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom edge" );
+    id = 15; node = 1; param[0] = 20.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom edge" );
+    type = REF_GEOM_FACE;
+    id = 3; node = 0; param[0] = 10.0; param[1] = 20.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom face" );
+    type = REF_GEOM_FACE;
+    id = 3; node = 1; param[0] = 11.0; param[1] = 20.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom face" );
+    type = REF_GEOM_FACE;
+    id = 3; node = 2; param[0] = 10.5; param[1] = 21.0;
+    RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom face" );
+
     RSS(ref_export_meshb( export_grid, file ), "export" );
     RSS(ref_import_meshb( &import_grid, file ), "import" );
+
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_edg(export_grid)),
