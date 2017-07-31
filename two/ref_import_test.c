@@ -67,6 +67,25 @@ int main( int argc, char *argv[] )
 
   { /* export import .meshb tet brick */
     REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.meshb";
+    RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+    RSS(ref_export_meshb( export_grid, file ), "export" );
+    RSS(ref_import_meshb( &import_grid, file ), "import" );
+    REIS( ref_node_n(ref_grid_node(export_grid)),
+	  ref_node_n(ref_grid_node(import_grid)), "node count" );
+    REIS( ref_cell_n(ref_grid_qua(export_grid)),
+	  ref_cell_n(ref_grid_qua(import_grid)), "qua count" );
+    REIS( ref_cell_n(ref_grid_tri(export_grid)),
+	  ref_cell_n(ref_grid_tri(import_grid)), "tri count" );
+    REIS( ref_cell_n(ref_grid_tet(export_grid)),
+	  ref_cell_n(ref_grid_tet(import_grid)), "tet count" );
+    RSS(ref_grid_free(import_grid),"free");
+    RSS(ref_grid_free(export_grid),"free");
+    REIS(0, remove( file ), "test clean up");
+  }
+
+  { /* export import .meshb tet brick with geom */
+    REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     char file[] = "ref_import_test.meshb";
     RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
