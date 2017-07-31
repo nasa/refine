@@ -1859,6 +1859,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 		}
 	      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"ele id");
 	    }
+      REIS( next_position, ftell(file), "tri inconsistent");
     }
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -1882,6 +1883,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 	  id = 0;
 	  REIS(1, fwrite(&(id),sizeof(int),1,file),"tet id");
 	}
+      REIS( next_position, ftell(file), "tet inconsistent");
     }
 
   /* End */
