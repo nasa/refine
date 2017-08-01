@@ -901,6 +901,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT ntri, tri, nedge, edge, ntet, tet;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT n0, n1, n2, n3, id;
+  REF_INT geom_keyword, type, i, geom, ngeom;
+  REF_DBL param[2];
   REF_BOOL verbose = REF_FALSE;
   
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
@@ -909,6 +911,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 
   RSS( ref_dict_create( &ref_dict ), "create dict" );
 
+  if (verbose) printf("open %s\n",filename);
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
@@ -1122,6 +1125,35 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	}
     }
   REIS( next_position, ftell(file), "end location" );
+
+  each_ref_type( ref_geom, type )
+    {
+      geom_keyword = 40+type;
+      code = ref_dict_value( ref_dict, geom_keyword, &position);
+      RXS( code, REF_NOT_FOUND, "kw pos");
+      if ( code == REF_SUCCESS )
+	{
+	  fseek(file, (long)position, SEEK_SET);
+	  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
+	       "keyword code");
+	  REIS(geom_keyword, keyword_code, "keyword code");
+	  RSS( meshb_pos( file, version, &next_position), "pos");
+	  REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "keyword code");
+	  if (verbose) printf("type %d ngeom %d\n",type, ngeom);
+
+	  for (geom=0;geom<ngeom;geom++)
+	    {
+	      REIS( 1, fread(&(node),sizeof(node), 1, file ), "node" );
+	      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+	      for ( i = 0; i < type ; i++ )
+		REIS( 1, fread(&(param[i]),sizeof(double), 1, file ), "param" );
+	      node--;
+	      RSS( ref_geom_add( ref_grid_geom(ref_grid),
+				 node, type, id, param ), "add geom");
+	    }
+	  REIS( next_position, ftell(file), "end location" );
+	}
+    }
 
   ref_dict_free( ref_dict );
 

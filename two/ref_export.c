@@ -1753,14 +1753,17 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT *o2n, *n2o;
-  REF_INT code, version, keyword_code, dim;
-  int next_position;
+  REF_INT code, version, dim;
+  int next_position, keyword_code;
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT id;
+  REF_INT type, id, i;
+  REF_INT geom;
+  int ngeom;
   REF_BOOL verbose = REF_FALSE;
 
   file = fopen(filename,"w");
@@ -1886,6 +1889,33 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
       REIS( next_position, ftell(file), "tet inconsistent");
     }
 
+  each_ref_type( ref_geom, type )
+    {
+      ngeom = 0;
+      each_ref_geom_of( ref_geom, type, geom )
+	ngeom++;
+      if ( ngeom > 0 )
+	{
+	  keyword_code = 40+type; /* GmfVerticesOnGeometricVertices */
+	  next_position = 4+4+4+ngeom*(4*2+8*type)+ftell(file);
+	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"keyword");
+	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next");
+	  REIS(1, fwrite(&(ngeom),sizeof(int),1,file),"n");
+	  if (verbose) printf("geom type %d kw %d next %d n %d\n",
+			      type, keyword_code,next_position,ngeom);
+	  each_ref_geom_of( ref_geom, type, geom )
+	    {
+	      node = o2n[ref_geom_node(ref_geom,geom)] + 1;
+	      id = ref_geom_id(ref_geom,geom);
+	      REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
+	      REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
+	      for ( i = 0; i < type ; i++ )
+		REIS(1, fwrite(&(ref_geom_param(ref_geom,i,geom)),
+			       sizeof(double),1,file),"id");
+	    }
+	}
+    }
+  
   /* End */
   keyword_code = 54;
   REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
@@ -1897,6 +1927,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   ref_free(n2o);
   ref_free(o2n);
 
+  if (verbose) printf("close %s\n",filename);
   fclose(file);
 
   return REF_SUCCESS;

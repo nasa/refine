@@ -131,6 +131,8 @@ int main( int argc, char *argv[] )
 	  ref_cell_n(ref_grid_tet(import_grid)), "tet count" );
 
     RSS( ref_geom_verify_topo(import_grid), "import inconsistent");
+    REIS( ref_geom_n(ref_grid_geom(export_grid)),
+	  ref_geom_n(ref_grid_geom(import_grid)), "tet count" );
 
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
