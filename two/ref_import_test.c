@@ -88,11 +88,11 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_GEOM ref_geom;
+    REF_INT type, id, node;
+    REF_DBL param[2];
     char file[] = "ref_import_test.meshb";
     RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
     ref_geom = ref_grid_geom(export_grid);
-    REF_INT type, id, node;
-    REF_DBL param[2];
     nodes[0] = 0; nodes[1] = 1; nodes[2] = 15;
     RSS(ref_cell_add(ref_grid_edg(export_grid), nodes, &cell ), "add edge" );
     type = REF_GEOM_NODE;
