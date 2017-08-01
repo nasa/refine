@@ -52,11 +52,28 @@ BEGIN_C_DECLORATION
 #define ref_geom_param(ref_geom,dimension,geom) \
   (( ref_geom )->param[( dimension )+2*( geom )] )
 
+#define each_ref_type( ref_geom, type )				\
+  for ( ( type ) = 0;						\
+        ( type ) < 3;						\
+        ( type )++ )
+
 #define each_ref_geom( ref_geom, geom )				\
   for ( ( geom ) = 0;						\
         ( geom ) < ref_geom_max(ref_geom);			\
         ( geom )++ )						\
     if ( REF_EMPTY != ref_geom_type( ref_geom, geom ) )
+
+#define each_ref_geom_of( ref_geom, type, geom )		\
+  for ( ( geom ) = 0;						\
+        ( geom ) < ref_geom_max(ref_geom);			\
+        ( geom )++ )						\
+    if ( ( type ) == ref_geom_type( ref_geom, geom ) )
+
+#define each_ref_geom_node( ref_geom, geom )			\
+  for ( ( geom ) = 0;						\
+        ( geom ) < ref_geom_max(ref_geom);			\
+        ( geom )++ )						\
+    if ( REF_GEOM_NODE == ref_geom_type( ref_geom, geom ) )
 
 #define each_ref_geom_edge( ref_geom, geom )			\
   for ( ( geom ) = 0;						\
