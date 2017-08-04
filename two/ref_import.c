@@ -1143,10 +1143,13 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 
 	  for (geom=0;geom<ngeom;geom++)
 	    {
+	      double filler;
 	      REIS( 1, fread(&(node),sizeof(node), 1, file ), "node" );
 	      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
 	      for ( i = 0; i < type ; i++ )
 		REIS( 1, fread(&(param[i]),sizeof(double), 1, file ), "param" );
+	      if ( 0 < type )
+		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
 	      node--;
 	      RSS( ref_geom_add( ref_grid_geom(ref_grid),
 				 node, type, id, param ), "add geom");

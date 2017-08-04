@@ -1897,7 +1897,8 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
       if ( ngeom > 0 )
 	{
 	  keyword_code = 40+type; /* GmfVerticesOnGeometricVertices */
-	  next_position = 4+4+4+ngeom*(4*2+8*type)+ftell(file);
+	  next_position = 4+4+4+ngeom*(4*2+8*type)+(0 < type?8*ngeom:0)
+	    + ftell(file);
 	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"keyword");
 	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next");
 	  REIS(1, fwrite(&(ngeom),sizeof(int),1,file),"n");
@@ -1905,12 +1906,16 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 			      type, keyword_code,next_position,ngeom);
 	  each_ref_geom_of( ref_geom, type, geom )
 	    {
+	      double filler = 0.0;
 	      node = o2n[ref_geom_node(ref_geom,geom)] + 1;
 	      id = ref_geom_id(ref_geom,geom);
 	      REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
 	      REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
 	      for ( i = 0; i < type ; i++ )
 		REIS(1, fwrite(&(ref_geom_param(ref_geom,i,geom)),
+			       sizeof(double),1,file),"id");
+	      if ( 0 < type )
+		REIS(1, fwrite(&(filler),
 			       sizeof(double),1,file),"id");
 	    }
 	}
