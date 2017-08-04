@@ -15,15 +15,37 @@
 #include  "ref_cell.h"
 #include   "ref_adj.h"
 #include "ref_fixture.h"
+#include "ref_import.h"
 #include "ref_export.h"
 #include  "ref_dict.h"
 #include  "ref_edge.h"
 
 #include  "ref_math.h"
+#include  "ref_args.h"
 
 int main( int argc, char *argv[] )
 {
+  REF_INT assoc_pos = REF_EMPTY;
+  RXS( ref_args_find( argc, argv, "--assoc", &assoc_pos ),
+       REF_NOT_FOUND, "arg search" );
 
+  if ( assoc_pos != REF_EMPTY )
+    {
+      REF_GRID ref_grid;
+      REIS( 5, argc,
+	    "required args: --assoc grid.ext input.gas grid_geom_assoc.meshb");
+      REIS( 1, assoc_pos,
+	    "required args: --assoc grid.ext input.gas grid_geom_assoc.meshb");
+      printf("merge geometry association into meshb\n");
+      printf("grid source %s\n",argv[2]);
+      printf("geometry association source %s\n",argv[3]);
+      printf("output %s\n",argv[4]);
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS( ref_geom_load( ref_grid, argv[3] ), "geom gas import" );
+      RSS( ref_export_by_extension( ref_grid, argv[4] ), "argv export" );
+      return 0;
+    }
+  
   if ( 2 == argc )
     { /* fixture */
       char *filename = argv[1];

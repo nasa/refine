@@ -223,13 +223,14 @@ REF_STATUS ref_geom_uv_area_sign( REF_GRID ref_grid, REF_INT id,
 				  REF_DBL *sign )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  if ( id < 1 || id > ref_geom->nface ) return REF_INVALID;
   if ( NULL == ((ref_geom)->uv_area_sign) )
     {
       REF_CELL ref_cell = ref_grid_tri(ref_grid);
       REF_INT face;
       REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
       REF_DBL uv_area;
+      if (REF_EMPTY == ref_geom->nface)
+	RSS( ref_geom_infer_nedge_nface( ref_grid ), "infer counts" );
       ref_malloc_init( ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	{
@@ -251,6 +252,7 @@ REF_STATUS ref_geom_uv_area_sign( REF_GRID ref_grid, REF_INT id,
 	}
     }
 
+  if ( id < 1 || id > ref_geom->nface ) return REF_INVALID;
   *sign = ((ref_geom)->uv_area_sign)[id-1];
   
   return REF_SUCCESS;
@@ -1275,7 +1277,20 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
   
   return REF_SUCCESS;
 }
-  
+
+REF_STATUS ref_geom_infer_nedge_nface( REF_GRID ref_grid )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT min_id, max_id;
+  RSS( ref_export_faceid_range( ref_grid, &min_id, &max_id), "face range");
+  REIS( 1, min_id, "first face id not 1" );
+  ref_geom->nface = max_id;
+  RSS( ref_export_edgeid_range( ref_grid, &min_id, &max_id), "face range");
+  REIS( 1, min_id, "first edge id not 1" );
+  ref_geom->nedge = max_id;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag )
 {
 #ifdef HAVE_EGADS
