@@ -1831,7 +1831,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
 		  nodes[node] = o2n[nodes[node]]+1;
 		  REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),"ele");
 		}
-	      REIS(1, fwrite(&(nodes[3]),sizeof(REF_INT),1,file),"ele id");
+	      REIS(1, fwrite(&(nodes[2]),sizeof(REF_INT),1,file),"ele id");
 	    }
       REIS( next_position, ftell(file), "edge inconsistent");
     }
