@@ -43,6 +43,7 @@ int main( int argc, char *argv[] )
       RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
       RSS( ref_geom_load( ref_grid, argv[3] ), "geom gas import" );
       RSS( ref_export_by_extension( ref_grid, argv[4] ), "argv export" );
+      RSS( ref_grid_free(ref_grid),"free");
       return 0;
     }
   
