@@ -205,7 +205,11 @@ int main( int argc, char *argv[] )
   snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
   RSS( ref_gather_b8_ugrid( ref_grid, output_filename ),
        "gather");
-  ref_mpi_stopwatch_stop("gather");
+  ref_mpi_stopwatch_stop("gather b8.ugrid");
+  snprintf( output_filename, 1024, "%s.meshb", output_project );
+  RSS( ref_export_by_extension( ref_grid, output_filename ),
+       "export");
+  ref_mpi_stopwatch_stop("export meshb");
   snprintf( output_filename, 1024, "%s_surf.tec", output_project );
   RSS(ref_export_tec_surf( ref_grid, output_filename ),"surf tec" );
   snprintf( output_filename, 1024, "%s_geom.tec", output_project );
