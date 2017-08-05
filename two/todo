@@ -1,8 +1,7 @@
  
 ellipsoid viz 
 
-add geom to meshb
-extract geom from meshb
+geom from meshb in all tests
 
 docs?
 provide dense api (or pack)
@@ -107,6 +106,8 @@ low priority surface reconstruction when EGADS not available
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
++ geom restart in meshb format
 
 + remove projectable and quality to remove empty cell for viz
 + include surface in metric ellipse
