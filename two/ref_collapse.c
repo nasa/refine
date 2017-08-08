@@ -419,12 +419,15 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
 				      REF_BOOL *allowed )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL quality;
   REF_BOOL will_be_collapsed;
   REF_DBL edge_ratio;
+  REF_BOOL has_support;
+  REF_DBL sign_uv_area, uv_area;
 
   *allowed = REF_FALSE;
 
@@ -453,7 +456,32 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
       if ( quality < ref_adapt_collapse_quality_absolute ) return REF_SUCCESS;
     }
 
-  /* FIXME check tris too */
+  RSS( ref_geom_supported( ref_geom, node0, &has_support), "support");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+
+      will_be_collapsed = REF_FALSE;
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node0 == nodes[node] ) will_be_collapsed = REF_TRUE;
+      if ( will_be_collapsed ) continue;
+
+      for ( node = 0; node < ref_cell_node_per(ref_cell) ; node++ )
+	if ( node1 == nodes[node] ) nodes[node] = node0;
+      RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
+      if ( quality < ref_adapt_collapse_quality_absolute ) return REF_SUCCESS;
+
+      if ( has_support )
+	{
+	  RSS( ref_geom_uv_area_sign( ref_grid,
+				      nodes[ref_cell_node_per(ref_cell)],
+				      &sign_uv_area ), "sign");
+	  RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area), "uv area");
+	  if ( sign_uv_area*uv_area < 1.0e-12 ) return REF_SUCCESS;
+	}
+    }
 
   *allowed = REF_TRUE;
 
