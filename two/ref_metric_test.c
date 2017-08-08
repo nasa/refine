@@ -61,11 +61,11 @@ int main( int argc, char *argv[] )
   RXS( ref_args_find( argc, argv, "--parent", &parent_pos ),
        REF_NOT_FOUND, "arg search" );
 
-  if ( curvature_pos != REF_EMPTY )
+  if ( curve_limit_pos != REF_EMPTY )
     {
       REF_GRID ref_grid;
       
-      REIS( 1, curvature_pos,
+      REIS( 1, curve_limit_pos,
 	    "required args: --curve-limit grid.ext input.metric geom.egads [assoc.gas]");
       RAS( argc==5 || argc==6 , 
 	    "required args: --curve-limit grid.ext input.metric geom.egads [assoc.gas]");
