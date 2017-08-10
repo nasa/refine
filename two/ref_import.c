@@ -887,6 +887,42 @@ static REF_STATUS meshb_pos( FILE *file, REF_INT version, REF_INT *pos )
 
   return REF_SUCCESS;
 } 
+REF_STATUS ref_import_meshb_header( const char *filename, 
+				    REF_INT *version, REF_DICT ref_dict )
+{
+  FILE *file;
+  int int_code, int_version;
+  REF_INT keyword_code, position, next_position, end_position;
+  file = fopen(filename,"r");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  REIS(1, fread((unsigned char *)&int_code, 4, 1, file), "code");
+  REIS(1, int_code, "code");
+  REIS(1, fread((unsigned char *)&int_version, 4, 1, file), "version");
+  if ( int_version < 1 || 3 < int_version )
+    {
+      printf("version %d not supported\n",int_version);
+      THROW("version");
+    }
+  *version = (REF_INT)int_version;
+
+  next_position = ftell(file);
+  fseek(file, 0, SEEK_END);
+  end_position = ftell(file);
+  while ( next_position <= end_position && 0 != next_position )
+    {
+      position = next_position;
+      fseek(file, position, SEEK_SET);
+      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
+	   "keyword code");
+      RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
+      RSS( meshb_pos( file, *version, &next_position), "pos");
+    }  
+
+  fclose(file);
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
@@ -894,8 +930,9 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_NODE ref_node;
   FILE *file;
   REF_INT code, version, dim;
-  REF_INT keyword_code, position, next_position, end_position;
+  REF_INT keyword_code, position, next_position;
   REF_DICT ref_dict;
+  REF_INT dim_keyword;
   REF_INT vertex_keyword, triangle_keyword, edge_keyword, tet_keyword;
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge, ntet, tet;
@@ -905,57 +942,34 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_DBL param[2];
   REF_BOOL verbose = REF_FALSE;
   
+  if (verbose) printf("header %s\n",filename);
+  RSS( ref_dict_create( &ref_dict ), "create dict" );
+  RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
+  if (verbose) printf("meshb version %d\n",version);
+  if (verbose) ref_dict_inspect(ref_dict);
+
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
-
-  RSS( ref_dict_create( &ref_dict ), "create dict" );
 
   if (verbose) printf("open %s\n",filename);
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
-  
-  REIS(1, fread((unsigned char *)&code, 4, 1, file), "code");
-  REIS(1, code, "code");
-  REIS(1, fread((unsigned char *)&version, 4, 1, file), "version");
-  if ( version < 1 || 3 < version )
-    {
-      printf("version %d not supported\n",version);
-      THROW("version");
-    }
-  if (verbose) printf("meshb version %d\n",version);
 
-  position = ftell(file);
+  dim_keyword = 3;
+  RSS( ref_dict_value( ref_dict, dim_keyword, &position), "kw pos");
+  fseek(file, (long)position, SEEK_SET);
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-  REIS(3, keyword_code, "keyword code");
-  RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
+  REIS(dim_keyword, keyword_code, "keyword code");
   RSS( meshb_pos( file, version, &next_position), "pos");
-
-  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "keyword code");
+  if (verbose) printf("meshb dim %d\n",dim);
   if ( dim < 2 || 3 < dim )
     {
       printf("dim %d not supported\n",dim);
       THROW("dim");
     }
-  if (verbose) printf("meshb dim %d\n",dim);
-
-  fseek(file, 0, SEEK_END);
-  end_position = ftell(file);
-
-  while ( next_position <= end_position && 0 != next_position )
-    {
-      position = next_position;
-      fseek(file, position, SEEK_SET);
-      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
-	   "keyword code");
-      RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
-      RSS( meshb_pos( file, version, &next_position), "pos");
-      if (verbose) printf("key %d at %d next %d\n",
-			  keyword_code, position, next_position);
-    }  
-
-  if (verbose) ref_dict_inspect(ref_dict);
 
   vertex_keyword = 4;
   RSS( ref_dict_value( ref_dict, vertex_keyword, &position), "kw pos");
