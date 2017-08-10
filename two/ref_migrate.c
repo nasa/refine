@@ -971,6 +971,100 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_ADJ ref_adj = ref_geom_adj(ref_geom);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT all_parts[REF_CELL_MAX_SIZE_PER];
+  REF_INT nunique;
+  REF_INT unique_parts[REF_CELL_MAX_SIZE_PER];
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT part, node, cell, i;
+  REF_INT *a_next;
+  REF_INT *a_int, *b_int;
+  REF_INT *a_real, *b_real;
+  REF_BOOL need_to_keep;
+  REF_INT id, global, type, degree, item, geom;
+  REF_DBL param[2];
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      {
+	RSS( ref_adj_degree( ref_adj, node, &degree ), "adj deg");
+	a_size[ref_node_part(ref_node,node)] += degree;
+      }
+
+  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_size[part];
+  ref_malloc( a_int,  3*a_total, REF_INT );
+  ref_malloc( a_real, 2*a_total, REF_INT );
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_size[part];
+  ref_malloc( b_int,  3*b_total, REF_INT );
+  ref_malloc( b_real, 2*b_total, REF_INT );
+
+  ref_malloc( a_next, ref_mpi_n, REF_INT );
+  a_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    a_next[part] = a_next[part-1]+a_size[part-1];
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      each_ref_adj_node_item_with_ref( ref_adj, node, item, geom)
+	{
+	  part = ref_node_part(ref_node,node);
+	  a_int[0+3*a_next[part]] = ref_geom_type(ref_geom,geom);
+	  a_int[1+3*a_next[part]] = ref_geom_id(ref_geom,geom);
+	  a_int[2+3*a_next[part]] = ref_geom_node(ref_geom,geom);
+	  a_int[2+3*a_next[part]] =
+	    ref_node_global(ref_node,a_int[2+3*a_next[part]]);
+	  a_real[0+2*a_next[part]] = ref_geom_param(ref_geom,0,geom);
+	  a_real[1+2*a_next[part]] = ref_geom_param(ref_geom,1,geom);
+	  a_next[part]++;
+	}
+
+  RSS( ref_mpi_alltoallv( a_int, a_size, b_int, b_size, 
+			  3, REF_INT_TYPE ), 
+       "alltoallv geom int");
+  RSS( ref_mpi_alltoallv( a_real, a_size, b_real, b_size, 
+			  2, REF_INT_TYPE ), 
+       "alltoallv geom real");
+
+  for ( geom=0; geom < b_total; geom++ )
+    {
+      type   = b_int[0+3*geom];
+      id     = b_int[1+3*geom];
+      global = b_int[2+3*geom];
+      RSS( ref_node_local( ref_node, global, &node ), "g2l");
+      param[0] = b_real[0+2*geom];
+      param[1] = b_real[1+2*geom];
+      RSS( ref_geom_add( ref_geom, node, type, id, param ), "geom add" );
+    }
+
+  free(a_next);
+  free(b_real);
+  free(b_int);
+  free(a_real);
+  free(a_int);
+  free(b_size);
+  free(a_size);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node( ref_grid );
@@ -1001,11 +1095,16 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 	  need_to_keep = ( need_to_keep ||
 			   !ref_adj_empty( ref_cell_adj(ref_cell), node ) );
 	if ( !need_to_keep )
-	  RSS( ref_node_remove_without_global( ref_node, node), "remove" );
+	  {
+	    RSS( ref_node_remove_without_global( ref_node, node), "remove" );
+	    RSS( ref_geom_remove_all( ref_grid_geom(ref_grid), node),"rm geom");
+	  }
       }
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
+
+  RSS( ref_migrate_shufflin_geom( ref_grid ), "geom");
 
   return REF_SUCCESS;
 }

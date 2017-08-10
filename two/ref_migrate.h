@@ -68,6 +68,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid );
 REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid );
 REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node, 
 				      REF_CELL ref_cell );
+REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid );
 
 END_C_DECLORATION
 
