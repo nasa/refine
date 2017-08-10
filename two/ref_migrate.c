@@ -976,17 +976,12 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT all_parts[REF_CELL_MAX_SIZE_PER];
-  REF_INT nunique;
-  REF_INT unique_parts[REF_CELL_MAX_SIZE_PER];
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
-  REF_INT part, node, cell, i;
+  REF_INT part, node;
   REF_INT *a_next;
   REF_INT *a_int, *b_int;
   REF_INT *a_real, *b_real;
-  REF_BOOL need_to_keep;
   REF_INT id, global, type, degree, item, geom;
   REF_DBL param[2];
 
