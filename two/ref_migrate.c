@@ -989,6 +989,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
       RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "cell" );
     }
 
+  RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_edg(ref_grid) ), "edg");
   RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_tri(ref_grid) ), "tri");
   RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_qua(ref_grid) ), "qua");
 
