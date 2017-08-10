@@ -3,6 +3,17 @@ ellipsoid viz
 
 geom from meshb in all tests
 
+parallel geom
+ ref_geom load bal (parallel update ghost geom param)
+ meshb file IO
+
+jacobian form of tet quality
+- implement refine/one quality measures
+- det stability in quality no longer issue
+
+cavity operator
+bl insert
+
 docs?
 provide dense api (or pack)
 provide 2D api
@@ -36,19 +47,11 @@ insert once, right place
 make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
 
-cavity operator
-bl insert
-
 create jenkins test
 - make check valgrind
 - make check stack fuzz
 
 interp metric parallel
-
-parallel geom
- ref_geom load bal
- parallel update ghost geom param
- geom gas restart file IO
 
 interp metric on curved surface
  make debug tecplot status
@@ -61,10 +64,6 @@ validate normal deviation (make metric big across cylinder)
 -- insert with ball
 -- create an embbeded surface as a debug measure,
       create norm/tests for problems
-
-jacobian form of tet quality
-- implement refine/one quality measures
-- det stability in quality no longer issue
 
 ideal tet using principle direction? but faces dissaggree? optimizer?
 
