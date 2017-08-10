@@ -13,6 +13,11 @@
 #include "ref_list.h"
 #include "ref_adj.h"
 #include "ref_matrix.h"
+#include "ref_geom.h"
+#include  "ref_math.h"
+#include "ref_import.h"
+#include "ref_twod.h"
+
 
 #include "ref_sort.h"
 #include "ref_migrate.h"
@@ -112,10 +117,9 @@ int main( int argc, char *argv[] )
     REIS( 1, ref_part_implicit( 4, 2, 3 ), "part");
   }
 
-  { /* part */
+  { /* part b8.ugrid */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.b8.ugrid";
-    char viz_file[256];
     
     RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
     if ( ref_mpi_master ) 
@@ -124,16 +128,25 @@ int main( int argc, char *argv[] )
       }
     RSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
 
-    if ( ref_mpi_n > 1 ) 
-      {
-	sprintf(viz_file, "ref_part_p%d.tec", ref_mpi_id);
-	RSS( ref_export_by_extension( import_grid, viz_file ), "export");
-	if ( ref_mpi_master ) ref_grid_inspect( export_grid );
-	ref_grid_inspect( import_grid );  
-      }
-
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
+    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+  }
+
+  { /* part meshb */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.meshb";
+    
+    if ( ref_mpi_master ) 
+      {
+	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+	RSS(ref_export_meshb( export_grid, grid_file ), "export" );
+	RSS(ref_grid_free(export_grid),"free");
+      }
+
+    RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+
+    RSS(ref_grid_free(import_grid),"free");
     if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
   }
 

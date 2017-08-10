@@ -15,6 +15,8 @@ BEGIN_C_DECLORATION
 #define ref_part_implicit( total_things, total_parts, thing ) \
   ((thing) / ((((total_things)-1)/(total_parts))+1) )
 
+REF_STATUS ref_part_meshb( REF_GRID *ref_grid, const char *filename );
+
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid, const char *filename );
 REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   REF_NODE ref_node, REF_INT nnode,

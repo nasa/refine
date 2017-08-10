@@ -15,6 +15,32 @@
 #include "ref_export.h"
 
 #include "ref_twod.h"
+#include "ref_dict.h"
+#include "ref_import.h"
+
+REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
+{
+  REF_BOOL verbose = REF_TRUE;
+  REF_INT version;
+  REF_DICT ref_dict;
+
+  if ( ref_mpi_master )
+    {
+      RSS( ref_dict_create( &ref_dict ), "create dict" );
+      RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
+      if (verbose) printf("meshb version %d\n",version);
+      if (verbose) ref_dict_inspect(ref_dict);
+    }
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+
+  if ( ref_mpi_master )
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" );
+    }
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
