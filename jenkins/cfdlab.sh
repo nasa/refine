@@ -46,7 +46,7 @@ trap - EXIT
 LOG=${root_dir}/log.make-distcheck
 trap "cat $LOG" EXIT
 make -j distcheck > $LOG 2>&1
-cp refine-*.tar.gz ${root_dir
+cp refine-*.tar.gz ${root_dir}
 trap - EXIT
 
 mkdir -p ${build_dir}
