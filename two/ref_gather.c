@@ -170,6 +170,8 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT code, version, dim;
   int next_position, keyword_code;
+  REF_INT ncell, node_per;
+  REF_CELL ref_cell;
   REF_BOOL swap_endian = REF_FALSE;
   REF_BOOL has_id = REF_TRUE;
   
@@ -210,6 +212,31 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   RSS( ref_gather_node( ref_node, swap_endian, has_id, file ), "nodes");
   if ( ref_mpi_master )
     REIS( next_position, ftell(file), "vertex inconsistent");
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
+  if ( ncell > 0 )
+    {
+      if ( ref_mpi_master )
+	{
+	  node_per = ref_cell_node_per(ref_cell);
+	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
+	  keyword_code = 5;
+	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+	  REIS(1, fwrite(&(ncell),sizeof(int),1,file),"nnode");
+	  if (verbose) printf("vertex kw %d next %d n %d\n",
+			      keyword_code,next_position,
+			      ncell);
+	}
+      /*
+      RSS( ref_gather_cell( ref_node, ref_cell,
+			    REF_FALSE, faceid, swap_endian, has_id,
+			    file ), "nodes");
+      if ( ref_mpi_master )
+	REIS( next_position, ftell(file), "cell inconsistent");
+      */
+    }
 
   return REF_SUCCESS;
 }
