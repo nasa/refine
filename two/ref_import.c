@@ -987,7 +987,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      3, &available, &next_position ), "jump" );
   RAS( available, "meshb missing dimension" );
-  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "keyword code");
+  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
   if (verbose) printf("meshb dim %d\n",dim);
   if ( dim < 2 || 3 < dim )
     {
@@ -998,7 +998,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      4, &available, &next_position ), "jump" );
   RAS( available, "meshb missing vertex" );
-  REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "keyword code");
+  REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
   if (verbose) printf("nnode %d\n",nnode);
 
   for (node=0;node<nnode;node++)
@@ -1042,7 +1042,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 			      5, &available, &next_position ), "jump" );
   if ( available )
     {
-      REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
+      REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "nedge");
       if (verbose) printf("nedge %d\n",nedge);
 
       for (edge=0;edge<nedge;edge++)
@@ -1076,7 +1076,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      6, &available, &next_position ), "jump" );
   RAS( available, "meshb missing triangle" );
-  REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "keyword code");
+  REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "ntri");
   if (verbose) printf("ntri %d\n",ntri);
 
   for (tri=0;tri<ntri;tri++)
