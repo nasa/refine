@@ -165,10 +165,13 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
 
 REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 {
+  REF_BOOL verbose = REF_TRUE;
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT code, version, dim;
   int next_position, keyword_code;
+  REF_BOOL swap_endian = REF_FALSE;
+  REF_BOOL has_id = REF_TRUE;
   
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
   
@@ -192,6 +195,22 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
       REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
     }
 
+  if ( ref_mpi_master )
+    {
+      next_position = 4+4+4+ref_node_n_global(ref_node)*(3*8+4)+ftell(file);
+      keyword_code = 4;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      REIS(1, fwrite(&(ref_node_n(ref_node)),sizeof(int),1,file),"nnode");
+      if (verbose) printf("vertex kw %d next %d n %d\n",
+			  keyword_code,next_position,
+			  ref_node_n_global(ref_node));
+
+    }
+  RSS( ref_gather_node( ref_node, swap_endian, has_id, file ), "nodes");
+  if ( ref_mpi_master )
+    REIS( next_position, ftell(file), "vertex inconsistent");
+
   return REF_SUCCESS;
 }
 
@@ -203,6 +222,8 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT faceid, min_faceid, max_faceid;
+  REF_BOOL swap_endian = REF_TRUE;
+  REF_BOOL has_id = REF_FALSE;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
@@ -242,7 +263,7 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
       REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nhex");
     }
 
-  RSS( ref_gather_node( ref_node, file ), "nodes");
+  RSS( ref_gather_node( ref_node, swap_endian, has_id, file ), "nodes");
 
   RSS( ref_export_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
 
@@ -307,13 +328,15 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
+REF_STATUS ref_gather_node( REF_NODE ref_node,
+			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file )
 {
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_DBL swapped_dbl;
   REF_INT nnode_written, first, n, i;
   REF_INT global, local;
+  REF_INT id = 0;
   REF_STATUS status;
 
   chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
@@ -364,12 +387,13 @@ REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file )
 	      {
 		printf("error gather node %d %f\n",first+i, xyzm[3+4*i]);
 	      }
-	    swapped_dbl = xyzm[0+4*i]; SWAP_DBL(swapped_dbl);
+	    swapped_dbl = xyzm[0+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
 	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
-	    swapped_dbl = xyzm[1+4*i]; SWAP_DBL(swapped_dbl);
+	    swapped_dbl = xyzm[1+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
 	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
-	    swapped_dbl = xyzm[2+4*i]; SWAP_DBL(swapped_dbl);
+	    swapped_dbl = xyzm[2+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
 	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
+	    if (has_id) REIS(1, fwrite(&id,sizeof(REF_INT),1,file),"id");
 	  }
     }
 

@@ -43,7 +43,7 @@ int main( int argc, char *argv[] )
       if ( ref_mpi_master ) 
 	REIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
     }
-
+  
   if ( 0 == argc ) /* off, octave is not quiet */
     {
       REF_GRID ref_grid;
@@ -63,15 +63,20 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+      RSS(ref_part_by_extension( &import_grid, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
       RSS(ref_migrate_to_balance(import_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
 
       ref_mpi_stopwatch_start();
+      RSS( ref_gather_meshb( import_grid, "ref_gather_test.meshb" ), 
+	   "gather");
+      ref_mpi_stopwatch_stop("meshb");
+
+      ref_mpi_stopwatch_start();
       RSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
-      ref_mpi_stopwatch_stop("gather");
+      ref_mpi_stopwatch_stop("b8.ugrid");
 
       RSS( ref_grid_free( import_grid ), "free");
     }

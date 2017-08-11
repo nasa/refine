@@ -30,7 +30,8 @@ REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell );
 
-REF_STATUS ref_gather_node( REF_NODE ref_node, FILE *file );
+REF_STATUS ref_gather_node( REF_NODE ref_node,
+			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file );
 REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
 REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
 
