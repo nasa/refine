@@ -172,8 +172,11 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   int next_position, keyword_code;
   REF_INT ncell, node_per;
   REF_CELL ref_cell;
+  REF_BOOL faceid_insted_of_c2n = REF_FALSE;
+  REF_BOOL always_id = REF_TRUE;
   REF_BOOL swap_endian = REF_FALSE;
-  REF_BOOL has_id = REF_TRUE;
+  REF_BOOL select_faceid = REF_FALSE;
+  REF_INT faceid = REF_EMPTY;
   
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
   
@@ -209,7 +212,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			  ref_node_n_global(ref_node));
 
     }
-  RSS( ref_gather_node( ref_node, swap_endian, has_id, file ), "nodes");
+  RSS( ref_gather_node( ref_node, swap_endian, always_id, file ), "nodes");
   if ( ref_mpi_master )
     REIS( next_position, ftell(file), "vertex inconsistent");
 
@@ -229,13 +232,12 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			      keyword_code,next_position,
 			      ncell);
 	}
-      /*
       RSS( ref_gather_cell( ref_node, ref_cell,
-			    REF_FALSE, faceid, swap_endian, has_id,
+			    faceid_insted_of_c2n, always_id, swap_endian,
+			    select_faceid, faceid,
 			    file ), "nodes");
       if ( ref_mpi_master )
 	REIS( next_position, ftell(file), "cell inconsistent");
-      */
     }
 
   return REF_SUCCESS;
