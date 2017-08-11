@@ -21,8 +21,11 @@
 REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_BOOL verbose = REF_TRUE;
-  REF_INT version;
+  REF_INT version, dim;
+  REF_BOOL available;
+  REF_INT next_position;
   REF_DICT ref_dict;
+  FILE *file;
 
   if ( ref_mpi_master )
     {
@@ -30,6 +33,16 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
       RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
       if (verbose) printf("meshb version %d\n",version);
       if (verbose) ref_dict_inspect(ref_dict);
+      if (verbose) printf("open %s\n",filename);
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  3, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing dimension" );
+      REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+      if (verbose) printf("meshb dim %d\n",dim);
+      REIS( 3, dim, "only 3D supported" );
     }
 
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
