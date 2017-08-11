@@ -924,16 +924,43 @@ REF_STATUS ref_import_meshb_header( const char *filename,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_import_meshb_jump( FILE *file, REF_INT version, 
+				  REF_DICT ref_dict,
+				  REF_INT keyword,
+				  REF_BOOL *available, REF_INT *next_position )
+{
+  REF_INT keyword_code, position;
+  REF_INT status;
+  status = ref_dict_value( ref_dict, keyword, &position);
+  RXS( status, REF_NOT_FOUND, "kw pos");
+  if ( REF_SUCCESS == status )
+    {
+      *available = REF_TRUE;
+    }
+  else
+    {
+      *available = REF_FALSE;
+      *next_position = 0;
+      return REF_SUCCESS;
+    }
+  RSS( ref_dict_value( ref_dict, keyword, &position), "kw pos");
+  fseek(file, (long)position, SEEK_SET);
+  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+  REIS(keyword, keyword_code, "keyword code");
+  RSS( meshb_pos( file, version, next_position), "pos");
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   FILE *file;
-  REF_INT code, version, dim;
-  REF_INT keyword_code, position, next_position;
+  REF_INT version, dim;
+  REF_BOOL available;
+  REF_INT next_position;
   REF_DICT ref_dict;
-  REF_INT dim_keyword;
-  REF_INT vertex_keyword, triangle_keyword, edge_keyword, tet_keyword;
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge, ntet, tet;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
@@ -957,12 +984,9 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
 
-  dim_keyword = 3;
-  RSS( ref_dict_value( ref_dict, dim_keyword, &position), "kw pos");
-  fseek(file, (long)position, SEEK_SET);
-  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-  REIS(dim_keyword, keyword_code, "keyword code");
-  RSS( meshb_pos( file, version, &next_position), "pos");
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      3, &available, &next_position ), "jump" );
+  RAS( available, "meshb missing dimension" );
   REIS(1, fread((unsigned char *)&dim, 4, 1, file), "keyword code");
   if (verbose) printf("meshb dim %d\n",dim);
   if ( dim < 2 || 3 < dim )
@@ -971,12 +995,9 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
       THROW("dim");
     }
 
-  vertex_keyword = 4;
-  RSS( ref_dict_value( ref_dict, vertex_keyword, &position), "kw pos");
-  fseek(file, (long)position, SEEK_SET);
-  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-  REIS(vertex_keyword, keyword_code, "keyword code");
-  RSS( meshb_pos( file, version, &next_position), "pos");
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      4, &available, &next_position ), "jump" );
+  RAS( available, "meshb missing vertex" );
   REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "keyword code");
   if (verbose) printf("nnode %d\n",nnode);
 
@@ -1017,16 +1038,10 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init glob");
 
-  edge_keyword = 5;
-  code = ref_dict_value( ref_dict, edge_keyword, &position);
-  RXS( code, REF_NOT_FOUND, "kw pos");
-  if ( REF_NOT_FOUND != code)
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      5, &available, &next_position ), "jump" );
+  if ( available )
     {
-      fseek(file, (long)position, SEEK_SET);
-      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
-	   "keyword code");
-      REIS(edge_keyword, keyword_code, "keyword code");
-      RSS( meshb_pos( file, version, &next_position), "pos");
       REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "keyword code");
       if (verbose) printf("nedge %d\n",nedge);
 
@@ -1055,15 +1070,12 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	       "edg for edge");
 	    }
 	}
+      REIS( next_position, ftell(file), "end location" );
     }
 
-  triangle_keyword = 6;
-  RSS( ref_dict_value( ref_dict, triangle_keyword, &position),
-       "tri kw missing");
-  fseek(file, (long)position, SEEK_SET);
-  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-  REIS(triangle_keyword, keyword_code, "keyword code");
-  RSS( meshb_pos( file, version, &next_position), "pos");
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      6, &available, &next_position ), "jump" );
+  RAS( available, "meshb missing triangle" );
   REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "keyword code");
   if (verbose) printf("ntri %d\n",ntri);
 
@@ -1109,17 +1121,11 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   REIS( next_position, ftell(file), "end location" );
 
-  tet_keyword = 8;
-  code = ref_dict_value( ref_dict, tet_keyword, &position);
-  RXS( code, REF_NOT_FOUND, "kw pos");
-  if ( 3==dim && code != REF_NOT_FOUND )
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      8, &available, &next_position ), "jump" );
+  if ( 3==dim && available )
     {
-      fseek(file, (long)position, SEEK_SET);
-      REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
-	   "keyword code");
-      REIS(tet_keyword, keyword_code, "keyword code");
-      RSS( meshb_pos( file, version, &next_position), "pos");
-      REIS(1, fread((unsigned char *)&ntet, 4, 1, file), "keyword code");
+      REIS(1, fread((unsigned char *)&ntet, 4, 1, file), "ntet");
       if (verbose) printf("ntet %d\n",ntet);
 
       for (tet=0;tet<ntet;tet++)
@@ -1137,22 +1143,18 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	  RSS( ref_cell_add( ref_grid_tet(ref_grid), nodes, &new_cell ), 
 	       "tet");
 	}
+      REIS( next_position, ftell(file), "end location" );
     }
-  REIS( next_position, ftell(file), "end location" );
 
   each_ref_type( ref_geom, type )
     {
       geom_keyword = 40+type;
-      code = ref_dict_value( ref_dict, geom_keyword, &position);
-      RXS( code, REF_NOT_FOUND, "kw pos");
-      if ( code == REF_SUCCESS )
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  geom_keyword,
+				  &available, &next_position ), "jump" );
+      if ( available )
 	{
-	  fseek(file, (long)position, SEEK_SET);
-	  REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
-	       "keyword code");
-	  REIS(geom_keyword, keyword_code, "keyword code");
-	  RSS( meshb_pos( file, version, &next_position), "pos");
-	  REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "keyword code");
+	  REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
 	  if (verbose) printf("type %d ngeom %d\n",type, ngeom);
 
 	  for (geom=0;geom<ngeom;geom++)
