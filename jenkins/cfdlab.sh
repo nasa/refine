@@ -83,7 +83,6 @@ trap "cat $LOG" EXIT
 cd ${build_dir}/two
 echo para-unit > $LOG 2>&1
 mpiexec -np 2 ./ref_mpi_test >> $LOG 2>&1
-mpiexec -np 2 ./ref_part_test >> $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-2d-linear-two
