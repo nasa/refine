@@ -25,11 +25,28 @@ egads_path=/ump/fldmd/home/wtjones1/local/pkgs-modules/ESP/svn
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
 build_dir=${root_dir}/_refine
+strict_dir=${root_dir}/_strict
 
 cd ${source_dir}
 LOG=${root_dir}/log.bootstrap
 trap "cat $LOG" EXIT
 ./bootstrap > $LOG 2>&1
+trap - EXIT
+
+mkdir -p ${strict_dir}
+cd ${strict_dir}
+LOG=${root_dir}/log.strict-configure
+trap "cat $LOG" EXIT
+${source_dir}/configure \
+    --prefix=${strict_dir} \
+    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    FC=gfortran  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.make-distcheck
+trap "cat $LOG" EXIT
+make -j distcheck > $LOG 2>&1
+cp refine-*.tar.gz ${root_dir
 trap - EXIT
 
 mkdir -p ${build_dir}
@@ -40,7 +57,7 @@ ${source_dir}/configure \
     --prefix=${build_dir} \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
-    CFLAGS='-DHAVE_MPI -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CFLAGS='-DHAVE_MPI -g -O2 -Wall -Wextra -Werror -Wunused -Wuninitialized' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
 trap - EXIT
@@ -48,11 +65,6 @@ trap - EXIT
 LOG=${root_dir}/log.make
 trap "cat $LOG" EXIT
 env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
-trap - EXIT
-
-LOG=${root_dir}/log.make-distcheck
-trap "cat $LOG" EXIT
-make distcheck > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.make-install
