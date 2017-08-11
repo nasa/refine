@@ -66,7 +66,9 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_node( file, swap_endian, has_id,
 		      ref_node, nnode ), "part node" ); 
-  
+  if ( ref_mpi_master )
+    REIS( next_position, ftell(file), "end location" );
+
   if ( ref_mpi_master )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
