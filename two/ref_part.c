@@ -74,7 +74,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  8, &available, &next_position ), "jump" );
       RAS( available, "meshb missing tet" );
-      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nnode");
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntet");
       if (verbose) printf("ntet %d\n",ncell);
     }
   RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
@@ -83,6 +83,40 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   if ( ref_mpi_master )
     REIS( next_position, ftell(file), "end location" );
 
+  if ( ref_mpi_master )
+    {
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  6, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing tri" );
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntri");
+      if (verbose) printf("ntri %d\n",ncell);
+    }
+  RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_part_meshb_cell( ref_grid_tri(ref_grid), ncell,
+			    ref_node, nnode, file ), "part cell" ); 
+  if ( ref_mpi_master )
+    REIS( next_position, ftell(file), "end location" );
+
+  if ( ref_mpi_master )
+    {
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  5, &available, &next_position ), "jump" );
+      if ( available )
+	{
+	  REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nedge");
+	  if (verbose) printf("nedge %d\n",ncell);
+	}
+    }
+  RSS( ref_mpi_bcast( &available, 1, REF_INT_TYPE ), "bcast" );
+  if ( available )
+    {
+      RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+      RSS( ref_part_meshb_cell( ref_grid_edg(ref_grid), ncell,
+				ref_node, nnode, file ), "part cell" ); 
+      if ( ref_mpi_master )
+	REIS( next_position, ftell(file), "end location" );
+    }
+  
   if ( ref_mpi_master )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
