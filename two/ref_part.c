@@ -59,12 +59,13 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_node( FILE *file, REF_NODE ref_node, REF_INT nnode )
+REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
+			  REF_NODE ref_node, REF_INT nnode )
 {
   REF_INT node, new_node;
   REF_INT part;
   REF_INT n;
-  REF_DBL swapped_dbl;
+  REF_DBL dbl;
   REF_DBL *xyz;
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
@@ -76,15 +77,15 @@ REF_STATUS ref_part_node( FILE *file, REF_NODE ref_node, REF_INT nnode )
 	{
 	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
 	  ref_node_part(ref_node,new_node) = ref_mpi_id;
-	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
-	  SWAP_DBL(swapped_dbl);
-	  ref_node_xyz( ref_node, 0, new_node ) = swapped_dbl;
-	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
-	  SWAP_DBL(swapped_dbl);
-	  ref_node_xyz( ref_node, 1, new_node ) = swapped_dbl;
-	  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
-	  SWAP_DBL(swapped_dbl);
-	  ref_node_xyz( ref_node, 2, new_node ) = swapped_dbl;
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 0, new_node ) = dbl;
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 1, new_node ) = dbl;
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 2, new_node ) = dbl;
 	}
       for ( part = 1; part<ref_mpi_n ; part++ )
 	{
@@ -96,15 +97,15 @@ REF_STATUS ref_part_node( FILE *file, REF_NODE ref_node, REF_INT nnode )
 	      ref_malloc( xyz, 3*n, REF_DBL);
 	      for (node=0;node<n; node++)
 		{
-		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "x" );
-		  SWAP_DBL(swapped_dbl);
-		  xyz[0+3*node] = swapped_dbl;
-		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "y" );
-		  SWAP_DBL(swapped_dbl);
-		  xyz[1+3*node] = swapped_dbl;
-		  RES(1, fread( &swapped_dbl, sizeof(REF_DBL), 1, file ), "z" );
-		  SWAP_DBL(swapped_dbl);
-		  xyz[2+3*node] = swapped_dbl;
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[0+3*node] = dbl;
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[1+3*node] = dbl;
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[2+3*node] = dbl;
 		}
 	      RSS( ref_mpi_send( xyz, 3*n, REF_DBL_TYPE, part ), "send" );
 	      free(xyz);
@@ -148,6 +149,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
+  REF_BOOL swap_endian = REF_TRUE;
   REF_BOOL instrument = REF_FALSE;
 
   if (instrument) ref_mpi_stopwatch_start();
@@ -173,13 +175,13 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
       RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
 
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
+      if (swap_endian) SWAP_INT(nnode);
+      if (swap_endian) SWAP_INT(ntri);
+      if (swap_endian) SWAP_INT(nqua);
+      if (swap_endian) SWAP_INT(ntet);
+      if (swap_endian) SWAP_INT(npyr);
+      if (swap_endian) SWAP_INT(npri);
+      if (swap_endian) SWAP_INT(nhex);
     }
 
   RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
@@ -195,7 +197,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
     ref_grid_twod(ref_grid) = REF_TRUE;
 
-  RSS( ref_part_node( file, ref_node, nnode ), "part node" ); 
+  RSS( ref_part_node( file, swap_endian, ref_node, nnode ), "part node" ); 
   if (instrument) ref_mpi_stopwatch_stop("nodes");
 
   if ( 0 < ntri )
