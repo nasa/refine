@@ -26,8 +26,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT next_position;
   REF_DICT ref_dict;
   REF_GRID ref_grid;
+  REF_NODE ref_node;
   FILE *file;
-
+  REF_BOOL swap_endian = REF_FALSE;
+  REF_BOOL has_id = REF_TRUE;
+  REF_INT nnode;
+  
   file = NULL;
   if ( ref_mpi_master )
     {
@@ -48,7 +52,20 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
   ref_grid_twod(ref_grid) = REF_FALSE;
+
+  if ( ref_mpi_master )
+    {
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  4, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing vertex" );
+      REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
+      if (verbose) printf("nnode %d\n",nnode);
+    }
+  RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_part_node( file, swap_endian, has_id,
+		      ref_node, nnode ), "part node" ); 
   
   if ( ref_mpi_master )
     {
@@ -59,12 +76,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
+REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
 			  REF_NODE ref_node, REF_INT nnode )
 {
   REF_INT node, new_node;
   REF_INT part;
-  REF_INT n;
+  REF_INT n, id;
   REF_DBL dbl;
   REF_DBL *xyz;
 
@@ -86,6 +103,7 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
 	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
 	  if (swap_endian) SWAP_DBL(dbl);
 	  ref_node_xyz( ref_node, 2, new_node ) = dbl;
+	  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
 	}
       for ( part = 1; part<ref_mpi_n ; part++ )
 	{
@@ -106,6 +124,7 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
 		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
 		  if (swap_endian) SWAP_DBL(dbl);
 		  xyz[2+3*node] = dbl;
+		  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id");
 		}
 	      RSS( ref_mpi_send( xyz, 3*n, REF_DBL_TYPE, part ), "send" );
 	      free(xyz);
@@ -150,6 +169,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_NODE ref_node;
 
   REF_BOOL swap_endian = REF_TRUE;
+  REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
 
   if (instrument) ref_mpi_stopwatch_start();
@@ -197,7 +217,8 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
     ref_grid_twod(ref_grid) = REF_TRUE;
 
-  RSS( ref_part_node( file, swap_endian, ref_node, nnode ), "part node" ); 
+  RSS( ref_part_node( file, swap_endian, has_id,
+		      ref_node, nnode ), "part node" ); 
   if (instrument) ref_mpi_stopwatch_stop("nodes");
 
   if ( 0 < ntri )
