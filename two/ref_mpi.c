@@ -288,6 +288,16 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
+  if ( ref_mpi_n == 1 )
+    {
+      switch (type)
+	{
+	case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
+	case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+      return REF_SUCCESS;
+    }
   ref_type_mpi_type(type,datatype);
 
   MPI_Reduce( input, output, 1, datatype, MPI_MIN, 0, MPI_COMM_WORLD);
@@ -327,6 +337,16 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
+  if ( ref_mpi_n == 1 )
+    {
+      switch (type)
+	{
+	case REF_INT_TYPE: *(REF_INT *)output = *(REF_INT *)input; break;
+	case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+      return REF_SUCCESS;
+    }
   ref_type_mpi_type(type,datatype);
 
   MPI_Reduce( input, output, 1, datatype, MPI_MAX, 0, MPI_COMM_WORLD);
