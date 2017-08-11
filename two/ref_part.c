@@ -30,7 +30,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   FILE *file;
   REF_BOOL swap_endian = REF_FALSE;
   REF_BOOL has_id = REF_TRUE;
-  REF_INT nnode;
+  REF_INT nnode, ncell;
   
   file = NULL;
   if ( ref_mpi_master )
@@ -66,6 +66,20 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_node( file, swap_endian, has_id,
 		      ref_node, nnode ), "part node" ); 
+  if ( ref_mpi_master )
+    REIS( next_position, ftell(file), "end location" );
+
+  if ( ref_mpi_master )
+    {
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  8, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing tet" );
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nnode");
+      if (verbose) printf("ntet %d\n",ncell);
+    }
+  RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_part_meshb_cell( ref_grid_tet(ref_grid), ncell,
+			    ref_node, nnode, file ), "part cell" ); 
   if ( ref_mpi_master )
     REIS( next_position, ftell(file), "end location" );
 
@@ -314,6 +328,173 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
   if (instrument) ref_mpi_stopwatch_stop("volume");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
+				REF_NODE ref_node, REF_INT nnode,
+				FILE *file )
+{
+  REF_INT ncell_read;
+  REF_INT chunk;
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT elements_to_receive;
+  REF_INT *c2n;
+  REF_INT *c2t;
+  REF_INT *sent_c2n;
+  REF_INT *dest;
+  REF_INT *sent_part;
+  REF_INT *elements_to_send;
+  REF_INT *start_to_send;
+  REF_INT node_per, size_per;
+  REF_INT section_size;
+  REF_INT cell;
+  REF_INT part, node;
+  REF_INT ncell_keep;
+  REF_INT new_location;
+
+  chunk = MAX(1000000, ncell/ref_mpi_n);
+
+  size_per = ref_cell_size_per(ref_cell);
+  node_per = ref_cell_node_per(ref_cell);
+
+  ref_malloc( sent_c2n, size_per*chunk, REF_INT );
+
+  if ( ref_mpi_master )
+    {
+
+      ref_malloc( elements_to_send, ref_mpi_n, REF_INT );
+      ref_malloc( start_to_send, ref_mpi_n, REF_INT );
+      ref_malloc( c2n, size_per*chunk, REF_INT );
+      ref_malloc( c2t, (node_per+1)*chunk, REF_INT );
+      ref_malloc( dest, chunk, REF_INT );
+
+      ncell_read = 0;
+      while ( ncell_read < ncell )
+	{
+	  section_size = MIN(chunk,ncell-ncell_read);
+	  if ( node_per == size_per)
+	    {
+	      RES((size_t)(section_size*(node_per+1)),
+		  fread( c2t,
+			 sizeof(REF_INT), section_size*(node_per+1), file ), "cn" );
+	      for (cell=0;cell<section_size;cell++)
+		for (node=0;node<node_per;node++)
+		  c2n[node+size_per*cell] = c2t[node+(node_per+1)*cell];
+	    }
+	  else
+	    {
+	      RES((size_t)(section_size*size_per),
+		  fread( c2n,
+			 sizeof(REF_INT), section_size*size_per, file ), "cn" );
+	    }
+	  for (cell=0;cell<section_size;cell++)
+	    for (node=0;node<node_per;node++)
+	      c2n[node+size_per*cell]--;
+
+	  ncell_read += section_size;
+
+	  for (cell=0;cell<section_size;cell++)
+	    dest[cell] = ref_part_implicit( nnode, ref_mpi_n, 
+					    c2n[size_per*cell] );
+
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    elements_to_send[part] = 0;
+	  for (cell=0;cell<section_size;cell++)
+	    elements_to_send[dest[cell]]++;
+
+	  start_to_send[0]=0;
+	  for ( part = 0; part< ref_mpi_n-1;part++ )
+	    start_to_send[part+1] = start_to_send[part]+elements_to_send[part];
+
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    elements_to_send[part] = 0;
+	  for (cell=0;cell<section_size;cell++)
+	    {
+	      new_location = start_to_send[dest[cell]]
+		+ elements_to_send[dest[cell]];
+	      for (node=0;node<size_per;node++)
+		sent_c2n[node+size_per*new_location] = c2n[node+size_per*cell];
+	      elements_to_send[dest[cell]]++;
+	    }
+
+	  /* master keepers */
+
+	  ncell_keep = elements_to_send[0];
+	  if ( 0 < ncell_keep )
+	    { 
+	      ref_malloc_init( sent_part, size_per*ncell_keep, 
+			       REF_INT, REF_EMPTY );
+
+	      for (cell=0;cell<ncell_keep;cell++)
+		for (node=0;node<node_per;node++)
+		  sent_part[node+size_per*cell] =
+		    ref_part_implicit( nnode, ref_mpi_n, 
+				       sent_c2n[node+size_per*cell] );
+
+	      RSS( ref_cell_add_many_global( ref_cell, ref_node,
+					     ncell_keep, 
+					     sent_c2n, sent_part,
+					     ref_mpi_id ),"many glob");
+
+	      ref_free(sent_part);
+	    }
+
+	  for ( part = 1; part< ref_mpi_n;part++ )
+	    if ( 0 < elements_to_send[part] ) 
+	      {
+		RSS( ref_mpi_send( &(elements_to_send[part]), 
+				   1, REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( &(sent_c2n[size_per*start_to_send[part]]), 
+				   size_per*elements_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+	      }
+
+	}
+
+      ref_free(dest);
+      ref_free(c2t);
+      ref_free(c2n);
+      ref_free(start_to_send);
+      ref_free(elements_to_send);
+
+      /* signal we are done */
+      for ( part = 1; part<ref_mpi_n ; part++ )
+	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+
+    }  
+  else
+    {
+      do {
+	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	if ( elements_to_receive > 0 )
+	  {
+	    RSS( ref_mpi_recv( sent_c2n, size_per*elements_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+
+	    ref_malloc_init( sent_part, size_per*elements_to_receive, 
+			     REF_INT, REF_EMPTY );
+
+	    for (cell=0;cell<elements_to_receive;cell++)
+	      for (node=0;node<node_per;node++)
+		sent_part[node+size_per*cell] =
+		  ref_part_implicit( nnode, ref_mpi_n, 
+				     sent_c2n[node+size_per*cell] );
+
+	    RSS( ref_cell_add_many_global( ref_cell, ref_node,
+					   elements_to_receive, 
+					   sent_c2n, sent_part,
+					   ref_mpi_id ), "many glob");
+
+	    ref_free( sent_part );
+	  }
+      } while ( elements_to_receive != end_of_message );
+    }
+
+  free(sent_c2n);
+
+  RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "fill ghosts");
 
   return REF_SUCCESS;
 }

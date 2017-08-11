@@ -145,9 +145,10 @@ int main( int argc, char *argv[] )
       }
 
     RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+    RSS( ref_gather_tec_part( import_grid, "ref_part_test.tec" ), "part_viz");
 
     RSS(ref_grid_free(import_grid),"free");
-    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+    if ( REF_FALSE && ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
   }
 
   { /* metric */
