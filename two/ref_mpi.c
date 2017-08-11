@@ -143,7 +143,9 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  ref_type_mpi_type(type,datatype);
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+ ref_type_mpi_type(type,datatype);
 
   MPI_Bcast(data, n, datatype, 0, MPI_COMM_WORLD);
 #else
