@@ -60,7 +60,8 @@ REF_STATUS ref_mpi_initialize( void )
   MPI_Comm_size(MPI_COMM_WORLD,&ref_mpi_n);
   MPI_Comm_rank(MPI_COMM_WORLD,&ref_mpi_id);
 
-  MPI_Barrier( MPI_COMM_WORLD ); 
+  if ( ref_mpi_n > 1 )
+    MPI_Barrier( MPI_COMM_WORLD ); 
   mpi_stopwatch_first_time = (REF_DBL)MPI_Wtime();
 #else
   ref_mpi_n = 1;
@@ -88,7 +89,8 @@ REF_STATUS ref_mpi_stop( )
 REF_STATUS ref_mpi_stopwatch_start( void )
 {
 #ifdef HAVE_MPI
-  MPI_Barrier( MPI_COMM_WORLD ); 
+  if ( ref_mpi_n > 1 )
+    MPI_Barrier( MPI_COMM_WORLD ); 
   mpi_stopwatch_start_time = (REF_DBL)MPI_Wtime();
 #else
   mpi_stopwatch_start_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
@@ -104,7 +106,8 @@ REF_STATUS ref_mpi_stopwatch_stop( const char *message )
   REF_DBL before_barrier, after_barrier, elapsed;
   REF_DBL first, last;
   before_barrier = (REF_DBL)MPI_Wtime()-mpi_stopwatch_start_time;
-  MPI_Barrier( MPI_COMM_WORLD ); 
+  if ( ref_mpi_n > 1 )
+    MPI_Barrier( MPI_COMM_WORLD ); 
   after_barrier = (REF_DBL)MPI_Wtime();
   elapsed = after_barrier - mpi_stopwatch_first_time;
   after_barrier = after_barrier-mpi_stopwatch_start_time;
