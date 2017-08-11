@@ -84,6 +84,12 @@ cd ${source_dir}/acceptance/3d/linear/two
 ./accept-3d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-3d-linear-two-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/3d/linear/two
+./accept-3d-two-para.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/uniform/two
