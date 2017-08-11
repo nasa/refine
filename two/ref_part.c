@@ -51,10 +51,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_DICT ref_dict;
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_GEOM ref_geom;
   FILE *file;
   REF_BOOL swap_endian = REF_FALSE;
   REF_BOOL has_id = REF_TRUE;
   REF_INT nnode, ncell;
+  REF_INT type, geom_keyword, ngeom;
   
   file = NULL;
   if ( ref_mpi_master )
@@ -77,6 +79,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
+  ref_geom = ref_grid_geom(ref_grid);
   ref_grid_twod(ref_grid) = REF_FALSE;
 
   if ( ref_mpi_master )
@@ -141,6 +144,32 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	REIS( next_position, ftell(file), "end location" );
     }
   
+  each_ref_type( ref_geom, type )
+    {
+      if ( ref_mpi_master )
+	{
+	  geom_keyword = 40+type;
+	  RSS( ref_import_meshb_jump( file, version, ref_dict,
+				      geom_keyword,
+				      &available, &next_position ), "jump" );
+	  if ( available )
+	    {
+	      REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
+	      if (verbose) printf("type %d ngeom %d\n",type, ngeom);
+	    }
+	}
+      RSS( ref_mpi_bcast( &available, 1, REF_INT_TYPE ), "bcast" );
+      if ( available )
+	{
+	  RSS( ref_mpi_bcast( &ngeom, 1, REF_INT_TYPE ), "bcast" ); 
+	  RSS( ref_part_meshb_geom( ref_geom, ngeom, type,
+				    ref_node, nnode, file ), "part geom" );
+	  if ( ref_mpi_master )
+	    REIS( next_position, ftell(file), "end location" );
+	}
+    }
+  RSS( ref_migrate_shufflin_geom( ref_grid ), "fill ghosts");
+
   if ( ref_mpi_master )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
@@ -386,6 +415,167 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
   if (instrument) ref_mpi_stopwatch_stop("volume");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
+				REF_NODE ref_node, REF_INT nnode,
+				FILE *file )
+{
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT chunk;
+  REF_INT *sent_node;
+  REF_INT *sent_id;
+  REF_DBL *sent_param;
+  REF_INT *read_node;
+  REF_INT *read_id;
+  REF_DBL *read_param;
+  REF_DBL filler;
+
+  REF_INT ngeom_read, ngeom_keep;
+  REF_INT section_size; 
+
+  REF_INT *dest;
+  REF_INT *geom_to_send;
+  REF_INT *start_to_send;
+
+  REF_INT geom_to_receive;
+ 
+  REF_INT geom, i;
+  REF_INT part, node;
+  REF_INT new_location;
+
+  chunk = MAX(1000000, ngeom/ref_mpi_n);
+  chunk = MIN( chunk, ngeom );
+  
+  ref_malloc( sent_node, chunk, REF_INT );
+  ref_malloc( sent_id, chunk, REF_INT );
+  ref_malloc( sent_param, 2*chunk, REF_DBL );
+
+  if ( ref_mpi_master )
+    {
+      ref_malloc( geom_to_send, ref_mpi_n, REF_INT );
+      ref_malloc( start_to_send, ref_mpi_n, REF_INT );
+      ref_malloc( read_node, chunk, REF_INT );
+      ref_malloc( read_id, chunk, REF_INT );
+      ref_malloc( read_param, 2*chunk, REF_DBL );
+      ref_malloc( dest, chunk, REF_INT );
+
+      ngeom_read = 0;
+      while ( ngeom_read < ngeom )
+	{
+	  section_size = MIN(chunk,ngeom-ngeom_read);
+	  for (geom=0;geom<section_size;geom++)
+	    {
+	      REIS(1, fread(&(read_node[geom]),sizeof(REF_INT), 1, file ), "n");
+	      REIS(1, fread(&(read_id[geom]),sizeof(REF_INT), 1, file ), "n");
+	      for ( i = 0; i < 2 ; i++ )
+		read_param[i+2*geom] = 0.0; /* ensure init */
+	      for ( i = 0; i < type ; i++ )
+		REIS( 1, fread(&(read_param[i+2*geom]),
+			       sizeof(double), 1, file ), "param" );
+	      if ( 0 < type )
+		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
+	    }
+	  for (geom=0;geom<section_size;geom++)
+	    read_node[geom]--;
+
+	  ngeom_read += section_size;
+
+	  for (geom=0;geom<section_size;geom++)
+	    dest[geom] = ref_part_implicit( nnode, ref_mpi_n, 
+					    read_node[geom] );
+
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    geom_to_send[part] = 0;
+	  for (geom=0;geom<section_size;geom++)
+	    geom_to_send[dest[geom]]++;
+
+	  start_to_send[0]=0;
+	  for ( part = 0; part< ref_mpi_n-1;part++ )
+	    start_to_send[part+1] = start_to_send[part]+geom_to_send[part];
+
+	  for ( part = 0; part< ref_mpi_n;part++ )
+	    geom_to_send[part] = 0;
+	  for (geom=0;geom<section_size;geom++)
+	    {
+	      new_location = start_to_send[dest[geom]]
+		+ geom_to_send[dest[geom]];
+	      sent_node[new_location] = read_node[geom];
+	      sent_id[new_location] = read_id[geom];
+	      sent_param[0+2*new_location] = read_param[0+2*geom];
+	      sent_param[1+2*new_location] = read_param[1+2*geom];
+	      geom_to_send[dest[geom]]++;
+	    }
+
+	  /* master keepers */
+	  ngeom_keep = geom_to_send[0];
+	  for (geom=0;geom<ngeom_keep;geom++)
+	    {
+	      RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
+	      RSS( ref_geom_add( ref_geom,
+				 node, type, sent_id[geom],
+				 &(sent_param[2*geom]) ), "add geom");
+	    }
+	  
+	  /* ship it! */
+	  for ( part = 1; part< ref_mpi_n;part++ )
+	    if ( 0 < geom_to_send[part] ) 
+	      {
+		RSS( ref_mpi_send( &(geom_to_send[part]), 
+				   1, REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( &(sent_node[start_to_send[part]]), 
+				   geom_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( &(sent_id[start_to_send[part]]), 
+				   geom_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( &(sent_param[2*start_to_send[part]]), 
+				   2*geom_to_send[part], 
+				   REF_DBL_TYPE, part ), "send" );
+	      }
+
+	}
+
+      ref_free(dest);
+      ref_free(read_param);
+      ref_free(read_id);
+      ref_free(read_node);
+      ref_free(start_to_send);
+      ref_free(geom_to_send);
+
+      /* signal we are done */
+      for ( part = 1; part<ref_mpi_n ; part++ )
+	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+
+    }
+  else
+    {
+      do {
+	RSS( ref_mpi_recv( &geom_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	if ( geom_to_receive > 0 )
+	  {
+	    RSS( ref_mpi_recv( sent_node, geom_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+	    RSS( ref_mpi_recv( sent_id, geom_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+	    RSS( ref_mpi_recv( sent_param, 2*geom_to_receive, 
+			       REF_DBL_TYPE, 0 ), "send" );
+	    for (geom=0;geom<geom_to_receive;geom++)
+	      {
+		RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
+		RSS( ref_geom_add( ref_geom,
+				   node, type, sent_id[geom],
+				   &(sent_param[2*geom]) ), "add geom");
+	      }
+	  }
+      } while ( geom_to_receive != end_of_message );
+    }
+
+  free(sent_param);
+  free(sent_id);
+  free(sent_node);
 
   return REF_SUCCESS;
 }
