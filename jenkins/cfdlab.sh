@@ -38,9 +38,9 @@ LOG=${root_dir}/log.configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${build_dir} \
-    --with-parmetic=${parmetis_path} \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CFLAGS='-DHAVE_MPI -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
 trap - EXIT
