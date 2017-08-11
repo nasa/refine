@@ -58,69 +58,13 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_part_node( FILE *file, REF_NODE ref_node, REF_INT nnode )
 {
-  FILE *file;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node, new_node;
-  REF_DBL swapped_dbl;
   REF_INT part;
   REF_INT n;
+  REF_DBL swapped_dbl;
   REF_DBL *xyz;
-
-  long conn_offset, faceid_offset;
-
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-
-  REF_BOOL instrument = REF_FALSE;
-
-  if (instrument) ref_mpi_stopwatch_start();
-
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
-  ref_grid = *ref_grid_ptr;
-  ref_node = ref_grid_node(ref_grid);
-
-  /* header */
-
-  file = NULL;
-  if ( ref_mpi_master )
-    {
-      file = fopen(filename,"r");
-      if (NULL == (void *)file) printf("unable to open %s\n",filename);
-      RNS(file, "unable to open file" );
-
-      RES( 1, fread( &nnode, sizeof(REF_INT), 1, file ), "nnode" );
-      RES( 1, fread( &ntri, sizeof(REF_INT), 1, file ), "ntri" );
-      RES( 1, fread( &nqua, sizeof(REF_INT), 1, file ), "nqua" );
-      RES( 1, fread( &ntet, sizeof(REF_INT), 1, file ), "ntet" );
-      RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
-      RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
-      RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
-
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
-    }
-
-  RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &ntri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &nqua, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &ntet, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &npyr, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &npri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &nhex, 1, REF_INT_TYPE ), "bcast" ); 
-
-  /* guess twod status */
-
-  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
-    ref_grid_twod(ref_grid) = REF_TRUE;
-
-  /* nodes */
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
 
@@ -190,6 +134,68 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+{
+  FILE *file;
+  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+
+
+  long conn_offset, faceid_offset;
+
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+
+  REF_BOOL instrument = REF_FALSE;
+
+  if (instrument) ref_mpi_stopwatch_start();
+
+  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  /* header */
+
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+
+      RES( 1, fread( &nnode, sizeof(REF_INT), 1, file ), "nnode" );
+      RES( 1, fread( &ntri, sizeof(REF_INT), 1, file ), "ntri" );
+      RES( 1, fread( &nqua, sizeof(REF_INT), 1, file ), "nqua" );
+      RES( 1, fread( &ntet, sizeof(REF_INT), 1, file ), "ntet" );
+      RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
+      RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
+      RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
+
+      SWAP_INT(nnode);
+      SWAP_INT(ntri);
+      SWAP_INT(nqua);
+      SWAP_INT(ntet);
+      SWAP_INT(npyr);
+      SWAP_INT(npri);
+      SWAP_INT(nhex);
+    }
+
+  RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &ntri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &nqua, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &ntet, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &npyr, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &npri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( &nhex, 1, REF_INT_TYPE ), "bcast" ); 
+
+  /* guess twod status */
+
+  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
+    ref_grid_twod(ref_grid) = REF_TRUE;
+
+  RSS( ref_part_node( file, ref_node, nnode ), "part node" ); 
   if (instrument) ref_mpi_stopwatch_stop("nodes");
 
   if ( 0 < ntri )
