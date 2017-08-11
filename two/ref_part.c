@@ -18,6 +18,30 @@
 #include "ref_dict.h"
 #include "ref_import.h"
 
+REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
+				  const char *filename )
+{
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
+    {
+      RSS( ref_part_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
+      return REF_SUCCESS;
+    }
+  if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
+    {
+      RSS( ref_part_meshb( ref_grid_ptr, filename ), 
+	   "meshb failed");
+      return REF_SUCCESS;
+    }
+  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+	 "input file name extension unknown", filename);
+  RSS( REF_FAILURE, "unknown file extension");
+  return REF_FAILURE;
+}
+
 REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_BOOL verbose = REF_TRUE;
