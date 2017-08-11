@@ -28,6 +28,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_GRID ref_grid;
   FILE *file;
 
+  file = NULL;
   if ( ref_mpi_master )
     {
       RSS( ref_dict_create( &ref_dict ), "create dict" );
@@ -141,7 +142,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
-
 
   long conn_offset, faceid_offset;
 
