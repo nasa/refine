@@ -43,9 +43,15 @@ ${source_dir}/configure \
     FC=gfortran  > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.make-valgrind
+trap "cat $LOG" EXIT
+make -j 8 > $LOG 2>&1
+make check TESTS_ENVIRONMENT='valgrind --quiet  --error-exitcode=1 --leak-check=full' >> $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.make-distcheck
 trap "cat $LOG" EXIT
-make -j 8 distcheck > $LOG 2>&1
+make distcheck > $LOG 2>&1
 cp refine-*.tar.gz ${root_dir}
 trap - EXIT
 

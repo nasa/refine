@@ -6,6 +6,7 @@ geom from meshb in all tests
 parallel geom
  ref_geom load bal (parallel update ghost geom param)
  meshb file IO
+ parallel acceptance geom
 
 jacobian form of tet quality
 - implement refine/one quality measures
@@ -48,7 +49,6 @@ make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
 
 create jenkins test
-- make check valgrind
 - make check stack fuzz
 
 interp metric parallel
@@ -130,6 +130,8 @@ low priority surface reconstruction when EGADS not available
 
 + create jenkins test
 + make check
++ make check valgrind
++ parallel acceptance no geom
 + UGAWG test cases
   + 2d linear
   + 3d linear
