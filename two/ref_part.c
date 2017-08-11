@@ -25,6 +25,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_BOOL available;
   REF_INT next_position;
   REF_DICT ref_dict;
+  REF_GRID ref_grid;
   FILE *file;
 
   if ( ref_mpi_master )
@@ -44,12 +45,14 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
       if (verbose) printf("meshb dim %d\n",dim);
       REIS( 3, dim, "only 3D supported" );
     }
-
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
-
+  ref_grid = *ref_grid_ptr;
+  ref_grid_twod(ref_grid) = REF_FALSE;
+  
   if ( ref_mpi_master )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
+      fclose( file );
     }
 
   return REF_SUCCESS;
