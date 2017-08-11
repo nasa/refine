@@ -163,6 +163,38 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
+{
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT code, version, dim;
+  int next_position, keyword_code;
+  
+  RAS( !ref_grid_twod(ref_grid), "only 3D" );
+  
+  RSS( ref_node_synchronize_globals( ref_node ), "sync" );
+  file = NULL;
+  if ( ref_mpi_master )
+    {
+      file = fopen(filename,"w");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+
+      code = 1;
+      REIS(1, fwrite(&code,sizeof(int),1,file),"code");
+      version = 2;
+      REIS(1, fwrite(&version,sizeof(int),1,file),"version");
+      next_position = 4+4+4+ftell(file);
+      keyword_code = 3;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"dim code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      dim = 3;
+      REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
