@@ -44,7 +44,7 @@ REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
 
 REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
-  REF_BOOL verbose = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
   REF_BOOL available;
   REF_INT next_position;
