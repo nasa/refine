@@ -251,6 +251,7 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
   REF_INT faceid, min_faceid, max_faceid;
   REF_BOOL swap_endian = REF_TRUE;
   REF_BOOL always_id = REF_FALSE;
+  REF_BOOL faceid_insted_of_c2n, select_faceid;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
@@ -294,28 +295,34 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
 
   RSS( ref_export_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
 
+  faceid_insted_of_c2n = REF_FALSE;
+  select_faceid = REF_TRUE;
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
     RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
-			  REF_FALSE, always_id, swap_endian,
-			  REF_TRUE, faceid, file ), "tri c2n");
+			  faceid_insted_of_c2n, always_id, swap_endian,
+			  select_faceid, faceid, file ), "tri c2n");
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
     RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
-			  REF_FALSE, always_id, swap_endian,
-			  REF_TRUE, faceid, file ), "qua c2n");
+			  faceid_insted_of_c2n, always_id, swap_endian,
+			  select_faceid, faceid, file ), "qua c2n");
 
+  faceid_insted_of_c2n = REF_TRUE;
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
     RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
-			  REF_TRUE, always_id, swap_endian,
-			  REF_TRUE, faceid, file ), "tri faceid");
+			  faceid_insted_of_c2n, always_id, swap_endian,
+			  select_faceid, faceid, file ), "tri faceid");
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
     RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
-			  REF_TRUE, always_id, swap_endian,
-			  REF_TRUE, faceid, file ), "qua faceid");
+			  faceid_insted_of_c2n, always_id, swap_endian,
+			  select_faceid, faceid, file ), "qua faceid");
+
+  faceid_insted_of_c2n = REF_FALSE;
+  select_faceid = REF_FALSE;
   faceid = REF_EMPTY;
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     RSS( ref_gather_cell( ref_node, ref_cell, 
-			  REF_FALSE, always_id, swap_endian,
-			  REF_FALSE, faceid, file ), "cell c2n");
+			  faceid_insted_of_c2n, always_id, swap_endian,
+			  select_faceid, faceid, file ), "cell c2n");
 
   if ( ref_mpi_master ) fclose(file);
 
