@@ -171,7 +171,9 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   REF_INT code, version, dim;
   int next_position, keyword_code;
   REF_INT ncell, node_per;
+  REF_INT ngeom, type;
   REF_CELL ref_cell;
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL faceid_insted_of_c2n = REF_FALSE;
   REF_BOOL always_id = REF_TRUE;
   REF_BOOL swap_endian = REF_FALSE;
@@ -288,6 +290,31 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 	REIS( next_position, ftell(file), "cell inconsistent");
     }
 
+  each_ref_type( ref_geom, type )
+    {
+      keyword_code = 40+type; /* GmfVerticesOnGeometricVertices */
+      RSS( ref_gather_ngeom( ref_node, ref_geom, type, &ngeom ), "ngeom");
+      if ( ngeom > 0 )
+	{
+	  if ( ref_mpi_master )
+	    {
+	      node_per = ref_cell_node_per(ref_cell);
+	      next_position = 4+4+4+ngeom*(4*2+8*type)+(0 < type?8*ngeom:0)
+		+ ftell(file);
+	      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+	      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+	      REIS(1, fwrite(&(ngeom),sizeof(int),1,file),"nnode");
+	      if (verbose) printf("geom type %d kw %d next %d n %d\n",
+				  type, keyword_code,next_position,
+				  ngeom);
+	    }
+	  RSS( ref_gather_geom( ref_node, ref_geom,
+				type, file ), "nodes");
+	  if ( ref_mpi_master )
+	    REIS( next_position, ftell(file), "cell inconsistent");
+	}
+    }
+      
   return REF_SUCCESS;
 }
 
