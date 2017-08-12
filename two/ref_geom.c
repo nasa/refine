@@ -1285,7 +1285,7 @@ REF_STATUS ref_geom_infer_nedge_nface( REF_GRID ref_grid )
   RSS( ref_export_faceid_range( ref_grid, &min_id, &max_id), "face range");
   REIS( 1, min_id, "first face id not 1" );
   ref_geom->nface = max_id;
-  RSS( ref_export_edgeid_range( ref_grid, &min_id, &max_id), "face range");
+  RSS( ref_export_edgeid_range( ref_grid, &min_id, &max_id), "edge range");
   REIS( 1, min_id, "first edge id not 1" );
   ref_geom->nedge = max_id;
   return REF_SUCCESS;
