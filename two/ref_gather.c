@@ -221,6 +221,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   ref_cell = ref_grid_edg(ref_grid);
   keyword_code = 5;
   RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
+  if (verbose) printf("%d: edge ncell %d\n",ref_mpi_id, ncell);
   if ( ncell > 0 )
     {
       if ( ref_mpi_master )
