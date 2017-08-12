@@ -1761,12 +1761,13 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
   REF_INT *a_tgi, *b_tgi;
   REF_DBL *a_param, *b_param;
   REF_INT part, node, degree;
-  REF_INT *a_next;
-  REF_INT local;
+  REF_INT *a_next, *b_next;
+  REF_INT local, item, geom;
 
   if ( 1 == ref_mpi_n ) return REF_SUCCESS;
 
   ref_malloc_init( a_next,  ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_next,  ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( a_nnode, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( b_nnode, ref_mpi_n, REF_INT, 0 );
   ref_malloc_init( a_ngeom, ref_mpi_n, REF_INT, 0 );
@@ -1829,12 +1830,48 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
   ref_malloc( b_tgi,   3*b_ngeom_total, REF_INT );
   ref_malloc( b_param, 2*b_ngeom_total, REF_DBL );
 
+  b_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    b_next[part] = b_next[part-1]+b_ngeom[part-1];
+
+  for (node=0;node<b_nnode_total;node++)
+    {
+      RSS( ref_node_local( ref_node, b_global[node], &local ), "g2l");
+      part = b_part[node];
+      each_ref_geom_having_node( ref_geom, local, item, geom )
+	{
+	  b_tgi[0+3*b_next[part]] = ref_geom_type(ref_geom,geom);
+	  b_tgi[1+3*b_next[part]] =
+	    ref_node_global(ref_node,ref_geom_node(ref_geom,geom));
+	  b_param[0+2*b_next[part]] = ref_geom_param(ref_geom,0,geom);
+	  b_param[1+2*b_next[part]] = ref_geom_param(ref_geom,1,geom);
+	  b_next[ref_node_part(ref_node,node)]++;
+	}
+    }
+
+  RSS( ref_mpi_alltoallv( b_tgi, b_ngeom, a_tgi, a_nnode, 
+			  3, REF_INT_TYPE ), 
+       "alltoallv tgi");
+  RSS( ref_mpi_alltoallv( b_param, b_ngeom, a_param, a_nnode, 
+			  2, REF_DBL_TYPE ), 
+       "alltoallv param");
+
+  for (geom=0;geom<b_ngeom_total;geom++)
+    {
+      RSS( ref_node_local( ref_node, a_tgi[1+3*geom], &local ), "g2l");
+      RSS( ref_geom_add( ref_geom, local, a_tgi[0+3*geom], a_tgi[2+3*geom],
+			 &(a_param[2*geom]) ), "add ghost" );
+    }
+  
+  free(b_param);
+  free(a_tgi);
   free(b_global);
   free(a_global);
   free(b_ngeom);
   free(a_ngeom);
   free(b_nnode);
   free(a_nnode);
+  free(b_next);
   free(a_next);
 
   return REF_SUCCESS;  

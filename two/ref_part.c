@@ -168,8 +168,8 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	    REIS( next_position, ftell(file), "end location" );
 	}
     }
-  RSS( ref_migrate_shufflin_geom( ref_grid ), "fill ghosts");
 
+  RSS( ref_geom_ghost( ref_geom, ref_node ), "fill geom ghosts");
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
   if ( ref_mpi_master )
