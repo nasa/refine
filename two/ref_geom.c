@@ -1036,7 +1036,19 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  {
 	    if (no_face)
 	      {
-		printf("no face\n");
+		printf("no face for geom\n");
+		RSS(ref_node_location(ref_node,node),"loc");
+		RSS(ref_geom_tattle(ref_geom,node),"tatt");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
+		    "geom tec" );
+		THROW("geom face missing tri or qua");
+	      }
+	  }
+	if ( !no_face )
+	  {
+	    if ( !geom_face)
+	      {
+		printf("no geom for face\n");
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
 		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
