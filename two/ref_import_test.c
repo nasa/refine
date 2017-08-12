@@ -114,7 +114,6 @@ int main( int argc, char *argv[] )
     type = REF_GEOM_FACE;
     id = 3; node = 2; param[0] = 10.5; param[1] = 21.0;
     RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom face" );
-    RSS( ref_geom_verify_topo(export_grid), "fixture inconsistent");
     
     RSS(ref_export_meshb( export_grid, file ), "export" );
     RSS(ref_import_meshb( &import_grid, file ), "import" );
@@ -130,7 +129,6 @@ int main( int argc, char *argv[] )
     REIS( ref_cell_n(ref_grid_tet(export_grid)),
 	  ref_cell_n(ref_grid_tet(import_grid)), "tet count" );
 
-    RSS( ref_geom_verify_topo(import_grid), "import inconsistent");
     REIS( ref_geom_n(ref_grid_geom(export_grid)),
 	  ref_geom_n(ref_grid_geom(import_grid)), "tet count" );
 
