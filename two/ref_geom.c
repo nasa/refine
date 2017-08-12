@@ -1025,17 +1025,38 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  ref_cell_node_empty( ref_grid_edg( ref_grid ), node );
 	if ( geom_node )
 	  {
-	    if (no_edge) THROW("geom node missing edge");
-	    if (no_face) THROW("geom node missing tri or qua");
+	    if (no_edge && ref_mpi_id == ref_node_part(ref_node,node) ) 
+	      {
+		THROW("geom node missing edge");
+	      }
+	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) ) {
+	      THROW("geom node missing tri or qua");
+	    }
 	}
 	if ( geom_edge )
 	  {
-	    if (no_edge) THROW("geom edge missing edge");
-	    if (no_face) THROW("geom edge missing tri or qua");
+	    if (no_edge && ref_mpi_id == ref_node_part(ref_node,node) ) 
+	      {
+		RSS(ref_clump_around( ref_grid, node, 
+				      "ref_geom_typo_clump.tec"),"clump");
+		RSS(ref_node_location(ref_node,node),"loc");
+		RSS(ref_geom_tattle(ref_geom,node),"tatt");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
+		    "geom tec" );
+		THROW("geom edge missing edge");
+	      }
+	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) )
+	      { 
+		RSS(ref_node_location(ref_node,node),"loc");
+		RSS(ref_geom_tattle(ref_geom,node),"tatt");
+		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
+		    "geom tec" );
+		THROW("geom edge missing tri or qua");
+	      }
 	  }
 	if ( geom_face )
 	  {
-	    if (no_face)
+	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) )
 	      {
 		printf("no face for geom\n");
 		RSS(ref_node_location(ref_node,node),"loc");

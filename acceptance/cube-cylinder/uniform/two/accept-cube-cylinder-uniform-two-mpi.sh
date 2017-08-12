@@ -12,7 +12,7 @@ else
     two=${HOME}/refine/zoltan/two
 fi
 
-nproc=16
+nproc=2
 
 # ${two}/ref_geom_test ega.egads
 # ${two}/ref_geom_test ega.egads ega.ugrid
