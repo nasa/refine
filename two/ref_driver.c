@@ -75,6 +75,7 @@ int main( int argc, char *argv[] )
   REF_INT ngeom;
   
   RSS( ref_mpi_start( argc, argv ), "start" );
+  ref_mpi_stopwatch_start();
 
   snprintf( output_project, 1024, "ref_driver" );
 
