@@ -1848,9 +1848,10 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 	  b_tgi[0+3*b_next[part]] = ref_geom_type(ref_geom,geom);
 	  b_tgi[1+3*b_next[part]] =
 	    ref_node_global(ref_node,ref_geom_node(ref_geom,geom));
+	  b_tgi[2+3*b_next[part]] = ref_geom_id(ref_geom,geom);
 	  b_param[0+2*b_next[part]] = ref_geom_param(ref_geom,0,geom);
 	  b_param[1+2*b_next[part]] = ref_geom_param(ref_geom,1,geom);
-	  b_next[ref_node_part(ref_node,node)]++;
+	  b_next[part]++;
 	}
     }
 
@@ -1861,7 +1862,7 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 			  2, REF_DBL_TYPE ), 
        "alltoallv param");
 
-  for (geom=0;geom<b_ngeom_total;geom++)
+  for (geom=0;geom<a_ngeom_total;geom++)
     {
       RSS( ref_node_local( ref_node, a_tgi[1+3*geom], &local ), "g2l");
       RSS( ref_geom_add( ref_geom, local, a_tgi[0+3*geom], a_tgi[2+3*geom],
