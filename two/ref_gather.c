@@ -440,6 +440,7 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
       ncell_local++;
 
   RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ncell, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
@@ -459,6 +460,7 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
     }
 
   RSS( ref_mpi_sum( &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ngeom, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
