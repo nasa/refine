@@ -22,8 +22,8 @@ mkdir -p egads
 ( cd egads && \
     ../configure \
     --prefix=`pwd` \
+    --with-EGADS=${egads_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    --with-EGADS=${egads_path}
     FC=gfortran \
     ) \
     || exit
@@ -33,6 +33,7 @@ mkdir -p parmetis
     ../configure \
     --prefix=`pwd` \
     --with-parmetis=${parmetis_path} \
+    --with-EGADS=${egads_path} \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
@@ -44,6 +45,7 @@ mkdir -p zoltan
     ../configure \
     --prefix=`pwd` \
     --with-zoltan=${zoltan_path} \
+    --with-EGADS=${egads_path} \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
