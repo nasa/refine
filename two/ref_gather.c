@@ -417,6 +417,25 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
+			     REF_INT type, REF_INT *ngeom )
+{
+  REF_INT geom, node;
+  REF_INT ngeom_local;
+
+  ngeom_local = 0;
+  each_ref_geom_of( ref_geom, type, geom )
+    {
+      node = ref_geom_node(ref_geom,geom);
+      if ( ref_mpi_id == ref_node_part(ref_node,node) )
+	ngeom_local++;
+    }
+
+  RSS( ref_mpi_sum( &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_node( REF_NODE ref_node,
 			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file )
 {
