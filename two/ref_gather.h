@@ -23,6 +23,7 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 
 REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename );
 
+REF_STATUS ref_gather_by_extension( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename );

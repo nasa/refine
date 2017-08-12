@@ -45,6 +45,10 @@
 #include "ref_cavity.h"
 #include "ref_clump.h"
 
+#include "ref_mpi.h"
+#include "ref_part.h"
+#include "ref_gather.h"
+
 static void echo_argv( int argc, char *argv[] )
 {
   int pos;
@@ -68,24 +72,35 @@ int main( int argc, char *argv[] )
   REF_BOOL debug_verbose = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
+  REF_INT ngeom;
+  
+  RSS( ref_mpi_start( argc, argv ), "start" );
 
   snprintf( output_project, 1024, "ref_driver" );
-	  
-  echo_argv( argc, argv );
+
+  if (ref_mpi_master)
+    echo_argv( argc, argv );
 
   while ((opt = getopt(argc, argv, "i:m:g:p:o:s:cltd")) != -1)
     {
       switch (opt)
 	{
 	case 'i':
-	  RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
+	  if ( 1 < ref_mpi_n )
+	    {
+	      RSS( ref_part_by_extension( &ref_grid, optarg ), "part" );
+	    }
+	  else
+	    {
+	      RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
+	    }
 	  break;
 	case 'g':
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
 	  break;
 	case 'p':
+	  if ( 1 < ref_mpi_n ) RSS( REF_IMPLEMENT, "-p not parallel");
 	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
-	  curvature_constraint = REF_TRUE;
 	  break;
 	case 'm':
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
@@ -137,16 +152,24 @@ int main( int argc, char *argv[] )
 
   RNS( ref_grid, "input grid required" );
 
+  RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
+			 REF_GEOM_FACE, &ngeom ), "count ngeom" );
+  if (ngeom>0)
+    curvature_constraint = REF_TRUE;
+  
   if (curvature_metric)
     RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
 
-  RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
-  RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
-
+  if ( 1 == ref_mpi_n && !curvature_metric)
+    {
+      RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
+      RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
+    }
+  
   RSS( ref_gather_tec_movie_record_button( tecplot_movie ), "show time" );
   
   ref_mpi_stopwatch_stop("read grid");
-  RSS(ref_validation_cell_volume(ref_grid),"vol");
+  RSS( ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
   
@@ -176,7 +199,7 @@ int main( int argc, char *argv[] )
 		   "interp curve" );
 	      ref_mpi_stopwatch_stop("curvature");
 	    }
-	  else
+	  if ( NULL != background_grid )
 	    {
 	      RSS( ref_metric_interpolate( ref_grid, background_grid ),
 		   "interp" );
@@ -203,27 +226,30 @@ int main( int argc, char *argv[] )
   RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
   ref_mpi_stopwatch_stop("verify params");
   snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
-  RSS( ref_gather_b8_ugrid( ref_grid, output_filename ),
-       "gather");
+  RSS( ref_gather_by_extension( ref_grid, output_filename ),
+       "b8.ugrid");
   ref_mpi_stopwatch_stop("gather b8.ugrid");
   snprintf( output_filename, 1024, "%s.meshb", output_project );
-  RSS( ref_export_by_extension( ref_grid, output_filename ),
+  RSS( ref_gather_by_extension( ref_grid, output_filename ),
        "export");
-  ref_mpi_stopwatch_stop("export meshb");
-  snprintf( output_filename, 1024, "%s_surf.tec", output_project );
-  RSS(ref_export_tec_surf( ref_grid, output_filename ),"surf tec" );
-  snprintf( output_filename, 1024, "%s_geom.tec", output_project );
-  RSS(ref_geom_tec( ref_grid, output_filename ),"geom tec" );
-  snprintf( output_filename, 1024, "%s.gas", output_project );
-  RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
-  ref_mpi_stopwatch_stop("tec");
-  if (debug_verbose)
+  ref_mpi_stopwatch_stop("gather meshb");
+  if ( 1 == ref_mpi_n )
+    {
+      snprintf( output_filename, 1024, "%s_surf.tec", output_project );
+      RSS(ref_export_tec_surf( ref_grid, output_filename ),"surf tec" );
+      snprintf( output_filename, 1024, "%s_geom.tec", output_project );
+      RSS(ref_geom_tec( ref_grid, output_filename ),"geom tec" );
+      snprintf( output_filename, 1024, "%s.gas", output_project );
+      RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
+      ref_mpi_stopwatch_stop("tec");
+    }
+  if (debug_verbose && 1 == ref_mpi_n )
     {
       snprintf( output_filename, 1024, "%s_metric_ellipse.tec", output_project );
       RSS( ref_export_tec_metric_ellipse( ref_grid, output_project ), "al");
       ref_mpi_stopwatch_stop("ellipse");
     }
-  if ( output_clumps)
+  if ( output_clumps && 1 == ref_mpi_n )
     {
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
       ref_mpi_stopwatch_stop("clump stuck");
@@ -232,6 +258,8 @@ int main( int argc, char *argv[] )
   if ( NULL != background_grid ) RSS(ref_grid_free( background_grid ), "free");
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
 
+  RSS( ref_mpi_stop(  ), "stop" );
+  
   return 0;
 }
 
