@@ -339,7 +339,19 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 	    REIS( next_position, ftell(file), "cell inconsistent");
 	}
     }
-      
+
+  if ( ref_mpi_master )
+    { /* End */
+      keyword_code = 54;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      next_position = 0;
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      if (verbose) printf("end kw %d next %d\n",
+			  keyword_code,next_position);
+      if (verbose) printf("close %s\n",filename);
+      fclose(file);
+    }
+
   return REF_SUCCESS;
 }
 
