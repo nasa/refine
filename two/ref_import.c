@@ -893,6 +893,7 @@ REF_STATUS ref_import_meshb_header( const char *filename,
   FILE *file;
   int int_code, int_version;
   REF_INT keyword_code, position, next_position, end_position;
+  REF_BOOL verbose = REF_FALSE;
   file = fopen(filename,"r");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
@@ -910,14 +911,18 @@ REF_STATUS ref_import_meshb_header( const char *filename,
   next_position = ftell(file);
   fseek(file, 0, SEEK_END);
   end_position = ftell(file);
+  if (verbose) printf("%d end\n",end_position);
+  if (verbose) printf("%d next_position\n",next_position);
   while ( next_position <= end_position && 0 != next_position )
     {
       position = next_position;
       fseek(file, position, SEEK_SET);
       REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), 
 	   "keyword code");
+      if (verbose) printf("%d position %d kw\n",position,keyword_code);
       RSS( ref_dict_store( ref_dict, keyword_code, position ), "store pos");
       RSS( meshb_pos( file, *version, &next_position), "pos");
+      if (verbose) printf("%d next_position\n",next_position);
     }  
 
   fclose(file);
