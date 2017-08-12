@@ -37,6 +37,8 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
 REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
 
+REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom, 
+			    REF_INT type, FILE *file );
 REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
 			    REF_BOOL faceid_insted_of_c2n, REF_BOOL always_id,
 			    REF_BOOL swap_endian,
