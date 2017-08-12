@@ -1753,10 +1753,11 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename  )
 REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 {
   REF_INT *a_nnode, *b_nnode;
-  REF_INT a_total, b_total;
+  REF_INT a_nnode_total, b_nnode_total;
   REF_INT *a_global, *b_global;
   REF_INT *a_part, *b_part;
   REF_INT *a_ngeom, *b_ngeom;
+  REF_INT a_ngeom_total, b_ngeom_total;
   REF_INT *a_tgi, *b_tgi;
   REF_DBL *a_param, *b_param;
   REF_INT part, node, degree;
@@ -1777,17 +1778,17 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 
   RSS( ref_mpi_alltoall( a_nnode, b_nnode, REF_INT_TYPE ), "alltoall nnodes");
 
-  a_total = 0;
+  a_nnode_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
-    a_total += a_nnode[part];
-  ref_malloc( a_global, a_total, REF_INT );
-  ref_malloc( a_part, a_total, REF_INT );
+    a_nnode_total += a_nnode[part];
+  ref_malloc( a_global, a_nnode_total, REF_INT );
+  ref_malloc( a_part, a_nnode_total, REF_INT );
 
-  b_total = 0;
+  b_nnode_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
-    b_total += b_nnode[part];
-  ref_malloc( b_global, b_total, REF_INT );
-  ref_malloc( b_part, b_total, REF_INT );
+    b_nnode_total += b_nnode[part];
+  ref_malloc( b_global, b_nnode_total, REF_INT );
+  ref_malloc( b_part, b_nnode_total, REF_INT );
 
   a_next[0] = 0;
   for ( part = 1; part<ref_mpi_n ; part++ )
@@ -1806,7 +1807,7 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
-  for (node=0;node<b_total;node++)
+  for (node=0;node<b_nnode_total;node++)
     {
       RSS( ref_node_local( ref_node, b_global[node], &local ), "g2l");
       part = b_part[node];
@@ -1816,17 +1817,17 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 
   RSS( ref_mpi_alltoall( b_nnode, a_nnode, REF_INT_TYPE ), "alltoall ngeoms");
 
-  a_total = 0;
+  a_ngeom_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
-    a_total += a_ngeom[part];
-  ref_malloc( a_tgi,   3*a_total, REF_INT );
-  ref_malloc( a_param, 2*a_total, REF_DBL );
+    a_ngeom_total += a_ngeom[part];
+  ref_malloc( a_tgi,   3*a_ngeom_total, REF_INT );
+  ref_malloc( a_param, 2*a_ngeom_total, REF_DBL );
 
-  b_total = 0;
+  b_ngeom_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
-    b_total += b_ngeom[part];
-  ref_malloc( b_tgi,   3*b_total, REF_INT );
-  ref_malloc( b_param, 2*b_total, REF_DBL );
+    b_ngeom_total += b_ngeom[part];
+  ref_malloc( b_tgi,   3*b_ngeom_total, REF_INT );
+  ref_malloc( b_param, 2*b_ngeom_total, REF_DBL );
 
   free(b_global);
   free(a_global);
