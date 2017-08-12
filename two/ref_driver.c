@@ -156,8 +156,11 @@ int main( int argc, char *argv[] )
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
 			 REF_GEOM_FACE, &ngeom ), "count ngeom" );
   if (ngeom>0)
-    curvature_constraint = REF_TRUE;
-  
+    {	
+      curvature_constraint = REF_TRUE;
+      RSS( ref_geom_verify_topo( ref_grid ), "geom topo" );
+    }
+
   if (curvature_metric)
     RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
 
