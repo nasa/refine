@@ -170,6 +170,8 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   RSS( ref_migrate_shufflin_geom( ref_grid ), "fill ghosts");
 
+  RSS( ref_node_ghost_real( ref_node ), "ghost real");
+
   if ( ref_mpi_master )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
