@@ -87,6 +87,9 @@ BEGIN_C_DECLORATION
         ( geom )++ )						\
     if ( REF_GEOM_FACE == ref_geom_type( ref_geom, geom ) )
 
+#define each_ref_geom_having_node( ref_geom, node, item, geom )	   	\
+  each_ref_adj_node_item_with_ref( ( ref_geom )->ref_adj, node, item, geom)
+
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 

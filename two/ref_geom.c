@@ -22,6 +22,7 @@
 
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_mpi.h"
 
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
 {
@@ -1748,3 +1749,93 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename  )
   fclose(file);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
+{
+  REF_INT *a_nnode, *b_nnode;
+  REF_INT a_total, b_total;
+  REF_INT *a_global, *b_global;
+  REF_INT *a_part, *b_part;
+  REF_INT *a_ngeom, *b_ngeom;
+  REF_INT *a_tgi, *b_tgi;
+  REF_DBL *a_param, *b_param;
+  REF_INT part, node, degree;
+  REF_INT *a_next;
+  REF_INT local;
+
+  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+
+  ref_malloc_init( a_next,  ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( a_nnode, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_nnode, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( a_ngeom, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( b_ngeom, ref_mpi_n, REF_INT, 0 );
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      a_nnode[ref_node_part(ref_node,node)]++;
+
+  RSS( ref_mpi_alltoall( a_nnode, b_nnode, REF_INT_TYPE ), "alltoall nnodes");
+
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_nnode[part];
+  ref_malloc( a_global, a_total, REF_INT );
+  ref_malloc( a_part, a_total, REF_INT );
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_nnode[part];
+  ref_malloc( b_global, b_total, REF_INT );
+  ref_malloc( b_part, b_total, REF_INT );
+
+  a_next[0] = 0;
+  for ( part = 1; part<ref_mpi_n ; part++ )
+    a_next[part] = a_next[part-1]+a_nnode[part-1];
+
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      {
+	part = ref_node_part(ref_node,node);
+	a_global[a_next[part]] = ref_node_global(ref_node,node);
+	a_part[a_next[part]] = ref_mpi_id;
+	a_next[ref_node_part(ref_node,node)]++;
+      }
+
+  RSS( ref_mpi_alltoallv( a_global, a_nnode, b_global, b_nnode, 
+			  1, REF_INT_TYPE ), 
+       "alltoallv global");
+
+  for (node=0;node<b_total;node++)
+    {
+      RSS( ref_node_local( ref_node, b_global[node], &local ), "g2l");
+      part = b_part[node];
+      RSS( ref_adj_degree( ref_geom_adj(ref_geom), local, &degree ), "deg" );
+      b_ngeom[part] += degree;
+    }
+
+  RSS( ref_mpi_alltoall( b_nnode, a_nnode, REF_INT_TYPE ), "alltoall ngeoms");
+
+  a_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    a_total += a_ngeom[part];
+  ref_malloc( a_tgi,   3*a_total, REF_INT );
+  ref_malloc( a_param, 2*a_total, REF_DBL );
+
+  b_total = 0;
+  for ( part = 0; part<ref_mpi_n ; part++ )
+    b_total += b_ngeom[part];
+  ref_malloc( b_tgi,   3*b_total, REF_INT );
+  ref_malloc( b_param, 2*b_total, REF_DBL );
+
+  free(b_global);
+  free(a_global);
+  free(b_ngeom);
+  free(a_ngeom);
+  free(b_nnode);
+  free(a_nnode);
+  free(a_next);
+
+  return REF_SUCCESS;  
+}
+
