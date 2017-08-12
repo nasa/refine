@@ -709,12 +709,10 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 	  {
 	    if ( faceid_insted_of_c2n )
 	      {
-		for ( node = node_per; node < size_per; node++ )
-		  {
-		    if (swap_endian) SWAP_INT(nodes[node]);
-		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-			 "cel node");
-		  }
+		node = node_per;
+		if (swap_endian) SWAP_INT(nodes[node]);
+		REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+		     "cel node");
 	      }
 	    else
 	      {
@@ -752,48 +750,49 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
       for (proc=1;proc<ref_mpi_n;proc++)
 	{
 	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
-	  ref_malloc(c2n, ncell*size_per, REF_INT);
-	  RSS( ref_mpi_recv( c2n, ncell*size_per, 
-			     REF_INT_TYPE, proc ), "recv c2n");
-	  for ( cell = 0; cell < ncell; cell++ )
-	    if ( faceid_insted_of_c2n )
-	      {
-		for ( node = node_per; node < size_per; node++ )
+	  if ( ncell > 0 )
+	    {
+	      ref_malloc(c2n, ncell*size_per, REF_INT);
+	      RSS( ref_mpi_recv( c2n, ncell*size_per, 
+				 REF_INT_TYPE, proc ), "recv c2n");
+	      for ( cell = 0; cell < ncell; cell++ )
+		if ( faceid_insted_of_c2n )
 		  {
+		    node = node_per;
 		    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
 		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
 				   sizeof(REF_INT),1,file),"cell");
 		  }
-	      }
-	    else
-	      {
-		for ( node = 0; node < node_per; node++ )
+		else
 		  {
-		    c2n[node+size_per*cell]++;
-		    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
-		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
-				   sizeof(REF_INT),1,file),"cell");
-		  }
-		if ( always_id )
-		  {
-		    if (ref_cell_last_node_is_an_id(ref_cell))
+		    for ( node = 0; node < node_per; node++ )
 		      {
-			node = node_per;
+			c2n[node+size_per*cell]++;
 			if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
 			REIS(1, fwrite(&(c2n[node+size_per*cell]),
-				       sizeof(REF_INT),1,file),
-			     "cel node");
+				       sizeof(REF_INT),1,file),"cell");
 		      }
-		    else
+		    if ( always_id )
 		      {
-			node = 0;
-			if (swap_endian) SWAP_INT(node);
-			REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
-			     "cel node");
+			if (ref_cell_last_node_is_an_id(ref_cell))
+			  {
+			    node = node_per;
+			    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
+			    REIS(1, fwrite(&(c2n[node+size_per*cell]),
+					   sizeof(REF_INT),1,file),
+				 "cel node");
+			  }
+			else
+			  {
+			    node = 0;
+			    if (swap_endian) SWAP_INT(node);
+			    REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
+				 "cel node");
+			  }
 		      }
 		  }
-	      }
-	  ref_free(c2n);
+	      ref_free(c2n);
+	    }
 	}
     }
   else
@@ -805,23 +804,26 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
 	  ncell++;
       RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
-      ref_malloc(c2n, ncell*size_per, REF_INT);
-      ncell = 0;
-      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
-	     ( !select_faceid ||
-	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
-	  {
-	    for ( node = 0; node < node_per; node++ )
-	      c2n[node+size_per*ncell] = ref_node_global(ref_node,nodes[node]);
-	    for ( node = node_per; node < size_per; node++ )
-	      c2n[node+size_per*ncell] = nodes[node];
-	    ncell++;
-	  }
-      RSS( ref_mpi_send( c2n, ncell*size_per, 
-			 REF_INT_TYPE, 0 ), "send c2n");
-
-      ref_free(c2n);
+      if ( ncell > 0 )
+	{
+	  ref_malloc(c2n, ncell*size_per, REF_INT);
+	  ncell = 0;
+	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	    if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+		 ( !select_faceid ||
+		   nodes[ref_cell_node_per(ref_cell)] == faceid ) )
+	      {
+		for ( node = 0; node < node_per; node++ )
+		  c2n[node+size_per*ncell] = 
+		    ref_node_global(ref_node,nodes[node]);
+		for ( node = node_per; node < size_per; node++ )
+		  c2n[node+size_per*ncell] = nodes[node];
+		ncell++;
+	      }
+	  RSS( ref_mpi_send( c2n, ncell*size_per, 
+			     REF_INT_TYPE, 0 ), "send c2n");
+	  ref_free(c2n);
+	}
     }
 
   return REF_SUCCESS;
