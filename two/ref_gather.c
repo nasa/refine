@@ -217,6 +217,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
     REIS( next_position, ftell(file), "vertex inconsistent");
 
   ref_cell = ref_grid_edg(ref_grid);
+  keyword_code = 5;
   RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
   if ( ncell > 0 )
     {
@@ -224,11 +225,58 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 	{
 	  node_per = ref_cell_node_per(ref_cell);
 	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
-	  keyword_code = 5;
 	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
 	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
 	  REIS(1, fwrite(&(ncell),sizeof(int),1,file),"nnode");
-	  if (verbose) printf("vertex kw %d next %d n %d\n",
+	  if (verbose) printf("elem kw %d next %d n %d\n",
+			      keyword_code,next_position,
+			      ncell);
+	}
+      RSS( ref_gather_cell( ref_node, ref_cell,
+			    faceid_insted_of_c2n, always_id, swap_endian,
+			    select_faceid, faceid,
+			    file ), "nodes");
+      if ( ref_mpi_master )
+	REIS( next_position, ftell(file), "cell inconsistent");
+    }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  keyword_code = 6;
+  RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
+  if ( ncell > 0 )
+    {
+      if ( ref_mpi_master )
+	{
+	  node_per = ref_cell_node_per(ref_cell);
+	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
+	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+	  REIS(1, fwrite(&(ncell),sizeof(int),1,file),"nnode");
+	  if (verbose) printf("elem kw %d next %d n %d\n",
+			      keyword_code,next_position,
+			      ncell);
+	}
+      RSS( ref_gather_cell( ref_node, ref_cell,
+			    faceid_insted_of_c2n, always_id, swap_endian,
+			    select_faceid, faceid,
+			    file ), "nodes");
+      if ( ref_mpi_master )
+	REIS( next_position, ftell(file), "cell inconsistent");
+    }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  keyword_code = 8;
+  RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
+  if ( ncell > 0 )
+    {
+      if ( ref_mpi_master )
+	{
+	  node_per = ref_cell_node_per(ref_cell);
+	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
+	  REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+	  REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+	  REIS(1, fwrite(&(ncell),sizeof(int),1,file),"nnode");
+	  if (verbose) printf("elem kw %d next %d n %d\n",
 			      keyword_code,next_position,
 			      ncell);
 	}
