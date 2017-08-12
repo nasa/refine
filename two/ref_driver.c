@@ -229,10 +229,13 @@ int main( int argc, char *argv[] )
   RSS( ref_gather_by_extension( ref_grid, output_filename ),
        "b8.ugrid");
   ref_mpi_stopwatch_stop("gather b8.ugrid");
-  snprintf( output_filename, 1024, "%s.meshb", output_project );
-  RSS( ref_gather_by_extension( ref_grid, output_filename ),
-       "export");
-  ref_mpi_stopwatch_stop("gather meshb");
+  if ( !ref_grid_twod(ref_grid) )
+    {
+      snprintf( output_filename, 1024, "%s.meshb", output_project );
+      RSS( ref_gather_by_extension( ref_grid, output_filename ),
+	   "export");
+      ref_mpi_stopwatch_stop("gather meshb");
+    }
   if ( 1 == ref_mpi_n )
     {
       snprintf( output_filename, 1024, "%s_surf.tec", output_project );
