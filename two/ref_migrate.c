@@ -981,7 +981,7 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
   REF_INT part, node;
   REF_INT *a_next;
   REF_INT *a_int, *b_int;
-  REF_INT *a_real, *b_real;
+  REF_DBL *a_real, *b_real;
   REF_INT id, global, type, degree, item, geom;
   REF_DBL param[2];
 
@@ -1003,13 +1003,13 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
   for ( part = 0; part<ref_mpi_n ; part++ )
     a_total += a_size[part];
   ref_malloc( a_int,  3*a_total, REF_INT );
-  ref_malloc( a_real, 2*a_total, REF_INT );
+  ref_malloc( a_real, 2*a_total, REF_DBL );
 
   b_total = 0;
   for ( part = 0; part<ref_mpi_n ; part++ )
     b_total += b_size[part];
   ref_malloc( b_int,  3*b_total, REF_INT );
-  ref_malloc( b_real, 2*b_total, REF_INT );
+  ref_malloc( b_real, 2*b_total, REF_DBL );
 
   ref_malloc( a_next, ref_mpi_n, REF_INT );
   a_next[0] = 0;
