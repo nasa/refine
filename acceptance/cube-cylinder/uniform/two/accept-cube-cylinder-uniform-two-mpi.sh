@@ -12,17 +12,17 @@ else
     two=${HOME}/refine/zoltan/two
 fi
 
-nproc=2
+nproc=16
 
 # ${two}/ref_geom_test ega.egads
 # ${two}/ref_geom_test ega.egads ega.ugrid
 # mv ref_geom_test.gas ega.gas
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
-mpiexec -np ${nproc} ${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1
+mpiexec -np ${nproc} ${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1 -t
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-uniform-two-01.status
 
-mpiexec -np ${nproc} ${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2
+mpiexec -np ${nproc} ${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2 -t
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-uniform-two-02.status
 
