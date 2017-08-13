@@ -3,9 +3,6 @@ ellipsoid viz
 
 geom from meshb in all tests
 
-parallel geom
- ref_geom load bal (parallel update ghost geom param)
- meshb file IO
  parallel acceptance geom
 
 jacobian form of tet quality
@@ -107,6 +104,9 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 + geom restart in meshb format
++ parallel geom
+  + ref_geom load bal (parallel update ghost geom param)
+  + meshb file IO
 
 + remove projectable and quality to remove empty cell for viz
 + include surface in metric ellipse
