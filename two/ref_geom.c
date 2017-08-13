@@ -1037,8 +1037,6 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  {
 	    if (no_edge && ref_mpi_id == ref_node_part(ref_node,node) ) 
 	      {
-		RSS(ref_clump_around( ref_grid, node, 
-				      "ref_geom_typo_clump.tec"),"clump");
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
 		RSS(ref_geom_tec( ref_grid, "ref_geom_typo_error.tec" ),
