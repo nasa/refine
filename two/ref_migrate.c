@@ -1035,7 +1035,7 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
 			  3, REF_INT_TYPE ), 
        "alltoallv geom int");
   RSS( ref_mpi_alltoallv( a_real, a_size, b_real, b_size, 
-			  2, REF_INT_TYPE ), 
+			  2, REF_DBL_TYPE ), 
        "alltoallv geom real");
 
   for ( geom=0; geom < b_total; geom++ )
