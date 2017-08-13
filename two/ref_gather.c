@@ -232,7 +232,8 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
       keyword_code = 4;
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-      REIS(1, fwrite(&(ref_node_n(ref_node)),sizeof(int),1,file),"nnode");
+      REIS(1, fwrite(&(ref_node_n_global(ref_node)),
+		     sizeof(int),1,file),"nnode");
       if (verbose) printf("vertex kw %d next %d n %d\n",
 			  keyword_code,next_position,
 			  ref_node_n_global(ref_node));
