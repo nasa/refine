@@ -1072,6 +1072,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
   RSS( ref_node_synchronize_globals( ref_node ), "sync global nodes");
 
   RSS( ref_migrate_shufflin_node( ref_node ), "send out nodes" );
+  RSS( ref_migrate_shufflin_geom( ref_grid ), "geom");
 
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
     {
@@ -1098,8 +1099,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
   RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild" );
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
-
-  RSS( ref_migrate_shufflin_geom( ref_grid ), "geom");
+  RSS( ref_geom_ghost( ref_grid_geom(ref_grid), ref_node ), "ghost geom");
 
   return REF_SUCCESS;
 }
