@@ -47,18 +47,6 @@ int main( int argc, char *argv[] )
       return 0;
     }
   
-  if ( 2 == argc )
-    { /* fixture */
-      char *filename = argv[1];
-      if ( 0 == access( filename, R_OK ) )
-	{
-	  printf("EGADS project %s exists, deleting\n",filename);
-	  REIS(0, remove( filename ), "test clean up");
-	}
-      RSS( ref_geom_egads_export( filename ), "egads fixture" );
-      printf("wrote EGADS project %s\n",filename);
-    }
-
   if ( 3 == argc || 4 == argc )
     { /* egads to grid */
       REF_GRID ref_grid;
