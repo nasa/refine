@@ -159,6 +159,7 @@ int main( int argc, char *argv[] )
     {	
       curvature_constraint = REF_TRUE;
       RSS( ref_geom_verify_topo( ref_grid ), "geom topo" );
+      RSS( ref_geom_verify_param( ref_grid ), "geom param" );
     }
 
   if (curvature_metric)
