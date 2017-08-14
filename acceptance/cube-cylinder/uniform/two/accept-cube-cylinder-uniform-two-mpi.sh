@@ -19,10 +19,12 @@ nproc=16
 # mv ref_geom_test.gas ega.gas
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
 mpiexec -np ${nproc} ${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1 -t
+cp ref_gather_movie.tec ref_driver1_movie.tec
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-uniform-two-mpi-01.status
 
 mpiexec -np ${nproc} ${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2 -t
+cp ref_gather_movie.tec ref_driver2_movie.tec
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-uniform-two-mpi-02.status
 
