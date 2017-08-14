@@ -214,6 +214,10 @@ else
   AM_CONDITIONAL(BUILD_PARMETIS_SUPPORT,false)
 fi
 
+AC_ARG_ENABLE(lite,
+        [[  --enable-lite build with EGADS lite [no]]],
+        [egadslite=$enableval],[egadslite="no"])
+
 AC_ARG_WITH(EGADS,
 	[  --with-EGADS[=ARG]      use EGADS package [ARG=no]],
 	[with_egads=$withval],     [with_egads="no"])
@@ -226,9 +230,14 @@ then
   if test "$egads_h_path" != 'no'
   then	  
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
+    egads_lib="-legads"
+    if test "$egadslite" != 'no'
+    then
+      egads_lib="-legadslite"
+    fi
     egads_include="-I${egads_h_path}"
     egads_lib_path="${with_egads}/lib"
-    egads_ldadd="-L${egads_lib_path} -legads"
+    egads_ldadd="-L${egads_lib_path} ${egads_lib}"
     if (uname -s | grep Darwin) > /dev/null 2>&1
     then
       egads_ldadd="-rpath ${egads_lib_path} ${egads_ldadd}"
