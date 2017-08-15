@@ -1396,6 +1396,34 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
       RSS( ref_geom_add( ref_geom, node, REF_GEOM_NODE, node, NULL), "node");
   }
 
+  for (face = 0; face < (ref_geom->nface); face++) {
+    REIS( EGADS_SUCCESS,
+	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
+			 &tlen, &tris, &tric), "tess query face" );
+    for ( node = 0; node<plen; node++ ) {
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
+      nodes[0] -= 1;
+      param[0] = uv[0+2*node];
+      param[1] = uv[1+2*node];
+      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_FACE, face+1, param),
+	   "face uv");
+    }
+    for ( tri = 0; tri<tlen; tri++ ) {
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[0+3*tri], &(nodes[0])), "l2g0");
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[1+3*tri], &(nodes[1])), "l2g1");
+      REIS( EGADS_SUCCESS,
+	    EG_localToGlobal(tess, face+1, tris[2+3*tri], &(nodes[2])), "l2g2");
+      nodes[0] -= 1;
+      nodes[1] -= 1;
+      nodes[2] -= 1;
+      nodes[3] = face + 1;
+      RSS( ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell ), "new tri");
+    }
+  }
+  
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     int egads_status;
     REF_BOOL degenerate;
@@ -1427,34 +1455,6 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 	RSS( ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell ),
 	     "new edge");
       }
-  }
-  
-  for (face = 0; face < (ref_geom->nface); face++) {
-    REIS( EGADS_SUCCESS,
-	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
-			 &tlen, &tris, &tric), "tess query face" );
-    for ( node = 0; node<plen; node++ ) {
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
-      nodes[0] -= 1;
-      param[0] = uv[0+2*node];
-      param[1] = uv[1+2*node];
-      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_FACE, face+1, param),
-	   "face uv");
-    }
-    for ( tri = 0; tri<tlen; tri++ ) {
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, face+1, tris[0+3*tri], &(nodes[0])), "l2g0");
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, face+1, tris[1+3*tri], &(nodes[1])), "l2g1");
-      REIS( EGADS_SUCCESS,
-	    EG_localToGlobal(tess, face+1, tris[2+3*tri], &(nodes[2])), "l2g2");
-      nodes[0] -= 1;
-      nodes[1] -= 1;
-      nodes[2] -= 1;
-      nodes[3] = face + 1;
-      RSS( ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell ), "new tri");
-    }
   }
   
 #else
