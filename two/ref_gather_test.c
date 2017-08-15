@@ -24,6 +24,8 @@
 #include "ref_gather.h"
 #include "ref_edge.h"
 #include "ref_twod.h"
+#include "ref_malloc.h"
+#include "ref_import.h"
 
 int main( int argc, char *argv[] )
 {
@@ -42,6 +44,37 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free");
       if ( ref_mpi_master ) 
 	REIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
+    }
+  
+  if ( 1 == argc )
+    { /* export import .meshb tet with cad_model */
+      REF_GRID export_grid, import_grid;
+      REF_GEOM ref_geom;
+      char file[] = "ref_gather_test.meshb";
+      
+      RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+      ref_geom = ref_grid_geom(export_grid);
+      ref_geom_cad_data_size(ref_geom) = 3;
+      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
+		 REF_BYTE );
+      ref_geom_cad_data(ref_geom)[0] = 5;
+      ref_geom_cad_data(ref_geom)[1] = 4;
+      ref_geom_cad_data(ref_geom)[2] = 3;
+      RSS( ref_gather_meshb( export_grid, file ), 
+	   "gather");
+      RSS(ref_grid_free(export_grid),"free");
+
+      if ( ref_mpi_master )
+	{
+	  RSS(ref_import_meshb( &import_grid, file ), "import" );
+	  ref_geom = ref_grid_geom(import_grid);
+	  REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );
+	  REIS( 5, ref_geom_cad_data(ref_geom)[0], "cad[0]" );
+	  REIS( 4, ref_geom_cad_data(ref_geom)[1], "cad[1]" );
+	  REIS( 3, ref_geom_cad_data(ref_geom)[2], "cad[2]" );
+	  RSS(ref_grid_free(import_grid),"free");
+	  REIS(0, remove( file ), "test clean up");
+	}
     }
   
   if ( 0 == argc ) /* off, octave is not quiet */
