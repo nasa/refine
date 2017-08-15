@@ -961,6 +961,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_GEOM ref_geom;
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
@@ -972,6 +973,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT n0, n1, n2, n3, id;
   REF_INT geom_keyword, type, i, geom, ngeom;
   REF_DBL param[2];
+  REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
   
   if (verbose) printf("header %s\n",filename);
@@ -983,6 +985,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
+  ref_geom = ref_grid_geom(ref_grid);
 
   if (verbose) printf("open %s\n",filename);
   file = fopen(filename,"r");
@@ -1172,11 +1175,31 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	      if ( 0 < type )
 		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
 	      node--;
-	      RSS( ref_geom_add( ref_grid_geom(ref_grid),
+	      RSS( ref_geom_add( ref_geom,
 				 node, type, id, param ), "add geom");
 	    }
 	  REIS( next_position, ftell(file), "end location" );
 	}
+    }
+
+  cad_data_keyword = 11;
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      cad_data_keyword,
+			      &available, &next_position ), "jump" );
+  if ( available )
+    {
+      REIS(1, fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 
+		    4, 1, file), "cad data size");
+      if (verbose) printf("cad_data %ld bytes\n",
+			  ref_geom_cad_data_size(ref_geom));
+      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
+		 REF_BYTE );
+      REIS(ref_geom_cad_data_size(ref_geom), 
+	   fread(ref_geom_cad_data(ref_geom), 
+		 sizeof(REF_BYTE),
+		 ref_geom_cad_data_size(ref_geom),
+		 file),"cad_data");
+      REIS( next_position, ftell(file), "end location" );
     }
 
   ref_dict_free( ref_dict );

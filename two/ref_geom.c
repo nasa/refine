@@ -76,6 +76,7 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
 {
   if ( NULL == (void *)ref_geom )
     return REF_NULL;
+  ref_free( ref_geom->cad_data );
 #ifdef HAVE_EGADS
   if ( NULL != ref_geom->faces)
     EG_free((ego *)(ref_geom->faces));
@@ -125,6 +126,9 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   ref_geom->solid = NULL;
   ref_geom->edges = NULL;
   ref_geom->faces = NULL;
+
+  ref_geom->cad_data_size = 0;
+  ref_geom->cad_data = (REF_BYTE *)NULL;
 
   return REF_SUCCESS;
 }
