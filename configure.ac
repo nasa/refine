@@ -233,6 +233,7 @@ then
     egads_lib="-legads"
     if test "$egadslite" != 'no'
     then
+    AC_DEFINE([HAVE_EGADS_LITE],[1],[EGADS is available in lite form])
       egads_lib="-legadslite"
     fi
     egads_include="-I${egads_h_path}"
