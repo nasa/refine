@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -1237,9 +1238,42 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
   int oclass, mtype, nbody, *senses, nchild;
   ego solid, *faces, *edges;
   int nface, nedge;
- 
+
   context = (ego)(ref_geom->context);
+
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+
+  /*
+
+#ifndef HAVE_EGADS_LITE
+
+  REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+
+  {
+    long cad_data_size;
+    REF_BYTE *cad_data;
+    REIS( EGADS_SUCCESS, EG_streamModel(model, &cad_data_size, &cad_data), 
+	  "EG stream");
+    ref_geom_cad_data_size(ref_geom) = cad_data_size;
+    ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
+	       REF_BYTE );
+    REIS( ref_geom_cad_data_size(ref_geom),
+	  memcpy( ref_geom_cad_data(ref_geom), cad_data, 
+		  ref_geom_cad_data_size(ref_geom)), "memcpy");
+    free( cad_data );
+  }
+
+#else
+  if (ref_mpi_master )
+    printf("EGADS lite, using meshb data ignore %s\n",filename);
+
+  REIS( EGADS_SUCCESS, EG_readModel(context, 
+				    (long)ref_geom_cad_data_size(ref_geom),
+				    ref_geom_cad_data(ref_geom),
+				    &model ), "EG load");
+#endif
+
+  */
 
   REIS( EGADS_SUCCESS,
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
