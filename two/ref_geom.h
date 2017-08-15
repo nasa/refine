@@ -30,12 +30,16 @@ BEGIN_C_DECLORATION
     void *solid;
     void *faces;
     void *edges;
+    long cad_data_size;
+    unsigned char *cad_data;
   };
 
 #define ref_geom_n(ref_geom)     (( ref_geom )->n )
 #define ref_geom_max(ref_geom)   (( ref_geom )->max )
 #define ref_geom_blank(ref_geom) (( ref_geom )->blank )
 #define ref_geom_adj(ref_geom)   (( ref_geom )->ref_adj )
+#define ref_geom_cad_data(ref_geom) (( ref_geom )->cad_data )
+#define ref_geom_cad_data_size(ref_geom) (( ref_geom )->cad_data_size )
 
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 

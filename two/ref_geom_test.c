@@ -472,6 +472,15 @@ int main( int argc, char *argv[] )
     RWDS( 0.25,  drsduv[3], tol, "dsdv" );
   }
 
+  { /* egads lite data is zero size and null */
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom),"create");
+    REIS( 0, ref_geom_cad_data_size(ref_geom), "zero length" );
+    RAS( NULL == (void *)ref_geom_cad_data(ref_geom), "null init" );
+    RSS(ref_geom_free(ref_geom),"free");
+  }
+
+
   return 0;
 }
 
