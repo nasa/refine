@@ -2,6 +2,8 @@
 
 set -x
 
+./bootstrap
+
 # TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full'
 
 module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
