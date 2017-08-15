@@ -39,6 +39,8 @@ typedef int REF_INT;
 
 typedef double REF_DBL;
 
+typedef unsigned char REF_BYTE;
+
 typedef int REF_STATUS;
 
 #define REF_SUCCESS        (0)

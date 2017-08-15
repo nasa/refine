@@ -67,7 +67,7 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_geom->faces = NULL;
 
   ref_geom->cad_data_size = 0;
-  ref_geom->cad_data = (unsigned char *)NULL;
+  ref_geom->cad_data = (REF_BYTE *)NULL;
 
   return REF_SUCCESS;
 }

@@ -31,7 +31,7 @@ BEGIN_C_DECLORATION
     void *faces;
     void *edges;
     long cad_data_size;
-    unsigned char *cad_data;
+    REF_BYTE *cad_data;
   };
 
 #define ref_geom_n(ref_geom)     (( ref_geom )->n )
