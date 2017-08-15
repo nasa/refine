@@ -30,7 +30,7 @@ BEGIN_C_DECLORATION
     void *solid;
     void *faces;
     void *edges;
-    long cad_data_size;
+    REF_INT cad_data_size;
     REF_BYTE *cad_data;
   };
 

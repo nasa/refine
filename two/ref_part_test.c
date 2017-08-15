@@ -23,6 +23,7 @@
 #include "ref_migrate.h"
 #include "ref_edge.h"
 #include "ref_gather.h"
+#include "ref_malloc.h"
 
 int main( int argc, char *argv[] )
 {
@@ -145,6 +146,37 @@ int main( int argc, char *argv[] )
       }
 
     RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+
+    RSS(ref_grid_free(import_grid),"free");
+    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+  }
+
+  { /* part meshb with cad_data*/
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.meshb";
+    REF_GEOM ref_geom;
+    if ( ref_mpi_master ) 
+      {
+	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+	ref_geom = ref_grid_geom(export_grid);
+	ref_geom_cad_data_size(ref_geom) = 3;
+	ref_malloc(ref_geom_cad_data(ref_geom), 
+		   ref_geom_cad_data_size(ref_geom),
+		   REF_BYTE );
+	ref_geom_cad_data(ref_geom)[0] = 5;
+	ref_geom_cad_data(ref_geom)[1] = 4;
+	ref_geom_cad_data(ref_geom)[2] = 3;
+	RSS(ref_export_meshb( export_grid, grid_file ), "export" );
+	RSS(ref_grid_free(export_grid),"free");
+      }
+
+    RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+
+    ref_geom = ref_grid_geom(import_grid);
+    REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );
+    REIS( 5, ref_geom_cad_data(ref_geom)[0], "cad[0]" );
+    REIS( 4, ref_geom_cad_data(ref_geom)[1], "cad[1]" );
+    REIS( 3, ref_geom_cad_data(ref_geom)[2], "cad[2]" );
 
     RSS(ref_grid_free(import_grid),"free");
     if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");

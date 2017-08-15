@@ -1190,7 +1190,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     {
       REIS(1, fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 
 		    4, 1, file), "cad data size");
-      if (verbose) printf("cad_data %ld bytes\n",
+      if (verbose) printf("cad_data %d bytes\n",
 			  ref_geom_cad_data_size(ref_geom));
       ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
 		 REF_BYTE );
