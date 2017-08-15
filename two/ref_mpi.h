@@ -17,6 +17,7 @@ extern char **ref_mpi_argv;
 typedef int REF_TYPE;
 #define REF_INT_TYPE (1)
 #define REF_DBL_TYPE (2)
+#define REF_BYTE_TYPE (3)
 
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_initialize( );

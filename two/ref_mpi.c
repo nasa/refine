@@ -28,6 +28,7 @@ char **ref_mpi_argv = NULL;
     {									\
     case REF_INT_TYPE: (macro_mpi_type) = MPI_INT; break;		\
     case REF_DBL_TYPE: (macro_mpi_type) = MPI_DOUBLE; break;		\
+    case REF_BYTE_TYPE: (macro_mpi_type) = MPI_UNSIGNED_CHAR; break;	\
     default: (macro_mpi_type) = MPI_DATATYPE_NULL;			\
       RSS( REF_IMPLEMENT, "data type");					\
     }
