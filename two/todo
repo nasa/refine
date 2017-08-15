@@ -1,5 +1,9 @@
 
-verify node local and add evaluator
+verify cad node xyz and add evaluator
+
+init params on singular
+
+deadlock on parallel io tests
  
 ellipsoid viz 
 
