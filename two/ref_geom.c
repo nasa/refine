@@ -1454,9 +1454,9 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 			      printf("tess node index %d\n",nodes[0]);
 			      ref_node_location(ref_grid_node(ref_grid),
 						nodes[0]);
-			      printf("u tess %f min %f max %f\n",
+			      printf("u tess %f tmin %f tmax %f\n",
 				     uv[0+2*node],uvmin[0],uvmax[0]);
-			      printf("v tess %f min %f max %f\n",
+			      printf("v tess %f tmin %f tmax %f\n",
 				     uv[1+2*node],uvmin[1],uvmax[1]);
 			    }
 			}
