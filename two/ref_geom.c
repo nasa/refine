@@ -803,6 +803,10 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
   switch (ref_geom_type(ref_geom,geom))
     {
     case (REF_GEOM_NODE) :
+      RNS(ref_geom->nodes,"nodes not loaded");
+      if ( ref_geom_id(ref_geom,geom) < 1 ||
+	   ref_geom_id(ref_geom,geom) > ref_geom->nnode ) 
+	return REF_INVALID;
       nodes = (ego *)(ref_geom->nodes);
       object = nodes[ref_geom_id(ref_geom,geom) - 1]; 
       {
@@ -816,12 +820,18 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
       break;
     case (REF_GEOM_EDGE) :
       RNS(ref_geom->edges,"edges not loaded");
+      if ( ref_geom_id(ref_geom,geom) < 1 ||
+	   ref_geom_id(ref_geom,geom) > ref_geom->nedge ) 
+	return REF_INVALID;
       edges = (ego *)(ref_geom->edges);
       object = edges[ref_geom_id(ref_geom,geom) - 1]; 
       params[0] = ref_geom_param(ref_geom,0,geom);
       break;
     case (REF_GEOM_FACE) :
       RNS(ref_geom->faces,"faces not loaded");
+      if ( ref_geom_id(ref_geom,geom) < 1 ||
+	   ref_geom_id(ref_geom,geom) > ref_geom->nface ) 
+	return REF_INVALID;
       faces = (ego *)(ref_geom->faces);
       object = faces[ref_geom_id(ref_geom,geom) - 1]; 
       params[0] = ref_geom_param(ref_geom,0,geom);
