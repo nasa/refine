@@ -12,15 +12,17 @@ else
     two=${HOME}/refine/egads/two
 fi
 
-# ${two}/ref_geom_test ega.egads
-# ${two}/ref_geom_test ega.egads ega.ugrid
-# mv ref_geom_test.gas ega.gas
+geomfile=ega.egads
+
+# ${two}/ref_geom_test ${geomfile}
+# ${two}/ref_geom_test ${geomfile} ega.meshb
+
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
-${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1
+${two}/ref_driver -i ega.meshb -g ${geomfile} -m ega.metric -o ref_driver1
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-uniform-two-01.status
 
-${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2
+${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1.metric -o ref_driver2
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-uniform-two-02.status
 
