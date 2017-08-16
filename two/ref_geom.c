@@ -1295,29 +1295,32 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
   {
     long cad_data_size;
     REF_BYTE *cad_data;
-    REIS( EGADS_SUCCESS, EG_streamModel(model, &cad_data_size, &cad_data), 
+    int EG_exportModel(ego model, long *cad_data_size, char **cad_data);
+    REIS( EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data), 
 	  "EG stream");
     ref_geom_cad_data_size(ref_geom) = cad_data_size;
     ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
 	       REF_BYTE );
-    REIS( ref_geom_cad_data_size(ref_geom),
-	  memcpy( ref_geom_cad_data(ref_geom), cad_data, 
-		  ref_geom_cad_data_size(ref_geom)), "memcpy");
+    memcpy( ref_geom_cad_data(ref_geom), cad_data, 
+	    ref_geom_cad_data_size(ref_geom) );
     free( cad_data );
   }
+
 
 #else
   if (ref_mpi_master )
     printf("EGADS lite, using meshb data ignore %s\n",filename);
 
-  REIS( EGADS_SUCCESS, EG_readModel(context, 
-				    (long)ref_geom_cad_data_size(ref_geom),
-				    ref_geom_cad_data(ref_geom),
-				    &model ), "EG load");
+  RAS( 0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data" );
+  RNS( ref_geom_cad_data(ref_geom), "cad_data NULL" );
+  REIS( EGADS_SUCCESS, EG_importModel(context, 
+				      (long)ref_geom_cad_data_size(ref_geom),
+				      ref_geom_cad_data(ref_geom),
+				      &model ), "EG load");
 #endif
 
   */
-
+ 
   REIS( EGADS_SUCCESS,
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
 		       &nbody, &bodies, &senses), "EG topo bodies");
