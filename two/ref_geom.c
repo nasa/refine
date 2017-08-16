@@ -1418,7 +1418,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
       if (mtype != PLANE)
 	{
 	  ego ecurve, *eedges, *echilds;
-	  int iloop, iedge, nedge, nchild;
+	  int iloop, iedge, nedge, nchild, inode;
 	  /* loop through all Loops associated with this Face */
 	  for (iloop = 0; iloop < nloop; iloop++)
 	    {
@@ -1434,6 +1434,20 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 		  if (mtype == DEGENERATE)
 		    {
 		      printf("face id %d has degen\n",face+1);
+		      /* find index of bounding Node */
+		      inode = EG_indexBodyTopo(solid, echilds[0]);
+		      for (node = 0; node<plen; node++)
+			{
+			  if (ptype[node] == 0 && pindex[node] == inode)
+			    {
+			      REIS( EGADS_SUCCESS,
+				    EG_localToGlobal(tess, face+1, node+1,
+						     &(nodes[0])), "l2g0");
+			      printf("tess node index %d\n",nodes[0]);
+			      ref_node_location(ref_grid_node(ref_grid),nodes[0]);
+			    }
+
+			}
 		    }
 		}
 	    }
