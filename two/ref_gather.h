@@ -48,11 +48,6 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell, 
 				FILE *file );
 
-REF_STATUS ref_gather_faceid_range( REF_GRID ref_grid, 
-				    REF_INT *min_faceid, REF_INT *max_faceid );
-REF_STATUS ref_gather_edgeid_range( REF_GRID ref_grid, 
-				    REF_INT *min_edgeid, REF_INT *max_edgeid );
-
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */
