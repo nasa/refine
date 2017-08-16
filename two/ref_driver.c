@@ -196,30 +196,27 @@ int main( int argc, char *argv[] )
       printf(" pass %d of %d\n",pass,passes);
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
+      if (curvature_metric)
+	{
+	  RSS( ref_metric_interpolated_curvature( ref_grid ),
+	       "interp curve" );
+	  ref_mpi_stopwatch_stop("curvature");
+	}
       if ( NULL != background_grid )
 	{
-	  if (curvature_metric)
-	    {
-	      RSS( ref_metric_interpolated_curvature( ref_grid ),
-		   "interp curve" );
-	      ref_mpi_stopwatch_stop("curvature");
-	    }
-	  if ( NULL != background_grid )
-	    {
-	      RSS( ref_metric_interpolate( ref_grid, background_grid ),
-		   "interp" );
-	      ref_mpi_stopwatch_stop("interp");
-	    }
-	  if ( curvature_constraint )
-	    {
-	      RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
-	      ref_mpi_stopwatch_stop("crv const");
-	    }
-	  if ( sanitize_metric )
-	    {
-	      RSS( ref_metric_sanitize( ref_grid ), "sant metric");
-	      ref_mpi_stopwatch_stop("sant");
-	    }
+	  RSS( ref_metric_interpolate( ref_grid, background_grid ),
+	       "interp" );
+	  ref_mpi_stopwatch_stop("interp");
+	}
+      if ( curvature_constraint )
+	{
+	  RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+	  ref_mpi_stopwatch_stop("crv const");
+	}
+      if ( sanitize_metric )
+	{
+	  RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+	  ref_mpi_stopwatch_stop("sant");
 	}
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
