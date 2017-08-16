@@ -794,7 +794,7 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
   double eval[18];
   double params[2];
   REF_INT i;
-  ego *edges, *faces;
+  ego *nodes, *edges, *faces;
   ego object;
   if ( geom < 0 || ref_geom_max(ref_geom) <= geom )
     return REF_INVALID;
@@ -803,7 +803,16 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
   switch (ref_geom_type(ref_geom,geom))
     {
     case (REF_GEOM_NODE) :
-      RSS(REF_IMPLEMENT, "geom node" );
+      nodes = (ego *)(ref_geom->nodes);
+      object = nodes[ref_geom_id(ref_geom,geom) - 1]; 
+      {
+	ego ref, *pchldrn;
+	int oclass, mtype, nchild, *psens;
+	REIS( EGADS_SUCCESS,
+	      EG_getTopology(object, &ref, &oclass, &mtype, xyz,
+			     &nchild, &pchldrn, &psens), "EG topo node");
+      }
+      return REF_SUCCESS;
       break;
     case (REF_GEOM_EDGE) :
       RNS(ref_geom->edges,"edges not loaded");
@@ -986,6 +995,21 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   REF_DBL tol;
   REF_BOOL geom_edge;
   
+  each_ref_geom_node( ref_geom, geom )
+    {
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
+      node = ref_geom_node(ref_geom,geom);
+      dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+      tol = 1.0e-12;
+      if ( dist > tol )
+	{
+	  printf("geom node %d node %d dist %e\n",geom,node,dist);	 
+	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
+	}
+    }
+  
   each_ref_geom_edge( ref_geom, geom )
     {
       RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
@@ -996,7 +1020,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
       tol = 1.0e-12;
       if ( dist > tol )
 	{
-	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  printf("geom edge %d node %d dist %e\n",geom,node,dist);	 
 	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
 	}
     }
@@ -1013,7 +1037,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
       if (geom_edge) tol = 2.0e-5;
       if ( dist > tol )
 	{
-	  printf("geom %d node %d dist %e\n",geom,node,dist);	 
+	  printf("geom face %d node %d dist %e\n",geom,node,dist);	 
 	  RSS( ref_geom_tattle( ref_geom, node ), "tattle");
 	}
     }
