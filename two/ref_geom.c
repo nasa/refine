@@ -1401,6 +1401,45 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
     REIS( EGADS_SUCCESS,
 	  EG_getTessFace(tess, face+1, &plen, &points, &uv, &ptype, &pindex,
 			 &tlen, &tris, &tric), "tess query face" );
+
+    {
+      ego esurf, *eloops, eref;
+      int oclass, mtype, nloop,*senses,*pinfo;
+      double data[18], *preal;
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(((ego *)(ref_geom->faces))[face],
+			   &esurf, &oclass, &mtype,
+			   data, &nloop, &eloops, &senses), "topo" );
+      REIS( EGADS_SUCCESS,
+	    EG_getGeometry(esurf, &oclass, &mtype,
+			   &eref, &pinfo, &preal),"geom");
+      EG_free(pinfo);
+      EG_free(preal);
+      if (mtype != PLANE)
+	{
+	  ego ecurve, *eedges, *echilds;
+	  int iloop, iedge, nedge, nchild;
+	  /* loop through all Loops associated with this Face */
+	  for (iloop = 0; iloop < nloop; iloop++)
+	    {
+	      /* loop through all Edges associated with this Loop */
+	      REIS( EGADS_SUCCESS,
+		    EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype,
+				   data, &nedge, &eedges, &senses), "topo");
+	      for (iedge = 0; iedge < nedge; iedge++)
+		{
+		  REIS( EGADS_SUCCESS,
+			EG_getTopology(eedges[iedge], &ecurve, &oclass, &mtype,
+				       data, &nchild, &echilds, &senses), "tp");
+		  if (mtype == DEGENERATE)
+		    {
+		      printf("face id %d has degen\n",face+1);
+		    }
+		}
+	    }
+	}
+    }
+    
     for ( node = 0; node<plen; node++ ) {
       REIS( EGADS_SUCCESS,
 	    EG_localToGlobal(tess, face+1, node+1, &(nodes[0])), "l2g0");
