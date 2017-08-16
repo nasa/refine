@@ -1152,6 +1152,84 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node, 
+				     REF_INT *nodes, 
+				     REF_DBL *quality )
+{
+  REF_DBL mlog0[6], mlog1[6], mlog2[6], mlog3[6];
+  REF_DBL mlog[6], m[6], jac[9];
+  REF_DBL xyz0[3], xyz1[3], xyz2[3], xyz3[4];
+  REF_INT i;
+  REF_DBL l0,l1,l2,l3,l4,l5;
+
+  REF_DBL det, min_det, volume;
+  REF_DBL volume_in_metric;
+  REF_DBL num, denom;
+
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2),"log2");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[3]), mlog3),"log3");
+
+  for (i=0;i<6;i++)
+    mlog[i]=(mlog0[i]+mlog1[i]+mlog2[i]+mlog3[i])/4.0;
+  RSS( ref_matrix_exp_m(mlog, m),"exp");
+  RSS( ref_matrix_jacob_m(m, jac),"jac");
+
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[0]),
+			     xyz0 ), "xyz0");
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[1]),
+			     xyz1 ), "xyz1");
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[2]),
+			     xyz2 ), "xyz2");
+  RSS( ref_matrix_vect_mult( jac, ref_node_xyz_ptr(ref_node,nodes[3]),
+			     xyz3 ), "xyz3");
+
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[1], &l0 ), "l0" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[2], &l1 ), "l1" );
+  RSS( ref_node_ratio( ref_node, nodes[0], nodes[3], &l2 ), "l2" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[2], &l3 ), "l3" );
+  RSS( ref_node_ratio( ref_node, nodes[1], nodes[3], &l4 ), "l4" );
+  RSS( ref_node_ratio( ref_node, nodes[2], nodes[3], &l5 ), "l5" );
+  
+  RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
+
+  if ( volume <= 0.0 )
+    {
+      *quality = volume;
+       return REF_SUCCESS;
+    }
+
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det),"n0");
+  min_det = det;
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det),"n1");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det),"n2");
+  min_det = MIN(min_det,det);
+  RSS( ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]), &det),"n3");
+  min_det = MIN(min_det,det);
+
+  volume_in_metric = sqrt( min_det ) * volume;
+
+  num = pow(volume_in_metric,2.0/3.0);
+  denom = l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5;
+
+  if ( ref_math_divisible(num,denom) )
+    {
+      /* 36/3^(1/3) */
+      *quality = 24.9610058766228 * num / denom;
+    }
+  else
+    {
+      printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+	     __FILE__,__LINE__,__func__,
+	     volume, min_det, num, denom );
+      *quality = -1.0;
+    }
+
+  return REF_SUCCESS;  
+}
+
 static REF_STATUS ref_node_tri_epic_quality( REF_NODE ref_node, 
 					     REF_INT *nodes, 
 					     REF_DBL *quality )
