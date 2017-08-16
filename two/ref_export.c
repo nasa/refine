@@ -1239,79 +1239,6 @@ REF_STATUS ref_export_b8_ugrid( REF_GRID ref_grid, const char *filename  )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_faceid_range( REF_GRID ref_grid, 
-				    REF_INT *min_faceid, REF_INT *max_faceid )
-{
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_faceid = REF_INT_MAX;
-  *max_faceid = REF_INT_MIN;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
-      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
-    }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
-      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
-    }
-
-  if ( ref_mpi_n > 1 )
-    {
-      REF_INT global;
-
-      RSS( ref_mpi_min( min_faceid, &global, REF_INT_TYPE ), "mpi min face" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi min face" );
-      *min_faceid = global;
-
-      RSS( ref_mpi_max( max_faceid, &global, REF_INT_TYPE ), "mpi max face" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi max face" );
-      *max_faceid = global;
-    }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_edgeid_range( REF_GRID ref_grid, 
-				    REF_INT *min_edgeid, REF_INT *max_edgeid )
-{
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_edgeid = REF_INT_MAX;
-  *max_edgeid = REF_INT_MIN;
-
-  ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      *min_edgeid = MIN( *min_edgeid, nodes[ref_cell_node_per(ref_cell)] );
-      *max_edgeid = MAX( *max_edgeid, nodes[ref_cell_node_per(ref_cell)] );
-    }
-
-  if ( ref_mpi_n > 1 )
-    {
-      REF_INT global;
-
-      RSS( ref_mpi_min( min_edgeid, &global, REF_INT_TYPE ), "mpi min edge" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi min edge" );
-      *min_edgeid = global;
-
-      RSS( ref_mpi_max( max_edgeid, &global, REF_INT_TYPE ), "mpi max edge" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi max edge" );
-      *max_edgeid = global;
-    }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_export_cogsg( REF_GRID ref_grid, const char *filename_cogsg )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2561,3 +2488,51 @@ REF_STATUS ref_export_plt_surf_zone( REF_GRID ref_grid, FILE *file )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_export_faceid_range( REF_GRID ref_grid, 
+				    REF_INT *min_faceid, REF_INT *max_faceid )
+{
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
+      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
+    }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      *min_faceid = MIN( *min_faceid, nodes[ref_cell_node_per(ref_cell)] );
+      *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_edgeid_range( REF_GRID ref_grid, 
+				    REF_INT *min_edgeid, REF_INT *max_edgeid )
+{
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_edgeid = REF_INT_MAX;
+  *max_edgeid = REF_INT_MIN;
+
+  ref_cell = ref_grid_edg(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      *min_edgeid = MIN( *min_edgeid, nodes[ref_cell_node_per(ref_cell)] );
+      *max_edgeid = MAX( *max_edgeid, nodes[ref_cell_node_per(ref_cell)] );
+    }
+
+  return REF_SUCCESS;
+}
+
