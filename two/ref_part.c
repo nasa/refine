@@ -198,6 +198,9 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     {
       RSS( ref_mpi_bcast( &ref_geom_cad_data_size(ref_geom),
 			  1, REF_INT_TYPE ), "bcast" ); 
+      ref_malloc(ref_geom_cad_data(ref_geom),
+		 ref_geom_cad_data_size(ref_geom),
+		 REF_BYTE );
       RSS( ref_mpi_bcast( ref_geom_cad_data(ref_geom),
 			  ref_geom_cad_data_size(ref_geom), 
 			  REF_BYTE_TYPE ), "bcast" ); 

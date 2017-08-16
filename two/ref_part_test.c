@@ -131,7 +131,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
-    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+    if ( ref_mpi_master )
+      REIS(0, remove( grid_file ), "test clean up");
   }
 
   { /* part meshb */
