@@ -52,6 +52,7 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_geom_blank(ref_geom) = 0;
   
   RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
+  ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
   ref_geom->context = NULL;
@@ -65,8 +66,9 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   }
 #endif
   ref_geom->solid = NULL;
-  ref_geom->edges = NULL;
   ref_geom->faces = NULL;
+  ref_geom->edges = NULL;
+  ref_geom->nodes = NULL;
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
@@ -84,6 +86,8 @@ REF_STATUS ref_geom_free( REF_GEOM ref_geom )
     EG_free((ego *)(ref_geom->faces));
   if ( NULL != ref_geom->edges)
     EG_free((ego *)(ref_geom->edges));
+  if ( NULL != ref_geom->nodes)
+    EG_free((ego *)(ref_geom->nodes));
   /* solid is not freeable */
   if ( NULL != ref_geom->context)
     REIS( EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
@@ -124,10 +128,14 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   RSS( ref_adj_deep_copy( &( ref_geom->ref_adj ), original->ref_adj ),
        "deep copy ref_adj for ref_geom" );
   
+  ref_geom->nnode = REF_EMPTY;
+  ref_geom->nedge = REF_EMPTY;
+  ref_geom->nface = REF_EMPTY;
   ref_geom->context = NULL;
   ref_geom->solid = NULL;
-  ref_geom->edges = NULL;
   ref_geom->faces = NULL;
+  ref_geom->edges = NULL;
+  ref_geom->nodes = NULL;
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
@@ -1237,8 +1245,8 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
   ego model = NULL;
   ego geom, *bodies, *children;
   int oclass, mtype, nbody, *senses, nchild;
-  ego solid, *faces, *edges;
-  int nface, nedge;
+  ego solid, *faces, *edges, *nodes;
+  int nface, nedge, nnode;
 
   context = (ego)(ref_geom->context);
 
@@ -1287,6 +1295,10 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
   REIS( SOLIDBODY, mtype, "expected SOLIDBODY" );
   ref_geom->solid = (void *)solid;
   
+  REIS( EGADS_SUCCESS,
+	EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes), "EG node topo");
+  ref_geom->nnode = nnode;
+  ref_geom->nodes = (void *)nodes;
   REIS( EGADS_SUCCESS,
 	EG_getBodyTopos(solid, NULL, EDGE, &nedge, &edges), "EG edge topo");
   ref_geom->nedge = nedge;

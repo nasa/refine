@@ -25,11 +25,12 @@ BEGIN_C_DECLORATION
     REF_DBL *param;
     REF_DBL *uv_area_sign;
     REF_ADJ ref_adj;
-    REF_INT nedge, nface;
+    REF_INT nnode, nedge, nface;
     void *context;
     void *solid;
     void *faces;
     void *edges;
+    void *nodes;
     REF_INT cad_data_size;
     REF_BYTE *cad_data;
   };
