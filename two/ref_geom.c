@@ -1394,7 +1394,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
     ref_node_xyz( ref_node, 1, node ) = verts[1];
     ref_node_xyz( ref_node, 2, node ) = verts[2];
     if ( 0 == pty )
-      RSS( ref_geom_add( ref_geom, node, REF_GEOM_NODE, node, NULL), "node");
+      RSS( ref_geom_add( ref_geom, node, REF_GEOM_NODE, pin, NULL), "node");
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
