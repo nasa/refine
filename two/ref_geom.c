@@ -1885,7 +1885,9 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
   
   free(b_param);
   free(a_tgi);
+  free(b_partl);
   free(b_global);
+  free(a_part);
   free(a_global);
   free(b_ngeom);
   free(a_ngeom);
