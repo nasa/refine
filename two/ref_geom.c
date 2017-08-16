@@ -1433,7 +1433,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 				       trange, &nchild, &echilds, &senses), "tp");
 		  if (mtype == DEGENERATE)
 		    {
-		      double uvmin[4], uvmax[4];
+		      double uvmin[6], uvmax[6];
 		      printf("face id %d has degen\n",face+1);
 		      /* find index of bounding Node */
 		      inode = EG_indexBodyTopo(solid, echilds[0]);
@@ -1458,6 +1458,8 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 				     uv[0+2*node],uvmin[0],uvmax[0]);
 			      printf("v tess %f tmin %f tmax %f\n",
 				     uv[1+2*node],uvmin[1],uvmax[1]);
+			      uv[0+2*node] = 0.5*(uvmin[0],uvmax[0]);
+			      uv[1+2*node] = 0.5*(uvmin[1],uvmax[1]);
 			    }
 			}
 		    }
