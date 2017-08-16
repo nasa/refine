@@ -15,16 +15,15 @@ fi
 h=0.01
 
 # ${two}/ref_geom_test ega.egads
-# ${two}/ref_geom_test ega.egads ega.ugrid
-# mv ref_geom_test.gas ega.gas
-${two}/ref_acceptance ega.ugrid ega.metric ${h}
-${two}/ref_driver -i ega.ugrid -g ega.egads -p ega.gas -m ega.metric -o ref_driver1 -l
-${two}/ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric ${h}
-${two}/ref_metric_test ref_driver1.b8.ugrid ref_driver1.metric > accept-cube-cylinder-linear010-two-01.status
+# ${two}/ref_geom_test ega.egads ega.meshb
+${two}/ref_acceptance ega.meshb ega.metric ${h}
+${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1 -l
+${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric ${h}
+${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-linear010-two-01.status
 
-${two}/ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric -o ref_driver2 -l
-${two}/ref_acceptance ref_driver2.b8.ugrid ref_driver2.metric ${h}
-${two}/ref_metric_test ref_driver2.b8.ugrid ref_driver2.metric > accept-cube-cylinder-linear010-two-02.status
+${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2 -l
+${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric ${h}
+${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-linear010-two-02.status
 
 cat accept-cube-cylinder-linear010-two-02.status
 ../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.050 1.9
