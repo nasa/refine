@@ -1433,9 +1433,16 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 				       data, &nchild, &echilds, &senses), "tp");
 		  if (mtype == DEGENERATE)
 		    {
+		      double uvmin[4], uvmax[4];
 		      printf("face id %d has degen\n",face+1);
 		      /* find index of bounding Node */
 		      inode = EG_indexBodyTopo(solid, echilds[0]);
+		      REIS( EGADS_SUCCESS,
+			    EG_evaluate(eedges[iedge+nedge], &data[0], uvmin),
+			    "eval min");
+		      REIS( EGADS_SUCCESS,
+			    EG_evaluate(eedges[iedge+nedge], &data[1], uvmax),
+			    "eval max");
 		      for (node = 0; node<plen; node++)
 			{
 			  if (ptype[node] == 0 && pindex[node] == inode)
@@ -1443,10 +1450,15 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 			      REIS( EGADS_SUCCESS,
 				    EG_localToGlobal(tess, face+1, node+1,
 						     &(nodes[0])), "l2g0");
+			      nodes[0] -= 1;
 			      printf("tess node index %d\n",nodes[0]);
-			      ref_node_location(ref_grid_node(ref_grid),nodes[0]);
+			      ref_node_location(ref_grid_node(ref_grid),
+						nodes[0]);
+			      printf("u %f min %f max %f\n",
+				     uv[0+2*inode],uvmin[0],uvmax[0]);
+			      printf("v %f min %f max %f\n",
+				     uv[1+2*inode],uvmin[1],uvmax[1]);
 			    }
-
 			}
 		    }
 		}
