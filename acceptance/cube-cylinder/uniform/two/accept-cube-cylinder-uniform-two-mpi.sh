@@ -13,7 +13,7 @@ else
 fi
 
 nproc=16
-geomfile=ega.egads
+geomfile=ega.lite
 
 # ${two}/ref_geom_test ${geomfile}
 # ${two}/ref_geom_test ${geomfile} ega.meshb
