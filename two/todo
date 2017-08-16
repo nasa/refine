@@ -1,15 +1,4 @@
 
-verify cad node xyz and add evaluator (should id be node+1?)
-how to eval cad node?
-
-init params on singular
-
-ellipsoid viz 
-
-geom from meshb in all tests
-
- parallel acceptance geom
-
 jacobian form of tet quality
 - implement refine/one quality measures
 - det stability in quality no longer issue
@@ -17,11 +6,11 @@ jacobian form of tet quality
 cavity operator
 bl insert
 
+ellipsoid viz 
+
 docs?
 provide dense api (or pack)
 provide 2D api
-
-chat with Bill about parallel egads communication, AFLR4
 
 EGADS questions:
 - degnerate edges (faces)
@@ -107,6 +96,19 @@ low priority surface reconstruction when EGADS not available
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
++++++++++++++++++
+
++ chat with Bill about parallel egads communication, AFLR4
+
++ parallel acceptance geom
+
++ verify cad node xyz and add evaluator (should id be node+1?)
++ how to eval cad node?
+
++ init params on singular
+
++ geom from meshb in all tests
 
 + geom restart in meshb format
 + parallel geom
