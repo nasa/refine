@@ -148,8 +148,8 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
   
   ref_node->twod_mid_plane = original->twod_mid_plane;
   
-  ref_node->tet_quality = REF_NODE_JAC_QUALITY;
-  ref_node->tri_quality = REF_NODE_JAC_QUALITY;
+  ref_node->tet_quality = original->tet_quality;
+  ref_node->tri_quality = original->tri_quality;
 
   return REF_SUCCESS;
 }
