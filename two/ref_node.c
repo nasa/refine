@@ -1161,11 +1161,8 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
   REF_DBL xyz0[3], xyz1[3], xyz2[3], xyz3[4];
   REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
   REF_INT i;
-  REF_DBL l0,l1,l2,l3,l4,l5;
 
-  REF_DBL det, min_det, volume;
-  REF_DBL volume_in_metric;
-  REF_DBL num, denom;
+  REF_DBL l2, m11, m12, m13, det, volume, num;
 
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
@@ -1196,9 +1193,12 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
   l2 = ref_math_dot(e0,e0) + ref_math_dot(e1,e1) + ref_math_dot(e2,e2)
     + ref_math_dot(e3,e3) + ref_math_dot(e4,e4) + ref_math_dot(e5,e5);
 
-  m11 = (xyz0[0]-xyz3[0])*((xyz1[1]-xyz3[1])*(xyz2[2]-xyz3[2])-(xyz2[1]-xyz3[1])*(xyz1[2]-xyz3[2]));
-  m12 = (xyz0[1]-xyz3[1])*((xyz1[0]-xyz3[0])*(xyz2[2]-xyz3[2])-(xyz2[0]-xyz3[0])*(xyz1[2]-xyz3[2]));
-  m13 = (xyz0[2]-xyz3[2])*((xyz1[0]-xyz3[0])*(xyz2[1]-xyz3[1])-(xyz2[0]-xyz3[0])*(xyz1[1]-xyz3[1]));
+  m11 = (xyz0[0]-xyz3[0])
+    *((xyz1[1]-xyz3[1])*(xyz2[2]-xyz3[2])-(xyz2[1]-xyz3[1])*(xyz1[2]-xyz3[2]));
+  m12 = (xyz0[1]-xyz3[1])
+    *((xyz1[0]-xyz3[0])*(xyz2[2]-xyz3[2])-(xyz2[0]-xyz3[0])*(xyz1[2]-xyz3[2]));
+  m13 = (xyz0[2]-xyz3[2])
+    *((xyz1[0]-xyz3[0])*(xyz2[1]-xyz3[1])-(xyz2[0]-xyz3[0])*(xyz1[1]-xyz3[1]));
   det = ( m11 - m12 + m13 );
 
   volume = -det/6.0;
@@ -1209,18 +1209,17 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
        return REF_SUCCESS;
     }
   num = pow(volume,2.0/3.0);
-  denom = l0*l0 + l1*l1 + l2*l2 + l3*l3 + l4*l4 + l5*l5;
 
-  if ( ref_math_divisible(num,denom) )
+  if ( ref_math_divisible(num,l2) )
     {
       /* 36/3^(1/3) */
-      *quality = 24.9610058766228 * num / denom;
+      *quality = 24.9610058766228 * num / l2;
     }
   else
     {
-      printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+      printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n",
 	     __FILE__,__LINE__,__func__,
-	     volume, min_det, num, denom );
+	     volume, num, l2 );
       *quality = -1.0;
     }
 
