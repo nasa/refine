@@ -1219,7 +1219,8 @@ int main( int argc, char *argv[] )
     RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
     ref_node->tet_quality = REF_NODE_JAC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
-    RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
+    /* mapped volume */
+    RWDS( -1000.0/6.0, qual, -1.0, "qual expected" );
 
     RSS(ref_node_free(ref_node),"free");
   }
