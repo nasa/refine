@@ -1239,7 +1239,7 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
       RSS( ref_node_tet_epic_quality(ref_node,nodes,quality), "epic");
       break;
     case REF_NODE_JAC_QUALITY:
-      RSS( ref_node_tet_jac_quality(ref_node,nodes,quality), "epic");
+      RSS( ref_node_tet_jac_quality(ref_node,nodes,quality), "jac");
       break;
     default:
       THROW("case not recognized");
