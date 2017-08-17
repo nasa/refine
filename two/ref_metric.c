@@ -100,7 +100,7 @@ REF_STATUS ref_metric_ring_node( REF_NODE ref_node )
   each_ref_node_valid_node( ref_node, node )
     {
       x= ref_node_xyz(ref_node,0,node);
-      hh = h + (0.1-h)*MAX(2*ABS(x-1.0),1);
+      hh = h + (0.1-h)*MIN(2*ABS(x-1.0),1);
       ref_node_metric(ref_node,0,node) = 1.0/(hh*hh);
       ref_node_metric(ref_node,1,node) = 0.0;
       ref_node_metric(ref_node,2,node) = 0.0;

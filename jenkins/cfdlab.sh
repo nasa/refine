@@ -150,3 +150,9 @@ cd ${source_dir}/acceptance/cube-sphere/uniform/two
 ./accept-cube-sphere-uniform-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-cube-sphere-ring-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-sphere/ring/two
+./accept-cube-sphere-ring-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
