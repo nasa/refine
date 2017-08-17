@@ -871,6 +871,7 @@ int main( int argc, char *argv[] )
     REF_DBL qual;
 
     RSS(ref_node_create(&ref_node),"create");
+    ref_node->tri_quality = REF_NODE_EPIC_QUALITY;
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
