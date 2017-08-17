@@ -28,6 +28,7 @@ struct REF_NODE_STRUCT {
   REF_LIST unused_global_list;
   REF_INT old_n_global, new_n_global;
   REF_DBL twod_mid_plane;
+  REF_INT tet_quality;
   REF_INT tri_quality;
 };
 

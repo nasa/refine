@@ -767,6 +767,8 @@ int main( int argc, char *argv[] )
 	ref_node_metric(ref_node,5,nodes[global]) = 20.0;
        }
 
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
+
     FD_NODES0( ref_node_tet_dquality_dnode0 );
 
     RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
@@ -1184,8 +1186,13 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
     ref_node_xyz(ref_node,2,nodes[3]) = 1.0;
 
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
-    RWDS( 0.839947, qual, 0.00001, "qual expected" );
+    RWDS( 0.839947, qual, 0.00001, "epic qual expected" );
+
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.839947, qual, 0.00001, "jac qual expected" );
 
     for ( global=0;global<4;global++)
       {
@@ -1197,11 +1204,20 @@ int main( int argc, char *argv[] )
 	ref_node_metric(ref_node,5,global) = 100.0;
       }
 
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
     RWDS( 0.839947, qual, 0.00001, "qual expected not metric dep" );
 
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.839947, qual, 0.00001, "jac qual expected" );
+
     /* inverted tet is negative volume */
     ref_node_xyz(ref_node,2,nodes[3]) = -1.0;
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
     RWDS( -1.0/6.0, qual, -1.0, "qual expected" );
 
@@ -1253,6 +1269,10 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,1,nodes[3]) = 0.0;
     ref_node_xyz(ref_node,2,nodes[3]) = 1.0/3.0*sqrt(6.0)*a;
 
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 1.0, qual, -1.0, "qual expected" );
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
     RWDS( 1.0, qual, -1.0, "qual expected" );
 
