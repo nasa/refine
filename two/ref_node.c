@@ -54,7 +54,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
 
   ref_node->twod_mid_plane = 0.5;
 
-  ref_node->tet_quality = REF_NODE_JAC_QUALITY;
+  ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
 
   return REF_SUCCESS;
