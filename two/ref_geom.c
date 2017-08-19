@@ -224,6 +224,13 @@ REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_recon( REF_GRID ref_grid )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  printf("seraching for %d topo nodes\n",ref_geom->nnode);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
 			     REF_DBL *uv_area )
 {

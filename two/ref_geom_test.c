@@ -26,9 +26,30 @@
 int main( int argc, char *argv[] )
 {
   REF_INT assoc_pos = REF_EMPTY;
+  REF_INT recon_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--assoc", &assoc_pos ),
        REF_NOT_FOUND, "arg search" );
+  RXS( ref_args_find( argc, argv, "--recon", &recon_pos ),
+       REF_NOT_FOUND, "arg search" );
 
+  if ( recon_pos != REF_EMPTY )
+    {
+      REF_GRID ref_grid;
+      REIS( 4, argc,
+	    "required args: --recon grid.ext geom.egads");
+      REIS( 1, recon_pos,
+	    "required args: --recon grid.ext geom.egads");
+      printf("reconstruct geometry association\n");
+      printf("grid source %s\n",argv[2]);
+      printf("geometry source %s\n",argv[3]);
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3] ), "ld egads" );
+      RSS( ref_geom_recon( ref_grid ), "geom recon" );
+      RSS( ref_geom_tec( ref_grid, "ref_geom_recon.tec" ), "geom export" );
+      RSS( ref_grid_free(ref_grid),"free");
+      return 0;
+    }
+  
   if ( assoc_pos != REF_EMPTY )
     {
       REF_GRID ref_grid;
