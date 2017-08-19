@@ -239,7 +239,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   double t;
   double param[2];
-  REF_INT geom, cell;
+  REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -282,7 +282,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  int toponode0, toponode1;
 	  REF_INT node0, node1;
 	  double closest[3];
-	  REF_INT i, next_node, current_node;
+	  REF_INT next_node, current_node;
 	  REF_INT cell, geom;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
 	  REIS( 2, nchild, "expect to topo node for edge");
@@ -359,26 +359,37 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   ref_free(tessnodes);
   ref_free(node_list);
   printf("seting face UV under edges\n");
-  RAS( EG_setOutLevel(ref_geom->context, 3) >= 0, "make silent");
-  each_ref_geom_edge( ref_geom, geom )
+  RAS( EG_setOutLevel(ref_geom->context, 3) >= 0, "make debug");
+  each_ref_cell_valid_cell_with_nodes( ref_grid_edg(ref_grid), cell, edge_nodes)
     {
-      REF_INT item, edgeid, faceid;
+      REF_INT edgeid, faceid;
       int sense;
-      node = ref_geom_node(ref_geom,geom);
-      edgeid = ref_geom_id(ref_geom,geom);
-      t = ref_geom_param(ref_geom,0,geom);
-      each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
+      REF_INT ncell, tri_list[2], tri_nodes[REF_CELL_MAX_SIZE_PER];
+      edgeid = edge_nodes[2];
+      ref_cell_list_with2( ref_grid_tri(ref_grid),
+			   edge_nodes[0], edge_nodes[1],
+			   2, &ncell, tri_list );
+      for(i=0;i<2;i++)
 	{
-	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), "nodes");
-	  faceid = nodes[3];
-	  printf(" nodes %d %d %d\n",nodes[0],nodes[1],nodes[2]);
-	  printf(" node %d edge %d face %d\n",node,edgeid,faceid);
+	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid),
+			       tri_list[i], tri_nodes ), "nodes");
+	  faceid = tri_nodes[3];
 	  sense = 0;
+	  RSS( ref_geom_tuv( ref_geom, edge_nodes[0],
+			     REF_GEOM_EDGE, edgeid, &t ), "edge t0");
 	  REIS( EGADS_SUCCESS,
 		EG_getEdgeUV( ((ego *)(ref_geom->faces))[faceid - 1],
 			      ((ego *)(ref_geom->edges))[edgeid - 1],
 			      sense, t, param), "eval edge face uv");
-	  RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE,
+	  RSS(ref_geom_add(ref_geom, edge_nodes[0], REF_GEOM_FACE,
+			   faceid, param ), "add geom face for edge");
+	  RSS( ref_geom_tuv( ref_geom, edge_nodes[1],
+			     REF_GEOM_EDGE, edgeid, &t ), "edge t0");
+	  REIS( EGADS_SUCCESS,
+		EG_getEdgeUV( ((ego *)(ref_geom->faces))[faceid - 1],
+			      ((ego *)(ref_geom->edges))[edgeid - 1],
+			      sense, t, param), "eval edge face uv");
+	  RSS(ref_geom_add(ref_geom, edge_nodes[0], REF_GEOM_FACE,
 			   faceid, param ), "add geom face for edge");
 	}
     }
