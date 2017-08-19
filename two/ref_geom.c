@@ -295,7 +295,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node0 id %d index %d t %f dist %e\n",
+	  printf("  node0 id %2d index %3d t %f dist %e\n",
 		 toponode0,node0,trange[0],dist);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[1]), xyz ), "EG eval");
@@ -303,7 +303,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node1 id %d index %d t %f dist %e\n",
+	  printf("  node1 id %2d index %3d t %f dist %e\n",
 		 toponode1,node1,trange[1],dist);
 	  current_node = node0;
 	  t = trange[0];
@@ -338,7 +338,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		    EG_invEvaluate(object,
 				   ref_node_xyz_ptr(ref_node,best_node),
 				   param, closest), "EG eval");
-	      printf("   best_node %d t %f best_dist %e\n",
+	      printf("   best_node %5d t %f best_dist %e\n",
 		     best_node,param[0],best_dist);
 	      param[1] = t;
 	      nodes[0] = best_node;
