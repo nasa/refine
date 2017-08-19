@@ -236,6 +236,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_DBL best_dist, dist;
   REF_INT *tessnodes;
   REF_INT degree, max_node = 50, *node_list;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  double t;
+  double param[2];
+  REF_INT geom, cell;
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -277,10 +281,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	{
 	  int toponode0, toponode1;
 	  REF_INT node0, node1;
-	  double t;
-	  double param[2], closest[3];
+	  double closest[3];
 	  REF_INT i, next_node, current_node;
-	  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 	  REF_INT cell, geom;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
 	  REIS( 2, nchild, "expect to topo node for edge");
@@ -356,6 +358,31 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
     }
   ref_free(tessnodes);
   ref_free(node_list);
+  printf("seting face UV under edges\n");
+  RAS( EG_setOutLevel(ref_geom->context, 3) >= 0, "make silent");
+  each_ref_geom_edge( ref_geom, geom )
+    {
+      REF_INT item, edgeid, faceid;
+      int sense;
+      node = ref_geom_node(ref_geom,geom);
+      edgeid = ref_geom_id(ref_geom,geom);
+      t = ref_geom_param(ref_geom,0,geom);
+      each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
+	{
+	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes ), "nodes");
+	  faceid = nodes[3];
+	  printf(" nodes %d %d %d\n",nodes[0],nodes[1],nodes[2]);
+	  printf(" node %d edge %d face %d\n",node,edgeid,faceid);
+	  sense = 0;
+	  REIS( EGADS_SUCCESS,
+		EG_getEdgeUV( ((ego *)(ref_geom->faces))[faceid - 1],
+			      ((ego *)(ref_geom->edges))[edgeid - 1],
+			      sense, t, param), "eval edge face uv");
+	  RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE,
+			   faceid, param ), "add geom face for edge");
+	}
+    }
+  
   return REF_SUCCESS;
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
