@@ -366,10 +366,11 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       int sense;
       REF_INT ncell, tri_list[2], tri_nodes[REF_CELL_MAX_SIZE_PER];
       edgeid = edge_nodes[2];
-      ref_cell_list_with2( ref_grid_tri(ref_grid),
-			   edge_nodes[0], edge_nodes[1],
-			   2, &ncell, tri_list );
-      for(i=0;i<2;i++)
+      RSS( ref_cell_list_with2( ref_grid_tri(ref_grid),
+				edge_nodes[0], edge_nodes[1],
+				2, &ncell, tri_list ), "tri list for edge");
+      REIS( 2, ncell, "expect two tri for edge" );
+      for(i=0;i<ncell;i++)
 	{
 	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid),
 			       tri_list[i], tri_nodes ), "nodes");
@@ -389,7 +390,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		EG_getEdgeUV( ((ego *)(ref_geom->faces))[faceid - 1],
 			      ((ego *)(ref_geom->edges))[edgeid - 1],
 			      sense, t, param), "eval edge face uv");
-	  RSS(ref_geom_add(ref_geom, edge_nodes[0], REF_GEOM_FACE,
+	  RSS(ref_geom_add(ref_geom, edge_nodes[1], REF_GEOM_FACE,
 			   faceid, param ), "add geom face for edge");
 	}
     }
