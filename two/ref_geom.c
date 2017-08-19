@@ -231,7 +231,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   ego ref, *pchldrn, *nodes, *edges, object;
   int oclass, mtype, nchild, *psens;
-  double xyz[3];
+  double xyz[9], trange[2];
   REF_INT node, id, best_node;
   REF_DBL best_dist, dist;
   printf("searching for %d topo nodes\n",ref_geom->nnode);
@@ -255,7 +255,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      best_dist = dist;
 	    }
 	}
-      printf(" topo node id %3d node %6d dist %.8e\n",id,best_node,best_dist);
+      printf(" topo node id %3d node %6d dist %.4e\n",
+	     id,best_node,best_dist);
       RSS( ref_geom_add( ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
     }
   edges = (ego *)(ref_geom->edges);
@@ -263,7 +264,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
     {
       object = edges[id - 1]; 
       REIS( EGADS_SUCCESS,
-	    EG_getTopology(object, &ref, &oclass, &mtype, xyz,
+	    EG_getTopology(object, &ref, &oclass, &mtype, trange,
 			   &nchild, &pchldrn, &psens), "EG topo node");
       if (mtype == DEGENERATE)
 	{
@@ -271,6 +272,12 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
       else
 	{
+	  int toponode0, toponode1;
+	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
+	  REIS( 2, nchild, "expect to topo node for edge");
+	  toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+	  printf(" topo edge id %3d between %3d %3d\n",id,toponode0,toponode1);
 	}
     }
 
