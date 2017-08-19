@@ -279,7 +279,9 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  REF_INT node0, node1;
 	  double t;
 	  double param[2], closest[3];
-	  REF_INT i, next_node; 
+	  REF_INT i, next_node, current_node;
+	  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+	  REF_INT cell, geom;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
 	  REIS( 2, nchild, "expect to topo node for edge");
 	  toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
@@ -293,41 +295,62 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node0 id %d index %d dist %e\n",toponode0,node0,dist);
+	  printf("  node0 id %d index %d t %f dist %e\n",
+		 toponode0,node0,trange[0],dist);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[1]), xyz ), "EG eval");
 	  node=node1;
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node1 id %d index %d dist %e\n",toponode1,node1,dist);
-	  node = node0;
+	  printf("  node1 id %d index %d t %f dist %e\n",
+		 toponode1,node1,trange[1],dist);
+	  current_node = node0;
 	  t = trange[0];
-	  while ( node != node1 )
+	  while ( current_node != node1 )
 	    {
 	      RSS(ref_cell_node_list_around( ref_grid_tri(ref_grid),
-					     node, max_node, &degree, node_list),
+					     current_node, max_node,
+					     &degree, node_list),
 		  "next node" );
 	      best_node = REF_EMPTY;
 	      best_dist = 1.0e20;
 	      for (i=0;i<degree;i++)
 		{
 		  next_node = node_list[i];
+		  if ( REF_SUCCESS == ref_geom_find( ref_geom, next_node,
+						     REF_GEOM_EDGE, id, &geom ))
+		    continue; /* this canidate is alreadt part of the edge */
 		  REIS( EGADS_SUCCESS,
 			EG_invEvaluate(object,
 				       &(ref_node_xyz(ref_node,0,next_node)),
 				       param, closest), "EG eval");
 		  dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,next_node),2) +
 			       pow(closest[1]-ref_node_xyz(ref_node,1,next_node),2) +
-			   pow(closest[2]-ref_node_xyz(ref_node,2,next_node),2) );
+			       pow(closest[2]-ref_node_xyz(ref_node,2,next_node),2) );
 		  if ( dist < best_dist )
 		    {
 		      best_node = node;
 		      best_dist = dist; 
 		    }
 		}
-	      printf("   best_node %d best_dist %e\n",best_node,best_dist);
-	      node = node1;
+	      REIS( EGADS_SUCCESS,
+		    EG_invEvaluate(object,
+				   &(ref_node_xyz(ref_node,0,best_node)),
+				   param, closest), "EG eval");
+	      printf("   best_node %d t %f best_dist %e\n",
+		     best_node,param[0],best_dist);
+	      param[1] = t;
+	      nodes[0] = best_node;
+	      nodes[1] = current_node;
+	      nodes[2] = id;
+	      RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &cell ), "add e");
+	      RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE,
+			       id, &(param[0]) ), "add geom edge 0");
+	      RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE,
+			       id, &(param[1]) ), "add geom edge 1");
+	      current_node = best_node;
+	      t = param[0];
 	    }
 	}
     }
