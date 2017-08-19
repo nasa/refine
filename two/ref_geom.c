@@ -228,8 +228,36 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  printf("seraching for %d topo nodes\n",ref_geom->nnode);
-  
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  ego ref, *pchldrn, *nodes, object;
+  int oclass, mtype, nchild, *psens;
+  double xyz[3];
+  REF_INT node, id, best_node;
+  REF_DBL best_dist, dist;
+  printf("searching for %d topo nodes\n",ref_geom->nnode);
+  nodes = (ego *)(ref_geom->nodes);
+  for ( id = 1 ; id <= ref_geom->nnode ; id++ )
+    {
+      object = nodes[id - 1]; 
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(object, &ref, &oclass, &mtype, xyz,
+			   &nchild, &pchldrn, &psens), "EG topo node");
+      best_node = REF_EMPTY;
+      best_dist = 1.0e20;
+      each_ref_node_valid_node( ref_node, node )
+	{
+	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+	  if ( dist < best_dist )
+	    {
+	      best_node = node;
+	      best_dist = dist;
+	    }
+	}
+      printf(" topo node id %3d node %6d dist %.8e\n",id,best_node,best_dist);
+    }
+
   return REF_SUCCESS;
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
