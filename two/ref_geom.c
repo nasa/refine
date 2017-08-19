@@ -240,7 +240,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   double t;
   double param[2];
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_BOOL update_needed;
+  REF_INT pass, updates;
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -394,13 +394,15 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
     }
 
-  update_needed = REF_TRUE;
-  while (update_needed)
+  pass = 0;
+  updates = REF_EMPTY;
+  while (0 != updates)
     {
       REF_INT geom0,geom1,geom2;
       REF_INT faceid;
       double closest[3];
-      update_needed = REF_FALSE;
+      updates = 0;
+      pass++;
       each_ref_cell_valid_cell_with_nodes( ref_grid_tri(ref_grid), cell, nodes)
 	{
 	  faceid = nodes[3];
@@ -412,7 +414,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 			      &geom2), REF_NOT_FOUND, "find0" );
 	  if ( REF_EMPTY != geom0 && REF_EMPTY == geom1 )
 	    {
-	      update_needed = REF_TRUE;
+	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[0],
 				 REF_GEOM_FACE, faceid, param ), "geom0");
 	      REIS( EGADS_SUCCESS,
@@ -428,7 +430,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	    }
 	  if ( REF_EMPTY != geom1 && REF_EMPTY == geom2 )
 	    {
-	      update_needed = REF_TRUE;
+	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[1],
 				 REF_GEOM_FACE, faceid, param ), "geom1");
 	      REIS( EGADS_SUCCESS,
@@ -444,7 +446,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	    }
 	  if ( REF_EMPTY != geom2 && REF_EMPTY == geom0 )
 	    {
-	      update_needed = REF_TRUE;
+	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[2],
 				 REF_GEOM_FACE, faceid, param ), "geom2");
 	      REIS( EGADS_SUCCESS,
@@ -459,6 +461,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      printf(" faceid %3d dist %e\n",faceid,dist);
 	    }
 	}
+      printf(" pass %3d updates %d\n",pass, updates);
     }
   return REF_SUCCESS;
 #else
