@@ -1,4 +1,11 @@
 
+egads recon
+ clean up method
+ add singularity fix
+ imporove screen output
+ add topo check
+ add param check
+
 jacobian form of tet quality
 - implement refine/one quality measures
 - det stability in quality no longer issue
