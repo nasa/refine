@@ -234,8 +234,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   double xyz[9], trange[2];
   REF_INT node, id, best_node;
   REF_DBL best_dist, dist;
+  REF_INT *tessnodes;
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   nodes = (ego *)(ref_geom->nodes);
+  ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
   for ( id = 1 ; id <= ref_geom->nnode ; id++ )
     {
       object = nodes[id - 1]; 
@@ -257,6 +259,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
       printf(" topo node id %3d node %6d dist %.4e\n",
 	     id,best_node,best_dist);
+      tessnodes[id-1]=best_node;
       RSS( ref_geom_add( ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
     }
   edges = (ego *)(ref_geom->edges);
@@ -273,14 +276,31 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       else
 	{
 	  int toponode0, toponode1;
+	  REF_INT node0, node1;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
 	  REIS( 2, nchild, "expect to topo node for edge");
 	  toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
 	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
-	  printf(" topo edge id %3d between %3d %3d\n",id,toponode0,toponode1);
+	  node0 = tessnodes[toponode0-1];
+	  node1 = tessnodes[toponode1-1];
+	  printf(" topo edge id %3d\n",id);
+	  REIS( EGADS_SUCCESS,
+		EG_evaluate(object, &(trange[0]), xyz ), "EG eval");
+	  node=node0;
+	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+	  printf("  node0 id %d index %d dist %e\n",toponode0,node0,dist);
+	  REIS( EGADS_SUCCESS,
+		EG_evaluate(object, &(trange[1]), xyz ), "EG eval");
+	  node=node1;
+	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
+		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
+		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
+	  printf("  node1 id %d index %d dist %e\n",toponode1,node1,dist);
 	}
     }
-
+  ref_free(tessnodes);
   return REF_SUCCESS;
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
