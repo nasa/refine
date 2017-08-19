@@ -256,6 +256,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	    }
 	}
       printf(" topo node id %3d node %6d dist %.8e\n",id,best_node,best_dist);
+      RSS( ref_geom_add( ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
     }
 
   return REF_SUCCESS;
