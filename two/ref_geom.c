@@ -226,9 +226,19 @@ REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename )
 
 REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 {
+#ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   printf("seraching for %d topo nodes\n",ref_geom->nnode);
+  
   return REF_SUCCESS;
+#else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  if (REF_EMPTY == ref_geom->nnode)
+    printf("No EGADS loaded\n");
+  printf("No EGADS linked for %s\n", __func__);
+  return REF_IMPLEMENT;
+#endif
+
 }
 
 REF_STATUS ref_geom_uv_area( REF_GEOM ref_geom, REF_INT *nodes,
