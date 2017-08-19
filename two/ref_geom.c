@@ -240,6 +240,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   double t;
   double param[2];
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL update_needed;
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -359,7 +360,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   ref_free(tessnodes);
   ref_free(node_list);
   printf("seting face UV under edges\n");
-  RAS( EG_setOutLevel(ref_geom->context, 3) >= 0, "make debug");
   each_ref_cell_valid_cell_with_nodes( ref_grid_edg(ref_grid), cell, edge_nodes)
     {
       REF_INT edgeid, faceid;
@@ -393,7 +393,73 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 			   faceid, param ), "add geom face for edge");
 	}
     }
-  
+
+  update_needed = REF_TRUE;
+  while (update_needed)
+    {
+      REF_INT geom0,geom1,geom2;
+      REF_INT faceid;
+      double closest[3];
+      update_needed = REF_FALSE;
+      each_ref_cell_valid_cell_with_nodes( ref_grid_tri(ref_grid), cell, nodes)
+	{
+	  faceid = nodes[3];
+	  RXS( ref_geom_find( ref_geom, nodes[0], REF_GEOM_FACE, faceid,
+			      &geom0), REF_NOT_FOUND, "find0" );
+	  RXS( ref_geom_find( ref_geom, nodes[1], REF_GEOM_FACE, faceid,
+			      &geom1), REF_NOT_FOUND, "find0" );
+	  RXS( ref_geom_find( ref_geom, nodes[2], REF_GEOM_FACE, faceid,
+			      &geom2), REF_NOT_FOUND, "find0" );
+	  if ( REF_EMPTY != geom0 && REF_EMPTY == geom1 )
+	    {
+	      update_needed = REF_TRUE;
+	      RSS( ref_geom_tuv( ref_geom, nodes[0],
+				 REF_GEOM_FACE, faceid, param ), "geom0");
+	      REIS( EGADS_SUCCESS,
+		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+				   ref_node_xyz_ptr(ref_node,nodes[1]),
+				   param, closest), "EG eval");
+	      RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_FACE,
+			       faceid, param ), "add face");
+	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[1]),2)+
+			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[1]),2)+
+			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[1]),2));
+	      printf(" faceid %3d dist %e\n",faceid,dist);
+	    }
+	  if ( REF_EMPTY != geom1 && REF_EMPTY == geom2 )
+	    {
+	      update_needed = REF_TRUE;
+	      RSS( ref_geom_tuv( ref_geom, nodes[1],
+				 REF_GEOM_FACE, faceid, param ), "geom1");
+	      REIS( EGADS_SUCCESS,
+		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+				   ref_node_xyz_ptr(ref_node,nodes[2]),
+				   param, closest), "EG eval");
+	      RSS(ref_geom_add(ref_geom, nodes[2], REF_GEOM_FACE,
+			       faceid, param ), "add face");
+	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[2]),2)+
+			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[2]),2)+
+			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[2]),2));
+	      printf(" faceid %3d dist %e\n",faceid,dist);
+	    }
+	  if ( REF_EMPTY != geom2 && REF_EMPTY == geom0 )
+	    {
+	      update_needed = REF_TRUE;
+	      RSS( ref_geom_tuv( ref_geom, nodes[2],
+				 REF_GEOM_FACE, faceid, param ), "geom2");
+	      REIS( EGADS_SUCCESS,
+		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+				   ref_node_xyz_ptr(ref_node,nodes[0]),
+				   param, closest), "EG eval");
+	      RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_FACE,
+			       faceid, param ), "add face");
+	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[0]),2)+
+			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[0]),2)+
+			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[0]),2));
+	      printf(" faceid %3d dist %e\n",faceid,dist);
+	    }
+	}
+    }
   return REF_SUCCESS;
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
