@@ -46,6 +46,8 @@ int main( int argc, char *argv[] )
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3] ), "ld egads" );
       RSS( ref_geom_recon( ref_grid ), "geom recon" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_recon.tec" ), "geom export" );
+      RSS( ref_export_by_extension( ref_grid, "ref_geom_recon.meshb" ),
+	   "export" );
       RSS( ref_grid_free(ref_grid),"free");
       return 0;
     }
