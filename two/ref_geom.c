@@ -427,7 +427,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[1]),2)+
 			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[1]),2)+
 			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[1]),2));
-	      printf(" faceid %3d dist %e\n",faceid,dist);
 	    }
 	  if ( REF_EMPTY != geom1 && REF_EMPTY == geom2 )
 	    {
@@ -443,7 +442,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[2]),2)+
 			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[2]),2)+
 			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[2]),2));
-	      printf(" faceid %3d dist %e\n",faceid,dist);
 	    }
 	  if ( REF_EMPTY != geom2 && REF_EMPTY == geom0 )
 	    {
@@ -459,7 +457,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[0]),2)+
 			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[0]),2)+
 			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[0]),2));
-	      printf(" faceid %3d dist %e\n",faceid,dist);
 	    }
 	}
       printf(" pass %3d updates %d\n",pass, updates);
