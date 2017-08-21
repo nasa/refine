@@ -9,10 +9,13 @@ BEGIN_C_DECLORATION
 #define ref_matrix_eig( d, e ) ((d)[(e)])
 #define ref_matrix_vec( d, xyz, v) ((d)[(xyz)+3+3*(v)])
 
-#define ref_matrix_sqrt_vt_m_v( m, v ) \
-  sqrt( (v)[0] * ( (m)[0]*(v)[0] + (m)[1]*(v)[1] + (m)[2]*(v)[2] ) + \
-	(v)[1] * ( (m)[1]*(v)[0] + (m)[3]*(v)[1] + (m)[4]*(v)[2] ) + \
-	(v)[2] * ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) )
+#define ref_matrix_vt_m_v( m, v )				     \
+  ( (v)[0] * ( (m)[0]*(v)[0] + (m)[1]*(v)[1] + (m)[2]*(v)[2] ) +     \
+    (v)[1] * ( (m)[1]*(v)[0] + (m)[3]*(v)[1] + (m)[4]*(v)[2] ) +     \
+    (v)[2] * ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) )
+
+#define ref_matrix_sqrt_vt_m_v( m, v )		\
+  ( sqrt( ref_matrix_vt_m_v( m, v ) ) )
 
 REF_STATUS ref_matrix_sqrt_vt_m_v_deriv( REF_DBL *m_upper_tri, REF_DBL *v, 
 					 REF_DBL *f, REF_DBL *df_dv );
