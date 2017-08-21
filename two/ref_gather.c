@@ -149,7 +149,8 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
     RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
     if (0 == ntet)
       {
-	fprintf(movie_file," 1 1 1 1\n");
+	if ( ref_mpi_master )
+	  fprintf(movie_file," 1 1 1 1\n");
       }
     else
       {
