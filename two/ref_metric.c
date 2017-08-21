@@ -242,7 +242,7 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
   REF_INT node, tri, ixyz, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL xyz[3], interpolated_xyz[3], bary[3];
-  REF_DBL tol = -1.0;
+  REF_DBL tol = 1.0e-11;
   REF_DBL log_parent_m[3][6];
   REF_DBL log_interpolated_m[6];
 
