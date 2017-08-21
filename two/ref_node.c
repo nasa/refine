@@ -1172,7 +1172,6 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2),"log2");
   RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[3]), mlog3),"log3");
-
   for (i=0;i<6;i++)
     mlog[i]=(mlog0[i]+mlog1[i]+mlog2[i]+mlog3[i])/4.0;
   RSS( ref_matrix_exp_m(mlog, m),"exp");
@@ -1233,6 +1232,15 @@ REF_STATUS ref_node_tet_quality( REF_NODE ref_node,
 				 REF_INT *nodes, 
 				 REF_DBL *quality )
 {
+
+  if (REF_FALSE)
+    {
+      REF_DBL epic,jac;
+      RSS( ref_node_tet_epic_quality(ref_node,nodes,&epic), "epic");
+      RSS( ref_node_tet_jac_quality(ref_node,nodes,&jac), "epic");
+      printf("tet epic %11.8f jac %11.8f\n",epic,jac);
+    }
+  
   switch (ref_node->tet_quality)
     {
     case REF_NODE_EPIC_QUALITY:
@@ -1342,6 +1350,15 @@ REF_STATUS ref_node_tri_quality( REF_NODE ref_node,
 				 REF_INT *nodes, 
 				 REF_DBL *quality )
 {
+
+  if (REF_FALSE)
+    {
+      REF_DBL epic,jac;
+      RSS( ref_node_tri_epic_quality(ref_node,nodes,&epic), "epic");
+      RSS( ref_node_tri_jac_quality(ref_node,nodes,&jac), "epic");
+      printf("tri epic %11.8f jac %11.8f\n",epic,jac);
+    }
+  
   switch (ref_node->tri_quality)
     {
     case REF_NODE_EPIC_QUALITY:
