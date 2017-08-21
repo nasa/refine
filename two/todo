@@ -8,6 +8,8 @@ egads recon
  add param check
  switch to EG_invEvaluateGuess
 
+ref_geom_snap evaluate all xyz and edge uv
+
 jacobian form of tet quality
 - implement refine/one quality measures
 - det stability in quality no longer issue
