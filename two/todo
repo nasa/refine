@@ -1,6 +1,4 @@
 
-add sliver check to movie and fake zero cells
-
 egads recon
  clean up method
  add singularity fix
@@ -28,17 +26,10 @@ provide 2D api
 EGADS questions:
 - degnerate edges (faces)
   EG_getTopology (mtype edge)
-- INRIA meshb to store parameterization with grid (call MARCUM)
 - surface normal (direction and inside/outside orientation)
   EG_getTopology (mtype sforward is UxV out of domain)
-- best way to recover uv, t (don't)
-- curvatures for metric
-  - EG_curvature: when degenerate, move nearby
-  - noise in surface will be present
 - easiest way to build the planar delta wing
   - draw 2D planform, extrude, trim with booleans
-- analytic hemisphere-cylinder 5e-7 tolerance is typical, edge to surface
-- geode: unclear about support, see how PW adapt develops 
 - for initial grids, set .tParams, vtess to visualize
 
 open source
@@ -111,6 +102,17 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ bob discussions
+  + INRIA meshb to store parameterization with grid (call MARCUM)
+  + best way to recover uv, t (don't)
+  + curvatures for metric
+    + EG_curvature: when degenerate, move nearby
+    + noise in surface will be present
+  + analytic hemisphere-cylinder 5e-7 tolerance is typical, edge to surface
+  + geode: unclear about support, see how PW adapt develops 
+
++ add sliver check to movie and fake zero cells
 
 + plot low MR tets
 
