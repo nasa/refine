@@ -259,6 +259,13 @@ int main( int argc, char *argv[] )
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
       ref_mpi_stopwatch_stop("clump stuck");
     }
+  if ( debug_verbose && 1 == ref_mpi_n )
+    {
+      snprintf( output_filename, 1024, "%s_tet_qual.tec", output_project );
+      RSS(ref_clump_tet_quality( ref_grid, 0.01, output_filename ),
+	  "clump" );
+      ref_mpi_stopwatch_stop("clump tet quality");
+    }
   
   if ( NULL != background_grid ) RSS(ref_grid_free( background_grid ), "free");
   if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");

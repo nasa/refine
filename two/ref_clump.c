@@ -10,6 +10,7 @@
 #include "ref_malloc.h"
 #include "ref_adapt.h"
 #include "ref_matrix.h"
+#include "ref_export.h"
 
 static REF_STATUS ref_clump_zone_around( FILE *f,
 					 REF_CELL ref_cell,
@@ -51,6 +52,60 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
 	      ref_node_xyz(ref_node,2,local),	      
 	      xyz_comp[0], xyz_comp[1], xyz_comp[2],
 	      ref_node_global(ref_node,local));
+    }
+  
+  for ( item = 0; item < ref_dict_n(ref_dict); item++ )
+    {
+      cell = ref_dict_key(ref_dict,item);
+      RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+      each_ref_cell_cell_node(ref_cell,cell_node)
+	{
+	  RSS( ref_dict_location( node_dict,
+				  nodes[cell_node], &local), "ret");
+	  fprintf(f," %d",local + 1);
+	}
+      fprintf(f,"\n");
+    }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_clump_cell_zone( FILE *f,
+				       REF_CELL ref_cell,
+				       REF_DICT ref_dict,
+				       const char *zonetype,
+				       REF_NODE ref_node )
+{
+  REF_INT item, cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT local;
+  REF_DICT node_dict;
+  
+  if ( ref_dict_n(ref_dict) <= 0 ) return REF_SUCCESS;
+
+  RSS(ref_dict_create(&node_dict),"create cell dict");
+  for ( item = 0; item < ref_dict_n(ref_dict); item++ )
+    {
+      cell = ref_dict_key(ref_dict,item);
+      RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+      each_ref_cell_cell_node(ref_cell,cell_node)
+	{
+	  RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+	}
+    }
+  
+  fprintf(f,
+	  "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
+	  "point", zonetype );
+
+  for ( item = 0; item < ref_dict_n(node_dict); item++ )
+    {
+      local = ref_dict_key(node_dict,item);
+      fprintf(f, " %.16e %.16e %.16e\n",
+	      ref_node_xyz(ref_node,0,local),
+	      ref_node_xyz(ref_node,1,local),
+	      ref_node_xyz(ref_node,2,local));
     }
   
   for ( item = 0; item < ref_dict_n(ref_dict); item++ )
@@ -296,5 +351,47 @@ REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
         ntarget++;
       }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_clump_tet_quality( REF_GRID ref_grid, REF_DBL min_quality,
+				  const char *filename )
+{
+  REF_DICT ref_dict;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality;
+  char *zonetype;
+  FILE *f;
+
+  RSS(ref_dict_create(&ref_dict),"create cell dict");
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+      if ( quality < min_quality )
+	RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    }
+
+  f = fopen(filename,"w");
+  if (NULL == (void *)f)
+    printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  fprintf(f, "title=\"tecplot refine cell clump file\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
+
+  zonetype = "fetetrahedron";
+  RSS( ref_clump_cell_zone( f, ref_cell, ref_dict, zonetype,
+			    ref_node ), "zone" );
+
+  RSS( ref_export_tec_surf_zone( ref_grid, f ), "add surf" );
+  fclose(f);
+
+  RSS(ref_dict_free(ref_dict),"free tet");
+  
   return REF_SUCCESS;
 }
