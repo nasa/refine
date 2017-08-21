@@ -12,6 +12,10 @@ jacobian form of tet quality
 - implement refine/one quality measures
 - det stability in quality no longer issue
 
+plot low MR elements
+
+histogram hist plots
+
 cavity operator
 bl insert
 
