@@ -1206,6 +1206,14 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
 
   volume = -det/6.0;
 
+  if (REF_FALSE)
+    {
+      REF_DBL vol, det;
+      RSS( ref_node_tet_vol( ref_node, nodes, &vol ), "vol");
+      RSS( ref_matrix_det_m(m, &det),"n0");
+      printf("volume %f vol %f det %f prod %f\n",volume,vol,det,vol*sqrt(det));
+    }
+
   if ( volume <= 0.0 )
     {
       *quality = volume;
