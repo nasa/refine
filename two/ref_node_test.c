@@ -1225,6 +1225,51 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  if (REF_FALSE)
+  { /* right tet jac quality sign */
+    REF_NODE ref_node;
+    REF_INT nodes[4], global;
+    REF_DBL qual;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+    global = 3;
+    RSS(ref_node_add(ref_node,global,&(nodes[3])),"add");
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_xyz(ref_node,0,global) = 0.0;
+	ref_node_xyz(ref_node,1,global) = 0.0;
+	ref_node_xyz(ref_node,2,global) = 0.0;
+	ref_node_metric(ref_node,0,global) = 5.569680186165702e+00;
+	ref_node_metric(ref_node,1,global) = -1.669546513836191e-01;
+	ref_node_metric(ref_node,2,global) = -5.647583642671333e-02;
+	ref_node_metric(ref_node,3,global) = 5.645045675922971e+00;
+	ref_node_metric(ref_node,4,global) = 1.230436787883563e+00;
+	ref_node_metric(ref_node,5,global) = 2.881886210688973e+0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[3]) = 1.0;
+
+    ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.81577123, qual, 0.00001, "epic qual expected" );
+
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
+    RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
+    RWDS( 0.839947, qual, 0.00001, "jac qual expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* Regular Tetrahedron vol, quality, ratio */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
