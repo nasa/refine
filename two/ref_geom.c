@@ -324,9 +324,11 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		  if ( REF_SUCCESS == ref_geom_find( ref_geom, next_node,
 						     REF_GEOM_EDGE, id, &geom ))
 		    continue; /* this canidate is already part of the edge */
+		  param[0] = t;
 		  REIS( EGADS_SUCCESS,
 			EG_invEvaluate(object,
-				       ref_node_xyz_ptr(ref_node,next_node),
+				       ref_node_xyz_ptr(ref_node,
+							next_node),
 				       param, closest), "EG eval");
 		  dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,next_node),2) +
 			       pow(closest[1]-ref_node_xyz(ref_node,1,next_node),2) +
@@ -337,6 +339,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		      best_dist = dist; 
 		    }
 		}
+	      param[0] = t;
 	      REIS( EGADS_SUCCESS,
 		    EG_invEvaluate(object,
 				   ref_node_xyz_ptr(ref_node,best_node),

@@ -2,9 +2,11 @@
 egads recon
  clean up method
  add singularity fix
- imporove screen output
+ improve screen output
+ edge candidates must have more than one tri type
  add topo check
  add param check
+ switch to EG_invEvaluateGuess
 
 jacobian form of tet quality
 - implement refine/one quality measures
