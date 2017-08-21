@@ -120,11 +120,46 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 		  "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
 		  zone_title, nnode, ntri, "point", "fetriangle", movie_time );
 	}
-      movie_time += 1.0;
     }
 
   RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
-  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), movie_file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), movie_file ),"t");
+
+  {
+    REF_INT ntet;
+    REF_DBL min_quality = 0.10;
+    RSS( ref_gather_ncell_quality( ref_node, ref_grid_tet(ref_grid),
+				   min_quality, &ntet ), "ntri");
+    
+    if ( ref_mpi_master )
+      {
+	if ( NULL == zone_title )
+	  {
+	    fprintf(movie_file,
+		    "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
+		    nnode, MAX(1,ntet), "point", "fetetrahedron", movie_time );
+	  }
+	else
+	  {
+	    fprintf(movie_file,
+		    "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
+		    zone_title, nnode, MAX(1,ntet), "point", "fetetrahedron", movie_time );
+	  }
+      }
+    RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
+    if (0 == ntet)
+      {
+	fprintf(movie_file," 1 1 1 1\n");
+      }
+    else
+      {
+	RSS( ref_gather_cell_quality_tec( ref_node, ref_grid_tet(ref_grid),
+					  min_quality, movie_file ), "qtet");
+      }
+  }
+
+  if ( ref_mpi_master )
+    movie_time += 1.0;
 
   return REF_SUCCESS;
 }
@@ -489,6 +524,28 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
       ncell_local++;
+
+  RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ncell, 1, REF_INT_TYPE ), "bcast");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell, 
+				     REF_DBL min_quality, REF_INT *ncell )
+{
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell_local;
+  REF_DBL quality;
+
+  ncell_local = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+      if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	   quality < min_quality )
+	ncell_local++;
+    }
 
   RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
   RSS( ref_mpi_bcast( ncell, 1, REF_INT_TYPE ), "bcast");
@@ -1048,6 +1105,98 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell,
 			 REF_INT_TYPE, 0 ), "send c2n");
 
       ref_free(c2n);
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+					REF_DBL min_quality, FILE *file )
+{
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per = ref_cell_node_per(ref_cell);
+  REF_INT size_per = ref_cell_size_per(ref_cell);
+  REF_INT ncell;
+  REF_INT *c2n;
+  REF_INT proc;
+  REF_DBL quality;
+
+  if ( ref_mpi_master )
+    {
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	{
+	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+	  if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	       quality < min_quality )
+	    {
+	      for ( node = 0; node < node_per; node++ )
+		{
+		  nodes[node] = ref_node_global(ref_node,nodes[node]);
+		  nodes[node]++;
+		  fprintf(file," %d",nodes[node]);
+		}
+	      fprintf(file,"\n");
+	    }
+	}
+    }
+
+  if ( ref_mpi_master )
+    {
+      for (proc=1;proc<ref_mpi_n;proc++)
+	{
+	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  if ( ncell > 0 )
+	    {
+	      ref_malloc(c2n, ncell*size_per, REF_INT);
+	      RSS( ref_mpi_recv( c2n, ncell*size_per, 
+				 REF_INT_TYPE, proc ), "recv c2n");
+	      for ( cell = 0; cell < ncell; cell++ )
+		{
+		  for ( node = 0; node < node_per; node++ )
+		    {
+		      c2n[node+size_per*cell]++;
+		      fprintf(file," %d",c2n[node+size_per*cell]);
+		    }
+		  fprintf(file,"\n");
+		}
+	      ref_free(c2n);
+	    }
+	}
+    }
+  else
+    {
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	{
+	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+	  if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	       quality < min_quality)
+	    ncell++;
+	}
+      RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      if ( ncell > 0 )
+	{
+	  ref_malloc(c2n, ncell*size_per, REF_INT);
+	  ncell = 0;
+	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	    {
+	      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+	      if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+		   quality < min_quality )
+		{
+		  for ( node = 0; node < node_per; node++ )
+		    c2n[node+size_per*ncell] =
+		      ref_node_global(ref_node,nodes[node]);
+		  for ( node = node_per; node < size_per; node++ )
+		    c2n[node+size_per*ncell] = nodes[node];
+		  ncell++;
+		}
+	    }
+	  RSS( ref_mpi_send( c2n, ncell*size_per, 
+			     REF_INT_TYPE, 0 ), "send c2n");
+	  ref_free(c2n);
+	}
     }
 
   return REF_SUCCESS;

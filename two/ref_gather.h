@@ -30,6 +30,8 @@ REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename );
 
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell );
+REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell, 
+				     REF_DBL min_quality, REF_INT *ncell );
 REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
 			     REF_INT type, REF_INT *ngeom );
 
@@ -47,6 +49,8 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 			    FILE *file );
 REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell, 
 				FILE *file );
+REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+					REF_DBL min_quality, FILE *file );
 
 END_C_DECLORATION
 
