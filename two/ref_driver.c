@@ -97,6 +97,7 @@ int main( int argc, char *argv[] )
 	    }
 	  break;
 	case 'g':
+	  RNS( ref_grid, "input grid must be loaded before geom" );
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
 	  break;
 	case 'p':
