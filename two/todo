@@ -12,8 +12,6 @@ ref_geom_snap evaluate all xyz and edge uv
 
 ideal tri/tet use log avg m?
 
-plot low MR elements
-
 histogram hist plots
 
 cavity operator
@@ -111,6 +109,8 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ plot low MR tets
 
 + jacobian form of tet quality
   + implement refine/one quality measures
