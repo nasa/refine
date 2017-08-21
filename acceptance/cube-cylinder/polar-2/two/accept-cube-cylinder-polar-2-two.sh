@@ -19,7 +19,7 @@ function adapt_cycle_sant {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l
+    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l -d
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
@@ -29,7 +29,7 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps}
+    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -d
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
