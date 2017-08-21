@@ -10,9 +10,7 @@ egads recon
 
 ref_geom_snap evaluate all xyz and edge uv
 
-jacobian form of tet quality
-- implement refine/one quality measures
-- det stability in quality no longer issue
+ideal tri/tet use log avg m?
 
 plot low MR elements
 
@@ -113,6 +111,10 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ jacobian form of tet quality
+  + implement refine/one quality measures
+  + det stability in quality no longer issue
 
 + chat with Bill about parallel egads communication, AFLR4
 
