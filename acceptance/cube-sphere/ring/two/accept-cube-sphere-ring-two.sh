@@ -42,5 +42,5 @@ adapt_cycle cube-sphere cycle01 8
 adapt_cycle cycle01 cycle02 8
 adapt_cycle cycle02 cycle03 8
 
-../../../check.rb cycle03.status 0.09 1.7
+../../../check.rb cycle03.status 0.20 2.5
 
