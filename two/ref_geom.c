@@ -959,6 +959,7 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
   REF_BOOL have_geom_node;
   REF_BOOL have_geom_edge;
   REF_BOOL have_geom_face;
+  REF_INT node_geom;
   REF_INT edge_geom;
   REF_INT face_geom;
   REF_DBL xyz[3];
@@ -974,13 +975,18 @@ REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node )
       if (REF_GEOM_NODE == ref_geom_type(ref_geom,geom))
 	{
 	  have_geom_node = REF_TRUE;
+	  node_geom = geom;
 	  break;
 	}
     }
 
-  /* node geom, do nothing */
   if (have_geom_node)
-    {
+    { /* update T of edges? update UV of (degen) faces? */
+      RSS( ref_geom_eval( ref_geom, node_geom, xyz, NULL ), "eval edge" );
+      node = ref_geom_node(ref_geom,node_geom);
+      ref_node_xyz(ref_node,0,node) = xyz[0];
+      ref_node_xyz(ref_node,1,node) = xyz[1];
+      ref_node_xyz(ref_node,2,node) = xyz[2];
       return REF_SUCCESS;
     }
   
