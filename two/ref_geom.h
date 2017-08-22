@@ -165,6 +165,8 @@ REF_STATUS ref_geom_egads_diagonal( REF_GEOM ref_geom, REF_DBL *diag );
 /* positive max_length is absolute, negative max_length is relative to bbox */
 REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length );
 
+REF_STATUS ref_geom_degen_param( REF_GRID ref_grid );
+
 REF_STATUS ref_geom_tetgen_volume( REF_GRID ref_grid );
 
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file );

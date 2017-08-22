@@ -1832,6 +1832,28 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_degen_param( REF_GRID ref_grid )
+{
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT edge;
+  ego ref, *children;
+  int oclass, mtype, nchild, *senses;
+  double trange[4];
+  for (edge = 0; edge < (ref_geom->nedge); edge++)
+    {
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(((ego *)(ref_geom->edges))[edge],
+			   &ref, &oclass, &mtype,
+			   trange, &nchild, &children, &senses), "tp");
+    }
+#else
+  printf("unable to %s, No EGADS linked.\n",__func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
