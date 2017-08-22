@@ -1753,6 +1753,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 		  if (mtype == DEGENERATE)
 		    {
 		      double uvmin[6], uvmax[6];
+		      REF_INT geom;
 		      printf("face id %d has degen\n",face+1);
 		      /* find index of bounding Node */
 		      inode = EG_indexBodyTopo(solid, echilds[0]);
@@ -1762,28 +1763,23 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
 		      REIS( EGADS_SUCCESS,
 			    EG_evaluate(eedges[iedge+nedge], &trange[1], uvmax),
 			    "eval max");
-		      for (node = 0; node<plen; node++)
-			{
-			  if (ptype[node] == 0 && pindex[node] == inode)
-			    {
-			      REIS( EGADS_SUCCESS,
-				    EG_localToGlobal(tess, face+1, node+1,
-						     &(nodes[0])), "l2g0");
-			      nodes[0] -= 1;
-			      printf("tess node index %d\n",nodes[0]);
-			      ref_node_location(ref_grid_node(ref_grid),
-						nodes[0]);
-			      printf("u tess %f tmin %f tmax %f\n",
-				     uv[0+2*node],uvmin[0],uvmax[0]);
-			      printf("v tess %f tmin %f tmax %f\n",
-				     uv[1+2*node],uvmin[1],uvmax[1]);
-			      param[0] = 0.5*(uvmin[0]+uvmax[0]);
-			      param[1] = 0.5*(uvmin[1]+uvmax[1]);
-      RSS( ref_geom_add( ref_geom, nodes[0], REF_GEOM_FACE, face+1, param),
-	   "face uv");
-
-			    }
-			}
+		      each_ref_geom_node( ref_geom, geom )
+			if ( inode == ref_geom_id(ref_geom,geom) )
+			  {
+			    node = ref_geom_node(ref_geom,geom);
+			    printf("tess node index %d\n",node);
+			    ref_node_location(ref_grid_node(ref_grid),node);
+			    RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE,
+					       face+1, param), "face uv");
+			    printf("u tess %f tmin %f tmax %f\n",
+				   param[0],uvmin[0],uvmax[0]);
+			    printf("v tess %f tmin %f tmax %f\n",
+				   param[1],uvmin[1],uvmax[1]);
+			    param[0] = 0.5*(uvmin[0]+uvmax[0]);
+			    param[1] = 0.5*(uvmin[1]+uvmax[1]);
+			    RSS( ref_geom_add( ref_geom, node, REF_GEOM_FACE,
+					       face+1, param), "face uv");
+			  }
 		    }
 		}
 	    }
