@@ -1,6 +1,7 @@
 
 
 cavity operator in 2D/3D
+ movie with time
  face based grow and shrink
  shrink needs list delete
  bl insert (why hsc no refining?)
