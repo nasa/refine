@@ -398,6 +398,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
     }
 
+  RSS( ref_geom_degen_param( ref_grid ), "UV cleanup at singularities");
+  
   pass = 0;
   updates = REF_EMPTY;
   while (0 != updates)
@@ -1789,6 +1791,8 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
     }
 
   }
+
+  RSS( ref_geom_degen_param( ref_grid ), "UV cleanup at singularities");
   
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     int egads_status;
@@ -1836,7 +1840,7 @@ REF_STATUS ref_geom_degen_param( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT edge;
+  REF_INT edge, toponode;
   ego ref, *children;
   int oclass, mtype, nchild, *senses;
   double trange[4];
@@ -1846,6 +1850,12 @@ REF_STATUS ref_geom_degen_param( REF_GRID ref_grid )
 	    EG_getTopology(((ego *)(ref_geom->edges))[edge],
 			   &ref, &oclass, &mtype,
 			   trange, &nchild, &children, &senses), "tp");
+      if (mtype == DEGENERATE)
+	{
+	  REIS(1,nchild,"degen edge not one child");
+	  toponode = EG_indexBodyTopo(ref_geom->solid, children[0]);
+	  printf("degen edge at %d topo node\n",toponode);
+	}
     }
 #else
   printf("unable to %s, No EGADS linked.\n",__func__);
