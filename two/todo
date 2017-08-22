@@ -1,6 +1,5 @@
 
 egads recon
- add singularity fix
  clean up method
  improve screen output
  edge candidates must have more than one tri type
@@ -10,7 +9,6 @@ egads recon
 
 post Adrien grid
  ref_geom_snap evaluate all xyz and edge uv
- singularity fix
 
 ideal tri/tet use log avg m?
 
@@ -129,7 +127,11 @@ low priority surface reconstruction when EGADS not available
 + verify cad node xyz and add evaluator (should id be node+1?)
 + how to eval cad node?
 
-+ init params on singular
++ reconstruct params
+  + extracted singularity fix
+
++ tess params on singular
+  + extracted singularity fix
 
 + geom from meshb in all tests
 
