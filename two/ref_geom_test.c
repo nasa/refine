@@ -19,6 +19,8 @@
 #include "ref_export.h"
 #include  "ref_dict.h"
 #include  "ref_edge.h"
+#include "ref_validation.h"
+#include "ref_metric.h"
 
 #include  "ref_math.h"
 #include  "ref_args.h"
@@ -35,6 +37,7 @@ int main( int argc, char *argv[] )
   if ( recon_pos != REF_EMPTY )
     {
       REF_GRID ref_grid;
+      REF_INT node;
       REIS( 4, argc,
 	    "required args: --recon grid.ext geom.egads");
       REIS( 1, recon_pos,
@@ -45,6 +48,14 @@ int main( int argc, char *argv[] )
       RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3] ), "ld egads" );
       RSS( ref_geom_recon( ref_grid ), "geom recon" );
+      printf("verify topo\n");
+      RSS( ref_geom_verify_topo( ref_grid ), "constrained params" );
+      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit metric" );
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
+      printf("constrain\n");
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	RSS( ref_geom_constrain( ref_grid, node ), "original params" );
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_geom_tec( ref_grid, "ref_geom_recon.tec" ), "geom export" );
       RSS( ref_export_by_extension( ref_grid, "ref_geom_recon.meshb" ),
 	   "export" );
