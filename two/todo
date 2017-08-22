@@ -1,21 +1,17 @@
 
+sliver deletion
+
 egads recon
  clean up method
- improve screen output
  edge candidates must have more than one tri type
- add topo check
- add param check
  switch to EG_invEvaluateGuess
-
-post Adrien grid
- ref_geom_snap evaluate all xyz and edge uv
 
 ideal tri/tet use log avg m?
 
 histogram hist plots
 
 cavity operator
-bl insert
+bl insert (why hsc no refining?)
 
 ellipsoid viz 
 
@@ -129,6 +125,9 @@ low priority surface reconstruction when EGADS not available
 
 + reconstruct params
   + extracted singularity fix
+  + add topo check
+  + add param check
+  + post Adrien grid
 
 + tess params on singular
   + extracted singularity fix
