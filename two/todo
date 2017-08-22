@@ -1,5 +1,11 @@
 
-sliver deletion
+
+cavity operator in 2D/3D
+ face based grow and shrink
+ shrink needs list delete
+ bl insert (why hsc no refining?)
+ sliver deletion
+ eliminate short edges (cavity)
 
 egads recon
  clean up method
@@ -9,9 +15,6 @@ egads recon
 ideal tri/tet use log avg m?
 
 histogram hist plots
-
-cavity operator
-bl insert (why hsc no refining?)
 
 ellipsoid viz 
 
@@ -61,6 +64,7 @@ ideal tet using principle direction? but faces dissaggree? optimizer?
 smooth
  sort worst to best? edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
+ freitag smoothing
 
 pull ref_migrate_method variables into struct
 pull ref_adapt variables into struct
@@ -69,12 +73,6 @@ mem leak, static, movie file pointer in grid
 static, lmpi time
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
-
-eliminate short edges (cavity)
-
-cavity operator in 2D/3D
-- face based grow and shrink
- - shrink needs list delete
 
 - refactor twod migrate
 - have graph in migrate
