@@ -1789,7 +1789,7 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
   }
 
   RSS( ref_geom_degen_param( ref_grid ), "UV cleanup at singularities");
-  
+
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     int egads_status;
     REF_BOOL degenerate;
@@ -1836,21 +1836,74 @@ REF_STATUS ref_geom_degen_param( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT edge, toponode;
-  ego ref, *children;
-  int oclass, mtype, nchild, *senses;
-  double trange[4];
-  for (edge = 0; edge < (ref_geom->nedge); edge++)
+  REF_INT face;
+
+  for (face = 0; face < (ref_geom->nface); face++)
     {
+      ego esurf, *eloops, eref;
+      int oclass, mtype, nloop,*senses,*pinfo;
+      double trange[4], data[18], *preal;
       REIS( EGADS_SUCCESS,
-	    EG_getTopology(((ego *)(ref_geom->edges))[edge],
-			   &ref, &oclass, &mtype,
-			   trange, &nchild, &children, &senses), "tp");
-      if (mtype == DEGENERATE)
+	    EG_getTopology(((ego *)(ref_geom->faces))[face],
+			   &esurf, &oclass, &mtype,
+			   data, &nloop, &eloops, &senses), "topo" );
+      REIS( EGADS_SUCCESS,
+	    EG_getGeometry(esurf, &oclass, &mtype,
+			   &eref, &pinfo, &preal),"geom");
+      EG_free(pinfo);
+      EG_free(preal);
+      if (mtype != PLANE)
 	{
-	  REIS(1,nchild,"degen edge not one child");
-	  toponode = EG_indexBodyTopo(ref_geom->solid, children[0]);
-	  printf("degen edge at %d topo node\n",toponode);
+	  ego ecurve, *eedges, *echilds;
+	  int iloop, iedge, nedge, nchild, inode;
+	  REF_INT node;
+	  REF_DBL param[2];
+	  /* loop through all Loops associated with this Face */
+	  for (iloop = 0; iloop < nloop; iloop++)
+	    {
+	      /* loop through all Edges associated with this Loop */
+	      REIS( EGADS_SUCCESS,
+		    EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype,
+				   data, &nedge, &eedges, &senses), "topo");
+	      for (iedge = 0; iedge < nedge; iedge++)
+		{
+		  REIS( EGADS_SUCCESS,
+			EG_getTopology(eedges[iedge], &ecurve, &oclass, &mtype,
+				       trange, &nchild, &echilds, &senses), "tp");
+		  if (mtype == DEGENERATE)
+		    {
+		      double uvmin[6], uvmax[6];
+		      REF_INT geom;
+		      printf("face id %d has degen\n",face+1);
+		      /* find index of bounding Node */
+		      inode = EG_indexBodyTopo((ego)(ref_geom->solid),
+					       echilds[0]);
+		      REIS( EGADS_SUCCESS,
+			    EG_evaluate(eedges[iedge+nedge], &trange[0], uvmin),
+			    "eval min");
+		      REIS( EGADS_SUCCESS,
+			    EG_evaluate(eedges[iedge+nedge], &trange[1], uvmax),
+			    "eval max");
+		      each_ref_geom_node( ref_geom, geom )
+			if ( inode == ref_geom_id(ref_geom,geom) )
+			  {
+			    node = ref_geom_node(ref_geom,geom);
+			    printf("tess node index %d\n",node);
+			    ref_node_location(ref_grid_node(ref_grid),node);
+			    RSS( ref_geom_tuv( ref_geom, node, REF_GEOM_FACE,
+					       face+1, param), "face uv");
+			    printf("u tess %f tmin %f tmax %f\n",
+				   param[0],uvmin[0],uvmax[0]);
+			    printf("v tess %f tmin %f tmax %f\n",
+				   param[1],uvmin[1],uvmax[1]);
+			    param[0] = 0.5*(uvmin[0]+uvmax[0]);
+			    param[1] = 0.5*(uvmin[1]+uvmax[1]);
+			    RSS( ref_geom_add( ref_geom, node, REF_GEOM_FACE,
+					       face+1, param), "face uv");
+			  }
+		    }
+		}
+	    }
 	}
     }
 #else
