@@ -381,7 +381,6 @@ int main( int argc, char *argv[] )
 
   { /* constrain without geom */
     REF_GRID ref_grid;
-    REF_GEOM ref_geom;
     REF_INT node;
 
     RSS(ref_grid_create(&ref_grid),"create");
