@@ -1,14 +1,16 @@
 
 egads recon
- clean up method
  add singularity fix
+ clean up method
  improve screen output
  edge candidates must have more than one tri type
  add topo check
  add param check
  switch to EG_invEvaluateGuess
 
-ref_geom_snap evaluate all xyz and edge uv
+post Adrien grid
+ ref_geom_snap evaluate all xyz and edge uv
+ singularity fix
 
 ideal tri/tet use log avg m?
 
