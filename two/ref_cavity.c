@@ -826,14 +826,22 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
+  char *zonetype;
   FILE *f;
 
-  ref_cell = (REF_CELL)NULL;
-  if ( 2 == ref_cavity_node_per(ref_cavity) )
-    ref_cell = ref_grid_tri(ref_grid);
-  if ( 3 == ref_cavity_node_per(ref_cavity) )
-    ref_cell = ref_grid_tet(ref_grid);
-  RNS(ref_cell, "no cell for node_per");
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
+      ref_cell = ref_grid_tri(ref_grid);
+      zonetype = "fetriangle";
+      break;
+    case ( 3 ):
+      ref_cell = ref_grid_tet(ref_grid);
+      zonetype = "fetetrahedron";
+      break;
+    default:
+      THROW("tec unknown node_per");
+    }
 
   f = fopen(filename,"w");
   if (NULL == (void *)f)
@@ -856,9 +864,9 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   fprintf(f,
-          "zone t=cavity, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=old, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
-          "point", "fequadrilateral" );
+          "point", zonetype );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
       local = ref_dict_key(node_dict,item);
@@ -879,8 +887,6 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 				  &local), "ret");
 	  fprintf(f," %d",local + 1);
 	}
-      RSS( ref_dict_location( node_dict, nodes[0], &local), "center node");
-      fprintf(f," %d",local + 1);
       fprintf(f,"\n");
     }
 
@@ -901,9 +907,9 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
     }
 
   fprintf(f,
-          "zone t=ball, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=new, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
-          "point", "fequadrilateral" );
+          "point", zonetype );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
       local = ref_dict_key(node_dict,item);
@@ -919,18 +925,16 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       RSS( ref_dict_location( node_dict, node, &local), "center node");
       fprintf(f," %d",local + 1);
       each_ref_cavity_face_node( ref_cavity, face_node )
-      {
-        RSS( ref_dict_location( node_dict,
-                                ref_cavity_f2n(ref_cavity,face_node,face),
-                                &local), "ret");
-        fprintf(f," %d",local + 1);
-      }
-      RSS( ref_dict_location( node_dict, node, &local), "center node");
-      fprintf(f," %d",local + 1);
+	{
+	  RSS( ref_dict_location( node_dict,
+				  ref_cavity_f2n(ref_cavity,face_node,face),
+				  &local), "ret");
+	  fprintf(f," %d",local + 1);
+	}
       fprintf(f,"\n");
     }
 
-  RSS(ref_dict_free(face_dict),"free tris");
+  RSS(ref_dict_free(face_dict),"free face");
   RSS(ref_dict_free(node_dict),"free nodes");
 
   fclose(f);
