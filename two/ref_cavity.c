@@ -949,20 +949,32 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_quality, total_quality;
-  REF_INT face, n;
+  REF_INT face, face_node, n;
+  REF_BOOL skip;
 
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
   each_ref_list_item( ref_cavity_list(ref_cavity), item )
-  {
-    cell = ref_list_value( ref_cavity_list(ref_cavity), item );
-    RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
-    RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
-    n++;
-    total_quality += quality;
-    min_quality = MIN( min_quality, quality );
-  }
+    {
+      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+      switch ( ref_cavity_node_per( ref_cavity ) )
+	{
+	case ( 2 ):
+	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
+	  RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+	  break;
+	case ( 3 ):
+	  RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
+	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
+	  break;
+	default:
+	  THROW("change unknown node_per");
+	}
+      n++;
+      total_quality += quality;
+      min_quality = MIN( min_quality, quality );
+    }
   if ( n > 0 )
     printf("- min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
@@ -971,19 +983,31 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   min_quality = 1.0;
   total_quality = 0.0;
   each_ref_cavity_valid_face( ref_cavity, face )
-  {
-    /* skip a collapsed triangle that in on the boundary of cavity */
-    if ( node == ref_cavity_f2n(ref_cavity,0,face) ||
-         node == ref_cavity_f2n(ref_cavity,1,face) )
-      continue;
-    nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
-    nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
-    nodes[2] = node;
-    RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
-    n++;
-    total_quality += quality;
-    min_quality = MIN( min_quality, quality );
-  }
+    {
+      skip = REF_FALSE;
+      /* skip a collapsed triangle that in on the boundary of cavity */
+      each_ref_cavity_face_node( ref_cavity, face_node )
+	if ( node == ref_cavity_f2n(ref_cavity,face_node,face) )
+	  skip = REF_TRUE;
+      if (skip) continue;
+      each_ref_cavity_face_node( ref_cavity, face_node )
+	nodes[face_node] = ref_cavity_f2n(ref_cavity,face_node,face);
+      nodes[ref_cavity_node_per(ref_cavity)] = node;
+      switch ( ref_cavity_node_per( ref_cavity ) )
+	{
+	case ( 2 ):
+	  RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+	  break;
+	case ( 3 ):
+	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
+	  break;
+	default:
+	  THROW("change unknown node_per");
+	}
+      n++;
+      total_quality += quality;
+      min_quality = MIN( min_quality, quality );
+    }
   if ( n > 0 )
     printf("+ min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
