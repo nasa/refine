@@ -821,12 +821,19 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                            REF_INT node, const char *filename )
 {
   REF_DICT node_dict, face_dict;
+  REF_CELL ref_cell;
   REF_INT face, face_node;
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
-
   FILE *f;
+
+  ref_cell = (REF_CELL)NULL;
+  if ( 2 == ref_cavity_node_per(ref_cavity) )
+    ref_cell = ref_grid_tri(ref_grid);
+  if ( 3 == ref_cavity_node_per(ref_cavity) )
+    ref_cell = ref_grid_tet(ref_grid);
+  RNS(ref_cell, "no cell for node_per");
 
   f = fopen(filename,"w");
   if (NULL == (void *)f)
@@ -843,8 +850,8 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   {
     cell = ref_list_value( ref_cavity_list(ref_cavity), item );
     RSS( ref_dict_store( face_dict, cell, 0 ), "store");
-    RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "nodes");
-    each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+    RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+    each_ref_cell_cell_node( ref_cell, cell_node )
       RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
   }
 
@@ -864,8 +871,8 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   for ( item = 0; item < ref_dict_n(face_dict); item++ )
     {
       cell = ref_dict_key(face_dict,item);
-      RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "nodes");
-      each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node( ref_cell, cell_node )
 	{
 	  RSS( ref_dict_location( node_dict,
 				  nodes[cell_node],
@@ -885,13 +892,13 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   RSS( ref_dict_store( node_dict, node, 0 ), "store");
   each_ref_cavity_valid_face( ref_cavity, face )
-  {
-    RSS( ref_dict_store( face_dict, face, 0 ), "store");
-    each_ref_cavity_face_node( ref_cavity, face_node )
-    RSS( ref_dict_store( node_dict,
-                         ref_cavity_f2n(ref_cavity,face_node,face), 0 ),
-         "store");
-  }
+    {
+      RSS( ref_dict_store( face_dict, face, 0 ), "store");
+      each_ref_cavity_face_node( ref_cavity, face_node )
+	RSS( ref_dict_store( node_dict,
+			     ref_cavity_f2n(ref_cavity,face_node,face), 0 ),
+	     "store");
+    }
 
   fprintf(f,
           "zone t=ball, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -922,7 +929,6 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       fprintf(f," %d",local + 1);
       fprintf(f,"\n");
     }
-
 
   RSS(ref_dict_free(face_dict),"free tris");
   RSS(ref_dict_free(node_dict),"free nodes");
