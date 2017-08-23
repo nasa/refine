@@ -739,6 +739,35 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CAVITY ref_cavity;
+  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL min_quality = 0.10;
+  REF_DBL quality;
+  REF_INT count;
+  char filename[1024];
+  count = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      node = nodes[0];
+      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+      if ( quality < min_quality )
+	{
+          RSS(ref_cavity_create(&ref_cavity,3),"create");
+          RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
+          RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
+	  snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
+          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"free");
+          RSS(ref_cavity_free(ref_cavity),"free");
+        }
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);

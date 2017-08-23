@@ -93,12 +93,15 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid, REF_INT face );
 
+REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid );
 REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid );
 REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                            REF_INT node, const char *filename );
 
 REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                               REF_INT node );
+
+
 
 END_C_DECLORATION
 
