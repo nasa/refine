@@ -262,6 +262,9 @@ int main( int argc, char *argv[] )
     }
   if ( debug_verbose && 1 == ref_mpi_n )
     {
+      RSS(ref_cavity_tet_quality( ref_grid ),
+	  "clump" );
+      ref_mpi_stopwatch_stop("cavity tet quality");
       snprintf( output_filename, 1024, "%s_tet_qual.tec", output_project );
       RSS(ref_clump_tet_quality( ref_grid, 0.01, output_filename ),
 	  "clump" );
