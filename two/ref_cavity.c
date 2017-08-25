@@ -980,9 +980,9 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_quality, total_quality;
-  REF_INT face, face_node, n;
+  REF_INT face, face_node, n, n_del, n_add;
   REF_BOOL skip;
-
+  REF_DBL min_del, min_add;
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
@@ -1006,10 +1006,12 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       total_quality += quality;
       min_quality = MIN( min_quality, quality );
     }
-  if ( n > 0 )
+  if ( REF_FALSE && n > 0 )
     printf("- min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
-
+  min_del = min_quality;
+  n_del = n;
+  
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
@@ -1039,9 +1041,14 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       total_quality += quality;
       min_quality = MIN( min_quality, quality );
     }
-  if ( n > 0 )
+  if ( REF_FALSE && n > 0 )
     printf("+ min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
+  min_add = min_quality;
+  n_add = n;
+
+  printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n",
+	 min_add, min_del, min_add-min_del, n_add, n_del);
 
   return REF_SUCCESS;
 }
