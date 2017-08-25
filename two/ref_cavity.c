@@ -758,6 +758,8 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
 	{
           RSS(ref_cavity_create(&ref_cavity,3),"create");
           RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
+          RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),"remove problem");
+          RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"viz");
           RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
 	  snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
           RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"free");
