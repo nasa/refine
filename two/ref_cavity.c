@@ -767,6 +767,8 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
   REF_DBL quality;
   REF_INT count;
   char filename[1024];
+  REF_BOOL improved;
+  REF_BOOL debug = REF_FALSE;
   count = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
@@ -777,17 +779,22 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
 	  snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
           RSS(ref_cavity_create(&ref_cavity,3),"create");
           RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
-          RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+	  if (debug)
+	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
           RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
 	      REF_INVALID,"remove problem");
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+          if (debug)
+	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
           RXS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),
 	      	      REF_INVALID,"enlarge viz");
-          RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+          RSS(ref_cavity_change(ref_cavity, ref_grid, node,
+				&improved), "change" );
+          if (debug)
+	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+	  if (improved)
+	    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"replace");
           RSS(ref_cavity_free(ref_cavity),"free");
         }
     }
@@ -807,6 +814,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
   REF_DBL edge_ratio;
   REF_BOOL active;
   REF_CAVITY ref_cavity;
+  REF_BOOL improved;
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -857,8 +865,11 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
           RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
           RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
           RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-          RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
-          RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+          RSS(ref_cavity_change(ref_cavity, ref_grid, node,
+				&improved), "change" );
+	  if ( improved )
+	    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid,
+				       node, opp ),"free");
           RSS(ref_cavity_free(ref_cavity),"free");
         }
     }
@@ -999,7 +1010,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                              REF_INT node )
+                              REF_INT node, REF_BOOL *improved )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT item, cell;
@@ -1008,6 +1019,7 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT face, face_node, n, n_del, n_add;
   REF_BOOL skip;
   REF_DBL min_del, min_add;
+  *improved = REF_FALSE;
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
@@ -1075,5 +1087,8 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n",
 	 min_add, min_del, min_add-min_del, n_add, n_del);
 
+  if ( min_add > min_del )
+    *improved = REF_TRUE;
+  
   return REF_SUCCESS;
 }

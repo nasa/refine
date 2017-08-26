@@ -99,7 +99,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                            REF_INT node, const char *filename );
 
 REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                              REF_INT node );
+                              REF_INT node, REF_BOOL *improved );
 
 
 
