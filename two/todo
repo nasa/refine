@@ -1,5 +1,4 @@
 
-
 cavity operator in 2D/3D
  movie with time
  face based grow and shrink
@@ -68,6 +67,7 @@ smooth
  sort worst to best? edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
  freitag smoothing
+ surface smoothing without geom
 
 pull ref_migrate_method variables into struct
 pull ref_adapt variables into struct
