@@ -761,10 +761,12 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
           RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
           RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
-          RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),"remove problem");
+          RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
+	      REF_INVALID,"remove problem");
           RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
-          RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"viz");
+          RXS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),
+	      	      REF_INVALID,"enlarge viz");
           RSS(ref_cavity_change(ref_cavity, ref_grid, node), "change" );
           RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
           RSS(ref_cavity_free(ref_cavity),"free");
