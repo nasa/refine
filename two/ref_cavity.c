@@ -315,11 +315,23 @@ REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
 {
   REF_INT item, cell;
 
-  each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
-  {
-    RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
-  }
-
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
+      each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
+	{
+	  RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
+	}
+      break;
+    case ( 3 ):
+      each_ref_cell_having_node( ref_grid_tet(ref_grid), node, item, cell )
+	{
+	  RSS( ref_cavity_add_tet( ref_cavity, ref_grid, cell ), "insert");
+	}
+      break;
+    default:
+      THROW("add_disk unknown node_per");
+    }
   return REF_SUCCESS;
 }
 
