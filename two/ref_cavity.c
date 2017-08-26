@@ -793,7 +793,7 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
 				&improved), "change" );
           if (debug)
 	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
-	  if (improved)
+	  if (REF_FALSE && improved)
 	    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"replace");
           RSS(ref_cavity_free(ref_cavity),"free");
         }
