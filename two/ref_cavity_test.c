@@ -412,7 +412,7 @@ int main( int argc, char *argv[] )
     node = 1;
     RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
 
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
 
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
@@ -441,7 +441,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     node = 1;
     RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
@@ -451,7 +451,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     node = 2;
     RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
@@ -493,7 +493,7 @@ int main( int argc, char *argv[] )
     node = 0;
     RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
 
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
 
     ref_node_xyz(ref_node,0,node) = 0.3;
     ref_node_xyz(ref_node,0,opp ) = 0.3;
@@ -566,7 +566,7 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.6;
     ref_node_xyz(ref_node,2,opp ) = 0.6;
     RSS(ref_cavity_create(&ref_cavity,2),"create");
-    RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");

@@ -310,7 +310,7 @@ REF_STATUS ref_cavity_rm_tri( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
+REF_STATUS ref_cavity_add_ball( REF_CAVITY ref_cavity,
                                 REF_GRID ref_grid, REF_INT node )
 {
   REF_INT item, cell;
@@ -330,7 +330,7 @@ REF_STATUS ref_cavity_add_disk( REF_CAVITY ref_cavity,
 	}
       break;
     default:
-      THROW("add_disk unknown node_per");
+      THROW("add_ball unknown node_per");
     }
   return REF_SUCCESS;
 }
@@ -777,7 +777,7 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
 	  snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
           RSS(ref_cavity_create(&ref_cavity,3),"create");
           RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
-          RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+          RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
           RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
           RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
@@ -853,7 +853,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
       if ( ref_node_valid(ref_node,node) )
         {
           RSS(ref_cavity_create(&ref_cavity,2),"create");
-          RSS(ref_cavity_add_disk(ref_cavity,ref_grid,node),"insert first");
+          RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
           RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
           RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
           RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
