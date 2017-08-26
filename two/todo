@@ -13,6 +13,8 @@ egads recon
  edge candidates must have more than one tri type
  switch to EG_invEvaluateGuess
 
+extract faceids from ref_collapse_edge_geometry
+
 ideal tri/tet use log avg m?
 
 histogram hist plots
