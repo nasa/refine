@@ -64,24 +64,18 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	{
 	  RSS( ref_node_add(ref_layer_node(ref_layer),
 			    nodes[cell_node], &node), "add");
-	  printf("1st %d orig %d\n",node,nodes[cell_node]);
 	  for (i=0;i<3;i++)
 	    ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
 	}
     }
   nnode = ref_node_n(ref_layer_node(ref_layer));
-  printf(" layer ntri %d nnode %d\n",
-	 ref_list_n(ref_layer_list(ref_layer)),
-	 nnode);
 
-  printf("ngobal %d\n",ref_node_n_global(ref_grid_node(ref_grid)));
   /* second layer of nodes */
   for (local = 0;local<nnode;local++)
     {
       global = local+ref_node_n_global(ref_grid_node(ref_grid));
       RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
-      printf("2nd %d orig %d\n",node,global);
       for (i=0;i<3;i++)
 	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	  ref_node_xyz(ref_layer_node(ref_layer), i, local);
