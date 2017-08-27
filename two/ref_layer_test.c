@@ -46,6 +46,9 @@ int main( int argc, char *argv[] )
     faceid = 6;
     RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
     RSS(ref_layer_puff( ref_layer, ref_grid ),"puff");
+
+    if ( argc > 1 )
+      RSS( ref_layer_tec( ref_layer, argv[1] ), "tec" );
     
     RSS(ref_layer_free(ref_layer),"layer");
     RSS(ref_grid_free(ref_grid),"grid");
