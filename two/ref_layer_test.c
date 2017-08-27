@@ -35,7 +35,7 @@ int main( int argc, char *argv[] )
     RSS(ref_layer_free(ref_layer),"layer");
   }
 
-  {  /* attach layers */
+  {  /* add layers to tet fixture */
     REF_LAYER ref_layer;
     REF_GRID ref_grid;
     REF_DICT ref_dict;
@@ -46,6 +46,7 @@ int main( int argc, char *argv[] )
     RSS(ref_dict_store(ref_dict,6,REF_EMPTY),"mark top");
 
     RSS(ref_layer_attach( ref_layer, ref_grid, ref_dict ),"attach");
+    RSS(ref_layer_puff( ref_layer, ref_grid ),"puff");
     
     RSS(ref_layer_free(ref_layer),"layer");
     RSS(ref_dict_free(ref_dict),"dict");
