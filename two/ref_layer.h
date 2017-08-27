@@ -3,6 +3,8 @@
 #define REF_LAYER_H
 
 #include "ref_defs.h"
+#include "ref_grid.h"
+#include "ref_dict.h"
 
 BEGIN_C_DECLORATION
 typedef struct REF_LAYER_STRUCT REF_LAYER_STRUCT;
@@ -21,6 +23,9 @@ REF_STATUS ref_layer_create( REF_LAYER *ref_layer );
 REF_STATUS ref_layer_free( REF_LAYER ref_layer );
 
 #define ref_layer_n(ref_layer) ((ref_layer)->n)
+
+REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
+			     REF_GRID ref_grid, REF_DICT faceids );
 
 END_C_DECLORATION
 
