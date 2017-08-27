@@ -82,7 +82,16 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	  ref_node_xyz(ref_grid_node(ref_grid), i, global);
     }
-
+  
+  for (local = 0;local<ref_dict_n(node_dict);local++)
+    {
+      global = local+ref_dict_n(node_dict);
+      RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
+      for (i=0;i<3;i++)
+	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
+	  ref_node_xyz(ref_grid_node(ref_grid), i, global);
+    }
+  
   ref_dict_free(node_dict);
   
   return REF_SUCCESS;
