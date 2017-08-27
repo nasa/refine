@@ -922,13 +922,13 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   RSS(ref_dict_create(&face_dict),"create faces");
 
   each_ref_list_item( ref_cavity_list(ref_cavity), item )
-  {
-    cell = ref_list_value( ref_cavity_list(ref_cavity), item );
-    RSS( ref_dict_store( face_dict, cell, 0 ), "store");
-    RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
-    each_ref_cell_cell_node( ref_cell, cell_node )
-      RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
-  }
+    {
+      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+      RSS( ref_dict_store( face_dict, cell, 0 ), "store");
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node( ref_cell, cell_node )
+	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+    }
 
   fprintf(f,
           "zone t=old, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
