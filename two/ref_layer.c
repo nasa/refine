@@ -56,17 +56,25 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_DICT node_dict;
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnode;
   
   RSS(ref_dict_create(&node_dict),"create nodes");
-  
+
+  nnode = 0;
   each_ref_list_item( ref_layer_list(ref_layer), item )
     {
       cell = ref_list_value( ref_layer_list(ref_layer), item );
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
       each_ref_cell_cell_node( ref_cell, cell_node )
-	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+	if ( ! ref_dict_has_key( node_dict, nodes[cell_node] ) )
+	  {
+	    RSS( ref_dict_store( node_dict, nodes[cell_node], nnode ), "store");
+	    nnode++;
+	  }
     }
-
+  printf(" layer ntri %d nnode %d\n",
+	 ref_list_n(ref_layer_list(ref_layer)),
+	 ref_dict_n(node_dict));
   ref_dict_free(node_dict);
   
   return REF_SUCCESS;
