@@ -52,6 +52,7 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT prism[REF_CELL_MAX_SIZE_PER];
   REF_INT node, local, global, i, nnode;
   
   each_ref_list_item( ref_layer_list(ref_layer), item )
@@ -81,6 +82,22 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  ref_node_xyz(ref_grid_node(ref_grid), i, local);
     }
 
+  each_ref_list_item( ref_layer_list(ref_layer), item )
+    {
+      cell = ref_list_value( ref_layer_list(ref_layer), item );
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node( ref_cell, cell_node )
+	{
+	  RSS( ref_node_local(ref_layer_node(ref_layer),
+			      nodes[cell_node], &local), "local");
+	  prism[cell_node] = local;
+	  global = local+ref_node_n_global(ref_grid_node(ref_grid));
+	  RSS( ref_node_local(ref_layer_node(ref_layer),
+			      global, &local), "local");
+	  prism[3+cell_node] = local;
+	}
+      RSS(ref_cell_add(ref_layer_cell(ref_layer), prism, &item ), "add");
+    }
   return REF_SUCCESS;
 }
 
