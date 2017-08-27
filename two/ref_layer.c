@@ -51,46 +51,36 @@ REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
 REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_DICT node_dict;
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node, local, global, i;
+  REF_INT node, local, global, i, nnode;
   
-  RSS(ref_dict_create(&node_dict),"create nodes");
-
   each_ref_list_item( ref_layer_list(ref_layer), item )
     {
       cell = ref_list_value( ref_layer_list(ref_layer), item );
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
       each_ref_cell_cell_node( ref_cell, cell_node )
-	if ( ! ref_dict_has_key( node_dict, nodes[cell_node] ) )
-	  {
-	    RSS( ref_dict_store( node_dict, nodes[cell_node], REF_EMPTY ),
-		 "store");
-	  }
+	{
+	  RSS( ref_node_add(ref_layer_node(ref_layer),
+			    nodes[cell_node], &node), "add");
+	  for (i=0;i<3;i++)
+	    ref_node_xyz(ref_layer_node(ref_layer), i, node) =
+	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
+	}
     }
   printf(" layer ntri %d nnode %d\n",
 	 ref_list_n(ref_layer_list(ref_layer)),
-	 ref_dict_n(node_dict));
+	 ref_node_n(ref_layer_node(ref_layer)));
 
-  each_ref_dict_key_value( node_dict, item, global, local )
+  nnode = ref_node_n(ref_layer_node(ref_layer));
+  for (local = 0;local<node;local++)
     {
+      global = local+ref_node_n_global(ref_grid_node(ref_grid));
       RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
       for (i=0;i<3;i++)
 	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
-	  ref_node_xyz(ref_grid_node(ref_grid), i, global);
+	  ref_node_xyz(ref_grid_node(ref_grid), i, local);
     }
-  
-  for (local = 0;local<ref_dict_n(node_dict);local++)
-    {
-      global = local+ref_dict_n(node_dict);
-      RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
-      for (i=0;i<3;i++)
-	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
-	  ref_node_xyz(ref_grid_node(ref_grid), i, global);
-    }
-  
-  ref_dict_free(node_dict);
-  
+
   return REF_SUCCESS;
 }
 
