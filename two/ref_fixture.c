@@ -1096,6 +1096,8 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
 	RSS( ref_cell_add(ref_grid_tri(ref_grid),tri, &cell),"qua");
       }
 
+  RSS( ref_node_initialize_n_global( ref_node, i*j*k ), "init glob" );
+  
   return REF_SUCCESS;
 }
 
