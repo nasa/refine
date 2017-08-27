@@ -27,6 +27,7 @@ libref2_a_SOURCES = \
 	ref_html.c \
 	ref_import.c \
 	ref_inflate.c \
+	ref_layer.c \
 	ref_list.c \
 	ref_math.c \
 	ref_matrix.c \
@@ -50,7 +51,8 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_dict.h ref_defs.h ref_edge.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_gen.h ref_geom.h ref_grid.h \
-	ref_histogram.h ref_html.h ref_import.h ref_inflate.h ref_list.h \
+	ref_histogram.h ref_html.h ref_import.h ref_inflate.h \
+	ref_list.h ref_layer.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_project.h \
@@ -214,6 +216,11 @@ TESTS += ref_inflate_test
 noinst_PROGRAMS += ref_inflate_test
 ref_inflate_test_SOURCES = ref_inflate_test.c
 ref_inflate_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_layer_test
+noinst_PROGRAMS += ref_layer_test
+ref_layer_test_SOURCES = ref_layer_test.c
+ref_layer_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_list_test
 noinst_PROGRAMS += ref_list_test
