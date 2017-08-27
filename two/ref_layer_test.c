@@ -48,7 +48,7 @@ int main( int argc, char *argv[] )
     RSS(ref_layer_puff( ref_layer, ref_grid ),"puff");
 
     if ( argc > 1 )
-      RSS( ref_layer_tec( ref_layer, argv[1] ), "tec" );
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "tec" );
     
     RSS(ref_layer_free(ref_layer),"layer");
     RSS(ref_grid_free(ref_grid),"grid");
