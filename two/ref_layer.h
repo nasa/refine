@@ -32,7 +32,7 @@ REF_STATUS ref_layer_free( REF_LAYER ref_layer );
 #define ref_layer_n(ref_layer) (ref_list_n(ref_layer_list(ref_layer)))
 
 REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
-			     REF_GRID ref_grid, REF_DICT faceids );
+			     REF_GRID ref_grid, REF_INT faceid );
 REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid );
 
 END_C_DECLORATION

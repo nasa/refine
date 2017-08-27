@@ -35,18 +35,15 @@ REF_STATUS ref_layer_free( REF_LAYER ref_layer )
 }
 
 REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
-			     REF_GRID ref_grid, REF_DICT faceids )
+			     REF_GRID ref_grid, REF_INT faceid )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell;
-  
-  each_ref_cell_valid_cell( ref_cell, cell )
-    {
-      if (ref_dict_has_key(faceids,ref_cell_c2n( ref_cell, 3, cell )))
-	{
-	  RSS( ref_list_add(ref_layer_list(ref_layer), cell ), "mark tri" );
-	}
-    }
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  /* copy nodes into local copy that provides compact index */
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( faceid == nodes[ref_cell_node_per(ref_cell)] )
+      RSS( ref_list_add( ref_layer_list(ref_layer), cell ), "parent" );
   
   return REF_SUCCESS;
 }
