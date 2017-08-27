@@ -11,18 +11,19 @@ typedef struct REF_LAYER_STRUCT REF_LAYER_STRUCT;
 typedef REF_LAYER_STRUCT * REF_LAYER;
 END_C_DECLORATION
 
-#include "ref_adj.h"
+#include "ref_list.h"
 
 BEGIN_C_DECLORATION
 
 struct REF_LAYER_STRUCT {
-  REF_INT n;
+  REF_LIST ref_list;
 };
 
 REF_STATUS ref_layer_create( REF_LAYER *ref_layer );
 REF_STATUS ref_layer_free( REF_LAYER ref_layer );
 
-#define ref_layer_n(ref_layer) ((ref_layer)->n)
+#define ref_layer_list(ref_layer) ((ref_layer)->ref_list)
+#define ref_layer_n(ref_layer) (ref_list_n(ref_layer_list(ref_layer)))
 
 REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
 			     REF_GRID ref_grid, REF_DICT faceids );
