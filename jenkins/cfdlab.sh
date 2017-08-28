@@ -7,6 +7,8 @@ set -u # Treat unset variables as error
 set +x # echo commands
 . /usr/local/pkgs/modules/init/bash
 
+date
+
 module add gcc_4.9.1_64
 module add openmpi_1.8.6_gcc
 module add git # for git describe
@@ -33,6 +35,8 @@ trap "cat $LOG" EXIT
 ./bootstrap > $LOG 2>&1
 trap - EXIT
 
+date
+
 mkdir -p ${strict_dir}
 cd ${strict_dir}
 LOG=${root_dir}/log.strict-configure
@@ -54,6 +58,8 @@ trap "cat $LOG" EXIT
 make distcheck > $LOG 2>&1
 cp refine-*.tar.gz ${root_dir}
 trap - EXIT
+
+date
 
 mkdir -p ${build_dir}
 cd ${build_dir}
@@ -78,6 +84,8 @@ trap "cat $LOG" EXIT
 make install > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.unit-para
 trap "cat $LOG" EXIT
 cd ${build_dir}/two
@@ -90,11 +98,15 @@ mpiexec -np 8 ./ref_part_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-2d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/linear/two
 ./accept-2d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
+
+date
 
 LOG=${root_dir}/log.accept-2d-polar-2-two
 trap "cat $LOG" EXIT
@@ -102,11 +114,15 @@ cd ${source_dir}/acceptance/2d/polar-2/two
 ./accept-2d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-3d-linear-one
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/one
 ./accept-3d-one.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
+
+date
 
 LOG=${root_dir}/log.accept-3d-linear-two
 trap "cat $LOG" EXIT
@@ -114,11 +130,15 @@ cd ${source_dir}/acceptance/3d/linear/two
 ./accept-3d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
 ./accept-3d-two-para.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
+
+date
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
 trap "cat $LOG" EXIT
@@ -126,11 +146,15 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform/two
 ./accept-cube-cylinder-uniform-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/linear010/two
 ./accept-cube-cylinder-linear010-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
+
+date
 
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
 trap "cat $LOG" EXIT
@@ -138,11 +162,15 @@ cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
 ./accept-cube-cylinder-polar-2-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-3d-polar-1-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/polar-1/two
 ./accept-3d-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
+
+date
 
 LOG=${root_dir}/log.accept-cube-sphere-uniform-two
 trap "cat $LOG" EXIT
@@ -150,9 +178,12 @@ cd ${source_dir}/acceptance/cube-sphere/uniform/two
 ./accept-cube-sphere-uniform-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
+
 LOG=${root_dir}/log.accept-cube-sphere-ring-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/ring/two
 ./accept-cube-sphere-ring-two.sh ${build_dir} > $LOG 2>&1
 trap - EXIT
 
+date
