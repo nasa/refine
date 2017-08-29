@@ -48,6 +48,25 @@ REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
+			     REF_INT node)
+{
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL contains;
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_list_contains( ref_layer_list(ref_layer), cell,
+			      &contains ), "in layer" );
+      if ( ! contains ) 
+	continue;
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "tri nodes");
+      /*printf("node %3d faceid %d\n",node,nodes[3]);*/
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -67,6 +86,7 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  for (i=0;i<3;i++)
 	    ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
+	  ref_layer_normal(ref_layer,ref_grid,node);
 	}
     }
   nnode = ref_node_n(ref_layer_node(ref_layer));
