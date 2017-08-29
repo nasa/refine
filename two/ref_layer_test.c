@@ -43,13 +43,21 @@ int main( int argc, char *argv[] )
     RSS(ref_fixture_tet_brick_grid( &ref_grid ), "tet brick");
     RSS(ref_layer_create( &ref_layer ),"create");
 
-    faceid = 6;
-    RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
+    faceid = 6; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
+    faceid = 4; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
+    faceid = 3; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
+    faceid = 5; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
     RSS(ref_layer_puff( ref_layer, ref_grid ),"puff");
 
     if ( argc > 1 )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "tec" );
-    
+      {
+	RSS( ref_layer_tec( ref_layer, argv[1] ), "tec" );
+      }
+    if ( argc > 2 )
+      {
+	RSS( ref_export_by_extension( ref_grid, argv[2] ), "tec" );
+      }
+
     RSS(ref_layer_free(ref_layer),"layer");
     RSS(ref_grid_free(ref_grid),"grid");
   }
