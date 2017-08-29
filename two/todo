@@ -1,4 +1,11 @@
 
+layer
+ add loop to cube case
+ normal based on total triangle angle
+ constrain to adject face
+ grow
+ insert
+
 cavity operator in 2D/3D
  movie with time
  face based grow and shrink
