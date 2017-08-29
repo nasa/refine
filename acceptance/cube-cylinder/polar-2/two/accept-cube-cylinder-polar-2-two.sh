@@ -19,7 +19,7 @@ function adapt_cycle_sant {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l -d
+    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
@@ -29,7 +29,7 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -d
+    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps}
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
@@ -51,6 +51,12 @@ adapt_cycle cycle07 cycle08 2
 adapt_cycle cycle08 cycle09 2
 adapt_cycle cycle09 cycle10 2
 adapt_cycle cycle10 cycle11 2
+
+cat cycle10.status
+../../../check.rb cycle10.status 0.012 3.1
+
+exit
+
 adapt_cycle cycle11 cycle12 2
 adapt_cycle cycle12 cycle13 2
 adapt_cycle cycle13 cycle14 2
@@ -60,12 +66,6 @@ adapt_cycle cycle16 cycle17 2
 adapt_cycle cycle17 cycle18 2
 adapt_cycle cycle18 cycle19 2
 adapt_cycle cycle19 cycle20 2
-
-cat cycle20.status
-../../../check.rb cycle20.status 0.012 3.1
-
-exit
-
 adapt_cycle cycle20 cycle21 2
 adapt_cycle cycle21 cycle22 2
 adapt_cycle cycle22 cycle23 2
