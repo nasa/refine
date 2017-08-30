@@ -61,17 +61,17 @@ int main( void )
 
     degree = 0;
     each_ref_adj_node_item_with_ref(ref_adj,0,item,ref)
-      degree++;
+    degree++;
     RES(0,degree,"empty degree");
 
     RSS(ref_adj_add(ref_adj,0,14),"add");
 
     degree = 0;
     each_ref_adj_node_item_with_ref(ref_adj,0,item,ref)
-      {
-	degree++;
-	RES(14,ref,"check ref");        
-      }
+    {
+      degree++;
+      RES(14,ref,"check ref");
+    }
     RES(1,degree,"node degree");
 
     RSS(ref_adj_free(ref_adj),"free");
@@ -91,7 +91,7 @@ int main( void )
   {  /* negative node */
     REF_ADJ ref_adj;
     RSS(ref_adj_create(&ref_adj),"create");
-  
+
     RES(REF_EMPTY,ref_adj_first(ref_adj,-1),"negative first");
     REIS(REF_INVALID,ref_adj_add(ref_adj,-1,21),"negative add");
 
@@ -122,7 +122,7 @@ int main( void )
     REF_INT nitem, item;
     RSS(ref_adj_create(&ref_adj),"create");
     nitem =  ref_adj_nitem( ref_adj );
-    for ( item = 0 ; item < nitem+1 ; item++ )
+    for ( item = 0; item < nitem+1; item++ )
       RSS(ref_adj_add(ref_adj,0,item),"add requiring item realloc");
 
     RAS( ref_adj_nitem( ref_adj ) > nitem, "item bigger" );

@@ -11,17 +11,17 @@ REF_STATUS ref_adj_create( REF_ADJ *ref_adj_ptr )
   REF_INT i;
 
   ref_malloc( *ref_adj_ptr, 1, REF_ADJ_STRUCT );
-  ref_adj = (*ref_adj_ptr);
+  ref_adj = ( *ref_adj_ptr );
 
   ref_adj_nnode(ref_adj) = 10;
   ref_adj_nitem(ref_adj) = 20;
 
   ref_malloc(ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
-  for (i = 0; i < ref_adj_nnode(ref_adj) ; i++ )
+  for (i = 0; i < ref_adj_nnode(ref_adj); i++ )
     ref_adj->first[i] = REF_EMPTY;
 
   ref_malloc(ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
-  for (i = 0; i < ref_adj_nitem(ref_adj) ; i++ )
+  for (i = 0; i < ref_adj_nitem(ref_adj); i++ )
     {
       ref_adj->item[i].ref = REF_EMPTY;
       ref_adj->item[i].next = i+1;
@@ -34,7 +34,8 @@ REF_STATUS ref_adj_create( REF_ADJ *ref_adj_ptr )
 
 REF_STATUS ref_adj_free( REF_ADJ ref_adj )
 {
-  if ( NULL == (void *)ref_adj ) return REF_NULL;
+  if ( NULL == (void *)ref_adj )
+    return REF_NULL;
   ref_free( ref_adj->first );
   ref_free( ref_adj->item );
   ref_free( ref_adj );
@@ -47,23 +48,23 @@ REF_STATUS ref_adj_deep_copy( REF_ADJ *ref_adj_ptr, REF_ADJ original )
   REF_INT i;
 
   ref_malloc( *ref_adj_ptr, 1, REF_ADJ_STRUCT );
-  ref_adj = (*ref_adj_ptr);
+  ref_adj = ( *ref_adj_ptr );
 
   ref_adj_nnode(ref_adj) = ref_adj_nnode(original);
   ref_adj_nitem(ref_adj) = ref_adj_nitem(original);
 
   ref_malloc(ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
-  for (i = 0; i < ref_adj_nnode(ref_adj) ; i++ )
+  for (i = 0; i < ref_adj_nnode(ref_adj); i++ )
     ref_adj->first[i] = original->first[i];
 
   ref_malloc(ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
-  for (i = 0; i < ref_adj_nitem(ref_adj) ; i++ )
+  for (i = 0; i < ref_adj_nitem(ref_adj); i++ )
     {
       ref_adj->item[i].ref = original->item[i].ref;
       ref_adj->item[i].next = original->item[i].next;
     }
   ref_adj->blank = original->blank;
-  
+
   return REF_SUCCESS;
 }
 
@@ -72,11 +73,11 @@ REF_STATUS ref_adj_inspect( REF_ADJ ref_adj )
   REF_INT node, item;
   printf("ref_adj = %p\n",(void *)ref_adj);
   printf(" blank = %d\n",ref_adj->blank);
-  for ( node = 0 ; node < ref_adj_nnode( ref_adj ) ; node++ )
+  for ( node = 0; node < ref_adj_nnode( ref_adj ); node++ )
     printf(" first[%d] = %d\n",node,ref_adj->first[node]);
-  for ( item = 0 ; item < ref_adj_nitem( ref_adj ) ; item++ )
+  for ( item = 0; item < ref_adj_nitem( ref_adj ); item++ )
     printf(" item[%d] = %d : %d\n",item,
-	   ref_adj->item[item].next,ref_adj->item[item].ref);
+           ref_adj->item[item].next,ref_adj->item[item].ref);
 
   return REF_SUCCESS;
 }
@@ -86,7 +87,7 @@ REF_STATUS ref_adj_node_inspect( REF_ADJ ref_adj, REF_INT node )
   REF_INT item, ref;
   printf(" %d :",node);
   each_ref_adj_node_item_with_ref( ref_adj, node, item, ref)
-    printf(" %d",ref);
+  printf(" %d",ref);
   printf("\n");
 
   return REF_SUCCESS;
@@ -98,19 +99,20 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
   REF_INT orig, chunk, i;
   REF_INT max_limit = REF_INT_MAX;
 
-  if ( node < 0 ) return REF_INVALID;
+  if ( node < 0 )
+    return REF_INVALID;
 
   if ( node >= ref_adj_nnode(ref_adj) )
     {
       orig = ref_adj_nnode( ref_adj );
       chunk = 100 + MAX( 0, node-orig );
-      chunk = MAX( chunk, (REF_INT)(0.5*(REF_DBL)orig) );
+      chunk = MAX( chunk, (REF_INT)( 0.5*(REF_DBL)orig ) );
       /* try to keep under 32-bit limit */
       chunk = MIN( chunk, max_limit-orig );
       ref_adj_nnode(ref_adj) = orig + chunk;
       ref_realloc( ref_adj->first, ref_adj_nnode(ref_adj), REF_INT );
-      for (i = orig; i < ref_adj_nnode(ref_adj) ; i++ )
-	ref_adj->first[i] = REF_EMPTY;
+      for (i = orig; i < ref_adj_nnode(ref_adj); i++ )
+        ref_adj->first[i] = REF_EMPTY;
     }
 
   if ( REF_EMPTY == ref_adj_blank(ref_adj) )
@@ -119,16 +121,16 @@ REF_STATUS ref_adj_add( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
            "the number of ref_adj items is too large for int, cannot grow");
 
       orig = ref_adj_nitem( ref_adj );
-      chunk = MAX(100,(REF_INT)(0.5*(REF_DBL)orig));
+      chunk = MAX(100,(REF_INT)( 0.5*(REF_DBL)orig ));
       /* try to keep under 32-bit limit */
       chunk = MIN( chunk, max_limit-orig );
       ref_adj_nitem( ref_adj ) =  orig + chunk;
       ref_realloc( ref_adj->item, ref_adj_nitem(ref_adj), REF_ADJ_ITEM_STRUCT );
-      for (i = orig; i < ref_adj_nitem(ref_adj) ; i++ )
-	{
-	  ref_adj->item[i].ref = REF_EMPTY;
-	  ref_adj->item[i].next = i+1;
-	}
+      for (i = orig; i < ref_adj_nitem(ref_adj); i++ )
+        {
+          ref_adj->item[i].ref = REF_EMPTY;
+          ref_adj->item[i].next = i+1;
+        }
       ref_adj->item[ref_adj_nitem(ref_adj)-1].next = REF_EMPTY;
       ref_adj->blank = orig;
     }
@@ -151,7 +153,8 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
 
   item = ref_adj_first( ref_adj, node );
 
-  if ( !ref_adj_valid( item ) ) return REF_INVALID;
+  if ( !ref_adj_valid( item ) )
+    return REF_INVALID;
 
   if ( reference == ref_adj_item_ref( ref_adj, item ) )
     {
@@ -161,28 +164,28 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
       ref_adj_item_ref( ref_adj, item ) = REF_EMPTY;
       return REF_SUCCESS;
     }
-  
+
   target = REF_EMPTY;
   parent = REF_EMPTY;
   each_ref_adj_node_item_with_ref( ref_adj, node, item, ref)
-    {
-      if ( ref == reference )
-	{
-	  target = item;
-	  break;
-	}
-      else
-	{
-	  parent = item;
-	}
-    }
+  {
+    if ( ref == reference )
+      {
+        target = item;
+        break;
+      }
+    else
+      {
+        parent = item;
+      }
+  }
 
   if ( REF_EMPTY == target )
     return REF_INVALID;
 
   if ( REF_EMPTY == parent )
     RSS( REF_FAILURE, "parent empty");
-  
+
   ref_adj_item_next( ref_adj, parent ) = ref_adj_item_next( ref_adj, item );
   ref_adj_item_next( ref_adj, item ) = ref_adj_blank( ref_adj );
   ref_adj_blank( ref_adj ) = item;
@@ -191,26 +194,27 @@ REF_STATUS ref_adj_remove( REF_ADJ ref_adj, REF_INT node, REF_INT reference )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adj_add_uniquely( REF_ADJ ref_adj, 
-				 REF_INT node, REF_INT reference )
+REF_STATUS ref_adj_add_uniquely( REF_ADJ ref_adj,
+                                 REF_INT node, REF_INT reference )
 {
   REF_INT item, ref;
   each_ref_adj_node_item_with_ref( ref_adj, node, item, ref)
-    if ( ref == reference ) return REF_SUCCESS;
+  if ( ref == reference )
+    return REF_SUCCESS;
 
   return ref_adj_add( ref_adj, node, reference );
 }
 
-REF_STATUS ref_adj_degree( REF_ADJ ref_adj, 
-			   REF_INT node, REF_INT *degree )
+REF_STATUS ref_adj_degree( REF_ADJ ref_adj,
+                           REF_INT node, REF_INT *degree )
 {
   REF_INT item;
   *degree = 0;
 
   for ( item = ref_adj_first( ref_adj, node );
-	ref_adj_valid( item ) ;
-	(item) = ref_adj_item_next( ref_adj, item ) )
-    (*degree)++;
+        ref_adj_valid( item );
+        ( item ) = ref_adj_item_next( ref_adj, item ) )
+    ( *degree )++;
 
   return REF_SUCCESS;
 }
