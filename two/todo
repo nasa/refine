@@ -2,11 +2,10 @@
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 layer
- add loop to cube case
- normal based on total triangle angle
- constrain to adject face
- grow
+ constrain to adjacent face
  insert
+   cavity recover triangle side
+   cavity recover tet face
 
 cavity operator in 2D/3D
  movie with time
@@ -108,6 +107,11 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ layer
+  + add loop to cube case
+  + normal based on total triangle angle
+  + grow (puff)
 
 + bob discussions
   + INRIA meshb to store parameterization with grid (call MARCUM)
