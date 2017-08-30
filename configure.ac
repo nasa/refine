@@ -8,7 +8,7 @@ AC_INIT([refine], [git_describe], [fun3d-support@lists.nasa.gov])
 dnl AC_INIT([refine], [1.8.18], [fun3d-support@lists.nasa.gov])
 
 AC_CONFIG_HEADERS(config.h)
-AC_CONFIG_SRCDIR([two/ref_defs.h])
+AC_CONFIG_SRCDIR([src/ref_defs.h])
 AM_INIT_AUTOMAKE([tar-pax])
 
 AC_ARG_ENABLE(exec,
@@ -252,7 +252,7 @@ fi
 
 AC_CONFIG_FILES( \
 	   Makefile \
-	   two/Makefile \
+	   src/Makefile \
 	   one/Makefile \
 	   util/Makefile
 	   )

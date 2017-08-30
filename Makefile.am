@@ -1,5 +1,5 @@
 
-SUBDIRS = two one util
+SUBDIRS = src one util
 SUBDIRS += acceptance
 
 AUTOMAKE_OPTIONS = 1.7
