@@ -4,6 +4,7 @@
 
 #include "ref_layer.h"
 
+#include "ref_math.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
@@ -49,11 +50,18 @@ REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
 }
 
 REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
-			     REF_INT node)
+			     REF_INT node, REF_DBL *norm )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
+  REF_DBL angle, total, triangle_norm[3];
+
+  total = 0.0;
+  norm[0] = 0.0;
+  norm[1] = 0.0;
+  norm[2] = 0.0;
+
   each_ref_cell_having_node( ref_cell, node, item, cell )
     {
       RSS( ref_list_contains( ref_layer_list(ref_layer), cell,
@@ -61,9 +69,25 @@ REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
       if ( ! contains ) 
 	continue;
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "tri nodes");
-      if ( REF_FALSE )
-	printf("node %3d faceid %d\n",node,nodes[3]);
+      RSS( ref_node_tri_node_angle( ref_grid_node(ref_grid), nodes, node,
+				    &angle ), "angle" );
+      RSS( ref_node_tri_normal( ref_grid_node(ref_grid), nodes,
+				triangle_norm ), "norm" );
+      RSS( ref_math_normalize( triangle_norm ), "normalize tri norm" );
+      total += angle;
+      for(i=0;i<3;i++)
+	norm[i] += angle*triangle_norm[i];
     }
+	  
+  if ( !ref_math_divisible(norm[0],total) ||
+       !ref_math_divisible(norm[1],total) ||
+       !ref_math_divisible(norm[2],total) ) 
+    return REF_DIV_ZERO;
+
+  for(i=0;i<3;i++)
+    norm[i] /= angle; 
+
+  RSS( ref_math_normalize( norm ), "normalize average norm" );
 
   return REF_SUCCESS;
 }
@@ -74,6 +98,7 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT prism[REF_CELL_MAX_SIZE_PER];
   REF_INT node, local, global, i, nnode;
+  REF_DBL norm[3];
 
   /* first layer of nodes */
   each_ref_list_item( ref_layer_list(ref_layer), item )
@@ -98,11 +123,10 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
       RSS( ref_layer_normal(ref_layer,ref_grid,
 			    ref_node_global(ref_layer_node(ref_layer),
-					    local) ), "normal");
+					    local), norm ), "normal");
       for (i=0;i<3;i++)
 	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
-	  ref_node_xyz(ref_layer_node(ref_layer), i, local);
-      ref_node_xyz(ref_layer_node(ref_layer), 2, node) -= 0.1;
+	  0.1*norm[i] + ref_node_xyz(ref_layer_node(ref_layer), i, local);
     }
 
   /* layer of prisms */
