@@ -1,4 +1,6 @@
 
+extract cell orient from tri_node_angle and correct _dnode0 uses in code
+
 layer
  add loop to cube case
  normal based on total triangle angle

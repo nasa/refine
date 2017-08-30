@@ -11,6 +11,7 @@
 #include  "ref_list.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 int main( int argc, char *argv[] )
 {
@@ -863,6 +864,47 @@ int main( int argc, char *argv[] )
     RWDS( 0.0, area, -1.0, "expected area" );
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
     RAS( !valid, "expected zero area is invalid" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* right tri node angle */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global, node;
+    REF_DBL angle;
+
+    RSS(ref_node_create(&ref_node),"create");
+
+    global = 0; RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1; RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2; RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 2.0;
+    ref_node_xyz(ref_node,2,nodes[2]) = 2.0;
+
+    node = 5;
+    REIS(REF_NOT_FOUND,
+	 ref_node_tri_node_angle(ref_node, nodes, node, &angle),
+	 "node should not be in nodes");
+
+    node = 0;
+    RSS(ref_node_tri_node_angle(ref_node, nodes, node, &angle), "angle");
+    RWDS( 0.50*ref_math_pi, angle, -1.0, "expected 90 degree angle" );
+
+    node = 1;
+    RSS(ref_node_tri_node_angle(ref_node, nodes, node, &angle), "angle");
+    RWDS( 0.25*ref_math_pi, angle, -1.0, "expected 45 degree angle" );
+
+    node = 2;
+    RSS(ref_node_tri_node_angle(ref_node, nodes, node, &angle), "angle");
+    RWDS( 0.25*ref_math_pi, angle, -1.0, "expected 45 degree angle" );
 
     RSS(ref_node_free(ref_node),"free");
   }

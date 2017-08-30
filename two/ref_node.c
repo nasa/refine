@@ -1602,6 +1602,49 @@ REF_STATUS ref_node_tri_twod_orientation( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tri_node_angle( REF_NODE ref_node, 
+				    REF_INT *nodes, REF_INT node,  
+				    REF_DBL *angle )
+{
+  REF_INT node1, node2, i;
+  REF_DBL edge1[3], edge2[3];
+
+  *angle = -9.0;
+
+  node1 = REF_EMPTY;
+  node2 = REF_EMPTY;
+  if ( node == nodes[0])
+    {
+      node1 = nodes[1];
+      node2 = nodes[2];
+    }
+  if ( node == nodes[1])
+    {
+      node1 = nodes[2];
+      node2 = nodes[0];
+    }
+  if ( node == nodes[2])
+    {
+      node1 = nodes[0];
+      node2 = nodes[1];
+    }
+  if ( REF_EMPTY == node1 ||  REF_EMPTY == node2 )
+    return REF_NOT_FOUND;
+
+  for ( i=0 ; i<3 ; i++ )
+    {
+      edge1[i] = ref_node_xyz(ref_node,i,node1) - ref_node_xyz(ref_node,i,node);
+      edge2[i] = ref_node_xyz(ref_node,i,node2) - ref_node_xyz(ref_node,i,node);
+    }
+
+  RSS( ref_math_normalize( edge1 ), "normalize zero length edge1" );
+  RSS( ref_math_normalize( edge2 ), "normalize zero length edge2" );
+  *angle = acos( ref_math_dot(edge1,edge2) );
+  
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_node_tri_area( REF_NODE ref_node, 
 			      REF_INT *nodes, 
 			      REF_DBL *area )
