@@ -13,12 +13,12 @@
 #include "ref_export.h"
 
 static REF_STATUS ref_clump_zone_around( FILE *f,
-					 REF_CELL ref_cell,
-					 REF_DICT ref_dict,
-					 const char *zonetype,
-					 REF_DICT node_dict,
-					 REF_NODE ref_node,
-					 REF_INT node )
+                                         REF_CELL ref_cell,
+                                         REF_DICT ref_dict,
+                                         const char *zonetype,
+                                         REF_DICT node_dict,
+                                         REF_NODE ref_node,
+                                         REF_INT node )
 {
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -26,44 +26,45 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
   REF_INT local;
   REF_DBL jacob[9];
 
-  if ( ref_dict_n(ref_dict) <= 0 ) return REF_SUCCESS;
+  if ( ref_dict_n(ref_dict) <= 0 )
+    return REF_SUCCESS;
 
   RSS( ref_matrix_jacob_m( ref_node_metric_ptr(ref_node,node),
                            jacob ), "jac");
 
   fprintf(f,
-	  "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	  zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
-	  "point", zonetype );
+          "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
+          "point", zonetype );
 
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
       local = ref_dict_key(node_dict,item);
       xyz_phys[0] = ref_node_xyz(ref_node,0,local)
-	- ref_node_xyz(ref_node,0,node);
+                    - ref_node_xyz(ref_node,0,node);
       xyz_phys[1] = ref_node_xyz(ref_node,1,local)
-	- ref_node_xyz(ref_node,1,node);
+                    - ref_node_xyz(ref_node,1,node);
       xyz_phys[2] = ref_node_xyz(ref_node,2,local)
-	- ref_node_xyz(ref_node,2,node);
+                    - ref_node_xyz(ref_node,2,node);
       RSS( ref_matrix_vect_mult( jacob, xyz_phys, xyz_comp ), "ax");
       fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e %d\n",
-	      ref_node_xyz(ref_node,0,local),
-	      ref_node_xyz(ref_node,1,local),
-	      ref_node_xyz(ref_node,2,local),	      
-	      xyz_comp[0], xyz_comp[1], xyz_comp[2],
-	      ref_node_global(ref_node,local));
+              ref_node_xyz(ref_node,0,local),
+              ref_node_xyz(ref_node,1,local),
+              ref_node_xyz(ref_node,2,local),
+              xyz_comp[0], xyz_comp[1], xyz_comp[2],
+              ref_node_global(ref_node,local));
     }
-  
+
   for ( item = 0; item < ref_dict_n(ref_dict); item++ )
     {
       cell = ref_dict_key(ref_dict,item);
       RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
       each_ref_cell_cell_node(ref_cell,cell_node)
-	{
-	  RSS( ref_dict_location( node_dict,
-				  nodes[cell_node], &local), "ret");
-	  fprintf(f," %d",local + 1);
-	}
+      {
+        RSS( ref_dict_location( node_dict,
+                                nodes[cell_node], &local), "ret");
+        fprintf(f," %d",local + 1);
+      }
       fprintf(f,"\n");
     }
 
@@ -71,17 +72,18 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
 }
 
 static REF_STATUS ref_clump_cell_zone( FILE *f,
-				       REF_CELL ref_cell,
-				       REF_DICT ref_dict,
-				       const char *zonetype,
-				       REF_NODE ref_node )
+                                       REF_CELL ref_cell,
+                                       REF_DICT ref_dict,
+                                       const char *zonetype,
+                                       REF_NODE ref_node )
 {
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local;
   REF_DICT node_dict;
-  
-  if ( ref_dict_n(ref_dict) <= 0 ) return REF_SUCCESS;
+
+  if ( ref_dict_n(ref_dict) <= 0 )
+    return REF_SUCCESS;
 
   RSS(ref_dict_create(&node_dict),"create cell dict");
   for ( item = 0; item < ref_dict_n(ref_dict); item++ )
@@ -89,35 +91,35 @@ static REF_STATUS ref_clump_cell_zone( FILE *f,
       cell = ref_dict_key(ref_dict,item);
       RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
       each_ref_cell_cell_node(ref_cell,cell_node)
-	{
-	  RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
-	}
+      {
+        RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+      }
     }
-  
+
   fprintf(f,
-	  "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-	  zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
-	  "point", zonetype );
+          "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
+          "point", zonetype );
 
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
     {
       local = ref_dict_key(node_dict,item);
       fprintf(f, " %.16e %.16e %.16e\n",
-	      ref_node_xyz(ref_node,0,local),
-	      ref_node_xyz(ref_node,1,local),
-	      ref_node_xyz(ref_node,2,local));
+              ref_node_xyz(ref_node,0,local),
+              ref_node_xyz(ref_node,1,local),
+              ref_node_xyz(ref_node,2,local));
     }
-  
+
   for ( item = 0; item < ref_dict_n(ref_dict); item++ )
     {
       cell = ref_dict_key(ref_dict,item);
       RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
       each_ref_cell_cell_node(ref_cell,cell_node)
-	{
-	  RSS( ref_dict_location( node_dict,
-				  nodes[cell_node], &local), "ret");
-	  fprintf(f," %d",local + 1);
-	}
+      {
+        RSS( ref_dict_location( node_dict,
+                                nodes[cell_node], &local), "ret");
+        fprintf(f," %d",local + 1);
+      }
       fprintf(f,"\n");
     }
 
@@ -125,7 +127,7 @@ static REF_STATUS ref_clump_cell_zone( FILE *f,
 }
 
 REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
-			     const char *filename )
+                             const char *filename )
 {
   REF_DICT node_dict, tri_dict, tet_dict;
   REF_DICT ref_dict;
@@ -143,21 +145,21 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
   ref_cell = ref_grid_tri(ref_grid);
   ref_dict = tri_dict;
   each_ref_cell_having_node( ref_cell, node, item, cell )
-    {
-      RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
-      RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
-      each_ref_cell_cell_node(ref_cell,cell_node)
-	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
-    }
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
   ref_cell = ref_grid_tet(ref_grid);
   ref_dict = tet_dict;
   each_ref_cell_having_node( ref_cell, node, item, cell )
-    {
-      RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
-      RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
-      each_ref_cell_cell_node(ref_cell,cell_node)
-	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
-    }
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
 
 
   f = fopen(filename,"w");
@@ -170,17 +172,17 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 
   ref_cell = ref_grid_tri(ref_grid);
   ref_dict = tri_dict;
-  zonetype="fetriangle";
+  zonetype = "fetriangle";
   RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
-			      node_dict,
-			      ref_grid_node(ref_grid), node ), "zone" );
-  
+                              node_dict,
+                              ref_grid_node(ref_grid), node ), "zone" );
+
   ref_cell = ref_grid_tet(ref_grid);
   ref_dict = tet_dict;
   zonetype = "fetetrahedron";
-       RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
-			      node_dict,
-			      ref_grid_node(ref_grid), node ), "zone" );
+  RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
+                              node_dict,
+                              ref_grid_node(ref_grid), node ), "zone" );
 
   fclose(f);
 
@@ -192,7 +194,7 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
 }
 
 REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
-				 const char *filename )
+                                 const char *filename )
 {
   REF_DICT node_dict, tri_dict;
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -355,7 +357,7 @@ REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
 }
 
 REF_STATUS ref_clump_tet_quality( REF_GRID ref_grid, REF_DBL min_quality,
-				  const char *filename )
+                                  const char *filename )
 {
   REF_DICT ref_dict;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -370,11 +372,11 @@ REF_STATUS ref_clump_tet_quality( REF_GRID ref_grid, REF_DBL min_quality,
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
-    {
-      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-      if ( quality < min_quality )
-	RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
-    }
+  {
+    RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+    if ( quality < min_quality )
+      RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+  }
 
   f = fopen(filename,"w");
   if (NULL == (void *)f)
@@ -386,12 +388,12 @@ REF_STATUS ref_clump_tet_quality( REF_GRID ref_grid, REF_DBL min_quality,
 
   zonetype = "fetetrahedron";
   RSS( ref_clump_cell_zone( f, ref_cell, ref_dict, zonetype,
-			    ref_node ), "zone" );
+                            ref_node ), "zone" );
 
   RSS( ref_export_tec_surf_zone( ref_grid, f ), "add surf" );
   fclose(f);
 
   RSS(ref_dict_free(ref_dict),"free tet");
-  
+
   return REF_SUCCESS;
 }

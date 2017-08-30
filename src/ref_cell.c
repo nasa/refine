@@ -7,7 +7,7 @@
 #include "ref_malloc.h"
 
 REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
-				REF_INT node_per, REF_BOOL last_node_is_an_id )
+                                REF_INT node_per, REF_BOOL last_node_is_an_id )
 {
   ref_cell_last_node_is_an_id(ref_cell) = last_node_is_an_id;
 
@@ -146,7 +146,7 @@ REF_STATUS ref_cell_initialize( REF_CELL ref_cell,
       ref_cell->f2n = NULL;
       return REF_SUCCESS;
     }
-  
+
   ref_cell->f2n = NULL;
   if ( ref_cell_face_per(ref_cell) > 0 )
     ref_malloc( ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
@@ -287,7 +287,7 @@ REF_STATUS ref_cell_create( REF_CELL *ref_cell_ptr,
   ref_cell = ( *ref_cell_ptr );
 
   RSS( ref_cell_initialize( ref_cell, node_per, last_node_is_an_id ), "init" );
-  
+
   max = 100;
 
   ref_cell_n(ref_cell) = 0;
@@ -334,8 +334,8 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
   ref_cell = ( *ref_cell_ptr );
 
   RSS( ref_cell_initialize( ref_cell,
-			    original->node_per,
-			    original->last_node_is_an_id ), "init" );
+                            original->node_per,
+                            original->last_node_is_an_id ), "init" );
 
   max = ref_cell_max(original);
   ref_cell_n(ref_cell) = ref_cell_n(original);
@@ -344,9 +344,9 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
   ref_malloc( ref_cell->c2n, ref_cell_max(ref_cell) *
               ref_cell_size_per(ref_cell), REF_INT);
   for ( cell = 0; cell < max; cell++ )
-    for ( node = 0; node < ref_cell_size_per(ref_cell) ; node++ )
+    for ( node = 0; node < ref_cell_size_per(ref_cell); node++ )
       ref_cell_c2n(ref_cell,node,cell) = ref_cell_c2n(original,node,cell);
-  
+
   if ( NULL == original->c2e )
     {
       ref_cell->c2e = NULL;
@@ -354,11 +354,11 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
   else
     {
       ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
-		  ref_cell_edge_per(ref_cell), REF_INT);
+                  ref_cell_edge_per(ref_cell), REF_INT);
       for ( cell = 0; cell < max; cell++ )
-	for ( node = 0; node < ref_cell_edge_per(ref_cell) ; node++ )
-	  ref_cell_c2e_set(ref_cell,node,cell) = 
-	    ref_cell_c2e(original,node,cell);
+        for ( node = 0; node < ref_cell_edge_per(ref_cell); node++ )
+          ref_cell_c2e_set(ref_cell,node,cell) =
+            ref_cell_c2e(original,node,cell);
     }
 
   ref_cell_blank(ref_cell) = ref_cell_blank(original);
@@ -430,8 +430,8 @@ REF_STATUS ref_cell_add( REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell )
       ref_realloc( ref_cell->c2n, ref_cell_size_per(ref_cell) *
                    ref_cell_max(ref_cell), REF_INT );
       if ( NULL != ref_cell->c2e )
-	ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
-		     ref_cell_max(ref_cell), REF_INT );
+        ref_realloc( ref_cell->c2e, ref_cell_edge_per(ref_cell) *
+                     ref_cell_max(ref_cell), REF_INT );
 
       for (cell = orig; cell < ref_cell_max(ref_cell); cell++ )
         {
@@ -524,7 +524,7 @@ REF_STATUS ref_cell_remove( REF_CELL ref_cell, REF_INT cell )
   ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
   ref_cell_c2n(ref_cell,1,cell) = ref_cell_blank(ref_cell);
   ref_cell_blank(ref_cell) = cell;
-  
+
   return REF_SUCCESS;
 }
 
@@ -588,29 +588,29 @@ REF_STATUS ref_cell_replace_node( REF_CELL ref_cell,
 }
 
 REF_STATUS ref_cell_compact( REF_CELL ref_cell,
-			     REF_INT **o2n_ptr, REF_INT **n2o_ptr )
+                             REF_INT **o2n_ptr, REF_INT **n2o_ptr )
 {
   REF_INT cell;
   REF_INT ncell;
   REF_INT *o2n, *n2o;
-  
+
   ref_malloc_init( *o2n_ptr, ref_cell_max(ref_cell), REF_INT, REF_EMPTY );
   o2n = *o2n_ptr;
   ref_malloc( *n2o_ptr, ref_cell_n(ref_cell), REF_INT );
   n2o = *n2o_ptr;
 
-  ncell = 0;    
-  
+  ncell = 0;
+
   each_ref_cell_valid_cell( ref_cell, cell )
-    {
-      o2n[cell] = ncell;
-      ncell++;
-    }
+  {
+    o2n[cell] = ncell;
+    ncell++;
+  }
 
   RES( ncell, ref_cell_n(ref_cell), "ncell miscount" );
 
   each_ref_cell_valid_cell( ref_cell, cell )
-    n2o[o2n[cell]] = cell;
+  n2o[o2n[cell]] = cell;
 
   return REF_SUCCESS;
 }
@@ -651,27 +651,28 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
 }
 
 REF_STATUS ref_cell_side_has_id( REF_CELL ref_cell,
-				 REF_INT node0, REF_INT node1, REF_INT id,
-				 REF_BOOL *has_id)
+                                 REF_INT node0, REF_INT node1, REF_INT id,
+                                 REF_BOOL *has_id)
 {
   REF_INT item, cell;
   REF_INT cell_edge;
 
   *has_id = REF_FALSE;
 
-  if ( !ref_cell_last_node_is_an_id(ref_cell) ) return REF_SUCCESS;
+  if ( !ref_cell_last_node_is_an_id(ref_cell) )
+    return REF_SUCCESS;
 
   each_ref_adj_node_item_with_ref( ref_cell_adj(ref_cell), node0, item, cell)
-    each_ref_cell_cell_edge( ref_cell, cell_edge )
-    if ( ( node0 == ref_cell_e2n(ref_cell,0,cell_edge,cell) &&
-	   node1 == ref_cell_e2n(ref_cell,1,cell_edge,cell) ) ||
-	 ( node0 == ref_cell_e2n(ref_cell,1,cell_edge,cell) &&
-	   node1 == ref_cell_e2n(ref_cell,0,cell_edge,cell) ) )
-      if (id == ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),cell))
-	{
-	  *has_id = REF_TRUE;
-	  return REF_SUCCESS;
-	}
+  each_ref_cell_cell_edge( ref_cell, cell_edge )
+  if ( ( node0 == ref_cell_e2n(ref_cell,0,cell_edge,cell) &&
+         node1 == ref_cell_e2n(ref_cell,1,cell_edge,cell) ) ||
+       ( node0 == ref_cell_e2n(ref_cell,1,cell_edge,cell) &&
+         node1 == ref_cell_e2n(ref_cell,0,cell_edge,cell) ) )
+    if (id == ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),cell))
+      {
+        *has_id = REF_TRUE;
+        return REF_SUCCESS;
+      }
 
   return REF_SUCCESS;
 }
@@ -819,7 +820,7 @@ REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell)
 
   if ( NULL == ref_cell->c2e )
     ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
-		ref_cell_edge_per(ref_cell), REF_INT);
+                ref_cell_edge_per(ref_cell), REF_INT);
 
   for ( cell = 0; cell < ref_cell_max(ref_cell); cell++ )
     for ( edge = 0; edge < ref_cell_edge_per(ref_cell); edge++ )
@@ -836,7 +837,7 @@ REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
 
   if ( NULL == ref_cell->c2e )
     ref_malloc( ref_cell->c2e, ref_cell_max(ref_cell) *
-		ref_cell_edge_per(ref_cell), REF_INT);
+                ref_cell_edge_per(ref_cell), REF_INT);
 
   each_ref_cell_having_node( ref_cell, n0, item, cell)
   {

@@ -48,12 +48,12 @@ struct REF_CELL_STRUCT {
 #define ref_cell_c2n(ref_cell,node,cell) \
   (( ref_cell )->c2n[( node )+ref_cell_size_per(ref_cell)*( cell )] )
 
-#define ref_cell_c2e(ref_cell,cell_edge,cell)				\
-  ( NULL==(( ref_cell )->c2e) ?						\
-    REF_EMPTY :								\
+#define ref_cell_c2e(ref_cell,cell_edge,cell) \
+  ( NULL==(( ref_cell )->c2e ) ?              \
+    REF_EMPTY :                               \
     ( ref_cell )->c2e[( cell_edge )+ref_cell_edge_per(ref_cell)*( cell )] )
 
-#define ref_cell_c2e_set(ref_cell,cell_edge,cell)			\
+#define ref_cell_c2e_set(ref_cell,cell_edge,cell) \
   ( ( ref_cell )->c2e[( cell_edge )+ref_cell_edge_per(ref_cell)*( cell )] )
 
 #define ref_cell_e2n_gen(ref_cell,node,edge) \
@@ -128,7 +128,7 @@ REF_STATUS ref_cell_replace_whole( REF_CELL ref_cell,
 REF_STATUS ref_cell_replace_node( REF_CELL ref_cell,
                                   REF_INT old_node, REF_INT new_node );
 REF_STATUS ref_cell_compact( REF_CELL ref_cell,
-			     REF_INT **o2n, REF_INT **n2o );
+                             REF_INT **o2n, REF_INT **n2o );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
 
@@ -137,9 +137,9 @@ REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
                               REF_BOOL *has_side);
 
 REF_STATUS ref_cell_side_has_id( REF_CELL ref_cell,
-				 REF_INT node0, REF_INT node1,
-				 REF_INT id,
-				 REF_BOOL *has_id );
+                                 REF_INT node0, REF_INT node1,
+                                 REF_INT id,
+                                 REF_BOOL *has_id );
 
 REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
                                REF_INT *face_nodes,

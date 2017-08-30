@@ -42,7 +42,7 @@ int main( int argc, char *argv[] )
   REF_DBL x_node, y_node, best_dist;
   REF_DBL dx, dy, dist;
 
-  valid_inputs = (3 <= argc);  
+  valid_inputs = ( 3 <= argc );
 
   if ( !valid_inputs )
     {
@@ -58,69 +58,71 @@ int main( int argc, char *argv[] )
 
   RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    {
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
-      RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
-    }
+  {
+    RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
+    RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
+    RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
+  }
   RSS(ref_subdiv_split(ref_subdiv),"split");
   RSS(ref_subdiv_free(ref_subdiv),"free");
 
   arg_parse_position = 3;
   while ( arg_parse_position < argc &&
-	  strcmp(argv[arg_parse_position],"-xy") == 0 )
+          strcmp(argv[arg_parse_position],"-xy") == 0 )
     {
-      if (argc < arg_parse_position+3) THROW("incomplete -xy argument");
+      if (argc < arg_parse_position+3)
+        THROW("incomplete -xy argument");
       printf("%s %s %s\n",
-	     argv[arg_parse_position], 
-	     argv[arg_parse_position+1], 
-	     argv[arg_parse_position+2]);
+             argv[arg_parse_position],
+             argv[arg_parse_position+1],
+             argv[arg_parse_position+2]);
       x_node = atof(argv[arg_parse_position+1]);
       y_node = atof(argv[arg_parse_position+2]);
       printf("%s %.15e %.15e\n",
-	     argv[arg_parse_position], 
-	     x_node, 
-	     y_node);
+             argv[arg_parse_position],
+             x_node,
+             y_node);
       arg_parse_position += 3;
       best_dist = 0;
       best_node = REF_EMPTY;
       each_ref_node_valid_node(ref_node,node)
-	{
-	  dx = ref_node_xyz(ref_node,0,node)-x_node;
-	  dy = ref_node_xyz(ref_node,2,node)-y_node;
-	  dist = sqrt(dx*dx+dy*dy);
-	  if ( best_node == REF_EMPTY )
-	    {
-	      best_node = node;
-	      best_dist = dist;
-	    }
-	  else
-	    {
-	      if ( dist < best_dist )
-		{
-		  best_node = node;
-		  best_dist = dist;
-		}
-	    }
-	}
-	
-      if ( best_node == REF_EMPTY ) THROW("missing nodes?");
+      {
+        dx = ref_node_xyz(ref_node,0,node)-x_node;
+        dy = ref_node_xyz(ref_node,2,node)-y_node;
+        dist = sqrt(dx*dx+dy*dy);
+        if ( best_node == REF_EMPTY )
+          {
+            best_node = node;
+            best_dist = dist;
+          }
+        else
+          {
+            if ( dist < best_dist )
+              {
+                best_node = node;
+                best_dist = dist;
+              }
+          }
+      }
+
+      if ( best_node == REF_EMPTY )
+        THROW("missing nodes?");
 
       printf("node %d x %.15e y %.15e dist %.15e\n",
-	     best_node, 
-	     ref_node_xyz(ref_node,0,best_node),
-	     ref_node_xyz(ref_node,2,best_node),
-	     best_dist);
-     
+             best_node,
+             ref_node_xyz(ref_node,0,best_node),
+             ref_node_xyz(ref_node,2,best_node),
+             best_dist);
+
       RSS( ref_subdiv_create( &ref_subdiv, ref_grid ), "init" );
       node = best_node;
       each_ref_cell_having_node( ref_cell, node, item, cell )
-	{
-	  RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
-	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
-	  RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
-	}
+      {
+        RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+        RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[1], nodes[2] ), "o0" );
+        RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[2], nodes[0] ), "o1" );
+        RSS( ref_subdiv_mark_to_split( ref_subdiv, nodes[0], nodes[1] ), "o2" );
+      }
       RSS(ref_subdiv_split(ref_subdiv),"split");
       RSS(ref_subdiv_free(ref_subdiv),"free");
     }

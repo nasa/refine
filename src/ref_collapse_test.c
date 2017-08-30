@@ -115,7 +115,7 @@ int main( void )
     REIS(0, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
     REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"edg");
-    
+
     RSS( ref_cell_nodes(ref_grid_tri(ref_grid),0,nodes),"nodes");
     REIS( 0, nodes[0], "0" );
     REIS( 3, nodes[1], "1" );
@@ -157,11 +157,11 @@ int main( void )
     |\ 1|\
     |0\ | \
     |  \|2 \
-    0---1---5  
+    0---1---5
     */
-    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=10;
+    nodes[0] = 1; nodes[1] = 4, nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri1),"add tri");
-    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=10;
+    nodes[0] = 1; nodes[1] = 5, nodes[2] = 4; nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri2),"add tri");
 
     node0 = 0; node1 = 3;
@@ -192,7 +192,7 @@ int main( void )
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     /*
     2---4      y
-    |\ 1|\     
+    |\ 1|\
     |0\ | \    ^
     |  \|2 \   |
     0---1---5  +-> x
@@ -208,9 +208,9 @@ int main( void )
     ref_node_xyz(ref_grid_node(ref_grid),1,node) = 0.0;
     ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.0;
 
-    nodes[0]= 1; nodes[1]=4, nodes[2]=2; nodes[3]=10;
+    nodes[0] = 1; nodes[1] = 4, nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri1),"add tri");
-    nodes[0]= 1; nodes[1]=5, nodes[2]=4; nodes[3]=10;
+    nodes[0] = 1; nodes[1] = 5, nodes[2] = 4; nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&tri2),"add tri");
 
     node0 = 2; node1 = 1;
@@ -223,7 +223,7 @@ int main( void )
     REIS(REF_FALSE,allowed,"normal would change");
 
     ref_node_xyz(ref_grid_node(ref_grid),0,node) = 2.0;
-    ref_node_xyz(ref_grid_node(ref_grid),1,node) =-1.0;
+    ref_node_xyz(ref_grid_node(ref_grid),1,node) = -1.0;
     ref_node_xyz(ref_grid_node(ref_grid),2,node) = 0.0;
 
     node0 = 2; node1 = 4;
@@ -311,7 +311,7 @@ int main( void )
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1/(10.0*10.0);
+    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1/( 10.0*10.0 );
 
     RSS(ref_collapse_pass(ref_grid),"pass");
 
@@ -450,8 +450,8 @@ int main( void )
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1/(10.0*10.0);
-    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1/(10.0*10.0);
+    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1/( 10.0*10.0 );
+    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1/( 10.0*10.0 );
 
     RSS(ref_collapse_twod_pass(ref_grid),"pass");
 

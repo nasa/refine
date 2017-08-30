@@ -56,11 +56,11 @@ int main( void )
 
     RSS(ref_tet(&original),"create");
     RSS(ref_cell_deep_copy(&ref_cell,original),"deep copy");
-	
+
     RSS(ref_cell_free(original),"cleanup");
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
-  
+
   { /* add */
     REF_CELL ref_cell;
     REF_INT nodes[4];
@@ -161,7 +161,7 @@ int main( void )
     RSS(ref_cell_remove(ref_cell,1),"remove cell");
 
     RSS(ref_cell_compact(ref_cell,&o2n,&n2o),"compact");
-    
+
     REIS(0,o2n[0],"o2n");
     REIS(REF_EMPTY,o2n[1],"o2n");
     REIS(1,o2n[2],"o2n");
@@ -296,7 +296,7 @@ int main( void )
       {
         nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
         RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
-	RSS(ref_cell_remove(ref_cell,cell),"rm cell");
+        RSS(ref_cell_remove(ref_cell,cell),"rm cell");
       }
     REIS(max,ref_cell_max(ref_cell),"do not realloc max");
 

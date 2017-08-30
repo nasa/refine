@@ -319,15 +319,15 @@ REF_STATUS ref_cavity_add_ball( REF_CAVITY ref_cavity,
     {
     case ( 2 ):
       each_ref_cell_having_node( ref_grid_tri(ref_grid), node, item, cell )
-	{
-	  RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
-	}
+      {
+        RSS( ref_cavity_add_tri( ref_cavity, ref_grid, cell ), "insert");
+      }
       break;
     case ( 3 ):
       each_ref_cell_having_node( ref_grid_tet(ref_grid), node, item, cell )
-	{
-	  RSS( ref_cavity_add_tet( ref_cavity, ref_grid, cell ), "insert");
-	}
+      {
+        RSS( ref_cavity_add_tet( ref_cavity, ref_grid, cell ), "insert");
+      }
       break;
     default:
       THROW("add_ball unknown node_per");
@@ -416,24 +416,24 @@ REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
       RSS( ref_cell_remove( ref_grid_tri(ref_grid), cell ), "rm" );
       each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
       if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
-	{
-	  RSS( ref_node_remove( ref_grid_node(ref_grid),
-				nodes[cell_node] ),"rm");
-	  RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
-				    nodes[cell_node] ),"rm");
-	}
+        {
+          RSS( ref_node_remove( ref_grid_node(ref_grid),
+                                nodes[cell_node] ),"rm");
+          RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
+                                    nodes[cell_node] ),"rm");
+        }
 
       RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ),
            "save nodes");
       RSS( ref_cell_remove( ref_grid_tri(ref_grid), tri ), "rm" );
       each_ref_cell_cell_node( ref_grid_tri(ref_grid), cell_node )
       if ( ref_cell_node_empty( ref_grid_tri(ref_grid), nodes[cell_node] ) )
-	{
-	  RSS( ref_node_remove( ref_grid_node(ref_grid),
-				nodes[cell_node] ),"rm");
-	  RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
-				    nodes[cell_node] ),"rm");
-	}
+        {
+          RSS( ref_node_remove( ref_grid_node(ref_grid),
+                                nodes[cell_node] ),"rm");
+          RSS( ref_geom_remove_all( ref_grid_geom(ref_grid),
+                                    nodes[cell_node] ),"rm");
+        }
 
     }
 
@@ -771,33 +771,33 @@ REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
   REF_BOOL debug = REF_FALSE;
   count = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    {
-      node = nodes[0];
-      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-      if ( quality < min_quality )
-	{
-	  snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
-          RSS(ref_cavity_create(&ref_cavity,3),"create");
-          RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
-	  if (debug)
-	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+  {
+    node = nodes[0];
+    RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+    if ( quality < min_quality )
+      {
+        snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
+        RSS(ref_cavity_create(&ref_cavity,3),"create");
+        RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
+        if (debug)
+          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
-          RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
-	      REF_INVALID,"remove problem");
-          if (debug)
-	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+        RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
+            REF_INVALID,"remove problem");
+        if (debug)
+          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
 
-          RXS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),
-	      	      REF_INVALID,"enlarge viz");
-          RSS(ref_cavity_change(ref_cavity, ref_grid, node,
-				&improved), "change" );
-          if (debug)
-	    RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
-	  if (REF_FALSE && improved)
-	    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"replace");
-          RSS(ref_cavity_free(ref_cavity),"free");
-        }
-    }
+        RXS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),
+            REF_INVALID,"enlarge viz");
+        RSS(ref_cavity_change(ref_cavity, ref_grid, node,
+                              &improved), "change" );
+        if (debug)
+          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
+        if (REF_FALSE && improved)
+          RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"replace");
+        RSS(ref_cavity_free(ref_cavity),"free");
+      }
+  }
 
   return REF_SUCCESS;
 }
@@ -866,10 +866,10 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
           RSS(ref_cavity_make_visible(ref_cavity,ref_grid,node),"make valid");
           RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
           RSS(ref_cavity_change(ref_cavity, ref_grid, node,
-				&improved), "change" );
-	  if ( improved )
-	    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid,
-				       node, opp ),"free");
+                                &improved), "change" );
+          if ( improved )
+            RSS(ref_cavity_replace_tri(ref_cavity, ref_grid,
+                                       node, opp ),"free");
           RSS(ref_cavity_free(ref_cavity),"free");
         }
     }
@@ -922,13 +922,13 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   RSS(ref_dict_create(&face_dict),"create faces");
 
   each_ref_list_item( ref_cavity_list(ref_cavity), item )
-    {
-      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
-      RSS( ref_dict_store( face_dict, cell, 0 ), "store");
-      RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
-      each_ref_cell_cell_node( ref_cell, cell_node )
-	RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
-    }
+  {
+    cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+    RSS( ref_dict_store( face_dict, cell, 0 ), "store");
+    RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+    each_ref_cell_cell_node( ref_cell, cell_node )
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
 
   fprintf(f,
           "zone t=old, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -948,12 +948,12 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       cell = ref_dict_key(face_dict,item);
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
       each_ref_cell_cell_node( ref_cell, cell_node )
-	{
-	  RSS( ref_dict_location( node_dict,
-				  nodes[cell_node],
-				  &local), "ret");
-	  fprintf(f," %d",local + 1);
-	}
+      {
+        RSS( ref_dict_location( node_dict,
+                                nodes[cell_node],
+                                &local), "ret");
+        fprintf(f," %d",local + 1);
+      }
       fprintf(f,"\n");
     }
 
@@ -965,13 +965,13 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   RSS( ref_dict_store( node_dict, node, 0 ), "store");
   each_ref_cavity_valid_face( ref_cavity, face )
-    {
-      RSS( ref_dict_store( face_dict, face, 0 ), "store");
-      each_ref_cavity_face_node( ref_cavity, face_node )
-	RSS( ref_dict_store( node_dict,
-			     ref_cavity_f2n(ref_cavity,face_node,face), 0 ),
-	     "store");
-    }
+  {
+    RSS( ref_dict_store( face_dict, face, 0 ), "store");
+    each_ref_cavity_face_node( ref_cavity, face_node )
+    RSS( ref_dict_store( node_dict,
+                         ref_cavity_f2n(ref_cavity,face_node,face), 0 ),
+         "store");
+  }
 
   fprintf(f,
           "zone t=new, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -992,12 +992,12 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
       RSS( ref_dict_location( node_dict, node, &local), "center node");
       fprintf(f," %d",local + 1);
       each_ref_cavity_face_node( ref_cavity, face_node )
-	{
-	  RSS( ref_dict_location( node_dict,
-				  ref_cavity_f2n(ref_cavity,face_node,face),
-				  &local), "ret");
-	  fprintf(f," %d",local + 1);
-	}
+      {
+        RSS( ref_dict_location( node_dict,
+                                ref_cavity_f2n(ref_cavity,face_node,face),
+                                &local), "ret");
+        fprintf(f," %d",local + 1);
+      }
       fprintf(f,"\n");
     }
 
@@ -1024,60 +1024,61 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   min_quality = 1.0;
   total_quality = 0.0;
   each_ref_list_item( ref_cavity_list(ref_cavity), item )
-    {
-      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
-      switch ( ref_cavity_node_per( ref_cavity ) )
-	{
-	case ( 2 ):
-	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
-	  RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
-	  break;
-	case ( 3 ):
-	  RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
-	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
-	  break;
-	default:
-	  THROW("change unknown node_per");
-	}
-      n++;
-      total_quality += quality;
-      min_quality = MIN( min_quality, quality );
-    }
+  {
+    cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+    switch ( ref_cavity_node_per( ref_cavity ) )
+      {
+      case ( 2 ):
+        RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
+        RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+        break;
+      case ( 3 ):
+        RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
+        RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
+        break;
+      default:
+        THROW("change unknown node_per");
+      }
+    n++;
+    total_quality += quality;
+    min_quality = MIN( min_quality, quality );
+  }
   if ( REF_FALSE && n > 0 )
     printf("- min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
   min_del = min_quality;
   n_del = n;
-  
+
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
   each_ref_cavity_valid_face( ref_cavity, face )
-    {
-      skip = REF_FALSE;
-      /* skip a collapsed triangle that in on the boundary of cavity */
-      each_ref_cavity_face_node( ref_cavity, face_node )
-	if ( node == ref_cavity_f2n(ref_cavity,face_node,face) )
-	  skip = REF_TRUE;
-      if (skip) continue;
-      each_ref_cavity_face_node( ref_cavity, face_node )
-	nodes[face_node] = ref_cavity_f2n(ref_cavity,face_node,face);
-      nodes[ref_cavity_node_per(ref_cavity)] = node;
-      switch ( ref_cavity_node_per( ref_cavity ) )
-	{
-	case ( 2 ):
-	  RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
-	  break;
-	case ( 3 ):
-	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
-	  break;
-	default:
-	  THROW("change unknown node_per");
-	}
-      n++;
-      total_quality += quality;
-      min_quality = MIN( min_quality, quality );
-    }
+  {
+    skip = REF_FALSE;
+    /* skip a collapsed triangle that in on the boundary of cavity */
+    each_ref_cavity_face_node( ref_cavity, face_node )
+    if ( node == ref_cavity_f2n(ref_cavity,face_node,face) )
+      skip = REF_TRUE;
+    if (skip)
+      continue;
+    each_ref_cavity_face_node( ref_cavity, face_node )
+    nodes[face_node] = ref_cavity_f2n(ref_cavity,face_node,face);
+    nodes[ref_cavity_node_per(ref_cavity)] = node;
+    switch ( ref_cavity_node_per( ref_cavity ) )
+      {
+      case ( 2 ):
+        RSS( ref_node_tri_quality( ref_node, nodes, &quality ), "new qual");
+        break;
+      case ( 3 ):
+        RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "new qual");
+        break;
+      default:
+        THROW("change unknown node_per");
+      }
+    n++;
+    total_quality += quality;
+    min_quality = MIN( min_quality, quality );
+  }
   if ( REF_FALSE && n > 0 )
     printf("+ min %12.8f avg %12.8f n %d\n",
            min_quality, total_quality/((REF_DBL)n ), n);
@@ -1085,10 +1086,10 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   n_add = n;
 
   printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n",
-	 min_add, min_del, min_add-min_del, n_add, n_del);
+         min_add, min_del, min_add-min_del, n_add, n_del);
 
   if ( min_add > min_del )
     *improved = REF_TRUE;
-  
+
   return REF_SUCCESS;
 }
