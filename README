@@ -1,25 +1,6 @@
-Refine is a 3D tetrahedral grid adaptation framework. It is
-implemented with an object-oriented flavor in the C language.  Most
-functionality is wrapped into Ruby scripting language extensions
-<http://www.ruby-lang.org/> for use in test first programming and unit
-testing. See the README.EXT file in the Ruby distribution for details
-on ruby extensions. 
 
-The refine library can be called by FUN3D <http://fun3d.larc.nasa.gov/>
-to perform adaptation with a parallel execution scheme.
-
-CAD geometry access is facilitated with the NASA Langley Geometry
-Laboratory SDK <http://geolab.larc.nasa.gov/>, which assess CAD
-information with the CAPRI API
-<http://raphael.mit.edu/capri/docs.html>.
-
-MesherX is an advancing layer mixed-element mesher that interacts with
-the SDK to rebuild the inviscid portions of the grid.
+Refine is a 3D mixed-element grid adaptation framework implemented in
+the C language.
 
 See the INSTALL file for build instructions.
-
-Contact Mike Park <Mike.Park@NASA.Gov> (757) 864-6604 or anyone listed
-in the AUTHORS file for help or more information.
-
-Mesh Error Minimization Engine
 
