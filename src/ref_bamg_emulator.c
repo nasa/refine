@@ -35,14 +35,14 @@ int main( int argc, char *argv[] )
   struct tm *now = localtime(&rawtime);
   RAS (0<strftime(timestamp,512,"%Y-%m-%d_%H:%M:%S",now),
        "unable to format time stamp");
-  
+
   RSS( ref_args_find( argc, argv, "-b", &location), "-b argument missing" );
   printf(" %s ",argv[location]);
   RAS( location<argc-1, "-b missing");
   input_filename = argv[1+location];
   printf("'%s'\n",input_filename);
 
-  RXS( ref_args_find( argc, argv, "-noop", &location ), 
+  RXS( ref_args_find( argc, argv, "-noop", &location ),
        REF_NOT_FOUND, "noop" );
   noop = ( location != REF_EMPTY );
 
@@ -54,7 +54,7 @@ int main( int argc, char *argv[] )
       metric_filename = argv[1+location];
       printf("'%s'\n",metric_filename);
     }
-  
+
   RSS( ref_args_find( argc, argv, "-o", &location), "-o argument missing" );
   printf(" %s ",argv[location]);
   RAS( location<argc-1, "-o missing");
@@ -63,7 +63,7 @@ int main( int argc, char *argv[] )
 
   printf("start up at %s\n",timestamp);
   RAS(0<sprintf(command,"cp %s ref-bu-%s-in.msh",
-		input_filename,timestamp),"in");
+                input_filename,timestamp),"in");
   printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 
@@ -75,8 +75,8 @@ int main( int argc, char *argv[] )
   if ( noop )
     {
       REF_DBL *metric;
-      ref_malloc( metric, 
-		   6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      ref_malloc( metric,
+                  6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
       RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
       RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
       ref_free( metric );
@@ -85,9 +85,9 @@ int main( int argc, char *argv[] )
     {
       RSS( ref_part_bamg_metric( ref_grid, metric_filename ), "metric" );
       if ( NULL != background_grid )
-	RSS( ref_part_bamg_metric( background_grid, metric_filename ), "metric" );
+        RSS( ref_part_bamg_metric( background_grid, metric_filename ), "metric" );
       RAS(0<sprintf(command,"cp %s ref-bu-%s.metric",
-		    metric_filename,timestamp),"in");
+                    metric_filename,timestamp),"in");
       printf("%s\n",command);
       REIS( 0, system(command), "cp command failed" );
     }
@@ -103,21 +103,21 @@ int main( int argc, char *argv[] )
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
       if ( NULL != background_grid )
-	{
-	  RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
-	  ref_mpi_stopwatch_stop("interp");
-	}
+        {
+          RSS( ref_metric_interpolate( ref_grid, background_grid ), "interp" );
+          ref_mpi_stopwatch_stop("interp");
+        }
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop("balance");
     }
-  
+
   RSS( ref_export_by_extension( ref_grid, output_filename ), "out" );
 
   RAS(0<sprintf(command,"cp %s ref-bu-%s-out.msh",
-		output_filename,timestamp),"in");
+                output_filename,timestamp),"in");
   printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 

@@ -15,7 +15,7 @@ int main( int argc, char *argv[] )
   REF_GRID ref_grid;
   REF_BOOL valid_inputs;
 
-  valid_inputs = (3 == argc);
+  valid_inputs = ( 3 == argc );
 
   if ( !valid_inputs )
     {
@@ -35,7 +35,7 @@ int main( int argc, char *argv[] )
   RSS(ref_grid_free(ref_grid),"free");
 
   REIS( 0, system("bamg -M bamg.metric2d -b bamg.msh -o bamg-out.msh"),
-	"bamg failed" );
+        "bamg failed" );
 
   RSS( ref_import_by_extension( &ref_grid, "bamg-out.msh" ), "import" );
   RSS( ref_export_by_extension( ref_grid, "ref_bamg_test.b8.ugrid" ), "export");
