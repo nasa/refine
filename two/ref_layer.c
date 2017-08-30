@@ -61,7 +61,8 @@ REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
       if ( ! contains ) 
 	continue;
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "tri nodes");
-      /*printf("node %3d faceid %d\n",node,nodes[3]);*/
+      if ( REF_FALSE )
+	printf("node %3d faceid %d\n",node,nodes[3]);
     }
 
   return REF_SUCCESS;
@@ -86,7 +87,6 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  for (i=0;i<3;i++)
 	    ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
-	  ref_layer_normal(ref_layer,ref_grid,node);
 	}
     }
   nnode = ref_node_n(ref_layer_node(ref_layer));
@@ -96,6 +96,9 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
     {
       global = local+ref_node_n_global(ref_grid_node(ref_grid));
       RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
+      RSS( ref_layer_normal(ref_layer,ref_grid,
+			    ref_node_global(ref_layer_node(ref_layer),
+					    local) ), "normal");
       for (i=0;i<3;i++)
 	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
 	  ref_node_xyz(ref_layer_node(ref_layer), i, local);
