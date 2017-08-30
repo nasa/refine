@@ -129,9 +129,9 @@ REF_STATUS ref_metric_polar2d_node( REF_NODE ref_node )
       h_t = 0.1;
       h0 = 0.001;
       h_r = h0 + 2*(0.1-h0)*ABS(r-0.5);
-      ref_matrix_eig( d, 0 ) = 1/(h_r*h_r);
-      ref_matrix_eig( d, 1 ) = 1/(h_t*h_t);
-      ref_matrix_eig( d, 2 ) = 1/(h_y*h_y);
+      ref_matrix_eig( d, 0 ) = 1.0/(h_r*h_r);
+      ref_matrix_eig( d, 1 ) = 1.0/(h_t*h_t);
+      ref_matrix_eig( d, 2 ) = 1.0/(h_y*h_y);
       ref_matrix_vec( d, 0, 0 ) = cos( t );
       ref_matrix_vec( d, 1, 0 ) = 0.0;
       ref_matrix_vec( d, 2, 0 ) = sin( t );
@@ -175,9 +175,9 @@ REF_STATUS ref_metric_ugawg_node( REF_NODE ref_node, REF_INT version )
 	  d0 = MIN( 10.0*ABS(r-0.5), 1.0 );
 	  h_t = 0.1 * d0 + 0.025 * (1.0-d0);
 	}
-      ref_matrix_eig( d, 0 ) = 1/(h_r*h_r);
-      ref_matrix_eig( d, 1 ) = 1/(h_t*h_t);
-      ref_matrix_eig( d, 2 ) = 1/(h_z*h_z);
+      ref_matrix_eig( d, 0 ) = 1.0/(h_r*h_r);
+      ref_matrix_eig( d, 1 ) = 1.0/(h_t*h_t);
+      ref_matrix_eig( d, 2 ) = 1.0/(h_z*h_z);
       ref_matrix_vec( d, 0, 0 ) = cos( t );
       ref_matrix_vec( d, 1, 0 ) = sin( t );
       ref_matrix_vec( d, 2, 0 ) = 0.0;
@@ -603,7 +603,7 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       hn = hmax;
       hn = MIN(hn, norm_ratio*hr);
       hn = MIN(hn, norm_ratio*hs);
-      ref_matrix_eig(diagonal_system, 2 ) = 1/hn/hn;
+      ref_matrix_eig(diagonal_system, 2 ) = 1.0/hn/hn;
       RSS( ref_matrix_form_m( diagonal_system, &(metric[6*node]) ), "reform m");
     }
   

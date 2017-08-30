@@ -180,7 +180,7 @@ int main( void )
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1/(0.25*0.25);
+    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1.0/(0.25*0.25);
 
     RSS(ref_split_pass(ref_grid),"pass");
 
@@ -254,8 +254,8 @@ int main( void )
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1/(0.25*0.25);
-    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1/(0.25*0.25);
+    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1.0/(0.25*0.25);
+    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1.0/(0.25*0.25);
 
     RSS(ref_split_twod_pass(ref_grid),"pass");
 

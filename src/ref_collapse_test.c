@@ -311,7 +311,7 @@ int main( void )
     RSS(ref_fixture_tet_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1/( 10.0*10.0 );
+    ref_node_metric(ref_grid_node(ref_grid),5,3) = 1.0/( 10.0*10.0 );
 
     RSS(ref_collapse_pass(ref_grid),"pass");
 
@@ -450,8 +450,8 @@ int main( void )
     RSS(ref_fixture_pri_grid(&ref_grid),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1/( 10.0*10.0 );
-    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1/( 10.0*10.0 );
+    ref_node_metric(ref_grid_node(ref_grid),5,1) = 1.0/( 10.0*10.0 );
+    ref_node_metric(ref_grid_node(ref_grid),5,4) = 1.0/( 10.0*10.0 );
 
     RSS(ref_collapse_twod_pass(ref_grid),"pass");
 
