@@ -12,7 +12,7 @@ REF_STATUS ref_dict_create( REF_DICT *ref_dict_ptr )
 
   ref_malloc( *ref_dict_ptr, 1, REF_DICT_STRUCT );
 
-  ref_dict = (*ref_dict_ptr);
+  ref_dict = ( *ref_dict_ptr );
 
   ref_dict_n(ref_dict) = 0;
   ref_dict_max(ref_dict) = 10;
@@ -25,7 +25,8 @@ REF_STATUS ref_dict_create( REF_DICT *ref_dict_ptr )
 
 REF_STATUS ref_dict_free( REF_DICT ref_dict )
 {
-  if ( NULL == (void *)ref_dict ) return REF_NULL;
+  if ( NULL == (void *)ref_dict )
+    return REF_NULL;
   ref_free( ref_dict->value );
   ref_free( ref_dict->key );
   ref_free( ref_dict );
@@ -45,23 +46,23 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
     }
 
   insert_point = 0;
-  for (i=ref_dict_n( ref_dict )-1; i>=0; i--)
+  for (i = ref_dict_n( ref_dict )-1; i>=0; i--)
     {
       if ( ref_dict->key[i] == key )
-	{
-	  ref_dict->value[i] = value;
-	  return REF_SUCCESS;
-	}
-      if ( ref_dict->key[i] < key ) 
-	{
-	  insert_point = i+1;
-	  break;
-	}
+        {
+          ref_dict->value[i] = value;
+          return REF_SUCCESS;
+        }
+      if ( ref_dict->key[i] < key )
+        {
+          insert_point = i+1;
+          break;
+        }
     }
   /* shift to open up insert_point */
-  for(i=ref_dict_n( ref_dict );i>insert_point;i--)
+  for (i = ref_dict_n( ref_dict ); i>insert_point; i--)
     ref_dict->key[i] = ref_dict->key[i-1];
-  for(i=ref_dict_n( ref_dict );i>insert_point;i--)
+  for (i = ref_dict_n( ref_dict ); i>insert_point; i--)
     ref_dict->value[i] = ref_dict->value[i-1];
   /* fill insert_point */
   ref_dict_n( ref_dict )++;
@@ -71,18 +72,18 @@ REF_STATUS ref_dict_store( REF_DICT ref_dict, REF_INT key, REF_INT value )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_dict_location( REF_DICT ref_dict, 
-			      REF_INT key, REF_INT *location )
+REF_STATUS ref_dict_location( REF_DICT ref_dict,
+                              REF_INT key, REF_INT *location )
 {
   REF_INT i;
 
   *location = REF_EMPTY;
 
-  for (i=0; i<ref_dict_n( ref_dict ); i++) 
+  for (i = 0; i<ref_dict_n( ref_dict ); i++)
     if ( key == ref_dict->key[i] )
       {
-	*location = i;
-	return REF_SUCCESS;
+        *location = i;
+        return REF_SUCCESS;
       }
 
   return REF_NOT_FOUND;
@@ -97,9 +98,9 @@ REF_STATUS ref_dict_remove( REF_DICT ref_dict, REF_INT key )
 
   ref_dict_n( ref_dict )--;
 
-  for(i=location;i<ref_dict_n( ref_dict );i++)
+  for (i = location; i<ref_dict_n( ref_dict ); i++)
     ref_dict->key[i] = ref_dict->key[i+1];
-  for(i=location;i<ref_dict_n( ref_dict );i++)
+  for (i = location; i<ref_dict_n( ref_dict ); i++)
     ref_dict->value[i] = ref_dict->value[i+1];
 
   return REF_SUCCESS;
@@ -118,10 +119,10 @@ REF_BOOL ref_dict_has_key( REF_DICT ref_dict, REF_INT key )
 {
   REF_INT i;
 
-  for (i=0; i<ref_dict_n( ref_dict ); i++) 
+  for (i = 0; i<ref_dict_n( ref_dict ); i++)
     if ( key == ref_dict->key[i] )
       {
-	return REF_TRUE;
+        return REF_TRUE;
       }
 
   return REF_FALSE;
@@ -132,7 +133,7 @@ REF_STATUS ref_dict_inspect( REF_DICT ref_dict )
   REF_INT i;
   printf("ref_dict = %p\n",(void *)ref_dict);
   printf(" n = %d, max = %d\n",ref_dict_n(ref_dict),ref_dict_max(ref_dict));
-  for ( i = 0 ; i < ref_dict_n( ref_dict ) ; i++ )
+  for ( i = 0; i < ref_dict_n( ref_dict ); i++ )
     printf(" %d [%d] = %d\n",ref_dict->key[i],i,ref_dict->value[i]);
 
   return REF_SUCCESS;

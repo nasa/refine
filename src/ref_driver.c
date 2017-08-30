@@ -53,7 +53,7 @@ static void echo_argv( int argc, char *argv[] )
 {
   int pos;
   printf("\n");
-  for ( pos = 0 ; pos < argc ; pos++ ) 
+  for ( pos = 0; pos < argc; pos++ )
     printf(" %s",argv[pos]);
   printf("\n\n");
 }
@@ -73,7 +73,7 @@ int main( int argc, char *argv[] )
   char output_project[1024];
   char output_filename[1024];
   REF_INT ngeom;
-  
+
   RSS( ref_mpi_start( argc, argv ), "start" );
   ref_mpi_stopwatch_start();
 
@@ -82,82 +82,83 @@ int main( int argc, char *argv[] )
   if (ref_mpi_master)
     echo_argv( argc, argv );
 
-  while ((opt = getopt(argc, argv, "i:m:g:p:o:s:cltd")) != -1)
+  while (( opt = getopt(argc, argv, "i:m:g:p:o:s:cltd")) != -1)
     {
       switch (opt)
-	{
-	case 'i':
-	  if ( 1 < ref_mpi_n )
-	    {
-	      RSS( ref_part_by_extension( &ref_grid, optarg ), "part" );
-	    }
-	  else
-	    {
-	      RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
-	    }
-	  break;
-	case 'g':
-	  RNS( ref_grid, "input grid must be loaded before geom" );
-	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
-	  break;
-	case 'p':
-	  if ( 1 < ref_mpi_n ) RSS( REF_IMPLEMENT, "-p not parallel");
-	  RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
-	  break;
-	case 'm':
-	  RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
-	  curvature_metric = REF_FALSE;
-	  break;
-	case 'o':
-	  snprintf( output_project, 1024, "%s", optarg );
-	  break;
-	case 's':
-	  passes = atoi(optarg);
-	  break;
-	case 'c':
-	  output_clumps = REF_TRUE;
-	  break;
-	case 'l':
-	  sanitize_metric = REF_TRUE;
-	  break;
-	case 't':
-	  tecplot_movie = REF_TRUE;
-	  break;
-	case 'd':
-	  debug_verbose = REF_TRUE;
-	  break;
-	case '?':
-	default:
-	  printf("parse error -%c\n",optopt);
-	  printf("usage: \n %s\n",argv[0]);
-	  printf("       [-i input_grid.ext]\n");
-	  printf("       [-g geometry.egads]\n");
-	  printf("       [-p parameterization-restart.gas]\n");
-	  printf("       [-m input_project.metric] (curvature metric when missing)\n");
-	  printf("       [-s adapt_cycles] default is 15\n");
-	  printf("       [-o output_project]\n");
-	  printf("       [-c] output clumps\n");
-	  printf("       [-l] limit metric change\n");
-	  printf("       [-t] tecplot movie\n");
-	  printf("       [-d] debug verbose\n");
-	  printf("./ref_geom_test ega.egads \n");
-	  printf("./ref_geom_test ega.egads ega.ugrid\n");
-	  printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
-	  printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
-	  printf("cp ref_driver.b8.ugrid ref_driver1.b8.ugrid\n");
-	  printf("cp ref_driver.gas ref_driver1.gas\n");
-	  printf("./ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric 0.1\n");
-	  printf("./ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric\n");
-	  return 1;
-	}
+        {
+        case 'i':
+          if ( 1 < ref_mpi_n )
+            {
+              RSS( ref_part_by_extension( &ref_grid, optarg ), "part" );
+            }
+          else
+            {
+              RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
+            }
+          break;
+        case 'g':
+          RNS( ref_grid, "input grid must be loaded before geom" );
+          RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
+          break;
+        case 'p':
+          if ( 1 < ref_mpi_n )
+            RSS( REF_IMPLEMENT, "-p not parallel");
+          RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
+          break;
+        case 'm':
+          RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
+          curvature_metric = REF_FALSE;
+          break;
+        case 'o':
+          snprintf( output_project, 1024, "%s", optarg );
+          break;
+        case 's':
+          passes = atoi(optarg);
+          break;
+        case 'c':
+          output_clumps = REF_TRUE;
+          break;
+        case 'l':
+          sanitize_metric = REF_TRUE;
+          break;
+        case 't':
+          tecplot_movie = REF_TRUE;
+          break;
+        case 'd':
+          debug_verbose = REF_TRUE;
+          break;
+        case '?':
+        default:
+          printf("parse error -%c\n",optopt);
+          printf("usage: \n %s\n",argv[0]);
+          printf("       [-i input_grid.ext]\n");
+          printf("       [-g geometry.egads]\n");
+          printf("       [-p parameterization-restart.gas]\n");
+          printf("       [-m input_project.metric] (curvature metric when missing)\n");
+          printf("       [-s adapt_cycles] default is 15\n");
+          printf("       [-o output_project]\n");
+          printf("       [-c] output clumps\n");
+          printf("       [-l] limit metric change\n");
+          printf("       [-t] tecplot movie\n");
+          printf("       [-d] debug verbose\n");
+          printf("./ref_geom_test ega.egads \n");
+          printf("./ref_geom_test ega.egads ega.ugrid\n");
+          printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
+          printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
+          printf("cp ref_driver.b8.ugrid ref_driver1.b8.ugrid\n");
+          printf("cp ref_driver.gas ref_driver1.gas\n");
+          printf("./ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric 0.1\n");
+          printf("./ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric\n");
+          return 1;
+        }
     }
 
   RNS( ref_grid, "input grid required" );
 
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
-			 REF_GEOM_FACE, &ngeom ), "count ngeom" );
+                         REF_GEOM_FACE, &ngeom ), "count ngeom" );
   if (ngeom>0)
-    {	
+    {
       curvature_constraint = REF_TRUE;
       RSS( ref_geom_verify_topo( ref_grid ), "geom topo" );
       RSS( ref_geom_verify_param( ref_grid ), "geom param" );
@@ -171,14 +172,14 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
       RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
     }
-  
+
   RSS( ref_gather_tec_movie_record_button( tecplot_movie ), "show time" );
-  
+
   ref_mpi_stopwatch_stop("read grid");
   RSS( ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
-  
+
   if ( curvature_constraint )
     {
       RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
@@ -191,34 +192,34 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
     }
-  
+
   for (pass = 0; pass<passes; pass++ )
     {
       printf(" pass %d of %d\n",pass,passes);
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
       if (curvature_metric)
-	{
-	  RSS( ref_metric_interpolated_curvature( ref_grid ),
-	       "interp curve" );
-	  ref_mpi_stopwatch_stop("curvature");
-	}
+        {
+          RSS( ref_metric_interpolated_curvature( ref_grid ),
+               "interp curve" );
+          ref_mpi_stopwatch_stop("curvature");
+        }
       if ( NULL != background_grid )
-	{
-	  RSS( ref_metric_interpolate( ref_grid, background_grid ),
-	       "interp" );
-	  ref_mpi_stopwatch_stop("interp");
-	}
+        {
+          RSS( ref_metric_interpolate( ref_grid, background_grid ),
+               "interp" );
+          ref_mpi_stopwatch_stop("interp");
+        }
       if ( curvature_constraint )
-	{
-	  RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
-	  ref_mpi_stopwatch_stop("crv const");
-	}
+        {
+          RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+          ref_mpi_stopwatch_stop("crv const");
+        }
       if ( sanitize_metric )
-	{
-	  RSS( ref_metric_sanitize( ref_grid ), "sant metric");
-	  ref_mpi_stopwatch_stop("sant");
-	}
+        {
+          RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+          ref_mpi_stopwatch_stop("sant");
+        }
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
@@ -236,7 +237,7 @@ int main( int argc, char *argv[] )
     {
       snprintf( output_filename, 1024, "%s.meshb", output_project );
       RSS( ref_gather_by_extension( ref_grid, output_filename ),
-	   "export");
+           "export");
       ref_mpi_stopwatch_stop("gather meshb");
     }
   if ( 1 == ref_mpi_n )
@@ -263,19 +264,21 @@ int main( int argc, char *argv[] )
   if ( debug_verbose && 1 == ref_mpi_n )
     {
       RSS(ref_cavity_tet_quality( ref_grid ),
-	  "clump" );
+          "clump" );
       ref_mpi_stopwatch_stop("cavity tet quality");
       snprintf( output_filename, 1024, "%s_tet_qual.tec", output_project );
       RSS(ref_clump_tet_quality( ref_grid, 0.01, output_filename ),
-	  "clump" );
+          "clump" );
       ref_mpi_stopwatch_stop("clump tet quality");
     }
-  
-  if ( NULL != background_grid ) RSS(ref_grid_free( background_grid ), "free");
-  if ( NULL != ref_grid ) RSS(ref_grid_free( ref_grid ), "free");
+
+  if ( NULL != background_grid )
+    RSS(ref_grid_free( background_grid ), "free");
+  if ( NULL != ref_grid )
+    RSS(ref_grid_free( ref_grid ), "free");
 
   RSS( ref_mpi_stop(  ), "stop" );
-  
+
   return 0;
 }
 
