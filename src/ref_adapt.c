@@ -43,7 +43,7 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
 {
   REF_INT ngeom;
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
-			 REF_GEOM_FACE, &ngeom ), "count ngeom" );
+                         REF_GEOM_FACE, &ngeom ), "count ngeom" );
   ref_gather_blocking_frame( ref_grid, "threed pass" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
@@ -63,9 +63,9 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
       RSS( ref_cavity_tet_quality( ref_grid ), "split pass");
       ref_gather_blocking_frame( ref_grid, "split" );
       if (ngeom>0)
-	RSS( ref_geom_verify_topo( ref_grid ), "cavity geom typo check");
+        RSS( ref_geom_verify_topo( ref_grid ), "cavity geom typo check");
     }
-  
+
   RSS( ref_smooth_threed_pass( ref_grid ), "smooth pass");
   ref_gather_blocking_frame( ref_grid, "smooth" );
   if (ngeom>0)

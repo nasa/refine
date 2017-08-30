@@ -12,7 +12,7 @@ int main( int argc, char *argv[] )
 {
   REF_GRID ref_grid;
 
-  if (3 != argc) 
+  if (3 != argc)
     {
       printf("usage: %s input_grid.extension output_grid.extension\n",argv[0]);
       return 0;
