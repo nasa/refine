@@ -15,11 +15,11 @@ cat > faux_input <<EOF
 EOF
 
 if [ $# -gt 0 ] ; then
-    one=$1/src
-    two=$1/two
+    one=$1/one
+    two=$1/src
 else
-    one=${HOME}/refine/strict/src
-    two=${HOME}/refine/strict/two
+    one=${HOME}/refine/strict/one
+    two=${HOME}/refine/strict/src
 fi
 
 ${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
