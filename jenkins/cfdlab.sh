@@ -72,7 +72,7 @@ LOG=${root_dir}/log.configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${build_dir} \
-    --with-parmetis=${parmetis_path} \
+    --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
