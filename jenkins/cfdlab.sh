@@ -9,9 +9,10 @@ set +x # echo commands
 
 date
 
-module add gcc_4.9.1_64
-module add openmpi_1.8.6_gcc
-module add git # for git describe
+module load gcc_4.9.1_64
+module load openmpi_1.10.2_intel_2017
+module load intel.2017.2.174
+module load git # for git describe
 
 module use --append /ump/fldmd/home/wtjones1/Modules/modulefiles
 module load OpenCASCADE/6.6.0
@@ -20,7 +21,9 @@ module load ESP/svn
 module list
 set -x # echo commands
 
-parmetis_path="/ump/fldmd/home/wtjones1/local/pkgs-modules/ParMETIS/4.0.3-openmpi_1.8.6_gcc-gcc_4.9.1_64"
+module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
+parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
+zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 
 egads_path=/ump/fldmd/home/wtjones1/local/pkgs-modules/ESP/svn
 
@@ -39,6 +42,7 @@ date
 
 mkdir -p ${strict_dir}
 cd ${strict_dir}
+
 LOG=${root_dir}/log.strict-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
@@ -63,13 +67,14 @@ date
 
 mkdir -p ${build_dir}
 cd ${build_dir}
+
 LOG=${root_dir}/log.configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${build_dir} \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
-    CFLAGS='-DHAVE_MPI -g -O2 -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
 trap - EXIT
@@ -88,7 +93,7 @@ date
 
 LOG=${root_dir}/log.unit-para
 trap "cat $LOG" EXIT
-cd ${build_dir}/two
+cd ${build_dir}/src
 echo para-unit > $LOG 2>&1
 mpiexec -np 2 ./ref_mpi_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_part_test >> $LOG 2>&1

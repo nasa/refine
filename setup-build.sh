@@ -4,11 +4,9 @@ set -x
 
 ./bootstrap
 
-# TESTS_ENVIRONMENT='valgrind --quiet --leak-check=full'
-
 module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
-parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2013-2013.4.183_64"
-zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2013-2013.4.183_64"
+parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
+zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 #egads_path="/ump/fldmd/home/mpark/esp/LINUX64"
 egads_path="/ump/fldmd/home/mpark/local/pkgs/ESP110/EngSketchPad"
 
