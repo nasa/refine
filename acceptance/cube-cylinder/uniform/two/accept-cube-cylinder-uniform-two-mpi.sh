@@ -5,11 +5,11 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/src
-    two=$1/two
+    one=$1/one
+    two=$1/src
 else
-    one=${HOME}/refine/zoltan/src
-    two=${HOME}/refine/zoltan/two
+    one=${HOME}/refine/zoltan/one
+    two=${HOME}/refine/zoltan/src
 fi
 
 nproc=16

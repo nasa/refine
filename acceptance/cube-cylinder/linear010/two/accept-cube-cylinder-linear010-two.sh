@@ -5,11 +5,11 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/src
-    two=$1/two
+    one=$1/one
+    two=$1/src
 else
-    one=${HOME}/refine/egads/src
-    two=${HOME}/refine/egads/two
+    one=${HOME}/refine/egads/one
+    two=${HOME}/refine/egads/src
 fi
 
 h=0.01
