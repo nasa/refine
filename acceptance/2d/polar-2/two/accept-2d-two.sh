@@ -5,11 +5,11 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/src
-    two=$1/two
+    one=$1/one
+    two=$1/src
 else
-    one=${HOME}/refine/strict/src
-    two=${HOME}/refine/strict/two
+    one=${HOME}/refine/strict/one
+    two=${HOME}/refine/strict/src
 fi
 
 tecplot=-t
