@@ -17,8 +17,7 @@ REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
   ref_layer = *ref_layer_ptr;
 
   RSS(ref_list_create(&(ref_layer_list(ref_layer))),"create list");
-  RSS(ref_node_create(&(ref_layer_node(ref_layer))),"create node");
-  RSS(ref_cell_create(&(ref_layer_cell(ref_layer)),6,REF_FALSE),"create cell");
+  RSS(ref_grid_create(&(ref_layer_grid(ref_layer))),"create grid");
 
   return REF_SUCCESS;
 }
@@ -27,8 +26,7 @@ REF_STATUS ref_layer_free( REF_LAYER ref_layer )
 {
   if ( NULL == (void *)ref_layer ) return REF_NULL;
 
-  ref_cell_free( ref_layer_cell(ref_layer) );
-  ref_node_free( ref_layer_node(ref_layer) );
+  ref_grid_free( ref_layer_grid(ref_layer) );
   ref_list_free( ref_layer_list(ref_layer) );
   ref_free( ref_layer );
 
@@ -78,7 +76,7 @@ REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
       for(i=0;i<3;i++)
 	norm[i] += angle*triangle_norm[i];
     }
-	  
+  
   if ( !ref_math_divisible(norm[0],total) ||
        !ref_math_divisible(norm[1],total) ||
        !ref_math_divisible(norm[2],total) ) 
@@ -95,6 +93,8 @@ REF_STATUS ref_layer_normal( REF_LAYER ref_layer, REF_GRID ref_grid,
 REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
+  REF_CELL layer_prism = ref_grid_pri(ref_layer_grid(ref_layer));
   REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT prism[REF_CELL_MAX_SIZE_PER];
   REF_INT node, local, global, i, nnode;
@@ -107,26 +107,26 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
       each_ref_cell_cell_node( ref_cell, cell_node )
 	{
-	  RSS( ref_node_add(ref_layer_node(ref_layer),
+	  RSS( ref_node_add(layer_node,
 			    nodes[cell_node], &node), "add");
 	  for (i=0;i<3;i++)
-	    ref_node_xyz(ref_layer_node(ref_layer), i, node) =
+	    ref_node_xyz(layer_node, i, node) =
 	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
 	}
     }
-  nnode = ref_node_n(ref_layer_node(ref_layer));
+  nnode = ref_node_n(layer_node);
 
   /* second layer of nodes */
   for (local = 0;local<nnode;local++)
     {
       global = local+ref_node_n_global(ref_grid_node(ref_grid));
-      RSS( ref_node_add(ref_layer_node(ref_layer), global, &node), "add");
+      RSS( ref_node_add(layer_node, global, &node), "add");
       RSS( ref_layer_normal(ref_layer,ref_grid,
-			    ref_node_global(ref_layer_node(ref_layer),
+			    ref_node_global(layer_node,
 					    local), norm ), "normal");
       for (i=0;i<3;i++)
-	ref_node_xyz(ref_layer_node(ref_layer), i, node) =
-	  0.1*norm[i] + ref_node_xyz(ref_layer_node(ref_layer), i, local);
+	ref_node_xyz(layer_node, i, node) =
+	  0.1*norm[i] + ref_node_xyz(layer_node, i, local);
     }
 
   /* layer of prisms */
@@ -136,20 +136,20 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
       each_ref_cell_cell_node( ref_cell, cell_node )
 	{
-	  RSS( ref_node_local(ref_layer_node(ref_layer),
+	  RSS( ref_node_local(layer_node,
 			      nodes[cell_node], &local), "local");
 	  prism[cell_node] = local;
 	  prism[3+cell_node] = local+nnode;
 	}
-      RSS(ref_cell_add(ref_layer_cell(ref_layer), prism, &item ), "add");
+      RSS(ref_cell_add(layer_prism, prism, &item ), "add");
     }
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_layer_tec( REF_LAYER ref_layer, const char *filename )
 {
-  REF_NODE ref_node = ref_layer_node(ref_layer);
-  REF_CELL ref_cell = ref_layer_cell(ref_layer);
+  REF_NODE ref_node = ref_grid_node(ref_layer_grid(ref_layer));
+  REF_CELL ref_cell = ref_grid_pri(ref_layer_grid(ref_layer));
   FILE *file;
   REF_INT node, i, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT brick[REF_CELL_MAX_SIZE_PER];

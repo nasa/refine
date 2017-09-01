@@ -19,17 +19,15 @@ BEGIN_C_DECLORATION
 
 struct REF_LAYER_STRUCT {
   REF_LIST ref_list;
-  REF_NODE ref_node;
-  REF_CELL ref_cell;
+  REF_GRID ref_grid;
 };
 
 REF_STATUS ref_layer_create( REF_LAYER *ref_layer );
 REF_STATUS ref_layer_free( REF_LAYER ref_layer );
 
 #define ref_layer_list(ref_layer) ((ref_layer)->ref_list)
-#define ref_layer_node(ref_layer) ((ref_layer)->ref_node)
-#define ref_layer_cell(ref_layer) ((ref_layer)->ref_cell)
 #define ref_layer_n(ref_layer) (ref_list_n(ref_layer_list(ref_layer)))
+#define ref_layer_grid(ref_layer) ((ref_layer)->ref_grid)
 
 REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
 			     REF_GRID ref_grid, REF_INT faceid );
