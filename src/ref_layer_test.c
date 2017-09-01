@@ -51,7 +51,8 @@ int main( int argc, char *argv[] )
 
     if ( argc > 1 )
       {
-	RSS( ref_layer_tec( ref_layer, argv[1] ), "tec" );
+	RSS( ref_export_by_extension( ref_layer_grid(ref_layer),
+				      argv[1] ), "tec" );
       }
     if ( argc > 2 )
       {
