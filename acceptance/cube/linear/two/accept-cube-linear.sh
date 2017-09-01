@@ -21,10 +21,10 @@ function adapt_cycle_sant {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -g cube.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l ${tecplot}
+    ${two}/ref_driver -i ${inproj}.meshb -g cube.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l ${tecplot}
     mv ref_gather_movie.tec ${inproj}_movie.tec
-    ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
-    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
+    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
 }
 function adapt_cycle {
@@ -32,17 +32,16 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -g cube.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
+    ${two}/ref_driver -i ${inproj}.meshb -g cube.egads -p ${inproj}.gas -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
     mv ref_gather_movie.tec ${inproj}_movie.tec
-    ${two}/ref_acceptance -ugawg ${field} ${outproj}.b8.ugrid ${outproj}.metric
-    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
+    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 
 }
 
 # ./cube.sh
 
-${two}/ref_translate cube.ugrid cube.b8.ugrid
-${two}/ref_acceptance -ugawg ${field} cube.b8.ugrid cube.metric
+${two}/ref_acceptance -ugawg ${field} cube.meshb cube.metric
 
 adapt_cycle_sant cube cycle01 2
 adapt_cycle_sant cycle01 cycle02 2
