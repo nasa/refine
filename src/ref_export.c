@@ -590,7 +590,7 @@ REF_STATUS ref_export_metric_xyzdirlen( REF_GRID ref_grid,
 		  d[3],d[4],d[5],
 		  d[6],d[7],d[8],
 		  d[9],d[10],d[11],
-		  d[0],d[1],d[2]);
+		  1.0/sqrt(d[0]),1.0/sqrt(d[1]),1.0/sqrt(d[2]));
     }
 
   ref_free(n2o);
