@@ -1,4 +1,11 @@
 
+accept comm as argument
+pull ref_migrate_method variables into struct
+pull ref_adapt variables into struct
+create REF_MPI and REF_GATHER to eliminate static
+mem leak, static, movie file pointer in grid
+static, lmpi time
+
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 layer
@@ -76,12 +83,6 @@ smooth
  requeue neighbors with large changes? particulary quality drops
  freitag smoothing
  surface smoothing without geom
-
-pull ref_migrate_method variables into struct
-pull ref_adapt variables into struct
-create REF_MPI and REF_GATHER to eliminate static
-mem leak, static, movie file pointer in grid
-static, lmpi time
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
