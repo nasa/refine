@@ -211,6 +211,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_grid_enclosing_tet( ref_grid,
 				   ref_node_xyz_ptr(layer_node,local),
 				   &tet, bary ), "enclosing tet" );
+      printf("bary %f %f %f %f\n",bary[0],bary[1],bary[2],bary[3]);
     }
   return REF_SUCCESS;
 }
