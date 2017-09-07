@@ -190,9 +190,9 @@ REF_STATUS ref_split_edge( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_tri( REF_GRID ref_grid,
-			  REF_INT node0, REF_INT node1, REF_INT node2,
-			  REF_INT new_node )
+REF_STATUS ref_split_face( REF_GRID ref_grid,
+			   REF_INT node0, REF_INT node1, REF_INT node2,
+			   REF_INT new_node )
 {
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], face_nodes[REF_CELL_MAX_SIZE_PER];
