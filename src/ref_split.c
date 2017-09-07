@@ -475,8 +475,8 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 				 new_node1 ), "geom new node");
       RSS( ref_geom_constrain( ref_grid, new_node1 ), "geom constraint");
 
-      RSS( ref_split_face( ref_grid, node0, node1, new_node0,
-			   node2, node3, new_node1 ), "split face");
+      RSS( ref_split_twod_edge( ref_grid, node0, node1, new_node0,
+				node2, node3, new_node1 ), "split face");
 
       ref_node_age(ref_node,node0) = 0;
       ref_node_age(ref_node,node1) = 0;
@@ -492,9 +492,11 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_face( REF_GRID ref_grid, 
-			   REF_INT node0, REF_INT node1, REF_INT new_node0, 
-			   REF_INT node2, REF_INT node3, REF_INT new_node1 )
+REF_STATUS ref_split_twod_edge( REF_GRID ref_grid, 
+				REF_INT node0, REF_INT node1,
+				REF_INT new_node0, 
+				REF_INT node2, REF_INT node3,
+				REF_INT new_node1 )
 {
 
   REF_CELL pri = ref_grid_pri(ref_grid);

@@ -254,8 +254,8 @@ int main( void )
     RSS( ref_node_add(ref_grid_node(ref_grid),6,&new_node0), "new");
     RSS( ref_node_add(ref_grid_node(ref_grid),7,&new_node1), "new");
 
-    RSS(ref_split_face(ref_grid,node0,node1,new_node0,
-		                node2,node3,new_node1),"split");
+    RSS(ref_split_twod_edge(ref_grid,node0,node1,new_node0,
+			    node2,node3,new_node1),"split");
 
     REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
@@ -275,8 +275,8 @@ int main( void )
     RSS( ref_node_add(ref_grid_node(ref_grid),6,&new_node0), "new");
     RSS( ref_node_add(ref_grid_node(ref_grid),7,&new_node1), "new");
 
-    RSS(ref_split_face(ref_grid,node0,node1,new_node0,
-		                node2,node3,new_node1),"split");
+    RSS(ref_split_twod_edge(ref_grid,node0,node1,new_node0,
+			    node2,node3,new_node1),"split");
 
     REIS(2, ref_cell_n(ref_grid_pri(ref_grid)),"tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
