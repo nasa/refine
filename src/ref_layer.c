@@ -95,8 +95,10 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_CELL layer_prism = ref_grid_pri(ref_layer_grid(ref_layer));
-  REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL layer_edge = ref_grid_edg(ref_layer_grid(ref_layer));
+  REF_INT item, cell, cell_node, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT prism[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
   REF_INT node, local, global, i, nnode;
   REF_DBL norm[3];
 
@@ -141,8 +143,54 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  prism[cell_node] = local;
 	  prism[3+cell_node] = local+nnode;
 	}
-      RSS(ref_cell_add(layer_prism, prism, &item ), "add");
+      RSS(ref_cell_add(layer_prism, prism, &new_cell ), "add");
     }
+
+  /* constrain faces */
+  each_ref_list_item( ref_layer_list(ref_layer), item )
+    {
+      cell = ref_list_value( ref_layer_list(ref_layer), item );
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_edge( ref_cell, cell_edge )
+	{
+	  REF_INT node0;
+	  REF_INT node1;
+	  REF_INT ncell, cell_list[2];
+	  REF_BOOL contains0, contains1;
+	  REF_INT edge_nodes[REF_CELL_MAX_SIZE_PER];
+	  node0 = nodes[ref_cell_e2n_gen(ref_cell,0,cell_edge)];
+	  node1 = nodes[ref_cell_e2n_gen(ref_cell,1,cell_edge)];
+	  RSS( ref_cell_list_with2(ref_cell,node0,node1,
+				   2, &ncell, cell_list ), "find with 2");
+	  REIS(2,ncell, "expected two tri for tri side");
+	  RSS( ref_list_contains( ref_layer_list(ref_layer), cell_list[0],
+				  &contains0 ), "0 in layer" );
+	  RSS( ref_list_contains( ref_layer_list(ref_layer), cell_list[1],
+				  &contains1 ), "1 in layer" );
+	  if ( contains0 && contains1 )
+	    continue; /* tri side interior to layer */
+	  if ( !contains0 && !contains1 )
+	    THROW("tri side is not in layer");
+	  RSS( ref_node_local(layer_node,
+			      node0, &local), "local");
+	  edge_nodes[0] = local+nnode;
+	  RSS( ref_node_local(layer_node,
+			      node1, &local), "local");
+	  edge_nodes[1] = local+nnode;
+	  if ( contains0 )
+	    {
+	      REIS(cell,cell_list[0], "cell should be in layer");
+	      edge_nodes[2] = ref_cell_c2n(ref_cell,3,cell_list[1]);
+	    }
+	  if ( contains1 )
+	    {
+	      REIS(cell,cell_list[1], "cell should be in layer");
+	      edge_nodes[2] = ref_cell_c2n(ref_cell,3,cell_list[0]);
+	    }
+	  RSS(ref_cell_add(layer_edge, edge_nodes, &new_cell ), "add");
+	}
+    }
+
   return REF_SUCCESS;
 }
 
