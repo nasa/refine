@@ -204,7 +204,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_INT nnode_per_layer, node, local, global;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER], node0, node1;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], node0, node1, node2, node3;
   REF_INT tet, i, new_node;
   REF_DBL bary[4];
   REF_INT zeros;
@@ -215,8 +215,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 
   for ( node = 0 ; node < nnode_per_layer ; node++ )
     {
-      local = node; /* base */
-      global = ref_node_global(layer_node,node);
+      global = ref_node_global(layer_node,node); /* base */
       tet = ref_adj_first(ref_cell_adj(ref_cell),global);
       local = node+nnode_per_layer; /* target */
       RSS( ref_grid_enclosing_tet( ref_grid,
@@ -228,7 +227,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  zeros++;
       switch ( zeros )
 	{
-	case 2:
+	case 2: /* split an edge */
 	  RSS(ref_cell_nodes(ref_cell,tet,nodes),"nodes");
 	  node0=REF_EMPTY;
 	  node1=REF_EMPTY;
@@ -245,8 +244,12 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 		    node1 = i;
 		    continue;
 		  }
-		THROW("more zeros than nodes");
+		THROW("more non-zeros than nodes");
 	      }
+	  if ( node0 == REF_EMPTY )
+	    THROW("non-zero node0 missing");
+	  if ( node1 == REF_EMPTY )
+	    THROW("non-zero node1 missing");
 	  node0 = nodes[node0];
 	  node1 = nodes[node1];
 	  RSS( ref_node_next_global( ref_node, &global ), "next global");
@@ -265,9 +268,32 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	    ref_node_xyz(ref_node,i,new_node) = 
 	      ref_node_xyz(layer_node,i,local);
 	  break;
-	default:
+	case 1:  /* split a triangle */
+	  node0=REF_EMPTY;
+	  for (i=0;i<4;i++)
+	    if (ABS(bary[i]) < zero_tol)
+	      {
+		if ( node0 == REF_EMPTY )
+		  {
+		    node0 = i;
+		    continue;
+		  }
+		THROW("more zeros than nodes");
+	      }
+	  if ( node0 == REF_EMPTY )
+	    THROW("non-zero node0 missing");
+	  node1 = ref_cell_f2n_gen(ref_cell,0,node0);
+	  node2 = ref_cell_f2n_gen(ref_cell,1,node0);
+	  node3 = ref_cell_f2n_gen(ref_cell,2,node0);
 	  printf("%d bary %f %f %f %f\n",
 		 zeros,bary[0],bary[1],bary[2],bary[3]);
+	  printf("node0 %d face %d %d %d\n",
+		 node0, node1, node2, node3);
+	  break;
+	default:
+	  printf("implement zeros %d bary %f %f %f %f\n",
+		 zeros,bary[0],bary[1],bary[2],bary[3]);
+	  RSS(REF_IMPLEMENT,"missing a general case");
 	  break;
 	}
     }
