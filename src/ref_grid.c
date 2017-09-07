@@ -232,7 +232,47 @@ REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid,
       }
 
   return REF_SUCCESS;
+}
 
+REF_STATUS ref_grid_edge_nodes( REF_GRID ref_grid, 
+				REF_INT edge_tag, 
+				REF_INT *nnode, REF_INT *nedge, 
+				REF_INT **g2l, REF_INT **l2g )
+{
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_malloc_init( *g2l, ref_node_max(ref_node), REF_INT, REF_EMPTY );
+
+  (*nnode) = 0;
+  (*nedge) = 0;
+
+  ref_cell = ref_grid_edg(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    if ( edge_tag == nodes[2] )
+      {
+	(*nedge)++;
+	for ( node = 0; node < 2; node++ )
+	  if ( REF_EMPTY == (*g2l)[nodes[node]] )
+	    { (*g2l)[nodes[node]] = (*nnode); (*nnode)++; }
+      }
+
+  ref_malloc( *l2g, *nnode, REF_INT );
+
+  (*nnode) = 0;
+  for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( REF_EMPTY != (*g2l)[node] ) 
+      {
+	(*g2l)[node] = (*nnode);
+	(*l2g)[(*nnode)] = node;
+	(*nnode)++;
+      }
+
+  return REF_SUCCESS;
 }
 
 static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,

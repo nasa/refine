@@ -78,6 +78,10 @@ REF_STATUS ref_grid_boundary_nodes( REF_GRID ref_grid,
 				    REF_INT boundary_tag, 
 				    REF_INT *nnode, REF_INT *nface, 
 				    REF_INT **g2l, REF_INT **l2g );
+REF_STATUS ref_grid_edge_nodes( REF_GRID ref_grid, 
+				REF_INT edge_tag, 
+				REF_INT *nnode, REF_INT *nedge, 
+				REF_INT **g2l, REF_INT **l2g );
 
 REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid );
 
