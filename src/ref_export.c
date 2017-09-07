@@ -295,6 +295,7 @@ REF_STATUS ref_export_tec( REF_GRID ref_grid, const char *filename  )
   fprintf(file, "title=\"tecplot refine geometry file\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
+  RSS( ref_export_tec_edge_zone( ref_grid, file  ), "edge" );
   RSS( ref_export_tec_surf_zone( ref_grid, file  ), "surf" );
   RSS( ref_export_tec_vol_zone( ref_grid, file  ), "vol" );
 
@@ -316,6 +317,63 @@ REF_STATUS ref_export_tec_surf( REF_GRID ref_grid, const char *filename  )
   RSS( ref_export_tec_surf_zone( ref_grid, file  ), "surf" );
 
   fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_edge_zone( REF_GRID ref_grid, FILE *file )
+{
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *g2l, *l2g;
+  REF_INT nedge;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnode;
+  REF_DICT ref_dict;
+  REF_INT boundary_tag,boundary_index;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  RSS( ref_dict_create( &ref_dict ), "create dict" ); 
+
+  ref_cell = ref_grid_edg(ref_grid);
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    RSS( ref_dict_store( ref_dict, nodes[2], REF_EMPTY ), "mark tri" );
+
+  each_ref_dict_key( ref_dict, boundary_index, boundary_tag )
+    {
+      RSS( ref_grid_edge_nodes( ref_grid, boundary_tag,
+				&nnode, &nedge, &g2l, &l2g ),
+	   "extract this edge");
+
+      fprintf(file,
+	 "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	      boundary_tag, nnode, nedge, "point", "felineseg" );
+
+      for ( node = 0; node < nnode; node++ )
+	fprintf(file, " %.16e %.16e %.16e\n",
+		ref_node_xyz(ref_node,0,l2g[node]),
+		ref_node_xyz(ref_node,1,l2g[node]),
+		ref_node_xyz(ref_node,2,l2g[node]) ) ;
+
+      ref_cell = ref_grid_edg(ref_grid);
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+	if ( boundary_tag == nodes[2] )
+	  {
+	    for ( node = 0; node < 2; node++ )
+	      {
+		fprintf(file," %d",g2l[nodes[node]] + 1);
+	      }
+	    fprintf(file,"\n");
+	  }
+
+      ref_free(l2g);
+      ref_free(g2l);
+    }
+
+  RSS( ref_dict_free( ref_dict ), "free dict" ); 
+
   return REF_SUCCESS;
 }
 
