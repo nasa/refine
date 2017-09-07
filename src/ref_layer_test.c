@@ -48,6 +48,7 @@ int main( int argc, char *argv[] )
     faceid = 3; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
     faceid = 5; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
     RSS(ref_layer_puff( ref_layer, ref_grid ),"puff");
+    RSS(ref_layer_insert( ref_layer, ref_grid ),"insert");
 
     if ( argc > 1 )
       {

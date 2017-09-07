@@ -194,3 +194,23 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
+  REF_INT nnode, node, local, global;
+  REF_INT tet;
+  REF_DBL bary[4];
+  nnode = ref_node_n(layer_node)/2; /* should persist in ref_layer */
+
+  for ( node = 0 ; node < nnode ; node++ )
+    {
+      local = node+nnode;
+      global = ref_node_global(layer_node,node);
+      tet = ref_adj_first(ref_cell_adj(ref_cell),global);
+      RSS( ref_grid_enclosing_tet( ref_grid,
+				   ref_node_xyz_ptr(layer_node,local),
+				   &tet, bary ), "enclosing tet" );
+    }
+  return REF_SUCCESS;
+}
