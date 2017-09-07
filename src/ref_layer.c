@@ -199,8 +199,10 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_INT nnode, node, local, global;
-  REF_INT tet;
+  REF_INT tet, i;
   REF_DBL bary[4];
+  REF_INT zeros;
+  REF_DBL zero_tol = 1.0e-10;
   nnode = ref_node_n(layer_node)/2; /* should persist in ref_layer */
 
   for ( node = 0 ; node < nnode ; node++ )
@@ -211,7 +213,16 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_grid_enclosing_tet( ref_grid,
 				   ref_node_xyz_ptr(layer_node,local),
 				   &tet, bary ), "enclosing tet" );
-      printf("bary %f %f %f %f\n",bary[0],bary[1],bary[2],bary[3]);
+      zeros = 0;
+      for (i=0;i<4;i++)
+	if (ABS(bary[i]) < zero_tol)
+	  zeros++;
+      switch ( zeros )
+	{
+	case 2:
+	  printf("%d bary %f %f %f %f\n",zeros,bary[0],bary[1],bary[2],bary[3]);
+	  break;
+	}
     }
   return REF_SUCCESS;
 }
