@@ -435,7 +435,7 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_grid_exahstive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
+REF_STATUS ref_grid_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 					     REF_INT *tet, REF_DBL *bary )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -494,8 +494,8 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
       /* exhastive serach if cell is invalid */
       if ( !ref_cell_valid(ref_cell,guess) )
 	{
-	  RSS( ref_grid_exahstive_enclosing_tet( ref_grid, xyz,
-						 tet, bary ), "enclose");
+	  RSS( ref_grid_exhaustive_enclosing_tet( ref_grid, xyz,
+						  tet, bary ), "enclose");
 	  return REF_SUCCESS;
 	}
 
