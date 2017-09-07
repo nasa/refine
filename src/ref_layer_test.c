@@ -19,6 +19,7 @@
 
 #include  "ref_export.h"
 #include   "ref_edge.h"
+#include   "ref_metric.h"
 
 int main( int argc, char *argv[] )
 {
@@ -41,6 +42,7 @@ int main( int argc, char *argv[] )
     REF_INT faceid;
     
     RSS(ref_fixture_tet_brick_grid( &ref_grid ), "tet brick");
+    RSS(ref_metric_unit_node( ref_grid_node(ref_grid) ),"unit metric");
     RSS(ref_layer_create( &ref_layer ),"create");
 
     faceid = 6; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");

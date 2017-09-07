@@ -3,6 +3,7 @@
 #include <stdio.h>
 
 #include "ref_layer.h"
+#include "ref_split.h"
 
 #include "ref_math.h"
 #include "ref_malloc.h"
@@ -197,9 +198,11 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
   REF_INT nnode, node, local, global;
-  REF_INT tet, i;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], node0, node1;
+  REF_INT tet, i, new_node;
   REF_DBL bary[4];
   REF_INT zeros;
   REF_DBL zero_tol = 1.0e-10;
@@ -220,7 +223,36 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       switch ( zeros )
 	{
 	case 2:
-	  printf("%d bary %f %f %f %f\n",zeros,bary[0],bary[1],bary[2],bary[3]);
+	  RSS(ref_cell_nodes(ref_cell,tet,nodes),"nodes");
+	  node0=REF_EMPTY;
+	  node1=REF_EMPTY;
+	  for (i=0;i<4;i++)
+	    if (ABS(bary[i]) >= zero_tol)
+	      {
+		if ( node0 == REF_EMPTY )
+		  {
+		    node0 = i;
+		    continue;
+		  }
+		if ( node1 == REF_EMPTY )
+		  {
+		    node1 = i;
+		    continue;
+		  }
+		THROW("more zeros than nodes");
+	      }
+	  printf("%d bary %f %f %f %f %d %d\n",
+		 zeros,bary[0],bary[1],bary[2],bary[3], node0, node1);
+	  node0 = nodes[node0];
+	  node1 = nodes[node1];
+	  RSS( ref_node_next_global( ref_node, &global ), "next global");
+	  RSS( ref_node_add( ref_node, global, &new_node ), "new node");
+	  RSS( ref_node_interpolate_edge( ref_node, node0, node1,
+					  new_node ), "interp new node");
+	  RSS( ref_geom_add_between( ref_grid, node0, node1,
+				     new_node ), "geom new node");
+	  RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
+	  RSS( ref_split_edge( ref_grid, node0, node1, new_node ), "split");
 	  break;
 	}
     }
