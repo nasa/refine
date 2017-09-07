@@ -27,6 +27,8 @@
 #include "ref_metric.h"
 
 #include "ref_gather.h"
+#include "ref_geom.h"
+#include "ref_clump.h"
 
 int main( void )
 {
@@ -78,6 +80,55 @@ int main( void )
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
     REIS(2, ref_cell_n(ref_grid_edg(ref_grid)),"edg");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split tet in three */
+    REF_GRID ref_grid;
+    REF_INT node0, node1, node2, new_node;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    node0 = 1; node1 = 2; node2 = 3;
+
+    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
+    RSS(ref_split_tri(ref_grid,node0,node1,node2,new_node),"split");
+
+    REIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+    REIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"tri");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split tet and tri in three */
+    REF_GRID ref_grid;
+    REF_INT node0, node1, node2, new_node;
+
+    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    node0 = 0; node1 = 1; node2 = 2;
+
+    RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
+    RSS(ref_split_tri(ref_grid,node0,node1,node2,new_node),"split");
+
+    REIS(3, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
+    REIS(3, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"tri");
+
+    RSS( ref_grid_free( ref_grid ), "free grid");
+  }
+
+  { /* split two tet in six */
+    REF_GRID ref_grid;
+    REF_INT node0, node1, node2, new_node;
+
+    RSS(ref_fixture_tet2_grid(&ref_grid),"set up");
+    node0 = 1; node1 = 2; node2 = 3;
+
+    RSS( ref_node_add(ref_grid_node(ref_grid),5,&new_node), "new");
+    RSS(ref_split_tri(ref_grid,node0,node1,node2,new_node),"split");
+
+    REIS(6, ref_cell_n(ref_grid_tet(ref_grid)),"tet");
 
     RSS( ref_grid_free( ref_grid ), "free grid");
   }

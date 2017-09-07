@@ -190,6 +190,102 @@ REF_STATUS ref_split_edge( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_split_tri( REF_GRID ref_grid,
+			  REF_INT node0, REF_INT node1, REF_INT node2,
+			  REF_INT new_node )
+{
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], face_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell0, cell1;
+  REF_INT node, new_cell;
+
+  face_nodes[0] = node0;
+  face_nodes[1] = node1;
+  face_nodes[2] = node2;
+  face_nodes[3] = node0;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS( ref_cell_with_face(ref_cell,face_nodes,
+			  &cell0, &cell1 ), "get tet(2)" );
+  if ( REF_EMPTY != cell0 )
+    {
+      cell = cell0;
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node0 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node0 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node0;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node1 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node1 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node1;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node2 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node2 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node2;
+    }
+  if ( REF_EMPTY != cell1 )
+    {
+      cell = cell1;
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node0 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node0 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node0;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node1 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node1 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node1;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node2 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node2 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node2;
+    }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RXS( ref_cell_with(ref_cell,face_nodes,&cell),
+       REF_NOT_FOUND, "find tri" );
+  if ( REF_EMPTY != cell )
+    {
+      RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+      RSS( ref_cell_remove( ref_cell, cell ), "remove" );
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node0 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node0 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node0;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node1 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node1 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node1;
+
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( node2 == nodes[node] ) nodes[node] = new_node;
+      RSS( ref_cell_add(ref_cell,nodes,&new_cell),"add node2 version");
+      for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	if ( new_node == nodes[node] ) nodes[node] = node2;
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_edge_mixed( REF_GRID ref_grid, 
 				 REF_INT node0, REF_INT node1,
 				 REF_BOOL *allowed )
