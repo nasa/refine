@@ -206,6 +206,8 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_DBL bary[4];
   REF_INT zeros;
   REF_DBL zero_tol = 1.0e-10;
+  REF_BOOL has_support;
+
   nnode = ref_node_n(layer_node)/2; /* should persist in ref_layer */
 
   for ( node = 0 ; node < nnode ; node++ )
@@ -253,6 +255,13 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 				     new_node ), "geom new node");
 	  RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
 	  RSS( ref_split_edge( ref_grid, node0, node1, new_node ), "split");
+	  RSS( ref_geom_supported( ref_grid_geom(ref_grid), new_node,
+				   &has_support ), "got geom?" );
+	  if ( has_support )
+	    RSS(REF_IMPLEMENT,"add geometry handling");
+	  for (i=0;i<3;i++)
+	    ref_node_xyz(ref_node,i,new_node) = 
+	      ref_node_xyz(layer_node,i,local);
 	  break;
 	}
     }
