@@ -20,6 +20,8 @@ REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
   RSS(ref_list_create(&(ref_layer_list(ref_layer))),"create list");
   RSS(ref_grid_create(&(ref_layer_grid(ref_layer))),"create grid");
 
+  ref_layer->nnode_per_layer = REF_EMPTY;
+
   return REF_SUCCESS;
 }
 
@@ -100,7 +102,7 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_INT item, cell, cell_node, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT prism[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
-  REF_INT node, local, global, i, nnode;
+  REF_INT node, local, global, i, nnode_per_layer;
   REF_DBL norm[3];
 
   /* first layer of nodes */
@@ -117,10 +119,11 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	      ref_node_xyz(ref_grid_node(ref_grid), i, nodes[cell_node]);
 	}
     }
-  nnode = ref_node_n(layer_node);
+  nnode_per_layer = ref_node_n(layer_node);
+  ref_layer->nnode_per_layer = nnode_per_layer;
 
   /* second layer of nodes */
-  for (local = 0;local<nnode;local++)
+  for (local = 0;local<nnode_per_layer;local++)
     {
       global = local+ref_node_n_global(ref_grid_node(ref_grid));
       RSS( ref_node_add(layer_node, global, &node), "add");
@@ -142,7 +145,7 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  RSS( ref_node_local(layer_node,
 			      nodes[cell_node], &local), "local");
 	  prism[cell_node] = local;
-	  prism[3+cell_node] = local+nnode;
+	  prism[3+cell_node] = local+nnode_per_layer;
 	}
       RSS(ref_cell_add(layer_prism, prism, &new_cell ), "add");
     }
@@ -174,10 +177,10 @@ REF_STATUS ref_layer_puff( REF_LAYER ref_layer, REF_GRID ref_grid )
 	    THROW("tri side is not in layer");
 	  RSS( ref_node_local(layer_node,
 			      node0, &local), "local");
-	  edge_nodes[0] = local+nnode;
+	  edge_nodes[0] = local+nnode_per_layer;
 	  RSS( ref_node_local(layer_node,
 			      node1, &local), "local");
-	  edge_nodes[1] = local+nnode;
+	  edge_nodes[1] = local+nnode_per_layer;
 	  if ( contains0 )
 	    {
 	      REIS(cell,cell_list[0], "cell should be in layer");
@@ -200,7 +203,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
-  REF_INT nnode, node, local, global;
+  REF_INT nnode_per_layer, node, local, global;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], node0, node1;
   REF_INT tet, i, new_node;
   REF_DBL bary[4];
@@ -208,13 +211,14 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
   REF_DBL zero_tol = 1.0e-10;
   REF_BOOL has_support;
 
-  nnode = ref_node_n(layer_node)/2; /* should persist in ref_layer */
+  nnode_per_layer = ref_layer->nnode_per_layer;
 
-  for ( node = 0 ; node < nnode ; node++ )
+  for ( node = 0 ; node < nnode_per_layer ; node++ )
     {
-      local = node+nnode;
+      local = node; /* base */
       global = ref_node_global(layer_node,node);
       tet = ref_adj_first(ref_cell_adj(ref_cell),global);
+      local = node+nnode_per_layer; /* target */
       RSS( ref_grid_enclosing_tet( ref_grid,
 				   ref_node_xyz_ptr(layer_node,local),
 				   &tet, bary ), "enclosing tet" );
@@ -243,8 +247,6 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 		  }
 		THROW("more zeros than nodes");
 	      }
-	  printf("%d bary %f %f %f %f %d %d\n",
-		 zeros,bary[0],bary[1],bary[2],bary[3], node0, node1);
 	  node0 = nodes[node0];
 	  node1 = nodes[node1];
 	  RSS( ref_node_next_global( ref_node, &global ), "next global");
@@ -262,6 +264,10 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  for (i=0;i<3;i++)
 	    ref_node_xyz(ref_node,i,new_node) = 
 	      ref_node_xyz(layer_node,i,local);
+	  break;
+	default:
+	  printf("%d bary %f %f %f %f\n",
+		 zeros,bary[0],bary[1],bary[2],bary[3]);
 	  break;
 	}
     }
