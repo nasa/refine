@@ -222,6 +222,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_grid_enclosing_tet( ref_grid,
 				   ref_node_xyz_ptr(layer_node,local),
 				   &tet, bary ), "enclosing tet" );
+      RSS(ref_cell_nodes(ref_cell,tet,nodes),"nodes");
       zeros = 0;
       for (i=0;i<4;i++)
 	if (ABS(bary[i]) < zero_tol)
@@ -229,7 +230,6 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       switch ( zeros )
 	{
 	case 2: /* split an edge */
-	  RSS(ref_cell_nodes(ref_cell,tet,nodes),"nodes");
 	  node0=REF_EMPTY;
 	  node1=REF_EMPTY;
 	  for (i=0;i<4;i++)
@@ -307,9 +307,12 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	    RSS(REF_IMPLEMENT,"add geometry handling");
 	  RSS( ref_node_next_global( ref_node, &global ), "next global");
 	  RSS( ref_node_add( ref_node, global, &new_node ), "new node");
-	  RSS( ref_node_interpolate_face( ref_node, node0, node1, node2,
+	  RSS( ref_node_interpolate_face( ref_node, node1, node2, node3,
 					  new_node ), "interp new node");
-	  RSS( ref_split_face( ref_grid, node0, node1, node2, new_node),
+	  for (i=0;i<3;i++)
+	    ref_node_xyz(ref_node,i,new_node) = 
+	      ref_node_xyz(layer_node,i,local);
+	  RSS( ref_split_face( ref_grid, node1, node2, node3, new_node),
 	       "fsplit");
 	  printf("split zeros %d bary %f %f %f %f\n",
 		 zeros,bary[0],bary[1],bary[2],bary[3]);
