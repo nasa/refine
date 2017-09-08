@@ -334,3 +334,30 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_layer_recon( REF_LAYER ref_layer, REF_GRID ref_grid )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
+  REF_CELL layer_edge = ref_grid_edg(ref_layer_grid(ref_layer));
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL has_side;
+  REF_INT node0, node1;
+  
+  each_ref_cell_valid_cell_with_nodes( layer_edge, cell, nodes )
+    {
+      node0 = ref_node_global(layer_node,nodes[0]);
+      node1 = ref_node_global(layer_node,nodes[1]);
+      RSS( ref_cell_has_side( ref_cell, node0, node1, &has_side ), "side?" );
+      if (has_side)
+	{
+	  printf("got one\n");
+	}
+      else
+	{
+	  printf("need one\n");
+	}
+    }
+
+  return REF_SUCCESS;
+}
