@@ -1859,7 +1859,7 @@ REF_STATUS ref_node_interpolate_face( REF_NODE ref_node,
   RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node1), log_m1 ),"log 1");
   RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node2), log_m2 ),"log 2");
 
-  for ( i = 0; i < 5 ; i++ )
+  for ( i = 0; i < 6 ; i++ )
     m[i] = (1.0/3.0) * ( log_m0[i] + log_m1[i] + log_m2[i] );
   
   RSS( ref_matrix_exp_m( m, ref_node_metric_ptr(ref_node,new_node) ),"exp m");
