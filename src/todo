@@ -9,7 +9,6 @@ static, lmpi time
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 layer
- constrain to adjacent face
  insert
    cavity recover triangle side
    cavity recover tet face
@@ -113,6 +112,8 @@ low priority surface reconstruction when EGADS not available
   + add loop to cube case
   + normal based on total triangle angle
   + grow (puff)
+  + constrain to adjacent face
+  + insert points
 
 + bob discussions
   + INRIA meshb to store parameterization with grid (call MARCUM)
