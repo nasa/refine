@@ -227,6 +227,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
       for (i=0;i<4;i++)
 	if (ABS(bary[i]) < zero_tol)
 	  zeros++;
+      new_node = REF_EMPTY;
       switch ( zeros )
 	{
 	case 2: /* split an edge */
@@ -323,7 +324,13 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  RSS(REF_IMPLEMENT,"missing a general case");
 	  break;
 	}
+      RAS( REF_EMPTY != new_node, "new_node not set" );
+      layer_node->global[local] = new_node;
+      
       RSS(ref_validation_cell_volume(ref_grid),"vol");
     }
+
+  RSS( ref_node_rebuild_sorted_global( layer_node ), "rebuild" );
+
   return REF_SUCCESS;
 }
