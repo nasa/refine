@@ -241,7 +241,7 @@ then
     egads_ldadd="-L${egads_lib_path} ${egads_lib}"
     if (uname -s | grep Darwin) > /dev/null 2>&1
     then
-      egads_ldadd="-rpath ${egads_lib_path} ${egads_ldadd}"
+      egads_ldadd="-Wl,-rpath,${egads_lib_path} ${egads_ldadd}"
     fi
   else
     AC_MSG_ERROR([egads.h not found in $with_egads/include])
