@@ -34,6 +34,6 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     CC=mpicc \
     FC=mpif90 \
-    CFLAGS='-DHAVE_MPI -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CFLAGS='-DHAVE_MPI -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wno-long-long' \
     ) \
     || exit
