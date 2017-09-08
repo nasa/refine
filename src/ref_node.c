@@ -1827,6 +1827,46 @@ REF_STATUS ref_node_interpolate_edge( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_interpolate_face( REF_NODE ref_node, 
+				      REF_INT node0, REF_INT node1, 
+				      REF_INT node2, REF_INT new_node )
+{
+  REF_DBL log_m0[6], log_m1[6], log_m2[6], m[6];
+  REF_INT i;
+
+  if ( !ref_node_valid(ref_node,node0) ||
+       !ref_node_valid(ref_node,node1) ||
+       !ref_node_valid(ref_node,node2) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  if ( ref_node_guess_allocated(ref_node) )
+    ref_node_raw_guess(ref_node,new_node) =
+      ref_node_raw_guess(ref_node,node0);  
+  
+  for ( i = 0; i < 3 ; i++ )
+    ref_node_xyz(ref_node,i,new_node) = 
+      (1.0/3.0) * ( ref_node_xyz(ref_node,i,node0)
+		    + ref_node_xyz(ref_node,i,node1)
+		    + ref_node_xyz(ref_node,i,node2));
+
+  for ( i = 0; i < ref_node_naux(ref_node) ; i++ )
+    ref_node_aux(ref_node,i,new_node) = 
+      (1.0/3.0) * ( ref_node_aux(ref_node,i,node0)
+		    + ref_node_aux(ref_node,i,node1)
+		    + ref_node_aux(ref_node,i,node2));
+  
+  RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node0), log_m0 ),"log 0");
+  RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node1), log_m1 ),"log 1");
+  RSS( ref_matrix_log_m( ref_node_metric_ptr(ref_node,node2), log_m2 ),"log 2");
+
+  for ( i = 0; i < 5 ; i++ )
+    m[i] = (1.0/3.0) * ( log_m0[i] + log_m1[i] + log_m2[i] );
+  
+  RSS( ref_matrix_exp_m( m, ref_node_metric_ptr(ref_node,new_node) ),"exp m");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_resize_aux( REF_NODE ref_node )
 {
   if ( NULL == ref_node->aux )
