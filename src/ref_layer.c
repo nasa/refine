@@ -8,6 +8,7 @@
 #include "ref_math.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
+#include "ref_validation.h"
 
 REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
 {
@@ -306,6 +307,8 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	    RSS(REF_IMPLEMENT,"add geometry handling");
 	  RSS( ref_node_next_global( ref_node, &global ), "next global");
 	  RSS( ref_node_add( ref_node, global, &new_node ), "new node");
+	  RSS( ref_node_interpolate_face( ref_node, node0, node1, node2,
+					  new_node ), "interp new node");
 	  RSS( ref_split_face( ref_grid, node0, node1, node2, new_node),
 	       "fsplit");
 	  printf("split zeros %d bary %f %f %f %f\n",
@@ -317,6 +320,7 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	  RSS(REF_IMPLEMENT,"missing a general case");
 	  break;
 	}
+      RSS(ref_validation_cell_volume(ref_grid),"vol");
     }
   return REF_SUCCESS;
 }
