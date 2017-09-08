@@ -151,7 +151,7 @@ then
   fi
   if test "$zoltan_dylib_path" != 'no'
   then
-      zoltan_ldadd="-L$zoltan_dylib_path -lzoltan"
+      zoltan_ldadd="-Wl,-rpath,${zoltan_dylib_path} -L${zoltan_dylib_path} -lzoltan"
   fi
   if test "empty$zoltan_ldadd" == 'empty'
   then
