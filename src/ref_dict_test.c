@@ -93,7 +93,7 @@ int main( void )
     RSS(ref_dict_free(ref_dict),"free");
   }
 
-  { /* has key */
+  { /* has key has value*/
     REF_INT key, value;
     RSS(ref_dict_create(&ref_dict),"create");
 
@@ -102,6 +102,9 @@ int main( void )
 
     REIS( REF_TRUE, ref_dict_has_key( ref_dict, 2 ), "not found" );
     REIS( REF_FALSE, ref_dict_has_key( ref_dict, 1 ), "found?" );
+
+    REIS( REF_TRUE, ref_dict_has_value( ref_dict, 5 ), "not found" );
+    REIS( REF_FALSE, ref_dict_has_value( ref_dict, 7 ), "found?" );
 
     RSS(ref_dict_free(ref_dict),"free");
   }
