@@ -27,6 +27,7 @@
 #include "ref_metric.h"
 #include "ref_clump.h"
 #include "ref_geom.h"
+#include "ref_validation.h"
 
 int main( int argc, char *argv[] )
 {
@@ -632,13 +633,17 @@ int main( int argc, char *argv[] )
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
     node = 39;
-    ref_node_xyz(ref_node,0,node) = 1.0;
+    ref_node_xyz(ref_node,0,node) = 0.5;
     RSS(ref_cavity_create(&ref_cavity,3),"create");
+    if ( 2 == argc )
+      ref_cavity_debug(ref_cavity) = REF_TRUE;
     RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
-    RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
+    RSS(ref_validation_cell_volume(ref_grid),"vol");
+    
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
 

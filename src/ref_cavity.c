@@ -248,6 +248,7 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face;
   REF_INT cell;
+  REF_DBL volume;
 
   each_ref_cavity_valid_face( ref_cavity, face )
   {
@@ -255,7 +256,12 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
     nodes[1] = ref_cavity_f2n(ref_cavity,1,face);
     nodes[2] = ref_cavity_f2n(ref_cavity,2,face);
     nodes[3] = node;
+    if ( node == nodes[0] || node == nodes[1] || node == nodes[2] )
+      continue; /* attached face */
     RSS( ref_cell_add( ref_grid_tet(ref_grid), nodes, &cell ), "add" );
+    RSS( ref_node_tet_vol( ref_grid_node(ref_grid), nodes, &volume ), "norm");
+    if ( volume <= 0.0 )
+      printf("%d %d %d %d %e\n",nodes[0],nodes[1],nodes[2],nodes[3],volume);
   }
 
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
@@ -572,6 +578,11 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   REF_BOOL keep_growing;
   REF_STATUS status;
 
+  if (ref_cavity_debug(ref_cavity))
+    printf(" enlarge start %d tets %d faces\n",
+	   ref_list_n(ref_cavity_list(ref_cavity)),
+	   ref_cavity_n(ref_cavity));
+  
   keep_growing = REF_TRUE;
   while (keep_growing)
     {
@@ -607,6 +618,11 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
           }
       }
     }
+
+  if (ref_cavity_debug(ref_cavity))
+    printf(" enlarge final %d tets %d faces\n",
+	   ref_list_n(ref_cavity_list(ref_cavity)),
+	   ref_cavity_n(ref_cavity));
 
   return REF_SUCCESS;
 }
