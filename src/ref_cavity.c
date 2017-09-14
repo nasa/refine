@@ -40,6 +40,8 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 
   RSS( ref_list_create( &( ref_cavity->ref_list ) ), "add list" );
 
+  ref_cavity->debug = REF_FALSE;
+  
   return REF_SUCCESS;
 }
 

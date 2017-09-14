@@ -21,6 +21,7 @@ struct REF_CAVITY_STRUCT {
   REF_INT blank;
   REF_INT *f2n;
   REF_LIST ref_list;
+  REF_BOOL debug;
 };
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity, REF_INT node_per );

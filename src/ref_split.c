@@ -15,6 +15,9 @@
 #include "ref_gather.h"
 #include "ref_twod.h"
 
+#include "ref_geom.h"
+#include "ref_cavity.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass( REF_GRID ref_grid )
@@ -24,8 +27,10 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed, allowed_quality, allowed_local;
+  REF_BOOL allowed, allowed_quality, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
+  REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
+  REF_STATUS status;
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -69,13 +74,34 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				 ref_edge_e2n( ref_edge, 1, edge ),
 				 new_node ), "geom new node");
       RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
-
+      RSS( ref_geom_supported( ref_grid_geom(ref_grid), new_node,
+			     &geom_support ), "geom support");
+ 
       RSS( ref_split_edge_quality( ref_grid,
 				   ref_edge_e2n( ref_edge, 0, edge ),
 				   ref_edge_e2n( ref_edge, 1, edge ),
 				   new_node,
 				   &allowed_quality ), "edge qual" );
-      if ( !allowed_quality )
+      valid_cavity = REF_FALSE;
+      if ( !allowed_quality && geom_support && ref_mpi_n == 1 )
+	{
+	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
+	  RSS( ref_cavity_add_edge( ref_cavity, ref_grid,
+				    ref_edge_e2n( ref_edge, 0, edge ),
+				    ref_edge_e2n( ref_edge, 1, edge ) ),
+	       "cav add" );
+	  RSS( ref_cavity_split_edge( ref_cavity,
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
+				      new_node ), "cav split" );
+	  status = ref_cavity_enlarge_visible( ref_cavity, ref_grid,
+					       new_node );
+	  if ( REF_SUCCESS == status ) valid_cavity = REF_TRUE;
+	  RSS( ref_cavity_free( ref_cavity ), "cav free" );
+	  ref_cavity = (REF_CAVITY)NULL;
+	}
+      
+      if ( !valid_cavity && !allowed_quality )
 	{
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
 	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
@@ -86,7 +112,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      ref_edge_e2n( ref_edge, 0, edge ),
 				      ref_edge_e2n( ref_edge, 1, edge ),
 				      &allowed_local ), "local tet" );
-      if ( !allowed_local)
+      if ( !allowed_local )
 	{
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
@@ -99,6 +125,18 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   new_node ), "split" );
+      if ( valid_cavity )
+	{
+	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
+	  RSS( ref_cavity_add_ball( ref_cavity, ref_grid,
+				    new_node ), "cav split" );
+	  RSS( ref_cavity_enlarge_visible( ref_cavity, ref_grid,
+					   new_node ), "cav enlarge");
+	  RSS( ref_cavity_replace_tet( ref_cavity, ref_grid,
+				       new_node ), "cav replace" );
+	  RSS( ref_cavity_free( ref_cavity ), "cav free" );
+	  ref_cavity = (REF_CAVITY)NULL;
+	}
 
       ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge )) = 0;
       ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge )) = 0;
