@@ -626,10 +626,11 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
-    REF_INT node;
+    REF_INT node, nnode;
 
     RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick" );
     ref_node = ref_grid_node(ref_grid);
+    nnode = ref_node_n(ref_node);
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
     node = 39;
@@ -642,6 +643,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
+    RAS( nnode>ref_node_n(ref_node), "node count did not decrease" );
     RSS(ref_validation_cell_volume(ref_grid),"vol");
     
     if ( 2 == argc )

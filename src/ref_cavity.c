@@ -245,9 +245,11 @@ REF_STATUS ref_cavity_rm_tet( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid, REF_INT node )
 {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face;
   REF_INT cell;
+  REF_INT i;
   REF_DBL volume;
 
   each_ref_cavity_valid_face( ref_cavity, face )
@@ -258,7 +260,7 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
     nodes[3] = node;
     if ( node == nodes[0] || node == nodes[1] || node == nodes[2] )
       continue; /* attached face */
-    RSS( ref_cell_add( ref_grid_tet(ref_grid), nodes, &cell ), "add" );
+    RSS( ref_cell_add( ref_cell, nodes, &cell ), "add" );
     RSS( ref_node_tet_vol( ref_grid_node(ref_grid), nodes, &volume ), "norm");
     if ( volume <= 0.0 )
       printf("%d %d %d %d %e\n",nodes[0],nodes[1],nodes[2],nodes[3],volume);
@@ -267,7 +269,11 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
   while ( ref_list_n( ref_cavity_list(ref_cavity) ) > 0 )
     {
       RSS( ref_list_pop( ref_cavity_list(ref_cavity), &cell ), "list" );
-      RSS( ref_cell_remove( ref_grid_tet(ref_grid), cell ), "rm" );
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "rm" );
+      RSS( ref_cell_remove( ref_cell, cell ), "rm" );
+      for (i=0;i<4;i++)
+	if ( ref_adj_empty( ref_cell_adj(ref_cell), nodes[i] ) )
+	  RSS( ref_node_remove( ref_grid_node(ref_grid), nodes[i] ), "remove" );
     }
 
   return REF_SUCCESS;
