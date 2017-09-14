@@ -598,6 +598,10 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
               }
             else
               {
+		if ( ref_cavity_debug(ref_cavity) )
+		  RSS( ref_cavity_tec( ref_cavity, ref_grid, node,
+				       "enlarge.tec" ),
+		       "tec for enlarge_face fail" );
                 return status;
               }
           }

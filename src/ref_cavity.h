@@ -38,6 +38,7 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 #define ref_cavity_blank( ref_cavity ) (( ref_cavity )->blank )
 
 #define ref_cavity_list( ref_cavity ) (( ref_cavity )->ref_list )
+#define ref_cavity_debug( ref_cavity ) (( ref_cavity )->debug )
 
 #define ref_cavity_valid(ref_cavity,face)                    \
   ( ( face ) >=0 && ( face ) < ref_cavity_max(ref_cavity) && \
