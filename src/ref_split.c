@@ -24,7 +24,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed;
+  REF_BOOL allowed, allowed_quality, allowed_local;
   REF_INT global, new_node;
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
@@ -74,8 +74,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				   ref_edge_e2n( ref_edge, 0, edge ),
 				   ref_edge_e2n( ref_edge, 1, edge ),
 				   new_node,
-				   &allowed ), "edge qual" );
-      if ( !allowed) 
+				   &allowed_quality ), "edge qual" );
+      if ( !allowed_quality )
 	{
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
 	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
@@ -85,8 +85,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS( ref_split_edge_local_tets( ref_grid,
 				      ref_edge_e2n( ref_edge, 0, edge ),
 				      ref_edge_e2n( ref_edge, 1, edge ),
-				      &allowed ), "local tet" );
-      if ( !allowed) 
+				      &allowed_local ), "local tet" );
+      if ( !allowed_local)
 	{
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
 	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
