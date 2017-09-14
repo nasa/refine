@@ -25,6 +25,8 @@
 #include    "ref_twod.h"
 #include   "ref_gather.h"
 #include "ref_metric.h"
+#include "ref_clump.h"
+#include "ref_geom.h"
 
 int main( int argc, char *argv[] )
 {
@@ -577,5 +579,21 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
+  { /* split edge of tet */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+
+    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+
+    RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
+    REIS( 4, ref_cavity_n(ref_cavity), "n" );
+    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+    
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  
   return 0;
 }

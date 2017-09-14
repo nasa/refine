@@ -335,6 +335,33 @@ REF_STATUS ref_cavity_add_ball( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_add_edge( REF_CAVITY ref_cavity,
+                                REF_GRID ref_grid,
+				REF_INT node0, REF_INT node1 )
+{
+  REF_INT cell, ncell;
+  REF_INT cell_to_add[50];
+  
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
+      RSS( REF_IMPLEMENT, "twod" );
+      break;
+    case ( 3 ):
+      RSS( ref_cell_list_with2(ref_grid_tet(ref_grid),node0,node1,
+			       50, &ncell, cell_to_add ), "get list" );
+      for ( cell = 0 ; cell < ncell ; cell++ )
+	{
+	  RSS( ref_cavity_add_tet( ref_cavity, ref_grid,
+				   cell_to_add[cell] ), "insert");
+	}
+      break;
+    default:
+      THROW("add_ball unknown node_per");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid,
                                    REF_INT node, REF_INT clone )
