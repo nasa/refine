@@ -17,9 +17,11 @@ geomfile=cone-cone.egads
 # ${two}/ref_geom_test ${geomfile} cone-cone.meshb
 
 ${two}/ref_acceptance cone-cone.meshb cone-cone.metric 0.1
-${two}/ref_driver -i cone-cone.meshb -g ${geomfile} -m cone-cone.metric -o ref_driver1
+${two}/ref_driver -i cone-cone.meshb -g ${geomfile} -m cone-cone.metric -o ref_driver1 -t
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cone-cone-uniform-two-01.status
+
+exit
 
 ${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1.metric -o ref_driver2
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
