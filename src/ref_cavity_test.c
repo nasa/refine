@@ -594,7 +594,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-    { /* add edge of tet2 */
+  { /* add edge of tet2 */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
@@ -609,6 +609,20 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  
+  { /* split face */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[3];
+    REF_INT node0,node1,new_node;
+    
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    nodes[0] = 1; nodes[1] = 2; nodes[2] = 3;
+    RSS(ref_cavity_insert(ref_cavity,nodes),"insert");
+    node0 = 1; node1 = 2; new_node = 4;
+    RSS(ref_cavity_split_edge(ref_cavity,node0,node1,new_node),"insert first");
+    REIS( 2, ref_cavity_n(ref_cavity), "cancel");
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
   return 0;
 }

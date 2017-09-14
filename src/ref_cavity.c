@@ -362,6 +362,55 @@ REF_STATUS ref_cavity_add_edge( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_split_edge( REF_CAVITY ref_cavity,
+				  REF_INT node0, REF_INT node1,
+				  REF_INT new_node )
+{
+  REF_INT face;
+  REF_INT node, nodes[3];
+  
+  switch ( ref_cavity_node_per( ref_cavity ) )
+    {
+    case ( 2 ):
+      RSS( REF_IMPLEMENT, "twod" );
+      break;
+    case ( 3 ):
+      each_ref_cavity_valid_face( ref_cavity, face )
+	{
+	  each_ref_cavity_face_node( ref_cavity, node )
+	    nodes[node] = ref_cavity_f2n(ref_cavity,node,face);
+	  if ( ( node0 == nodes[1] && node1 == nodes[2] ) ||
+	       ( node1 == nodes[1] && node0 == nodes[2] ) )
+	    {
+	      ref_cavity_f2n(ref_cavity,1,face) = new_node;
+	      nodes[2] = new_node;
+	      RSS( ref_cavity_insert( ref_cavity, nodes ), "insert edge 0" );
+	      continue;
+	    }
+	  if ( ( node0 == nodes[0] && node1 == nodes[2] ) ||
+	       ( node1 == nodes[0] && node0 == nodes[2] ) )
+	    {
+	      ref_cavity_f2n(ref_cavity,0,face) = new_node;
+	      nodes[2] = new_node;
+	      RSS( ref_cavity_insert( ref_cavity, nodes ), "insert edge 1" );
+	      continue;
+	    }
+	  if ( ( node0 == nodes[0] && node1 == nodes[1] ) ||
+	       ( node1 == nodes[0] && node0 == nodes[1] ) )
+	    {
+	      ref_cavity_f2n(ref_cavity,0,face) = new_node;
+	      nodes[1] = new_node;
+	      RSS( ref_cavity_insert( ref_cavity, nodes ), "insert edge 2" );
+	      continue;
+	    }
+	}
+      break;
+    default:
+      THROW("add_ball unknown node_per");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid,
                                    REF_INT node, REF_INT clone )

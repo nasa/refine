@@ -73,6 +73,9 @@ REF_STATUS ref_cavity_add_ball( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_add_edge( REF_CAVITY ref_cavity,
                                 REF_GRID ref_grid,
 				REF_INT node0, REF_INT node1 );
+REF_STATUS ref_cavity_split_edge( REF_CAVITY ref_cavity,
+				  REF_INT node0, REF_INT node1,
+				  REF_INT new_node );
 
 REF_STATUS ref_cavity_replace_tri( REF_CAVITY ref_cavity,
                                    REF_GRID ref_grid,
