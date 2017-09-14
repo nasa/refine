@@ -573,9 +573,6 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
-    if ( 2 == argc )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
-
     RSS( ref_grid_free(ref_grid),"free");
   }
 
@@ -622,6 +619,30 @@ int main( int argc, char *argv[] )
     REIS( 2, ref_cavity_n(ref_cavity), "cancel");
 
     RSS(ref_cavity_free(ref_cavity),"free");
+  }
+
+  { /* tet brick insert */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
+    REF_INT node;
+
+    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick" );
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_metric_unit_node( ref_node ), "unit metric");
+
+    node = 39;
+    ref_node_xyz(ref_node,0,node) = 1.0;
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_metric(ref_cavity,ref_grid,node),"enlarge short");
+    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
+    RSS(ref_cavity_free(ref_cavity),"free");
+
+    if ( 2 == argc )
+      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
+
+    RSS( ref_grid_free(ref_grid),"free");
   }
 
   return 0;
