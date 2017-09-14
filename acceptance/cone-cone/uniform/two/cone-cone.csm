@@ -1,0 +1,7 @@
+cone 0 0 1.0 0 0  0.0 1.0
+cone 0 0 0.8 0 0 -0.2 1.0
+subtract
+box 0 0 0 1 1 1
+intersect
+dump cone-cone.egads
+end
