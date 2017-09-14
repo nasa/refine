@@ -76,7 +76,9 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
       RSS( ref_geom_supported( ref_grid_geom(ref_grid), new_node,
 			     &geom_support ), "geom support");
- 
+
+      geom_support = REF_FALSE; /* disable cavity insert */
+      
       RSS( ref_split_edge_quality( ref_grid,
 				   ref_edge_e2n( ref_edge, 0, edge ),
 				   ref_edge_e2n( ref_edge, 1, edge ),
@@ -128,6 +130,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       if ( valid_cavity )
 	{
 	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
+	  ref_cavity_debug(ref_cavity) = REF_TRUE;
 	  RSS( ref_cavity_add_ball( ref_cavity, ref_grid,
 				    new_node ), "cav split" );
 	  RSS( ref_cavity_enlarge_visible( ref_cavity, ref_grid,
