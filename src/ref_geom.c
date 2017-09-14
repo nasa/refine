@@ -1680,6 +1680,13 @@ REF_STATUS ref_geom_egads_tess( REF_GRID ref_grid, REF_DBL max_length )
   params[2] = 15.0;
   /* printf("params = %f,%f,%f\n",params[0],params[1],params[2]); */
 
+  if ( REF_FALSE )
+    { /* unlimited override to make coarse init grids */
+      params[0] = 1.0;
+      params[1] = 1.0;
+      params[2] = 180.0;
+    }
+
   REIS( EGADS_SUCCESS,
 	EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS( EGADS_SUCCESS,
