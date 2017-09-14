@@ -192,3 +192,11 @@ cd ${source_dir}/acceptance/cube-sphere/ring/two
 trap - EXIT
 
 date
+
+LOG=${root_dir}/log.accept-annulus-uniform-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/annulus/uniform/two
+./accept-annulus-uniform-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
