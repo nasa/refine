@@ -8,16 +8,16 @@ static, lmpi time
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
-layer
- insert
-   cavity recover triangle side
-   cavity recover tet face
+layer insert
+ cavity recover triangle side
+ cavity recover tet face
 
 cavity operator in 2D/3D
+ verify topo 
+ boundary edge split  (why hsc,cone-cone,om6 tip no refining?)
  movie with time
  face based grow and shrink
  shrink needs list delete
- bl insert (why hsc no refining?)
  sliver deletion
  eliminate short edges (cavity)
 
