@@ -638,6 +638,9 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 	   ref_list_n(ref_cavity_list(ref_cavity)),
 	   ref_cavity_n(ref_cavity));
 
+  if (ref_cavity_debug(ref_cavity))
+    RSS( ref_cavity_topo( ref_cavity, ref_grid, node ), "topo");
+    
   return REF_SUCCESS;
 }
 
@@ -1206,7 +1209,7 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_topp( REF_CAVITY ref_cavity, REF_GRID ref_grid,
+REF_STATUS ref_cavity_topo( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 			    REF_INT node )
 {
   REF_INT item, cell, face, face_node;
@@ -1231,6 +1234,13 @@ REF_STATUS ref_cavity_topp( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   each_ref_cavity_valid_face( ref_cavity, face )
     {
+      if ( node == ref_cavity_f2n(ref_cavity,0,face) )
+	continue;
+      if ( node == ref_cavity_f2n(ref_cavity,1,face) )
+	continue;
+      if ( 2 < ref_cavity_node_per( ref_cavity ) &&
+	   node == ref_cavity_f2n(ref_cavity,2,face) )
+	continue;
       printf("new ");
       for ( face_node = 0;
 	    face_node < ref_cavity_node_per(ref_cavity);
