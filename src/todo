@@ -12,6 +12,8 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
 
+degen curvature for cone-cone
+
 cavity operator in 2D/3D
  verify topo 
  boundary edge split  (why hsc,cone-cone,om6 tip no refining?)
