@@ -110,6 +110,24 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_tattle( REF_GRID ref_grid, REF_INT node )
+{
+  REF_CELL ref_cell;
+  REF_INT item, cell;
+  
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_tattle( ref_cell, cell ),"cell tat");
+    }
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_tattle( ref_cell, cell ),"cell tat");
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_cell_with( REF_GRID ref_grid, REF_INT node_per,
 			       REF_CELL *ref_cell )
 {

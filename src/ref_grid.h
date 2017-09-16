@@ -64,6 +64,7 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
 
 
 REF_STATUS ref_grid_inspect( REF_GRID ref_grid );
+REF_STATUS ref_grid_tattle( REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_grid_cell_with( REF_GRID ref_grid, REF_INT node_per,
 			       REF_CELL *ref_cell );
