@@ -13,8 +13,8 @@
 REF_STATUS ref_validation_all( REF_GRID ref_grid )
 {
 
-  printf(" hanging nodes?\n");
-  RSS( ref_validation_hanging_node( ref_grid ), "hanging node");
+  printf(" unused nodes?\n");
+  RSS( ref_validation_unused_node( ref_grid ), "unused node");
   printf(" cell faces?\n");
   RSS( ref_validation_cell_face( ref_grid ), "cell face");
   printf(" cell nodes valid?\n");
@@ -23,7 +23,7 @@ REF_STATUS ref_validation_all( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
+REF_STATUS ref_validation_unused_node( REF_GRID ref_grid )
 {
   REF_INT node;
   REF_BOOL problem;
@@ -64,7 +64,7 @@ REF_STATUS ref_validation_hanging_node( REF_GRID ref_grid )
       if ( ref_adj_empty( ref_adj, node ) )
 	{
 	  problem = REF_TRUE;
-	  printf(" hanging node %d\n",node);	  
+	  printf(" unused node %d\n",node);	  
 	}
     }
 
