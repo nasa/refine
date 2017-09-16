@@ -12,12 +12,8 @@
 
 REF_STATUS ref_validation_all( REF_GRID ref_grid )
 {
-
-  printf(" cell faces?\n");
   RSS( ref_validation_cell_face( ref_grid ), "cell face");
-  printf(" cell nodes valid?\n");
   RSS( ref_validation_cell_node( ref_grid ), "cell node valid");
-  printf(" unused nodes?\n");
   RSS( ref_validation_unused_node( ref_grid ), "unused node");
 
   return REF_SUCCESS;
