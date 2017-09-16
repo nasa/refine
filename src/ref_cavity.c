@@ -1205,3 +1205,40 @@ REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cavity_topp( REF_CAVITY ref_cavity, REF_GRID ref_grid,
+			    REF_INT node )
+{
+  REF_INT item, cell, face, face_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+ 
+  each_ref_list_item( ref_cavity_list(ref_cavity), item )
+    {
+      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+      switch ( ref_cavity_node_per( ref_cavity ) )
+	{
+	case ( 2 ):
+	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid), cell, nodes), "cell");
+	  break;
+	case ( 3 ):
+	  RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
+	  break;
+	default:
+	  THROW("change unknown node_per");
+	}
+      printf("old %d %d %d %d\n",nodes[0],nodes[1],nodes[2],nodes[3]);
+    }
+
+  each_ref_cavity_valid_face( ref_cavity, face )
+    {
+      printf("new ");
+      for ( face_node = 0;
+	    face_node < ref_cavity_node_per(ref_cavity);
+	    face_node++ )
+        printf(" %d ",ref_cavity_f2n(ref_cavity,face_node,face));
+      printf(" %d ",node);
+      printf("\n");
+  }
+
+  return REF_SUCCESS;
+}
