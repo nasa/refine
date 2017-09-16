@@ -14,6 +14,7 @@
 #include "ref_sort.h"
 
 #include "ref_dict.h"
+#include "ref_validation.h"
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
@@ -252,6 +253,11 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
   REF_INT i;
   REF_DBL volume;
 
+  if ( ref_cavity_debug(ref_cavity) )
+    RSS( ref_cavity_tec( ref_cavity, ref_grid, node,
+			 "ref_cavity_tet_replace.tec" ),
+	 "tec for enlarge_face fail" );
+  
   each_ref_cavity_valid_face( ref_cavity, face )
   {
     nodes[0] = ref_cavity_f2n(ref_cavity,0,face);
@@ -276,6 +282,8 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
 	  RSS( ref_node_remove( ref_grid_node(ref_grid), nodes[i] ), "remove" );
     }
 
+  RSS( ref_validation_unused_node( ref_grid ), "valid nodes" );
+  
   return REF_SUCCESS;
 }
 
