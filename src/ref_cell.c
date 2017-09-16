@@ -392,7 +392,7 @@ REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_taddle( REF_CELL ref_cell, REF_INT cell )
+REF_STATUS ref_cell_tattle( REF_CELL ref_cell, REF_INT cell )
 {
   REF_INT node;
   printf("cell %d:",cell);
