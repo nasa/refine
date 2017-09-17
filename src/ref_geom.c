@@ -1165,7 +1165,7 @@ REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
       ego ref, *pchldrn;
       int oclass, mtype, nchild, *psens;
       double uv_range[4];
-      REF_DBL shift=1.0e-4;
+      REF_DBL shift=1.0e-2;
       RSS( ref_geom_eval( ref_geom, geom, xyz, dxyz_duv ), "eval" );
       du = sqrt(ref_math_dot(&(dxyz_duv[0]),&(dxyz_duv[0])));
       dv = sqrt(ref_math_dot(&(dxyz_duv[3]),&(dxyz_duv[3])));
