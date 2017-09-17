@@ -30,5 +30,3 @@ ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cone-cone-u
 cat accept-cone-cone-uniform-two-02.status
 ../../../check.rb accept-cone-cone-uniform-two-02.status 0.05 2.1
 
-
-
