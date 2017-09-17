@@ -507,7 +507,7 @@ REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *curvature_metric;
   REF_DBL m[6];
-  REF_INT node, im;
+  REF_INT node, im, gradation;
   
   if ( !ref_geom_model_loaded(ref_grid_geom(ref_grid)) )
     {
@@ -516,8 +516,11 @@ REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid )
     }
 
   ref_malloc( curvature_metric, 6*ref_node_max(ref_node), REF_DBL );
-
   RSS( ref_metric_from_curvature( curvature_metric, ref_grid ), "curve" );
+  for ( gradation =0 ; gradation<10 ; gradation++ )
+    {
+      RSS( ref_metric_gradation( curvature_metric, ref_grid, 1.5 ), "grad");
+    }
 
   each_ref_node_valid_node( ref_node, node )
     {
