@@ -15,11 +15,6 @@ layer insert
 degen curvature for cone-cone
 
 cavity operator in 2D/3D
- verify topo 
- boundary edge split  (why hsc,cone-cone,om6 tip no refining?)
- movie with time
- face based grow and shrink
- shrink needs list delete
  sliver deletion
  eliminate short edges (cavity)
 
@@ -109,6 +104,13 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ cavity
+  + verify topo 
+  + boundary edge split  (why hsc,cone-cone,om6 tip no refining?)
+  + movie with time
+  + face based grow and shrink
+  + shrink needs list delete
 
 + layer
   + add loop to cube case
