@@ -6,7 +6,9 @@ pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
 extern ref_migrate_method into struct
 
-boundary tangle in cone-cone and om6
+boundary tangle
+  cone-cone : fill in
+  om6 : gradation curvature limit
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
