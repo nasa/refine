@@ -12,8 +12,6 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
 
-degen curvature for cone-cone
-
 cavity operator in 2D/3D
  sliver deletion
  eliminate short edges (cavity)
@@ -166,6 +164,7 @@ low priority surface reconstruction when EGADS not available
 + kirtosis spelling
 
 + curvature adapt
++ degen curvature for cone-cone
 + smooth curve metric function
 + if descrete reconstruciton surface curvature constraints in metric needed,
   + Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
