@@ -1,10 +1,8 @@
 
 accept comm as argument
-pull ref_gather_method variables into struct
-pull ref_adapt variables into struct
-create REF_MPI and REF_GATHER to eliminate static
-mem leak, static, movie file pointer in grid
-static, lmpi time
+pull ref_adapt extern variables into struct
+create REF_MPI to eliminate static, store comm, and store time
+extern ref_migrate_method into struct
 
 boundary tangle in cone-cone and om6
 
