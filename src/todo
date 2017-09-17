@@ -1,6 +1,4 @@
 
-gradation control to curvature constraint limit matrix
-
 accept comm as argument
 pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
@@ -8,7 +6,6 @@ extern ref_migrate_method into struct
 
 boundary tangle
   cone-cone : fill in
-  om6 : gradation curvature limit
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
@@ -45,8 +42,6 @@ EGADS questions:
 - easiest way to build the planar delta wing
   - draw 2D planform, extrude, trim with booleans
 - for initial grids, set .tParams, vtess to visualize
-
-open source
 
 time adapt pass elements
 profile
@@ -130,6 +125,8 @@ low priority surface reconstruction when EGADS not available
   + analytic hemisphere-cylinder 5e-7 tolerance is typical, edge to surface
   + geode: unclear about support, see how PW adapt develops 
 
++ om6 : gradation curvature limit
+
 + add sliver check to movie and fake zero cells
 
 + plot low MR tets
@@ -170,6 +167,7 @@ low priority surface reconstruction when EGADS not available
 + curvature adapt
 + degen curvature for cone-cone
 + smooth curve metric function
++ gradation control to curvature constraint limit matrix
 + if descrete reconstruciton surface curvature constraints in metric needed,
   + Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
   + Ref/frey-imr9-2000-about-surface-remeshing.pdf
@@ -212,5 +210,6 @@ low priority surface reconstruction when EGADS not available
 
 +  don't collapse remove geom nodes
 
-+ move repo to gitlab
++ open source, clean up, and move repo to gitlab
+
 
