@@ -1,6 +1,6 @@
 
 accept comm as argument
-pull ref_migrate_method variables into struct
+pull ref_gather_method variables into struct
 pull ref_adapt variables into struct
 create REF_MPI and REF_GATHER to eliminate static
 mem leak, static, movie file pointer in grid

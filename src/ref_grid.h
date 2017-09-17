@@ -12,6 +12,7 @@ END_C_DECLORATION
 #include "ref_node.h"
 #include "ref_cell.h"
 #include "ref_geom.h"
+#include "ref_gather.h"
 
 BEGIN_C_DECLORATION
 
@@ -25,6 +26,7 @@ struct REF_GRID_STRUCT {
   REF_CELL qua;
 
   REF_GEOM geom;
+  REF_GATHER gather;
 
   REF_BOOL twod;
 };
@@ -47,6 +49,7 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
 #define ref_grid_qua(ref_grid) ((ref_grid)->qua)
 
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
+#define ref_grid_gather(ref_grid) ((ref_grid)->gather)
 
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 

@@ -124,7 +124,8 @@ int main( int argc, char *argv[] )
           RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_1" ),"ex" );
         }
 
-      RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
+      RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
+					       REF_TRUE ), "rec" );
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
@@ -210,7 +211,8 @@ int main( int argc, char *argv[] )
         }
       }
 
-      RSS( ref_gather_tec_movie_record_button( REF_TRUE ), "rec" );
+      RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
+					       REF_TRUE ), "rec" );
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "qual");

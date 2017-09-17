@@ -158,7 +158,8 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_mpi_stopwatch_stop("metric gradation");
     }
 
-  RSS( ref_gather_tec_movie_record_button( REF_FALSE ), "rec" );
+  RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
+					   REF_FALSE ), "rec" );
 
   RSS(ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_ratio( ref_grid ), "gram");

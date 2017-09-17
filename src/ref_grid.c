@@ -30,6 +30,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( &ref_grid_qua(ref_grid), 4, REF_TRUE ), "qua create" );
 
   RSS( ref_geom_create( &ref_grid_geom(ref_grid) ), "geom create" );
+  RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
 
   ref_grid_twod(ref_grid) = REF_FALSE;
 
@@ -67,7 +68,8 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
 
   RSS( ref_geom_deep_copy( &ref_grid_geom(ref_grid),
 			   ref_grid_geom(original) ), "geom deep copy" );
-
+  RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
+  
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
 
   return REF_SUCCESS;
@@ -77,6 +79,7 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
 {
   if ( NULL == (void *)ref_grid ) return REF_NULL;
 
+  RSS( ref_gather_free( ref_grid_gather(ref_grid) ), "gather free");
   RSS( ref_geom_free( ref_grid_geom(ref_grid) ), "geom free");
   
   RSS( ref_cell_free( ref_grid_qua(ref_grid) ), "qua free");
@@ -105,7 +108,8 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
   printf(" %d edg\n",ref_cell_n(ref_grid_edg(ref_grid)));
   printf(" %d tri\n",ref_cell_n(ref_grid_tri(ref_grid)));
   printf(" %d qua\n",ref_cell_n(ref_grid_qua(ref_grid)));
-  printf(" %d geom\n",ref_cell_n(ref_grid_geom(ref_grid)));
+  printf(" %d geom\n",ref_geom_n(ref_grid_geom(ref_grid)));
+  printf(" %p gather\n",(void *)(ref_grid_gather(ref_grid)->file));
 
   return REF_SUCCESS;
 }

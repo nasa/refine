@@ -173,7 +173,8 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
     }
 
-  RSS( ref_gather_tec_movie_record_button( tecplot_movie ), "show time" );
+  RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
+					   tecplot_movie ), "show time" );
 
   ref_mpi_stopwatch_stop("read grid");
   RSS( ref_validation_cell_volume(ref_grid),"vol");

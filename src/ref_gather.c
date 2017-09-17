@@ -10,6 +10,29 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+REF_STATUS ref_gather_create( REF_GATHER *ref_gather_ptr )
+{
+  REF_GATHER ref_gather;
+
+  ref_malloc( *ref_gather_ptr, 1, REF_GATHER_STRUCT );
+
+  ref_gather = *ref_gather_ptr;
+
+  ref_gather->recording = REF_FALSE;
+  ref_gather->file = (FILE *)NULL;
+  ref_gather->time = 0.0;
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_free( REF_GATHER ref_gather )
+{
+  if ( NULL != (void *)(ref_gather->file) ) fclose(ref_gather->file);
+  ref_free( ref_gather );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename  )
 {
   FILE *file;
@@ -71,24 +94,21 @@ REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename  )
   return REF_SUCCESS;
 }
 
-static REF_BOOL recording_movie = REF_FALSE;
-
-REF_STATUS ref_gather_tec_movie_record_button( REF_BOOL on_or_off )
+REF_STATUS ref_gather_tec_movie_record_button( REF_GATHER ref_gather,
+					       REF_BOOL on_or_off )
 {
-  recording_movie = on_or_off;
+  ref_gather->recording = on_or_off;
   return REF_SUCCESS;
 }
-
-static FILE *movie_file = NULL;
-static REF_DBL movie_time = 0.0;
 
 REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 				       const char *zone_title )
 {
+  REF_GATHER ref_gather = ref_grid_gather(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode,ntri;
 
-  if ( !recording_movie ) return REF_SUCCESS;
+  if ( !(ref_gather->recording) ) return REF_SUCCESS;
 
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
@@ -98,32 +118,32 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 
   if ( ref_mpi_master )
     {
-      if ( NULL == (void *)movie_file )
+      if ( NULL == (void *)(ref_gather->file) )
 	{ 
-	  movie_file = fopen("ref_gather_movie.tec","w");
-	  if ( NULL == (void *)movie_file ) 
+	  ref_gather->file = fopen("ref_gather_movie.tec","w");
+	  if ( NULL == (void *)(ref_gather->file) ) 
 	    printf("unable to open ref_gather_movie.tec\n");
-	  RNS(movie_file, "unable to open file" );
+	  RNS(ref_gather->file, "unable to open file" );
 	  
-	  fprintf(movie_file, "title=\"tecplot refine partion file\"\n");
-	  fprintf(movie_file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
+	  fprintf(ref_gather->file, "title=\"tecplot refine partion file\"\n");
+	  fprintf(ref_gather->file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
 	}
       if ( NULL == zone_title )
 	{
-	  fprintf(movie_file,
+	  fprintf(ref_gather->file,
 		  "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
-		  nnode, ntri, "point", "fetriangle", movie_time );
+		  nnode, ntri, "point", "fetriangle", ref_gather->time );
 	}
       else
 	{
-	  fprintf(movie_file,
+	  fprintf(ref_gather->file,
 		  "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
-		  zone_title, nnode, ntri, "point", "fetriangle", movie_time );
+		  zone_title, nnode, ntri, "point", "fetriangle", ref_gather->time );
 	}
     }
 
-  RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
-  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), movie_file ),"t");
+  RSS( ref_gather_node_tec_part( ref_node, ref_gather->file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), ref_gather->file ),"t");
 
   {
     REF_INT ntet;
@@ -135,32 +155,33 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
       {
 	if ( NULL == zone_title )
 	  {
-	    fprintf(movie_file,
+	    fprintf(ref_gather->file,
 		    "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
-		    nnode, MAX(1,ntet), "point", "fetetrahedron", movie_time );
+		    nnode, MAX(1,ntet), "point", "fetetrahedron", ref_gather->time );
 	  }
 	else
 	  {
-	    fprintf(movie_file,
+	    fprintf(ref_gather->file,
 		    "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s, solutiontime=%f\n",
-		    zone_title, nnode, MAX(1,ntet), "point", "fetetrahedron", movie_time );
+		    zone_title, nnode, MAX(1,ntet), "point", "fetetrahedron", ref_gather->time );
 	  }
       }
-    RSS( ref_gather_node_tec_part( ref_node, movie_file ), "nodes");
+    RSS( ref_gather_node_tec_part( ref_node, ref_gather->file ), "nodes");
     if (0 == ntet)
       {
 	if ( ref_mpi_master )
-	  fprintf(movie_file," 1 1 1 1\n");
+	  fprintf(ref_gather->file," 1 1 1 1\n");
       }
     else
       {
 	RSS( ref_gather_cell_quality_tec( ref_node, ref_grid_tet(ref_grid),
-					  min_quality, movie_file ), "qtet");
+					  min_quality, ref_gather->file ),
+	     "qtet");
       }
   }
 
   if ( ref_mpi_master )
-    movie_time += 1.0;
+    (ref_gather->time) += 1.0;
 
   return REF_SUCCESS;
 }
