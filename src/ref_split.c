@@ -84,8 +84,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS( ref_geom_supported( ref_grid_geom(ref_grid), new_node,
 			     &geom_support ), "geom support");
 
-      geom_support = REF_FALSE; /* disable cavity insert */
-      
       RSS( ref_split_edge_quality( ref_grid,
 				   ref_edge_e2n( ref_edge, 0, edge ),
 				   ref_edge_e2n( ref_edge, 1, edge ),
