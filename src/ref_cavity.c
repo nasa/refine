@@ -14,7 +14,6 @@
 #include "ref_sort.h"
 
 #include "ref_dict.h"
-#include "ref_validation.h"
 
 REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
 {
@@ -282,8 +281,6 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
 	  RSS( ref_node_remove( ref_grid_node(ref_grid), nodes[i] ), "remove" );
     }
 
-  RSS( ref_validation_unused_node( ref_grid ), "valid nodes" );
-  
   return REF_SUCCESS;
 }
 
