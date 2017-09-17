@@ -137,7 +137,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       if ( valid_cavity )
 	{
 	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
-	  ref_cavity_debug(ref_cavity) = REF_TRUE;
 	  RSS( ref_cavity_add_ball( ref_cavity, ref_grid,
 				    new_node ), "cav split" );
 	  RSS( ref_cavity_enlarge_visible( ref_cavity, ref_grid,
