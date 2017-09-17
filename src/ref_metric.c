@@ -341,12 +341,11 @@ REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
+REF_STATUS ref_metric_gradation( REF_DBL *metric, REF_GRID ref_grid, REF_DBL r )
 {
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
   REF_DBL *metric_limit;
-  REF_DBL *metric;
   REF_DBL ratio, lr;
   REF_DBL l0[6], l1[6];
   REF_DBL m0[6], m1[6];
@@ -359,16 +358,14 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
 	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
   ref_malloc( metric_limit, 
 	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
-  ref_malloc( metric, 
-	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
-
-  RSS( ref_metric_from_node( metric_orig, ref_grid_node(ref_grid)), "from");
-  RSS( ref_metric_from_node( metric_limit, ref_grid_node(ref_grid)), "from");
-  RSS( ref_metric_from_node( metric, ref_grid_node(ref_grid)), "from");
   
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
-      for (i=0;i<6;i++) metric_limit[i+6*node] *= (1.0/r/r);
+      for (i=0;i<6;i++) metric_orig[i+6*node] = metric[i+6*node];
+    }
+  each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+    {
+      for (i=0;i<6;i++) metric_limit[i+6*node] = metric[i+6*node]*(1.0/r/r);
     }
 
   each_ref_edge( ref_edge, edge )
@@ -394,9 +391,6 @@ REF_STATUS ref_metric_gradation( REF_GRID ref_grid, REF_DBL r )
 				 &(metric[6*node1]) ), "m0" );  
     }
 
-  RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid)), "to");
-
-  ref_free( metric );
   ref_free( metric_limit );
   ref_free( metric_orig );
 
@@ -497,14 +491,13 @@ REF_STATUS ref_metric_interpolated_curvature( REF_GRID ref_grid )
   REF_INT gradation;
 
   ref_malloc( metric, 6*ref_node_max(ref_node), REF_DBL );
-  RSS( ref_metric_from_curvature( metric, ref_grid ), "curve" );
-  RSS(ref_metric_to_node( metric, ref_node ), "to node");
-  ref_free( metric );
-  
+  RSS( ref_metric_from_curvature( metric, ref_grid ), "curve" );  
   for ( gradation =0 ; gradation<10 ; gradation++ )
     {
-      RSS( ref_metric_gradation( ref_grid, 1.2 ), "grad");
+      RSS( ref_metric_gradation( metric, ref_grid, 1.2 ), "grad");
     }
+  RSS(ref_metric_to_node( metric, ref_node ), "to node");
+  ref_free( metric );
 
   return REF_SUCCESS;
 }
