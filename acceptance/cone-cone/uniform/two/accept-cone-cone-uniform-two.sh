@@ -21,8 +21,6 @@ ${two}/ref_driver -i cone-cone.meshb -g ${geomfile} -m cone-cone.metric -o ref_d
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cone-cone-uniform-two-01.status
 
-exit
-
 ${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1.metric -o ref_driver2
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cone-cone-uniform-two-02.status
