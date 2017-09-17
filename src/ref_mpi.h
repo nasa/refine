@@ -5,6 +5,15 @@
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
+typedef struct REF_MPI_STRUCT REF_MPI_STRUCT;
+typedef REF_MPI_STRUCT * REF_MPI;
+END_C_DECLORATION
+
+BEGIN_C_DECLORATION
+struct REF_MPI_STRUCT {
+  REF_INT n;
+  REF_INT id;
+};
 
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
