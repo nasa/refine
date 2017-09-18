@@ -21,6 +21,9 @@ egads recon
  clean up method
  edge candidates must have more than one tri type
  switch to EG_invEvaluateGuess
+   revert on failure (wrap?)
+   for faces start from interior?
+   or walk edges?
 
 extract faceids from ref_collapse_edge_geometry
 
