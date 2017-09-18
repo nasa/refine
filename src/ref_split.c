@@ -103,7 +103,10 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      new_node ), "cav split" );
 	  status = ref_cavity_enlarge_visible( ref_cavity, ref_grid,
 					       new_node );
-	  if ( REF_SUCCESS == status ) valid_cavity = REF_TRUE;
+	  if ( REF_SUCCESS == status )
+	    {
+	      valid_cavity = REF_TRUE;
+	    }
 	  RSS( ref_cavity_free( ref_cavity ), "cav free" );
 	  ref_cavity = (REF_CAVITY)NULL;
 	}
