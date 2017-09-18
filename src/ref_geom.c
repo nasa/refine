@@ -415,9 +415,9 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  RXS( ref_geom_find( ref_geom, nodes[0], REF_GEOM_FACE, faceid,
 			      &geom0), REF_NOT_FOUND, "find0" );
 	  RXS( ref_geom_find( ref_geom, nodes[1], REF_GEOM_FACE, faceid,
-			      &geom1), REF_NOT_FOUND, "find0" );
+			      &geom1), REF_NOT_FOUND, "find1" );
 	  RXS( ref_geom_find( ref_geom, nodes[2], REF_GEOM_FACE, faceid,
-			      &geom2), REF_NOT_FOUND, "find0" );
+			      &geom2), REF_NOT_FOUND, "find2" );
 	  if ( REF_EMPTY != geom0 && REF_EMPTY == geom1 )
 	    {
 	      updates++;
