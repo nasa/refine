@@ -859,6 +859,7 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 				 REF_INT new_node )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT item0, item1;
   REF_INT geom0, geom1;
   REF_INT type, id;
@@ -882,8 +883,11 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	    {
 	      RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
 	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
-	      if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
-	      if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
+	      param[0] = 0.5 * ( param0[0] + param1[0] );
+	      if ( ref_geom_model_loaded(ref_geom) )
+		RSS( ref_geom_inverse_eval( ref_geom, type, id,
+					    ref_node_xyz_ptr(ref_node,new_node),
+					    param ), "inv eval edge" );
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
@@ -899,8 +903,12 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	    {
 	      RSS( ref_geom_tuv(ref_geom,node0,type,id,param0), "node0" );
 	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
-	      if ( type > 0 ) param[0] = 0.5 * ( param0[0] + param1[0] );
-	      if ( type > 1 ) param[1] = 0.5 * ( param0[1] + param1[1] );
+	      param[0] = 0.5 * ( param0[0] + param1[0] );
+	      param[1] = 0.5 * ( param0[1] + param1[1] );
+	      if ( ref_geom_model_loaded(ref_geom) )
+		RSS( ref_geom_inverse_eval( ref_geom, type, id,
+					    ref_node_xyz_ptr(ref_node,new_node),
+					    param ), "inv eval edge" );
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
