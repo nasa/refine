@@ -82,7 +82,7 @@ int main( int argc, char *argv[] )
   if (ref_mpi_master)
     echo_argv( argc, argv );
 
-  while (( opt = getopt(argc, argv, "i:m:g:p:o:s:cltd")) != -1)
+  while (( opt = getopt(argc, argv, "i:m:g:r:p:o:s:cltd")) != -1)
     {
       switch (opt)
         {
@@ -99,6 +99,11 @@ int main( int argc, char *argv[] )
         case 'g':
           RNS( ref_grid, "input grid must be loaded before geom" );
           RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), optarg ), "ld e" );
+          break;
+        case 'r':
+          RNS( ref_grid, "input grid must be loaded before geom" );
+          ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) =
+	    atof(optarg);
           break;
         case 'p':
           if ( 1 < ref_mpi_n )
@@ -133,6 +138,7 @@ int main( int argc, char *argv[] )
           printf("usage: \n %s\n",argv[0]);
           printf("       [-i input_grid.ext]\n");
           printf("       [-g geometry.egads]\n");
+          printf("       [-r segments_per_curvature_radian]\n");
           printf("       [-p parameterization-restart.gas]\n");
           printf("       [-m input_project.metric] (curvature metric when missing)\n");
           printf("       [-s adapt_cycles] default is 15\n");
