@@ -200,3 +200,11 @@ cd ${source_dir}/acceptance/annulus/uniform/two
 trap - EXIT
 
 date
+
+LOG=${root_dir}/log.accept-cone-cone-uniform-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cone-cone/uniform/two
+./accept-cone-cone-uniform-two.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
