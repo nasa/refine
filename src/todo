@@ -1,4 +1,6 @@
 
+find and remove multiple face tets
+
 accept comm as argument
 pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
