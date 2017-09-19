@@ -42,7 +42,7 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
   ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
   ref_geom->uv_area_sign = NULL;
-  ref_geom->segments_per_radian_of_curvature = 1.0/10.0;
+  ref_geom->segments_per_radian_of_curvature = 10.0;
 
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     {
