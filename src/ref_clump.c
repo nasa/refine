@@ -193,6 +193,87 @@ REF_STATUS ref_clump_around( REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_clump_between( REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+			      const char *filename )
+{
+  REF_DICT node_dict, tri_dict, tet_dict;
+  REF_DICT ref_dict;
+  REF_CELL ref_cell;
+  REF_INT item, cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  char *zonetype;
+
+  FILE *f;
+
+  RSS(ref_dict_create(&node_dict),"create nodes");
+  RSS(ref_dict_create(&tri_dict),"create tris");
+  RSS(ref_dict_create(&tet_dict),"create tets");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  ref_dict = tri_dict;
+  each_ref_cell_having_node( ref_cell, node0, item, cell )
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
+  ref_cell = ref_grid_tet(ref_grid);
+  ref_dict = tet_dict;
+  each_ref_cell_having_node( ref_cell, node0, item, cell )
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
+  each_ref_cell_having_node( ref_cell, node1, item, cell )
+  {
+    RSS( ref_cell_nodes(ref_cell,cell,nodes), "n");
+    RSS( ref_dict_store( ref_dict, cell, 0 ), "store");
+    each_ref_cell_cell_node(ref_cell,cell_node)
+    RSS( ref_dict_store( node_dict, nodes[cell_node], 0 ), "store");
+  }
+
+
+  f = fopen(filename,"w");
+  if (NULL == (void *)f)
+    printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  fprintf(f, "title=\"tecplot refine clump file\"\n");
+  fprintf(f, "variables = \"x\" \"y\" \"z\" \"xm\" \"ym\" \"zm\" \"g\"\n");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  ref_dict = tri_dict;
+  zonetype = "fetriangle";
+  RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
+                              node_dict,
+                              ref_grid_node(ref_grid), node0 ), "zone" );
+
+  ref_cell = ref_grid_tet(ref_grid);
+  ref_dict = tet_dict;
+  zonetype = "fetetrahedron";
+  RSS( ref_clump_zone_around( f, ref_cell, ref_dict, zonetype,
+                              node_dict,
+                              ref_grid_node(ref_grid), node0 ), "zone" );
+
+  fclose(f);
+
+  RSS(ref_dict_free(tet_dict),"free tet");
+  RSS(ref_dict_free(tri_dict),"free tris");
+  RSS(ref_dict_free(node_dict),"free nodes");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
                                  const char *filename )
 {
@@ -273,9 +354,8 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
-  REF_DBL *ratio;
   REF_INT ntarget;
-  REF_INT node, node0, node1;
+  REF_INT node0, node1;
   REF_INT edge;
   REF_DBL edge_ratio;
 
@@ -283,29 +363,21 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
 
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
-  ref_malloc_init( ratio, ref_node_max(ref_node),
-                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
-
+  ntarget = 0;
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
       RSS( ref_node_ratio( ref_node, node0, node1,
                            &edge_ratio ), "ratio");
-      ratio[node0] = MIN( ratio[node0], edge_ratio );
-      ratio[node1] = MIN( ratio[node1], edge_ratio );
+      if (edge_ratio < ratio_tol*ref_adapt_collapse_ratio )
+	{
+	  sprintf(filename,"clump%d.t",ntarget);
+	  RSS(ref_clump_between(ref_grid, node0, node1, filename ), "dump");
+	  ntarget++;
+	}
     }
 
-  ntarget = 0;
-  for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ratio_tol*ref_adapt_collapse_ratio )
-      {
-        sprintf(filename,"clump%d.t",ntarget);
-        RSS(ref_clump_around(ref_grid, node, filename ), "dump");
-        ntarget++;
-      }
-
-  ref_free( ratio )
   RSS( ref_edge_free( ref_edge ), "free edges" );
 
   return REF_SUCCESS;
