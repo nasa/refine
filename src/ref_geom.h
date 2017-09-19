@@ -24,6 +24,7 @@ BEGIN_C_DECLORATION
     REF_INT *descr;
     REF_DBL *param;
     REF_DBL *uv_area_sign;
+    REF_DBL segments_per_radian_of_curvature;
     REF_ADJ ref_adj;
     REF_INT nnode, nedge, nface;
     void *context;
@@ -56,6 +57,9 @@ BEGIN_C_DECLORATION
 
 #define ref_geom_param(ref_geom,dimension,geom) \
   (( ref_geom )->param[( dimension )+2*( geom )] )
+
+#define ref_geom_segments_per_radian_of_curvature(ref_geom) \
+  (( ref_geom )->segments_per_radian_of_curvature )
 
 #define each_ref_type( ref_geom, type )				\
   for ( ( type ) = 0;						\

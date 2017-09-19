@@ -42,7 +42,8 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
   ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
   ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
   ref_geom->uv_area_sign = NULL;
-  
+  ref_geom->segments_per_radian_of_curvature = 1.0/10.0;
+
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     {
       ref_geom_type(ref_geom,geom) = REF_EMPTY;
@@ -116,7 +117,9 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
   ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
   ref_geom->uv_area_sign = NULL;
- 
+  ref_geom->segments_per_radian_of_curvature =
+    original->segments_per_radian_of_curvature;
+
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     for ( i = 0; i < 3; i++ )
       ref_geom_descr(ref_geom,i,geom) = ref_geom_descr(original,i,geom);

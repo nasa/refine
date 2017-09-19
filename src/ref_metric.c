@@ -555,7 +555,8 @@ REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid )
       RSS(REF_IMPLEMENT,"...or implement non-CAD curvature estimate")
     }
 
-  drad = 1.0/10.0; /* 1/segments per radian */
+  /* 1/segments per radian */
+  drad = 1.0/ref_geom_segments_per_radian_of_curvature(ref_geom);
   RSS( ref_geom_egads_diagonal( ref_geom, &hmax ), "bbox diag");
   hmax *= 0.1; /* normal spacing and max tangential spacing */
   rlimit = hmax/drad; /* h = r*drad, r = h/drad */
