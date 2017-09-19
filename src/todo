@@ -11,8 +11,8 @@ layer insert
  cavity recover tet face
 
 cavity operator in 2D/3D
- sliver deletion
  eliminate short edges (cavity)
+ sliver deletion
 
 egads recon
  clean up method
