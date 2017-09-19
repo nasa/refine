@@ -4,9 +4,6 @@ pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
 extern ref_migrate_method into struct
 
-boundary tangle
-  cone-cone : fill in
-
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 layer insert
@@ -21,15 +18,18 @@ egads recon
  clean up method
  edge candidates must have more than one tri type
  switch to EG_invEvaluateGuess
+   why not working for edges (initialized to right node t?)
    revert on failure (wrap?)
    for faces start from interior?
    or walk edges?
+
+insert optimized node location (uv,xyz) with validity constraint
 
 extract faceids from ref_collapse_edge_geometry
 
 ideal tri/tet use log avg m?
 
-histogram hist plots
+histogram history plots
 
 ellipsoid viz 
 
@@ -127,6 +127,9 @@ low priority surface reconstruction when EGADS not available
     + noise in surface will be present
   + analytic hemisphere-cylinder 5e-7 tolerance is typical, edge to surface
   + geode: unclear about support, see how PW adapt develops 
+
++ boundary tangle
+  + cone-cone : fill in
 
 + om6 : gradation curvature limit
 
