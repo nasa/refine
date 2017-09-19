@@ -1127,6 +1127,46 @@ REF_STATUS ref_geom_eval( REF_GEOM ref_geom, REF_INT geom,
 #endif
 }
 
+REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
+				  REF_DBL *xyz, REF_DBL *param )
+{
+#ifdef HAVE_EGADS
+  REF_DBL closest[3];
+  ego object;
+  object = (ego)NULL;
+  switch (type)
+    {
+    case (REF_GEOM_NODE) :
+      printf("GEOM_NODE ref_geom_inverse_eval not defined\n");
+      return REF_IMPLEMENT;
+      break;
+    case (REF_GEOM_EDGE) :
+      RNS(ref_geom->edges,"edges not loaded");
+      if ( id < 1 || id > ref_geom->nedge )
+	return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE) :
+      RNS(ref_geom->faces,"faces not loaded");
+      if ( id < 1 || id > ref_geom->nface )
+	return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom" );
+    }
+
+  REIS( EGADS_SUCCESS,
+	EG_invEvaluateGuess(object, xyz,
+			    param, closest), "EG inv eval (guess)");
+  return REF_SUCCESS;
+#else
+  printf("no-op, No EGADS linked for %s type %d id %d x %f p %f n %d\n",
+	 __func__, type, id, xyz[0], param[0], ref_geom_n(ref_geom) );
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_curvature( REF_GEOM ref_geom, REF_INT geom,
 			       REF_DBL *kr, REF_DBL *r,
 			       REF_DBL *ks, REF_DBL *s )
