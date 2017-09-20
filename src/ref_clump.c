@@ -366,6 +366,11 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
   ntarget = 0;
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
+      if (ntarget >= 100)
+	{
+	  printf("over 100 stuck edges, giving up\n");
+	  break;
+	}
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
       RSS( ref_node_ratio( ref_node, node0, node1,

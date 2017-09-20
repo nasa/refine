@@ -26,25 +26,28 @@
 #include   "ref_gather.h"
 #include   "ref_metric.h"
 
+#include   "ref_import.h"
+#include   "ref_part.h"
+#include   "ref_export.h"
+
 int main( int argc, char *argv[] )
 {
 
-  if ( 2 == argc )
-    { /* ball */
+  if ( 1 < argc )
+    {
       REF_GRID ref_grid;
-      REF_INT node;
-
-      RSS( ref_fixture_twod_brick_grid( &ref_grid ), "2d brick" );
-      node = 10;
-      RSS(ref_clump_tri_around(ref_grid, node, argv[1]),"clump");
+      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+      if ( 2 < argc )
+	{
+	  RSS(ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part m");
+	}
+      else
+	{
+	  RSS(ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit m");
+	}
+      RSS( ref_clump_stuck_edges( ref_grid, 0.5 ), "stuck edge" );
+      RSS( ref_export_tec_surf( ref_grid, "clump_surf.tec" ), "surf" );
       RSS( ref_grid_free(ref_grid),"free");
-
-      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "tet brick" );
-      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit metric" );
-      node = 10;
-      RSS(ref_clump_around(ref_grid, node, argv[1]),"clump");
-      RSS( ref_grid_free(ref_grid),"free");
-
     }
 
   return 0;
