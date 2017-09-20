@@ -175,3 +175,60 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_swap_triage( REF_GRID ref_grid )
+{
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL tet = ref_grid_tet(ref_grid);
+  REF_INT tri_index, tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i, face_nodes[4];
+  REF_INT tet0, tet1;
+  REF_INT faceid0, faceid1;
+  REF_BOOL more_than_two;
+  REF_INT cell_face, node, cell_nodes[4];
+  REF_INT found, found_nodes[REF_CELL_MAX_SIZE_PER];
+  
+  each_ref_cell_valid_cell_with_nodes( tri, tri_index, tri_nodes )
+    {
+      for( i=0 ;i<3;i++)
+	face_nodes[i] = tri_nodes[i];
+      face_nodes[3] = face_nodes[0];
+      RSS( ref_cell_with_face( tet, face_nodes,
+                               &tet0, &tet1 ),
+           "unable to find tets with face");
+      if ( REF_EMPTY == tet0 )
+        THROW("boundry tet missing");
+      if ( REF_EMPTY != tet1 )
+	THROW("boundry tri has two tets, not manifold");
+
+      faceid0 = REF_EMPTY;
+      faceid1 = REF_EMPTY;
+      more_than_two = REF_FALSE;
+      for (cell_face=0;cell_face<4;cell_face++)
+	{
+	  for(node=0;node<4;node++)
+	    cell_nodes[node]=ref_cell_f2n(tet,node,cell_face,tet0);
+	  if ( REF_SUCCESS == ref_cell_with( tri, cell_nodes, &found ) )
+	    {
+	      RSS( ref_cell_nodes( tri, found, found_nodes), "tri");
+	      if ( REF_EMPTY == faceid0 )
+		{
+		  faceid0 = found_nodes[3];
+		}
+	      else
+		{
+		  if ( REF_EMPTY != faceid1 )
+		    {
+		      more_than_two = REF_TRUE;
+		    }
+		  faceid1 = found_nodes[3];
+		}
+	    }
+	}
+      if ( REF_EMPTY == faceid0 || REF_EMPTY == faceid1 ||
+	   faceid0 != faceid1 || more_than_two )
+	continue;
+      RSS( ref_swap_remove_two_face_cell( ref_grid, tet0 ), "remove it" );
+    }
+  return REF_SUCCESS;
+}
