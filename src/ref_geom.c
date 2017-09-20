@@ -865,6 +865,7 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
   REF_BOOL has_id;
+  REF_BOOL has_edge_support;
 
   each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
 				   node0, item0, geom0)
@@ -892,6 +893,12 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
+    }
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				   node0, item0, geom0)
+    each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				     node1, item1, geom1)
+    {
       type = REF_GEOM_FACE;
       if ( ref_geom_type(ref_geom,geom0) == type &&
 	   ref_geom_type(ref_geom,geom1) == type &&
@@ -906,11 +913,17 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
 	      param[0] = 0.5 * ( param0[0] + param1[0] );
 	      param[1] = 0.5 * ( param0[1] + param1[1] );
-	      if ( ref_geom_model_loaded(ref_geom) )
-		RSB( ref_geom_inverse_eval( ref_geom, type, id,
-					    ref_node_xyz_ptr(ref_node,new_node),
-					    param ), "inv eval face",
-		     ref_geom_tec( ref_grid, "ref_geom_split_edge.tec" ) );
+	      RSS( ref_geom_is_a( ref_geom, new_node, REF_GEOM_EDGE,
+				  &has_edge_support ), "look for edge" );
+	      if ( ref_geom_model_loaded(ref_geom) &&
+		   !has_edge_support )/* constrain will clean up or add edgeUV*/
+		{
+		  RSB( ref_geom_inverse_eval( ref_geom, type, id,
+					      ref_node_xyz_ptr( ref_node,
+								new_node),
+					      param ), "inv eval face",
+		       ref_geom_tec( ref_grid, "ref_geom_split_face.tec" ) );
+		}
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
