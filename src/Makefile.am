@@ -140,7 +140,7 @@ ref_cell_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_clump_test
 noinst_PROGRAMS += ref_clump_test
 ref_clump_test_SOURCES = ref_clump_test.c
-ref_clump_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_clump_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_collapse_test
 noinst_PROGRAMS += ref_collapse_test
@@ -210,7 +210,7 @@ ref_html_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_import_test
 noinst_PROGRAMS += ref_import_test
 ref_import_test_SOURCES = ref_import_test.c
-ref_import_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_import_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_inflate_test
 noinst_PROGRAMS += ref_inflate_test
