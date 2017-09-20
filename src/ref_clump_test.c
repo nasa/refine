@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
 	  RSS(ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit m");
 	}
 
-      RSS( ref_swap_triage( ref_grid ), "flip traige" );
+      RSS( ref_swap_pass( ref_grid ), "flip traige" );
 
       RSS( ref_clump_stuck_edges( ref_grid, 0.5 ), "stuck edge" );
       RSS( ref_export_tec_surf( ref_grid, "clump_surf.tec" ), "surf" );

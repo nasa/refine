@@ -176,7 +176,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_triage( REF_GRID ref_grid )
+REF_STATUS ref_swap_pass( REF_GRID ref_grid )
 {
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
