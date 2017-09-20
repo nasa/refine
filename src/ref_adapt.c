@@ -11,6 +11,7 @@
 
 #include "ref_collapse.h"
 #include "ref_split.h"
+#include "ref_swap.h"
 #include "ref_smooth.h"
 #include "ref_cavity.h"
 
@@ -52,6 +53,11 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
   ref_gather_blocking_frame( ref_grid, "collapse" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
+
+  RSS( ref_swap_pass( ref_grid ), "swap pass");
+  ref_gather_blocking_frame( ref_grid, "swap" );
+  if (ngeom>0)
+    RSS( ref_geom_verify_topo( ref_grid ), "swap geom typo check");
 
   RSS( ref_split_pass( ref_grid ), "split pass");
   ref_gather_blocking_frame( ref_grid, "split" );

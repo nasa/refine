@@ -4,6 +4,7 @@
 
 #include "ref_swap.h"
 
+/* parallel requirement, all local */
 REF_STATUS ref_swap_remove_two_face_cell( REF_GRID ref_grid, REF_INT cell )
 {
   REF_CELL ref_cell;
@@ -18,7 +19,7 @@ REF_STATUS ref_swap_remove_two_face_cell( REF_GRID ref_grid, REF_INT cell )
   REF_INT temp, face;
 
   ref_cell = ref_grid_tet(ref_grid);
- 
+
   face0 = REF_EMPTY;
   face1 = REF_EMPTY;
   faceid0 = REF_EMPTY;
@@ -96,7 +97,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
   REF_INT remove_this_node;
 
   ref_cell = ref_grid_tet(ref_grid);
- 
+
   face0 = REF_EMPTY;
   face1 = REF_EMPTY;
   face2 = REF_EMPTY;
@@ -178,6 +179,7 @@ REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell )
 
 REF_STATUS ref_swap_pass( REF_GRID ref_grid )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
   REF_INT tri_index, tri_nodes[REF_CELL_MAX_SIZE_PER];
@@ -200,6 +202,13 @@ REF_STATUS ref_swap_pass( REF_GRID ref_grid )
         THROW("boundry tet missing");
       if ( REF_EMPTY != tet1 )
 	THROW("boundry tri has two tets, not manifold");
+
+      /* must be local to swap */
+      if ( ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,0,tet0) ) ||
+	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,1,tet0) ) ||
+	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,2,tet0) ) ||
+	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,3,tet0) ) )
+	continue;
 
       faceid0 = REF_EMPTY;
       faceid1 = REF_EMPTY;
