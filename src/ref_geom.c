@@ -885,9 +885,10 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	      RSS( ref_geom_tuv(ref_geom,node1,type,id,param1), "node1" );
 	      param[0] = 0.5 * ( param0[0] + param1[0] );
 	      if ( ref_geom_model_loaded(ref_geom) )
-		RSS( ref_geom_inverse_eval( ref_geom, type, id,
+		RSB( ref_geom_inverse_eval( ref_geom, type, id,
 					    ref_node_xyz_ptr(ref_node,new_node),
-					    param ), "inv eval edge" );
+					    param ), "inv eval edge",
+		     ref_geom_tec( ref_grid, "ref_geom_split_edge.tec" ) );
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
@@ -906,9 +907,10 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 	      param[0] = 0.5 * ( param0[0] + param1[0] );
 	      param[1] = 0.5 * ( param0[1] + param1[1] );
 	      if ( ref_geom_model_loaded(ref_geom) )
-		RSS( ref_geom_inverse_eval( ref_geom, type, id,
+		RSB( ref_geom_inverse_eval( ref_geom, type, id,
 					    ref_node_xyz_ptr(ref_node,new_node),
-					    param ), "inv eval edge" );
+					    param ), "inv eval face",
+		     ref_geom_tec( ref_grid, "ref_geom_split_edge.tec" ) );
 	      RSS( ref_geom_add(ref_geom,new_node,type,id,param), "new geom" );
 	    }
 	}
