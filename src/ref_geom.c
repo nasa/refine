@@ -1143,7 +1143,9 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #ifdef HAVE_EGADS
   REF_DBL closest[3];
   ego object;
+  int egads_status;
   object = (ego)NULL;
+
   switch (type)
     {
     case (REF_GEOM_NODE) :
@@ -1169,6 +1171,21 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REIS( EGADS_SUCCESS,
 	EG_invEvaluateGuess(object, xyz,
 			    param, closest), "EG inv eval (guess)");
+
+  /* delete the above function to try and recover */
+
+  egads_status = EG_invEvaluateGuess(object, xyz,
+				     param, closest);
+  if ( EGADS_SUCCESS == egads_status )
+    return REF_SUCCESS;
+  if ( EGADS_EMPTY != egads_status )
+    {
+      REIS( EGADS_SUCCESS, egads_status, "EG inv eval (guess)" );
+    }
+  REIS( EGADS_SUCCESS,
+	EG_invEvaluate(object, xyz,
+		       param, closest), "EG inv eval");
+
   return REF_SUCCESS;
 #else
   printf("no-op, No EGADS linked for %s type %d id %d x %f p %f n %d\n",
