@@ -10,6 +10,8 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
 
+prevent slivers by setting collapse limits
+
 cavity operator in 2D/3D
  eliminate short edges (cavity)
  sliver deletion
