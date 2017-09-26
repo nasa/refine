@@ -1,6 +1,4 @@
 
-find and remove multiple face tets
-
 accept comm as argument
 pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
@@ -106,6 +104,8 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ find and remove multiple face tets (2)
 
 + cavity
   + verify topo 
