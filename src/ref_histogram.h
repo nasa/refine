@@ -46,7 +46,8 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
 			      REF_DBL observation );
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 
-REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram, 
+REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
+				REF_GRID ref_grid,
 				const char *description );
 REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
 				 const char *description );

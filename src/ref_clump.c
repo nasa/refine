@@ -375,7 +375,7 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
       node1 = ref_edge_e2n( ref_edge, 1, edge );
       RSS( ref_node_ratio( ref_node, node0, node1,
                            &edge_ratio ), "ratio");
-      if (edge_ratio < ratio_tol*ref_adapt_collapse_ratio )
+      if (edge_ratio < ratio_tol*ref_grid_adapt(ref_grid,collapse_ratio) )
 	{
 	  sprintf(filename,"clump%d.t",ntarget);
 	  RSS(ref_clump_between(ref_grid, node0, node1, filename ), "dump");
@@ -404,7 +404,7 @@ REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node),
-                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
+                   REF_DBL, 2.0*ref_grid_adapt(ref_grid,collapse_ratio) );
 
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
@@ -423,7 +423,7 @@ REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
 
   ntarget = 0;
   for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ref_adapt_collapse_ratio )
+    if ( ratio[node] < ref_grid_adapt(ref_grid,collapse_ratio) )
       {
         sprintf(filename,"clump%d.t",ntarget);
         RSS(ref_clump_tri_around(ref_grid, node, filename ), "dump");

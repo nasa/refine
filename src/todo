@@ -1,6 +1,5 @@
 
 accept comm as argument
-pull ref_adapt extern variables into struct
 create REF_MPI to eliminate static, store comm, and store time
 extern ref_migrate_method into struct
 
@@ -10,7 +9,9 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
 
-prevent slivers by setting collapse limits
+smarter adapt parameters
+ prevent slivers by setting collapse limits
+ tighten limits near convergence
 
 cavity operator in 2D/3D
  eliminate short edges (cavity)

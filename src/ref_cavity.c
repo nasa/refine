@@ -931,7 +931,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node),
-                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
+                   REF_DBL, 2.0*ref_grid_adapt(ref_grid,collapse_ratio) );
 
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
@@ -953,7 +953,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 
   ntarget = 0;
   for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ref_adapt_collapse_ratio )
+    if ( ratio[node] < ref_grid_adapt(ref_grid,collapse_ratio) )
       {
         node2target[node] = ntarget;
         target[ntarget] = node;
@@ -967,7 +967,7 @@ REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ref_adapt_collapse_ratio )
+      if ( ratio[order[i]] > ref_grid_adapt(ref_grid,collapse_ratio) )
         continue;
       node = target[order[i]];
       if ( ref_node_valid(ref_node,node) )

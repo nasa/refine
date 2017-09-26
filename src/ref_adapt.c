@@ -17,15 +17,54 @@
 
 #include "ref_gather.h"
 
-REF_DBL ref_adapt_split_ratio = 1.5;
-REF_DBL ref_adapt_split_quality_absolute = 1.0e-3;
-REF_DBL ref_adapt_split_quality_relative = 0.6;
+REF_STATUS ref_adapt_create( REF_ADAPT *ref_adapt_ptr )
+{
+  REF_ADAPT ref_adapt;
 
-REF_DBL ref_adapt_collapse_ratio = 0.6;
-REF_DBL ref_adapt_collapse_quality_absolute = 1.0e-3;
-REF_DBL ref_adapt_collapse_ratio_limit = 3.0;
+  ref_malloc( *ref_adapt_ptr, 1, REF_ADAPT_STRUCT );
 
-REF_DBL ref_adapt_smooth_min_quality = 1.0e-3;
+  ref_adapt = *ref_adapt_ptr;
+
+  ref_adapt->split_ratio = 1.5;
+  ref_adapt->split_quality_absolute = 1.0e-3;
+  ref_adapt->split_quality_relative = 0.6;
+
+  ref_adapt->collapse_ratio = 0.6;
+  ref_adapt->collapse_quality_absolute = 1.0e-3;
+  ref_adapt->collapse_ratio_limit = 3.0;
+
+  ref_adapt->smooth_min_quality = 1.0e-3;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_adapt_deep_copy( REF_ADAPT *ref_adapt_ptr, REF_ADAPT original )
+{
+  REF_ADAPT ref_adapt;
+
+  ref_malloc( *ref_adapt_ptr, 1, REF_ADAPT_STRUCT );
+
+  ref_adapt = *ref_adapt_ptr;
+
+  ref_adapt->split_ratio = original->split_ratio;
+  ref_adapt->split_quality_absolute = original->split_quality_absolute;
+  ref_adapt->split_quality_relative = original->split_quality_relative;
+
+  ref_adapt->collapse_ratio = original->collapse_ratio;
+  ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
+  ref_adapt->collapse_ratio_limit = original->collapse_ratio_limit ;
+
+  ref_adapt->smooth_min_quality = original->smooth_min_quality;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_adapt_free( REF_ADAPT ref_adapt )
+{
+  ref_free( ref_adapt );
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 {

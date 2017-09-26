@@ -35,7 +35,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node),
-                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
+                   REF_DBL, 2.0*ref_grid_adapt(ref_grid,collapse_ratio) );
 
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
@@ -51,7 +51,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 
   ntarget = 0;
   for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ref_adapt_collapse_ratio )
+    if ( ratio[node] < ref_grid_adapt(ref_grid,collapse_ratio) )
       {
         node2target[node] = ntarget;
         target[ntarget] = node;
@@ -65,7 +65,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ref_adapt_collapse_ratio )
+      if ( ratio[order[i]] > ref_grid_adapt(ref_grid,collapse_ratio) )
         continue;
       node1 = target[order[i]];
       RSS( ref_collapse_to_remove_node1( ref_grid, &node0, node1 ),
@@ -79,7 +79,7 @@ REF_STATUS ref_collapse_pass( REF_GRID ref_grid )
             for (node = 0; node<ref_cell_node_per(ref_cell); node++)
               if ( REF_EMPTY != node2target[nodes[node]] )
                 ratio[node2target[nodes[node]]] =
-                  2.0*ref_adapt_collapse_ratio;
+                  2.0*ref_grid_adapt(ref_grid,collapse_ratio);
           }
         }
     }
@@ -463,7 +463,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
         {
           RSS( ref_node_ratio( ref_node, node0, nodes[node],
                                &edge_ratio ), "ratio");
-          if ( edge_ratio > ref_adapt_collapse_ratio_limit )
+          if ( edge_ratio > ref_grid_adapt(ref_grid,collapse_ratio_limit) )
             return REF_SUCCESS;
         }
 
@@ -471,7 +471,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
       if ( node1 == nodes[node] )
         nodes[node] = node0;
     RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
-    if ( quality < ref_adapt_collapse_quality_absolute )
+    if ( quality < ref_grid_adapt(ref_grid,collapse_quality_absolute) )
       return REF_SUCCESS;
   }
 
@@ -493,7 +493,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
       if ( node1 == nodes[node] )
         nodes[node] = node0;
     RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
-    if ( quality < ref_adapt_collapse_quality_absolute )
+    if ( quality < ref_grid_adapt(ref_grid,collapse_quality_absolute) )
       return REF_SUCCESS;
 
     if ( has_support )
@@ -636,7 +636,7 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
         {
           RSS( ref_node_ratio( ref_node, keep, nodes[node],
                                &edge_ratio ), "ratio");
-          if ( edge_ratio > ref_adapt_collapse_ratio_limit )
+          if ( edge_ratio > ref_grid_adapt(ref_grid,collapse_ratio_limit) )
             return REF_SUCCESS;
         }
 
@@ -644,7 +644,7 @@ REF_STATUS ref_collapse_face_quality( REF_GRID ref_grid,
       if ( remove == nodes[node] )
         nodes[node] = keep;
     RSS( ref_node_tri_quality( ref_node,nodes,&quality ), "qual");
-    if ( quality < ref_adapt_collapse_quality_absolute )
+    if ( quality < ref_grid_adapt(ref_grid,collapse_quality_absolute) )
       return REF_SUCCESS;
   }
 
@@ -818,7 +818,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc_init( ratio, ref_node_max(ref_node),
-                   REF_DBL, 2.0*ref_adapt_collapse_ratio );
+                   REF_DBL, 2.0*ref_grid_adapt(ref_grid,collapse_ratio) );
 
   for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
     {
@@ -840,7 +840,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 
   ntarget = 0;
   for ( node = 0; node < ref_node_max(ref_node); node++ )
-    if ( ratio[node] < ref_adapt_collapse_ratio )
+    if ( ratio[node] < ref_grid_adapt(ref_grid,collapse_ratio) )
       {
         node2target[node] = ntarget;
         target[ntarget] = node;
@@ -854,7 +854,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
 
   for ( i = 0; i < ntarget; i++ )
     {
-      if ( ratio[order[i]] > ref_adapt_collapse_ratio )
+      if ( ratio[order[i]] > ref_grid_adapt(ref_grid,collapse_ratio) )
         continue;
       node1 = target[order[i]];
       RSS( ref_collapse_face_remove_node1( ref_grid, &node0, node1 ),
@@ -868,7 +868,7 @@ REF_STATUS ref_collapse_twod_pass( REF_GRID ref_grid )
             for (node = 0; node<ref_cell_node_per(ref_cell); node++)
               if ( REF_EMPTY != node2target[nodes[node]] )
                 ratio[node2target[nodes[node]]] =
-                  2.0*ref_adapt_collapse_ratio;
+                  2.0*ref_grid_adapt(ref_grid,collapse_ratio);
           }
         }
     }

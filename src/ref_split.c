@@ -45,7 +45,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   &(ratio[n]) ), "ratio");
-      if ( ratio[n] > ref_adapt_split_ratio )
+      if ( ratio[n] > ref_grid_adapt(ref_grid,split_ratio) )
 	{
 	  edges[n] = edge;
 	  n++;
@@ -425,10 +425,10 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tet_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < ref_adapt_split_quality_absolute ||
-	   quality1 < ref_adapt_split_quality_absolute ||
-	   quality0 < ref_adapt_split_quality_relative*min_existing_quality ||
-	   quality1 < ref_adapt_split_quality_relative*min_existing_quality ) 
+      if ( quality0 < ref_grid_adapt(ref_grid,split_quality_absolute) ||
+	   quality1 < ref_grid_adapt(ref_grid,split_quality_absolute) ||
+	   quality0 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ||
+	   quality1 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ) 
 	return REF_SUCCESS;
     }
 
@@ -469,7 +469,7 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 			   ref_edge_e2n( ref_edge, 0, edge ),
 			   ref_edge_e2n( ref_edge, 1, edge ),
 			   &(ratio[n]) ), "ratio");
-      if ( ratio[n] > ref_adapt_split_ratio )
+      if ( ratio[n] > ref_grid_adapt(ref_grid,split_ratio) )
 	{
 	  edges[n] = edge;
 	  n++;
@@ -752,10 +752,10 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
 	if ( node1 == nodes[node] ) nodes[node] = new_node;
       RSS( ref_node_tri_quality( ref_node,nodes,&quality1 ), "q1");
 
-      if ( quality0 < ref_adapt_split_quality_absolute ||
-	   quality1 < ref_adapt_split_quality_absolute ||
-	   quality0 < ref_adapt_split_quality_relative*min_existing_quality ||
-	   quality1 < ref_adapt_split_quality_relative*min_existing_quality ) 
+      if ( quality0 < ref_grid_adapt(ref_grid,split_quality_absolute) ||
+	   quality1 < ref_grid_adapt(ref_grid,split_quality_absolute) ||
+	   quality0 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ||
+	   quality1 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ) 
 	return REF_SUCCESS;
     }
 

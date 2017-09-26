@@ -31,6 +31,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
 
   RSS( ref_geom_create( &ref_grid_geom(ref_grid) ), "geom create" );
   RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
+  RSS( ref_adapt_create( &(ref_grid->adapt) ), "adapt create" );
 
   ref_grid_twod(ref_grid) = REF_FALSE;
 

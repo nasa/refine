@@ -457,7 +457,7 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
       RSS( ref_node_tri_quality( ref_grid_node(ref_grid), 
 				 nodes,  
 				 &quality ), "tri qual");
-      quality = MAX(quality,ref_adapt_smooth_min_quality);
+      quality = MAX(quality,ref_grid_adapt(ref_grid,smooth_min_quality));
       weight = 1.0/quality;
       normalization += weight;
       for (ixyz = 0; ixyz<3; ixyz++)
@@ -500,7 +500,7 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv( REF_GRID ref_grid,
       RSS( ref_node_tri_quality( ref_grid_node(ref_grid), 
 				 nodes,  
 				 &quality ), "tri qual");
-      quality = MAX(quality,ref_adapt_smooth_min_quality);
+      quality = MAX(quality,ref_grid_adapt(ref_grid,smooth_min_quality));
       weight = 1.0/quality;
       normalization += weight;
       for (iuv = 0; iuv<2; iuv++)
@@ -733,7 +733,7 @@ REF_STATUS ref_smooth_tet_weighted_ideal( REF_GRID ref_grid,
       RSS( ref_node_tet_quality( ref_grid_node(ref_grid), 
 				 nodes,  
 				 &quality ), "tet qual");
-      quality = MAX(quality,ref_adapt_smooth_min_quality);
+      quality = MAX(quality,ref_grid_adapt(ref_grid,smooth_min_quality));
       weight = 1.0/quality;
       normalization += weight;
       for (ixyz = 0; ixyz<3; ixyz++)
@@ -890,7 +890,7 @@ REF_STATUS ref_smooth_geom_edge( REF_GRID ref_grid,
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &q ), "q");
   
       if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q );
-      if ( q > ref_adapt_smooth_min_quality )
+      if ( q > ref_grid_adapt(ref_grid,smooth_min_quality) )
 	{
 	  return REF_SUCCESS;
 	}
@@ -954,7 +954,7 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
       RSS( ref_smooth_tri_uv_area_around( ref_grid, node, &min_uv_area ), "a");
-      if ( qtri >= qtri_orig && qtet > ref_adapt_smooth_min_quality &&
+      if ( qtri >= qtri_orig && qtet > ref_grid_adapt(ref_grid,smooth_min_quality) &&
 	   min_uv_area > 1.0e-12 &&
 	   uv_min[0] < uv[0] && uv[0] < uv_max[0] &&
 	   uv_min[1] < uv[1] && uv[1] < uv_max[1] )

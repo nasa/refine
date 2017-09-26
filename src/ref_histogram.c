@@ -132,7 +132,8 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram, 
+REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
+				REF_GRID ref_grid,
 				const char *description )
 {
   REF_INT i, sum;
@@ -148,8 +149,8 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
     if ( ref_histogram_to_obs(i+1) > ref_histogram_min( ref_histogram ) &&
 	 ref_histogram_to_obs(i-1) < ref_histogram_max( ref_histogram ) )
       {
-	if ( ( ref_histogram_to_obs(i)   > ref_adapt_split_ratio ||
-	       ref_histogram_to_obs(i-1) < ref_adapt_collapse_ratio ) &&
+	if ( ( ref_histogram_to_obs(i)   > ref_grid_adapt(ref_grid,split_ratio) ||
+	       ref_histogram_to_obs(i-1) < ref_grid_adapt(ref_grid,collapse_ratio) ) &&
 	     ref_histogram_bin( ref_histogram, i ) > 0 )
 	  {
 	    printf("%7.3f:%10d *\n", 
@@ -329,7 +330,7 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
-  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram, ref_grid,
 						  "edge ratio"), "print");
 
   for (edge=0;edge< ref_edge_n(ref_edge);edge++)
@@ -399,7 +400,7 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
-  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram,
+  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram, ref_grid,
 						  "quality"), "print");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -433,7 +434,7 @@ REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 			       ref_edge_e2n(ref_edge, 0, edge),
 			       ref_edge_e2n(ref_edge, 1, edge), 
 			       &ratio ), "rat");
-	  if ( ratio > ref_adapt_split_ratio ) n++;
+	  if ( ratio > ref_grid_adapt(ref_grid,split_ratio) ) n++;
 	}
     }
 
@@ -470,7 +471,7 @@ REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 			       ref_edge_e2n(ref_edge, 0, edge),
 			       ref_edge_e2n(ref_edge, 1, edge), 
 			       &ratio ), "rat");
-	  if ( ratio > ref_adapt_split_ratio ) 
+	  if ( ratio > ref_grid_adapt(ref_grid,split_ratio) ) 
 	    {
 	      node = ref_edge_e2n(ref_edge, 0, edge);
 	      fprintf(file, " %.16e %.16e %.16e %.16e\n", 
