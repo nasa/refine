@@ -12,7 +12,7 @@ else
     two=${HOME}/refine/zoltan/src
 fi
 
-nproc=16
+nproc=4
 geomfile=ega.egads
 
 # ${two}/ref_geom_test ${geomfile}
