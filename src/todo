@@ -1,7 +1,6 @@
 
 accept comm as argument
 create REF_MPI to eliminate static, store comm, and store time
-extern ref_migrate_method into struct
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 

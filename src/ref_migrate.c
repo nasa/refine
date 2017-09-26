@@ -32,8 +32,6 @@
 
 #include "ref_export.h"
 
-REF_INT ref_migrate_method = REF_MIGRATE_GRAPH;
-
 REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 {
   REF_MIGRATE ref_migrate;
@@ -88,6 +86,8 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
 				     n1, n0 ),"uniq");
 	}
 
+  ref_migrate_method(ref_migrate) = REF_MIGRATE_GRAPH;
+  
   return REF_SUCCESS;
 }
 
@@ -462,7 +462,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
     Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
 
-    switch (ref_migrate_method)
+    switch (ref_migrate_method(ref_migrate))
       {
       case REF_MIGRATE_GRAPH: Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH"); break;
       case REF_MIGRATE_RCB: Zoltan_Set_Param(zz, "LB_METHOD", "RCB"); break;

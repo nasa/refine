@@ -23,11 +23,12 @@ struct REF_MIGRATE_STRUCT {
   REF_INT *global;
   REF_DBL *xyz;
   REF_DBL *weight;
+  REF_INT method;
 };
 
-extern REF_INT ref_migrate_method;
 #define REF_MIGRATE_GRAPH (0)
 #define REF_MIGRATE_RCB   (1)
+#define ref_migrate_method( ref_migrate ) ((ref_migrate)->method)
 
 #define ref_migrate_grid( ref_migrate ) ((ref_migrate)->grid)
 #define ref_migrate_parent_global( ref_migrate ) ((ref_migrate)->parent_global)
