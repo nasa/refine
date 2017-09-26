@@ -164,8 +164,6 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_INT i, passes;
 
-      ref_migrate_method = REF_MIGRATE_RCB;
-
       ref_mpi_stopwatch_start();
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
       ref_mpi_stopwatch_stop("read grid");
