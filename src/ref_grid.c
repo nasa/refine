@@ -70,6 +70,8 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
   RSS( ref_geom_deep_copy( &ref_grid_geom(ref_grid),
 			   ref_grid_geom(original) ), "geom deep copy" );
   RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
+  RSS( ref_adapt_deep_copy( &(ref_grid->adapt),
+			    original->adapt ), "adapt deep copy" );
   
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
 
@@ -80,6 +82,7 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
 {
   if ( NULL == (void *)ref_grid ) return REF_NULL;
 
+  RSS( ref_adapt_free( ref_grid->adapt ), "adapt free");
   RSS( ref_gather_free( ref_grid_gather(ref_grid) ), "gather free");
   RSS( ref_geom_free( ref_grid_geom(ref_grid) ), "geom free");
   
@@ -111,6 +114,7 @@ REF_STATUS ref_grid_inspect( REF_GRID ref_grid )
   printf(" %d qua\n",ref_cell_n(ref_grid_qua(ref_grid)));
   printf(" %d geom\n",ref_geom_n(ref_grid_geom(ref_grid)));
   printf(" %p gather\n",(void *)(ref_grid_gather(ref_grid)->file));
+  printf(" %p adapt\n",(void *)(ref_grid->adapt));
 
   return REF_SUCCESS;
 }
