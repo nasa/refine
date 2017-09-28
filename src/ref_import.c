@@ -1152,8 +1152,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	  RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
 	       "qua");
 	}
+      REIS( next_position, ftell(file), "end location" );
     }
-  REIS( next_position, ftell(file), "end location" );
 
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      8, &available, &next_position ), "jump" );
