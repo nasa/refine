@@ -21,6 +21,7 @@ struct REF_LAYER_STRUCT {
   REF_LIST ref_list;
   REF_GRID ref_grid;
   REF_INT nnode_per_layer;
+  REF_BOOL verbose;
 };
 
 REF_STATUS ref_layer_create( REF_LAYER *ref_layer );

@@ -22,6 +22,7 @@ REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
   RSS(ref_grid_create(&(ref_layer_grid(ref_layer))),"create grid");
 
   ref_layer->nnode_per_layer = REF_EMPTY;
+  ref_layer->verbose = REF_FALSE;
 
   return REF_SUCCESS;
 }
@@ -315,19 +316,22 @@ REF_STATUS ref_layer_insert( REF_LAYER ref_layer, REF_GRID ref_grid )
 	      ref_node_xyz(layer_node,i,local);
 	  RSS( ref_split_face( ref_grid, node1, node2, node3, new_node),
 	       "fsplit");
-	  printf("split zeros %d bary %f %f %f %f\n",
-		 zeros,bary[0],bary[1],bary[2],bary[3]);
+	  if ( ref_layer->verbose )
+	    printf("split zeros %d bary %f %f %f %f\n",
+		   zeros,bary[0],bary[1],bary[2],bary[3]);
 	  break;
 	default:
-	  printf("implement zeros %d bary %f %f %f %f\n",
-		 zeros,bary[0],bary[1],bary[2],bary[3]);
+	  if ( ref_layer->verbose )
+	    printf("implement zeros %d bary %f %f %f %f\n",
+		   zeros,bary[0],bary[1],bary[2],bary[3]);
 	  RSS(REF_IMPLEMENT,"missing a general case");
 	  break;
 	}
       RAS( REF_EMPTY != new_node, "new_node not set" );
       layer_node->global[local] = new_node;
       
-      RSS(ref_validation_cell_volume(ref_grid),"vol");
+      if ( ref_layer->verbose )
+	RSS(ref_validation_cell_volume(ref_grid),"vol");
     }
 
   RSS( ref_node_rebuild_sorted_global( layer_node ), "rebuild" );
@@ -351,11 +355,13 @@ REF_STATUS ref_layer_recon( REF_LAYER ref_layer, REF_GRID ref_grid )
       RSS( ref_cell_has_side( ref_cell, node0, node1, &has_side ), "side?" );
       if (has_side)
 	{
-	  printf("got one\n");
+	  if ( ref_layer->verbose )
+	    printf("got one\n");
 	}
       else
 	{
-	  printf("need one\n");
+	  if ( ref_layer->verbose )
+	    printf("need one\n");
 	}
     }
 

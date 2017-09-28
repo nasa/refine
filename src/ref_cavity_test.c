@@ -644,7 +644,6 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_free(ref_cavity),"free");
 
     RAS( nnode>ref_node_n(ref_node), "node count did not decrease" );
-    RSS(ref_validation_cell_volume(ref_grid),"vol");
     
     if ( 2 == argc )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
