@@ -968,7 +968,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT next_position;
   REF_DICT ref_dict;
   REF_INT nnode, node, new_node;
-  REF_INT ntri, tri, nedge, edge, ntet, tet;
+  REF_INT ntri, tri, nedge, edge, ncell, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT n0, n1, n2, n3, id;
   REF_INT geom_keyword, type, i, geom, ngeom;
@@ -1133,16 +1133,16 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 			      8, &available, &next_position ), "jump" );
   if ( 3==dim && available )
     {
-      REIS(1, fread((unsigned char *)&ntet, 4, 1, file), "ntet");
-      if (verbose) printf("ntet %d\n",ntet);
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
+      if (verbose) printf("ntet %d\n",ncell);
 
-      for (tet=0;tet<ntet;tet++)
+      for (cell=0;cell<ncell;cell++)
 	{
-	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
-	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
-	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "n2" );
-	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "n3" );
-	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "tet n0" );
+	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "tet n1" );
+	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "tet n2" );
+	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "tet n3" );
+	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "tet id" );
 	  n0--; n1--; n2--; n3--;
 	  nodes[0]=n0;
 	  nodes[1]=n1;
