@@ -970,7 +970,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge, ncell, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-  REF_INT n0, n1, n2, n3, id;
+  REF_INT n0, n1, n2, n3, n4, n5, id;
   REF_INT geom_keyword, type, i, geom, ngeom;
   REF_DBL param[2];
   REF_INT cad_data_keyword;
@@ -1130,6 +1130,32 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REIS( next_position, ftell(file), "end location" );
 
   RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      7, &available, &next_position ), "jump" );
+  if ( 3==dim && available )
+    {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
+      if (verbose) printf("nquad %d\n",ncell);
+
+      for (cell=0;cell<ncell;cell++)
+	{
+	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "qua n0" );
+	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "qua n1" );
+	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "qua n2" );
+	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "qua n3" );
+	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+	  n0--; n1--; n2--; n3--;
+	  nodes[0]=n0;
+	  nodes[1]=n1;
+	  nodes[2]=n2;
+	  nodes[3]=n3;
+	  nodes[4]=id;
+	  RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+	       "qua");
+	}
+    }
+  REIS( next_position, ftell(file), "end location" );
+
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      8, &available, &next_position ), "jump" );
   if ( 3==dim && available )
     {
@@ -1150,6 +1176,66 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	  nodes[3]=n3;
 	  RSS( ref_cell_add( ref_grid_tet(ref_grid), nodes, &new_cell ), 
 	       "tet");
+	}
+      REIS( next_position, ftell(file), "end location" );
+    }
+
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      49, &available, &next_position ), "jump" );
+  if ( 3==dim && available )
+    {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
+      if (verbose) printf("npyramid %d\n",ncell);
+
+      for (cell=0;cell<ncell;cell++)
+	{
+	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "pyr n0" );
+	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "pyr n1" );
+	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "pyr n2" );
+	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "pyr n3" );
+	  REIS( 1, fread(&(n4),sizeof(n4), 1, file ), "pyr n4" );
+	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "pyr id" );
+	  n0--; n1--; n2--; n3--; n4--;
+	  /* convention: square basis is 0-1-2-3
+	     (oriented conter clockwise like trias) and top vertex is 4 */
+	  nodes[0]=n0;
+	  nodes[3]=n1;
+	  nodes[4]=n2;
+	  nodes[1]=n3;
+	  nodes[2]=n4;
+	  RSS( ref_cell_add( ref_grid_pyr(ref_grid), nodes, &new_cell ), 
+	       "pyr");
+	}
+      REIS( next_position, ftell(file), "end location" );
+    }
+
+  RSS( ref_import_meshb_jump( file, version, ref_dict,
+			      9, &available, &next_position ), "jump" );
+  if ( 3==dim && available )
+    {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
+      if (verbose) printf("nprism %d\n",ncell);
+
+      for (cell=0;cell<ncell;cell++)
+	{
+	  REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "pri n0" );
+	  REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "pri n1" );
+	  REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "pri n2" );
+	  REIS( 1, fread(&(n3),sizeof(n3), 1, file ), "pri n3" );
+	  REIS( 1, fread(&(n4),sizeof(n4), 1, file ), "pri n4" );
+	  REIS( 1, fread(&(n5),sizeof(n5), 1, file ), "pri n5" );
+	  REIS( 1, fread(&(id),sizeof(id), 1, file ), "pri id" );
+	  n0--; n1--; n2--; n3--; n4--; n5--;
+	  /* convention: bottom basis is 0-1-2, top basis is 3-4-5
+             (3 above 0, 4 above 1, 5 above 2) */
+	  nodes[0]=n0;
+	  nodes[1]=n1;
+	  nodes[2]=n2;
+	  nodes[3]=n3;
+	  nodes[4]=n4;
+	  nodes[5]=n5;
+	  RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+	       "pri");
 	}
       REIS( next_position, ftell(file), "end location" );
     }
