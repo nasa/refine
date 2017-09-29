@@ -181,7 +181,10 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
   }
 
   if ( ref_mpi_master )
-    (ref_gather->time) += 1.0;
+    {
+      REIS( 0, fflush(ref_gather->file), "gather movie fflush" );
+      (ref_gather->time) += 1.0;
+    }
 
   return REF_SUCCESS;
 }
