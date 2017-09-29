@@ -437,7 +437,7 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node;
+  REF_INT node, ntri;
   REF_DBL quality;
   REF_BOOL will_be_collapsed;
   REF_DBL edge_ratio;
@@ -473,7 +473,10 @@ REF_STATUS ref_collapse_edge_quality( REF_GRID ref_grid,
     RSS( ref_node_tet_quality( ref_node,nodes,&quality ), "qual");
     if ( quality < ref_grid_adapt(ref_grid,collapse_quality_absolute) )
       return REF_SUCCESS;
-    /* reject more than one tri on a tet? */
+    RSS( ref_cell_ntri_with_tet_nodes( ref_grid_tri(ref_grid), nodes, &ntri),
+	 "count boundary triangles" );
+    if ( ntri > 1 )
+      return REF_SUCCESS;   
   }
 
   RSS( ref_geom_supported( ref_geom, node0, &has_support), "support");
