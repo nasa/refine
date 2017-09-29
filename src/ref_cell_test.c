@@ -13,6 +13,7 @@
 #include  "ref_sort.h"
 #include  "ref_list.h"
 
+#include  "ref_math.h"
 #include  "ref_malloc.h"
 
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr)
@@ -662,6 +663,46 @@ int main( void )
     REIS(3,list[3], "not in list");
 
     RSS(ref_cell_free(ref_cell),"cleanup");
+  }
+
+  { /* tet tris */
+    REF_CELL ref_cell;
+    REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT ntri, cell;
+
+    RSS(ref_tri(&ref_cell),"create");
+
+    tet_nodes[0] = 0; tet_nodes[1] = 1; tet_nodes[2] = 2; tet_nodes[3] = 3;
+
+    RSS(ref_cell_ntri_with_tet_nodes(ref_cell,tet_nodes,&ntri),"tet tris");
+    REIS(0,ntri, "should be none");
+
+    tri_nodes[0] = 0; tri_nodes[1] = 1; tri_nodes[2] = 2; tri_nodes[3] = 10;
+    RSS(ref_cell_add(ref_cell,tri_nodes,&cell),"add tri");
+    
+    RSS(ref_cell_ntri_with_tet_nodes(ref_cell,tet_nodes,&ntri),"tet tris");
+    REIS(1,ntri, "should be one");
+
+    tri_nodes[0] = 0; tri_nodes[1] = 3; tri_nodes[2] = 1; tri_nodes[3] = 10;
+    RSS(ref_cell_add(ref_cell,tri_nodes,&cell),"add tri");
+    
+    RSS(ref_cell_ntri_with_tet_nodes(ref_cell,tet_nodes,&ntri),"tet tris");
+    REIS(2,ntri, "should be two");
+
+    tri_nodes[0] = 1; tri_nodes[1] = 3; tri_nodes[2] = 2; tri_nodes[3] = 10;
+    RSS(ref_cell_add(ref_cell,tri_nodes,&cell),"add tri");
+    
+    RSS(ref_cell_ntri_with_tet_nodes(ref_cell,tet_nodes,&ntri),"tet tris");
+    REIS(3,ntri, "should be three");
+
+    tri_nodes[0] = 0; tri_nodes[1] = 2; tri_nodes[2] = 3; tri_nodes[3] = 10;
+    RSS(ref_cell_add(ref_cell,tri_nodes,&cell),"add tri");
+    
+    RSS(ref_cell_ntri_with_tet_nodes(ref_cell,tet_nodes,&ntri),"tet tris");
+    REIS(4,ntri, "should be all");
+
+    RSS(ref_cell_free(ref_cell),"cleanup tri");
   }
 
   { /* tri with */

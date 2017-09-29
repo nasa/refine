@@ -725,6 +725,41 @@ REF_STATUS ref_cell_with_face( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_ntri_with_tet_nodes( REF_CELL ref_cell, REF_INT *nodes,
+					 REF_INT *ntri )
+{
+  REF_INT face[3], cell;
+
+  *ntri = 0;
+
+  face[0] = nodes[1];
+  face[1] = nodes[2];
+  face[2] = nodes[3];
+  RXS(ref_cell_with(ref_cell,face,&cell),REF_NOT_FOUND,"t0");
+  if ( REF_EMPTY != cell ) (*ntri)++;
+
+  face[0] = nodes[0];
+  face[1] = nodes[2];
+  face[2] = nodes[3];
+  RXS(ref_cell_with(ref_cell,face,&cell),REF_NOT_FOUND,"t0");
+  if ( REF_EMPTY != cell ) (*ntri)++;
+
+  face[0] = nodes[0];
+  face[1] = nodes[3];
+  face[2] = nodes[1];
+  RXS(ref_cell_with(ref_cell,face,&cell),REF_NOT_FOUND,"t0");
+  if ( REF_EMPTY != cell ) (*ntri)++;
+
+  face[0] = nodes[0];
+  face[1] = nodes[1];
+  face[2] = nodes[2];
+  RXS(ref_cell_with(ref_cell,face,&cell),REF_NOT_FOUND,"t0");
+  if ( REF_EMPTY != cell ) (*ntri)++;
+
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_cell_with( REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell )
 {
   REF_INT item, ref, node, same;
