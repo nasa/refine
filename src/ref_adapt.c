@@ -66,6 +66,66 @@ REF_STATUS ref_adapt_free( REF_ADAPT ref_adapt )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
+{
+  REF_ADAPT ref_adapt = ref_grid->adapt;
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality, min_quality;
+  REF_BOOL active_twod;
+  REF_DBL target;
+  
+  if ( ref_grid_twod(ref_grid) )
+    {
+      ref_cell = ref_grid_tri(ref_grid);
+    }
+  else
+    {
+      ref_cell = ref_grid_tet(ref_grid);
+    }
+  min_quality = 1.0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) == ref_mpi_id )
+	{
+	  if ( ref_grid_twod(ref_grid) )
+	    {
+	      RSS( ref_node_node_twod( ref_grid_node(ref_grid),nodes[0], 
+				       &active_twod ), "active twod tri" );
+	      if ( !active_twod ) continue;
+	      RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
+					 nodes,&quality ), "qual");
+	    }
+	  else
+	    {
+	      RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
+					 nodes,&quality ), "qual");
+	    }
+	  min_quality = MIN(min_quality,quality);
+	}
+    }
+  RSS( ref_mpi_min( &min_quality, &quality, REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_bcast( &quality, 1, REF_DBL_TYPE ), "min" );
+  min_quality = quality;
+
+  target = MAX(MIN(0.1, quality),1.0e-3);
+  if (ref_mpi_master)
+    printf("target quality %6.4f\n",target);
+  
+  ref_adapt->split_ratio = 1.5;
+  ref_adapt->split_quality_absolute = 0.001;
+  ref_adapt->split_quality_relative = 0.6;
+
+  ref_adapt->collapse_ratio = 0.6;
+  ref_adapt->collapse_quality_absolute = target;
+  ref_adapt->collapse_ratio_limit = 3.0;
+
+  ref_adapt->smooth_min_quality = target;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 {
   if (ref_grid_twod(ref_grid))

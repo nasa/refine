@@ -204,6 +204,7 @@ int main( int argc, char *argv[] )
     {
       if ( ref_mpi_master )
 	printf(" pass %d of %d with %d ranks\n",pass,passes,ref_mpi_n);
+      RSS( ref_adapt_parameter( ref_grid ), "param");
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop("pass");
       if (curvature_metric)

@@ -25,7 +25,7 @@ function adapt_cycle {
     ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.01
 
     rm ref_adapt_test.b8.ugrid
-    mpiexec -np 2 ${two}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric
+    mpiexec -np 2 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -t -o ref_adapt_test
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
@@ -37,7 +37,7 @@ adapt_cycle accept-3d-two-para-02
 adapt_cycle accept-3d-two-para-03
 
 cat accept-3d-two-para-03.status
-../../../check.rb accept-3d-two-para-03.status 0.001 10.0
+../../../check.rb accept-3d-two-para-03.status 0.2 2.0
 
 
 
