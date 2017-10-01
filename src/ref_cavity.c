@@ -1121,6 +1121,53 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_local( REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                              REF_INT node, REF_BOOL *local )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face, face_node;
+
+  REIS(3,ref_cavity_node_per( ref_cavity ), "only implemented for tets" );
+
+  *local = REF_FALSE;
+  if ( ref_mpi_id != ref_node_part( ref_node, node ) )
+    return REF_SUCCESS;
+
+  each_ref_list_item( ref_cavity_list(ref_cavity), item )
+    {
+      cell = ref_list_value( ref_cavity_list(ref_cavity), item );
+      RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
+      if ( ref_mpi_id != ref_node_part( ref_node, nodes[0] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[1] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[2] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[3] ) )
+	{
+	  *local = REF_FALSE;
+	  return REF_SUCCESS;
+	}
+    }
+
+  each_ref_cavity_valid_face( ref_cavity, face )
+    {
+      each_ref_cavity_face_node( ref_cavity, face_node )
+	nodes[face_node] = ref_cavity_f2n(ref_cavity,face_node,face);
+      nodes[ref_cavity_node_per(ref_cavity)] = node;
+      if ( ref_mpi_id != ref_node_part( ref_node, nodes[0] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[1] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[2] ) ||
+	   ref_mpi_id != ref_node_part( ref_node, nodes[3] ) )
+	{
+	  *local = REF_FALSE;
+	  return REF_SUCCESS;
+	}
+  }
+
+  *local = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_change( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                               REF_INT node, REF_BOOL *improved )
 {
