@@ -8,8 +8,8 @@ if [ $# -gt 0 ] ; then
     one=$1/one
     two=$1/src
 else
-    one=${HOME}/refine/strict/one
-    two=${HOME}/refine/strict/src
+    one=${HOME}/refine/zoltan/one
+    two=${HOME}/refine/zoltan/src
 fi
 
 ${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
