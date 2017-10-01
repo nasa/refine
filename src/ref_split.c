@@ -105,7 +105,9 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 					       new_node );
 	  if ( REF_SUCCESS == status )
 	    {
-	      valid_cavity = REF_TRUE;
+	      RSS( ref_cavity_local( ref_cavity, ref_grid,
+				     new_node, &allowed_local ), "cav local");
+	      valid_cavity = allowed_local;	      
 	    }
 	  RSS( ref_cavity_free( ref_cavity ), "cav free" );
 	  ref_cavity = (REF_CAVITY)NULL;
