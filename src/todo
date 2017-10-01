@@ -11,6 +11,9 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
 
+collapse
+ examine triangle MR
+
 smarter adapt parameters
  prevent slivers by setting collapse limits
  tighten limits near convergence
