@@ -47,10 +47,27 @@ int main( int argc, char *argv[] )
 {
   REF_INT assoc_pos = REF_EMPTY;
   REF_INT recon_pos = REF_EMPTY;
+  REF_INT viz_pos = REF_EMPTY;
   RXS( ref_args_find( argc, argv, "--assoc", &assoc_pos ),
        REF_NOT_FOUND, "arg search" );
   RXS( ref_args_find( argc, argv, "--recon", &recon_pos ),
        REF_NOT_FOUND, "arg search" );
+  RXS( ref_args_find( argc, argv, "--viz", &viz_pos ),
+       REF_NOT_FOUND, "arg search" );
+
+  if ( viz_pos != REF_EMPTY )
+    {
+      REF_GRID ref_grid;
+      REIS( 3, argc,
+	    "required args: --viz grid.ext");
+      REIS( 1, viz_pos,
+	    "required args: --viz grid.ext");
+      printf("grid source %s\n",argv[2]);
+      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS( ref_geom_tec( ref_grid, "ref_geom_viz.tec" ), "geom export" );
+      RSS( ref_grid_free(ref_grid),"free");
+      return 0;
+    }
 
   if ( recon_pos != REF_EMPTY )
     {
