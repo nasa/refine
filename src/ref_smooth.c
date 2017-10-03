@@ -971,7 +971,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &qtet ), "q tet");
       RSS( ref_smooth_tri_quality_around( ref_grid, node, &qtri ), "q tri");
       RSS( ref_smooth_tri_uv_area_around( ref_grid, node, &min_uv_area ), "a");
-      if ( qtri >= qtri_orig && qtet > ref_grid_adapt(ref_grid,smooth_min_quality) &&
+      if ( qtri >= qtri_orig && 
+	   qtet > ref_grid_adapt(ref_grid,smooth_min_quality) &&
 	   min_uv_area > 1.0e-12 &&
 	   uv_min[0] < uv[0] && uv[0] < uv_max[0] &&
 	   uv_min[1] < uv[1] && uv[1] < uv_max[1] )
