@@ -405,19 +405,21 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
 				   REF_BOOL *allowed )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL quality, quality0, quality1;
+  REF_DBL sign_uv_area, uv_area0, uv_area1;
   REF_DBL min_existing_quality;
 
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS( ref_cell_list_with2(ref_cell,node0,node1,
-			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "get list" );
+			  MAX_CELL_SPLIT, &ncell, cell_to_split ), "tets" );
 
   min_existing_quality = 1.0;
   for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
@@ -448,10 +450,46 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
 	   quality1 < ref_grid_adapt(ref_grid,split_quality_absolute) ||
 	   quality0 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ||
 	   quality1 < ref_grid_adapt(ref_grid,split_quality_relative)*min_existing_quality ) 
-	return REF_SUCCESS;
+	{
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;
+	}
     }
 
-  /* FIXME check tris too */
+  if ( 0 < ref_geom_n(ref_geom) )
+    {
+      ref_cell = ref_grid_tri(ref_grid);
+      RSS( ref_cell_list_with2(ref_cell,node0,node1,MAX_CELL_SPLIT, 
+			       &ncell, cell_to_split ), "tris" );
+      for ( cell_in_list = 0; cell_in_list < ncell ; cell_in_list++ )
+	{
+	  cell = cell_to_split[cell_in_list];
+	  RSS( ref_cell_nodes(ref_cell, cell, nodes),"cell nodes");
+      
+	  for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	    if ( node0 == nodes[node] ) nodes[node] = new_node;
+	  RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area0), "uv area");
+	  RSS( ref_geom_uv_area_sign( ref_grid, nodes[3], 
+				      &sign_uv_area ), "sign");
+	  uv_area0 *= sign_uv_area;
+	  for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	    if ( new_node == nodes[node] ) nodes[node] = node0;
+
+	  for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
+	    if ( node1 == nodes[node] ) nodes[node] = new_node;
+	  RSS( ref_geom_uv_area( ref_geom, nodes, &uv_area1), "uv area");
+	  RSS( ref_geom_uv_area_sign( ref_grid, nodes[3], 
+				      &sign_uv_area ), "sign");
+	  uv_area1 *= sign_uv_area;
+
+	  if ( 1.0e-12 > uv_area0 ||
+	       1.0e-12 > uv_area1 ) 
+	    {
+	      *allowed = REF_FALSE;
+	      return REF_SUCCESS;
+	    }
+	}
+    }
 
   *allowed = REF_TRUE;
 
