@@ -2247,10 +2247,14 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename  )
   
   for ( id = min_id ; id <= max_id ; id++ )
     RSS( ref_geom_face_tec_zone( ref_grid, id, file ), "tec face" );
-  for ( id = min_id ; id <= max_id ; id++ )
-    RSS( ref_geom_norm_tec_zone( ref_grid, id, file ), "tec norm" );
-  for ( id = min_id ; id <= max_id ; id++ )
-    RSS( ref_geom_curve_tec_zone( ref_grid, id, file ), "tec curve" );
+
+  if ( ref_geom_model_loaded(ref_geom) )
+    {
+      for ( id = min_id ; id <= max_id ; id++ )
+	RSS( ref_geom_norm_tec_zone( ref_grid, id, file ), "tec norm" );
+      for ( id = min_id ; id <= max_id ; id++ )
+	RSS( ref_geom_curve_tec_zone( ref_grid, id, file ), "tec curve" );
+    }
 
   fclose(file);
   return REF_SUCCESS;
