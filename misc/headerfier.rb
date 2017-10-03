@@ -5,7 +5,7 @@ ARGV.each do |file|
   first_include = 0
   lines.each_with_index do |line,i|
     first_include = i
-    break if ( line =~ /#include/ )
+    break if ( line =~ /#/ )
     puts line
   end
   File.open(file,"w") do |f|
