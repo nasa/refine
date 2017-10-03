@@ -46,6 +46,7 @@
 #include "ref_clump.h"
 #include "ref_geom.h"
 #include "ref_validation.h"
+#include  "ref_face.h"
 
 int main( int argc, char *argv[] )
 {
@@ -667,6 +668,24 @@ int main( int argc, char *argv[] )
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
 
     RSS( ref_grid_free(ref_grid),"free");
+  }
+
+  { /* replace tet */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+
+    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,0),"insert ball");
+
+    REIS( 4, ref_cavity_n(ref_cavity), "n" );
+    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+    
+    RSS( ref_cavity_replace_tet(ref_cavity, ref_grid, 0 ), "replace" );
+
+    RSS(ref_cavity_free(ref_cavity),"free");
+    RSS(ref_grid_free(ref_grid),"free");
   }
 
   return 0;
