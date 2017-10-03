@@ -196,7 +196,7 @@ REF_STATUS ref_validation_cell_face( REF_GRID ref_grid )
 	problem = REF_TRUE;	
 	printf(" hits %d\n",hits[face]);	  
 	for(node=0;node<3;node++)
-	  nodes[node]=ref_cell_c2n(ref_cell,node,cell);
+	  nodes[node]=ref_face_f2n(ref_face,node,face);
 	printf("face %d nodes %d %d %d global %d %d %d\n",
 	       face,
 	       nodes[0], nodes[1], nodes[2],
