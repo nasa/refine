@@ -159,21 +159,29 @@ REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
 {
   REF_INT ngeom;
+  REF_BOOL instrument = REF_FALSE;
+  
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                          REF_GEOM_FACE, &ngeom ), "count ngeom" );
   ref_gather_blocking_frame( ref_grid, "threed pass" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
-
+  if ( instrument )
+    ref_mpi_stopwatch_stop("adapt start");
+  
   RSS( ref_collapse_pass( ref_grid ), "col pass");
   ref_gather_blocking_frame( ref_grid, "collapse" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
+  if ( instrument )
+    ref_mpi_stopwatch_stop("adapt col");
 
   RSS( ref_split_pass( ref_grid ), "split pass");
   ref_gather_blocking_frame( ref_grid, "split" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
+  if ( instrument )
+    ref_mpi_stopwatch_stop("adapt spl");
 
   if ( REF_FALSE )
     {
@@ -187,6 +195,8 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
   ref_gather_blocking_frame( ref_grid, "smooth" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "smooth geom typo check");
+  if ( instrument )
+    ref_mpi_stopwatch_stop("adapt mov");
 
   return REF_SUCCESS;
 }
