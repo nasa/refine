@@ -1,8 +1,8 @@
 
-apache2 verbage
-
 accept comm as argument
 create REF_MPI to eliminate static, store comm, and store time
+
+store metric in log form
 
 interp metric parallel
 
@@ -111,6 +111,8 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ apache2 verbage
 
 + meshb add 3d quad, prism, pyramid
 + find and remove multiple face tets (2) (changed to a prevention)
