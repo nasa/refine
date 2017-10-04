@@ -70,6 +70,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node->new_n_global = REF_EMPTY;
 
   ref_node->twod_mid_plane = 0.5;
+  ref_node->min_volume = 1.0e-15;
 
   ref_node->tet_quality = REF_NODE_JAC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
@@ -164,6 +165,7 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
   ref_node->new_n_global = original->new_n_global;
   
   ref_node->twod_mid_plane = original->twod_mid_plane;
+  ref_node->min_volume = original->min_volume;
   
   ref_node->tet_quality = original->tet_quality;
   ref_node->tri_quality = original->tri_quality;
@@ -1059,9 +1061,9 @@ REF_STATUS ref_node_tet_epic_quality( REF_NODE ref_node,
 
   RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
   
-  if ( volume <= 0.0 )
+  if ( volume <= ref_node->min_volume )
     {
-      *quality = volume;
+      *quality = volume-ref_node->min_volume;
       return REF_SUCCESS;
     }
 
@@ -1125,9 +1127,9 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
   
   RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
 
-  if ( volume <= 0.0 )
+  if ( volume <= ref_node->min_volume )
     {
-      *quality = volume;
+      *quality = volume-ref_node->min_volume;
       for(i=0;i<3;i++) d_quality[i] = d_volume[i];
       return REF_SUCCESS;
     }
@@ -1185,9 +1187,9 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
   REF_DBL l2, det, volume, volume_in_metric, num;
 
   RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
-  if ( volume <= 0.0 )
+  if ( volume <= ref_node->min_volume  )
     {
-      *quality = volume;
+      *quality = volume-ref_node->min_volume;
       return REF_SUCCESS;
     }
 
