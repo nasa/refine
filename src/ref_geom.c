@@ -1416,6 +1416,7 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
   REF_BOOL no_face, no_edge;
   
   for ( node = 0 ;node < ref_node_max(ref_node);node++ )
+    {
     if ( ref_node_valid( ref_node, node ) )
       {
 	RSS( ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node");
@@ -1512,7 +1513,7 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	if (!ref_adj_empty( ref_geom_adj(ref_geom), node ) )
 	  THROW("invalid node has geom");
       }
-     
+    }
     return REF_SUCCESS;
 }
 
