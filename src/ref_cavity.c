@@ -284,7 +284,7 @@ REF_STATUS ref_cavity_replace_tet( REF_CAVITY ref_cavity,
       continue; /* attached face */
     RSS( ref_cell_add( ref_cell, nodes, &cell ), "add" );
     RSS( ref_node_tet_vol( ref_grid_node(ref_grid), nodes, &volume ), "norm");
-    if ( volume <= 0.0 )
+    if ( volume <= ref_node_min_volume(ref_grid_node(ref_grid)) )
       printf("%d %d %d %d %e\n",nodes[0],nodes[1],nodes[2],nodes[3],volume);
   }
 
@@ -585,7 +585,7 @@ REF_STATUS ref_cavity_visible( REF_CAVITY ref_cavity,
 
       RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "norm");
 
-      if ( volume <= 0.0 )
+      if ( volume <= ref_node_min_volume(ref_node) )
         return REF_SUCCESS;
 
       break;
