@@ -1061,9 +1061,9 @@ REF_STATUS ref_node_tet_epic_quality( REF_NODE ref_node,
 
   RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
   
-  if ( volume <= ref_node->min_volume )
+  if ( volume <= ref_node_min_volume(ref_node) )
     {
-      *quality = volume-ref_node->min_volume;
+      *quality = volume-ref_node_min_volume(ref_node);
       return REF_SUCCESS;
     }
 
@@ -1127,9 +1127,9 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
   
   RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
 
-  if ( volume <= ref_node->min_volume )
+  if ( volume <= ref_node_min_volume(ref_node) )
     {
-      *quality = volume-ref_node->min_volume;
+      *quality = volume-ref_node_min_volume(ref_node);
       for(i=0;i<3;i++) d_quality[i] = d_volume[i];
       return REF_SUCCESS;
     }
@@ -1187,9 +1187,9 @@ REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node,
   REF_DBL l2, det, volume, volume_in_metric, num;
 
   RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol");
-  if ( volume <= ref_node->min_volume  )
+  if ( volume <= ref_node_min_volume(ref_node)  )
     {
-      *quality = volume-ref_node->min_volume;
+      *quality = volume-ref_node_min_volume(ref_node);
       return REF_SUCCESS;
     }
 
