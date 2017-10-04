@@ -1,4 +1,8 @@
 
+cavity gain quality/volume limit
+volume limit above zero (adapt param)
+bary skip zero cells (div zero)
+
 apache2 verbage
 
 accept comm as argument
