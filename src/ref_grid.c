@@ -493,7 +493,7 @@ REF_STATUS ref_grid_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   each_ref_cell_valid_cell( ref_cell, guess)
     {
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
-      RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+      RXS( ref_node_bary4( ref_node, nodes, xyz, bary ), REF_DIV_ZERO, "bary");
       min_bary = MIN( MIN(bary[0],bary[1]),MIN(bary[2],bary[3]));
       if ( REF_EMPTY == best_guess || min_bary > best_bary )
 	{
@@ -544,7 +544,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 	}
 
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
-      RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+      RXS( ref_node_bary4( ref_node, nodes, xyz, bary ), REF_DIV_ZERO, "bary");
 
       if ( step > 990 )
 	{
