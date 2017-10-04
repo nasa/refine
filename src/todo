@@ -1,8 +1,4 @@
 
-cavity gain quality/volume limit
-volume limit above zero (adapt param)
-bary skip zero cells (div zero)
-
 apache2 verbage
 
 accept comm as argument
@@ -117,7 +113,10 @@ low priority surface reconstruction when EGADS not available
 +++++++++++++++++
 
 + meshb add 3d quad, prism, pyramid
-+ find and remove multiple face tets (2)
++ find and remove multiple face tets (2) (changed to a prevention)
++ cavity gain quality/volume limit
++ volume limit above zero (adapt param)
++ bary skip zero cells (div zero)
 
 + cavity
   + verify topo 
