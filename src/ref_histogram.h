@@ -61,6 +61,9 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 #define ref_histogram_to_obs(i) \
   ( pow(2.0,(1.0/ref_histogram_exp(ref_histogram))*((REF_DBL)((i)-ref_histogram_nbin(ref_histogram)/2) ) ) )
 
+/* defaults are 18, 6.0 resolved 72, 12.0 */
+REF_STATUS ref_histogram_resolution( REF_HISTOGRAM ref_histogram, 
+				     REF_INT nbin, REF_DBL exp );
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );
 REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );

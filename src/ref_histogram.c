@@ -37,7 +37,7 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_histogram = (*ref_histogram_ptr);
 
   ref_histogram_nbin(ref_histogram) = 18;
-  ref_histogram_exp(ref_histogram) = 9.0/1.5;
+  ref_histogram_exp(ref_histogram) = 6.0;
 
   ref_malloc_init( ref_histogram->bins, 
 		   ref_histogram_nbin(ref_histogram), REF_INT, 0 );
@@ -53,6 +53,19 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
 		   ref_histogram_nstat(ref_histogram), REF_DBL, 0.0 );
 
   ref_histogram->df = NULL;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_resolution( REF_HISTOGRAM ref_histogram, 
+				     REF_INT nbin, REF_DBL exp )
+{
+  ref_histogram_nbin(ref_histogram) = nbin;
+  ref_histogram_exp(ref_histogram) = exp;
+
+  ref_free( ref_histogram->bins );
+  ref_malloc_init( ref_histogram->bins, 
+		   ref_histogram_nbin(ref_histogram), REF_INT, 0 );
 
   return REF_SUCCESS;
 }
