@@ -254,11 +254,6 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("balance");
     }
 
-  {
-    snprintf( output_filename, 1024, "%s-metric.metric", output_project );
-    RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
-  }
-  
   RSS( ref_geom_verify_param( ref_grid ), "final params" );
   ref_mpi_stopwatch_stop("verify final params");
   snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
@@ -272,6 +267,8 @@ int main( int argc, char *argv[] )
            "export");
       ref_mpi_stopwatch_stop("gather meshb");
     }
+  snprintf( output_filename, 1024, "%s-metric.metric", output_project );
+  RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
   if ( 1 == ref_mpi_n )
     {
       snprintf( output_filename, 1024, "%s_surf.tec", output_project );
