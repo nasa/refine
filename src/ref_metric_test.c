@@ -93,7 +93,7 @@ int main( int argc, char *argv[] )
       RSS( ref_import_by_extension( &ref_grid, argv[2] ),
 	   "unable to load target grid in position 1" );
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
-	   "unable to load parent grid in position 2");
+	   "unable to load parent metric in position 2");
       RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[4] ),
 	   "unable to load egads in position 3" );
       if ( argc == 6 )
