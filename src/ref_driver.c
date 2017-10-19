@@ -254,8 +254,13 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop("balance");
     }
 
-  RSS( ref_geom_verify_param( ref_grid ), "loaded params" );
-  ref_mpi_stopwatch_stop("verify params");
+  {
+    snprintf( output_filename, 1024, "%s-metric.metric", output_project );
+    RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
+  }
+  
+  RSS( ref_geom_verify_param( ref_grid ), "final params" );
+  ref_mpi_stopwatch_stop("verify final params");
   snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
   RSS( ref_gather_by_extension( ref_grid, output_filename ),
        "b8.ugrid");
