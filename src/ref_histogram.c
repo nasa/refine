@@ -37,6 +37,7 @@ REF_STATUS ref_histogram_create( REF_HISTOGRAM *ref_histogram_ptr )
   ref_histogram = (*ref_histogram_ptr);
 
   ref_histogram_nbin(ref_histogram) = 18;
+  ref_histogram_exp(ref_histogram) = 9.0/1.5;
 
   ref_malloc_init( ref_histogram->bins, 
 		   ref_histogram_nbin(ref_histogram), REF_INT, 0 );

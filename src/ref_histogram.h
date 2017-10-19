@@ -34,6 +34,7 @@ struct REF_HISTOGRAM_STRUCT {
   REF_DBL max, min;
   REF_DBL log_total;
   REF_DBL log_mean;
+  REF_DBL exp;
   REF_INT nbin;
   REF_INT *bins;
   REF_INT nstat;
@@ -48,16 +49,17 @@ REF_STATUS ref_histogram_free( REF_HISTOGRAM ref_histogram );
 #define ref_histogram_min( ref_histogram ) ((ref_histogram)->min)
 #define ref_histogram_log_total( ref_histogram ) ((ref_histogram)->log_total)
 #define ref_histogram_log_mean( ref_histogram ) ((ref_histogram)->log_mean)
+#define ref_histogram_exp( ref_histogram ) ((ref_histogram)->exp)
 #define ref_histogram_nbin( ref_histogram ) ((ref_histogram)->nbin)
 #define ref_histogram_bin( ref_histogram, i ) ((ref_histogram)->bins[(i)])
 #define ref_histogram_nstat( ref_histogram ) ((ref_histogram)->nstat)
 #define ref_histogram_stat( ref_histogram, i ) ((ref_histogram)->stats[(i)])
 
 #define ref_histogram_to_bin(o) \
-  MAX(MIN( (floor((9.0/1.5)*log2((o)))) + ref_histogram_nbin(ref_histogram)/2,  ref_histogram_nbin(ref_histogram)-1),0)
+  MAX(MIN( (floor(ref_histogram_exp(ref_histogram)*log2((o)))) + ref_histogram_nbin(ref_histogram)/2,  ref_histogram_nbin(ref_histogram)-1),0)
 
 #define ref_histogram_to_obs(i) \
-  ( pow(2.0,(1.5/9.0)*((REF_DBL)((i)-ref_histogram_nbin(ref_histogram)/2) ) ) )
+  ( pow(2.0,(1.0/ref_histogram_exp(ref_histogram))*((REF_DBL)((i)-ref_histogram_nbin(ref_histogram)/2) ) ) )
 
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );
