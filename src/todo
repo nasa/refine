@@ -2,8 +2,8 @@
 extract ref_histogram_add_ratio
 extract ref_histogram_add_quality
 delete ref_histogram_tec_ratio
-create ref_histogram_ratio_tec
-create ref_histogram_quality_tec
+create ref_histogram_ratio_tec (hi res)
+create ref_histogram_quality_tec (hi res)
 
 accept comm as argument
 create REF_MPI to eliminate static, store comm, and store time
