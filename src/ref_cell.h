@@ -177,6 +177,11 @@ REF_STATUS ref_cell_node_list_around( REF_CELL ref_cell,
                                       REF_INT max_node, REF_INT *nnode,
                                       REF_INT *node_list );
 
+REF_STATUS ref_cell_faceid_list_around( REF_CELL ref_cell,
+					REF_INT node,
+					REF_INT max_faceid, REF_INT *nfaceid,
+					REF_INT *faceids );
+
 /* edge routines */
 REF_STATUS ref_cell_empty_edges( REF_CELL ref_cell);
 REF_STATUS ref_cell_set_edge( REF_CELL ref_cell,
