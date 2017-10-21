@@ -32,6 +32,7 @@ layer insert
 egads recon
  clean up method
  edge candidates must have more than one tri type
+ examine the t values to ensure it is monotonic
  switch to EG_invEvaluateGuess
    why not working for edges (initialized to right node t?)
    revert on failure (wrap?)
