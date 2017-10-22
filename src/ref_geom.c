@@ -244,6 +244,25 @@ REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_face_arg )
+{
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT *e2f;
+  ref_malloc_init(*edge_face_arg,2*(ref_geom->nedge),REF_INT,REF_EMPTY);
+  e2f = *edge_face_arg;
+  return REF_SUCCESS;
+#else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  if (REF_EMPTY == ref_geom->nnode)
+    printf("No EGADS loaded\n");
+  *edge_face_arg = (REF_INT *)NULL;
+  printf("No EGADS linked for %s\n", __func__);
+
+ return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS

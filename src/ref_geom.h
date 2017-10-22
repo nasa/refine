@@ -123,6 +123,7 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 
 REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_faces );
 REF_STATUS ref_geom_recon( REF_GRID ref_grid );
 REF_STATUS ref_geom_infer_nedge_nface( REF_GRID ref_grid );
 
