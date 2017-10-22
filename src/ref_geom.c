@@ -262,6 +262,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pass, updates;
   REF_BOOL show_xyz = REF_FALSE;
+  REF_BOOL debug = REF_FALSE;
 #define REF_GEOM_MAX_FACEIDS (50)
   REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
   REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
@@ -494,6 +495,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      t = param[0];
 	    }
 	}
+      if ( debug )
+        ref_geom_tec( ref_grid, "ref_geom_each_edge.tec" );
     }
   ref_free(tessnodes);
   ref_free(node_list);
