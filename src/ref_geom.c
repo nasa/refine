@@ -262,7 +262,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pass, updates;
   REF_BOOL show_xyz = REF_FALSE;
-#define REF_GEOM_MAX_FACEIDS (3)
+#define REF_GEOM_MAX_FACEIDS (50)
   REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
 
   ref_malloc(node_list,max_node,REF_INT);
