@@ -248,9 +248,54 @@ REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_face_arg )
 {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT *e2f;
+  REF_INT *e2f, *nface;
+  REF_INT face, edge;
   ref_malloc_init(*edge_face_arg,2*(ref_geom->nedge),REF_INT,REF_EMPTY);
   e2f = *edge_face_arg;
+  ref_malloc_init(nface,(ref_geom->nedge),REF_INT,0);
+  printf("nedge %d nface %d\n",ref_geom->nedge,ref_geom->nface);
+  for (face = 0; face < (ref_geom->nface); face++)
+    {
+      ego esurf, *eloops, eref;
+      int oclass, mtype, nloop,*senses,*pinfo;
+      double data[18], *preal;
+      ego ecurve, *eedges;
+      int iloop, iedge, nedge;
+
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(((ego *)(ref_geom->faces))[face],
+			   &esurf, &oclass, &mtype,
+			   data, &nloop, &eloops, &senses), "topo" );
+      REIS( EGADS_SUCCESS,
+	    EG_getGeometry(esurf, &oclass, &mtype,
+			   &eref, &pinfo, &preal),"geom");
+      EG_free(pinfo);
+      EG_free(preal);
+      for (iloop = 0; iloop < nloop; iloop++)
+	{
+	  /* loop through all Edges associated with this Loop */
+	  REIS( EGADS_SUCCESS,
+		EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype,
+			       data, &nedge, &eedges, &senses), "topo");
+	  for (iedge = 0; iedge < nedge; iedge++)
+	    {
+	      edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge])
+		- 1;
+	      e2f[nface[edge]+2*edge] = face+1;
+	      nface[edge]++;
+	    }
+	}
+    }
+  
+  for (edge = 0; edge < (ref_geom->nedge); edge++)
+    {
+      REF_INT i;
+      printf("edge %d: %d nface",edge+1,nface[edge]);
+      for(i=0;i<nface[edge];i++)
+	printf(" %d",e2f[i+2*edge]);
+            printf("\n");
+    }
+  ref_free(nface);
   return REF_SUCCESS;
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
