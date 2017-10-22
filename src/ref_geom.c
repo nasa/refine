@@ -280,6 +280,13 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       best_dist = 1.0e20;
       each_ref_node_valid_node( ref_node, node )
 	{
+	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+					    node,
+					    REF_GEOM_MAX_FACEIDS,
+					    &nfaceid, faceids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  if ( nfaceid < 3 )
+	    continue;
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
@@ -289,8 +296,16 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      best_dist = dist;
 	    }
 	}
-      printf(" topo node id %3d node %6d dist %.4e\n",
+      printf(" topo node id %3d node %6d dist %.4e",
 	     id,best_node,best_dist);
+      RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+					best_node,
+					REF_GEOM_MAX_FACEIDS,
+					&nfaceid, faceids ),
+	   REF_INCREASE_LIMIT, "count faceids" );
+      for (i=0;i<nfaceid;i++)
+	printf(" %d", faceids[i]);
+      printf("\n");
       if ( show_xyz )
 	{
 	  printf(" d %23.15e %23.15e %23.15e\n",
