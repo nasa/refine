@@ -264,6 +264,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_BOOL show_xyz = REF_FALSE;
 #define REF_GEOM_MAX_FACEIDS (50)
   REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
+  REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
+  REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
 
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
@@ -330,8 +332,16 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node0 id %2d index %3d t %f dist %e\n",
+	  printf("  node0 id %2d index %3d t %f dist %e",
 		 toponode0,node0,trange[0],dist);
+	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+					    node0,
+					    REF_GEOM_MAX_FACEIDS,
+					    &nfaceid0, faceids0 ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  for (i=0;i<nfaceid0;i++)
+	    printf(" %d", faceids0[i]);
+	  printf("\n");
 	  if ( show_xyz )
 	    {
 	      printf(" d %23.15e %23.15e %23.15e\n",
@@ -346,8 +356,16 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node1 id %2d index %3d t %f dist %e\n",
+	  printf("  node1 id %2d index %3d t %f dist %e",
 		 toponode1,node1,trange[1],dist);
+	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+					    node1,
+					    REF_GEOM_MAX_FACEIDS,
+					    &nfaceid1, faceids1 ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  for (i=0;i<nfaceid1;i++)
+	    printf(" %d", faceids1[i]);
+	  printf("\n");
 	  if ( show_xyz )
 	    {
 	      printf(" d %23.15e %23.15e %23.15e\n",
