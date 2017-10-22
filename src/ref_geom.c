@@ -261,6 +261,9 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   double param[2];
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pass, updates;
+#define REF_GEOM_MAX_FACEIDS (3)
+  REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
+
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -344,6 +347,13 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		  if ( REF_SUCCESS == ref_geom_find( ref_geom, next_node,
 						     REF_GEOM_EDGE, id, &geom ))
 		    continue; /* this canidate is already part of the edge */
+		  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+						    next_node,
+						    REF_GEOM_MAX_FACEIDS,
+						    &nfaceid, faceids ),
+		       REF_INCREASE_LIMIT, "count faceids" );
+		  if ( nfaceid < 2 )
+		    continue; /* should be between faces */
 		  param[0] = t;
 		  REIS( EGADS_SUCCESS,
 			EG_invEvaluate(object,
