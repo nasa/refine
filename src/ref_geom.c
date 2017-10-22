@@ -261,6 +261,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   double param[2];
   REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT pass, updates;
+  REF_BOOL show_xyz = REF_FALSE;
 #define REF_GEOM_MAX_FACEIDS (3)
   REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
 
@@ -288,6 +289,14 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
       printf(" topo node id %3d node %6d dist %.4e\n",
 	     id,best_node,best_dist);
+      if ( show_xyz )
+	{
+	  printf(" d %23.15e %23.15e %23.15e\n",
+		 ref_node_xyz(ref_node,0,best_node),
+		 ref_node_xyz(ref_node,1,best_node),
+		 ref_node_xyz(ref_node,2,best_node));
+	  printf(" c %23.15e %23.15e %23.15e\n",xyz[0],xyz[1],xyz[2]);
+	}
       tessnodes[id-1]=best_node;
       RSS( ref_geom_add( ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
     }
@@ -323,6 +332,14 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
 	  printf("  node0 id %2d index %3d t %f dist %e\n",
 		 toponode0,node0,trange[0],dist);
+	  if ( show_xyz )
+	    {
+	      printf(" d %23.15e %23.15e %23.15e\n",
+		     ref_node_xyz(ref_node,0,node),
+		     ref_node_xyz(ref_node,1,node),
+		     ref_node_xyz(ref_node,2,node));
+	      printf(" c %23.15e %23.15e %23.15e\n",xyz[0],xyz[1],xyz[2]);
+	    }
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[1]), xyz ), "EG eval");
 	  node=node1;
@@ -331,8 +348,46 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
 	  printf("  node1 id %2d index %3d t %f dist %e\n",
 		 toponode1,node1,trange[1],dist);
+	  if ( show_xyz )
+	    {
+	      printf(" d %23.15e %23.15e %23.15e\n",
+		     ref_node_xyz(ref_node,0,node),
+		     ref_node_xyz(ref_node,1,node),
+		     ref_node_xyz(ref_node,2,node));
+	      printf(" c %23.15e %23.15e %23.15e\n",xyz[0],xyz[1],xyz[2]);
+	    }
 	  current_node = node0;
 	  t = trange[0];
+	  {
+	    best_node = node0;
+	    param[0] = trange[0];
+	    REIS( EGADS_SUCCESS,
+		  EG_invEvaluate(object,
+				 ref_node_xyz_ptr(ref_node,best_node),
+				 param, closest), "EG eval");
+	    dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,best_node),2) +
+			 pow(closest[1]-ref_node_xyz(ref_node,1,best_node),2) +
+			 pow(closest[2]-ref_node_xyz(ref_node,2,best_node),2) );
+	    printf("   best_node %5d t %f best_dist %e",
+		   best_node,param[0],dist);
+	    RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+					      best_node,
+					      REF_GEOM_MAX_FACEIDS,
+					      &nfaceid, faceids ),
+		 REF_INCREASE_LIMIT, "count faceids" );
+	    for (i=0;i<nfaceid;i++)
+	      printf(" %d", faceids[i]);
+	    printf("\n");
+	    if ( show_xyz )
+	      {
+		printf(" d %23.15e %23.15e %23.15e\n",
+		       ref_node_xyz(ref_node,0,best_node),
+		       ref_node_xyz(ref_node,1,best_node),
+		       ref_node_xyz(ref_node,2,best_node));
+		printf(" c %23.15e %23.15e %23.15e\n",
+		       closest[0],closest[1],closest[2]);
+	      }
+	  }
 	  while ( current_node != node1 )
 	    {
 	      RSS(ref_cell_node_list_around( ref_grid_tri(ref_grid),
@@ -374,8 +429,25 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		    EG_invEvaluate(object,
 				   ref_node_xyz_ptr(ref_node,best_node),
 				   param, closest), "EG eval");
-	      printf("   best_node %5d t %f best_dist %e\n",
+	      printf("   best_node %5d t %f best_dist %e",
 		     best_node,param[0],best_dist);
+	      RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
+						best_node,
+						REF_GEOM_MAX_FACEIDS,
+						&nfaceid, faceids ),
+		   REF_INCREASE_LIMIT, "count faceids" );
+	      for (i=0;i<nfaceid;i++)
+		printf(" %d", faceids[i]);
+	      printf("\n");
+	      if ( show_xyz )
+		{
+		  printf(" d %23.15e %23.15e %23.15e\n",
+			 ref_node_xyz(ref_node,0,best_node),
+			 ref_node_xyz(ref_node,1,best_node),
+			 ref_node_xyz(ref_node,2,best_node));
+		  printf(" c %23.15e %23.15e %23.15e\n",
+			 closest[0],closest[1],closest[2]);
+		}
 	      param[1] = t;
 	      nodes[0] = best_node;
 	      nodes[1] = current_node;
