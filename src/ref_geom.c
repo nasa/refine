@@ -331,7 +331,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
   REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
   REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
+  REF_INT *e2f;
 
+  RSS( ref_geom_edge_faces( ref_grid, &e2f ), "compute edge faces");
+  
   ref_malloc(node_list,max_node,REF_INT);
   printf("searching for %d topo nodes\n",ref_geom->nnode);
   ref_malloc(tessnodes,ref_geom->nnode,REF_INT);
@@ -403,7 +406,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
 	  node0 = tessnodes[toponode0-1];
 	  node1 = tessnodes[toponode1-1];
-	  printf(" topo edge id %3d\n",id);
+	  printf(" topo edge id %3d faceids %d %d\n",
+		 id, e2f[0+2*(id-1)], e2f[1+2*(id-1)]);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[0]), xyz ), "EG eval");
 	  node=node0;
@@ -494,6 +498,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      best_dist = 1.0e20;
 	      for (i=0;i<degree;i++)
 		{
+		  REF_INT fid;
+		  REF_BOOL have_faceid0, have_faceid1;
 		  next_node = node_list[i];
 		  if ( REF_SUCCESS == ref_geom_find( ref_geom, next_node,
 						     REF_GEOM_EDGE, id, &geom ))
@@ -505,6 +511,16 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		       REF_INCREASE_LIMIT, "count faceids" );
 		  if ( nfaceid < 2 )
 		    continue; /* should be between faces */
+		  have_faceid0 = REF_FALSE;
+		  for (fid=0;fid<nfaceid;fid++)
+		    if ( e2f[0+2*(id-1)] == faceids[fid] )
+		      have_faceid0 = REF_TRUE;
+		  have_faceid1 = REF_FALSE;
+		  for (fid=0;fid<nfaceid;fid++)
+		    if ( e2f[1+2*(id-1)] == faceids[fid] )
+		      have_faceid1 = REF_TRUE;
+		  if ( !have_faceid0 || !have_faceid1 )
+		    continue; /* must have expected faceids */
 		  param[0] = t;
 		  REIS( EGADS_SUCCESS,
 			EG_invEvaluate(object,
@@ -519,6 +535,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		      best_node = next_node;
 		      best_dist = dist; 
 		    }
+		}
+	      if ( REF_EMPTY == best_node )
+		{
+		  RSS(REF_FAILURE,"count not find next node");
 		}
 	      param[0] = t;
 	      REIS( EGADS_SUCCESS,
@@ -562,6 +582,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
     }
   ref_free(tessnodes);
   ref_free(node_list);
+  ref_free( e2f );
+
   printf("seting face UV under edges\n");
   each_ref_cell_valid_cell_with_nodes( ref_grid_edg(ref_grid), cell, edge_nodes)
     {
