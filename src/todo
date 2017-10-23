@@ -6,6 +6,7 @@ create ref_histogram_ratio_tec (hi res)
 create ref_histogram_quality_tec (hi res)
 
 egads recon
+ acceptance tests
  clean up method
  examine the t values to ensure it is monotonic
  switch to EG_invEvaluateGuess
