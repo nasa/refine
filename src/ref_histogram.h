@@ -92,8 +92,6 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
 REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid );
 REF_STATUS ref_histogram_quality_tec( REF_GRID ref_grid );
 
-REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid );
-
 REF_STATUS ref_histogram_debug( REF_HISTOGRAM ref_histogram,
 				const char *filename );
 
