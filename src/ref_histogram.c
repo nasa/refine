@@ -509,6 +509,22 @@ REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_quality_tec( REF_GRID ref_grid )
+{
+  REF_HISTOGRAM ref_histogram;
+
+  RSS( ref_histogram_create(&ref_histogram),"create");
+  RSS( ref_histogram_resolution( ref_histogram, 72, 12.0 ), "res");
+
+  RSS( ref_histogram_add_quality( ref_histogram, ref_grid ), "add ratio" );
+  
+  if ( ref_mpi_master )
+    RSS( ref_histogram_tec( ref_histogram, "quality"), "tec");
+
+  RSS( ref_histogram_free(ref_histogram), "free gram" );
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_tec_ratio( REF_GRID ref_grid )
 {
   REF_EDGE ref_edge;
