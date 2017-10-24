@@ -71,8 +71,8 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
 				REF_GRID ref_grid,
 				const char *description );
-REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
-				 const char *description );
+REF_STATUS ref_histogram_gnuplot( REF_HISTOGRAM ref_histogram, 
+				  const char *description );
 
 REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram, 
 				    REF_DBL observation );

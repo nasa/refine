@@ -204,8 +204,8 @@ REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_export( REF_HISTOGRAM ref_histogram, 
-				 const char *description )
+REF_STATUS ref_histogram_gnuplot( REF_HISTOGRAM ref_histogram, 
+				  const char *description )
 {
   REF_INT i;
   FILE *f;
