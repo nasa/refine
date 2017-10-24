@@ -381,36 +381,14 @@ REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
+REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram, 
+				      REF_GRID ref_grid )
 {
-  REF_HISTOGRAM ref_histogram;
-
-  RSS( ref_histogram_create(&ref_histogram),"create");
-  
-  if ( REF_FALSE )
-    RSS( ref_histogram_debug(ref_histogram,"ref_histogram.len"),"dbug");
-
-  RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
-  
-  if ( ref_mpi_master )
-    RSS( ref_histogram_print( ref_histogram, ref_grid, "edge ratio"), "print");
-  if ( ref_mpi_master ) 
-    RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
-
-  RSS( ref_histogram_free(ref_histogram), "free gram" );
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
-{
-  REF_HISTOGRAM ref_histogram;
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
   REF_BOOL active_twod;
-
-  RSS( ref_histogram_create(&ref_histogram),"create");
 
   if ( ref_grid_twod(ref_grid) )
     {
@@ -442,6 +420,38 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
     }
 
   RSS( ref_histogram_gather( ref_histogram ), "gather");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
+{
+  REF_HISTOGRAM ref_histogram;
+
+  RSS( ref_histogram_create(&ref_histogram),"create");
+  
+  if ( REF_FALSE )
+    RSS( ref_histogram_debug(ref_histogram,"ref_histogram.len"),"dbug");
+
+  RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
+  
+  if ( ref_mpi_master )
+    RSS( ref_histogram_print( ref_histogram, ref_grid, "edge ratio"), "print");
+  if ( ref_mpi_master ) 
+    RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
+
+  RSS( ref_histogram_free(ref_histogram), "free gram" );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
+{
+  REF_HISTOGRAM ref_histogram;
+
+  RSS( ref_histogram_create(&ref_histogram),"create");
+
+  RSS( ref_histogram_add_quality( ref_histogram, ref_grid ), "add quality" );
+
   if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram, ref_grid,
 						  "quality"), "print");
 
