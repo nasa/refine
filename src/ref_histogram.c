@@ -252,6 +252,40 @@ REF_STATUS ref_histogram_gnuplot( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram, 
+			      const char *description )
+{
+  REF_INT i;
+  FILE *f;
+  char filename[1024];
+  REF_INT sum;
+  REF_DBL norm, portion;
+
+  sum = 0;
+  for (i=0;i<ref_histogram_nbin(ref_histogram);i++)
+    sum += ref_histogram_bin( ref_histogram, i );
+  norm = 0.0;
+  if ( 0 < sum )
+    norm = 1.0 / (REF_DBL)sum;
+
+  sprintf(filename,"ref_histogram_%s.tec",description);
+  f = fopen(filename,"w");
+  if (NULL == (void *)f) printf("unable to open %s\n",filename);
+  RNS(f, "unable to open file" );
+
+  for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
+    {
+      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * norm;
+      fprintf(f,"%.5f %.5f\n%.5f %.5f\n", 
+	      ref_histogram_to_obs(i), portion,
+	      ref_histogram_to_obs(i+1),portion);
+    }
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram, 
 				   REF_DBL observation )
 {
@@ -454,6 +488,21 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
 
   if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram, ref_grid,
 						  "quality"), "print");
+
+  RSS( ref_histogram_free(ref_histogram), "free gram" );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid )
+{
+  REF_HISTOGRAM ref_histogram;
+
+  RSS( ref_histogram_create(&ref_histogram),"create");
+  
+  RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
+  
+  if ( ref_mpi_master )
+    RSS( ref_histogram_tec( ref_histogram, "ratio"), "tec");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
   return REF_SUCCESS;

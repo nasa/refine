@@ -227,6 +227,7 @@ int main( int argc, char *argv[] )
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
+      RSS( ref_histogram_ratio_tec( ref_grid ), "rat tec");
 
       RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ),
 	   "al");
