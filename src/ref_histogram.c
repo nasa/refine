@@ -273,12 +273,12 @@ REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram,
   if (NULL == (void *)f) printf("unable to open %s\n",filename);
   RNS(f, "unable to open file" );
 
-  for (i=0;i<ref_histogram_nbin(ref_histogram)-1;i++)
+  for (i=0;i<ref_histogram_nbin(ref_histogram)-2;i++)
     {
       portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * norm;
       fprintf(f,"%.5f %.5f\n%.5f %.5f\n", 
-	      ref_histogram_to_obs(i), portion,
-	      ref_histogram_to_obs(i+1),portion);
+	      ref_histogram_to_obs(i),   portion,
+	      ref_histogram_to_obs(i+1), portion);
     }
 
   fclose(f);
