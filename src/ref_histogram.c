@@ -99,7 +99,6 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
 
   ref_histogram_bin( ref_histogram, i )++;
 
-
   if (REF_FALSE)
     printf("%f < %f <= %f --> bucket[%d]\n",
 	   ref_histogram_to_obs(i-1),
@@ -450,7 +449,8 @@ REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram,
 	      RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
 					 nodes,&quality ), "qual");
 	    }
-	  RSS( ref_histogram_add( ref_histogram, quality ), "add");
+	  if ( quality > 0.0 )
+	    RSS( ref_histogram_add( ref_histogram, quality ), "add");
 	}
     }
 
