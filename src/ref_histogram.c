@@ -259,7 +259,7 @@ REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram,
   FILE *f;
   char filename[1024];
   REF_INT sum;
-  REF_DBL norm, portion;
+  REF_DBL norm, area, portion;
 
   sum = 0;
   for (i=0;i<ref_histogram_nbin(ref_histogram);i++)
@@ -275,8 +275,9 @@ REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram,
 
   for (i=0;i<ref_histogram_nbin(ref_histogram)-2;i++)
     {
-      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * norm;
-      fprintf(f,"%.5f %.5f\n%.5f %.5f\n", 
+      area = ref_histogram_to_obs(i+1)-ref_histogram_to_obs(i);
+      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * area * norm;
+      fprintf(f,"%.8e %.8e\n%.8e %.8e\n", 
 	      ref_histogram_to_obs(i),   portion,
 	      ref_histogram_to_obs(i+1), portion);
     }
@@ -498,7 +499,7 @@ REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid )
   REF_HISTOGRAM ref_histogram;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
-  RSS( ref_histogram_resolution( ref_histogram, 72, 12.0 ), "res");
+  RSS( ref_histogram_resolution( ref_histogram, 288x, 12.0 ), "res");
 
   RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
   
@@ -514,7 +515,7 @@ REF_STATUS ref_histogram_quality_tec( REF_GRID ref_grid )
   REF_HISTOGRAM ref_histogram;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
-  RSS( ref_histogram_resolution( ref_histogram, 72, 12.0 ), "res");
+  RSS( ref_histogram_resolution( ref_histogram, 288, 12.0 ), "res");
 
   RSS( ref_histogram_add_quality( ref_histogram, ref_grid ), "add ratio" );
   
