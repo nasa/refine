@@ -499,7 +499,7 @@ REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid )
   REF_HISTOGRAM ref_histogram;
 
   RSS( ref_histogram_create(&ref_histogram),"create");
-  RSS( ref_histogram_resolution( ref_histogram, 288x, 12.0 ), "res");
+  RSS( ref_histogram_resolution( ref_histogram, 288, 12.0 ), "res");
 
   RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
   
