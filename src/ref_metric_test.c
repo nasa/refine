@@ -230,8 +230,9 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_quality( ref_grid ), "qual");
       RSS( ref_histogram_ratio( ref_grid ), "rat");
 
-      RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ),
-	   "al");
+      if ( REF_FALSE )
+	RSS( ref_export_tec_metric_ellipse( ref_grid, "ref_metric_test_s00" ),
+	     "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
 
