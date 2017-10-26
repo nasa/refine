@@ -47,11 +47,40 @@
 #include  "ref_twod.h"
 
 #include "ref_gather.h"
+#include "ref_import.h"
+#include "ref_validation.h"
 
 int main( int argc, char *argv[] )
 {
 
   RSS( ref_mpi_start( argc, argv ), "start" );
+
+  if ( argc == 3 )
+    {
+      REF_GRID ref_grid;
+
+      if ( 1 ==ref_mpi_n )
+	{
+	  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+	}
+      else
+	{
+	  RSS(ref_part_by_extension( &ref_grid, argv[1] ), "part" );
+	}
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_ratio_tec( ref_grid ), "rat tec");
+      RSS( ref_histogram_quality_tec( ref_grid ), "qual tec");
+      RSS( ref_histogram_quality( ref_grid ), "qual");
+      RSS( ref_histogram_ratio( ref_grid ), "rat");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+
+      RSS( ref_mpi_stop( ), "stop" );
+      return 0;
+    }
+
 
   /*
 
