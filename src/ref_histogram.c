@@ -275,7 +275,8 @@ REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram,
   for (i=0;i<ref_histogram_nbin(ref_histogram)-2;i++)
     {
       area = ref_histogram_to_obs(i+1)-ref_histogram_to_obs(i);
-      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) * area * norm;
+      portion = (REF_DBL)ref_histogram_bin( ref_histogram, i ) / area * norm;
+      portion = MAX(portion, 1.0e-20);
       fprintf(f,"%.8e %.8e\n%.8e %.8e\n", 
 	      ref_histogram_to_obs(i),   portion,
 	      ref_histogram_to_obs(i+1), portion);
