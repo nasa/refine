@@ -1377,6 +1377,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   ego object;
   int egads_status;
   object = (ego)NULL;
+  REF_BOOL allow_recovery = REF_TRUE;
 
   switch (type)
     {
@@ -1400,11 +1401,11 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
 
-  REIS( EGADS_SUCCESS,
-	EG_invEvaluateGuess(object, xyz,
-			    param, closest), "EG inv eval (guess)");
-
-  /* delete the above function to try and recover */
+  if (!allow_recovery)
+    REIS( EGADS_SUCCESS,
+	  EG_invEvaluateGuess(object, xyz,
+			      param, closest), "EG inv eval (guess)");
+  /* without above function, try and recover */
 
   egads_status = EG_invEvaluateGuess(object, xyz,
 				     param, closest);
