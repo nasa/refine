@@ -1376,8 +1376,8 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REF_DBL closest[3];
   ego object;
   int egads_status;
-  object = (ego)NULL;
   REF_BOOL allow_recovery = REF_TRUE;
+  object = (ego)NULL;
 
   switch (type)
     {
