@@ -487,14 +487,21 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
 	o2n = (REF_INT *)malloc( ref_node_max(ref_node) * sizeof(REF_INT) );
 	RNS(o2n,"malloc o2n NULL");
 
-	nnode = 0;
 	for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
 	  o2n[node] = REF_EMPTY;
 
+	/* mark nodes needed by this element type */
+	nnode = 0;
 	each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
 	  for ( node = 0; node < node_per; node++ )
 	    if ( REF_EMPTY == o2n[nodes[node]] )
 	      { o2n[nodes[node]] = nnode; nnode++; }
+
+	/* retain node numbering if grid is compact and single element type */
+	nnode = 0;
+	for ( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+	  if ( REF_EMPTY != o2n[node] )
+	    { o2n[node] = nnode; nnode++; }
 
 	n2o = (REF_INT *)malloc( nnode * sizeof(REF_INT) );
 	RNS(n2o,"malloc n2o NULL");
