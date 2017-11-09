@@ -622,9 +622,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
       THROW("unable to find the next step");
     }
   
-  if (REF_TRUE)
-    THROW("max steps exceeded");
-
+  /* exhaustive search when walk runs out of iterations */
   RSS( ref_grid_exhaustive_enclosing_tet( ref_grid, xyz,
 					  tet, bary ), "enclose");
 
