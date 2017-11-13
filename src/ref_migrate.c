@@ -468,9 +468,15 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	RSS( ref_migrate_2d_agglomeration( ref_migrate ), "2d agglom" );
       }
 
-    REIS( ZOLTAN_OK, 
-	  Zoltan_Initialize(ref_mpi_argc, ref_mpi_argv, &ver), 
-	  "Zoltan is angry");
+    { /* zoltan does not use argc and argv when MPI_Initialized 
+	 must be protected */
+      char **empty_argument;
+      if ( 1 == ref_mpi_n )
+	THROW("Zoltan_Initialize must have actual arguments for seq");
+      REIS( ZOLTAN_OK, 
+	    Zoltan_Initialize( 0, empty_argument, &ver), 
+	    "Zoltan is angry");
+    }
     zz = Zoltan_Create(MPI_COMM_WORLD);
 
     /* General parameters */
