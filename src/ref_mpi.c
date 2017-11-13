@@ -68,7 +68,7 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi = ( *ref_mpi_ptr );
 
 #ifdef HAVE_MPI  
-  ref_malloc( (MPI_Comm *)(( ref_mpi )->comm), 1, MPI_Comm );
+  ref_malloc( (( ref_mpi )->comm), 1, MPI_Comm );
   ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
 #else
   ref_mpi->comm = NULL;
@@ -115,7 +115,7 @@ REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi_ptr, REF_MPI original )
   ref_mpi = ( *ref_mpi_ptr );
 
 #ifdef HAVE_MPI
-  ref_malloc( (MPI_Comm *)(( ref_mpi )->comm), 1, MPI_Comm );
+  ref_malloc( (( ref_mpi )->comm), 1, MPI_Comm );
   ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
 #else
   ref_mpi->comm = NULL;
