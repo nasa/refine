@@ -1563,49 +1563,98 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   REF_INT geom;
   REF_INT node;
   REF_DBL xyz[3];
-  REF_DBL dist, max, global_max;
+  REF_DBL dist, max, max_node, max_edge, global_max;
+  REF_BOOL node_constraint, edge_constraint;
 
   max = 0.0;
   each_ref_geom_node( ref_geom, geom )
     {
-      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
+      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+	continue;
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
       max = MAX(max,dist);
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max node" );
+  max = global_max;
   if ( ref_mpi_master )
     printf("CAD topo node max eval dist %e\n",max);
 
   max = 0.0;
+  max_node = 0.0;
   each_ref_geom_edge( ref_geom, geom )
     {
-      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
+      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+	continue;
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      max = MAX(max,dist);
+      RSS( ref_geom_is_a( ref_geom, node, REF_GEOM_NODE, &node_constraint),"n");
+      if ( node_constraint )
+	{
+	  max_node = MAX(max_node,dist);
+	}
+      else
+	{
+	  max = MAX(max,dist);
+	}
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  max = global_max;
   if ( ref_mpi_master )
     printf("CAD topo edge max eval dist %e\n",max);
+  RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  max_node = global_max;
+  if ( ref_mpi_master )
+    printf("CAD topo edge node tol %e\n",max_node);
 
   max = 0.0;
+  max_node = 0.0;
+  max_edge = 0.0;
   each_ref_geom_face( ref_geom, geom )
     {
-      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       node = ref_geom_node(ref_geom,geom);
+      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+	continue;
+      RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		   pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-      max = MAX(max,dist);
+      RSS( ref_geom_is_a( ref_geom, node, REF_GEOM_NODE, &node_constraint),"n");
+      RSS( ref_geom_is_a( ref_geom, node, REF_GEOM_EDGE, &edge_constraint),"n");
+      if ( node_constraint )
+	{
+	  max_node = MAX(max_node,dist);
+	}
+      else
+	{
+	  if ( edge_constraint )
+	    {
+	      max_edge = MAX(max_edge,dist);
+	    }
+	  else
+	    {
+	      max = MAX(max,dist);
+	    }
+	}
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max face" );
+  max = global_max;
   if ( ref_mpi_master )
     printf("CAD topo face max eval dist %e\n",max);
+  RSS( ref_mpi_max( &max_edge, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  max_edge = global_max;
+  if ( ref_mpi_master )
+    printf("CAD topo face edge tol %e\n",max_edge);
+  RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  max_node = global_max;
+  if ( ref_mpi_master )
+    printf("CAD topo face node tol %e\n",max_node);
   
   return REF_SUCCESS;
 }
