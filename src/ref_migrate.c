@@ -470,7 +470,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
     { /* zoltan does not use argc and argv when MPI_Initialized 
 	 must be protected */
-      char **empty_argument;
+      char **empty_argument=NULL;
       if ( 1 == ref_mpi_n )
 	THROW("Zoltan_Initialize must have actual arguments for seq");
       REIS( ZOLTAN_OK, 
