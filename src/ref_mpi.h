@@ -31,9 +31,11 @@ struct REF_MPI_STRUCT {
   REF_INT n;
   REF_INT id;
   void *comm;
-  REF_DBL mpi_stopwatch_start_time;
-  REF_DBL mpi_stopwatch_first_time;
+  REF_DBL start_time;
+  REF_DBL first_time;
 };
+
+#define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
 
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
@@ -44,6 +46,10 @@ typedef int REF_TYPE;
 #define REF_INT_TYPE (1)
 #define REF_DBL_TYPE (2)
 #define REF_BYTE_TYPE (3)
+
+REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
+REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
+REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi, REF_MPI original );
 
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_initialize( );

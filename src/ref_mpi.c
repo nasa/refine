@@ -52,6 +52,80 @@ REF_INT ref_mpi_id = 0;
 static REF_DBL mpi_stopwatch_start_time;
 static REF_DBL mpi_stopwatch_first_time;
 
+#ifdef HAVE_MPI
+#define ref_mpi_comm(ref_mpi)				\
+  ( MPI_COMM_NULL==(( ref_mpi )->comm) ?		\
+    MPI_COMM_WORLD : ((MPI_Comm)((( ref_mpi )->comm))) )
+#endif
+
+REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
+{
+  REF_MPI ref_mpi;
+
+  ref_malloc( *ref_mpi_ptr, 1, REF_MPI_STRUCT );
+  ref_mpi = ( *ref_mpi_ptr );
+
+#ifdef HAVE_MPI  
+  ref_mpi->comm = MPI_COMM_NULL;
+#else
+  ref_mpi->comm = NULL;
+#endif
+
+  ref_mpi->id = 0;
+  ref_mpi->n = 1;
+
+  ref_mpi->first_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
+  ref_mpi->start_time = ref_mpi->first_time;
+
+#ifdef HAVE_MPI  
+  MPI_Comm_size(ref_mpi_comm(ref_mpi),&(ref_mpi->n));
+  MPI_Comm_rank(ref_mpi_comm(ref_mpi),&(ref_mpi->id));
+
+  ref_mpi->first_time = (REF_DBL)MPI_Wtime();
+  ref_mpi->start_time = ref_mpi->first_time;
+#endif
+
+  ref_mpi_id = ref_mpi->id;
+  ref_mpi_n = ref_mpi->n;
+  mpi_stopwatch_first_time = ref_mpi->first_time;
+  mpi_stopwatch_start_time = ref_mpi->start_time;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_free( REF_MPI ref_mpi )
+{
+  if ( NULL == (void *)ref_mpi )
+    return REF_NULL;
+#ifdef HAVE_MPI
+  if ( MPI_COMM_NULL != ref_mpi->comm )
+    MPI_Comm_free((MPI_Comm *)ref_mpi->comm);
+#endif
+  ref_free( ref_mpi );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi_ptr, REF_MPI original )
+{
+  REF_MPI ref_mpi;
+
+  ref_malloc( *ref_mpi_ptr, 1, REF_MPI_STRUCT );
+  ref_mpi = ( *ref_mpi_ptr );
+
+#ifdef HAVE_MPI
+   ref_mpi->comm = MPI_COMM_NULL;
+#else
+  ref_mpi->comm = NULL;
+#endif
+  ref_mpi->id = original->id;
+  ref_mpi->n = original->n;
+
+  ref_mpi->first_time = original->first_time;
+  ref_mpi->start_time = original->start_time;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_start( int argc, char *argv[] )
 {
 
