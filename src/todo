@@ -38,6 +38,8 @@ insert optimized node location (uv,xyz) with validity constraint
 
 ideal tri/tet use log avg m?
 
+quadratic programming optimize min element quality
+
 histogram history plots
 
 ellipsoid viz 
