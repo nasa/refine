@@ -35,9 +35,6 @@
 REF_INT ref_mpi_n = 1;
 REF_INT ref_mpi_id = 0;
 
-int ref_mpi_argc = 0;
-char **ref_mpi_argv = NULL;
-
 #ifdef HAVE_MPI
 
 #define ref_type_mpi_type(macro_ref_type,macro_mpi_type)		\
@@ -58,11 +55,11 @@ static REF_DBL mpi_stopwatch_first_time;
 REF_STATUS ref_mpi_start( int argc, char *argv[] )
 {
 
-  ref_mpi_argc = argc;
-  ref_mpi_argv = argv;
-
 #ifdef HAVE_MPI
   MPI_Init(&argc,&argv);
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(argc);
+  SUPRESS_UNUSED_COMPILER_WARNING(argv);
 #endif
 
   RSS( ref_mpi_initialize(  ), "init");

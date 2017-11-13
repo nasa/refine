@@ -35,9 +35,6 @@ struct REF_MPI_STRUCT {
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
 
-extern int ref_mpi_argc;
-extern char **ref_mpi_argv;
-
 #define ref_mpi_master (0 == ref_mpi_id)
 
 typedef int REF_TYPE;
