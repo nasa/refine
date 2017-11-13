@@ -290,9 +290,9 @@ REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_face_arg )
   for (edge = 0; edge < (ref_geom->nedge); edge++)
     {
       REF_INT i;
-      printf("edge %d: %d nface",edge+1,nface[edge]);
+      printf("edge %4d has %2d faces:",edge+1,nface[edge]);
       for(i=0;i<nface[edge];i++)
-	printf(" %d",e2f[i+2*edge]);
+	printf(" %4d",e2f[i+2*edge]);
             printf("\n");
     }
   ref_free(nface);
@@ -362,7 +362,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      best_dist = dist;
 	    }
 	}
-      printf(" topo node id %3d node %6d dist %.4e",
+      printf(" topo node id %3d node %6d dist %.4e fid",
 	     id,best_node,best_dist);
       RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
 					best_node,
@@ -406,7 +406,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
 	  node0 = tessnodes[toponode0-1];
 	  node1 = tessnodes[toponode1-1];
-	  printf(" topo edge id %3d faceids %d %d\n",
+	  printf(" topo edge id %3d fid %d %d\n",
 		 id, e2f[0+2*(id-1)], e2f[1+2*(id-1)]);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[0]), xyz ), "EG eval");
@@ -414,7 +414,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node0 id %2d index %3d t %f dist %e",
+	  printf("  node0 id %2d index %3d t %f dist %e fid",
 		 toponode0,node0,trange[0],dist);
 	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
 					    node0,
@@ -438,7 +438,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
-	  printf("  node1 id %2d index %3d t %f dist %e",
+	  printf("  node1 id %2d index %3d t %f dist %e fid",
 		 toponode1,node1,trange[1],dist);
 	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
 					    node1,
@@ -468,7 +468,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	    dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,best_node),2) +
 			 pow(closest[1]-ref_node_xyz(ref_node,1,best_node),2) +
 			 pow(closest[2]-ref_node_xyz(ref_node,2,best_node),2) );
-	    printf("   best_node %5d t %f best_dist %e",
+	    printf("   best_node %5d t %f best_dist %e fid",
 		   best_node,param[0],dist);
 	    RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
 					      best_node,
@@ -545,7 +545,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		    EG_invEvaluate(object,
 				   ref_node_xyz_ptr(ref_node,best_node),
 				   param, closest), "EG eval");
-	      printf("   best_node %5d t %f best_dist %e",
+	      printf("   best_node %5d t %f best_dist %e fid",
 		     best_node,param[0],best_dist);
 	      RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
 						best_node,
