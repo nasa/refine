@@ -30,6 +30,9 @@ BEGIN_C_DECLORATION
 struct REF_MPI_STRUCT {
   REF_INT n;
   REF_INT id;
+  void *comm;
+  REF_DBL mpi_stopwatch_start_time;
+  REF_DBL mpi_stopwatch_first_time;
 };
 
 extern REF_INT ref_mpi_n;
