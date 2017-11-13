@@ -53,9 +53,11 @@ static REF_DBL mpi_stopwatch_start_time;
 static REF_DBL mpi_stopwatch_first_time;
 
 #ifdef HAVE_MPI
+#define ref_mpi_voidptr2comm(ref_mpi)		\
+  (*(MPI_Comm *)(( ref_mpi )->comm))
 #define ref_mpi_comm(ref_mpi)				\
-  ( MPI_COMM_NULL==(( ref_mpi )->comm) ?		\
-    MPI_COMM_WORLD : ((MPI_Comm)((( ref_mpi )->comm))) )
+  ( MPI_COMM_NULL==ref_mpi_voidptr2comm(ref_mpi) ?	\
+    MPI_COMM_WORLD : ref_mpi_voidptr2comm(ref_mpi) )
 #endif
 
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
@@ -66,7 +68,8 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi = ( *ref_mpi_ptr );
 
 #ifdef HAVE_MPI  
-  ref_mpi->comm = MPI_COMM_NULL;
+  ref_malloc( (MPI_Comm *)(( ref_mpi )->comm), 1, MPI_Comm );
+  ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
 #else
   ref_mpi->comm = NULL;
 #endif
@@ -98,8 +101,7 @@ REF_STATUS ref_mpi_free( REF_MPI ref_mpi )
   if ( NULL == (void *)ref_mpi )
     return REF_NULL;
 #ifdef HAVE_MPI
-  if ( MPI_COMM_NULL != ref_mpi->comm )
-    MPI_Comm_free((MPI_Comm *)ref_mpi->comm);
+  ref_free( ref_mpi->comm );
 #endif
   ref_free( ref_mpi );
   return REF_SUCCESS;
@@ -113,7 +115,8 @@ REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi_ptr, REF_MPI original )
   ref_mpi = ( *ref_mpi_ptr );
 
 #ifdef HAVE_MPI
-   ref_mpi->comm = MPI_COMM_NULL;
+  ref_malloc( (MPI_Comm *)(( ref_mpi )->comm), 1, MPI_Comm );
+  ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
 #else
   ref_mpi->comm = NULL;
 #endif
