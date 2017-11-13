@@ -208,3 +208,11 @@ cd ${source_dir}/acceptance/cone-cone/uniform/two
 trap - EXIT
 
 date
+
+LOG=${root_dir}/log.accept-cone-cone-recon
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cone-cone/recon
+./accept-cone-cone-recon.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
