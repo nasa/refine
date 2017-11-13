@@ -84,7 +84,8 @@ int main( int argc, char *argv[] )
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3] ), "ld egads" );
       RSS( ref_geom_recon( ref_grid ), "geom recon" );
       printf("verify topo\n");
-      RSS( ref_geom_verify_topo( ref_grid ), "constrained params" );
+      RSS( ref_geom_verify_topo( ref_grid ), "geom topo conflict" );
+      RSS( ref_geom_verify_param( ref_grid ), "test constrained params" );
       RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit metric" );
       RSS( ref_validation_cell_volume(ref_grid),"vol");
       printf("constrain\n");
