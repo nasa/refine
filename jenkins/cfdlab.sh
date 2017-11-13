@@ -216,3 +216,11 @@ cd ${source_dir}/acceptance/cone-cone/recon
 trap - EXIT
 
 date
+
+LOG=${root_dir}/log.accept-om6-recon
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/om6/recon
+./accept-om6-recon.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
