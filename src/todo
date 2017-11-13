@@ -1,6 +1,5 @@
 
 egads recon
- acceptance tests
  clean up method
  examine the t values to ensure it is monotonic
  switch to EG_invEvaluateGuess
