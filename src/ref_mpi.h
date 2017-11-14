@@ -36,6 +36,7 @@ struct REF_MPI_STRUCT {
 };
 
 #define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
+#define ref_mpi_once(ref_mpi) ( 0 == (ref_mpi)->id )
 
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;

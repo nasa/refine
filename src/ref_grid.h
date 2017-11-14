@@ -70,6 +70,8 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
 #define ref_grid_qua(ref_grid) ((ref_grid)->qua)
 
 #define ref_grid_mpi(ref_grid) ((ref_grid)->mpi)
+#define ref_grid_once(ref_grid) ref_mpi_once((ref_grid)->mpi)
+
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
 #define ref_grid_adapt(ref_grid,param) (((ref_grid)->adapt)->param)
