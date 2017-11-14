@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
 	printf("%d procs, read %s\n",ref_mpi_n,argv[1]);
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_b8_ugrid( &import_grid, argv[1] ), "import" );
+      RSS(ref_part_by_extension( &import_grid, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
 
       RSS(ref_migrate_new_part(import_grid),"new part");
