@@ -80,10 +80,16 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi->first_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
-#ifdef HAVE_MPI  
-  MPI_Comm_size(ref_mpi_comm(ref_mpi),&(ref_mpi->n));
-  MPI_Comm_rank(ref_mpi_comm(ref_mpi),&(ref_mpi->id));
-
+#ifdef HAVE_MPI
+  {
+    int running;
+    REIS( MPI_SUCCESS, MPI_Initialized( &running ), "running?" );
+    if ( running )
+      {
+	MPI_Comm_size(ref_mpi_comm(ref_mpi),&(ref_mpi->n));
+	MPI_Comm_rank(ref_mpi_comm(ref_mpi),&(ref_mpi->id));
+      }
+  }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
   ref_mpi->start_time = ref_mpi->first_time;
 #endif

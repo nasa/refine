@@ -217,8 +217,6 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
-  RSS( ref_mpi_stop( ), "stop" );
-
   { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
     RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
@@ -779,6 +777,8 @@ int main( int argc, char *argv[] )
     
     RSS( tear_down( ref_subdiv ), "tear down");
   }
+
+  RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
 }
