@@ -46,7 +46,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
   RSS( ref_cell_create( &ref_grid_tri(ref_grid), 3, REF_TRUE ), "tri create" );
   RSS( ref_cell_create( &ref_grid_qua(ref_grid), 4, REF_TRUE ), "qua create" );
 
-  ref_grid_mpi(ref_grid) = NULL;
+  RSS( ref_mpi_create( &ref_grid_mpi(ref_grid) ), "mpi create" );
   RSS( ref_geom_create( &ref_grid_geom(ref_grid) ), "geom create" );
   RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
   RSS( ref_adapt_create( &(ref_grid->adapt) ), "adapt create" );
@@ -85,7 +85,8 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
   RSS( ref_cell_deep_copy( &ref_grid_qua(ref_grid),
 			   ref_grid_qua(original) ), "qua deep copy" );
 
-  ref_grid_mpi(ref_grid) = NULL;
+  RSS( ref_mpi_deep_copy( &ref_grid_mpi(ref_grid),
+			   ref_grid_mpi(original) ), "mpi deep copy" );
   RSS( ref_geom_deep_copy( &ref_grid_geom(ref_grid),
 			   ref_grid_geom(original) ), "geom deep copy" );
   RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
@@ -104,6 +105,7 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RSS( ref_adapt_free( ref_grid->adapt ), "adapt free");
   RSS( ref_gather_free( ref_grid_gather(ref_grid) ), "gather free");
   RSS( ref_geom_free( ref_grid_geom(ref_grid) ), "geom free");
+  RSS( ref_mpi_free( ref_grid_mpi(ref_grid) ), "mpi free");
   
   RSS( ref_cell_free( ref_grid_qua(ref_grid) ), "qua free");
   RSS( ref_cell_free( ref_grid_tri(ref_grid) ), "tri free");
