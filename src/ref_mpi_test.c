@@ -26,14 +26,15 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( ref_mpi_n == 1 )
     { /* start */
       REIS( 1, ref_mpi_n, "n" );
       REIS( 0, ref_mpi_id, "n" );
-      RAS( ref_mpi_master, "master" );
+      RAS( ref_mpi_once(ref_mpi), "master" );
     }
   else
     {
@@ -41,10 +42,11 @@ int main( int argc, char *argv[] )
       REF_INT *a_size, *b_size;
       REF_INT bc;
 
-      if ( ref_mpi_master ) printf("number of processors %d \n",ref_mpi_n);
+      if ( ref_mpi_once(ref_mpi) )
+	printf("number of processors %d \n",ref_mpi_n);
 
       bc = REF_EMPTY;
-      if ( ref_mpi_master ) bc = 5;
+      if ( ref_mpi_once(ref_mpi) ) bc = 5;
       RSS( ref_mpi_stopwatch_start(), "sw start");
       RSS( ref_mpi_bcast( &bc, 1, REF_INT_TYPE ), "bcast" );
       RSS( ref_mpi_stopwatch_stop( "integer broadcast" ), "sw start");
@@ -69,6 +71,7 @@ int main( int argc, char *argv[] )
       ref_free( a_size );
     }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
