@@ -52,8 +52,9 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( argc == 3 )
     {
@@ -110,7 +111,7 @@ end
     RSS(ref_histogram_add(ref_histogram, 0.5),"add 0.5");
     RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
     RSS(ref_histogram_gather(ref_histogram),"gather");
-    if ( ref_mpi_master )
+    if ( ref_mpi_once(ref_mpi) )
       {
 	RWDS(0.5,ref_histogram_min(ref_histogram),tol,"tot");
 	RWDS(2.0,ref_histogram_max(ref_histogram),tol,"tot");
@@ -232,6 +233,8 @@ end
     RSS(ref_histogram_free(ref_histogram),"free");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop(  ), "stop" );
+
   return 0;
 }
