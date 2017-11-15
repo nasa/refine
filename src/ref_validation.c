@@ -347,7 +347,7 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
   part_complexity=complexity;
   RSS( ref_mpi_sum( &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       if (ref_grid_twod(ref_grid) ) total_nnode = total_nnode / 2;
       printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",

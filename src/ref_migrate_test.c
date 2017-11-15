@@ -43,8 +43,9 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( 1 == ref_mpi_n )
     { /* keep local, lose ghost */
@@ -114,7 +115,7 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
       char grid_file[] = "ref_migrate_test.b8.ugrid";
 
-      if ( ref_mpi_master ) 
+      if ( ref_mpi_once(ref_mpi) ) 
 	{
 	  REF_GRID export_grid;
 	  RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
@@ -128,14 +129,15 @@ int main( int argc, char *argv[] )
       RSS( ref_migrate_shufflin( import_grid ), "shufflin");
 
       RSS( ref_grid_free( import_grid ), "free");
-      if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+      if ( ref_mpi_once(ref_mpi) ) 
+	REIS(0, remove( grid_file ), "test clean up");
     }
 
   if ( 1 < argc )
     {
       REF_GRID import_grid;
 
-      if ( ref_mpi_master ) 
+      if ( ref_mpi_once(ref_mpi) ) 
 	printf("%d procs, read %s\n",ref_mpi_n,argv[1]);
 
       ref_mpi_stopwatch_start();
@@ -154,6 +156,7 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( import_grid ), "free");
     }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;

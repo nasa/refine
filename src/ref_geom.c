@@ -1580,7 +1580,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max node" );
   max = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo node max eval dist %e\n",max);
 
   max = 0.0;
@@ -1606,11 +1606,11 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo edge max eval dist %e\n",max);
   RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_node = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo edge node tol %e\n",max_node);
 
   max = 0.0;
@@ -1645,15 +1645,15 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
     }
   RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max face" );
   max = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo face max eval dist %e\n",max);
   RSS( ref_mpi_max( &max_edge, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_edge = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo face edge tol %e\n",max_edge);
   RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_node = global_max;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("CAD topo face node tol %e\n",max_node);
   
   return REF_SUCCESS;
@@ -1913,7 +1913,7 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
 
 
 #else
-  if (ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     printf("EGADS lite, using meshb data ignore %s\n",filename);
 
   RAS( 0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data" );

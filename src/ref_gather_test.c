@@ -47,8 +47,9 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( 1 == argc )
     {
@@ -60,7 +61,7 @@ int main( int argc, char *argv[] )
 	   "gather");
 
       RSS( ref_grid_free( ref_grid ), "free");
-      if ( ref_mpi_master ) 
+      if ( ref_mpi_once(ref_mpi) ) 
 	REIS(0, remove( "ref_gather_test.b8.ugrid" ), "test clean up");
     }
   
@@ -82,7 +83,7 @@ int main( int argc, char *argv[] )
 	   "gather");
       RSS(ref_grid_free(export_grid),"free");
 
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	{
 	  RSS(ref_import_meshb( &import_grid, file ), "import" );
 	  ref_geom = ref_grid_geom(import_grid);
@@ -105,7 +106,7 @@ int main( int argc, char *argv[] )
 	   "gather");
 
       RSS( ref_grid_free( ref_grid ), "free");
-      if ( ref_mpi_master ) 
+      if ( ref_mpi_once(ref_mpi) ) 
 	REIS(0, remove( "ref_gather_script.eps" ), "test clean up");
     }
 
@@ -132,6 +133,7 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( import_grid ), "free");
     }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;

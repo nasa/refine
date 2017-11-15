@@ -101,8 +101,9 @@ static REF_STATUS tear_down( REF_SUBDIV ref_subdiv )
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( 2 == argc )
     {
@@ -124,7 +125,8 @@ int main( int argc, char *argv[] )
       ref_node = ref_grid_node(ref_grid);
       ref_edge = ref_subdiv_edge(ref_subdiv);
 
-      if ( ref_mpi_master ) printf("orig %d\n",ref_node_n_global(ref_node));
+      if ( ref_mpi_once(ref_mpi) ) 
+	printf("orig %d\n",ref_node_n_global(ref_node));
 
       for ( edge=0; edge<ref_edge_n(ref_edge);edge++ )
 	{
@@ -149,7 +151,8 @@ int main( int argc, char *argv[] )
  
       RSS(ref_subdiv_split(ref_subdiv),"split");
 
-      if ( ref_mpi_master ) printf("split %d\n",ref_node_n_global(ref_node));
+      if ( ref_mpi_once(ref_mpi) )
+	printf("split %d\n",ref_node_n_global(ref_node));
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
 
@@ -171,11 +174,11 @@ int main( int argc, char *argv[] )
 
       RSS(ref_subdiv_mark_prism_sides(ref_subdiv),"mark sides");
 
-      if ( ref_mpi_master ) ref_grid_inspect(ref_grid);
+      if ( ref_mpi_once(ref_mpi) ) ref_grid_inspect(ref_grid);
 
       RSS(ref_subdiv_split(ref_subdiv),"split");
 
-      if ( ref_mpi_master ) ref_grid_inspect(ref_grid);
+      if ( ref_mpi_once(ref_mpi) ) ref_grid_inspect(ref_grid);
 
       RSS(ref_export_by_extension(ref_grid,argv[2]),"export");
 
@@ -778,6 +781,7 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
