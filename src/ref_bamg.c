@@ -43,7 +43,8 @@ int main( int argc, char *argv[] )
 
   RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
   RSS( ref_export_by_extension( ref_grid, "bamg.msh" ), "export" );
-  RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part metric" );
+  RSS( ref_part_metric( ref_grid_node(ref_grid), ref_grid_mpi(ref_grid), 
+			argv[2] ), "part metric" );
   RSS( ref_export_metric2d( ref_grid, "bamg.metric2d" ), "export" );
 
   RSS( ref_validation_cell_volume(ref_grid),"vol");

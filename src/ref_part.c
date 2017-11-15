@@ -36,6 +36,7 @@
 #include "ref_import.h"
 
 REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
+				  REF_MPI ref_mpi,
 				  const char *filename )
 {
   size_t end_of_string;
@@ -49,7 +50,7 @@ REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
     }
   if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
     {
-      RSS( ref_part_meshb( ref_grid_ptr, filename ), 
+      RSS( ref_part_meshb( ref_grid_ptr, ref_mpi, filename ), 
 	   "meshb failed");
       return REF_SUCCESS;
     }
@@ -59,7 +60,8 @@ REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
   return REF_FAILURE;
 }
 
-REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, 
+			   REF_MPI ref_mpi, const char *filename )
 {
   REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
@@ -77,7 +79,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT cad_data_keyword;
   
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       RSS( ref_dict_create( &ref_dict ), "create dict" );
       RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
@@ -100,7 +102,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   ref_geom = ref_grid_geom(ref_grid);
   ref_grid_twod(ref_grid) = REF_FALSE;
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  4, &available, &next_position ), "jump" );
@@ -110,11 +112,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_node( file, swap_endian, has_id,
-		      ref_node, nnode ), "part node" ); 
-  if ( ref_mpi_master )
+		      ref_node, nnode, 
+		      ref_grid_mpi(ref_grid) ), "part node" ); 
+  if ( ref_grid_once(ref_grid) )
     REIS( next_position, ftell(file), "end location" );
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  8, &available, &next_position ), "jump" );
@@ -124,11 +127,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_meshb_cell( ref_grid_tet(ref_grid), ncell,
-			    ref_node, nnode, file ), "part cell" ); 
-  if ( ref_mpi_master )
+			    ref_node, nnode, 
+			    ref_grid_mpi(ref_grid), file ), "part cell" ); 
+  if ( ref_grid_once(ref_grid) )
     REIS( next_position, ftell(file), "end location" );
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  6, &available, &next_position ), "jump" );
@@ -138,11 +142,12 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     }
   RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_meshb_cell( ref_grid_tri(ref_grid), ncell,
-			    ref_node, nnode, file ), "part cell" ); 
-  if ( ref_mpi_master )
+			    ref_node, nnode, 
+			    ref_grid_mpi(ref_grid), file ), "part cell" ); 
+  if ( ref_grid_once(ref_grid) )
     REIS( next_position, ftell(file), "end location" );
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  5, &available, &next_position ), "jump" );
@@ -157,14 +162,15 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     {
       RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
       RSS( ref_part_meshb_cell( ref_grid_edg(ref_grid), ncell,
-				ref_node, nnode, file ), "part cell" ); 
-      if ( ref_mpi_master )
+				ref_node, nnode, 
+				ref_grid_mpi(ref_grid), file ), "part cell" ); 
+      if ( ref_grid_once(ref_grid) )
 	REIS( next_position, ftell(file), "end location" );
     }
   
   each_ref_type( ref_geom, type )
     {
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	{
 	  geom_keyword = 40+type;
 	  RSS( ref_import_meshb_jump( file, version, ref_dict,
@@ -181,13 +187,15 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 	{
 	  RSS( ref_mpi_bcast( &ngeom, 1, REF_INT_TYPE ), "bcast" ); 
 	  RSS( ref_part_meshb_geom( ref_geom, ngeom, type,
-				    ref_node, nnode, file ), "part geom" );
-	  if ( ref_mpi_master )
+				    ref_node, nnode, 
+				    ref_grid_mpi(ref_grid),
+				    file ), "part geom" );
+	  if ( ref_grid_once(ref_grid) )
 	    REIS( next_position, ftell(file), "end location" );
 	}
     }
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       cad_data_keyword = 11;
       RSS( ref_import_meshb_jump( file, version, ref_dict,
@@ -215,7 +223,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
     {
       RSS( ref_mpi_bcast( &ref_geom_cad_data_size(ref_geom),
 			  1, REF_INT_TYPE ), "bcast" );
-      if ( !ref_mpi_master )
+      if ( !ref_grid_once(ref_grid) )
 	ref_malloc(ref_geom_cad_data(ref_geom),
 		   ref_geom_cad_data_size(ref_geom),
 		   REF_BYTE );
@@ -227,7 +235,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   RSS( ref_geom_ghost( ref_geom, ref_node ), "fill geom ghosts");
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
       fclose( file );
@@ -237,7 +245,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 }
 
 REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
-			  REF_NODE ref_node, REF_INT nnode )
+			  REF_NODE ref_node, REF_INT nnode, REF_MPI ref_mpi )
 {
   REF_INT node, new_node;
   REF_INT part;
@@ -247,7 +255,7 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
 
   RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       part = 0;
       for (node=0;node<ref_part_first( nnode, ref_mpi_n, 1 ); node++)
@@ -341,7 +349,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   /* header */
 
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -378,7 +386,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
     ref_grid_twod(ref_grid) = REF_TRUE;
 
   RSS( ref_part_node( file, swap_endian, has_id,
-		      ref_node, nnode ), "part node" ); 
+		      ref_node, nnode, ref_grid_mpi(ref_grid) ), "part node" ); 
   if (instrument) ref_mpi_stopwatch_stop("nodes");
 
   if ( 0 < ntri )
@@ -391,6 +399,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 	+ (long)4*(long)4*(long)nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid), 
 				   file, conn_offset, faceid_offset ), "tri" );
     }
 
@@ -405,6 +414,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 	+ (long)4*(long)4*(long)nqua;
       RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid), 
 				   file, conn_offset, faceid_offset ), "qua" );
     }
 
@@ -419,6 +429,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid), 
 				   file, conn_offset, faceid_offset ), "tet" );
     }
 
@@ -432,6 +443,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid), 
 				   file, conn_offset, faceid_offset ), "pyr" );
     }
 
@@ -446,6 +458,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       faceid_offset = (long)REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid), 
 				   file, conn_offset, faceid_offset ), "pri" );
     }
 
@@ -461,10 +474,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       faceid_offset = REF_EMPTY;
       RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
 				   ref_node, nnode, 
+				   ref_grid_mpi(ref_grid),
 				   file, conn_offset, faceid_offset ), "hex" );
     }
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     REIS(0,fclose(file),"close file");
 
   /* ghost xyz */
@@ -478,6 +492,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 
 REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
 				REF_NODE ref_node, REF_INT nnode,
+				REF_MPI ref_mpi,
 				FILE *file )
 {
   REF_INT end_of_message = REF_EMPTY;
@@ -510,7 +525,7 @@ REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
   ref_malloc( sent_id, chunk, REF_INT );
   ref_malloc( sent_param, 2*chunk, REF_DBL );
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       ref_malloc( geom_to_send, ref_mpi_n, REF_INT );
       ref_malloc( start_to_send, ref_mpi_n, REF_INT );
@@ -639,6 +654,7 @@ REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
 
 REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 				REF_NODE ref_node, REF_INT nnode,
+				REF_MPI ref_mpi,
 				FILE *file )
 {
   REF_INT ncell_read;
@@ -666,7 +682,7 @@ REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 
   ref_malloc( sent_c2n, size_per*chunk, REF_INT );
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
 
       ref_malloc( elements_to_send, ref_mpi_n, REF_INT );
@@ -806,6 +822,7 @@ REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 
 REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   REF_NODE ref_node, REF_INT nnode,
+				   REF_MPI ref_mpi,
 				   FILE *file, 
 				   long conn_offset, 
 				   long faceid_offset )
@@ -836,7 +853,7 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
   ref_malloc( sent_c2n, size_per*chunk, REF_INT );
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
 
       ref_malloc( elements_to_send, ref_mpi_n, REF_INT );
@@ -988,7 +1005,8 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
+REF_STATUS ref_part_metric( REF_NODE ref_node, REF_MPI ref_mpi,
+			    const char *filename )
 {
   FILE *file;
   REF_INT chunk;
@@ -1003,7 +1021,7 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
 
   file = NULL;
   sol_format = REF_FALSE;
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -1047,7 +1065,7 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
   while ( nnode_read < ref_node_n_global(ref_node) )
     {
       section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	{
 	  for (node=0;node<section_size;node++)
 	  if ( sol_format ) 
@@ -1089,7 +1107,7 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
     }
 
   ref_free( metric );
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;
@@ -1108,7 +1126,7 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
   nnode = ref_node_n_global(ref_node)/2;
   
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -1128,7 +1146,7 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
   while ( nnode_read < nnode )
     {
       section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	{
 	  for (node=0;node<section_size;node++)
 	    {
@@ -1171,13 +1189,14 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
     }
 
   ref_free( metric );
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, const char *filename )
+REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_MPI ref_mpi,
+			   REF_DBL *ratio, const char *filename )
 {
   FILE *file;
   REF_INT chunk;
@@ -1186,7 +1205,7 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, const char *filena
   REF_INT node, local, global;
 
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -1202,7 +1221,7 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, const char *filena
   while ( nnode_read < ref_node_n_global(ref_node) )
     {
       section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	{
 	  for (node=0;node<section_size;node++)
 	    REIS( 1, fscanf( file, "%lf", 
@@ -1225,7 +1244,7 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_DBL *ratio, const char *filena
     }
 
   ref_free( data );
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     REIS(0,fclose(file),"close file");
 
   return REF_SUCCESS;

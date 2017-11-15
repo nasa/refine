@@ -115,7 +115,7 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_by_extension( &import_grid, argv[1] ), "import" );
+      RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("read");
       RSS(ref_migrate_to_balance(import_grid),"balance");
       ref_mpi_stopwatch_stop("balance");

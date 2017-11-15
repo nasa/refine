@@ -56,7 +56,7 @@ int main( int argc, char *argv[] )
       char viz_file[256];
 
       ref_mpi_stopwatch_start();
-      RSS(ref_part_by_extension( &import_grid, argv[1] ), "import" );
+      RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
       ref_mpi_stopwatch_stop("import");
 
       sprintf(viz_file, "ref_part_test_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
@@ -166,7 +166,7 @@ int main( int argc, char *argv[] )
 	RSS(ref_grid_free(export_grid),"free");
       }
 
-    RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+    RSS(ref_part_meshb( &import_grid, ref_mpi, grid_file ), "import" );
 
     RSS(ref_grid_free(import_grid),"free");
     if ( ref_mpi_once(ref_mpi) )
@@ -192,7 +192,7 @@ int main( int argc, char *argv[] )
 	RSS(ref_grid_free(export_grid),"free");
       }
 
-    RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
+    RSS(ref_part_meshb( &import_grid, ref_mpi, grid_file ), "import" );
 
     ref_geom = ref_grid_geom(import_grid);
     REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );
@@ -225,7 +225,8 @@ int main( int argc, char *argv[] )
 	fclose(file);
       }
 	  
-    RSS(ref_part_metric( ref_grid_node(ref_grid), metric_file ), "metric" );
+    RSS(ref_part_metric( ref_grid_node(ref_grid), 
+			 ref_grid_mpi(ref_grid), metric_file ), "metric" );
 
     RSS(ref_grid_free(ref_grid),"free");
 

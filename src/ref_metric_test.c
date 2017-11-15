@@ -92,7 +92,8 @@ int main( int argc, char *argv[] )
 	    "required args: --curve-limit grid.ext input.metric geom.egads [assoc.gas]");
       RSS( ref_import_by_extension( &ref_grid, argv[2] ),
 	   "unable to load target grid in position 1" );
-      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
+      RSS( ref_part_metric( ref_grid_node(ref_grid), 
+			    ref_grid_mpi(ref_grid), argv[3] ),
 	   "unable to load parent metric in position 2");
       RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[4] ),
 	   "unable to load egads in position 3" );
@@ -150,7 +151,8 @@ int main( int argc, char *argv[] )
 	   "unable to load target grid in position 1" );
       RSS( ref_import_by_extension( &parent_grid, argv[3] ),
 	   "unable to load parent grid in position 3" );
-      RSS( ref_part_metric( ref_grid_node(parent_grid), argv[4] ),
+      RSS( ref_part_metric( ref_grid_node(parent_grid), 
+			    ref_grid_mpi(ref_grid), argv[4] ),
 	   "unable to load parent grid in position 4");
 
       RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
@@ -176,7 +178,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[2] ),
 	   "unable to load target grid in position 1" );
-      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
+      RSS( ref_part_metric( ref_grid_node(ref_grid), 
+			    ref_grid_mpi(ref_grid), argv[3] ),
 	   "unable to load parent grid in position 2");
       RSS( ref_export_metric_xyzdirlen( ref_grid, argv[4] ), 
 	   "export metric in xyzdirlen");
@@ -222,7 +225,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
 
-      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+      RSS( ref_part_metric( ref_grid_node(ref_grid), 
+			    ref_grid_mpi(ref_grid), argv[2] ), "get metric");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "qual");
@@ -245,7 +249,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
 
-      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+      RSS( ref_part_metric( ref_grid_node(ref_grid), 
+			    ref_grid_mpi(ref_grid), argv[2] ), "get metric");
 
       RSS( ref_metric_sanitize( ref_grid ), "sant metric");
 
@@ -267,7 +272,8 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
 
-      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+      RSS( ref_part_metric( ref_grid_node(ref_grid), 
+			    ref_grid_mpi(ref_grid), argv[2] ), "get metric");
 
       for ( i=0; i<6; i++)
 	{
