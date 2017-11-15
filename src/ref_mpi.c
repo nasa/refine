@@ -49,15 +49,10 @@ REF_INT ref_mpi_id = 0;
 
 #endif
 
-static REF_DBL mpi_stopwatch_start_time;
-static REF_DBL mpi_stopwatch_first_time;
-
 static REF_STATUS ref_mpi_set_globals( REF_MPI ref_mpi )
 {
   ref_mpi_id = ref_mpi->id;
   ref_mpi_n = ref_mpi->n;
-  mpi_stopwatch_first_time = ref_mpi->first_time;
-  mpi_stopwatch_start_time = ref_mpi->start_time;
   return REF_SUCCESS;
 }
 
@@ -140,14 +135,9 @@ REF_STATUS ref_mpi_initialize( void )
   MPI_Comm_size(MPI_COMM_WORLD,&ref_mpi_n);
   MPI_Comm_rank(MPI_COMM_WORLD,&ref_mpi_id);
 
-  if ( ref_mpi_n > 1 )
-    MPI_Barrier( MPI_COMM_WORLD ); 
-  mpi_stopwatch_first_time = (REF_DBL)MPI_Wtime();
 #else
   ref_mpi_n = 1;
   ref_mpi_id = 0;
-
-  mpi_stopwatch_first_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
 #endif
 
   return REF_SUCCESS;
@@ -207,11 +197,11 @@ REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
 #else
   printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
-	 mpi_stopwatch_first_time,
+	 ref_mpi->first_time,
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
-	 mpi_stopwatch_start_time,
+	 ref_mpi->start_time,
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
-	 mpi_stopwatch_start_time,
+	 ref_mpi->start_time,
 	 110.0,
 	 message );
   fflush(stdout);

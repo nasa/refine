@@ -40,8 +40,6 @@ struct REF_MPI_STRUCT {
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
 
-#define ref_mpi_master (0 == ref_mpi_id)
-
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
 REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
 REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi, REF_MPI original );
