@@ -52,6 +52,15 @@ REF_INT ref_mpi_id = 0;
 static REF_DBL mpi_stopwatch_start_time;
 static REF_DBL mpi_stopwatch_first_time;
 
+static REF_STATUS ref_mpi_set_globals( REF_MPI ref_mpi )
+{
+  ref_mpi_id = ref_mpi->id;
+  ref_mpi_n = ref_mpi->n;
+  mpi_stopwatch_first_time = ref_mpi->first_time;
+  mpi_stopwatch_start_time = ref_mpi->start_time;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
 {
   REF_MPI ref_mpi;
@@ -79,10 +88,7 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi->start_time = ref_mpi->first_time;
 #endif
 
-  ref_mpi_id = ref_mpi->id;
-  ref_mpi_n = ref_mpi->n;
-  mpi_stopwatch_first_time = ref_mpi->first_time;
-  mpi_stopwatch_start_time = ref_mpi->start_time;
+  RSS( ref_mpi_set_globals( ref_mpi ), "globs" );
 
   return REF_SUCCESS;
 }
