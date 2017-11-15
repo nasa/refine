@@ -66,21 +66,27 @@ REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
 			     REF_INT type, REF_INT *ngeom );
 
-REF_STATUS ref_gather_node( REF_NODE ref_node,
+REF_STATUS ref_gather_node( REF_NODE ref_node, REF_MPI ref_mpi,
 			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file );
-REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
-REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
+REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, REF_MPI ref_mpi,
+				     FILE *file );
+REF_STATUS ref_gather_node_metric( REF_NODE ref_node, REF_MPI ref_mpi,
+				   FILE *file );
 
-REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom, 
+REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_MPI ref_mpi,
+			    REF_GEOM ref_geom, 
 			    REF_INT type, FILE *file );
-REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_MPI ref_mpi,
+			    REF_CELL ref_cell, 
 			    REF_BOOL faceid_insted_of_c2n, REF_BOOL always_id,
 			    REF_BOOL swap_endian,
 			    REF_BOOL select_faceid, REF_INT faceid,
 			    FILE *file );
-REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_MPI ref_mpi,
+				REF_CELL ref_cell,
 				FILE *file );
-REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_MPI ref_mpi,
+					REF_CELL ref_cell, 
 					REF_DBL min_quality, FILE *file );
 
 END_C_DECLORATION

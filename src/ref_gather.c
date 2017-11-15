@@ -58,7 +58,7 @@ REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename  )
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen("ref_gather_script.m","w");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -68,17 +68,19 @@ REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename  )
       fprintf(file, "nodes=[\n");
     }
 
-  RSS( ref_gather_node_tec_part( ref_node, file ), "nodes");
+  RSS( ref_gather_node_tec_part( ref_node, ref_grid_mpi(ref_grid), 
+				 file ), "nodes");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       fprintf(file, "];\n");
       fprintf(file, "elements=[\n");
     }
 
-  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_mpi(ref_grid), 
+			    ref_grid_tri(ref_grid), file ), "nodes");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       fprintf(file, "];\n");
       fprintf(file, "x=[];z=[];\n");
@@ -133,7 +135,7 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 
   RSS( ref_gather_ncell( ref_node, ref_grid_tri(ref_grid), &ntri ), "ntri");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       if ( NULL == (void *)(ref_gather->file) )
 	{ 
@@ -159,16 +161,19 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 	}
     }
 
-  RSS( ref_gather_node_tec_part( ref_node, ref_gather->file ), "nodes");
-  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), ref_gather->file ),"t");
+  RSS( ref_gather_node_tec_part( ref_node, ref_grid_mpi(ref_grid),
+				 ref_gather->file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_mpi(ref_grid),
+			    ref_grid_tri(ref_grid), ref_gather->file ),"t");
 
   {
     REF_INT ntet;
     REF_DBL min_quality = 0.10;
-    RSS( ref_gather_ncell_quality( ref_node, ref_grid_tet(ref_grid),
+    RSS( ref_gather_ncell_quality( ref_node,
+				   ref_grid_tet(ref_grid),
 				   min_quality, &ntet ), "ntri");
     
-    if ( ref_mpi_master )
+    if ( ref_grid_once(ref_grid) )
       {
 	if ( NULL == zone_title )
 	  {
@@ -183,21 +188,23 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 		    zone_title, nnode, MAX(1,ntet), "point", "fetetrahedron", ref_gather->time );
 	  }
       }
-    RSS( ref_gather_node_tec_part( ref_node, ref_gather->file ), "nodes");
+    RSS( ref_gather_node_tec_part( ref_node, ref_grid_mpi(ref_grid),
+				   ref_gather->file ), "nodes");
     if (0 == ntet)
       {
-	if ( ref_mpi_master )
+	if ( ref_grid_once(ref_grid) )
 	  fprintf(ref_gather->file," 1 1 1 1\n");
       }
     else
       {
-	RSS( ref_gather_cell_quality_tec( ref_node, ref_grid_tet(ref_grid),
+	RSS( ref_gather_cell_quality_tec( ref_node, ref_grid_mpi(ref_grid), 
+					  ref_grid_tet(ref_grid),
 					  min_quality, ref_gather->file ),
 	     "qtet");
       }
   }
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       REIS( 0, fflush(ref_gather->file), "gather movie fflush" );
       (ref_gather->time) += 1.0;
@@ -219,7 +226,7 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
   RSS( ref_gather_ncell( ref_node, ref_grid_tri(ref_grid), &ntri ), "ntri");
 
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"w");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -232,10 +239,12 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
 	      nnode, ntri, "point", "fetriangle" );
     }
 
-  RSS( ref_gather_node_tec_part( ref_node, file ), "nodes");
-  RSS( ref_gather_cell_tec( ref_node, ref_grid_tri(ref_grid), file ), "nodes");
+  RSS( ref_gather_node_tec_part( ref_node, ref_grid_mpi(ref_grid), 
+				 file ), "nodes");
+  RSS( ref_gather_cell_tec( ref_node, ref_grid_mpi(ref_grid), 
+			    ref_grid_tri(ref_grid), file ), "nodes");
 
-  if ( ref_mpi_master ) fclose(file);
+  if ( ref_grid_once(ref_grid) ) fclose(file);
 
   return REF_SUCCESS;
 }
@@ -285,7 +294,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"w");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -303,7 +312,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
       REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
     }
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       next_position = 4+4+4+ref_node_n_global(ref_node)*(3*8+4)+ftell(file);
       keyword_code = 4;
@@ -316,8 +325,9 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			  ref_node_n_global(ref_node));
 
     }
-  RSS( ref_gather_node( ref_node, swap_endian, always_id, file ), "nodes");
-  if ( ref_mpi_master )
+  RSS( ref_gather_node( ref_node, ref_grid_mpi(ref_grid), 
+			swap_endian, always_id, file ), "nodes");
+  if ( ref_grid_once(ref_grid) )
     REIS( next_position, ftell(file), "vertex inconsistent");
 
   ref_cell = ref_grid_edg(ref_grid);
@@ -326,7 +336,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   if (verbose) printf("%d: edge ncell %d\n",ref_mpi_id, ncell);
   if ( ncell > 0 )
     {
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	{
 	  node_per = ref_cell_node_per(ref_cell);
 	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
@@ -337,11 +347,11 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			      keyword_code,next_position,
 			      ncell);
 	}
-      RSS( ref_gather_cell( ref_node, ref_cell,
+      RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid), ref_cell,
 			    faceid_insted_of_c2n, always_id, swap_endian,
 			    select_faceid, faceid,
 			    file ), "nodes");
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	REIS( next_position, ftell(file), "cell inconsistent");
     }
 
@@ -350,7 +360,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
   if ( ncell > 0 )
     {
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	{
 	  node_per = ref_cell_node_per(ref_cell);
 	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
@@ -361,11 +371,11 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			      keyword_code,next_position,
 			      ncell);
 	}
-      RSS( ref_gather_cell( ref_node, ref_cell,
+      RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid), ref_cell,
 			    faceid_insted_of_c2n, always_id, swap_endian,
 			    select_faceid, faceid,
 			    file ), "nodes");
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	REIS( next_position, ftell(file), "cell inconsistent");
     }
 
@@ -374,7 +384,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
   if ( ncell > 0 )
     {
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	{
 	  node_per = ref_cell_node_per(ref_cell);
 	  next_position = 4+4+4+ncell*(4*(node_per+1))+ftell(file);
@@ -385,11 +395,11 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 			      keyword_code,next_position,
 			      ncell);
 	}
-      RSS( ref_gather_cell( ref_node, ref_cell,
+      RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid), ref_cell,
 			    faceid_insted_of_c2n, always_id, swap_endian,
 			    select_faceid, faceid,
 			    file ), "nodes");
-      if ( ref_mpi_master )
+      if ( ref_grid_once(ref_grid) )
 	REIS( next_position, ftell(file), "cell inconsistent");
     }
 
@@ -399,7 +409,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
       RSS( ref_gather_ngeom( ref_node, ref_geom, type, &ngeom ), "ngeom");
       if ( ngeom > 0 )
 	{
-	  if ( ref_mpi_master )
+	  if ( ref_grid_once(ref_grid) )
 	    {
 	      node_per = ref_cell_node_per(ref_cell);
 	      next_position = 4+4+4+ngeom*(4*2+8*type)+(0 < type?8*ngeom:0)
@@ -411,14 +421,14 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 				  type, keyword_code,next_position,
 				  ngeom);
 	    }
-	  RSS( ref_gather_geom( ref_node, ref_geom,
+	  RSS( ref_gather_geom( ref_node, ref_grid_mpi(ref_grid), ref_geom,
 				type, file ), "nodes");
-	  if ( ref_mpi_master )
+	  if ( ref_grid_once(ref_grid) )
 	    REIS( next_position, ftell(file), "cell inconsistent");
 	}
     }
 
-  if ( ref_mpi_master && 0 < ref_geom_cad_data_size(ref_geom) )
+  if ( ref_grid_once(ref_grid) && 0 < ref_geom_cad_data_size(ref_geom) )
     {
       keyword_code = 11; /* Reserved3 */
       next_position = 4+4+4+ref_geom_cad_data_size(ref_geom)+ ftell(file);
@@ -431,7 +441,7 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
       REIS( next_position, ftell(file), "cad_model inconsistent");
     }
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     { /* End */
       keyword_code = 54;
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
@@ -471,7 +481,7 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
   RSS( ref_gather_ncell( ref_node, ref_grid_hex(ref_grid), &nhex ), "nhex");
   
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"w");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
@@ -496,28 +506,33 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
       REIS(1, fwrite(&nhex,sizeof(REF_INT),1,file),"nhex");
     }
 
-  RSS( ref_gather_node( ref_node, swap_endian, always_id, file ), "nodes");
+  RSS( ref_gather_node( ref_node, ref_grid_mpi(ref_grid), 
+			swap_endian, always_id, file ), "nodes");
 
   RSS( ref_geom_faceid_range( ref_grid, &min_faceid, &max_faceid), "range");
 
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_TRUE;
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
-    RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
+    RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid),
+			  ref_grid_tri(ref_grid), 
 			  faceid_insted_of_c2n, always_id, swap_endian,
 			  select_faceid, faceid, file ), "tri c2n");
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
-    RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
+    RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid),
+			  ref_grid_qua(ref_grid), 
 			  faceid_insted_of_c2n, always_id, swap_endian,
 			  select_faceid, faceid, file ), "qua c2n");
 
   faceid_insted_of_c2n = REF_TRUE;
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
-    RSS( ref_gather_cell( ref_node,ref_grid_tri(ref_grid), 
+    RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid),
+			  ref_grid_tri(ref_grid), 
 			  faceid_insted_of_c2n, always_id, swap_endian,
 			  select_faceid, faceid, file ), "tri faceid");
   for ( faceid = min_faceid ; faceid <= max_faceid ; faceid++ )
-    RSS( ref_gather_cell( ref_node,ref_grid_qua(ref_grid), 
+    RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid),
+			  ref_grid_qua(ref_grid), 
 			  faceid_insted_of_c2n, always_id, swap_endian,
 			  select_faceid, faceid, file ), "qua faceid");
 
@@ -525,11 +540,11 @@ REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid, const char *filename  )
   select_faceid = REF_FALSE;
   faceid = REF_EMPTY;
   each_ref_grid_ref_cell( ref_grid, group, ref_cell )
-    RSS( ref_gather_cell( ref_node, ref_cell, 
+    RSS( ref_gather_cell( ref_node, ref_grid_mpi(ref_grid), ref_cell, 
 			  faceid_insted_of_c2n, always_id, swap_endian,
 			  select_faceid, faceid, file ), "cell c2n");
 
-  if ( ref_mpi_master ) fclose(file);
+  if ( ref_grid_once(ref_grid) ) fclose(file);
 
   return REF_SUCCESS;
 }
@@ -542,16 +557,17 @@ REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename  )
   RSS( ref_node_synchronize_globals( ref_node ), "sync" );
 
   file = NULL;
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       file = fopen(filename,"w");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
       RNS(file, "unable to open file" );
     }
 
-  RSS( ref_gather_node_metric( ref_node, file ), "nodes");
+  RSS( ref_gather_node_metric( ref_node, ref_grid_mpi(ref_grid), 
+			       file ), "nodes");
 
-  if ( ref_mpi_master ) fclose(file);
+  if ( ref_grid_once(ref_grid) ) fclose(file);
 
   return REF_SUCCESS;
 }
@@ -615,7 +631,7 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_node( REF_NODE ref_node,
+REF_STATUS ref_gather_node( REF_NODE ref_node, REF_MPI ref_mpi,
 			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file )
 {
   REF_INT chunk;
@@ -667,7 +683,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 
       RSS( ref_mpi_sum( local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
       
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )
 	  {
 	    if ( ABS( xyzm[3+4*i] - 1.0 ) > 0.1 )
@@ -689,7 +705,8 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
+REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, REF_MPI ref_mpi,
+				     FILE *file )
 {
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -750,7 +767,7 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
 
       RSS( ref_mpi_sum( local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
 
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )
 	  {
 	    if ( ABS( xyzm[5+dim*i] - 1.0 ) > 0.1 )
@@ -769,7 +786,8 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file )
+REF_STATUS ref_gather_node_metric( REF_NODE ref_node, REF_MPI ref_mpi, 
+				   FILE *file )
 {
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -814,7 +832,7 @@ REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file )
 
       RSS( ref_mpi_sum( local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
 
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )
 	  {
 	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
@@ -833,7 +851,8 @@ REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_MPI ref_mpi,
+			    REF_CELL ref_cell, 
 			    REF_BOOL faceid_insted_of_c2n,
 			    REF_BOOL always_id,
 			    REF_BOOL swap_endian,
@@ -849,7 +868,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT *c2n;
   REF_INT proc;
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
@@ -894,7 +913,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
 	  }
     }
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       for (proc=1;proc<ref_mpi_n;proc++)
 	{
@@ -978,7 +997,8 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom, 
+REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_MPI ref_mpi,
+			    REF_GEOM ref_geom, 
 			    REF_INT type, FILE *file )
 {
   REF_INT geom, node, id, i;
@@ -988,7 +1008,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom,
   REF_INT proc;
   double filler = 0.0;
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_geom_of( ref_geom, type, geom )
 	{
@@ -1008,7 +1028,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom,
 	}
     }
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       for (proc=1;proc<ref_mpi_n;proc++)
 	{
@@ -1079,7 +1099,8 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node, REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_MPI ref_mpi,
+				REF_CELL ref_cell, 
 				FILE *file )
 {
   REF_INT cell, node;
@@ -1090,7 +1111,7 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT *c2n;
   REF_INT proc;
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
@@ -1105,7 +1126,7 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell,
 	  }
     }
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       for (proc=1;proc<ref_mpi_n;proc++)
 	{
@@ -1152,7 +1173,8 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell, 
+REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_MPI ref_mpi,
+					REF_CELL ref_cell,
 					REF_DBL min_quality, FILE *file )
 {
   REF_INT cell, node;
@@ -1164,7 +1186,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT proc;
   REF_DBL quality;
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	{
@@ -1183,7 +1205,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node, REF_CELL ref_cell,
 	}
     }
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       for (proc=1;proc<ref_mpi_n;proc++)
 	{
