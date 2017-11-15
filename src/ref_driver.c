@@ -78,6 +78,7 @@ static void echo_argv( int argc, char *argv[] )
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid = NULL;
   REF_GRID background_grid = NULL;
   int opt;
@@ -93,11 +94,12 @@ int main( int argc, char *argv[] )
   REF_INT ngeom;
 
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
   ref_mpi_stopwatch_start();
 
   snprintf( output_project, 1024, "ref_driver" );
 
-  if (ref_mpi_master)
+  if (ref_mpi_once(ref_mpi))
     echo_argv( argc, argv );
 
   while (( opt = getopt(argc, argv, "i:m:g:r:p:o:s:cltd")) != -1)
@@ -220,7 +222,7 @@ int main( int argc, char *argv[] )
 
   for (pass = 0; pass<passes; pass++ )
     {
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
 	printf(" pass %d of %d with %d ranks\n",pass,passes,ref_mpi_n);
       RSS( ref_adapt_parameter( ref_grid ), "param");
       RSS( ref_adapt_pass( ref_grid ), "pass");
@@ -306,6 +308,7 @@ int main( int argc, char *argv[] )
   if ( NULL != ref_grid )
     RSS(ref_grid_free( ref_grid ), "free");
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;

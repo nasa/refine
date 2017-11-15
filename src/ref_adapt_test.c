@@ -63,8 +63,9 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( 2 < argc )
     {
@@ -167,7 +168,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_grid_free( ref_grid ), "free");
 
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
         {
           RSS(ref_import_by_extension( &ref_grid,
                                        "ref_adapt_test.b8.ugrid" ), "imp" );
@@ -242,7 +243,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_grid_free( ref_grid ), "free");
 
-      if ( ref_mpi_master )
+      if ( ref_mpi_once(ref_mpi) )
         {
           RSS(ref_import_by_extension( &ref_grid,
                                        "ref_adapt_test.b8.ugrid" ), "imp" );
@@ -283,6 +284,7 @@ int main( int argc, char *argv[] )
 
     }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop(  ), "stop" );
 
   return 0;

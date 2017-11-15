@@ -127,7 +127,7 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   min_quality = quality;
 
   target = MAX(MIN(0.1, quality),1.0e-3);
-  if (ref_mpi_master)
+  if (ref_grid_once(ref_grid))
     printf("target quality %6.4f\n",target);
   
   ref_adapt->split_ratio = 1.5;

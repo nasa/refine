@@ -140,7 +140,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   RSS( ref_gather_ncell( ref_grid_node(ref_grid), 
 			 ref_grid_pri(ref_grid), &npri ), "npri");
 
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     {
       ref_grid_twod(ref_grid) = ( 0 == ntet && 0 != npri );
       if ( ref_grid_twod(ref_grid) ) printf ("assuming twod mode\n");
@@ -150,7 +150,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   if ( REF_FALSE ) /* Pointwise midplane location for Troy Lake */
     {
       ref_node_twod_mid_plane(ref_grid_node(ref_grid))=-1;
-      if ( ref_mpi_master ) 
+      if ( ref_grid_once(ref_grid) ) 
 	printf ("twod midplane %f\n",
 		ref_node_twod_mid_plane(ref_grid_node(ref_grid)));
     }
@@ -178,7 +178,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       RSS( ref_node_synchronize_globals( ref_grid_node(ref_grid) ), "sync g");
       if ( 500000 > ref_node_n_global(ref_grid_node(ref_grid)) )
 	{
-	  if ( ref_mpi_master )
+	  if ( ref_grid_once(ref_grid) )
 	    printf("use single parition under 0.5M nodes %d\n",
 		   ref_node_n_global(ref_grid_node(ref_grid)));
 	  RSS(ref_migrate_to_single_image(ref_grid),"balance");
