@@ -114,21 +114,20 @@ int main( int argc, char *argv[] )
     {
       REF_GRID import_grid;
 
-      ref_mpi_stopwatch_start();
       RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
-      ref_mpi_stopwatch_stop("read");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "read");
       RSS(ref_migrate_to_balance(import_grid),"balance");
-      ref_mpi_stopwatch_stop("balance");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "balance");
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start( ref_grid_mpi(import_grid) );
       RSS( ref_gather_meshb( import_grid, "ref_gather_test.meshb" ), 
 	   "gather");
-      ref_mpi_stopwatch_stop("meshb");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "meshb");
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start( ref_grid_mpi(import_grid) );
       RSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
-      ref_mpi_stopwatch_stop("b8.ugrid");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "b8.ugrid");
 
       RSS( ref_grid_free( import_grid ), "free");
     }

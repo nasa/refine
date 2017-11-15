@@ -50,11 +50,10 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       char file[] = "ref_export_test.tec";
       RSS( ref_mpi_start( argc, argv ), "start" );
-      ref_mpi_stopwatch_start();
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
-      ref_mpi_stopwatch_stop("import");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "import");
       RSS(ref_export_tec_surf( ref_grid, file ),"export" );
-      ref_mpi_stopwatch_stop("export");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "export");
       RSS(ref_grid_free(ref_grid),"free");
       RSS( ref_mpi_stop(  ), "stop" );
       return 0;

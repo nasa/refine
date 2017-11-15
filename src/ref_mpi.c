@@ -166,34 +166,34 @@ REF_STATUS ref_mpi_stop( )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_start( void )
+REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi )
 {
 #ifdef HAVE_MPI
   if ( ref_mpi_n > 1 )
     MPI_Barrier( MPI_COMM_WORLD ); 
-  mpi_stopwatch_start_time = (REF_DBL)MPI_Wtime();
+  ref_mpi->start_time = (REF_DBL)MPI_Wtime();
 #else
-  mpi_stopwatch_start_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
+  ref_mpi->start_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
 #endif
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stopwatch_stop( const char *message )
+REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
 {
 
 #ifdef HAVE_MPI
   REF_DBL before_barrier, after_barrier, elapsed;
   REF_DBL first, last;
-  before_barrier = (REF_DBL)MPI_Wtime()-mpi_stopwatch_start_time;
+  before_barrier = (REF_DBL)MPI_Wtime()-ref_mpi->start_time;
   if ( ref_mpi_n > 1 )
     MPI_Barrier( MPI_COMM_WORLD ); 
   after_barrier = (REF_DBL)MPI_Wtime();
-  elapsed = after_barrier - mpi_stopwatch_first_time;
-  after_barrier = after_barrier-mpi_stopwatch_start_time;
+  elapsed = after_barrier - ref_mpi->first_time;
+  after_barrier = after_barrier-ref_mpi->start_time;
   RSS( ref_mpi_min( &before_barrier, &first, REF_DBL_TYPE), "min");
   RSS( ref_mpi_min( &after_barrier, &last, REF_DBL_TYPE), "max");
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
 	     elapsed,
@@ -203,7 +203,7 @@ REF_STATUS ref_mpi_stopwatch_stop( const char *message )
 	     message );
       fflush(stdout);
     }
-  RSS( ref_mpi_stopwatch_start(), "restart" );
+  RSS( ref_mpi_stopwatch_start(ref_mpi), "restart" );
 #else
   printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
 	 (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC) - 
@@ -215,7 +215,7 @@ REF_STATUS ref_mpi_stopwatch_stop( const char *message )
 	 110.0,
 	 message );
   fflush(stdout);
-  RSS( ref_mpi_stopwatch_start(), "restart" );
+  RSS( ref_mpi_stopwatch_start(ref_mpi), "restart" );
 #endif
 
   return REF_SUCCESS;

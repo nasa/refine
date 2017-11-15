@@ -55,16 +55,16 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
       char viz_file[256];
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start(ref_mpi);
       RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
-      ref_mpi_stopwatch_stop("import");
+      ref_mpi_stopwatch_stop(ref_mpi,"import");
 
       sprintf(viz_file, "ref_part_test_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
       RSS( ref_export_by_extension( import_grid, viz_file ), "export");
-      ref_mpi_stopwatch_stop("export");
+      ref_mpi_stopwatch_stop(ref_mpi,"export");
 
       RSS( ref_gather_tec_part( import_grid, "ref_part_test.tec" ), "part_viz");
-      ref_mpi_stopwatch_stop("gather");
+      ref_mpi_stopwatch_stop(ref_mpi,"gather");
 
       RSS(ref_grid_free(import_grid),"free");
 

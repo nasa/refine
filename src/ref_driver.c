@@ -95,7 +95,7 @@ int main( int argc, char *argv[] )
 
   RSS( ref_mpi_start( argc, argv ), "start" );
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
-  ref_mpi_stopwatch_start();
+  ref_mpi_stopwatch_start( ref_mpi );
 
   snprintf( output_project, 1024, "ref_driver" );
 
@@ -204,7 +204,7 @@ int main( int argc, char *argv[] )
   RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
 					   tecplot_movie ), "show time" );
 
-  ref_mpi_stopwatch_stop("read grid");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
   RSS( ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
@@ -212,7 +212,7 @@ int main( int argc, char *argv[] )
   if ( curvature_constraint )
     {
       RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
-      ref_mpi_stopwatch_stop("crv const");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "crv const");
     }
   if ( sanitize_metric )
     {
@@ -228,48 +228,48 @@ int main( int argc, char *argv[] )
 	printf(" pass %d of %d with %d ranks\n",pass,passes,ref_mpi_n);
       RSS( ref_adapt_parameter( ref_grid ), "param");
       RSS( ref_adapt_pass( ref_grid ), "pass");
-      ref_mpi_stopwatch_stop("pass");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pass");
       if (curvature_metric)
         {
           RSS( ref_metric_interpolated_curvature( ref_grid ),
                "interp curve" );
-          ref_mpi_stopwatch_stop("curvature");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "curvature");
         }
       if ( NULL != background_grid )
         {
           RSS( ref_metric_interpolate( ref_grid, background_grid ),
                "interp" );
-          ref_mpi_stopwatch_stop("interp");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "interp");
         }
       if ( curvature_constraint )
         {
           RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
-          ref_mpi_stopwatch_stop("crv const");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "crv const");
         }
       if ( sanitize_metric )
         {
           RSS( ref_metric_sanitize( ref_grid ), "sant metric");
-          ref_mpi_stopwatch_stop("sant");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "sant");
         }
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
-      ref_mpi_stopwatch_stop("balance");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
     }
 
   RSS( ref_geom_verify_param( ref_grid ), "final params" );
-  ref_mpi_stopwatch_stop("verify final params");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "verify final params");
   snprintf( output_filename, 1024, "%s.b8.ugrid", output_project );
   RSS( ref_gather_by_extension( ref_grid, output_filename ),
        "b8.ugrid");
-  ref_mpi_stopwatch_stop("gather b8.ugrid");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather b8.ugrid");
   if ( !ref_grid_twod(ref_grid) )
     {
       snprintf( output_filename, 1024, "%s.meshb", output_project );
       RSS( ref_gather_by_extension( ref_grid, output_filename ),
            "export");
-      ref_mpi_stopwatch_stop("gather meshb");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather meshb");
     }
   snprintf( output_filename, 1024, "%s-metric.metric", output_project );
   RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
@@ -281,28 +281,28 @@ int main( int argc, char *argv[] )
       RSS(ref_geom_tec( ref_grid, output_filename ),"geom tec" );
       snprintf( output_filename, 1024, "%s.gas", output_project );
       RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
-      ref_mpi_stopwatch_stop("tec");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "tec");
     }
   if (debug_verbose && 1 == ref_mpi_n )
     {
       snprintf( output_filename, 1024, "%s_metric_ellipse.tec", output_project );
       RSS( ref_export_tec_metric_ellipse( ref_grid, output_project ), "al");
-      ref_mpi_stopwatch_stop("ellipse");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "ellipse");
     }
   if ( output_clumps && 1 == ref_mpi_n )
     {
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
-      ref_mpi_stopwatch_stop("clump stuck");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump stuck");
     }
   if ( debug_verbose && 1 == ref_mpi_n )
     {
       RSS(ref_cavity_tet_quality( ref_grid ),
           "clump" );
-      ref_mpi_stopwatch_stop("cavity tet quality");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "cavity tet quality");
       snprintf( output_filename, 1024, "%s_tet_qual.tec", output_project );
       RSS(ref_clump_tet_quality( ref_grid, 0.01, output_filename ),
           "clump" );
-      ref_mpi_stopwatch_stop("clump tet quality");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump tet quality");
     }
 
   if ( NULL != background_grid )

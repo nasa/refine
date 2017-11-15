@@ -340,11 +340,11 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
 
-  if (instrument) ref_mpi_stopwatch_start();
-
   RSS( ref_grid_create( ref_grid_ptr ), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
+
+  if (instrument) ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
   /* header */
 
@@ -387,7 +387,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 
   RSS( ref_part_node( file, swap_endian, has_id,
 		      ref_node, nnode, ref_grid_mpi(ref_grid) ), "part node" ); 
-  if (instrument) ref_mpi_stopwatch_stop("nodes");
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "nodes");
 
   if ( 0 < ntri )
     {
@@ -418,7 +418,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 				   file, conn_offset, faceid_offset ), "qua" );
     }
 
-  if (instrument) ref_mpi_stopwatch_stop("bound");
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "bound");
 
   if ( 0 < ntet )
     {
@@ -485,7 +485,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
-  if (instrument) ref_mpi_stopwatch_stop("volume");
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
 
   return REF_SUCCESS;
 }

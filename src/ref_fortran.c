@@ -50,7 +50,7 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
   ref_node = ref_grid_node(ref_grid);
 
   RSS( ref_mpi_initialize(),"init ref mpi");
-  ref_mpi_stopwatch_start(  );
+  ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
   REIS( *partition, ref_mpi_id, "processor ids do not match" );
 
@@ -159,7 +159,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
     {
       RSS( ref_metric_sanitize(ref_grid),"sant");
       RSS( ref_node_ghost_real( ref_grid_node(ref_grid) ), "ghost real");
-      ref_mpi_stopwatch_stop("metric sant");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "metric sant");
     }
 
   RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
@@ -172,7 +172,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
   for (i = 0; i<passes ; i++ )
     {
       RSS( ref_adapt_pass( ref_grid ), "pass");
-      ref_mpi_stopwatch_stop("pass");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pass");
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       RSS( ref_node_synchronize_globals( ref_grid_node(ref_grid) ), "sync g");
@@ -187,7 +187,7 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
 	{
 	  RSS(ref_migrate_to_balance(ref_grid),"balance");
 	}
-      ref_mpi_stopwatch_stop("balance");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
     }
 
   return REF_SUCCESS;

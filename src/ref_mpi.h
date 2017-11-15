@@ -50,8 +50,8 @@ REF_STATUS ref_mpi_start( int argc, char *argv[] );
 REF_STATUS ref_mpi_initialize( );
 REF_STATUS ref_mpi_stop( );
 
-REF_STATUS ref_mpi_stopwatch_start( );
-REF_STATUS ref_mpi_stopwatch_stop( const char *message );
+REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi );
+REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message );
 
 typedef int REF_TYPE;
 #define REF_INT_TYPE (1)

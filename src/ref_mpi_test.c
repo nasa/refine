@@ -47,9 +47,9 @@ int main( int argc, char *argv[] )
 
       bc = REF_EMPTY;
       if ( ref_mpi_once(ref_mpi) ) bc = 5;
-      RSS( ref_mpi_stopwatch_start(), "sw start");
+      RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
       RSS( ref_mpi_bcast( &bc, 1, REF_INT_TYPE ), "bcast" );
-      RSS( ref_mpi_stopwatch_stop( "integer broadcast" ), "sw start");
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer broadcast" ), "sw start");
       REIS( 5, bc, "bc wrong" );
 
       ref_malloc_init( a_size, ref_mpi_n, REF_INT, REF_EMPTY );
@@ -58,9 +58,9 @@ int main( int argc, char *argv[] )
       for ( part = 0; part<ref_mpi_n ; part++ )
 	a_size[part] = part;
 
-      RSS( ref_mpi_stopwatch_start(), "sw start");
+      RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
       RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
-      RSS( ref_mpi_stopwatch_stop( "integer alltoall" ), "sw start");
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer alltoall" ), "sw start");
 
       for ( part = 0; part<ref_mpi_n ; part++ )
 	REIS(part, a_size[part], "a_size changed" );

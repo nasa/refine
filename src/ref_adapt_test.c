@@ -73,21 +73,21 @@ int main( int argc, char *argv[] )
       REF_NODE ref_node;
       REF_INT i, passes;
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start( ref_mpi );
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
       ref_node = ref_grid_node(ref_grid);
-      ref_mpi_stopwatch_stop("read grid");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
 
       /* for Troy Lake Pointwise extruded 2D grids
          ref_node_twod_mid_plane(ref_node)=-1;
       */
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");
-      ref_mpi_stopwatch_stop("balance");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
 
       RSS(ref_part_metric( ref_node, ref_grid_mpi(ref_grid), 
 			   argv[2] ), "part metric" );
-      ref_mpi_stopwatch_stop("read metric");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read metric");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
@@ -104,21 +104,21 @@ int main( int argc, char *argv[] )
 
           RSS(ref_part_ratio( ref_node, ref_grid_mpi(ref_grid), 
 			      node_ratio, argv[3] ), "part metric" );
-          ref_mpi_stopwatch_stop("read ratio");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read ratio");
 
           RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, node_ratio),"mark rat");
-          ref_mpi_stopwatch_stop("subdiv mark");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "subdiv mark");
 
           ref_free( node_ratio );
 
           RSS(ref_subdiv_split(ref_subdiv),"split");
-          ref_mpi_stopwatch_stop("subdiv split");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "subdiv split");
 
           RSS(ref_subdiv_free(ref_subdiv),"free");
 
           RSS(ref_validation_cell_volume(ref_grid),"vol");
           RSS(ref_migrate_to_balance(ref_grid),"balance");
-          ref_mpi_stopwatch_stop("balance");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
         }
 
       if (REF_FALSE)
@@ -143,18 +143,18 @@ int main( int argc, char *argv[] )
         {
           printf(" pass %d of %d\n",i,passes);
           RSS( ref_adapt_pass( ref_grid ), "pass");
-          ref_mpi_stopwatch_stop("pass");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pass");
           RSS(ref_validation_cell_volume(ref_grid),"vol");
           RSS( ref_histogram_quality( ref_grid ), "gram");
           RSS( ref_histogram_ratio( ref_grid ), "gram");
           RSS(ref_migrate_to_balance(ref_grid),"balance");
-          ref_mpi_stopwatch_stop("balance");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
         }
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
       RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ),
            "gather");
-      ref_mpi_stopwatch_stop("gather");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather");
 
       RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_f" ),"ex" );
 
@@ -177,7 +177,7 @@ int main( int argc, char *argv[] )
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
         }
-      ref_mpi_stopwatch_stop("post");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "post");
     }
 
   if ( 2 == argc )
@@ -185,12 +185,12 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_INT i, passes;
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start( ref_mpi );
       RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
-      ref_mpi_stopwatch_stop("read grid");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");
-      ref_mpi_stopwatch_stop("balance");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
 
@@ -227,18 +227,18 @@ int main( int argc, char *argv[] )
       for (i = 0; i<passes; i++ )
         {
           RSS( ref_adapt_pass( ref_grid ), "pass");
-          ref_mpi_stopwatch_stop("pass");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pass");
           RSS(ref_validation_cell_volume(ref_grid),"vol");
           RSS( ref_histogram_quality( ref_grid ), "qual");
           RSS( ref_histogram_ratio( ref_grid ), "gram");
           RSS(ref_migrate_to_balance(ref_grid),"balance");
-          ref_mpi_stopwatch_stop("balance");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
         }
 
-      ref_mpi_stopwatch_start();
+      ref_mpi_stopwatch_start(ref_grid_mpi(ref_grid) );
       RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ),
            "gather");
-      ref_mpi_stopwatch_stop("gather");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather");
 
       RSS( ref_gather_tec_part( ref_grid, "ref_adapt_test_part.tec" ),
            "part_viz");
@@ -252,7 +252,7 @@ int main( int argc, char *argv[] )
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
         }
-      ref_mpi_stopwatch_stop("post");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "post");
     }
 
   if ( 1 == argc )

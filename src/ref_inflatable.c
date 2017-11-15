@@ -83,9 +83,8 @@ int main( int argc, char *argv[] )
       return 1;
     }
 
-  ref_mpi_stopwatch_start();
   RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
-  ref_mpi_stopwatch_stop("import");
+  ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
   nlayers = atoi( argv[2] );
   if ( nlayers < 0 )
@@ -223,7 +222,7 @@ int main( int argc, char *argv[] )
 	     ref_node_n(ref_grid_node(ref_grid)));
     }
 
-  ref_mpi_stopwatch_stop("inflate");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "inflate");
 
   if ( REF_EMPTY != scale_pos )
     {
@@ -238,9 +237,9 @@ int main( int argc, char *argv[] )
     }
 
   RSS( ref_export_tec_surf( ref_grid, "inflated_boundary.tec" ), "tec" );
-  ref_mpi_stopwatch_stop("surf");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "surf");
   RSS( ref_export_by_extension( ref_grid, "inflated.b8.ugrid" ), "b8" );
-  ref_mpi_stopwatch_stop("export");
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "export");
 
   RSS(ref_dict_free( faceids ), "free" );
   RSS(ref_grid_free(ref_grid),"free");

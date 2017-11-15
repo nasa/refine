@@ -167,21 +167,21 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
   if ( instrument )
-    ref_mpi_stopwatch_stop("adapt start");
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt start");
   
   RSS( ref_collapse_pass( ref_grid ), "col pass");
   ref_gather_blocking_frame( ref_grid, "collapse" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
   if ( instrument )
-    ref_mpi_stopwatch_stop("adapt col");
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt col");
 
   RSS( ref_split_pass( ref_grid ), "split pass");
   ref_gather_blocking_frame( ref_grid, "split" );
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "split geom typo check");
   if ( instrument )
-    ref_mpi_stopwatch_stop("adapt spl");
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt spl");
 
   if ( REF_FALSE )
     {
@@ -196,7 +196,7 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
   if (ngeom>0)
     RSS( ref_geom_verify_topo( ref_grid ), "smooth geom typo check");
   if ( instrument )
-    ref_mpi_stopwatch_stop("adapt mov");
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt mov");
 
   return REF_SUCCESS;
 }
