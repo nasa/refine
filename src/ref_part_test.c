@@ -46,7 +46,9 @@
 int main( int argc, char *argv[] )
 {
 
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( 1 < argc )
     { /* part */
@@ -141,7 +143,7 @@ int main( int argc, char *argv[] )
     char grid_file[] = "ref_part_test.b8.ugrid";
     
     RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
-    if ( ref_mpi_master ) 
+    if ( ref_mpi_once(ref_mpi) ) 
       {
 	RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
       }
@@ -149,7 +151,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
-    if ( ref_mpi_master )
+    if ( ref_mpi_once(ref_mpi) )
       REIS(0, remove( grid_file ), "test clean up");
   }
 
@@ -157,7 +159,7 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.meshb";
     
-    if ( ref_mpi_master ) 
+    if ( ref_mpi_once(ref_mpi) ) 
       {
 	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
 	RSS(ref_export_meshb( export_grid, grid_file ), "export" );
@@ -167,14 +169,15 @@ int main( int argc, char *argv[] )
     RSS(ref_part_meshb( &import_grid, grid_file ), "import" );
 
     RSS(ref_grid_free(import_grid),"free");
-    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+    if ( ref_mpi_once(ref_mpi) )
+      REIS(0, remove( grid_file ), "test clean up");
   }
 
   { /* part meshb with cad_data*/
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.meshb";
     REF_GEOM ref_geom;
-    if ( ref_mpi_master ) 
+    if ( ref_mpi_once(ref_mpi) ) 
       {
 	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
 	ref_geom = ref_grid_geom(export_grid);
@@ -198,7 +201,8 @@ int main( int argc, char *argv[] )
     REIS( 3, ref_geom_cad_data(ref_geom)[2], "cad[2]" );
 
     RSS(ref_grid_free(import_grid),"free");
-    if ( ref_mpi_master ) REIS(0, remove( grid_file ), "test clean up");
+    if ( ref_mpi_once(ref_mpi) ) 
+      REIS(0, remove( grid_file ), "test clean up");
   }
 
   { /* metric */
@@ -207,7 +211,7 @@ int main( int argc, char *argv[] )
     
     RSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
 
-    if ( ref_mpi_master ) 
+    if ( ref_mpi_once(ref_mpi) ) 
       {
 	REF_INT node;
 	FILE *file;
@@ -225,9 +229,11 @@ int main( int argc, char *argv[] )
 
     RSS(ref_grid_free(ref_grid),"free");
 
-    if ( ref_mpi_master ) REIS(0, remove( metric_file ), "test clean up");
+    if ( ref_mpi_once(ref_mpi) ) 
+      REIS(0, remove( metric_file ), "test clean up");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
