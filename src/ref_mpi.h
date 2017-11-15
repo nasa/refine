@@ -35,6 +35,17 @@ struct REF_MPI_STRUCT {
   REF_DBL first_time;
 };
 
+/*
+ * Constructors
+ *   ref_mpi_create_and_start
+ *   ref_mpi_create_from_world
+ *   ref_mpi_create_from_comm
+ *   ref_mpi_create_without_comm
+ * Destructors
+ *   ref_mpi_free_and_finalize
+ *   ref_mpi_free
+ */
+
 #define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
 #define ref_mpi_once(ref_mpi) ( 0 == (ref_mpi)->id )
 
@@ -42,11 +53,6 @@ extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
 
 #define ref_mpi_master (0 == ref_mpi_id)
-
-typedef int REF_TYPE;
-#define REF_INT_TYPE (1)
-#define REF_DBL_TYPE (2)
-#define REF_BYTE_TYPE (3)
 
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
 REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
@@ -58,6 +64,11 @@ REF_STATUS ref_mpi_stop( );
 
 REF_STATUS ref_mpi_stopwatch_start( );
 REF_STATUS ref_mpi_stopwatch_stop( const char *message );
+
+typedef int REF_TYPE;
+#define REF_INT_TYPE (1)
+#define REF_DBL_TYPE (2)
+#define REF_BYTE_TYPE (3)
 
 REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type );
 
