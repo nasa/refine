@@ -52,27 +52,12 @@ REF_INT ref_mpi_id = 0;
 static REF_DBL mpi_stopwatch_start_time;
 static REF_DBL mpi_stopwatch_first_time;
 
-#ifdef HAVE_MPI
-#define ref_mpi_voidptr2comm(ref_mpi)		\
-  (*(MPI_Comm *)(( ref_mpi )->comm))
-#define ref_mpi_comm(ref_mpi)				\
-  ( MPI_COMM_NULL==ref_mpi_voidptr2comm(ref_mpi) ?	\
-    MPI_COMM_WORLD : ref_mpi_voidptr2comm(ref_mpi) )
-#endif
-
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
 {
   REF_MPI ref_mpi;
 
   ref_malloc( *ref_mpi_ptr, 1, REF_MPI_STRUCT );
   ref_mpi = ( *ref_mpi_ptr );
-
-#ifdef HAVE_MPI  
-  ref_malloc( (( ref_mpi )->comm), 1, MPI_Comm );
-  ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
-#else
-  ref_mpi->comm = NULL;
-#endif
 
   ref_mpi->id = 0;
   ref_mpi->n = 1;
@@ -86,8 +71,8 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
     REIS( MPI_SUCCESS, MPI_Initialized( &running ), "running?" );
     if ( running )
       {
-	MPI_Comm_size(ref_mpi_comm(ref_mpi),&(ref_mpi->n));
-	MPI_Comm_rank(ref_mpi_comm(ref_mpi),&(ref_mpi->id));
+	MPI_Comm_size(MPI_COMM_WORLD,&(ref_mpi->n));
+	MPI_Comm_rank(MPI_COMM_WORLD,&(ref_mpi->id));
       }
   }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
@@ -106,9 +91,6 @@ REF_STATUS ref_mpi_free( REF_MPI ref_mpi )
 {
   if ( NULL == (void *)ref_mpi )
     return REF_NULL;
-#ifdef HAVE_MPI
-  ref_free( ref_mpi->comm );
-#endif
   ref_free( ref_mpi );
   return REF_SUCCESS;
 }
@@ -120,12 +102,6 @@ REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi_ptr, REF_MPI original )
   ref_malloc( *ref_mpi_ptr, 1, REF_MPI_STRUCT );
   ref_mpi = ( *ref_mpi_ptr );
 
-#ifdef HAVE_MPI
-  ref_malloc( (( ref_mpi )->comm), 1, MPI_Comm );
-  ref_mpi_voidptr2comm(ref_mpi) = MPI_COMM_NULL;
-#else
-  ref_mpi->comm = NULL;
-#endif
   ref_mpi->id = original->id;
   ref_mpi->n = original->n;
 

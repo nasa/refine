@@ -30,21 +30,9 @@ BEGIN_C_DECLORATION
 struct REF_MPI_STRUCT {
   REF_INT n;
   REF_INT id;
-  void *comm;
   REF_DBL start_time;
   REF_DBL first_time;
 };
-
-/*
- * Constructors
- *   ref_mpi_create_and_start
- *   ref_mpi_create_from_world
- *   ref_mpi_create_from_comm
- *   ref_mpi_create_without_comm
- * Destructors
- *   ref_mpi_free_and_finalize
- *   ref_mpi_free
- */
 
 #define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
 #define ref_mpi_once(ref_mpi) ( 0 == (ref_mpi)->id )
