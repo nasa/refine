@@ -28,6 +28,7 @@ END_C_DECLORATION
 
 #include <stdio.h>
 #include "ref_grid.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 struct REF_HISTOGRAM_STRUCT {
@@ -66,7 +67,8 @@ REF_STATUS ref_histogram_resolution( REF_HISTOGRAM ref_histogram,
 				     REF_INT nbin, REF_DBL exp );
 REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram, 
 			      REF_DBL observation );
-REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram );
+REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram, 
+				 REF_MPI ref_mpi );
 
 REF_STATUS ref_histogram_print( REF_HISTOGRAM ref_histogram,
 				REF_GRID ref_grid,
@@ -78,7 +80,8 @@ REF_STATUS ref_histogram_tec( REF_HISTOGRAM ref_histogram,
 
 REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram, 
 				    REF_DBL observation );
-REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram );
+REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram, 
+				      REF_MPI ref_mpi );
 REF_STATUS ref_histogram_print_stat( REF_HISTOGRAM ref_histogram );
 
 

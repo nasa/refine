@@ -112,7 +112,7 @@ REF_STATUS ref_histogram_add( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
+REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi )
 {
   REF_INT *bins;
   REF_DBL min, max, log_total;
@@ -129,7 +129,7 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram )
   RSS( ref_mpi_sum( &ref_histogram_log_total( ref_histogram ), &log_total, 
 		    1, REF_DBL_TYPE ), "log_total" );
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       ref_histogram_max( ref_histogram ) = max;
       ref_histogram_min( ref_histogram ) = min;
@@ -304,7 +304,8 @@ REF_STATUS ref_histogram_add_stat( REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram )
+REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram, 
+				      REF_MPI ref_mpi )
 {
   REF_DBL *stats;
   REF_INT i, observations;
@@ -314,7 +315,7 @@ REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram )
   RSS( ref_mpi_sum( ref_histogram->stats, stats, 
 		    ref_histogram_nstat(ref_histogram), REF_DBL_TYPE ), "sum" );
 
-  if ( ref_mpi_master )
+  if ( ref_mpi_once(ref_mpi) )
     {
       observations = 0;
       for ( i=0;i<ref_histogram_nbin(ref_histogram);i++ )
@@ -390,7 +391,7 @@ REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram,
 	}
     }
 
-  RSS( ref_histogram_gather( ref_histogram ), "gather");
+  RSS( ref_histogram_gather( ref_histogram, ref_grid_mpi(ref_grid) ), "gather");
 
   for (edge=0;edge< ref_edge_n(ref_edge);edge++)
     {
@@ -409,7 +410,8 @@ REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram,
 	  RSS( ref_histogram_add_stat( ref_histogram, ratio ), "add");
 	}
     }
-  RSS( ref_histogram_gather_stat( ref_histogram ), "gather");
+  RSS( ref_histogram_gather_stat( ref_histogram, 
+				  ref_grid_mpi(ref_grid) ), "gather");
 
   RSS( ref_edge_free(ref_edge), "free edge" );
 
@@ -455,7 +457,7 @@ REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram,
 	}
     }
 
-  RSS( ref_histogram_gather( ref_histogram ), "gather");
+  RSS( ref_histogram_gather( ref_histogram, ref_grid_mpi(ref_grid) ), "gather");
 
   return REF_SUCCESS;
 }
@@ -471,9 +473,9 @@ REF_STATUS ref_histogram_ratio( REF_GRID ref_grid )
 
   RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
   
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     RSS( ref_histogram_print( ref_histogram, ref_grid, "edge ratio"), "print");
-  if ( ref_mpi_master ) 
+  if ( ref_grid_once(ref_grid) ) 
     RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -488,7 +490,7 @@ REF_STATUS ref_histogram_quality( REF_GRID ref_grid )
 
   RSS( ref_histogram_add_quality( ref_histogram, ref_grid ), "add quality" );
 
-  if ( ref_mpi_master ) RSS( ref_histogram_print( ref_histogram, ref_grid,
+  if ( ref_grid_once(ref_grid) ) RSS( ref_histogram_print( ref_histogram, ref_grid,
 						  "quality"), "print");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -504,7 +506,7 @@ REF_STATUS ref_histogram_ratio_tec( REF_GRID ref_grid )
 
   RSS( ref_histogram_add_ratio( ref_histogram, ref_grid ), "add ratio" );
   
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     RSS( ref_histogram_tec( ref_histogram, "ratio"), "tec");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );
@@ -520,7 +522,7 @@ REF_STATUS ref_histogram_quality_tec( REF_GRID ref_grid )
 
   RSS( ref_histogram_add_quality( ref_histogram, ref_grid ), "add ratio" );
   
-  if ( ref_mpi_master )
+  if ( ref_grid_once(ref_grid) )
     RSS( ref_histogram_tec( ref_histogram, "quality"), "tec");
 
   RSS( ref_histogram_free(ref_histogram), "free gram" );

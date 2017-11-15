@@ -110,7 +110,7 @@ end
     RSS(ref_histogram_create(&ref_histogram),"create");
     RSS(ref_histogram_add(ref_histogram, 0.5),"add 0.5");
     RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
-    RSS(ref_histogram_gather(ref_histogram),"gather");
+    RSS(ref_histogram_gather(ref_histogram, ref_mpi),"gather");
     if ( ref_mpi_once(ref_mpi) )
       {
 	RWDS(0.5,ref_histogram_min(ref_histogram),tol,"tot");
@@ -161,7 +161,7 @@ end
     RSS(ref_histogram_create(&ref_histogram),"create");
     RSS(ref_histogram_add(ref_histogram, 4.0),"add 4.0");
     RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
-    RSS(ref_histogram_gather(ref_histogram),"gather");
+    RSS(ref_histogram_gather(ref_histogram, ref_mpi),"gather");
     RWDS(1.5,ref_histogram_log_mean(ref_histogram),tol,"mean");
     RSS(ref_histogram_free(ref_histogram),"free");
   }
@@ -172,10 +172,10 @@ end
     RSS(ref_histogram_create(&ref_histogram),"create");
     RSS(ref_histogram_add(ref_histogram, 4.0),"add 4.0");
     RSS(ref_histogram_add(ref_histogram, 2.0),"add 2.0");
-    RSS(ref_histogram_gather(ref_histogram),"gather");
+    RSS(ref_histogram_gather(ref_histogram, ref_mpi),"gather");
     RSS(ref_histogram_add_stat(ref_histogram, 4.0),"add 4.0");
     RSS(ref_histogram_add_stat(ref_histogram, 2.0),"add 2.0");
-    RSS(ref_histogram_gather_stat(ref_histogram),"gather");
+    RSS(ref_histogram_gather_stat(ref_histogram, ref_mpi),"gather");
     RWDS(1.0,   ref_histogram_stat(ref_histogram,0),tol,"stat 0");
     RWDS(0.0,   ref_histogram_stat(ref_histogram,1),tol,"stat 1");
     RWDS(0.25,  ref_histogram_stat(ref_histogram,2),tol,"stat 2");
