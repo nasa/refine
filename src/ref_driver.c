@@ -107,7 +107,7 @@ int main( int argc, char *argv[] )
       switch (opt)
         {
         case 'i':
-          if ( 1 < ref_mpi_n )
+          if ( ref_mpi_para(ref_mpi) )
             {
               RSS( ref_part_by_extension( &ref_grid, 
 					  ref_mpi, optarg ), "part" );
@@ -127,7 +127,7 @@ int main( int argc, char *argv[] )
 	    atof(optarg);
           break;
         case 'p':
-          if ( 1 < ref_mpi_n )
+          if ( ref_mpi_para(ref_mpi) )
             RSS( REF_IMPLEMENT, "-p not parallel");
           RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
           break;
@@ -194,7 +194,7 @@ int main( int argc, char *argv[] )
   if (curvature_metric)
     RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
 
-  if ( 1 == ref_mpi_n && !curvature_metric)
+  if ( !ref_mpi_para(ref_mpi) && !curvature_metric)
     {
       RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
       RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
@@ -272,7 +272,7 @@ int main( int argc, char *argv[] )
     }
   snprintf( output_filename, 1024, "%s-metric.metric", output_project );
   RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
-  if ( 1 == ref_mpi_n )
+  if ( !ref_mpi_para(ref_mpi) )
     {
       snprintf( output_filename, 1024, "%s_surf.tec", output_project );
       RSS(ref_export_tec_surf( ref_grid, output_filename ),"surf tec" );
@@ -282,18 +282,18 @@ int main( int argc, char *argv[] )
       RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "tec");
     }
-  if (debug_verbose && 1 == ref_mpi_n )
+  if (debug_verbose && !ref_grid_twod(ref_grid) )
     {
       snprintf( output_filename, 1024, "%s_metric_ellipse.tec", output_project );
       RSS( ref_export_tec_metric_ellipse( ref_grid, output_project ), "al");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "ellipse");
     }
-  if ( output_clumps && 1 == ref_mpi_n )
+  if ( output_clumps && !ref_grid_twod(ref_grid) )
     {
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump stuck");
     }
-  if ( debug_verbose && 1 == ref_mpi_n )
+  if ( debug_verbose && !ref_grid_twod(ref_grid) )
     {
       RSS(ref_cavity_tet_quality( ref_grid ),
           "clump" );
