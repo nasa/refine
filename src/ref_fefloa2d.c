@@ -43,8 +43,7 @@ int main( int argc, char *argv[] )
 
   RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
   RSS( ref_export_by_extension( ref_grid, "fefloa.2d.meshb" ), "export" );
-  RSS( ref_part_metric( ref_grid_node(ref_grid), ref_grid_mpi(ref_grid), 
-			argv[2] ), "part metric" );
+  RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part metric" );
   RSS( ref_export_twod_sol( ref_grid, "fefloa.2d.sol" ), "export" );
 
   RSS(ref_grid_free(ref_grid),"free");

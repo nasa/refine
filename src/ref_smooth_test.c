@@ -359,8 +359,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
 
-      RSS( ref_part_metric( ref_grid_node(ref_grid), 
-			    ref_grid_mpi(ref_grid), argv[2] ), "get metric");
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
       RSS( ref_histogram_quality( ref_grid ), "qual");
 

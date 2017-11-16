@@ -68,8 +68,7 @@ int main( int argc, char *argv[] )
 	{
 	  RSS(ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "part" );
 	}
-      RSS( ref_part_metric( ref_grid_node(ref_grid), 
-			    ref_grid_mpi(ref_grid), argv[2] ), "get metric");
+      RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
       RSS( ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_ratio_tec( ref_grid ), "rat tec");

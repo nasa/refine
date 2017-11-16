@@ -228,8 +228,7 @@ int main( int argc, char *argv[] )
 	fclose(file);
       }
 	  
-    RSS(ref_part_metric( ref_grid_node(ref_grid), 
-			 ref_grid_mpi(ref_grid), metric_file ), "metric" );
+    RSS(ref_part_metric( ref_grid_node(ref_grid), metric_file ), "metric" );
 
     RSS(ref_grid_free(ref_grid),"free");
 

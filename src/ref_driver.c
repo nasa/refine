@@ -132,8 +132,7 @@ int main( int argc, char *argv[] )
           RSS( ref_geom_load( ref_grid, optarg ), "load geom" );
           break;
         case 'm':
-          RSS(ref_part_metric( ref_grid_node(ref_grid), 
-			       ref_grid_mpi(ref_grid), optarg ), "part m");
+          RSS(ref_part_metric( ref_grid_node(ref_grid), optarg ), "part m");
           curvature_metric = REF_FALSE;
           break;
         case 'o':

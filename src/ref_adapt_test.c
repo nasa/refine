@@ -85,8 +85,7 @@ int main( int argc, char *argv[] )
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
 
-      RSS(ref_part_metric( ref_node, ref_grid_mpi(ref_grid), 
-			   argv[2] ), "part metric" );
+      RSS(ref_part_metric( ref_node, argv[2] ), "part metric" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read metric");
 
       RSS(ref_validation_cell_volume(ref_grid),"vol");
@@ -102,7 +101,7 @@ int main( int argc, char *argv[] )
 
           ref_malloc( node_ratio, ref_node_max(ref_node), REF_DBL );
 
-          RSS(ref_part_ratio( ref_node, ref_grid_mpi(ref_grid), 
+          RSS(ref_part_ratio( ref_node,
 			      node_ratio, argv[3] ), "part metric" );
           ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read ratio");
 

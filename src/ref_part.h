@@ -41,18 +41,15 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid,
 
 REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid, const char *filename );
 REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
-			  REF_NODE ref_node, REF_INT nnode, REF_MPI ref_mpi );
+			  REF_NODE ref_node, REF_INT nnode );
 REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 				REF_NODE ref_node, REF_INT nnode,
-				REF_MPI ref_mpi,
 				FILE *file );
 REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
 				REF_NODE ref_node, REF_INT nnode,
-				REF_MPI ref_mpi,
 				FILE *file );
 REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   REF_NODE ref_node, REF_INT nnode,
-				   REF_MPI ref_mpi,
 				   FILE *file, 
 				   long conn_offset,
 				   long faceid_offset );
@@ -60,9 +57,8 @@ REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid );
 REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar );
 
 REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename );
-REF_STATUS ref_part_metric( REF_NODE ref_node, REF_MPI ref_mpi,
-			    const char *filename );
-REF_STATUS ref_part_ratio( REF_NODE ref_node, REF_MPI ref_mpi,
+REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename );
+REF_STATUS ref_part_ratio( REF_NODE ref_node, 
 			   REF_DBL *ratio, const char *filename );
 
 END_C_DECLORATION
