@@ -105,14 +105,14 @@ int main( int argc, char *argv[] )
 
     RSS( ref_fixture_pri_stack_grid( &ref_grid ), "fix" );
 
-    if ( 1 < ref_mpi_n ) 
+    if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_orig_stack" ), "see" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid stack" );
 
     RSS( ref_migrate_to_balance( ref_grid ), "bal" );
 
-    if ( 1 < ref_mpi_n ) 
+    if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_bal_stack" ), "see" );
 
     RSS( ref_grid_free(ref_grid),"free");
@@ -123,14 +123,14 @@ int main( int argc, char *argv[] )
 
     RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
 
-    if ( 1 < ref_mpi_n ) 
+    if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_orig_pri" ), "see" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
 
     RSS( ref_migrate_to_balance( ref_grid ), "bal" );
 
-    if ( 1 < ref_mpi_n ) 
+    if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_bal_pri" ), "see" );
 
     RSS( ref_grid_free(ref_grid),"free");
