@@ -2523,6 +2523,7 @@ REF_STATUS ref_geom_tec( REF_GRID ref_grid, const char *filename  )
 
 REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_nnode, *b_nnode;
   REF_INT a_nnode_total, b_nnode_total;
   REF_INT *a_global, *b_global;
@@ -2535,43 +2536,43 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
   REF_INT *a_next, *b_next;
   REF_INT local, item, geom;
 
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
-  ref_malloc_init( a_next,  ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( b_next,  ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( a_nnode, ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( b_nnode, ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( a_ngeom, ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( b_ngeom, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( a_next,  ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_next,  ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( a_nnode, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_nnode, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( a_ngeom, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_ngeom, ref_mpi_m(ref_mpi), REF_INT, 0 );
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       a_nnode[ref_node_part(ref_node,node)]++;
 
   RSS( ref_mpi_alltoall( a_nnode, b_nnode, REF_INT_TYPE ), "alltoall nnodes");
 
   a_nnode_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     a_nnode_total += a_nnode[part];
   ref_malloc( a_global, a_nnode_total, REF_INT );
   ref_malloc( a_part, a_nnode_total, REF_INT );
 
   b_nnode_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     b_nnode_total += b_nnode[part];
   ref_malloc( b_global, b_nnode_total, REF_INT );
   ref_malloc( b_part, b_nnode_total, REF_INT );
 
   a_next[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker( ref_mpi, part )
     a_next[part] = a_next[part-1]+a_nnode[part-1];
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       {
 	part = ref_node_part(ref_node,node);
 	a_global[a_next[part]] = ref_node_global(ref_node,node);
-	a_part[a_next[part]] = ref_mpi_id;
+	a_part[a_next[part]] = ref_mpi_rank(ref_mpi);
 	a_next[ref_node_part(ref_node,node)]++;
       }
 
@@ -2588,26 +2589,26 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
       part = b_part[node];
       RSS( ref_adj_degree( ref_geom_adj(ref_geom), local, &degree ), "deg" );
       /* printf("%d: node %d global %d local %d part %d degree %d\n",
-	 ref_mpi_id, node,b_global[node], local, part, degree); */
+	 ref_mpi_rank(ref_mpi), node,b_global[node], local, part, degree); */
       b_ngeom[part] += degree;
     }
 
   RSS( ref_mpi_alltoall( b_ngeom, a_ngeom, REF_INT_TYPE ), "alltoall ngeoms");
 
   a_ngeom_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     a_ngeom_total += a_ngeom[part];
   ref_malloc( a_tgi,   3*a_ngeom_total, REF_INT );
   ref_malloc( a_param, 2*a_ngeom_total, REF_DBL );
 
   b_ngeom_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     b_ngeom_total += b_ngeom[part];
   ref_malloc( b_tgi,   3*b_ngeom_total, REF_INT );
   ref_malloc( b_param, 2*b_ngeom_total, REF_DBL );
 
   b_next[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker( ref_mpi, part )
     b_next[part] = b_next[part-1]+b_ngeom[part-1];
 
   for (node=0;node<b_nnode_total;node++)
@@ -2661,6 +2662,7 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 REF_STATUS ref_geom_faceid_range( REF_GRID ref_grid, 
 				  REF_INT *min_faceid, REF_INT *max_faceid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2682,7 +2684,7 @@ REF_STATUS ref_geom_faceid_range( REF_GRID ref_grid,
       *max_faceid = MAX( *max_faceid, nodes[ref_cell_node_per(ref_cell)] );
     }
 
-  if ( ref_mpi_n > 1 )
+  if ( ref_mpi_para(ref_mpi) )
     {
       REF_INT global;
 
@@ -2701,6 +2703,7 @@ REF_STATUS ref_geom_faceid_range( REF_GRID ref_grid,
 REF_STATUS ref_geom_edgeid_range( REF_GRID ref_grid, 
 				  REF_INT *min_edgeid, REF_INT *max_edgeid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2715,7 +2718,7 @@ REF_STATUS ref_geom_edgeid_range( REF_GRID ref_grid,
       *max_edgeid = MAX( *max_edgeid, nodes[ref_cell_node_per(ref_cell)] );
     }
 
-  if ( ref_mpi_n > 1 )
+  if ( ref_mpi_para(ref_mpi) )
     {
       REF_INT global;
 
