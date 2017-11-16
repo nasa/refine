@@ -74,14 +74,15 @@ static REF_STATUS tear_down( REF_SHARD ref_shard )
 int main( int argc, char *argv[] )
 {
   REF_INT nhex;
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if (3 == argc) 
     {
       REF_GRID ref_grid;
       char file[] = "ref_shard_test.b8.ugrid";
-      if ( ref_mpi_n > 1 ){
+      if ( ref_mpi_para(ref_mpi) ){
 	RSS( ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
       }else{
 	RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
@@ -100,7 +101,8 @@ int main( int argc, char *argv[] )
 	  REF_INT open_node0, open_node1;
 	  REF_INT face_marks, hex_marks;
 
-	  if ( ref_mpi_n > 1 ){
+	  if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ){
+	    RSS( ref_mpi_free( ref_mpi ), "mpi free" );
 	    RSS( ref_mpi_stop( ), "stop" );
 	    THROW("hex shard not parallel");
 	  }
@@ -141,13 +143,14 @@ int main( int argc, char *argv[] )
 	       "shrd");
 	  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),"shard");
 	}
-      if ( ref_mpi_n > 1 ){
+      if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ){
 	RSS( ref_gather_b8_ugrid( ref_grid, file ),"export" );
       }else{
 	RSS( ref_export_by_extension( ref_grid, file ),"export" );
       }
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),"export");
       RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_free( ref_mpi ), "mpi free" );
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
@@ -388,6 +391,7 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free" );
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
