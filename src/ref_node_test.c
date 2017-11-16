@@ -32,14 +32,15 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   REIS(REF_NULL,ref_node_free(NULL),"dont free NULL");
 
   { /* init */
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
     REIS(0,ref_node_n(ref_node),"init zero nodes");
 
     RSS(ref_node_free(ref_node),"free");
@@ -47,7 +48,7 @@ int main( int argc, char *argv[] )
 
   { /* deep copy empty */
     REF_NODE original, copy;
-    RSS(ref_node_create(&original),"create");
+    RSS(ref_node_create(&original,ref_mpi),"create");
     RSS(ref_node_deep_copy(&copy,original),"deep copy");
 
     RSS(ref_node_free(original),"free");
@@ -57,7 +58,7 @@ int main( int argc, char *argv[] )
   {
     REF_INT global, node;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RES(REF_EMPTY,ref_node_global(ref_node,0),"global empty for missing node");
 
@@ -96,7 +97,7 @@ int main( int argc, char *argv[] )
   { /* remove max node */
     REF_INT global, node, max;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     max = ref_node_max(ref_node);
     for ( global = 0; global < max ; global += 1 )
@@ -110,7 +111,7 @@ int main( int argc, char *argv[] )
   { /* remove max node without global */
     REF_INT global, node, max;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     max = ref_node_max(ref_node);
     for ( global = 0; global < max ; global += 1 )
@@ -124,7 +125,7 @@ int main( int argc, char *argv[] )
   { /* add bunch testing realloc */
     REF_INT global, node, max;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     max = ref_node_max(ref_node);
     for ( global = 10; global < 10*(max+2) ; global += 10 )
@@ -138,7 +139,7 @@ int main( int argc, char *argv[] )
   { /* lookup local from global */
     REF_INT global, node;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 10;
     RSS(ref_node_add(ref_node,global,&node),"realloc");
@@ -158,7 +159,7 @@ int main( int argc, char *argv[] )
   { /* lookup local from global after remove */
     REF_INT global, node;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 10;
     RSS(ref_node_add(ref_node,global,&node),"add");
@@ -177,7 +178,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_NODE ref_node;
     REF_INT *o2n, *n2o;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_add(ref_node,1,&node),"add");
     RSS(ref_node_add(ref_node,3,&node),"add");
@@ -203,7 +204,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_NODE ref_node;
     REF_INT *o2n, *n2o;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_add(ref_node,1,&node),"add");
     ref_node_part(ref_node,node) = ref_mpi_id+1;
@@ -231,7 +232,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT n, *o2n, *n2o;
     REF_DBL bounding_box[6];
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_add(ref_node,1,&node),"add");
     ref_node_xyz(ref_node,0,node) = 0.0;
@@ -271,7 +272,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RAS(!ref_node_valid(ref_node,0),"empty invalid");
     RSS(ref_node_add(ref_node,0,&node),"add 0 global");
@@ -284,7 +285,7 @@ int main( int argc, char *argv[] )
   { /* unique */
     REF_INT global, node;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 10;
     RSS(ref_node_add(ref_node,global,&node),"first");
@@ -304,7 +305,7 @@ int main( int argc, char *argv[] )
   { /* sorted_global rebuild */
     REF_INT global, node;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 20;
     RSS(ref_node_add(ref_node,global,&node),"realloc");
@@ -340,7 +341,7 @@ int main( int argc, char *argv[] )
     REF_INT global[2];
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global[0] = 20;
     global[1] = 10;
@@ -362,7 +363,7 @@ int main( int argc, char *argv[] )
     REF_INT global[2];
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_add(ref_node,10,&node),"many");
 
@@ -386,7 +387,7 @@ int main( int argc, char *argv[] )
     REF_INT global[2];
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global[0] = 20;
     global[1] = 20;
@@ -405,7 +406,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node, global;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 3542;
     RSS(ref_node_add(ref_node,global,&node),"add orig");
@@ -422,7 +423,7 @@ int main( int argc, char *argv[] )
     REF_INT local, global, node;
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 10;
     RSS(ref_node_add(ref_node,global,&local),"add");
@@ -447,7 +448,7 @@ int main( int argc, char *argv[] )
     REF_INT local, global, node;
     REF_NODE ref_node;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 10;
     RSS(ref_node_add(ref_node,global,&local),"add");
@@ -473,7 +474,7 @@ int main( int argc, char *argv[] )
     REF_INT node0, node1, global;
     REF_BOOL twod;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&node0),"add");
@@ -502,7 +503,7 @@ int main( int argc, char *argv[] )
     REF_INT node0, node1, global;
     REF_DBL ratio, h;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&node0),"add");
@@ -577,7 +578,7 @@ int main( int argc, char *argv[] )
     REF_DBL ratio;
     REF_DBL f_ratio, d_ratio[3];
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&node0),"add");
@@ -640,7 +641,7 @@ int main( int argc, char *argv[] )
     REF_INT node0, node1, global;
     REF_DBL ratio, f_ratio, d_ratio[3];
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&node0),"add");
@@ -681,7 +682,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[4], global;
     REF_DBL vol;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -741,7 +742,7 @@ int main( int argc, char *argv[] )
     REF_DBL f_vol, d_vol[3], vol;
     REF_DBL f_quality, d_quality[3], quality;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -816,7 +817,7 @@ int main( int argc, char *argv[] )
     REF_DBL area;
     REF_BOOL valid;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -890,7 +891,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[3], global, node;
     REF_DBL angle;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0; RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
     global = 1; RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
@@ -931,7 +932,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[3], global;
     REF_DBL qual;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
     ref_node->tri_quality = REF_NODE_EPIC_QUALITY;
 
     global = 0;
@@ -985,7 +986,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[3], global;
     REF_DBL qual;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
     ref_node->tri_quality = REF_NODE_JAC_QUALITY;
 
     global = 0;
@@ -1059,7 +1060,7 @@ int main( int argc, char *argv[] )
     REF_DBL f_area, d_area[3], area;
     REF_DBL f_quality, d_quality[3], quality;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1113,7 +1114,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[3], global;
     REF_DBL f_quality, d_quality[3], quality;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
     ref_node->tri_quality = REF_NODE_JAC_QUALITY;
 
     global = 0;
@@ -1163,7 +1164,7 @@ int main( int argc, char *argv[] )
     REF_DBL norm[3];
     REF_DBL area, qual;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1217,7 +1218,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[4], global;
     REF_DBL qual;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1290,7 +1291,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[4], global;
     REF_DBL qual;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1335,7 +1336,7 @@ int main( int argc, char *argv[] )
     REF_DBL qual, vol, ratio;
     REF_DBL a;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1394,7 +1395,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1, new_node, global;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_next_global( ref_node, &global ), "next_global");
     RSS(ref_node_add(ref_node,global,&node0),"add");
@@ -1452,7 +1453,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1, global;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     ref_node_naux(ref_node) = 2;
     RSS(ref_node_resize_aux(ref_node),"resize aux");
@@ -1490,7 +1491,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1, new_node, global;
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     ref_node_naux(ref_node) = 2;
     RSS(ref_node_resize_aux(ref_node),"resize aux");
@@ -1542,7 +1543,7 @@ int main( int argc, char *argv[] )
     REF_DBL xyz[3];
     REF_DBL bary[3];
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1615,7 +1616,7 @@ int main( int argc, char *argv[] )
     REF_DBL xyz[3];
     REF_DBL bary[4];
 
-    RSS(ref_node_create(&ref_node),"create");
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     global = 0;
     RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
@@ -1700,6 +1701,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;

@@ -31,7 +31,7 @@
 #define next2index(next) (-(next)-2)
 #define index2next(index) (-2-(index))
 
-REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
+REF_STATUS ref_node_create( REF_NODE *ref_node_ptr, REF_MPI ref_mpi )
 {
   REF_INT max, node;
   REF_NODE ref_node;
@@ -64,6 +64,7 @@ REF_STATUS ref_node_create( REF_NODE *ref_node_ptr )
   ref_node_naux(ref_node) = 0;
   ref_node->aux = NULL;
 
+  ref_node_mpi(ref_node) = ref_mpi; /* reference only */
   RSS( ref_list_create( &(ref_node->unused_global_list) ), "create list");
 
   ref_node->old_n_global = REF_EMPTY;
@@ -82,6 +83,7 @@ REF_STATUS ref_node_free( REF_NODE ref_node )
 {
   if ( NULL == (void *)ref_node ) return REF_NULL;
   ref_list_free( ref_node->unused_global_list );
+  /* ref_mpi reference only */
   ref_free( ref_node->aux );
   ref_free( ref_node->real );
   ref_free( ref_node->guess );
@@ -158,6 +160,7 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
 	  ref_node_aux(ref_node,i,node) = ref_node_aux(original,i,node);
     }
 
+  ref_node_mpi(ref_node) = ref_node_mpi(original); /* reference only */
   RSS( ref_list_deep_copy( &(ref_node->unused_global_list),
 			   original->unused_global_list), "deep copy list");
 

@@ -102,11 +102,13 @@ int main( void )
   { /* add many global */
     REF_CELL ref_cell;
     REF_NODE ref_node;
+    REF_MPI ref_mpi;
     REF_INT nodes[4];
     REF_INT parts[4];
     REF_INT retrieved[4];
 
-    RSS(ref_node_create(&ref_node),"create node");
+    RSS(ref_mpi_create(&ref_mpi),"create mpi");
+    RSS(ref_node_create(&ref_node, ref_mpi),"create node");
 
     RSS(ref_tet(&ref_cell),"create");
     RES(0,ref_cell_n(ref_cell),"init zero cells");
@@ -127,6 +129,7 @@ int main( void )
 
     RSS(ref_cell_free(ref_cell),"cleanup");
     RSS(ref_node_free(ref_node),"cleanup");
+    RSS(ref_mpi_free(ref_mpi),"cleanup");
   }
 
   { /* remove */
