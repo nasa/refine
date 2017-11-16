@@ -26,6 +26,8 @@ typedef struct REF_LIST_STRUCT REF_LIST_STRUCT;
 typedef REF_LIST_STRUCT * REF_LIST;
 END_C_DECLORATION
 
+#include "ref_mpi.h"
+
 BEGIN_C_DECLORATION
 
 struct REF_LIST_STRUCT {
@@ -58,7 +60,7 @@ REF_STATUS ref_list_sort( REF_LIST ref_list );
 
 REF_STATUS ref_list_erase( REF_LIST ref_list );
 
-REF_STATUS ref_list_allgather( REF_LIST ref_list );
+REF_STATUS ref_list_allgather( REF_LIST ref_list, REF_MPI ref_mpi );
 
 REF_STATUS ref_list_contains( REF_LIST ref_list, REF_INT item, 
 			      REF_BOOL *contains );

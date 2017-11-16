@@ -28,8 +28,9 @@
 int main( int argc, char *argv[] )
 {
   REF_LIST ref_list;
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   {
     REIS(REF_NULL,ref_list_free(NULL),"dont free NULL");
@@ -128,11 +129,11 @@ int main( int argc, char *argv[] )
   { /* allgather */
     RSS(ref_list_create(&ref_list),"create");
 
-    RSS(ref_list_add(ref_list,ref_mpi_id),"store");
+    RSS(ref_list_add(ref_list,ref_mpi_rank(ref_mpi)),"store");
 
-    RSS(ref_list_allgather(ref_list),"gather");
+    RSS(ref_list_allgather(ref_list,ref_mpi),"gather");
 
-    REIS(ref_mpi_n,ref_list_n(ref_list),"one from each");
+    REIS(ref_mpi_m(ref_mpi),ref_list_n(ref_list),"one from each");
 
     RSS(ref_list_free(ref_list),"free");
   }
@@ -174,6 +175,7 @@ int main( int argc, char *argv[] )
     RSS(ref_list_free(ref_list),"free");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;

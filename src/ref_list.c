@@ -21,7 +21,6 @@
 
 #include "ref_list.h"
 #include "ref_malloc.h"
-#include "ref_mpi.h"
 #include "ref_sort.h"
 
 REF_STATUS ref_list_create( REF_LIST *ref_list_ptr )
@@ -174,7 +173,7 @@ REF_STATUS ref_list_erase( REF_LIST ref_list )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_allgather( REF_LIST ref_list )
+REF_STATUS ref_list_allgather( REF_LIST ref_list, REF_MPI ref_mpi )
 {
   REF_INT i;
   REF_INT *local_copy;
@@ -182,13 +181,13 @@ REF_STATUS ref_list_allgather( REF_LIST ref_list )
   REF_INT *counts;
   REF_INT total_count;
 
-  ref_malloc( counts, ref_mpi_n, REF_INT );
+  ref_malloc( counts, ref_mpi_m(ref_mpi), REF_INT );
 
   RSS( ref_mpi_allgather( &(ref_list_n(ref_list)), counts, REF_INT_TYPE ), 
        "gather size");
 
   total_count = 0;
-  for( proc = 0; proc < ref_mpi_n ; proc++ )
+  each_ref_mpi_part( ref_mpi, proc )
     total_count += counts[proc];
 
   ref_malloc( local_copy, ref_list_n( ref_list ), REF_INT );
