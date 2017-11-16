@@ -47,7 +47,7 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_start( argc, argv ), "start" );
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
-  if ( 1 == ref_mpi_n )
+  if ( !ref_mpi_para(ref_mpi) )
     { /* keep local, lose ghost */
       REF_GRID ref_grid;
       REF_MIGRATE ref_migrate;
@@ -80,7 +80,7 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free gride");
     }
 
-  if ( 1 == ref_mpi_n )
+  if ( !ref_mpi_para(ref_mpi) )
     { /* keep ghost, lose local */
       REF_GRID ref_grid;
       REF_MIGRATE ref_migrate;
