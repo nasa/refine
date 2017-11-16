@@ -157,7 +157,7 @@ int main( int argc, char *argv[] )
 
       RSS(ref_export_tec_metric_ellipse( ref_grid, "ref_adapt_f" ),"ex" );
 
-      if ( ref_mpi_n == 1 &&
+      if ( !ref_mpi_para(ref_mpi) &&
            ref_node_n(ref_grid_node(ref_grid)) < 50000 )
         {
           REF_EDGE ref_edge;
