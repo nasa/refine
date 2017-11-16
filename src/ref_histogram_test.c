@@ -60,7 +60,7 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      if ( 1 ==ref_mpi_n )
+      if ( !ref_mpi_para(ref_mpi) )
 	{
 	  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
 	}
