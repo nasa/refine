@@ -331,7 +331,8 @@ REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   ref_cell = ref_grid_edg(ref_grid);
   keyword_code = 5;
   RSS( ref_gather_ncell( ref_node, ref_cell, &ncell ), "ntet");
-  if (verbose) printf("%d: edge ncell %d\n",ref_mpi_id, ncell);
+  if (verbose) printf("%d: edge ncell %d\n",
+		      ref_mpi_rank(ref_grid_mpi(ref_grid)), ncell);
   if ( ncell > 0 )
     {
       if ( ref_grid_once(ref_grid) )
@@ -572,12 +573,13 @@ REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename  )
 REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
 			     REF_INT *ncell )
 {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell_local;
 
   ncell_local = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
       ncell_local++;
 
   RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
@@ -589,6 +591,7 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell, 
 				     REF_DBL min_quality, REF_INT *ncell )
 {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell_local;
   REF_DBL quality;
@@ -597,7 +600,7 @@ REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell,
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
       RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-      if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 	   quality < min_quality )
 	ncell_local++;
     }
@@ -611,6 +614,7 @@ REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
 			     REF_INT type, REF_INT *ngeom )
 {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT geom, node;
   REF_INT ngeom_local;
 
@@ -618,7 +622,7 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
   each_ref_geom_of( ref_geom, type, geom )
     {
       node = ref_geom_node(ref_geom,geom);
-      if ( ref_mpi_id == ref_node_part(ref_node,node) )
+      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) )
 	ngeom_local++;
     }
 
@@ -640,7 +644,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
   REF_INT id = 0;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
 
   ref_malloc( local_xyzm, 4*chunk, REF_DBL );
   ref_malloc( xyzm, 4*chunk, REF_DBL );
@@ -663,7 +667,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 	  status = ref_node_local( ref_node, global, &local );
 	  RXS( status, REF_NOT_FOUND, "node local failed" );
 	  if ( REF_SUCCESS == status &&
-	       ref_mpi_id == ref_node_part(ref_node,local) )
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
 	    {
 	      local_xyzm[0+4*i] = ref_node_xyz(ref_node,0,local);
 	      local_xyzm[1+4*i] = ref_node_xyz(ref_node,1,local);
@@ -714,7 +718,7 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
   REF_STATUS status;
   REF_INT dim=6;
 
-  chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
 
   ref_malloc( local_xyzm, dim*chunk, REF_DBL );
   ref_malloc( xyzm, dim*chunk, REF_DBL );
@@ -736,7 +740,7 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
 	  status = ref_node_local( ref_node, global, &local );
 	  RXS( status, REF_NOT_FOUND, "node local failed" );
 	  if ( REF_SUCCESS == status &&
-	       ref_mpi_id == ref_node_part(ref_node,local) )
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
 	    {
 	      local_xyzm[0+dim*i] = ref_node_xyz(ref_node,0,local);
 	      local_xyzm[1+dim*i] = ref_node_xyz(ref_node,1,local);
@@ -795,7 +799,7 @@ REF_STATUS ref_gather_node_metric( REF_NODE ref_node,
   REF_INT global, local;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node)/ref_mpi_n + 1;
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
 
   ref_malloc( local_xyzm, 7*chunk, REF_DBL );
   ref_malloc( xyzm, 7*chunk, REF_DBL );
@@ -817,7 +821,7 @@ REF_STATUS ref_gather_node_metric( REF_NODE ref_node,
 	  status = ref_node_local( ref_node, global, &local );
 	  RXS( status, REF_NOT_FOUND, "node local failed" );
 	  if ( REF_SUCCESS == status &&
-	       ref_mpi_id == ref_node_part(ref_node,local) )
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
 	    {
 	      for (im=0;im<6;im++)
 		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
@@ -872,7 +876,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
   if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 	     ( !select_faceid ||
 	       nodes[ref_cell_node_per(ref_cell)] == faceid ))
 	  {
@@ -916,7 +920,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      for (proc=1;proc<ref_mpi_n;proc++)
+      each_ref_mpi_worker( ref_mpi, proc )
 	{
 	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  if ( ncell > 0 )
@@ -968,7 +972,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
     {
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 	     ( !select_faceid ||
 	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
 	  ncell++;
@@ -978,7 +982,7 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
 	  ref_malloc(c2n, ncell*size_per, REF_INT);
 	  ncell = 0;
 	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	    if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 		 ( !select_faceid ||
 		   nodes[ref_cell_node_per(ref_cell)] == faceid ) )
 	      {
@@ -1014,7 +1018,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
     {
       each_ref_geom_of( ref_geom, type, geom )
 	{
-	  if ( ref_mpi_id !=
+	  if ( ref_mpi_rank(ref_mpi) !=
 	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
 	    continue;
 	  node = ref_node_global(ref_node,ref_geom_node(ref_geom,geom)) + 1;
@@ -1032,7 +1036,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      for (proc=1;proc<ref_mpi_n;proc++)
+      each_ref_mpi_worker( ref_mpi, proc )
 	{
 	  RSS( ref_mpi_recv( &ngeom, 1, REF_INT_TYPE, proc ), "recv ngeom");
 	  if (ngeom >0)
@@ -1066,7 +1070,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
       ngeom = 0;
       each_ref_geom_of( ref_geom, type, geom )
 	{
-	  if ( ref_mpi_id !=
+	  if ( ref_mpi_rank(ref_mpi) !=
 	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
 	    continue;
 	  ngeom++;
@@ -1079,7 +1083,7 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
 	  ngeom = 0;
 	  each_ref_geom_of( ref_geom, type, geom )
 	    {
-	      if ( ref_mpi_id !=
+	      if ( ref_mpi_rank(ref_mpi) !=
 		   ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
 		continue;
 	      node_id[0+2*ngeom] =
@@ -1117,7 +1121,7 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
   if ( ref_mpi_once(ref_mpi) )
     {
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
 	  {
 	    for ( node = 0; node < node_per; node++ )
 	      {
@@ -1131,7 +1135,7 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      for (proc=1;proc<ref_mpi_n;proc++)
+      each_ref_mpi_worker( ref_mpi, proc )
 	{
 	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  ref_malloc(c2n, ncell*size_per, REF_INT);
@@ -1153,13 +1157,13 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
     {
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
 	  ncell++;
       RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
       ref_malloc(c2n, ncell*size_per, REF_INT);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) )
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
 	  {
 	    for ( node = 0; node < node_per; node++ )
 	      c2n[node+size_per*ncell] = ref_node_global(ref_node,nodes[node]);
@@ -1195,7 +1199,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	{
 	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-	  if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	  if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 	       quality < min_quality )
 	    {
 	      for ( node = 0; node < node_per; node++ )
@@ -1211,7 +1215,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      for (proc=1;proc<ref_mpi_n;proc++)
+      each_ref_mpi_worker( ref_mpi, proc )
 	{
 	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  if ( ncell > 0 )
@@ -1238,7 +1242,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	{
 	  RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-	  if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	  if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 	       quality < min_quality)
 	    ncell++;
 	}
@@ -1250,7 +1254,7 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
 	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	    {
 	      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-	      if ( ref_mpi_id == ref_node_part(ref_node,nodes[0]) &&
+	      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
 		   quality < min_quality )
 		{
 		  for ( node = 0; node < node_per; node++ )
