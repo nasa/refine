@@ -145,7 +145,8 @@ REF_STATUS ref_edge_part( REF_EDGE ref_edge, REF_INT edge,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
+REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_MPI ref_mpi,
+			       REF_INT *data )
 {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
@@ -159,41 +160,41 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
   REF_INT node0, node1;
   REF_INT request;
 
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
-  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
-      if ( part != ref_mpi_id ) a_size[part]++;
+      if ( part != ref_mpi_rank(ref_mpi) ) a_size[part]++;
     }
 
   RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part(ref_mpi,part)
     a_total += a_size[part];
   ref_malloc( a_nodes, 2*a_total, REF_INT );
   ref_malloc( a_data, a_total, REF_INT );
   ref_malloc( a_edge, a_total, REF_INT );
 
   b_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part(ref_mpi,part)
     b_total += b_size[part];
   ref_malloc( b_nodes, 2*b_total, REF_INT );
   ref_malloc( b_data, b_total, REF_INT );
 
-  ref_malloc( a_next, ref_mpi_n, REF_INT );
+  ref_malloc( a_next, ref_mpi_m(ref_mpi), REF_INT );
   a_next[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker(ref_mpi,part)
     a_next[part] = a_next[part-1]+a_size[part-1];
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
-      if ( part != ref_mpi_id )
+      if ( part != ref_mpi_rank(ref_mpi) )
 	{
 	  a_edge[a_next[part]] = edge;
 	  a_nodes[0+2*a_next[part]] = 
@@ -241,7 +242,8 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_INT *data )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim )
+REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_MPI ref_mpi,
+			       REF_DBL *data, REF_INT dim )
 {
   REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *a_size, *b_size;
@@ -256,41 +258,41 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_DBL *data, REF_INT dim )
   REF_INT request;
   REF_INT i;
 
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
-  ref_malloc_init( a_size, ref_mpi_n, REF_INT, 0 );
-  ref_malloc_init( b_size, ref_mpi_n, REF_INT, 0 );
+  ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
-      if ( part != ref_mpi_id ) a_size[part]++;
+      if ( part != ref_mpi_rank(ref_mpi) ) a_size[part]++;
     }
 
   RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part(ref_mpi,part)
     a_total += a_size[part];
   ref_malloc( a_nodes, 2*a_total, REF_INT );
   ref_malloc( a_data, dim*a_total, REF_DBL );
   ref_malloc( a_edge, a_total, REF_INT );
 
   b_total = 0;
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part(ref_mpi,part)
     b_total += b_size[part];
   ref_malloc( b_nodes, 2*b_total, REF_INT );
   ref_malloc( b_data, dim*b_total, REF_DBL );
 
-  ref_malloc( a_next, ref_mpi_n, REF_INT );
+  ref_malloc( a_next, ref_mpi_m(ref_mpi), REF_INT );
   a_next[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker(ref_mpi,part)
     a_next[part] = a_next[part-1]+a_size[part-1];
 
   for ( edge=0 ; edge < ref_edge_n(ref_edge) ; edge++ )
     {
       RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
-      if ( part != ref_mpi_id )
+      if ( part != ref_mpi_rank(ref_mpi) )
 	{
 	  a_edge[a_next[part]] = edge;
 	  a_nodes[0+2*a_next[part]] = 

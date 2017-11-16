@@ -338,6 +338,7 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
       again = REF_FALSE;
 
       RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
+			       ref_subdiv_mpi(ref_subdiv),
 			       ref_subdiv->mark), "ghost mark" );
 
       each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
@@ -379,6 +380,7 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
+  REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
   REF_INT edge, global, node, i;
   REF_INT part;
 
@@ -435,13 +437,13 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 	}
     }
 
-  RSS( ref_edge_ghost_int( ref_edge, edge_global ), "global ghost" );
-  RSS( ref_edge_ghost_int( ref_edge, edge_part ), "part ghost" );
-  RSS( ref_edge_ghost_dbl( ref_edge, edge_real, REF_NODE_REAL_PER ), 
+  RSS( ref_edge_ghost_int( ref_edge, ref_mpi, edge_global ), "global ghost" );
+  RSS( ref_edge_ghost_int( ref_edge, ref_mpi, edge_part ), "part ghost" );
+  RSS( ref_edge_ghost_dbl( ref_edge, ref_mpi, edge_real, REF_NODE_REAL_PER ), 
        "xyz ghost" );
   if ( ref_node_naux(ref_node) > 0 )
-    RSS( ref_edge_ghost_dbl( ref_edge, edge_aux, ref_node_naux(ref_node) ), 
-	 "aux ghost" );
+    RSS( ref_edge_ghost_dbl( ref_edge, ref_mpi,
+			     edge_aux, ref_node_naux(ref_node) ), "aux ghost" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
     {

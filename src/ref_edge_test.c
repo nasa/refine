@@ -38,9 +38,10 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
-
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
+ 
   {  /* make edges shared by two elements */
     REF_EDGE ref_edge;
     REF_GRID ref_grid;
@@ -98,7 +99,7 @@ int main( int argc, char *argv[] )
 	if ( ref_mpi_id == part ) data[edge]=edge;
       }
 
-    RSS( ref_edge_ghost_int( ref_edge, data ), "ghost");
+    RSS( ref_edge_ghost_int( ref_edge, ref_mpi, data ), "ghost");
 
     for ( edge=0;edge<ref_edge_n(ref_edge);edge++ )
       REIS( edge, data[edge], "ghost");
@@ -107,7 +108,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
