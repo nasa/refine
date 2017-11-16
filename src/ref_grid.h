@@ -26,9 +26,9 @@ typedef struct REF_GRID_STRUCT REF_GRID_STRUCT;
 typedef REF_GRID_STRUCT * REF_GRID;
 END_C_DECLORATION
 
+#include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_cell.h"
-#include "ref_mpi.h"
 #include "ref_geom.h"
 #include "ref_gather.h"
 #include "ref_adapt.h"
@@ -36,6 +36,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_GRID_STRUCT {
+  REF_MPI mpi;
   REF_NODE node;
 
   REF_CELL cell[5];
@@ -44,7 +45,6 @@ struct REF_GRID_STRUCT {
   REF_CELL tri;
   REF_CELL qua;
 
-  REF_MPI mpi;
   REF_GEOM geom;
   REF_GATHER gather;
   REF_ADAPT adapt;
@@ -57,6 +57,9 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
 
+#define ref_grid_mpi(ref_grid) ((ref_grid)->mpi)
+#define ref_grid_once(ref_grid) ref_mpi_once(ref_grid_mpi(ref_grid))
+
 #define ref_grid_node(ref_grid) ((ref_grid)->node)
 #define ref_grid_cell(ref_grid,group) ((ref_grid)->cell[(group)])
 
@@ -68,9 +71,6 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
 #define ref_grid_edg(ref_grid) ((ref_grid)->edg)
 #define ref_grid_tri(ref_grid) ((ref_grid)->tri)
 #define ref_grid_qua(ref_grid) ((ref_grid)->qua)
-
-#define ref_grid_mpi(ref_grid) ((ref_grid)->mpi)
-#define ref_grid_once(ref_grid) ref_mpi_once(ref_grid_mpi(ref_grid))
 
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)

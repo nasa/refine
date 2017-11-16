@@ -107,7 +107,6 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RSS( ref_adapt_free( ref_grid->adapt ), "adapt free");
   RSS( ref_gather_free( ref_grid_gather(ref_grid) ), "gather free");
   RSS( ref_geom_free( ref_grid_geom(ref_grid) ), "geom free");
-  RSS( ref_mpi_free( ref_grid_mpi(ref_grid) ), "mpi free");
   
   RSS( ref_cell_free( ref_grid_qua(ref_grid) ), "qua free");
   RSS( ref_cell_free( ref_grid_tri(ref_grid) ), "tri free");
@@ -119,6 +118,8 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RSS( ref_cell_free( ref_grid_tet(ref_grid) ), "tet free");
 
   RSS( ref_node_free( ref_grid_node(ref_grid) ), "node free");
+
+  RSS( ref_mpi_free( ref_grid_mpi(ref_grid) ), "mpi free");
 
   ref_free( ref_grid );
   return REF_SUCCESS;
