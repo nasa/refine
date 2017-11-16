@@ -224,7 +224,8 @@ int main( int argc, char *argv[] )
   for (pass = 0; pass<passes; pass++ )
     {
       if ( ref_mpi_once(ref_mpi) )
-	printf(" pass %d of %d with %d ranks\n",pass,passes,ref_mpi_n);
+	printf(" pass %d of %d with %d ranks\n",
+	       pass,passes,ref_mpi_m(ref_grid_mpi(ref_grid)));
       RSS( ref_adapt_parameter( ref_grid ), "param");
       RSS( ref_adapt_pass( ref_grid ), "pass");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pass");
