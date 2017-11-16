@@ -310,10 +310,10 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
 	    {
 	      RSS( ref_node_add(ref_node, 
 				node+ref_part_first( nnode, 
-						     ref_mpi_n, 
-						     ref_mpi_id ),
+						     ref_mpi_m(ref_mpi), 
+						     ref_mpi_rank(ref_mpi) ),
 				&new_node ), "new_node");
-	      ref_node_part(ref_node,new_node) = ref_mpi_id;
+	      ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
 	      ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
 	      ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
 	      ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
