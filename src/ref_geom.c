@@ -1558,6 +1558,7 @@ REF_STATUS ref_geom_rsn( REF_GEOM ref_geom, REF_INT geom,
 
 REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom;
@@ -1570,7 +1571,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   each_ref_geom_node( ref_geom, geom )
     {
       node = ref_geom_node(ref_geom,geom);
-      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
 	continue;
       RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
@@ -1588,7 +1589,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   each_ref_geom_edge( ref_geom, geom )
     {
       node = ref_geom_node(ref_geom,geom);
-      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
 	continue;
       RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
@@ -1619,7 +1620,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
   each_ref_geom_face( ref_geom, geom )
     {
       node = ref_geom_node(ref_geom,geom);
-      if ( ref_mpi_id != ref_node_part(ref_node,node) )
+      if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
 	continue;
       RSS( ref_geom_eval( ref_geom, geom, xyz, NULL ), "eval xyz" );
       dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
@@ -1661,6 +1662,7 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 
 REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node;
@@ -1681,17 +1683,21 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  ref_cell_node_empty( ref_grid_edg( ref_grid ), node );
 	if ( geom_node )
 	  {
-	    if (no_edge && ref_mpi_id == ref_node_part(ref_node,node) ) 
+	    if ( no_edge &&
+		 ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) 
 	      {
 		THROW("geom node missing edge");
 	      }
-	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) ) {
-	      THROW("geom node missing tri or qua");
-	    }
+	    if ( no_face &&
+		 ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) )
+	      {
+		THROW("geom node missing tri or qua");
+	      }
 	}
 	if ( geom_edge )
 	  {
-	    if (no_edge && ref_mpi_id == ref_node_part(ref_node,node) ) 
+	    if ( no_edge &&
+		 ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) 
 	      {
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
@@ -1699,7 +1705,8 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 		    "geom tec" );
 		THROW("geom edge missing edge");
 	      }
-	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) )
+	    if ( no_face &&
+		 ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) )
 	      { 
 		RSS(ref_node_location(ref_node,node),"loc");
 		RSS(ref_geom_tattle(ref_geom,node),"tatt");
@@ -1710,7 +1717,8 @@ REF_STATUS ref_geom_verify_topo( REF_GRID ref_grid )
 	  }
 	if ( geom_face )
 	  {
-	    if (no_face && ref_mpi_id == ref_node_part(ref_node,node) )
+	    if ( no_face &&
+		 ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) )
 	      {
 		printf("no face for geom\n");
 		RSS(ref_node_location(ref_node,node),"loc");
