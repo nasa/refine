@@ -59,7 +59,9 @@ int main( int argc, char *argv[] )
       RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
       ref_mpi_stopwatch_stop(ref_mpi,"import");
 
-      sprintf(viz_file, "ref_part_test_n%d_p%d.tec", ref_mpi_n, ref_mpi_id);
+      sprintf(viz_file, "ref_part_test_n%d_p%d.tec", 
+	      ref_mpi_m(ref_grid_mpi(import_grid)), 
+	      ref_mpi_rank(ref_grid_mpi(import_grid)));
       RSS( ref_export_by_extension( import_grid, viz_file ), "export");
       ref_mpi_stopwatch_stop(ref_mpi,"export");
 
@@ -68,6 +70,7 @@ int main( int argc, char *argv[] )
 
       RSS(ref_grid_free(import_grid),"free");
 
+      RSS( ref_mpi_free( ref_mpi ), "mpi free" );
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }

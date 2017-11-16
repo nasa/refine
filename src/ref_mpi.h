@@ -44,6 +44,11 @@ struct REF_MPI_STRUCT {
         ( part ) < ref_mpi_m(ref_mpi);	       \
         ( part )++ )
 
+#define each_ref_mpi_worker( ref_mpi, part )   \
+  for ( ( part ) = 1;			       \
+        ( part ) < ref_mpi_m(ref_mpi);	       \
+        ( part )++ )
+
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
 
