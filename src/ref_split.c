@@ -107,7 +107,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				   new_node,
 				   &allowed_quality ), "edge qual" );
       valid_cavity = REF_FALSE;
-      if ( !allowed_quality && geom_support && ref_mpi_n == 1 )
+      if ( !allowed_quality && geom_support &&
+	   !ref_mpi_para(ref_grid_mpi(ref_grid)) )
 	{
 	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
 	  RSS( ref_cavity_add_edge( ref_cavity, ref_grid,

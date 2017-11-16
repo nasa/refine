@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
 					 ),"mark edge");
 	}
 
-      if ( 1 == ref_mpi_n )
+      if ( !ref_mpi_para(ref_mpi) )
 	{
 	  RSS(ref_subdiv_mark_relax(ref_subdiv),"relax");
 	  ref_edge_tec_int(ref_subdiv_edge(ref_subdiv),
@@ -197,7 +197,7 @@ int main( int argc, char *argv[] )
 
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
-    if ( 1 < ref_mpi_n )
+    if ( ref_mpi_para(ref_mpi) )
       RSS(ref_export_tec_part(ref_grid,"stack_orig"),"stack part");
 
     REIS( 12, ref_node_n_global(ref_node), "start with 12" );
@@ -209,7 +209,7 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
 
-    if ( 1 < ref_mpi_n )
+    if ( ref_mpi_para(ref_mpi) )
       RSS(ref_export_tec_part(ref_grid,"stack_split"),"stack part");
 
     REIS( 16, ref_node_n_global(ref_node), "where my nodes?" );

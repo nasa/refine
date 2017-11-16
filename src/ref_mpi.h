@@ -34,8 +34,15 @@ struct REF_MPI_STRUCT {
   REF_DBL first_time;
 };
 
+#define ref_mpi_m(ref_mpi) ( (ref_mpi)->n )
+#define ref_mpi_rank(ref_mpi) ( (ref_mpi)->id )
 #define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
 #define ref_mpi_once(ref_mpi) ( 0 == (ref_mpi)->id )
+
+#define each_ref_mpi_part( ref_mpi, part )     \
+  for ( ( part ) = 0;			       \
+        ( part ) < ref_mpi_m(ref_mpi);	       \
+        ( part )++ )
 
 extern REF_INT ref_mpi_n;
 extern REF_INT ref_mpi_id;
