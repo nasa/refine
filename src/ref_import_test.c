@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
     char file[] = "ref_import_test.msh";
     RSS(ref_fixture_twod_brick_grid( &export_grid ), "set up tet" );
     RSS(ref_export_twod_msh( export_grid, file ), "export" );
-    RSS(ref_import_msh( &import_grid, file ), "import" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_qua(export_grid)),
@@ -72,7 +72,7 @@ int main( int argc, char *argv[] )
     char file[] = "ref_import_test.2d.meshb";
     RSS(ref_fixture_twod_brick_grid( &export_grid ), "set up tet" );
     RSS(ref_export_twod_meshb( export_grid, file ), "export" );
-    RSS(ref_import_meshb( &import_grid, file ), "import" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_qua(export_grid)),
@@ -88,8 +88,8 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.meshb";
     RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_meshb( export_grid, file ), "export" );
-    RSS(ref_import_meshb( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_qua(export_grid)),
@@ -117,8 +117,8 @@ int main( int argc, char *argv[] )
     ref_geom_cad_data(ref_geom)[2] = 3;
     ref_geom_cad_data(ref_geom)[3] = 2;
     ref_geom_cad_data(ref_geom)[4] = 1;
-    RSS(ref_export_meshb( export_grid, file ), "export" );
-    RSS(ref_import_meshb( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     ref_geom = ref_grid_geom(import_grid);
     REIS( 5, ref_geom_cad_data_size(ref_geom), "cad size" );
     REIS( 5, ref_geom_cad_data(ref_geom)[0], "cad[0]" );
@@ -162,8 +162,8 @@ int main( int argc, char *argv[] )
     id = 3; node = 2; param[0] = 10.5; param[1] = 21.0;
     RSS( ref_geom_add(ref_geom,node,type,id,param), "add geom face" );
     
-    RSS(ref_export_meshb( export_grid, file ), "export" );
-    RSS(ref_import_meshb( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
 
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
@@ -188,8 +188,8 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.fgrid";
     RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_fgrid( export_grid, file ), "export" );
-    RSS(ref_import_fgrid( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     RSS(ref_grid_free(import_grid),"free");
@@ -201,8 +201,8 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.ugrid";
     RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_ugrid( export_grid, file ), "export" );
-    RSS(ref_import_ugrid( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     RSS(ref_grid_free(import_grid),"free");
@@ -214,8 +214,8 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.lb8.ugrid";
     RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_lb8_ugrid( export_grid, file ), "export" );
-    RSS(ref_import_lb8_ugrid( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_tri(export_grid)),
@@ -239,8 +239,8 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.b8.ugrid";
     RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_b8_ugrid( export_grid, file ), "export" );
-    RSS(ref_import_b8_ugrid( &import_grid, file ), "import" );
+    RSS(ref_export_by_extension( export_grid, file ), "export" );
+    RSS(ref_import_by_extension( &import_grid, file ), "import" );
     REIS( ref_node_n(ref_grid_node(export_grid)),
 	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     REIS( ref_cell_n(ref_grid_tri(export_grid)),
@@ -255,32 +255,6 @@ int main( int argc, char *argv[] )
 	  ref_cell_c2n(ref_grid_tet(import_grid),0,0), "tet node0" );
     REIS( ref_cell_c2n(ref_grid_tet(export_grid),1,0),
 	  ref_cell_c2n(ref_grid_tet(import_grid),1,0), "tet node 1" );
-    RSS(ref_grid_free(import_grid),"free");
-    RSS(ref_grid_free(export_grid),"free");
-    REIS(0, remove( file ), "test clean up");
-  }
-
-  { /* export import .lb8.ugrid tet by extension */
-    REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.lb8.ugrid";
-    RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_by_extension( export_grid, file ), "export" );
-    RSS(ref_import_by_extension( &import_grid, file ), "import" );
-    REIS( ref_node_n(ref_grid_node(export_grid)),
-	  ref_node_n(ref_grid_node(import_grid)), "node count" );
-    RSS(ref_grid_free(import_grid),"free");
-    RSS(ref_grid_free(export_grid),"free");
-    REIS(0, remove( file ), "test clean up");
-  }
-
-  { /* export import .b8.ugrid tet by extension */
-    REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.b8.ugrid";
-    RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
-    RSS(ref_export_by_extension( export_grid, file ), "export" );
-    RSS(ref_import_by_extension( &import_grid, file ), "import" );
-    REIS( ref_node_n(ref_grid_node(export_grid)),
-	  ref_node_n(ref_grid_node(import_grid)), "node count" );
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
     REIS(0, remove( file ), "test clean up");

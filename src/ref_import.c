@@ -64,59 +64,6 @@ REF_STATUS ref_import_examine_header( const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
-				    const char *filename )
-{
-  size_t end_of_string;
-
-  end_of_string = strlen(filename);
-
-  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
-    {
-      RSS( ref_import_lb8_ugrid( ref_grid_ptr, filename ), "lb8_ugrid failed");
-    } 
-  else 
-    if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
-      {
-	RSS( ref_import_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
-      } 
-    else 
-      if( strcmp(&filename[end_of_string-9],".r8.ugrid") == 0 ) 
-	{
-	  RSS( ref_import_r8_ugrid( ref_grid_ptr, filename ), "r8_ugrid failed");
-	} 
-      else 
-	if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
-	  {
-	    RSS( ref_import_ugrid( ref_grid_ptr, filename ), "ugrid failed");
-	  } 
-	else 
-	  if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
-	    {
-	      RSS( ref_import_fgrid( ref_grid_ptr, filename ), "fgrid failed");
-	    } 
-	  else 
-	    if( strcmp(&filename[end_of_string-4],".msh") == 0 ) 
-	      {
-		RSS( ref_import_msh( ref_grid_ptr, filename ), "msh failed");
-	      }
-	    else 
-	      if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
-		{
-		  RSS( ref_import_meshb( ref_grid_ptr, filename ), 
-		       "meshb failed");
-		} 
-	      else 
-		{
-		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
-			 "input file name extension unknown", filename);
-		  RSS( REF_FAILURE, "unknown file extension");
-		}
-  
-  ref_grid_guess_twod_status( *ref_grid_ptr );
-
-  return REF_SUCCESS;
-}
 
 REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, const char *filename )
 {
@@ -1312,3 +1259,56 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
+				    const char *filename )
+{
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
+    {
+      RSS( ref_import_lb8_ugrid( ref_grid_ptr, filename ), "lb8_ugrid failed");
+    } 
+  else 
+    if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
+      {
+	RSS( ref_import_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
+      } 
+    else 
+      if( strcmp(&filename[end_of_string-9],".r8.ugrid") == 0 ) 
+	{
+	  RSS( ref_import_r8_ugrid( ref_grid_ptr, filename ), "r8_ugrid failed");
+	} 
+      else 
+	if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
+	  {
+	    RSS( ref_import_ugrid( ref_grid_ptr, filename ), "ugrid failed");
+	  } 
+	else 
+	  if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
+	    {
+	      RSS( ref_import_fgrid( ref_grid_ptr, filename ), "fgrid failed");
+	    } 
+	  else 
+	    if( strcmp(&filename[end_of_string-4],".msh") == 0 ) 
+	      {
+		RSS( ref_import_msh( ref_grid_ptr, filename ), "msh failed");
+	      }
+	    else 
+	      if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
+		{
+		  RSS( ref_import_meshb( ref_grid_ptr, filename ), 
+		       "meshb failed");
+		} 
+	      else 
+		{
+		  printf("%s: %d: %s %s\n",__FILE__,__LINE__,
+			 "input file name extension unknown", filename);
+		  RSS( REF_FAILURE, "unknown file extension");
+		}
+  
+  ref_grid_guess_twod_status( *ref_grid_ptr );
+
+  return REF_SUCCESS;
+}

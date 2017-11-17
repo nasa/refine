@@ -85,7 +85,7 @@ int main( int argc, char *argv[] )
 
       if ( ref_mpi_once(ref_mpi) )
 	{
-	  RSS(ref_import_meshb( &import_grid, file ), "import" );
+	  RSS(ref_import_by_extension( &import_grid, file ), "import" );
 	  ref_geom = ref_grid_geom(import_grid);
 	  REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );
 	  REIS( 5, ref_geom_cad_data(ref_geom)[0], "cad[0]" );

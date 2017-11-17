@@ -28,19 +28,12 @@ REF_STATUS ref_import_examine_header( const char *filename );
 
 REF_STATUS ref_import_by_extension( REF_GRID *ref_grid, const char *filename );
 
-REF_STATUS ref_import_fgrid( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_ugrid( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_msh( REF_GRID *ref_grid, const char *filename );
-REF_STATUS ref_import_meshb_header( const char *filename, 
-				    REF_INT *version, REF_DICT key_pos );
+REF_STATUS ref_import_meshb_header( const char *filename,
+                                   REF_INT *version, REF_DICT key_pos );
 REF_STATUS ref_import_meshb_jump( FILE *file, REF_INT version,
-				  REF_DICT key_pos,
-				  REF_INT keyword,
-				  REF_BOOL *available, REF_INT *next_position );
-REF_STATUS ref_import_meshb( REF_GRID *ref_grid, const char *filename );
+                                 REF_DICT key_pos,
+                                 REF_INT keyword,
+                                 REF_BOOL *available, REF_INT *next_position );
 
 END_C_DECLORATION
 
