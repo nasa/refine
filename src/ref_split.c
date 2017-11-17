@@ -388,9 +388,9 @@ REF_STATUS ref_split_edge_local_tets( REF_GRID ref_grid,
 	for ( test_node = 0 ; 
 	      test_node < ref_cell_node_per(ref_cell); 
 	      test_node++ )
-	  if ( ref_mpi_id != ref_node_part( ref_node,
-					    ref_cell_c2n(ref_cell,
-							 test_node,cell) ) )
+	  if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	       ref_node_part( ref_node,
+			      ref_cell_c2n(ref_cell, test_node, cell) ) )
 	    {
 	      return REF_SUCCESS;
 	    }
@@ -753,9 +753,9 @@ REF_STATUS ref_split_edge_local_prisms( REF_GRID ref_grid,
 	for ( test_node = 0 ; 
 	      test_node < ref_cell_node_per(ref_cell); 
 	      test_node++ )
-	  if ( ref_mpi_id != ref_node_part( ref_node,
-					    ref_cell_c2n(ref_cell,
-							 test_node,cell) ) )
+	  if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	       ref_node_part( ref_node,
+			      ref_cell_c2n(ref_cell, test_node, cell) ) )
 	    {
 	      return REF_SUCCESS;
 	    }

@@ -1,4 +1,7 @@
 
+merge ref_split_edge_local_tets ref_split_edge_local_prism
+  to ref_split_edge_local_cell
+
 egads recon
  clean up method
  examine the t values to ensure it is monotonic
