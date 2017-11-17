@@ -49,7 +49,6 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
   RSS( ref_grid_create( &ref_grid ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
-  RSS( ref_mpi_initialize(),"init ref mpi");
   ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
   REIS( *partition, ref_mpi_rank(ref_grid_mpi(ref_grid)),

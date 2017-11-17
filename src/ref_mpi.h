@@ -50,15 +50,11 @@ struct REF_MPI_STRUCT {
         ( part ) < ref_mpi_m(ref_mpi);	       \
         ( part )++ )
 
-extern REF_INT ref_mpi_n;
-extern REF_INT ref_mpi_id;
-
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
 REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
 REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi, REF_MPI original );
 
 REF_STATUS ref_mpi_start( int argc, char *argv[] );
-REF_STATUS ref_mpi_initialize( );
 REF_STATUS ref_mpi_stop( );
 
 REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi );

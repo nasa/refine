@@ -32,9 +32,6 @@
 
 #include "ref_malloc.h"
 
-REF_INT ref_mpi_n = 1;
-REF_INT ref_mpi_id = 0;
-
 #ifdef HAVE_MPI
 
 #define ref_type_mpi_type(macro_ref_type,macro_mpi_type)		\
@@ -48,13 +45,6 @@ REF_INT ref_mpi_id = 0;
     }
 
 #endif
-
-static REF_STATUS ref_mpi_set_globals( REF_MPI ref_mpi )
-{
-  ref_mpi_id = ref_mpi->id;
-  ref_mpi_n = ref_mpi->n;
-  return REF_SUCCESS;
-}
 
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
 {
@@ -82,8 +72,6 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
   ref_mpi->start_time = ref_mpi->first_time;
 #endif
-
-  RSS( ref_mpi_set_globals( ref_mpi ), "globs" );
 
   return REF_SUCCESS;
 }
@@ -122,24 +110,6 @@ REF_STATUS ref_mpi_start( int argc, char *argv[] )
   SUPRESS_UNUSED_COMPILER_WARNING(argv);
 #endif
 
-  RSS( ref_mpi_initialize(  ), "init");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_mpi_initialize( void )
-{
-
-#ifdef HAVE_MPI
-
-  MPI_Comm_size(MPI_COMM_WORLD,&ref_mpi_n);
-  MPI_Comm_rank(MPI_COMM_WORLD,&ref_mpi_id);
-
-#else
-  ref_mpi_n = 1;
-  ref_mpi_id = 0;
-#endif
-
   return REF_SUCCESS;
 }
 
@@ -149,9 +119,6 @@ REF_STATUS ref_mpi_stop( )
 #ifdef HAVE_MPI
   MPI_Finalize( );
 #endif
-
-  ref_mpi_n = 1;
-  ref_mpi_id = 0;
 
   return REF_SUCCESS;
 }
