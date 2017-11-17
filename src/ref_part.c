@@ -273,7 +273,8 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
 	{
 	  n = ref_part_first( nnode, ref_mpi_m(ref_mpi), part+1 )
             - ref_part_first( nnode, ref_mpi_m(ref_mpi), part );
-	  RSS( ref_mpi_send( &n, 1, REF_INT_TYPE, part ), "send" );
+	  RSS( ref_mpi_send( ref_mpi,
+			     &n, 1, REF_INT_TYPE, part ), "send" );
 	  if ( n > 0 )
 	    {
 	      ref_malloc( xyz, 3*n, REF_DBL);
@@ -290,18 +291,21 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
 		  xyz[2+3*node] = dbl;
 		  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id");
 		}
-	      RSS( ref_mpi_send( xyz, 3*n, REF_DBL_TYPE, part ), "send" );
+	      RSS( ref_mpi_send( ref_mpi,
+				 xyz, 3*n, REF_DBL_TYPE, part ), "send" );
 	      free(xyz);
 	    }
 	}
     }
   else
     {
-      RSS( ref_mpi_recv( &n, 1, REF_INT_TYPE, 0 ), "recv" );
+      RSS( ref_mpi_recv( ref_mpi,
+			 &n, 1, REF_INT_TYPE, 0 ), "recv" );
       if ( n > 0 )
 	{
 	  ref_malloc( xyz, 3*n, REF_DBL);
-	  RSS( ref_mpi_recv( xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
+	  RSS( ref_mpi_recv( ref_mpi,
+			     xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
 	  for (node=0;node<n; node++)
 	    {
 	      RSS( ref_node_add(ref_node, 
@@ -585,15 +589,19 @@ REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
 	  each_ref_mpi_worker( ref_mpi, part )
 	    if ( 0 < geom_to_send[part] ) 
 	      {
-		RSS( ref_mpi_send( &(geom_to_send[part]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(geom_to_send[part]), 
 				   1, REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( &(sent_node[start_to_send[part]]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_node[start_to_send[part]]), 
 				   geom_to_send[part], 
 				   REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( &(sent_id[start_to_send[part]]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_id[start_to_send[part]]), 
 				   geom_to_send[part], 
 				   REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( &(sent_param[2*start_to_send[part]]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_param[2*start_to_send[part]]), 
 				   2*geom_to_send[part], 
 				   REF_DBL_TYPE, part ), "send" );
 	      }
@@ -609,20 +617,25 @@ REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
 
       /* signal we are done */
       each_ref_mpi_worker( ref_mpi, part )
-	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+	RSS( ref_mpi_send( ref_mpi,
+			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
     }
   else
     {
       do {
-	RSS( ref_mpi_recv( &geom_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	RSS( ref_mpi_recv( ref_mpi,
+			   &geom_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
 	if ( geom_to_receive > 0 )
 	  {
-	    RSS( ref_mpi_recv( sent_node, geom_to_receive, 
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_node, geom_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
-	    RSS( ref_mpi_recv( sent_id, geom_to_receive, 
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_id, geom_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
-	    RSS( ref_mpi_recv( sent_param, 2*geom_to_receive, 
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_param, 2*geom_to_receive, 
 			       REF_DBL_TYPE, 0 ), "send" );
 	    for (geom=0;geom<geom_to_receive;geom++)
 	      {
@@ -756,9 +769,11 @@ REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 	  each_ref_mpi_worker( ref_mpi, part )
 	    if ( 0 < elements_to_send[part] ) 
 	      {
-		RSS( ref_mpi_send( &(elements_to_send[part]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(elements_to_send[part]), 
 				   1, REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( &(sent_c2n[size_per*start_to_send[part]]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_c2n[size_per*start_to_send[part]]), 
 				   size_per*elements_to_send[part], 
 				   REF_INT_TYPE, part ), "send" );
 	      }
@@ -773,16 +788,19 @@ REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 
       /* signal we are done */
       each_ref_mpi_worker( ref_mpi, part )
-	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+	RSS( ref_mpi_send( ref_mpi,
+			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
     }  
   else
     {
       do {
-	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	RSS( ref_mpi_recv( ref_mpi,
+			   &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
 	if ( elements_to_receive > 0 )
 	  {
-	    RSS( ref_mpi_recv( sent_c2n, size_per*elements_to_receive, 
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_c2n, size_per*elements_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
 
 	    ref_malloc_init( sent_part, size_per*elements_to_receive, 
@@ -940,9 +958,11 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	  each_ref_mpi_worker( ref_mpi, part )
 	    if ( 0 < elements_to_send[part] ) 
 	      {
-		RSS( ref_mpi_send( &(elements_to_send[part]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(elements_to_send[part]), 
 				   1, REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( &(sent_c2n[size_per*start_to_send[part]]), 
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_c2n[size_per*start_to_send[part]]), 
 				   size_per*elements_to_send[part], 
 				   REF_INT_TYPE, part ), "send" );
 	      }
@@ -958,16 +978,19 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 
       /* signal we are done */
       each_ref_mpi_worker( ref_mpi, part )
-	RSS( ref_mpi_send( &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+	RSS( ref_mpi_send( ref_mpi,
+			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
 
     }  
   else
     {
       do {
-	RSS( ref_mpi_recv( &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	RSS( ref_mpi_recv( ref_mpi,
+			   &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
 	if ( elements_to_receive > 0 )
 	  {
-	    RSS( ref_mpi_recv( sent_c2n, size_per*elements_to_receive, 
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_c2n, size_per*elements_to_receive, 
 			       REF_INT_TYPE, 0 ), "send" );
 
 	    ref_malloc_init( sent_part, size_per*elements_to_receive, 

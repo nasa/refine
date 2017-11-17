@@ -922,11 +922,13 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
     {
       each_ref_mpi_worker( ref_mpi, proc )
 	{
-	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  if ( ncell > 0 )
 	    {
 	      ref_malloc(c2n, ncell*size_per, REF_INT);
-	      RSS( ref_mpi_recv( c2n, ncell*size_per, 
+	      RSS( ref_mpi_recv( ref_mpi,
+				 c2n, ncell*size_per, 
 				 REF_INT_TYPE, proc ), "recv c2n");
 	      for ( cell = 0; cell < ncell; cell++ )
 		if ( faceid_insted_of_c2n )
@@ -976,7 +978,8 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
 	     ( !select_faceid ||
 	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
 	  ncell++;
-      RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      RSS( ref_mpi_send( ref_mpi,
+			 &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
       if ( ncell > 0 )
 	{
 	  ref_malloc(c2n, ncell*size_per, REF_INT);
@@ -993,7 +996,8 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
 		  c2n[node+size_per*ncell] = nodes[node];
 		ncell++;
 	      }
-	  RSS( ref_mpi_send( c2n, ncell*size_per, 
+	  RSS( ref_mpi_send( ref_mpi,
+			     c2n, ncell*size_per, 
 			     REF_INT_TYPE, 0 ), "send c2n");
 	  ref_free(c2n);
 	}
@@ -1038,14 +1042,17 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
     {
       each_ref_mpi_worker( ref_mpi, proc )
 	{
-	  RSS( ref_mpi_recv( &ngeom, 1, REF_INT_TYPE, proc ), "recv ngeom");
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ngeom, 1, REF_INT_TYPE, proc ), "recv ngeom");
 	  if (ngeom >0)
 	    {
 	      ref_malloc(node_id, 2*ngeom, REF_INT);
 	      ref_malloc(param, 2*ngeom, REF_DBL);
-	      RSS( ref_mpi_recv( node_id, 2*ngeom, 
+	      RSS( ref_mpi_recv( ref_mpi,
+				 node_id, 2*ngeom, 
 				 REF_INT_TYPE, proc ), "recv node_id");
-	      RSS( ref_mpi_recv( param, 2*ngeom, 
+	      RSS( ref_mpi_recv( ref_mpi,
+				 param, 2*ngeom, 
 				 REF_DBL_TYPE, proc ), "recv param");
 	      for ( geom = 0; geom < ngeom; geom++ )
 		{
@@ -1075,7 +1082,8 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
 	    continue;
 	  ngeom++;
 	}
-      RSS( ref_mpi_send( &ngeom, 1, REF_INT_TYPE, 0 ), "send ngeom");
+      RSS( ref_mpi_send( ref_mpi,
+			 &ngeom, 1, REF_INT_TYPE, 0 ), "send ngeom");
       if ( ngeom > 0 )
 	{
 	  ref_malloc(node_id, 2*ngeom, REF_INT);
@@ -1093,9 +1101,11 @@ REF_STATUS ref_gather_geom( REF_NODE ref_node,
 		param[i+2*ngeom] = ref_geom_param(ref_geom,i,geom);
 	      ngeom++;
 	    }
-	  RSS( ref_mpi_send( node_id, 2*ngeom, 
+	  RSS( ref_mpi_send( ref_mpi,
+			     node_id, 2*ngeom, 
 			     REF_INT_TYPE, 0 ), "send node_id");
-	  RSS( ref_mpi_send( param, 2*ngeom, 
+	  RSS( ref_mpi_send( ref_mpi,
+			     param, 2*ngeom, 
 			     REF_DBL_TYPE, 0 ), "send param");
 	  ref_free(param);
 	  ref_free(node_id);
@@ -1137,9 +1147,11 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
     {
       each_ref_mpi_worker( ref_mpi, proc )
 	{
-	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  ref_malloc(c2n, ncell*size_per, REF_INT);
-	  RSS( ref_mpi_recv( c2n, ncell*size_per, 
+	  RSS( ref_mpi_recv( ref_mpi,
+			     c2n, ncell*size_per, 
 			     REF_INT_TYPE, proc ), "recv c2n");
 	  for ( cell = 0; cell < ncell; cell++ )
 	    {
@@ -1159,7 +1171,8 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
 	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
 	  ncell++;
-      RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      RSS( ref_mpi_send( ref_mpi,
+			 &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
       ref_malloc(c2n, ncell*size_per, REF_INT);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
@@ -1171,7 +1184,8 @@ REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
 	      c2n[node+size_per*ncell] = nodes[node];
 	    ncell++;
 	  }
-      RSS( ref_mpi_send( c2n, ncell*size_per, 
+      RSS( ref_mpi_send( ref_mpi,
+			 c2n, ncell*size_per, 
 			 REF_INT_TYPE, 0 ), "send c2n");
 
       ref_free(c2n);
@@ -1217,11 +1231,13 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
     {
       each_ref_mpi_worker( ref_mpi, proc )
 	{
-	  RSS( ref_mpi_recv( &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
 	  if ( ncell > 0 )
 	    {
 	      ref_malloc(c2n, ncell*size_per, REF_INT);
-	      RSS( ref_mpi_recv( c2n, ncell*size_per, 
+	      RSS( ref_mpi_recv( ref_mpi,
+				 c2n, ncell*size_per, 
 				 REF_INT_TYPE, proc ), "recv c2n");
 	      for ( cell = 0; cell < ncell; cell++ )
 		{
@@ -1246,7 +1262,8 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
 	       quality < min_quality)
 	    ncell++;
 	}
-      RSS( ref_mpi_send( &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      RSS( ref_mpi_send( ref_mpi,
+			 &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
       if ( ncell > 0 )
 	{
 	  ref_malloc(c2n, ncell*size_per, REF_INT);
@@ -1265,7 +1282,8 @@ REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
 		  ncell++;
 		}
 	    }
-	  RSS( ref_mpi_send( c2n, ncell*size_per, 
+	  RSS( ref_mpi_send( ref_mpi,
+			     c2n, ncell*size_per, 
 			     REF_INT_TYPE, 0 ), "send c2n");
 	  ref_free(c2n);
 	}

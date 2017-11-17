@@ -230,7 +230,8 @@ REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
+REF_STATUS ref_mpi_send( REF_MPI ref_mpi,
+			 void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
@@ -238,10 +239,11 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
 
   ref_type_mpi_type(type,datatype);
 
-  tag = ref_mpi_n*dest+ref_mpi_id;
+  tag = ref_mpi_m(ref_mpi)*dest+ref_mpi_rank(ref_mpi);
 
   MPI_Send(data, n, datatype, dest, tag, MPI_COMM_WORLD);
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
   SUPRESS_UNUSED_COMPILER_WARNING(n);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
@@ -252,7 +254,8 @@ REF_STATUS ref_mpi_send( void *data, REF_INT n, REF_TYPE type, REF_INT dest )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
+REF_STATUS ref_mpi_recv( REF_MPI ref_mpi,
+			 void *data, REF_INT n, REF_TYPE type, REF_INT source )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
@@ -261,10 +264,11 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
 
   ref_type_mpi_type(type,datatype);
 
-  tag = ref_mpi_n*ref_mpi_id+source;
+  tag = ref_mpi_m(ref_mpi)*ref_mpi_rank(ref_mpi)+source;
 
   MPI_Recv(data, n, datatype, source, tag, MPI_COMM_WORLD, &status);
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
   SUPRESS_UNUSED_COMPILER_WARNING(n);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
