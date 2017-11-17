@@ -20,7 +20,6 @@ libref2_a_SOURCES = \
 	ref_fixture.c \
 	ref_fortran.c \
 	ref_gather.c \
-	ref_gen.c \
 	ref_geom.c \
 	ref_grid.c \
 	ref_histogram.c \
@@ -50,7 +49,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h \
 	ref_dict.h ref_defs.h ref_edge.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
-	ref_gather.h ref_gen.h ref_geom.h ref_grid.h \
+	ref_gather.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h ref_import.h ref_inflate.h \
 	ref_list.h ref_layer.h \
 	ref_malloc.h \
@@ -181,11 +180,6 @@ TESTS += ref_gather_test
 noinst_PROGRAMS += ref_gather_test
 ref_gather_test_SOURCES = ref_gather_test.c
 ref_gather_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
-
-TESTS += ref_gen_test
-noinst_PROGRAMS += ref_gen_test
-ref_gen_test_SOURCES = ref_gen_test.c
-ref_gen_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_geom_test
 noinst_PROGRAMS += ref_geom_test
