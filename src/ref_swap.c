@@ -206,6 +206,7 @@ REF_STATUS ref_swap_pass( REF_GRID ref_grid )
   REF_BOOL more_than_two;
   REF_INT cell_face, node, cell_nodes[4];
   REF_INT found, found_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT rank;
   
   each_ref_cell_valid_cell_with_nodes( tri, tri_index, tri_nodes )
     {
@@ -221,10 +222,11 @@ REF_STATUS ref_swap_pass( REF_GRID ref_grid )
 	THROW("boundry tri has two tets, not manifold");
 
       /* must be local to swap */
-      if ( ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,0,tet0) ) ||
-	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,1,tet0) ) ||
-	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,2,tet0) ) ||
-	   ref_mpi_id != ref_node_part( ref_node, ref_cell_c2n(tet,3,tet0) ) )
+      rank = ref_mpi_rank(ref_grid_mpi(ref_grid));
+      if ( rank != ref_node_part( ref_node, ref_cell_c2n(tet,0,tet0) ) ||
+	   rank != ref_node_part( ref_node, ref_cell_c2n(tet,1,tet0) ) ||
+	   rank != ref_node_part( ref_node, ref_cell_c2n(tet,2,tet0) ) ||
+	   rank != ref_node_part( ref_node, ref_cell_c2n(tet,3,tet0) ) )
 	continue;
 
       faceid0 = REF_EMPTY;
