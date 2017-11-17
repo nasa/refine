@@ -257,7 +257,7 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
       for (node=0;node<ref_part_first( nnode, ref_mpi_m(ref_mpi), 1 ); node++)
 	{
 	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
-	  ref_node_part(ref_node,new_node) = ref_mpi_id;
+	  ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
 	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
 	  if (swap_endian) SWAP_DBL(dbl);
 	  ref_node_xyz( ref_node, 0, new_node ) = dbl;
