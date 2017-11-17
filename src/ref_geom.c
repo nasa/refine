@@ -1579,7 +1579,8 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 		   pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
       max = MAX(max,dist);
     }
-  RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max node" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max, &global_max, REF_DBL_TYPE ), "mpi max node" );
   max = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo node max eval dist %e\n",max);
@@ -1605,11 +1606,13 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 	  max = MAX(max,dist);
 	}
     }
-  RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo edge max eval dist %e\n",max);
-  RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_node = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo edge node tol %e\n",max_node);
@@ -1644,15 +1647,18 @@ REF_STATUS ref_geom_verify_param( REF_GRID ref_grid )
 	    }
 	}
     }
-  RSS( ref_mpi_max( &max, &global_max, REF_DBL_TYPE ), "mpi max face" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max, &global_max, REF_DBL_TYPE ), "mpi max face" );
   max = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo face max eval dist %e\n",max);
-  RSS( ref_mpi_max( &max_edge, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max_edge, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_edge = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo face edge tol %e\n",max_edge);
-  RSS( ref_mpi_max( &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
+  RSS( ref_mpi_max( ref_mpi,
+		    &max_node, &global_max, REF_DBL_TYPE ), "mpi max edge" );
   max_node = global_max;
   if ( ref_grid_once(ref_grid) )
     printf("CAD topo face node tol %e\n",max_node);
@@ -2694,12 +2700,16 @@ REF_STATUS ref_geom_faceid_range( REF_GRID ref_grid,
     {
       REF_INT global;
 
-      RSS( ref_mpi_min( min_faceid, &global, REF_INT_TYPE ), "mpi min face" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi min face" );
+      RSS( ref_mpi_min( ref_mpi,
+			min_faceid, &global, REF_INT_TYPE ), "mpi min face" );
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &global, 1, REF_INT_TYPE ), "mpi min face" );
       *min_faceid = global;
 
-      RSS( ref_mpi_max( max_faceid, &global, REF_INT_TYPE ), "mpi max face" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi max face" );
+      RSS( ref_mpi_max( ref_mpi,
+			max_faceid, &global, REF_INT_TYPE ), "mpi max face" );
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &global, 1, REF_INT_TYPE ), "mpi max face" );
       *max_faceid = global;
     }
 
@@ -2728,12 +2738,16 @@ REF_STATUS ref_geom_edgeid_range( REF_GRID ref_grid,
     {
       REF_INT global;
 
-      RSS( ref_mpi_min( min_edgeid, &global, REF_INT_TYPE ), "mpi min edge" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi min edge" );
+      RSS( ref_mpi_min( ref_mpi,
+			min_edgeid, &global, REF_INT_TYPE ), "mpi min edge" );
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &global, 1, REF_INT_TYPE ), "mpi min edge" );
       *min_edgeid = global;
 
-      RSS( ref_mpi_max( max_edgeid, &global, REF_INT_TYPE ), "mpi max edge" );
-      RSS( ref_mpi_bcast( &global, 1, REF_INT_TYPE ), "mpi max edge" );
+      RSS( ref_mpi_max( ref_mpi,
+			max_edgeid, &global, REF_INT_TYPE ), "mpi max edge" );
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &global, 1, REF_INT_TYPE ), "mpi max edge" );
       *max_edgeid = global;
     }
 

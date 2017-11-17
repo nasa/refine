@@ -483,8 +483,10 @@ REF_STATUS ref_node_initialize_n_global_from_locals(  REF_NODE ref_node )
   each_ref_node_valid_node( ref_node, node)
     if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) 
       local_nnode++;
-  RSS( ref_mpi_sum( &local_nnode, &global_nnode, 1, REF_INT_TYPE ), "sum");
-  RSS( ref_mpi_bcast( &global_nnode, 1, REF_INT_TYPE ), "bcast");
+  RSS( ref_mpi_sum( ref_mpi,
+		    &local_nnode, &global_nnode, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ref_mpi,
+		      &global_nnode, 1, REF_INT_TYPE ), "bcast");
   RSS( ref_node_initialize_n_global(  ref_node, global_nnode ), "sub" );
 
   return REF_SUCCESS;

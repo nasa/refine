@@ -582,8 +582,10 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
     if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) )
       ncell_local++;
 
-  RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
-  RSS( ref_mpi_bcast( ncell, 1, REF_INT_TYPE ), "bcast");
+  RSS( ref_mpi_sum( ref_mpi,
+		    &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ref_mpi,
+		      ncell, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
@@ -605,8 +607,8 @@ REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell,
 	ncell_local++;
     }
 
-  RSS( ref_mpi_sum( &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
-  RSS( ref_mpi_bcast( ncell, 1, REF_INT_TYPE ), "bcast");
+  RSS( ref_mpi_sum( ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ref_mpi, ncell, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
@@ -626,8 +628,8 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
 	ngeom_local++;
     }
 
-  RSS( ref_mpi_sum( &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
-  RSS( ref_mpi_bcast( ngeom, 1, REF_INT_TYPE ), "bcast");
+  RSS( ref_mpi_sum( ref_mpi, &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ref_mpi, ngeom, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
@@ -683,7 +685,8 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 	    }
 	}
 
-      RSS( ref_mpi_sum( local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
+      RSS( ref_mpi_sum( ref_mpi,
+			local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
       
       if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )
@@ -768,7 +771,8 @@ REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
 		   first+i, local_xyzm[5+dim*i]);
 	  }
 
-      RSS( ref_mpi_sum( local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
+      RSS( ref_mpi_sum( ref_mpi,
+			local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
 
       if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )
@@ -834,7 +838,7 @@ REF_STATUS ref_gather_node_metric( REF_NODE ref_node,
 	    }
 	}
 
-      RSS( ref_mpi_sum( local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
+      RSS( ref_mpi_sum( ref_mpi, local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
 
       if ( ref_mpi_once(ref_mpi) )
 	for ( i=0; i<n; i++ )

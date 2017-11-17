@@ -120,13 +120,17 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi )
 
   ref_malloc( bins, ref_histogram_nbin(ref_histogram), REF_INT );
 
-  RSS( ref_mpi_sum( ref_histogram->bins, bins, 
+  RSS( ref_mpi_sum( ref_mpi,
+		    ref_histogram->bins, bins, 
 		    ref_histogram_nbin(ref_histogram), REF_INT_TYPE ), "sum" );
-  RSS( ref_mpi_max( &ref_histogram_max( ref_histogram ), &max, 
+  RSS( ref_mpi_max( ref_mpi,
+		    &ref_histogram_max( ref_histogram ), &max, 
 		    REF_DBL_TYPE ), "max" );
-  RSS( ref_mpi_min( &ref_histogram_min( ref_histogram ), &min, 
+  RSS( ref_mpi_min( ref_mpi,
+		    &ref_histogram_min( ref_histogram ), &min, 
 		    REF_DBL_TYPE ), "min" );
-  RSS( ref_mpi_sum( &ref_histogram_log_total( ref_histogram ), &log_total, 
+  RSS( ref_mpi_sum( ref_mpi,
+		    &ref_histogram_log_total( ref_histogram ), &log_total, 
 		    1, REF_DBL_TYPE ), "log_total" );
 
   if ( ref_mpi_once(ref_mpi) )
@@ -154,7 +158,8 @@ REF_STATUS ref_histogram_gather( REF_HISTOGRAM ref_histogram, REF_MPI ref_mpi )
       ref_histogram_log_mean( ref_histogram ) = 0.0;
     }
 
-  RSS( ref_mpi_bcast( &ref_histogram_log_mean( ref_histogram ), 
+  RSS( ref_mpi_bcast( ref_mpi,
+		      &ref_histogram_log_mean( ref_histogram ), 
 		      1, REF_DBL_TYPE ), "log_mean" );
 
   ref_free( bins );
@@ -312,7 +317,8 @@ REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram,
 
   ref_malloc( stats, ref_histogram_nstat(ref_histogram), REF_DBL );
 
-  RSS( ref_mpi_sum( ref_histogram->stats, stats, 
+  RSS( ref_mpi_sum( ref_mpi,
+		    ref_histogram->stats, stats, 
 		    ref_histogram_nstat(ref_histogram), REF_DBL_TYPE ), "sum" );
 
   if ( ref_mpi_once(ref_mpi) )

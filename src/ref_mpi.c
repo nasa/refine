@@ -181,8 +181,8 @@ REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
   after_barrier = (REF_DBL)MPI_Wtime();
   elapsed = after_barrier - ref_mpi->first_time;
   after_barrier = after_barrier-ref_mpi->start_time;
-  RSS( ref_mpi_min( &before_barrier, &first, REF_DBL_TYPE), "min");
-  RSS( ref_mpi_min( &after_barrier, &last, REF_DBL_TYPE), "max");
+  RSS( ref_mpi_min( ref_mpi, &before_barrier, &first, REF_DBL_TYPE), "min");
+  RSS( ref_mpi_min( ref_mpi, &after_barrier, &last, REF_DBL_TYPE), "max");
   if ( ref_mpi_once(ref_mpi) )
     {
       printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
@@ -211,17 +211,19 @@ REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type )
+REF_STATUS ref_mpi_bcast( REF_MPI ref_mpi,
+			  void *data, REF_INT n, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
  ref_type_mpi_type(type,datatype);
 
   MPI_Bcast(data, n, datatype, 0, MPI_COMM_WORLD);
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
   SUPRESS_UNUSED_COMPILER_WARNING(n);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
@@ -363,12 +365,13 @@ REF_STATUS ref_mpi_alltoallv( REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
+REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
+			void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  if ( ref_mpi_n == 1 )
+  if ( !ref_mpi_para(ref_mpi) )
     {
       switch (type)
 	{
@@ -389,6 +392,7 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
     case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 
@@ -413,12 +417,13 @@ REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
+REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
+			void *input, void *output, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  if ( ref_mpi_n == 1 )
+  if ( !ref_mpi_para(ref_mpi) )
     {
       switch (type)
 	{
@@ -439,19 +444,21 @@ REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type )
     case REF_DBL_TYPE: *(REF_DBL *)output = *(REF_DBL *)input; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
+REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
+			void *input, void *output, REF_INT n, REF_TYPE type )
 {
   REF_INT i;
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
 
-  if ( 1 == ref_mpi_n )
+  if ( !ref_mpi_para(ref_mpi) )
     {
       switch (type)
 	{
@@ -485,6 +492,7 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
       break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 

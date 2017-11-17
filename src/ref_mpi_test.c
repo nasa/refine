@@ -48,7 +48,7 @@ int main( int argc, char *argv[] )
       bc = REF_EMPTY;
       if ( ref_mpi_once(ref_mpi) ) bc = 5;
       RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
-      RSS( ref_mpi_bcast( &bc, 1, REF_INT_TYPE ), "bcast" );
+      RSS( ref_mpi_bcast( ref_mpi, &bc, 1, REF_INT_TYPE ), "bcast" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer broadcast" ), "sw start");
       REIS( 5, bc, "bc wrong" );
 

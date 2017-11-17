@@ -147,7 +147,8 @@ REF_STATUS FC_FUNC_(ref_fortran_adapt,REF_FORTRAN_ADAPT)( void )
       ref_grid_twod(ref_grid) = ( 0 == ntet && 0 != npri );
       if ( ref_grid_twod(ref_grid) ) printf ("assuming twod mode\n");
     }
-  RSS( ref_mpi_bcast( &ref_grid_twod(ref_grid), 1, REF_INT_TYPE ), "bcast" );
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &ref_grid_twod(ref_grid), 1, REF_INT_TYPE ), "bcast" );
 
   if ( REF_FALSE ) /* Pointwise midplane location for Troy Lake */
     {

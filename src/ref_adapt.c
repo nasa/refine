@@ -124,8 +124,10 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
 	  min_quality = MIN(min_quality,quality);
 	}
     }
-  RSS( ref_mpi_min( &min_quality, &quality, REF_DBL_TYPE ), "min" );
-  RSS( ref_mpi_bcast( &quality, 1, REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_min( ref_grid_mpi(ref_grid),
+		    &min_quality, &quality, REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &quality, 1, REF_DBL_TYPE ), "min" );
   min_quality = quality;
 
   target = MAX(MIN(0.1, quality),1.0e-3);

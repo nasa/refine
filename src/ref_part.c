@@ -110,7 +110,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
       REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
       if (verbose) printf("nnode %d\n",nnode);
     }
-  RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_mpi, &nnode, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_node( file, swap_endian, has_id,
 		      ref_node, nnode ), "part node" ); 
   if ( ref_grid_once(ref_grid) )
@@ -124,7 +124,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
       REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntet");
       if (verbose) printf("ntet %d\n",ncell);
     }
-  RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_mpi, &ncell, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_meshb_cell( ref_grid_tet(ref_grid), ncell,
 			    ref_node, nnode, file ), "part cell" ); 
   if ( ref_grid_once(ref_grid) )
@@ -138,7 +138,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
       REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntri");
       if (verbose) printf("ntri %d\n",ncell);
     }
-  RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_mpi, &ncell, 1, REF_INT_TYPE ), "bcast" ); 
   RSS( ref_part_meshb_cell( ref_grid_tri(ref_grid), ncell,
 			    ref_node, nnode, file ), "part cell" ); 
   if ( ref_grid_once(ref_grid) )
@@ -154,10 +154,10 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
 	  if (verbose) printf("nedge %d\n",ncell);
 	}
     }
-  RSS( ref_mpi_bcast( &available, 1, REF_INT_TYPE ), "bcast" );
+  RSS( ref_mpi_bcast( ref_mpi, &available, 1, REF_INT_TYPE ), "bcast" );
   if ( available )
     {
-      RSS( ref_mpi_bcast( &ncell, 1, REF_INT_TYPE ), "bcast" ); 
+      RSS( ref_mpi_bcast( ref_mpi, &ncell, 1, REF_INT_TYPE ), "bcast" ); 
       RSS( ref_part_meshb_cell( ref_grid_edg(ref_grid), ncell,
 				ref_node, nnode, file ), "part cell" ); 
       if ( ref_grid_once(ref_grid) )
@@ -178,10 +178,10 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
 	      if (verbose) printf("type %d ngeom %d\n",type, ngeom);
 	    }
 	}
-      RSS( ref_mpi_bcast( &available, 1, REF_INT_TYPE ), "bcast" );
+      RSS( ref_mpi_bcast( ref_mpi, &available, 1, REF_INT_TYPE ), "bcast" );
       if ( available )
 	{
-	  RSS( ref_mpi_bcast( &ngeom, 1, REF_INT_TYPE ), "bcast" ); 
+	  RSS( ref_mpi_bcast( ref_mpi, &ngeom, 1, REF_INT_TYPE ), "bcast" ); 
 	  RSS( ref_part_meshb_geom( ref_geom, ngeom, type,
 				    ref_node, nnode, 
 				    file ), "part geom" );
@@ -213,16 +213,18 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
 	  REIS( next_position, ftell(file), "end location" );
 	}
     }
-  RSS( ref_mpi_bcast( &available, 1, REF_INT_TYPE ), "bcast" );
+  RSS( ref_mpi_bcast( ref_mpi, &available, 1, REF_INT_TYPE ), "bcast" );
   if ( available )
     {
-      RSS( ref_mpi_bcast( &ref_geom_cad_data_size(ref_geom),
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &ref_geom_cad_data_size(ref_geom),
 			  1, REF_INT_TYPE ), "bcast" );
       if ( !ref_grid_once(ref_grid) )
 	ref_malloc(ref_geom_cad_data(ref_geom),
 		   ref_geom_cad_data_size(ref_geom),
 		   REF_BYTE );
-      RSS( ref_mpi_bcast( ref_geom_cad_data(ref_geom),
+      RSS( ref_mpi_bcast( ref_mpi,
+			  ref_geom_cad_data(ref_geom),
 			  ref_geom_cad_data_size(ref_geom), 
 			  REF_BYTE_TYPE ), "bcast" ); 
     }
@@ -372,13 +374,20 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
       if (swap_endian) SWAP_INT(nhex);
     }
 
-  RSS( ref_mpi_bcast( &nnode, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &ntri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &nqua, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &ntet, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &npyr, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &npri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( &nhex, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nnode, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &ntri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nqua, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &ntet, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &npyr, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &npri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nhex, 1, REF_INT_TYPE ), "bcast" ); 
 
   /* guess twod status */
 
@@ -1102,11 +1111,13 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
 			       &(metric[4+6*node]),
 			       &(metric[5+6*node]) ), "metric read error" );
 	    }
-	  RSS( ref_mpi_bcast( metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
 	}
       else
 	{
-	  RSS( ref_mpi_bcast( metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
 	}
       for (node=0;node<section_size;node++)
 	{
@@ -1169,11 +1180,13 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
 			       &(metric[1+3*node]),
 			       &(metric[2+3*node]) ), "metric read error" );
 	    }
-	  RSS( ref_mpi_bcast( metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+			      metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
 	}
       else
 	{
-	  RSS( ref_mpi_bcast( metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+			      metric, 3*chunk, REF_DBL_TYPE ), "bcast" );
 	}
       for (node=0;node<section_size;node++)
 	{
@@ -1241,11 +1254,13 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node,
 	  for (node=0;node<section_size;node++)
 	    REIS( 1, fscanf( file, "%lf", 
 			     &(data[node]) ), "data ratio read error" );
-	  RSS( ref_mpi_bcast( data, chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      data, chunk, REF_DBL_TYPE ), "bcast" );
 	}
       else
 	{
-	  RSS( ref_mpi_bcast( data, chunk, REF_DBL_TYPE ), "bcast" );
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      data, chunk, REF_DBL_TYPE ), "bcast" );
 	}
       for (node=0;node<section_size;node++)
 	{

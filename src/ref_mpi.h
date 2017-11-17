@@ -1,4 +1,5 @@
 
+
 /* Copyright 2014 United States Government as represented by the
  * Administrator of the National Aeronautics and Space
  * Administration. No copyright is claimed in the United States under
@@ -68,7 +69,8 @@ typedef int REF_TYPE;
 #define REF_DBL_TYPE (2)
 #define REF_BYTE_TYPE (3)
 
-REF_STATUS ref_mpi_bcast( void *data, REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_bcast( REF_MPI ref_mpi,
+			  void *data, REF_INT n, REF_TYPE type );
 
 REF_STATUS ref_mpi_send( REF_MPI ref_mpi,
 			 void *data, REF_INT n, REF_TYPE type, REF_INT dest );
@@ -83,9 +85,12 @@ REF_STATUS ref_mpi_alltoallv( REF_MPI ref_mpi,
 			      REF_INT n, REF_TYPE type );
 
 REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean );
-REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type );
-REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
-REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
+			void *input, void *output, REF_TYPE type );
+REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
+			void *input, void *output, REF_TYPE type );
+REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
+			void *input, void *output, REF_INT n, REF_TYPE type );
 
 REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
 			      void *scalar, void *array, REF_TYPE type );

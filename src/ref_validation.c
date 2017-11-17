@@ -339,17 +339,19 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
     }
 
   volume = min_volume;
-  RSS( ref_mpi_min( &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
+  RSS( ref_mpi_min( ref_mpi, &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
   volume = max_volume;
-  RSS( ref_mpi_max( &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
+  RSS( ref_mpi_max( ref_mpi, &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
 
   part_nnode=0;
   each_ref_node_valid_node( ref_node, node )
     if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) part_nnode++;
-  RSS( ref_mpi_sum( &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
+  RSS( ref_mpi_sum( ref_mpi,
+		    &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
 
   part_complexity=complexity;
-  RSS( ref_mpi_sum( &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
+  RSS( ref_mpi_sum( ref_mpi,
+		    &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
 
   if ( ref_grid_once(ref_grid) )
     {
