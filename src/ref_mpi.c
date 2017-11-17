@@ -159,7 +159,7 @@ REF_STATUS ref_mpi_stop( )
 REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi )
 {
 #ifdef HAVE_MPI
-  if ( ref_mpi_n > 1 )
+  if ( ref_mpi_para(ref_mpi) )
     MPI_Barrier( MPI_COMM_WORLD ); 
   ref_mpi->start_time = (REF_DBL)MPI_Wtime();
 #else
@@ -176,7 +176,7 @@ REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
   REF_DBL before_barrier, after_barrier, elapsed;
   REF_DBL first, last;
   before_barrier = (REF_DBL)MPI_Wtime()-ref_mpi->start_time;
-  if ( ref_mpi_n > 1 )
+  if ( ref_mpi_para(ref_mpi) )
     MPI_Barrier( MPI_COMM_WORLD ); 
   after_barrier = (REF_DBL)MPI_Wtime();
   elapsed = after_barrier - ref_mpi->first_time;

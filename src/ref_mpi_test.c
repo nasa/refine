@@ -30,10 +30,10 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_start( argc, argv ), "start" );
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
-  if ( ref_mpi_n == 1 )
+  if ( !ref_mpi_para(ref_mpi) )
     { /* start */
-      REIS( 1, ref_mpi_n, "n" );
-      REIS( 0, ref_mpi_id, "n" );
+      REIS( 1, ref_mpi_m(ref_mpi), "n" );
+      REIS( 0, ref_mpi_rank(ref_mpi), "rank" );
       RAS( ref_mpi_once(ref_mpi), "master" );
     }
   else
@@ -43,7 +43,7 @@ int main( int argc, char *argv[] )
       REF_INT bc;
 
       if ( ref_mpi_once(ref_mpi) )
-	printf("number of processors %d \n",ref_mpi_n);
+	printf("number of processors %d \n",ref_mpi_m(ref_mpi));
 
       bc = REF_EMPTY;
       if ( ref_mpi_once(ref_mpi) ) bc = 5;
@@ -52,10 +52,10 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer broadcast" ), "sw start");
       REIS( 5, bc, "bc wrong" );
 
-      ref_malloc_init( a_size, ref_mpi_n, REF_INT, REF_EMPTY );
-      ref_malloc_init( b_size, ref_mpi_n, REF_INT, REF_EMPTY );
+      ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
+      ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
 
-      for ( part = 0; part<ref_mpi_n ; part++ )
+      each_ref_mpi_part(ref_mpi, part)
 	a_size[part] = part;
 
       RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
@@ -63,10 +63,10 @@ int main( int argc, char *argv[] )
 			     a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer alltoall" ), "sw start");
 
-      for ( part = 0; part<ref_mpi_n ; part++ )
+      each_ref_mpi_part(ref_mpi, part)
 	REIS(part, a_size[part], "a_size changed" );
-      for ( part = 0; part<ref_mpi_n ; part++ )
-	REIS(ref_mpi_id, b_size[part], "b_size wrong" );
+      each_ref_mpi_part(ref_mpi, part)
+	REIS(ref_mpi_rank(ref_mpi), b_size[part], "b_size wrong" );
 
       ref_free( b_size );
       ref_free( a_size );
