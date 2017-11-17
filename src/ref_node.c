@@ -713,7 +713,8 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
     if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       a_size[ref_node_part(ref_node,node)]++;
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -746,7 +747,8 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
 	a_next[ref_node_part(ref_node,node)]++;
       }
 
-  RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_global, a_size, b_global, b_size, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
@@ -759,12 +761,14 @@ REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
 	b_aux[i+ref_node_naux(ref_node)*node] = ref_node_aux(ref_node,i,local);
     }
 
-  RSS( ref_mpi_alltoallv( b_real, b_size, a_real, a_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_real, b_size, a_real, a_size, 
 			  REF_NODE_REAL_PER, REF_DBL_TYPE ), 
        "alltoallv global");
 
   if ( ref_node_naux(ref_node) > 0 )
-    RSS( ref_mpi_alltoallv( b_aux, b_size, a_aux, a_size, 
+    RSS( ref_mpi_alltoallv( ref_mpi,
+			    b_aux, b_size, a_aux, a_size, 
 			    ref_node_naux(ref_node), REF_DBL_TYPE ), 
 	 "alltoallv global");
 
@@ -810,7 +814,8 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar )
     if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       a_size[ref_node_part(ref_node,node)]++;
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -837,7 +842,8 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar )
 	a_next[ref_node_part(ref_node,node)]++;
       }
 
-  RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_global, a_size, b_global, b_size, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
@@ -847,7 +853,8 @@ REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar )
       b_scalar[node] = scalar[local];
     }
 
-  RSS( ref_mpi_alltoallv( b_scalar, b_size, a_scalar, a_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_scalar, b_size, a_scalar, a_size, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 

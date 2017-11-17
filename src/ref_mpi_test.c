@@ -59,7 +59,8 @@ int main( int argc, char *argv[] )
 	a_size[part] = part;
 
       RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
-      RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+      RSS( ref_mpi_alltoall( ref_mpi,
+			     a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer alltoall" ), "sw start");
 
       for ( part = 0; part<ref_mpi_n ; part++ )

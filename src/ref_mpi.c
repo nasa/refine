@@ -275,10 +275,13 @@ REF_STATUS ref_mpi_recv( void *data, REF_INT n, REF_TYPE type, REF_INT source )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
+REF_STATUS ref_mpi_alltoall( REF_MPI ref_mpi,
+			     void *send, void *recv, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
 
   ref_type_mpi_type(type,datatype);
 
@@ -286,6 +289,7 @@ REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
 	       recv, 1, datatype, 
 	       MPI_COMM_WORLD );
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(send);
   SUPRESS_UNUSED_COMPILER_WARNING(recv);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
@@ -295,7 +299,8 @@ REF_STATUS ref_mpi_alltoall( void *send, void *recv, REF_TYPE type )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size, 
+REF_STATUS ref_mpi_alltoallv( REF_MPI ref_mpi,
+			      void *send, REF_INT *send_size, 
 			      void *recv, REF_INT *recv_size, 
 			      REF_INT n, REF_TYPE type )
 {
@@ -309,26 +314,26 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
 
   ref_type_mpi_type(type,datatype);
 
-  send_size_n =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  send_size_n =(REF_INT *)malloc(ref_mpi_m(ref_mpi)*sizeof(REF_INT));
   RNS(send_size_n,"malloc failed");
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     send_size_n[part] = n*send_size[part];
 
-  recv_size_n =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  recv_size_n =(REF_INT *)malloc(ref_mpi_m(ref_mpi)*sizeof(REF_INT));
   RNS(recv_size_n,"malloc failed");
-  for ( part = 0; part<ref_mpi_n ; part++ )
+  each_ref_mpi_part( ref_mpi, part )
     recv_size_n[part] = n*recv_size[part];
 
-  send_disp =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  send_disp =(REF_INT *)malloc(ref_mpi_m(ref_mpi)*sizeof(REF_INT));
   RNS(send_disp,"malloc failed");
   send_disp[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker( ref_mpi, part )
     send_disp[part] = send_disp[part-1]+send_size_n[part-1];
 
-  recv_disp =(REF_INT *)malloc(ref_mpi_n*sizeof(REF_INT));
+  recv_disp =(REF_INT *)malloc(ref_mpi_m(ref_mpi)*sizeof(REF_INT));
   RNS(recv_disp,"malloc failed");
   recv_disp[0] = 0;
-  for ( part = 1; part<ref_mpi_n ; part++ )
+  each_ref_mpi_worker( ref_mpi, part )
     recv_disp[part] = recv_disp[part-1]+recv_size_n[part-1];
 
   MPI_Alltoallv(send, send_size_n, send_disp, datatype, 
@@ -341,6 +346,7 @@ REF_STATUS ref_mpi_alltoallv( void *send, REF_INT *send_size,
   free(send_size_n);
 
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(send);
   SUPRESS_UNUSED_COMPILER_WARNING(send_size);
   SUPRESS_UNUSED_COMPILER_WARNING(recv);

@@ -554,7 +554,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	    }
 	}
     
-    RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+    RSS( ref_mpi_alltoall( ref_mpi,
+			   a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
     a_total = 0;
     each_ref_mpi_part( ref_mpi, part )
@@ -584,7 +585,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	    }
 	}
 
-    RSS( ref_mpi_alltoallv( a_parts, a_size, b_parts, b_size, 
+    RSS( ref_mpi_alltoallv( ref_mpi,
+			    a_parts, a_size, b_parts, b_size, 
 			    2, REF_INT_TYPE ), 
 	 "alltoallv parts");
 
@@ -802,7 +804,8 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 	a_size[ref_node_part(ref_node,node)]++;
       }
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -841,16 +844,19 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 	a_next[part]++;
       }
 
-  RSS( ref_mpi_alltoallv( a_global, a_size, b_global, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_global, a_size, b_global, b_size, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
-  RSS( ref_mpi_alltoallv( a_real, a_size, b_real, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_real, a_size, b_real, b_size, 
 			  REF_NODE_REAL_PER, REF_DBL_TYPE ), 
        "alltoallv global");
 
   if ( ref_node_naux(ref_node) > 0 )
-    RSS( ref_mpi_alltoallv( a_aux, a_size, b_aux, b_size, 
+    RSS( ref_mpi_alltoallv( ref_mpi,
+			    a_aux, a_size, b_aux, b_size, 
 			    ref_node_naux(ref_node), REF_DBL_TYPE ), 
 	 "alltoallv global");
 
@@ -913,7 +919,8 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 	}
     }
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -964,10 +971,12 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 	}
     }
 
-  RSS( ref_mpi_alltoallv( a_c2n, a_size, b_c2n, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_c2n, a_size, b_c2n, b_size, 
 			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
        "alltoallv c2n");
-  RSS( ref_mpi_alltoallv( a_parts, a_size, b_parts, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_parts, a_size, b_parts, b_size, 
 			  ref_cell_size_per(ref_cell), REF_INT_TYPE ), 
        "alltoallv parts");
 
@@ -1026,7 +1035,8 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
 	a_size[ref_node_part(ref_node,node)] += degree;
       }
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -1060,10 +1070,12 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
 	  a_next[part]++;
 	}
 
-  RSS( ref_mpi_alltoallv( a_int, a_size, b_int, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_int, a_size, b_int, b_size, 
 			  3, REF_INT_TYPE ), 
        "alltoallv geom int");
-  RSS( ref_mpi_alltoallv( a_real, a_size, b_real, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_real, a_size, b_real, b_size, 
 			  2, REF_DBL_TYPE ), 
        "alltoallv geom real");
 

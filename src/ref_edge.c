@@ -171,7 +171,8 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_MPI ref_mpi,
       if ( part != ref_mpi_rank(ref_mpi) ) a_size[part]++;
     }
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi,part)
@@ -205,7 +206,8 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_MPI ref_mpi,
 	}
     }
 
-  RSS( ref_mpi_alltoallv( a_nodes, a_size, b_nodes, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_nodes, a_size, b_nodes, b_size, 
 			  2, REF_INT_TYPE ), 
        "alltoallv requested nodes");
 
@@ -217,7 +219,8 @@ REF_STATUS ref_edge_ghost_int( REF_EDGE ref_edge, REF_MPI ref_mpi,
       b_data[request] = data[edge];
     }
 
-  RSS( ref_mpi_alltoallv( b_data, b_size, a_data, a_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_data, b_size, a_data, a_size, 
 			  1, REF_INT_TYPE ), 
        "alltoallv return data");
 
@@ -269,7 +272,8 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_MPI ref_mpi,
       if ( part != ref_mpi_rank(ref_mpi) ) a_size[part]++;
     }
 
-  RSS( ref_mpi_alltoall( a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi,part)
@@ -303,7 +307,8 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_MPI ref_mpi,
 	}
     }
 
-  RSS( ref_mpi_alltoallv( a_nodes, a_size, b_nodes, b_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_nodes, a_size, b_nodes, b_size, 
 			  2, REF_INT_TYPE ), 
        "alltoallv requested nodes");
 
@@ -316,7 +321,8 @@ REF_STATUS ref_edge_ghost_dbl( REF_EDGE ref_edge, REF_MPI ref_mpi,
 	b_data[i+dim*request] = data[i+dim*edge];
     }
 
-  RSS( ref_mpi_alltoallv( b_data, b_size, a_data, a_size, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_data, b_size, a_data, a_size, 
 			  dim, REF_DBL_TYPE ), 
        "alltoallv return data");
 

@@ -2549,7 +2549,8 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
     if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       a_nnode[ref_node_part(ref_node,node)]++;
 
-  RSS( ref_mpi_alltoall( a_nnode, b_nnode, REF_INT_TYPE ), "alltoall nnodes");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_nnode, b_nnode, REF_INT_TYPE ), "alltoall nnodes");
 
   a_nnode_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -2576,10 +2577,12 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 	a_next[ref_node_part(ref_node,node)]++;
       }
 
-  RSS( ref_mpi_alltoallv( a_global, a_nnode, b_global, b_nnode, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_global, a_nnode, b_global, b_nnode, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
-  RSS( ref_mpi_alltoallv( a_part, a_nnode, b_part, b_nnode, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_part, a_nnode, b_part, b_nnode, 
 			  1, REF_INT_TYPE ), 
        "alltoallv global");
 
@@ -2593,7 +2596,8 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
       b_ngeom[part] += degree;
     }
 
-  RSS( ref_mpi_alltoall( b_ngeom, a_ngeom, REF_INT_TYPE ), "alltoall ngeoms");
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 b_ngeom, a_ngeom, REF_INT_TYPE ), "alltoall ngeoms");
 
   a_ngeom_total = 0;
   each_ref_mpi_part( ref_mpi, part )
@@ -2627,10 +2631,12 @@ REF_STATUS ref_geom_ghost( REF_GEOM ref_geom, REF_NODE ref_node )
 	}
     }
 
-  RSS( ref_mpi_alltoallv( b_tgi, b_ngeom, a_tgi, a_ngeom, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_tgi, b_ngeom, a_tgi, a_ngeom, 
 			  3, REF_INT_TYPE ), 
        "alltoallv tgi");
-  RSS( ref_mpi_alltoallv( b_param, b_ngeom, a_param, a_ngeom, 
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  b_param, b_ngeom, a_param, a_ngeom, 
 			  2, REF_DBL_TYPE ), 
        "alltoallv param");
 
