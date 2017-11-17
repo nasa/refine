@@ -286,40 +286,5 @@ int main( int argc, char *argv[] )
     REIS(0, remove( file ), "test clean up");
   }
 
-  { /* import mapbc */
-    REF_DICT ref_dict;
-    char filename[] = "ref_import_test.mapbc";
-    FILE *file;
-    REF_INT key, value;
-
-    file = fopen(filename,"w");
-    RNS(file, "unable to open file" );
-
-    fprintf(file, " 3\n");
-    fprintf(file, " 1 4000\n");
-    fprintf(file, " 2 5000 farfield_riem\n");
-    fprintf(file, "   3 6662 \n");
-
-    fclose(file);
-
-    RSS(ref_import_mapbc( &ref_dict, filename ), "import" );
-
-    key = 1;
-    RSS(ref_dict_value(ref_dict,key,&value),"missing");
-    REIS(4000,value,"get value");
-
-    key = 2;
-    RSS(ref_dict_value(ref_dict,key,&value),"missing");
-    REIS(5000,value,"get value");
-
-    key = 3;
-    RSS(ref_dict_value(ref_dict,key,&value),"missing");
-    REIS(6662,value,"get value");
-
-    RSS(ref_dict_free(ref_dict),"free");
-
-    REIS(0, remove( filename ), "test clean up");
-  }
-
   return 0;
 }

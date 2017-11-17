@@ -42,8 +42,6 @@ REF_STATUS ref_import_meshb_jump( FILE *file, REF_INT version,
 				  REF_BOOL *available, REF_INT *next_position );
 REF_STATUS ref_import_meshb( REF_GRID *ref_grid, const char *filename );
 
-REF_STATUS ref_import_mapbc( REF_DICT *ref_dict, const char *filename );
-
 END_C_DECLORATION
 
 #endif /* REF_IMPORT_H */

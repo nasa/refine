@@ -1312,29 +1312,3 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_mapbc( REF_DICT *ref_dict_ptr, const char *filename )
-{
-  FILE *file;
-  REF_INT n, i;
-  REF_INT key, value;
-  REF_DICT ref_dict;
-
-  RSS( ref_dict_create( ref_dict_ptr ), "create grid");
-  ref_dict = *ref_dict_ptr;
-
-  file = fopen(filename,"r");
-  if (NULL == (void *)file) printf("unable to open %s\n",filename);
-  RNS(file, "unable to open file" );
-
-  RES( 1, fscanf( file, "%d", &n ), "n" );
-  for (i=0;i<n;i++)
-    {
-      RES( 1, fscanf( file, "%d", &key ),   "read mapbc line faceid" );
-      RES( 1, fscanf( file, "%d%*[^\n]", &value ), "read mapbc line bc type" );
-      RSS( ref_dict_store( ref_dict, key, value ), "store" );
-    }
-
-  fclose(file);
-
-  return REF_SUCCESS;
-}
