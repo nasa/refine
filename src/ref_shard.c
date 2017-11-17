@@ -497,7 +497,8 @@ static REF_STATUS ref_shard_cell_add_local( REF_NODE ref_node,
 
   for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
     has_local = has_local || 
-      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+      ( ref_mpi_rank(ref_node_mpi(ref_node)) ==
+	ref_node_part(ref_node,nodes[node]) );
   
   if ( has_local )
     RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
