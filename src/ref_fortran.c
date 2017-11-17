@@ -52,7 +52,8 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
   RSS( ref_mpi_initialize(),"init ref mpi");
   ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
-  REIS( *partition, ref_mpi_id, "processor ids do not match" );
+  REIS( *partition, ref_mpi_rank(ref_grid_mpi(ref_grid)),
+	"processor ids do not match" );
 
   RSS( ref_node_initialize_n_global( ref_node, *nnodesg), "init nnodesg");
 
@@ -110,7 +111,8 @@ REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
 	{
 	  nodes[node] = f2n[node+(*node_per_face)*face] - 1;
 	  has_a_local_node = has_a_local_node ||
-	    (ref_mpi_id == ref_node_part(ref_node,nodes[node]));
+	    (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+	     ref_node_part(ref_node,nodes[node]));
 	}
       nodes[(*node_per_face)] = (*face_index);
       if ( has_a_local_node ) 
@@ -123,9 +125,9 @@ REF_STATUS FC_FUNC_(ref_fortran_import_face,REF_FORTRAN_IMPORT_FACE)
 REF_STATUS FC_FUNC_(ref_fortran_viz,REF_FORTRAN_VIZ)( void )
 {
   char filename[1024];
-  sprintf(filename,"ref_viz%04d.vtk",ref_mpi_id);
+  sprintf(filename,"ref_viz%04d.vtk",ref_mpi_rank(ref_grid_mpi(ref_grid)));
   RSS( ref_export_vtk( ref_grid, filename ), "export vtk");
-  sprintf(filename,"ref_viz%04d.tec",ref_mpi_id);
+  sprintf(filename,"ref_viz%04d.tec",ref_mpi_rank(ref_grid_mpi(ref_grid)));
   RSS( ref_export_tec( ref_grid, filename ), "export tec");
   return REF_SUCCESS;
 }
@@ -242,7 +244,8 @@ REF_STATUS FC_FUNC_(ref_fortran_size_node,REF_FORTRAN_SIZE_NODE)
   *nnodes0 = 0;
   
   each_ref_node_valid_node(ref_node,node)
-    if ( ref_mpi_id == ref_node_part(ref_node,node) ) (*nnodes0)++;
+    if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+	 ref_node_part(ref_node,node) ) (*nnodes0)++;
 
   return REF_SUCCESS;
 }
