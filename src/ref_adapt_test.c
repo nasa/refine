@@ -74,7 +74,7 @@ int main( int argc, char *argv[] )
       REF_INT i, passes;
 
       ref_mpi_stopwatch_start( ref_mpi );
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+      RSS(ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "part grid" );
       ref_node = ref_grid_node(ref_grid);
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
 
@@ -185,7 +185,7 @@ int main( int argc, char *argv[] )
       REF_INT i, passes;
 
       ref_mpi_stopwatch_start( ref_mpi );
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "part grid" );
+      RSS(ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "part grid" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");

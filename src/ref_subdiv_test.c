@@ -113,7 +113,7 @@ int main( int argc, char *argv[] )
       REF_EDGE ref_edge;
       REF_INT edge;
       
-      RSS(ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+      RSS(ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
       RSS(ref_migrate_to_balance(ref_grid),"new part");
 
       RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );

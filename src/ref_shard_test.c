@@ -83,7 +83,7 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       char file[] = "ref_shard_test.b8.ugrid";
       if ( ref_mpi_para(ref_mpi) ){
-	RSS( ref_part_b8_ugrid( &ref_grid, argv[1] ), "import" );
+	RSS( ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
       }else{
 	RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
       }

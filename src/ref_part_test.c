@@ -150,7 +150,7 @@ int main( int argc, char *argv[] )
       {
 	RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
       }
-    RSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
+    RSS(ref_part_by_extension( &import_grid, ref_mpi, grid_file ), "import" );
 
     RSS(ref_grid_free(import_grid),"free");
     RSS(ref_grid_free(export_grid),"free");
@@ -169,7 +169,7 @@ int main( int argc, char *argv[] )
 	RSS(ref_grid_free(export_grid),"free");
       }
 
-    RSS(ref_part_meshb( &import_grid, ref_mpi, grid_file ), "import" );
+    RSS(ref_part_by_extension( &import_grid, ref_mpi, grid_file ), "import" );
 
     RSS(ref_grid_free(import_grid),"free");
     if ( ref_mpi_once(ref_mpi) )
@@ -195,7 +195,7 @@ int main( int argc, char *argv[] )
 	RSS(ref_grid_free(export_grid),"free");
       }
 
-    RSS(ref_part_meshb( &import_grid, ref_mpi, grid_file ), "import" );
+    RSS(ref_part_by_extension( &import_grid, ref_mpi, grid_file ), "import" );
 
     ref_geom = ref_grid_geom(import_grid);
     REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );

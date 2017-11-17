@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
 	  RSS(ref_grid_free(export_grid),"free" );
 	}
 
-      RSS(ref_part_b8_ugrid( &import_grid, grid_file ), "import" );
+      RSS(ref_part_by_extension( &import_grid, ref_mpi, grid_file ), "import" );
       RSS(ref_migrate_new_part(import_grid),"create");
 
       RSS( ref_migrate_shufflin( import_grid ), "shufflin");
