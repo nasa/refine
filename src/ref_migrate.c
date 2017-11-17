@@ -631,6 +631,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
 
   {
+    REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_MIGRATE ref_migrate;
     PARM_INT *vtxdist;
