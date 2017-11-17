@@ -234,7 +234,8 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 		RSS( REF_FAILURE, "cell with invalid node" );
 	      }
 	    has_local = has_local || 
-	      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+	      ( ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+		ref_node_part(ref_node,nodes[node]) );
 	  }
 	if ( !has_local )
 	  {
@@ -253,7 +254,8 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 		RSS( REF_FAILURE, "cell with invalid node" );
 	      }
 	    has_local = has_local || 
-	      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+	      ( ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+		ref_node_part(ref_node,nodes[node]) );
 	  }
 	if ( !has_local )
 	  {
@@ -272,7 +274,8 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 		RSS( REF_FAILURE, "cell with invalid node" );
 	      }
 	    has_local = has_local || 
-	      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+	      ( ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+		ref_node_part(ref_node,nodes[node]) );
 	  }
 	if ( !has_local )
 	  {
@@ -285,6 +288,7 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 
 REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -341,7 +345,7 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 
   part_nnode=0;
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) ) part_nnode++;
+    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) part_nnode++;
   RSS( ref_mpi_sum( &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
 
   part_complexity=complexity;
