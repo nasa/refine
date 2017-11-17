@@ -85,6 +85,7 @@ REF_STATUS ref_adapt_free( REF_ADAPT ref_adapt )
 
 REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
   REF_CELL ref_cell;
   REF_INT cell;
@@ -104,7 +105,8 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   min_quality = 1.0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
-      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) == ref_mpi_id )
+      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) ==
+	   ref_mpi_rank(ref_mpi) )
 	{
 	  if ( ref_grid_twod(ref_grid) )
 	    {
