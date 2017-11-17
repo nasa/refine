@@ -602,8 +602,8 @@ REF_STATUS ref_smooth_local_pris_about( REF_GRID ref_grid,
 
   each_ref_cell_having_node( ref_cell, about_node, item, cell )
     for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
-      if ( ref_mpi_id != ref_node_part(ref_node,
-				       ref_cell_c2n(ref_cell,node,cell)) )
+      if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	   ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
 	return REF_SUCCESS;
 
   *allowed =  REF_TRUE;
@@ -826,8 +826,8 @@ REF_STATUS ref_smooth_local_tet_about( REF_GRID ref_grid,
 
   each_ref_cell_having_node( ref_cell, about_node, item, cell )
     for ( node = 0 ; node < ref_cell_node_per(ref_cell); node++ )
-      if ( ref_mpi_id != ref_node_part(ref_node,
-				       ref_cell_c2n(ref_cell,node,cell)) )
+      if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	   ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
 	return REF_SUCCESS;
 
   *allowed =  REF_TRUE;

@@ -2,6 +2,9 @@
 merge ref_split_edge_local_tets ref_split_edge_local_prism
   to ref_split_edge_local_cell
 
+merge ref_smooth_local_tet_about ref_smooth_local_pris_about
+  to ref_smooth_local_cell_about
+
 egads recon
  clean up method
  examine the t values to ensure it is monotonic
