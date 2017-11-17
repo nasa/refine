@@ -207,7 +207,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
     RSS(ref_node_add(ref_node,1,&node),"add");
-    ref_node_part(ref_node,node) = ref_mpi_id+1;
+    ref_node_part(ref_node,node) = ref_mpi_rank(ref_mpi)+1;
     RSS(ref_node_add(ref_node,3,&node),"add");
     RSS(ref_node_add(ref_node,2,&node),"add");
     RSS(ref_node_remove(ref_node,1),"remove");
