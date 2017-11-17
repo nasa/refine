@@ -370,7 +370,7 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 	      }
 	  }
 
-      RSS( ref_mpi_all_or( &again ), "mpi all or" );
+      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
     }
 
   return REF_SUCCESS;

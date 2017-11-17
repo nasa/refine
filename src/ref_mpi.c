@@ -395,17 +395,18 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_all_or( REF_BOOL *boolean )
+REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean )
 {
 #ifdef HAVE_MPI
   REF_BOOL output;
 
-  if ( 1 == ref_mpi_n ) return REF_SUCCESS;
+  if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
   MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
   *boolean = MIN(output,1);
 
 #else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(boolean);
 #endif
 
