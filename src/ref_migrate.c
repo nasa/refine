@@ -75,7 +75,7 @@ REF_STATUS ref_migrate_create( REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid )
   ref_malloc( ref_migrate->weight, ref_migrate_max(ref_migrate), REF_DBL);
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id == ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_node_mpi(ref_node)) == ref_node_part(ref_node,node) )
       {
 	ref_migrate_global(ref_migrate,node) = ref_node_global(ref_node,node);
 	RSS( ref_adj_add( ref_migrate_parent_global(ref_migrate),
@@ -132,7 +132,7 @@ REF_STATUS ref_migrate_inspect( REF_MIGRATE ref_migrate )
   each_ref_migrate_node( ref_migrate, node )
     {
       printf(" %2d : %3d :",
-	     ref_mpi_id,
+	     ref_mpi_rank(ref_node_mpi(ref_node)),
 	     ref_node_global(ref_node,node));
       each_ref_adj_node_item_with_ref(ref_migrate_parent_global( ref_migrate ), 
 				      node, item, global)
@@ -430,6 +430,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 
 #ifdef HAVE_ZOLTAN
   {
+    REF_MPI ref_mpi = ref_grid_mpi( ref_grid );
     REF_NODE ref_node = ref_grid_node( ref_grid );
     REF_MIGRATE ref_migrate;
     int partitions_have_changed;
@@ -542,7 +543,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 				      node, item, global )
         {
 	  part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
-	  if ( ref_mpi_id != part )
+	  if ( ref_mpi_rank(ref_mpi) != part )
 	    {
 	      a_size[part]++;
 	    }
@@ -575,7 +576,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 				      node, item, global )
         {
 	  part = ref_adj_item_ref( ref_migrate_parent_part(ref_migrate),item);
-	  if ( ref_mpi_id != part )
+	  if ( ref_mpi_rank(ref_mpi) != part )
 	    {
 	      a_parts[0+2*a_next[part]] = global;
 	      a_parts[1+2*a_next[part]] = migrate_part[node];
@@ -673,7 +674,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     each_ref_mpi_part( ref_mpi, proc )
       vtxdist[proc+1] = vtxdist[proc] + partition_size[proc];
 
-    shift = vtxdist[ref_mpi_id];
+    shift = vtxdist[ref_mpi_rank(ref_mpi)];
     n=0;
     xadj[0]=0;
     each_ref_migrate_node( ref_migrate, node )
@@ -706,7 +707,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
     ref_malloc_init( ubvec, ref_mpi_m(ref_mpi), 
 		     PARM_REAL, 1.01 );
     ref_malloc_init( part, n,
-		     PARM_INT, ref_mpi_id );
+		     PARM_INT, ref_mpi_rank(ref_mpi) );
 
 #if PARMETIS_MAJOR_VERSION == 3
 	  ParMETIS_V3_PartKway ( vtxdist, xadj, xadjncy,
@@ -730,7 +731,7 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
 	  "ParMETIS is not o.k." );
 #endif
 
-    /* printf("%d: edgecut= %d\n",ref_mpi_id,edgecut[0]); */
+    /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
 
     ref_malloc_init( node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY );
     n=0;
@@ -786,13 +787,13 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
   ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       {
 	if( ref_node_part(ref_node,node) < 0 ||
 	    ref_node_part(ref_node,node) >= ref_mpi_m(ref_mpi) )
 	  {
 	    printf("id %d node %d global %d part %d",
-		   ref_mpi_id, node, 
+		   ref_mpi_rank(ref_mpi), node, 
 		   ref_node_global(ref_node,node), 
 		   ref_node_part(ref_node,node));
 	    THROW( "part out of range" );
@@ -826,7 +827,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
     a_next[part] = a_next[part-1]+a_size[part-1];
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       {
 	part = ref_node_part(ref_node,node);
 	a_global[a_next[part]] = ref_node_global(ref_node,node);
@@ -861,7 +862,7 @@ static REF_STATUS ref_migrate_shufflin_node( REF_NODE ref_node )
 	ref_node_real(ref_node,i,local) = b_real[i+REF_NODE_REAL_PER*node];
       for ( i=0; i < ref_node_naux(ref_node) ; i++ )
 	ref_node_aux(ref_node,i,local) = b_aux[i+ref_node_naux(ref_node)*node];
-      ref_node_part(ref_node,local) = ref_mpi_id;
+      ref_node_part(ref_node,local) = ref_mpi_rank(ref_mpi);
     }
 
   ref_free(a_next);
@@ -907,7 +908,7 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
       for ( node=0; node < nunique; node++ )
 	{
 	  part = unique_parts[node];
-	  if ( ref_mpi_id != part ) a_size[part]++;
+	  if ( ref_mpi_rank(ref_mpi) != part ) a_size[part]++;
 	}
     }
 
@@ -939,7 +940,7 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
       for ( node=0; node < nunique; node++ )
 	{
 	  part = unique_parts[node];
-	  if ( ref_mpi_id != part ) 
+	  if ( ref_mpi_rank(ref_mpi) != part ) 
 	    {
 	      for (i=0;i<ref_cell_node_per(ref_cell);i++)
 		{
@@ -971,7 +972,7 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
 
   RSS( ref_cell_add_many_global( ref_cell, ref_node,
 				 b_total, 
-				 b_c2n, b_parts, ref_mpi_id ), "many glob");
+				 b_c2n, b_parts, ref_mpi_rank(ref_mpi) ), "g");
 
   free(a_next);
   free(b_parts);
@@ -987,7 +988,8 @@ REF_STATUS ref_migrate_shufflin_cell( REF_NODE ref_node,
       for ( node=0; node < ref_cell_node_per(ref_cell); node++ )
 	{
 	  need_to_keep = ( need_to_keep || 
-			   ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+			   ( ref_mpi_rank(ref_mpi) ==
+			     ref_node_part(ref_node,nodes[node]) ) );
 	}
       if ( ! need_to_keep )
 	RSS( ref_cell_remove( ref_cell, cell), "remove" );
@@ -1017,7 +1019,7 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
   ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       {
 	RSS( ref_adj_degree( ref_adj, node, &degree ), "adj deg");
 	a_size[ref_node_part(ref_node,node)] += degree;
@@ -1043,7 +1045,7 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
     a_next[part] = a_next[part-1]+a_size[part-1];
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       each_ref_adj_node_item_with_ref( ref_adj, node, item, geom)
 	{
 	  part = ref_node_part(ref_node,node);
@@ -1088,6 +1090,7 @@ REF_STATUS ref_migrate_shufflin_geom( REF_GRID ref_grid )
 
 REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi( ref_grid );
   REF_NODE ref_node = ref_grid_node( ref_grid );
   REF_CELL ref_cell;
   REF_INT group, node;
@@ -1110,7 +1113,7 @@ REF_STATUS ref_migrate_shufflin( REF_GRID ref_grid )
   RSS( ref_migrate_shufflin_cell( ref_node, ref_grid_qua(ref_grid) ), "qua");
 
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_id != ref_node_part(ref_node,node) )
+    if ( ref_mpi_rank(ref_mpi) != ref_node_part(ref_node,node) )
       {
 	need_to_keep = REF_FALSE;
 	each_ref_grid_ref_cell( ref_grid, group, ref_cell )
