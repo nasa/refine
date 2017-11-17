@@ -30,6 +30,7 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
   REF_BOOL valid_inputs;
 
@@ -41,7 +42,9 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+
+  RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
   RSS( ref_export_by_extension( ref_grid, "bamg.msh" ), "export" );
   RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part metric" );
   RSS( ref_export_metric2d( ref_grid, "bamg.metric2d" ), "export" );
@@ -55,11 +58,12 @@ int main( int argc, char *argv[] )
   REIS( 0, system("bamg -M bamg.metric2d -b bamg.msh -o bamg-out.msh"),
         "bamg failed" );
 
-  RSS( ref_import_by_extension( &ref_grid, "bamg-out.msh" ), "import" );
+  RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				"bamg-out.msh" ), "import" );
   RSS( ref_export_by_extension( ref_grid, "ref_bamg_test.b8.ugrid" ), "export");
   RSS(ref_export_tec_surf( ref_grid, "ref_bamg_test.tec" ),"ex" );
 
   RSS(ref_grid_free(ref_grid),"free");
-
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

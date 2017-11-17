@@ -114,7 +114,8 @@ int main( int argc, char *argv[] )
             }
           else
             {
-              RSS( ref_import_by_extension( &ref_grid, optarg ), "import" );
+              RSS( ref_import_by_extension( &ref_grid,
+					    ref_mpi,optarg ), "import" );
             }
           break;
         case 'g':

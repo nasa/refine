@@ -50,12 +50,14 @@
 
 int main( void )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   { /* split tet in two */
     REF_GRID ref_grid;
     REF_INT node0, node1, new_node;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     node0 = 0; node1 = 3;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
@@ -72,7 +74,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, new_node;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     node0 = 0; node1 = 1;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
@@ -89,7 +91,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, new_node;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     node0 = 1; node1 = 2;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
@@ -106,7 +108,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, new_node;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     node0 = 1; node1 = 2; node2 = 3;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
@@ -123,7 +125,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, new_node;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     node0 = 0; node1 = 1; node2 = 2;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),4,&new_node), "new");
@@ -140,7 +142,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, new_node;
 
-    RSS(ref_fixture_tet2_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet2_grid(&ref_grid,ref_mpi),"set up");
     node0 = 1; node1 = 2; node2 = 3;
 
     RSS( ref_node_add(ref_grid_node(ref_grid),5,&new_node), "new");
@@ -156,7 +158,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
 
     node0 = 0; node1 = 1;
     RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
@@ -171,7 +173,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid,ref_mpi),"set up");
 
     node0 = 5; node1 = 6;
     RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
@@ -186,7 +188,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_tet_cap_grid(&ref_grid,ref_mpi),"set up");
 
     node0 = 3; node1 = 4;
     RSS(ref_split_edge_mixed(ref_grid,node0,node1,&allowed),"split");
@@ -201,7 +203,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
 
     node0 = 0; node1 = 1;
     RSS(ref_split_edge_local_tets(ref_grid,node0,node1,&allowed),"split");
@@ -216,7 +218,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
 
     ref_node_part(ref_grid_node(ref_grid),2) =
       ref_node_part(ref_grid_node(ref_grid),2) + 1;
@@ -232,7 +234,7 @@ int main( void )
   { /* no split, close enough */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
     RSS(ref_split_pass(ref_grid),"pass");
@@ -246,7 +248,7 @@ int main( void )
   { /* top small */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_tet_grid(&ref_grid),"set up");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
     ref_node_metric(ref_grid_node(ref_grid),5,3) = 1.0/(0.25*0.25);
@@ -265,7 +267,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, node3, new_node0, new_node1;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     node0 = 1; node1 = 2;
     node2 = 4; node3 = 5;
 
@@ -286,7 +288,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, node3, new_node0, new_node1;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     node0 = 0; node1 = 1;
     node2 = 3; node3 = 4;
 
@@ -306,7 +308,7 @@ int main( void )
   { /* twod prism, no split, close enough */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
     RSS(ref_split_twod_pass(ref_grid),"pass");
@@ -320,7 +322,7 @@ int main( void )
   { /* twod prism, splits */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
     ref_node_metric(ref_grid_node(ref_grid),5,1) = 1.0/(0.25*0.25);
@@ -345,7 +347,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
 
     node0 = 0; node1 = 1;
     RSS(ref_split_edge_local_prisms(ref_grid,node0,node1,&allowed),"split");
@@ -360,7 +362,7 @@ int main( void )
     REF_INT node0, node1;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
 
     ref_node_part(ref_grid_node(ref_grid),2) =
       ref_node_part(ref_grid_node(ref_grid),2) + 1;
@@ -373,5 +375,6 @@ int main( void )
     RSS( ref_grid_free( ref_grid ), "free grid");
   }
 
+  RSS( ref_mpi_free(ref_mpi), "free");
   return 0;
 }

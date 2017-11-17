@@ -47,11 +47,12 @@
 #include "ref_import.h"
 #include "ref_export.h"
 
-static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
+static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr,
+					 REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
 
-  RSS(ref_fixture_tet_grid( &ref_grid ), "tet");
+  RSS(ref_fixture_tet_grid( &ref_grid, ref_mpi ), "tet");
 
   RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
@@ -60,11 +61,12 @@ static REF_STATUS set_up_tet_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
   return REF_SUCCESS;
 }
 
-static REF_STATUS set_up_pyramid_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
+static REF_STATUS set_up_pyramid_for_subdiv( REF_SUBDIV *ref_subdiv_ptr,
+					     REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
 
-  RSS(ref_fixture_pyr_grid( &ref_grid ), "pri");
+  RSS(ref_fixture_pyr_grid( &ref_grid, ref_mpi ), "pri");
 
   RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
@@ -73,11 +75,12 @@ static REF_STATUS set_up_pyramid_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
   return REF_SUCCESS;
 }
 
-static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr )
+static REF_STATUS set_up_prism_for_subdiv( REF_SUBDIV *ref_subdiv_ptr,
+					   REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
 
-  RSS(ref_fixture_pri_grid( &ref_grid ), "pri");
+  RSS(ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri");
 
   RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
@@ -166,7 +169,7 @@ int main( int argc, char *argv[] )
       REF_SUBDIV ref_subdiv;
       REF_GRID ref_grid;
       
-      RSS(ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+      RSS(ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
 
       RSS( ref_metric_unit_node( ref_grid_node(ref_grid)), "id metric" );
 
@@ -191,7 +194,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1;
 
-    RSS( ref_fixture_pri_stack_grid( &ref_grid ), "stack" );
+    RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "stack" );
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
 
@@ -222,7 +225,7 @@ int main( int argc, char *argv[] )
 
   { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
 
     RES(0,ref_subdiv_mark(ref_subdiv,0),"init mark");
     RES(0,ref_subdiv_mark(ref_subdiv,6),"init mark");
@@ -242,7 +245,7 @@ int main( int argc, char *argv[] )
 
   { /* mark and relax prism*/
     REF_SUBDIV ref_subdiv;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
@@ -258,7 +261,7 @@ int main( int argc, char *argv[] )
 
   { /* relax tet */
     REF_SUBDIV ref_subdiv;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 1-2");
@@ -281,7 +284,7 @@ int main( int argc, char *argv[] )
 
   { /* relax tet oppisite edges */
     REF_SUBDIV ref_subdiv;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
     RSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 5");
@@ -305,7 +308,7 @@ int main( int argc, char *argv[] )
   { /* new nodes */
     REF_SUBDIV ref_subdiv;
     REF_NODE ref_node;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0 0-1");
@@ -325,7 +328,7 @@ int main( int argc, char *argv[] )
   { /* split prism in two */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -340,7 +343,7 @@ int main( int argc, char *argv[] )
   { /* split prism in two with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -359,7 +362,7 @@ int main( int argc, char *argv[] )
   { /* split prism in four with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -382,7 +385,7 @@ int main( int argc, char *argv[] )
   { /* cleave prism across quads */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_prism_sides( ref_subdiv ), "sides");
@@ -399,7 +402,7 @@ int main( int argc, char *argv[] )
   { /* split tet in two, map 1 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -415,7 +418,7 @@ int main( int argc, char *argv[] )
   { /* split tet in two, map 4 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,3),"mark edge 0-3");
@@ -431,7 +434,7 @@ int main( int argc, char *argv[] )
   { /* split tet in 4 around node 3 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0-1");
@@ -448,7 +451,7 @@ int main( int argc, char *argv[] )
   { /* split tet in 4 around node 0 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge");
@@ -465,7 +468,7 @@ int main( int argc, char *argv[] )
   { /* split tet in 4 around node 1 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,3,2),"mark edge");
@@ -482,7 +485,7 @@ int main( int argc, char *argv[] )
   { /* split tet in 4 around node 2 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,3,1),"mark edge");
@@ -499,7 +502,7 @@ int main( int argc, char *argv[] )
   { /* split tet in 8 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_tet_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
@@ -516,7 +519,7 @@ int main( int argc, char *argv[] )
   { /* unsplit pyramid */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
@@ -530,7 +533,7 @@ int main( int argc, char *argv[] )
   { /* unsplit pyramid */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_split(ref_subdiv),"split");
@@ -544,7 +547,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in two, mark e0:n0n1, promoting opp */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
@@ -562,7 +565,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in two, mark e2:n0n3, promoting opp */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,3),"mark edge 2");
@@ -580,7 +583,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in two, mark e6:n2n4, no promotion */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,2,4),"mark edge 6");
@@ -598,7 +601,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in to pyr and pri, mark e6, e3 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
@@ -617,7 +620,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in to pyr and pri e1, e5 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
@@ -636,7 +639,7 @@ int main( int argc, char *argv[] )
   { /* relax and split pyramid in to pyr and 3 pri, all but e2,e4 */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,2),"mark edge 1");
@@ -660,7 +663,7 @@ int main( int argc, char *argv[] )
   { /* split pyramid in to pyrs and tets, e0e1e3 base and e7 top */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,0,1),"mark edge 0");
@@ -680,7 +683,7 @@ int main( int argc, char *argv[] )
   { /* split pyramid in to pyrs and tets, e5e6e7 base and e0 top */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 5");
@@ -700,7 +703,7 @@ int main( int argc, char *argv[] )
   { /* split pyramid in to pyrs and tets, e3e4e6 base and e2 top */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
-    RSS(set_up_pyramid_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_pyramid_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 3");
@@ -724,7 +727,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_INT n;
 
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
     ref_node = ref_grid_node(ref_grid);
 
@@ -756,7 +759,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_INT n;
 
-    RSS(set_up_prism_for_subdiv(&ref_subdiv),"set up");
+    RSS(set_up_prism_for_subdiv(&ref_subdiv,ref_mpi),"set up");
     ref_grid = ref_subdiv_grid(ref_subdiv);
     ref_node = ref_grid_node(ref_grid);
 

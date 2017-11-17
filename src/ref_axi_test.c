@@ -21,8 +21,6 @@
 #include <string.h>
 #include <math.h>
 
-
-
 #include "ref_grid.h"
 #include "ref_adj.h"
 #include "ref_node.h"
@@ -31,7 +29,6 @@
 
 #include "ref_cell.h"
 #include "ref_sort.h"
-
 
 #include "ref_axi.h"
 
@@ -42,7 +39,7 @@
 #include "ref_mpi.h"
 #include "ref_edge.h"
 
-static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr,
+static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  REF_DBL z0, REF_DBL z1 )
 {
   REF_GRID ref_grid;
@@ -50,7 +47,7 @@ static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr,
   REF_INT nodes[5] = {0,1,2,3,10};
   REF_INT cell, node;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
 
   ref_node = ref_grid_node(ref_grid);
@@ -80,7 +77,7 @@ static REF_STATUS ref_quad_grid( REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr,
+static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                   REF_DBL z0, REF_DBL z1, REF_DBL z2 )
 {
   REF_GRID ref_grid;
@@ -88,7 +85,7 @@ static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr,
   REF_INT nodes[6] = {0,1,2,3,4,5};
   REF_INT cell, node;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
 
   ref_node = ref_grid_node(ref_grid);
@@ -130,13 +127,14 @@ static REF_STATUS ref_prism_grid( REF_GRID *ref_grid_ptr,
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
+  RSS(ref_mpi_create( &ref_mpi ), "create");
   if (argc==3)
     {
       REF_GRID ref_grid;
 
       printf("importing %s\n",argv[1]);
-      RSS(ref_import_by_extension( &ref_grid, argv[1] ),"from msh");
+      RSS(ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ),"from msh");
       printf("complete.\n");
 
       RSS(ref_grid_inspect( ref_grid ), "inspection");
@@ -151,6 +149,7 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free" );
       printf("done.\n");
 
+      ref_mpi_free(ref_mpi);
       return 0;
     }
 
@@ -159,7 +158,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_node_add(ref_node,0,&node0),"add node");
@@ -187,7 +186,7 @@ int main( int argc, char *argv[] )
     REF_NODE ref_node;
     REF_INT node0, node1;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_node_add(ref_node,0,&node0),"add node");
@@ -213,7 +212,7 @@ int main( int argc, char *argv[] )
   { /* collapse quad 0 */
     REF_GRID ref_grid;
 
-    RSS( ref_quad_grid( &ref_grid, 0.0, 0.0 ), "quad fixture" );
+    RSS( ref_quad_grid( &ref_grid, ref_mpi, 0.0, 0.0 ), "quad fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 2, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -227,7 +226,7 @@ int main( int argc, char *argv[] )
   { /* collapse quad 1a */
     REF_GRID ref_grid;
 
-    RSS( ref_quad_grid( &ref_grid, 0.0, 0.1 ), "quad fixture" );
+    RSS( ref_quad_grid( &ref_grid, ref_mpi, 0.0, 0.1 ), "quad fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 3, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -241,7 +240,7 @@ int main( int argc, char *argv[] )
   { /* collapse quad 1b */
     REF_GRID ref_grid;
 
-    RSS( ref_quad_grid( &ref_grid, 0.1, 0.0 ), "quad fixture" );
+    RSS( ref_quad_grid( &ref_grid, ref_mpi, 0.1, 0.0 ), "quad fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 3, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -255,7 +254,7 @@ int main( int argc, char *argv[] )
   { /* collapse quad 2 */
     REF_GRID ref_grid;
 
-    RSS( ref_quad_grid( &ref_grid, 0.1, 0.1 ), "quad fixture" );
+    RSS( ref_quad_grid( &ref_grid, ref_mpi, 0.1, 0.1 ), "quad fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -269,7 +268,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to prism */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.1, 0.1, 0.1 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.1, 0.1, 0.1 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -284,7 +283,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to pyramid 0 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.0, 0.1, 0.1 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.0, 0.1, 0.1 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -299,7 +298,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to pyramid 1 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.1, 0.0, 0.1 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.1, 0.0, 0.1 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -314,7 +313,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to pyramid 2 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.1, 0.1, 0.0 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.1, 0.1, 0.0 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -329,7 +328,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to tet 0 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.1, 0.0, 0.0 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.1, 0.0, 0.0 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -344,7 +343,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to tet 1 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.0, 0.1, 0.0 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.0, 0.1, 0.0 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -359,7 +358,7 @@ int main( int argc, char *argv[] )
   { /* collapse prism to tet 2 */
     REF_GRID ref_grid;
 
-    RSS( ref_prism_grid( &ref_grid, 0.0, 0.0, 0.1 ), "prism fixture" );
+    RSS( ref_prism_grid( &ref_grid, ref_mpi, 0.0, 0.0, 0.1 ), "prism fixture" );
     RSS( ref_axi_wedge( ref_grid ), "wedge");
 
     REIS( 4, ref_node_n(ref_grid_node(ref_grid)), "node n");
@@ -371,5 +370,6 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free( ref_grid ), "free" );
   }
 
+  ref_mpi_free(ref_mpi);
   return 0;
 }

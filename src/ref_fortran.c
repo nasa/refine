@@ -35,6 +35,7 @@
 #include "ref_gather.h"
 #include "ref_histogram.h"
 
+static REF_MPI ref_mpi = NULL;
 static REF_GRID ref_grid = NULL;
 
 REF_BOOL ref_fortran_allow_screen_output = REF_TRUE;
@@ -46,7 +47,8 @@ REF_STATUS FC_FUNC_(ref_fortran_init,REF_FORTRAN_INIT)
 {
   REF_NODE ref_node;
   REF_INT node, pos;
-  RSS( ref_grid_create( &ref_grid ), "create grid" );
+  RSS( ref_mpi_create( &ref_mpi ), "create mpi" );
+  RSS( ref_grid_create( &ref_grid, ref_mpi ), "create grid" );
   ref_node = ref_grid_node(ref_grid);
 
   ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
@@ -411,6 +413,8 @@ REF_STATUS FC_FUNC_(ref_fortran_free,REF_FORTRAN_FREE)( void )
 {
   RSS( ref_grid_free( ref_grid ), "free grid");
   ref_grid = NULL;
+  RSS( ref_mpi_free( ref_mpi ), "free mpi");
+  ref_mpi = NULL;
   return REF_SUCCESS;
 }
 

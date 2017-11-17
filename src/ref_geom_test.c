@@ -45,9 +45,13 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_INT assoc_pos = REF_EMPTY;
   REF_INT recon_pos = REF_EMPTY;
   REF_INT viz_pos = REF_EMPTY;
+
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   RXS( ref_args_find( argc, argv, "--assoc", &assoc_pos ),
        REF_NOT_FOUND, "arg search" );
   RXS( ref_args_find( argc, argv, "--recon", &recon_pos ),
@@ -63,9 +67,11 @@ int main( int argc, char *argv[] )
       REIS( 1, viz_pos,
 	    "required args: --viz grid.ext");
       printf("grid source %s\n",argv[2]);
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[2] ), "argv import" );
       RSS( ref_geom_tec( ref_grid, "ref_geom_viz.tec" ), "geom export" );
       RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_free( ref_mpi ), "free" );
       return 0;
     }
 
@@ -80,7 +86,8 @@ int main( int argc, char *argv[] )
       printf("reconstruct geometry association\n");
       printf("grid source %s\n",argv[2]);
       printf("geometry source %s\n",argv[3]);
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[2] ), "argv import" );
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3] ), "ld egads" );
       RSS( ref_geom_recon( ref_grid ), "geom recon" );
       printf("verify topo\n");
@@ -96,6 +103,7 @@ int main( int argc, char *argv[] )
       RSS( ref_export_by_extension( ref_grid, "ref_geom_recon.meshb" ),
 	   "export" );
       RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_free( ref_mpi ), "free" );
       return 0;
     }
   
@@ -110,10 +118,12 @@ int main( int argc, char *argv[] )
       printf("grid source %s\n",argv[2]);
       printf("geometry association source %s\n",argv[3]);
       printf("output %s\n",argv[4]);
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "argv import" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[2] ), "argv import" );
       RSS( ref_geom_load( ref_grid, argv[3] ), "geom gas import" );
       RSS( ref_export_by_extension( ref_grid, argv[4] ), "argv export" );
       RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_free( ref_mpi ), "free" );
       return 0;
     }
   
@@ -126,7 +136,7 @@ int main( int argc, char *argv[] )
       REF_DBL max_edge = -0.25;
       if ( 4 == argc ) max_edge = atof( argv[3] );
 
-      RSS(ref_grid_create(&ref_grid),"create");
+      RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
       RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[1] ), "ld egads" );
       RSS(ref_geom_egads_tess( ref_grid, max_edge ), "tess egads" );
@@ -344,7 +354,7 @@ int main( int argc, char *argv[] )
     REF_DBL params[2];
     REF_DBL tol =1.0e-12;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_geom = ref_grid_geom(ref_grid);
  
     node0 = 0; node1 = 1; new_node = 10;
@@ -376,7 +386,7 @@ int main( int argc, char *argv[] )
     REF_INT type, id, geom;
     REF_DBL params[2];
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_geom = ref_grid_geom(ref_grid);
 
     node0 = 0; node1 = 1; new_node = 10;
@@ -419,7 +429,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT node;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     
     node = 4;
     RSS( ref_geom_constrain(ref_grid,node), "no geom" );
@@ -543,7 +553,7 @@ int main( int argc, char *argv[] )
     RSS(ref_geom_free(ref_geom),"free");
   }
 
-
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }
 

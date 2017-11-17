@@ -52,7 +52,7 @@ struct REF_GRID_STRUCT {
   REF_BOOL twod;
 };
 
-REF_STATUS ref_grid_create( REF_GRID *ref_grid );
+REF_STATUS ref_grid_create( REF_GRID *ref_grid, REF_MPI ref_mpi );
 REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );

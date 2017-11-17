@@ -34,7 +34,7 @@
     ref_part_implicit( nnodesg, ref_mpi_m(ref_mpi),			\
 		       ref_node_global(ref_node,local[(node)]) );
 
-REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -42,11 +42,9 @@ REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT nnodesg = 4;
   REF_INT cell;
-  REF_MPI ref_mpi;
   
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
-  ref_mpi = ref_grid_mpi(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
   global[0]=0;global[1]=1;global[2]=2;global[3]=3;
@@ -91,7 +89,7 @@ REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -99,13 +97,10 @@ REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid_ptr )
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT nnodesg = 5;
   REF_INT cell;
-  REF_MPI ref_mpi;
   
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
-  ref_mpi = ref_grid_mpi(ref_grid);
   ref_node = ref_grid_node(ref_grid);
-
 
   global[0]=0;global[1]=1;global[2]=2;global[3]=3;
 
@@ -142,14 +137,14 @@ REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[5] = {0,1,2,3,4};
   REF_INT cell, node;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -200,7 +195,7 @@ REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }   
 
-REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -208,11 +203,9 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT nnodesg = 6;
-  REF_MPI ref_mpi;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
-  ref_mpi = ref_grid_mpi(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
   ref_grid_twod(ref_grid) = REF_TRUE;
@@ -279,7 +272,8 @@ REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr,
+					 REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -287,11 +281,9 @@ REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr )
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT nnodesg = 6;
-  REF_MPI ref_mpi;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
-  ref_mpi = ref_grid_mpi(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
   
@@ -372,7 +364,7 @@ REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -380,11 +372,9 @@ REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
   REF_INT nnodesg = 12;
-  REF_MPI ref_mpi;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
-  ref_mpi = ref_grid_mpi(ref_grid);
   ref_node = ref_grid_node(ref_grid);
 
   global[0] = 0; global[1] = 1; global[2] = 2;
@@ -491,14 +481,14 @@ REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT nodes[8] = {0,1,2,3,4,5,6,7};
   REF_INT cell, node;
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -567,7 +557,7 @@ REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -593,7 +583,7 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
   dy = (y1-y0)/((REF_DBL)(m-1));
   dz = (z1-z0)/((REF_DBL)(n-1));
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -782,7 +772,7 @@ REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid_ptr )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -808,7 +798,7 @@ REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid_ptr )
   dy = (y1-y0)/((REF_DBL)(m-1));
   dz = (z1-z0)/((REF_DBL)(n-1));
 
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 

@@ -171,7 +171,7 @@ int main( int argc, char *argv[] )
 
       if ( ref_mpi_once(ref_mpi) )
         {
-          RSS(ref_import_by_extension( &ref_grid,
+          RSS(ref_import_by_extension( &ref_grid, ref_mpi,
                                        "ref_adapt_test.b8.ugrid" ), "imp" );
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
@@ -246,7 +246,7 @@ int main( int argc, char *argv[] )
 
       if ( ref_mpi_once(ref_mpi) )
         {
-          RSS(ref_import_by_extension( &ref_grid,
+          RSS(ref_import_by_extension( &ref_grid, ref_mpi,
                                        "ref_adapt_test.b8.ugrid" ), "imp" );
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
@@ -259,7 +259,7 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_INT i, passes;
 
-      RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+      RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up grid");
       ref_grid_twod(ref_grid) = REF_TRUE;
 
       RSS(ref_migrate_to_balance(ref_grid),"balance");

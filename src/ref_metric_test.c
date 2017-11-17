@@ -73,6 +73,11 @@ int main( int argc, char *argv[] )
   REF_INT curvature_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
+
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+    
   RXS( ref_args_find( argc, argv, "--curve-limit", &curve_limit_pos ),
        REF_NOT_FOUND, "arg search" );
   RXS( ref_args_find( argc, argv, "--curvature", &curvature_pos ),
@@ -90,7 +95,7 @@ int main( int argc, char *argv[] )
 	    "required args: --curve-limit grid.ext input.metric geom.egads [assoc.gas]");
       RAS( argc==5 || argc==6 , 
 	    "required args: --curve-limit grid.ext input.metric geom.egads [assoc.gas]");
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ),
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[2] ),
 	   "unable to load target grid in position 1" );
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
 	   "unable to load parent metric in position 2");
@@ -108,7 +113,8 @@ int main( int argc, char *argv[] )
 	   "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
+      RSS( ref_mpi_free(ref_mpi), "free");
+      RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
 
@@ -120,7 +126,7 @@ int main( int argc, char *argv[] )
 	    "required args: --curvature grid.ext geom.egads assoc.gas");
       REIS( 5, argc,
 	    "required args: --curvature grid.ext geom.egads assoc.gas");
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ),
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[2] ),
 	   "unable to load target grid in position 1" );
       RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[3] ),
 	   "unable to load egads in position 2" );
@@ -136,7 +142,8 @@ int main( int argc, char *argv[] )
 	   "al");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
+      RSS( ref_mpi_free(ref_mpi), "free");
+      RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
   
@@ -146,9 +153,9 @@ int main( int argc, char *argv[] )
 
       REIS( 2, parent_pos,
 	    "required args: grid.ext --parent pgrid.ext pgrid.metric");
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ),
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ),
 	   "unable to load target grid in position 1" );
-      RSS( ref_import_by_extension( &parent_grid, argv[3] ),
+      RSS( ref_import_by_extension( &parent_grid, ref_mpi, argv[3] ),
 	   "unable to load parent grid in position 3" );
       RSS( ref_part_metric( ref_grid_node(parent_grid), argv[4] ),
 	   "unable to load parent grid in position 4");
@@ -162,6 +169,8 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free");
       RSS( ref_grid_free( parent_grid ), "free");
 
+      RSS( ref_mpi_free(ref_mpi), "free");
+      RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
   
@@ -174,7 +183,7 @@ int main( int argc, char *argv[] )
       RAS( argc==5 ,
 	   "required args: --xyzdirlen grid.ext input.metric output");
 
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ),
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[2] ),
 	   "unable to load target grid in position 1" );
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[3] ),
 	   "unable to load parent grid in position 2");
@@ -182,8 +191,9 @@ int main( int argc, char *argv[] )
 	   "export metric in xyzdirlen");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
-      return 0;
+      RSS( ref_mpi_free(ref_mpi), "free");
+      RSS( ref_mpi_stop( ), "stop" );
+     return 0;
     }
 
   if ( argc == 2 )
@@ -191,9 +201,8 @@ int main( int argc, char *argv[] )
       REF_GRID ref_grid;
       REF_DBL *metric;
 
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "examine header" );
 
       ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
       RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
@@ -210,6 +219,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_grid_free( ref_grid ), "free");
 
+      RSS( ref_mpi_free(ref_mpi), "free");
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
@@ -218,9 +228,8 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "examine header" );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
@@ -233,6 +242,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_grid_free( ref_grid ), "free");
 
+      RSS( ref_mpi_free(ref_mpi), "free");
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
@@ -241,9 +251,8 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "read grid" );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
@@ -252,7 +261,7 @@ int main( int argc, char *argv[] )
       RSS( ref_gather_metric( ref_grid, argv[3] ), "in");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
+      RSS( ref_mpi_free(ref_mpi), "free");
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
@@ -263,9 +272,8 @@ int main( int argc, char *argv[] )
       REF_DBL bounding_box[6];
       REF_INT i;
 
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "examine header" );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
@@ -279,7 +287,7 @@ int main( int argc, char *argv[] )
 				      bounding_box ), "bbox");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
+      RSS( ref_mpi_free(ref_mpi), "free");
       RSS( ref_mpi_stop( ), "stop" );
       return 0;
     }
@@ -290,7 +298,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -317,7 +325,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -344,7 +352,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -371,7 +379,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_pri_tet_cap_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_pri_tet_cap_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -406,7 +414,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_pyr_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_pyr_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -441,7 +449,7 @@ int main( int argc, char *argv[] )
     REF_DBL *metric;
     REF_INT node;
 
-    RSS( ref_fixture_hex_grid( &ref_grid ), "tet" );
+    RSS( ref_fixture_hex_grid( &ref_grid, ref_mpi ), "tet" );
 
     ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
@@ -509,7 +517,7 @@ smr = vector'*val*vector
 se.^-0.5
   */
 
-    RSS( ref_grid_create( &ref_grid ), "create grid" );
+    RSS( ref_grid_create( &ref_grid, ref_mpi ), "create grid" );
     RSS( ref_node_add( ref_grid_node(ref_grid), 0, &node ), "add" );
 
     ref_malloc( metric_file, 
@@ -553,8 +561,8 @@ se.^-0.5
     REF_INT node, im;
     REF_DBL tol = -1.0;
 
-    RSS( ref_fixture_twod_brick_grid( &parent_grid ), "brick");
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick");
+    RSS( ref_fixture_twod_brick_grid( &parent_grid, ref_mpi ), "brick");
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick");
     RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
  
     RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
@@ -578,8 +586,8 @@ se.^-0.5
     REF_INT node, im;
     REF_DBL tol = -1.0;
 
-    RSS( ref_fixture_tet_brick_grid( &parent_grid ), "brick");
-    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick");
+    RSS( ref_fixture_tet_brick_grid( &parent_grid, ref_mpi ), "brick");
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick");
 
     RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
 	   "oly" );
@@ -596,5 +604,7 @@ se.^-0.5
     RSS( ref_grid_free( parent_grid ), "free");
   }
 
+  RSS( ref_mpi_free(ref_mpi), "free");
+  RSS( ref_mpi_stop( ), "stop" );
   return 0;
 }

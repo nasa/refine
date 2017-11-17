@@ -34,12 +34,14 @@
 
 int main( void )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   { /* opposite prism node */
     REF_GRID ref_grid;
     REF_INT node, opposite;
     
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri fix" );
 
     node = 0;
     RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid), 
@@ -53,7 +55,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT node0, node1, node2, node3;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
 
     node0=0;node1=1;
     RSS(ref_twod_opposite_edge(ref_grid_pri(ref_grid),
@@ -86,7 +88,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_INT cell, tri, pri;
     
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri fix" );
 
     cell = 0;
     RSS( ref_twod_tri_pri_tri( ref_grid_tri(ref_grid), ref_grid_pri(ref_grid), 
@@ -97,5 +99,6 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

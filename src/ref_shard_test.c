@@ -47,11 +47,12 @@
 
 #include "ref_import.h"
 
-static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr )
+static REF_STATUS set_up_hex_for_shard( REF_SHARD *ref_shard_ptr,
+					REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
 
-  RSS( ref_fixture_hex_grid( &ref_grid ), "fixure hex" );
+  RSS( ref_fixture_hex_grid( &ref_grid, ref_mpi ), "fixure hex" );
 
   RSS(ref_shard_create(ref_shard_ptr,ref_grid),"create");
 
@@ -85,7 +86,7 @@ int main( int argc, char *argv[] )
       if ( ref_mpi_para(ref_mpi) ){
 	RSS( ref_part_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
       }else{
-	RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+	RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
       }
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),"import");
       RSS( ref_gather_ncell( ref_grid_node(ref_grid), ref_grid_hex(ref_grid), 
@@ -157,7 +158,7 @@ int main( int argc, char *argv[] )
 
   { /* mark */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     REIS(0,ref_shard_mark(ref_shard,1),"init mark");
     REIS(0,ref_shard_mark(ref_shard,3),"init mark");
@@ -174,7 +175,7 @@ int main( int argc, char *argv[] )
     REF_SHARD ref_shard;
     REF_BOOL marked;
 
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_to_split(ref_shard,1,6),"mark face for 1-6");
 
@@ -192,7 +193,7 @@ int main( int argc, char *argv[] )
 
   { /* mark and relax 1-6 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_to_split(ref_shard,1,6),"mark face for 1-6");
 
@@ -205,7 +206,7 @@ int main( int argc, char *argv[] )
 
   { /* mark and relax 0-7 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_to_split(ref_shard,0,7),"mark face for 1-6");
 
@@ -218,7 +219,7 @@ int main( int argc, char *argv[] )
 
   { /* relax nothing*/
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_relax(ref_shard),"relax");
 
@@ -234,7 +235,7 @@ int main( int argc, char *argv[] )
 
   { /* mark cell edge 0 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,0),"mark edge 0");
 
@@ -246,7 +247,7 @@ int main( int argc, char *argv[] )
 
   { /* mark cell edge 11 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,11),"mark edge 11");
 
@@ -258,7 +259,7 @@ int main( int argc, char *argv[] )
 
   { /* mark cell edge 5 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,5),"mark edge 5");
 
@@ -270,7 +271,7 @@ int main( int argc, char *argv[] )
 
   { /* mark cell edge 8 */
     REF_SHARD ref_shard;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,8),"mark edge 8");
 
@@ -283,7 +284,7 @@ int main( int argc, char *argv[] )
   { /* split on edge 0 */
     REF_SHARD ref_shard;
     REF_GRID ref_grid;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
     ref_grid = ref_shard_grid(ref_shard);
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,0),"mark edge 0");
@@ -303,7 +304,7 @@ int main( int argc, char *argv[] )
   { /* split on edge 8 */
     REF_SHARD ref_shard;
     REF_GRID ref_grid;
-    RSS(set_up_hex_for_shard(&ref_shard),"set up");
+    RSS(set_up_hex_for_shard(&ref_shard,ref_mpi),"set up");
     ref_grid = ref_shard_grid(ref_shard);
 
     RSS(ref_shard_mark_cell_edge_split(ref_shard,0,8),"mark edge 0");
@@ -324,7 +325,7 @@ int main( int argc, char *argv[] )
 
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     RSS(ref_cell_remove(ref_grid_tri(ref_grid),0),"one tri");
 
     RSS(ref_shard_prism_into_tet(ref_grid,0,0),"shard prism");
@@ -342,7 +343,7 @@ int main( int argc, char *argv[] )
 
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up");
     RSS(ref_cell_remove(ref_grid_tri(ref_grid),0),"one tri");
 
     RSS(ref_shard_prism_into_tet(ref_grid,1,101),"shard prism");
@@ -360,7 +361,7 @@ int main( int argc, char *argv[] )
 
     REF_GRID ref_grid;
     REF_INT cell, nodes[] = {0,1,2,15};
-    RSS(ref_fixture_pri_stack_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pri_stack_grid(&ref_grid,ref_mpi),"set up");
     RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add one tri");
 
     RSS(ref_shard_prism_into_tet(ref_grid,2,15),"shard prism");
@@ -378,7 +379,7 @@ int main( int argc, char *argv[] )
 
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pyr_grid(&ref_grid),"set up");
+    RSS(ref_fixture_pyr_grid(&ref_grid,ref_mpi),"set up");
 
     RSS(ref_shard_prism_into_tet(ref_grid,0,0),"shard prism");
 

@@ -21,8 +21,6 @@
 #include <string.h>
 #include <math.h>
 
-
-
 #include "ref_edge.h"
 
 #include "ref_grid.h"
@@ -48,7 +46,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[6];
     REF_INT cell;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
     nodes[3] = 3; nodes[4] = 4; nodes[5] = 5;
@@ -70,7 +68,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT edge;
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"pri");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"pri");
     RSS(ref_edge_create(&ref_edge,ref_grid),"create");
 
     RSS( ref_edge_with( ref_edge, 0, 1, &edge ), "find" );
@@ -90,7 +88,7 @@ int main( int argc, char *argv[] )
                       REF_EMPTY,REF_EMPTY,REF_EMPTY,
                       REF_EMPTY,REF_EMPTY,REF_EMPTY};
 
-    RSS(ref_fixture_pri_grid(&ref_grid),"pri");
+    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"pri");
     RSS(ref_edge_create(&ref_edge,ref_grid),"create");
 
     for ( edge=0;edge<ref_edge_n(ref_edge);edge++ )

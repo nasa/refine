@@ -54,8 +54,10 @@ int main( int argc, char *argv[] )
 
   if ( 1 < argc )
     {
+      REF_MPI ref_mpi;
       REF_GRID ref_grid;
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+      RSS( ref_mpi_create( &ref_mpi ), "create" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
       if ( 2 < argc )
 	{
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part m");
@@ -73,6 +75,7 @@ int main( int argc, char *argv[] )
 					       REF_TRUE ), "gather on" );      
       RSS( ref_gather_tec_movie_frame( ref_grid, "clump" ), "gather" );      
       RSS( ref_grid_free(ref_grid),"free");
+      RSS( ref_mpi_free( ref_mpi ), "free" );
     }
 
   return 0;

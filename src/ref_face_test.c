@@ -35,7 +35,9 @@
 
 int main( void )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   {  /* make faces shared by two elements */
     REF_FACE ref_face;
     REF_GRID ref_grid;
@@ -43,7 +45,7 @@ int main( void )
     REF_INT cell;
     REF_INT node;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     for( node=0; node<6; node++)
       nodes[node] = node;
@@ -69,7 +71,7 @@ int main( void )
     REF_INT node;
     REF_INT face;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     for( node=0; node<4; node++)
       nodes[node] = node;
@@ -99,7 +101,7 @@ int main( void )
     REF_INT cell;
     REF_INT node, node0, node1, face;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     for( node=0; node<8; node++)
       nodes[node] = node;
@@ -177,6 +179,7 @@ int main( void )
     
     REIS( 2, open_node, "expect 180 deg node");
   }
-
+  
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

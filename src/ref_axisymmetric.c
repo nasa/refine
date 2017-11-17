@@ -28,6 +28,7 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
 
   if (3 != argc)
@@ -36,8 +37,10 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   printf("importing %s\n",argv[1]);
-  RSS(ref_import_by_extension( &ref_grid, argv[1] ),"from msh");
+  RSS(ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ),"from msh");
   printf("complete.\n");
 
   RSS(ref_grid_inspect( ref_grid ), "inspection");
@@ -50,5 +53,7 @@ int main( int argc, char *argv[] )
   RSS(ref_export_by_extension( ref_grid, argv[2] ),"to file");
   printf("done.\n");
 
+  RSS( ref_grid_free(ref_grid), "free" );
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

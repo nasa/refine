@@ -41,14 +41,16 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
-
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+ 
   if (argc>1) 
     {
       printf("validating\n");
 
       printf("reading %s\n",argv[1]);
-      RSS(ref_import_by_extension( &ref_grid, argv[1] ),"from ugrid");
+      RSS(ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ),"from ugrid");
       printf("complete.\n");
       
       RSS(ref_grid_inspect( ref_grid ), "inspection");
@@ -63,8 +65,8 @@ int main( int argc, char *argv[] )
       RSS( ref_export_tec( ref_grid, "validate.tec" ), "tec" );
 
       printf("done.\n");
-      return 0;
     }
-
+  
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

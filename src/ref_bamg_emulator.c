@@ -44,7 +44,8 @@ int main( int argc, char *argv[] )
   REF_INT location;
   REF_INT i, passes;
 
-  REF_GRID ref_grid;
+  REF_MPI ref_mpi;
+  REF_GRID ref_grid = NULL;
   REF_GRID background_grid = NULL;
   char timestamp[512];
   char command[1024];
@@ -85,10 +86,11 @@ int main( int argc, char *argv[] )
   printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 
-  RSS( ref_import_by_extension( &ref_grid, input_filename ), "in" );
-  RSS( ref_import_by_extension( &background_grid, input_filename ), "in" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  RSS( ref_import_by_extension( &ref_grid, ref_mpi, input_filename ), "in" );
+  RSS( ref_import_by_extension( &background_grid, ref_mpi,
+				input_filename ), "in" );
   ref_grid_inspect(ref_grid);
-
 
   if ( noop )
     {
@@ -139,5 +141,8 @@ int main( int argc, char *argv[] )
   printf("%s\n",command);
   REIS( 0, system(command), "cp command failed" );
 
+  RSS( ref_grid_free(background_grid), "free" );
+  RSS( ref_grid_free(ref_grid), "free" );
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

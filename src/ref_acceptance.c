@@ -21,8 +21,6 @@
 #include <string.h>
 #include <math.h>
 
-#include "ref_inflate.h"
-
 #include "ref_math.h"
 
 #include "ref_import.h"
@@ -47,11 +45,14 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT masabl_pos;
   REF_INT ugawg_pos;
   REF_INT polar2d_pos;
+
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
 
   RXS(ref_args_find( argc, argv, "-ugawg", &ugawg_pos ),
       REF_NOT_FOUND, "arg");
@@ -66,7 +67,7 @@ int main( int argc, char *argv[] )
           return( 1 );
         }
       printf("%s reading\n",argv[3]);
-      RSS( ref_import_by_extension( &ref_grid, argv[3] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[3] ), "in");
 
       printf("%s field type\n",argv[2]);
       if ( strcmp(argv[2],"linear") == 0 )
@@ -111,7 +112,7 @@ int main( int argc, char *argv[] )
           return( 1 );
         }
       printf("%s reading\n",argv[3]);
-      RSS( ref_import_by_extension( &ref_grid, argv[2] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[2] ), "in");
 
       RSS( ref_metric_polar2d_node( ref_grid_node(ref_grid) ),"lin");
       printf("%s metric exported\n",argv[3]);
@@ -124,7 +125,7 @@ int main( int argc, char *argv[] )
 
   if ( REF_EMPTY != masabl_pos )
     {
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "in");
 
       RSS( ref_metric_masabl_node( ref_grid_node(ref_grid) ),
            "masabl" );
@@ -140,10 +141,10 @@ int main( int argc, char *argv[] )
       switch ( atoi(argv[1]) )
         {
         case 1:
-          RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick");
+          RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick");
           break;
         case 2:
-          RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick");
+          RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick");
           break;
         default:
           THROW("case not recognized");
@@ -156,7 +157,7 @@ int main( int argc, char *argv[] )
 
   if ( 4 == argc )
     {
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "in");
 
       RSS( ref_metric_olympic_node( ref_grid_node(ref_grid), atof(argv[3]) ),
            "oly" );
@@ -176,7 +177,7 @@ int main( int argc, char *argv[] )
       c = atof(argv[3]);
       k = atof(argv[4]);
 
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "in");
       ref_node = ref_grid_node(ref_grid);
 
       each_ref_node_valid_node( ref_node, node )
@@ -214,7 +215,7 @@ int main( int argc, char *argv[] )
       REF_INT pos;
       REF_INT node;
 
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "in");
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "in");
       ref_node = ref_grid_node(ref_grid);
 
       pos = 3;

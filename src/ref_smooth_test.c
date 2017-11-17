@@ -56,7 +56,8 @@
 
 #include "ref_twod.h"
 
-static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr, 
+static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
+						 REF_MPI ref_mpi,
 						 REF_INT *target_node, 
 						 REF_INT *target_cell )
 {
@@ -66,7 +67,7 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  RSS( ref_grid_create( ref_grid_ptr ), "grid" );
+  RSS( ref_grid_create( ref_grid_ptr,ref_mpi ), "grid" );
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -127,6 +128,7 @@ static REF_STATUS ref_smooth_tri_single_fixture( REF_GRID *ref_grid_ptr,
 }
 
 static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr, 
+					      REF_MPI ref_mpi,
 					      REF_INT *target_node )
 {
   REF_GRID ref_grid;
@@ -135,7 +137,7 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  RSS( ref_grid_create( ref_grid_ptr ), "grid" );
+  RSS( ref_grid_create( ref_grid_ptr,ref_mpi ), "grid" );
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -214,6 +216,7 @@ static REF_STATUS ref_smooth_tri_two_fixture( REF_GRID *ref_grid_ptr,
 }
 
 static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr, 
+					      REF_MPI ref_mpi,
 					      REF_INT *target_node,
 					      REF_INT *top_node )
 {
@@ -223,7 +226,7 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  RSS( ref_grid_create( ref_grid_ptr ), "grid" );
+  RSS( ref_grid_create( ref_grid_ptr,ref_mpi ), "grid" );
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -275,6 +278,7 @@ static REF_STATUS ref_smooth_tet_two_fixture( REF_GRID *ref_grid_ptr,
 }
 
 static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr, 
+					      REF_MPI ref_mpi,
 					      REF_INT *target_node )
 {
   REF_GRID ref_grid;
@@ -282,7 +286,7 @@ static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, cell;
   
-  RSS(ref_grid_create(ref_grid_ptr),"create");
+  RSS(ref_grid_create(ref_grid_ptr,ref_mpi),"create");
   ref_grid =  *ref_grid_ptr;
 
   ref_node = ref_grid_node(ref_grid);
@@ -350,14 +354,16 @@ static REF_STATUS ref_smooth_tet_tri_fixture( REF_GRID *ref_grid_ptr,
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   if ( argc > 2 )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "examine header" );
 
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
 
@@ -367,8 +373,6 @@ int main( int argc, char *argv[] )
            "surf");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
-      RSS( ref_mpi_stop( ), "stop" );
     }
 
   if ( argc == 2 )
@@ -378,20 +382,20 @@ int main( int argc, char *argv[] )
 
       RSS( ref_mpi_start( argc, argv ), "start" );
 
-      RSS( ref_smooth_tet_tri_fixture( &ref_grid, &target_node ), "fix" );
+      RSS( ref_smooth_tet_tri_fixture( &ref_grid, ref_mpi,
+				       &target_node ), "fix" );
       
       RSS( ref_export_by_extension( ref_grid, argv[1] ),
            "fixture");
 
       RSS( ref_grid_free( ref_grid ), "free");
-
-      RSS( ref_mpi_stop( ), "stop" );
     }
 
   {   
     REF_GRID ref_grid;
     REF_INT node, cell;
-    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, ref_mpi,
+					&node, &cell ), "2d fix" );
 
     RSS( ref_smooth_tri_steepest_descent( ref_grid, node ), "smooth" );
 
@@ -402,7 +406,8 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT node, cell;
     REF_DBL ideal[3];
-    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, ref_mpi,
+					&node, &cell ), "2d fix" );
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal),"ideal");
     RWDS(0.5,ideal[0],-1,"ideal x");
@@ -417,7 +422,8 @@ int main( int argc, char *argv[] )
     REF_INT node, cell;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, ref_mpi,
+					&node, &cell ), "2d fix" );
 
     ref_node_metric( ref_grid_node(ref_grid), 0, node ) = 0.25;
 
@@ -434,7 +440,8 @@ int main( int argc, char *argv[] )
     REF_INT node, cell;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_tri_single_fixture( &ref_grid, &node, &cell ), "2d fix" );
+    RSS( ref_smooth_tri_single_fixture( &ref_grid, ref_mpi,
+					&node, &cell ), "2d fix" );
 
     ref_node_metric( ref_grid_node(ref_grid), 5, node ) = 0.25;
 
@@ -451,7 +458,8 @@ int main( int argc, char *argv[] )
     REF_INT node;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
+    RSS( ref_smooth_tri_two_fixture( &ref_grid, ref_mpi,
+				     &node ), "2d fix" );
 
     RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal),"ideal");
     RWDS(0.5*(0.5+0.5*sqrt(3.0)),ideal[0],-1,"ideal x");
@@ -467,7 +475,8 @@ int main( int argc, char *argv[] )
     REF_DBL quality0, quality1;
     REF_BOOL allowed;
 
-    RSS( ref_smooth_tri_two_fixture( &ref_grid, &node ), "2d fix" );
+    RSS( ref_smooth_tri_two_fixture( &ref_grid, ref_mpi,
+				     &node ), "2d fix" );
 
     ref_node_xyz( ref_grid_node(ref_grid), 2, node ) = 0.0000001;
     RSS( ref_twod_opposite_node( ref_grid_pri(ref_grid), 
@@ -503,7 +512,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT node, cell;
     REF_DBL ideal[3];
-    RSS( ref_fixture_tet_grid( &ref_grid ), "2d fix" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "2d fix" );
     node = 3;
     cell = 0;
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
@@ -524,7 +533,7 @@ int main( int argc, char *argv[] )
     REF_INT node, cell;
     REF_DBL ideal[3];
     REF_DBL hz;
-    RSS( ref_fixture_tet_grid( &ref_grid ), "2d fix" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "2d fix" );
     node = 3;
     cell = 0;
     RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
@@ -548,7 +557,8 @@ int main( int argc, char *argv[] )
     REF_INT node, top_node;
     REF_DBL ideal[3];
 
-    RSS( ref_smooth_tet_two_fixture( &ref_grid, &node, &top_node ), "3d 2tet" );
+    RSS( ref_smooth_tet_two_fixture( &ref_grid, ref_mpi,
+				     &node, &top_node ), "3d 2tet" );
 
     RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal),"ideal");
     RWDS(0.574914957130530,ideal[0],-1,"ideal x");
@@ -563,7 +573,8 @@ int main( int argc, char *argv[] )
     REF_INT node, top_node;
     REF_DBL quality0, quality1;
 
-    RSS( ref_smooth_tet_two_fixture( &ref_grid, &node, &top_node ), "3d 2tet" );
+    RSS( ref_smooth_tet_two_fixture( &ref_grid, ref_mpi,
+				     &node, &top_node ), "3d 2tet" );
 
     ref_node_xyz( ref_grid_node(ref_grid), 0, node ) = 1.0;
     ref_node_xyz( ref_grid_node(ref_grid), 1, node ) = 0.0;
@@ -590,7 +601,8 @@ int main( int argc, char *argv[] )
    REF_INT target_node;
    REF_INT cell;
    REF_DBL ideal[3];
-   RSS( ref_smooth_tet_tri_fixture( &ref_grid, &target_node ), "fix" );
+   RSS( ref_smooth_tet_tri_fixture( &ref_grid, ref_mpi,
+				    &target_node ), "fix" );
 
    ref_node_xyz(ref_grid_node(ref_grid),0,target_node) = 0.5;
 
@@ -605,5 +617,7 @@ int main( int argc, char *argv[] )
    RSS( ref_grid_free( ref_grid ), "free");
  }
 
-  return 0;
+ RSS( ref_mpi_free( ref_mpi ), "free" );
+ RSS( ref_mpi_stop( ), "stop" );
+ return 0;
 }

@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_fixture_pri_stack_grid( &ref_grid ), "set up tet" );
+      RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "set up tet" );
 
       RSS( ref_gather_b8_ugrid( ref_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
@@ -71,7 +71,7 @@ int main( int argc, char *argv[] )
       REF_GEOM ref_geom;
       char file[] = "ref_gather_test.meshb";
       
-      RSS(ref_fixture_tet_grid( &export_grid ), "set up tet" );
+      RSS(ref_fixture_tet_grid( &export_grid, ref_mpi ), "set up tet" );
       ref_geom = ref_grid_geom(export_grid);
       ref_geom_cad_data_size(ref_geom) = 3;
       ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
@@ -85,7 +85,8 @@ int main( int argc, char *argv[] )
 
       if ( ref_mpi_once(ref_mpi) )
 	{
-	  RSS(ref_import_by_extension( &import_grid, file ), "import" );
+	  RSS(ref_import_by_extension( &import_grid, ref_mpi,
+				       file ), "import" );
 	  ref_geom = ref_grid_geom(import_grid);
 	  REIS( 3, ref_geom_cad_data_size(ref_geom), "cad size" );
 	  REIS( 5, ref_geom_cad_data(ref_geom)[0], "cad[0]" );
@@ -100,7 +101,7 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_fixture_pri_grid( &ref_grid ), "set up tet" );
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "set up tet" );
 
       RSS( ref_gather_plot( ref_grid, "ref_gather_script.eps" ), 
 	   "gather");
@@ -113,7 +114,8 @@ int main( int argc, char *argv[] )
   if ( 1 < argc )
     {
       REF_GRID import_grid;
-
+      
+      ref_mpi_stopwatch_start( ref_mpi );
       RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "read");
       RSS(ref_migrate_to_balance(import_grid),"balance");

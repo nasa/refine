@@ -25,7 +25,7 @@
 #include "ref_malloc.h"
 #include "ref_matrix.h"
 
-REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
+REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi )
 {
   REF_GRID ref_grid;
 
@@ -33,7 +33,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid_ptr )
 
   ref_grid = *ref_grid_ptr;
 
-  RSS( ref_mpi_create( &ref_grid_mpi(ref_grid) ), "mpi create" );
+  ref_grid_mpi(ref_grid) = ref_mpi;
 
   RSS( ref_node_create( &ref_grid_node(ref_grid), 
 			ref_grid_mpi(ref_grid) ), "node create" );
@@ -87,8 +87,7 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
   RSS( ref_cell_deep_copy( &ref_grid_qua(ref_grid),
 			   ref_grid_qua(original) ), "qua deep copy" );
 
-  RSS( ref_mpi_deep_copy( &ref_grid_mpi(ref_grid),
-			   ref_grid_mpi(original) ), "mpi deep copy" );
+  ref_grid_mpi(ref_grid) = ref_grid_mpi(original);
   RSS( ref_geom_deep_copy( &ref_grid_geom(ref_grid),
 			   ref_grid_geom(original) ), "geom deep copy" );
   RSS( ref_gather_create( &ref_grid_gather(ref_grid) ), "gather create" );
@@ -118,8 +117,6 @@ REF_STATUS ref_grid_free( REF_GRID ref_grid )
   RSS( ref_cell_free( ref_grid_tet(ref_grid) ), "tet free");
 
   RSS( ref_node_free( ref_grid_node(ref_grid) ), "node free");
-
-  RSS( ref_mpi_free( ref_grid_mpi(ref_grid) ), "mpi free");
 
   ref_free( ref_grid );
   return REF_SUCCESS;

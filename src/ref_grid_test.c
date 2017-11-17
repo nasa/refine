@@ -41,12 +41,14 @@
 
 int main( void )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+ 
   {  /* init */
     REF_GRID ref_grid;
     REIS(REF_NULL,ref_grid_free(NULL),"dont free NULL");
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     RSS(ref_grid_free(ref_grid),"free");
   }
 
@@ -56,7 +58,7 @@ int main( void )
     REF_INT node_per;
     REF_INT group;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     node_per = 3;
     each_ref_grid_ref_cell( ref_grid, group, ref_cell )
@@ -74,7 +76,7 @@ int main( void )
     REF_CELL ref_cell;
     REF_INT node_per;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     node_per = 4;
     RSS( ref_grid_cell_with( ref_grid, node_per, &ref_cell ), "with" );
@@ -88,7 +90,7 @@ int main( void )
     REF_CELL ref_cell;
     REF_INT node_per;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
 
     node_per = 4;
     RSS( ref_grid_face_with( ref_grid, node_per, &ref_cell ), "with" );
@@ -103,7 +105,7 @@ int main( void )
     REF_INT cell, nodes[4];
     REF_INT nnode, nface, *g2l, *l2g;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_cell = ref_grid_tri(ref_grid);
 
     nodes[0] = 5; nodes[1] = 8; nodes[2] = 6; nodes[3] = 10;
@@ -128,7 +130,7 @@ int main( void )
     REF_INT cell, nodes[4];
     REF_INT nnode, nface, *g2l, *l2g;
 
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_cell = ref_grid_tri(ref_grid);
 
     nodes[0] = 5; nodes[1] = 8; nodes[2] = 6; nodes[3] = 10;
@@ -154,7 +156,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];
     REF_INT tri;
-    RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "fix" );
 
     xyz[0]= 0.2;
     xyz[1]= 0.0;
@@ -187,7 +189,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];
     REF_INT tri;
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "fix" );
 
     xyz[0]= 0.5;
     xyz[1]= 0.0;
@@ -208,7 +210,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
-    RSS( ref_fixture_tet_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "fix" );
 
     xyz[0]= 0.2;
     xyz[1]= 0.1;
@@ -243,7 +245,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
-    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "fix" );
 
     xyz[0]= 0.5;
     xyz[1]= 0.5;
@@ -265,7 +267,7 @@ int main( void )
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
     REF_INT tet;
-    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "fix" );
 
     xyz[0]= 0.5;
     xyz[1]= 0.5;
@@ -283,5 +285,6 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

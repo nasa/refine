@@ -25,19 +25,19 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid );
-REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_tet_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
+REF_STATUS ref_fixture_tet2_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
 
-REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_pyr_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
 
-REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid );
-REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid_ptr );
-REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_pri_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
+REF_STATUS ref_fixture_pri_tet_cap_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
+REF_STATUS ref_fixture_pri_stack_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
 
-REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_hex_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
 
-REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid );
-REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid );
+REF_STATUS ref_fixture_tet_brick_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
+REF_STATUS ref_fixture_twod_brick_grid( REF_GRID *ref_grid, REF_MPI ref_mpi );
 
 END_C_DECLORATION
 

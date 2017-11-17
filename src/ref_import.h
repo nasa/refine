@@ -26,7 +26,8 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_import_examine_header( const char *filename );
 
-REF_STATUS ref_import_by_extension( REF_GRID *ref_grid, const char *filename );
+REF_STATUS ref_import_by_extension( REF_GRID *ref_grid, REF_MPI ref_mpi,
+				    const char *filename );
 
 REF_STATUS ref_import_meshb_header( const char *filename,
                                    REF_INT *version, REF_DICT key_pos );

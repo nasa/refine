@@ -72,7 +72,7 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
       if (verbose) printf("meshb dim %d\n",dim);
       REIS( 3, dim, "only 3D supported" );
     }
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
   ref_geom = ref_grid_geom(ref_grid);
@@ -304,7 +304,8 @@ REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			      const char *filename )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
@@ -318,7 +319,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
@@ -1266,7 +1267,8 @@ REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
 
   if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
     {
-      RSS( ref_part_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
+      RSS( ref_part_b8_ugrid( ref_grid_ptr, ref_mpi,
+			      filename ), "b8_ugrid failed");
       return REF_SUCCESS;
     }
   if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 

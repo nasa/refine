@@ -44,6 +44,7 @@ static int print_usage(const char *name)
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
   REF_INT node;
   REF_DBL dx, dy, dz, ds;
@@ -60,7 +61,9 @@ int main( int argc, char *argv[] )
   if ( 3 > argc )
     return(print_usage(argv[0]));
 
-  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
+  RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
 
   pos = 3;
   while( pos < argc ) {
@@ -194,7 +197,7 @@ int main( int argc, char *argv[] )
   }
   RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
 
-  RSS(ref_grid_free(ref_grid),"free");
-
+  RSS( ref_grid_free(ref_grid), "free" );
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

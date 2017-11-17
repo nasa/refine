@@ -55,7 +55,7 @@ int main( int argc, char *argv[] )
       REF_INT update_global, update_part;
       REF_ADJ ref_adj;
 
-      RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+      RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up grid");
       /* fake 2 proc */
       ref_node_part(ref_grid_node(ref_grid),3) = 1;
       ref_node_part(ref_grid_node(ref_grid),4) = 1;
@@ -87,7 +87,7 @@ int main( int argc, char *argv[] )
       REF_INT keep, lose;
       REF_ADJ ref_adj;
 
-      RSS(ref_fixture_pri_grid(&ref_grid),"set up grid");
+      RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"set up grid");
       /* fake 2 proc */
       ref_node_part(ref_grid_node(ref_grid),0) = 1;
       ref_node_part(ref_grid_node(ref_grid),1) = 1;
@@ -118,7 +118,8 @@ int main( int argc, char *argv[] )
       if ( ref_mpi_once(ref_mpi) ) 
 	{
 	  REF_GRID export_grid;
-	  RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
+	  RSS(ref_fixture_pri_stack_grid( &export_grid,
+					  ref_mpi ), "set up tet" );
 	  RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
 	  RSS(ref_grid_free(export_grid),"free" );
 	}

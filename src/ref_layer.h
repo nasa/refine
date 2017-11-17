@@ -41,7 +41,7 @@ struct REF_LAYER_STRUCT {
   REF_BOOL verbose;
 };
 
-REF_STATUS ref_layer_create( REF_LAYER *ref_layer );
+REF_STATUS ref_layer_create( REF_LAYER *ref_layer, REF_MPI ref_mpi );
 REF_STATUS ref_layer_free( REF_LAYER ref_layer );
 
 #define ref_layer_list(ref_layer) ((ref_layer)->ref_list)

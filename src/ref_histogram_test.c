@@ -62,7 +62,8 @@ int main( int argc, char *argv[] )
 
       if ( !ref_mpi_para(ref_mpi) )
 	{
-	  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "import" );
+	  RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+					argv[1] ), "import" );
 	}
       else
 	{

@@ -145,7 +145,7 @@ int main( int argc, char *argv[] )
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.b8.ugrid";
     
-    RSS(ref_fixture_pri_stack_grid( &export_grid ), "set up tet" );
+    RSS(ref_fixture_pri_stack_grid( &export_grid, ref_mpi ), "set up tet" );
     if ( ref_mpi_once(ref_mpi) ) 
       {
 	RSS(ref_export_b8_ugrid( export_grid, grid_file ), "export" );
@@ -164,7 +164,7 @@ int main( int argc, char *argv[] )
     
     if ( ref_mpi_once(ref_mpi) ) 
       {
-	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+	RSS(ref_fixture_tet_brick_grid( &export_grid, ref_mpi ), "set up tet" );
 	RSS(ref_export_meshb( export_grid, grid_file ), "export" );
 	RSS(ref_grid_free(export_grid),"free");
       }
@@ -182,7 +182,7 @@ int main( int argc, char *argv[] )
     REF_GEOM ref_geom;
     if ( ref_mpi_once(ref_mpi) ) 
       {
-	RSS(ref_fixture_tet_brick_grid( &export_grid ), "set up tet" );
+	RSS(ref_fixture_tet_brick_grid( &export_grid, ref_mpi ), "set up tet" );
 	ref_geom = ref_grid_geom(export_grid);
 	ref_geom_cad_data_size(ref_geom) = 3;
 	ref_malloc(ref_geom_cad_data(ref_geom), 
@@ -212,7 +212,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     char metric_file[] = "ref_part_test.metric";
     
-    RSS(ref_fixture_tet_grid( &ref_grid ), "set up tet" );
+    RSS(ref_fixture_tet_grid( &ref_grid, ref_mpi ), "set up tet" );
 
     if ( ref_mpi_once(ref_mpi) ) 
       {

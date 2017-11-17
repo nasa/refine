@@ -65,7 +65,8 @@ REF_STATUS ref_import_examine_header( const char *filename )
 }
 
 
-REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			     const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -79,7 +80,7 @@ REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT face_id;
   REF_INT cell, new_cell;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
@@ -139,7 +140,8 @@ REF_STATUS ref_import_fgrid( REF_GRID *ref_grid_ptr, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			     const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -154,7 +156,7 @@ REF_STATUS ref_import_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT face_id;
   REF_INT cell, new_cell;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
@@ -346,7 +348,7 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr,
+static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 					const char *filename,
 					REF_BOOL swap )
 {
@@ -359,7 +361,7 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr,
   REF_INT max_chunk, nread, chunk, ixyz;
   REF_DBL *xyz;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
@@ -432,21 +434,24 @@ static REF_STATUS ref_import_bin_ugrid( REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_lb8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+				 const char *filename )
 {
-  RSS( ref_import_bin_ugrid( ref_grid_ptr, filename, REF_FALSE ),
+  RSS( ref_import_bin_ugrid( ref_grid_ptr, ref_mpi, filename, REF_FALSE ),
        "import bin ugrid unswapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+				const char *filename )
 {
-  RSS( ref_import_bin_ugrid( ref_grid_ptr, filename, REF_TRUE ),
+  RSS( ref_import_bin_ugrid( ref_grid_ptr, ref_mpi, filename, REF_TRUE ),
        "import bin ugrid swapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+				const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -461,7 +466,7 @@ REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT node_per, cell, new_cell;
   REF_INT fortran_record_size;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
@@ -655,7 +660,8 @@ REF_STATUS ref_import_r8_ugrid( REF_GRID *ref_grid_ptr, const char *filename )
 
  */
 
-REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			   const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -671,7 +677,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, const char *filename )
   REF_INT status;
   REF_INT elem, nelem, type, flag, three, zero;
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
 
@@ -921,7 +927,8 @@ REF_STATUS ref_import_meshb_jump( FILE *file, REF_INT version,
 }
 
 
-REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
+REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			     const char *filename )
 {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -946,7 +953,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
   if (verbose) printf("meshb version %d\n",version);
   if (verbose) ref_dict_inspect(ref_dict);
 
-  RSS( ref_grid_create( ref_grid_ptr ), "create grid");
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
   ref_node = ref_grid_node(ref_grid);
   ref_geom = ref_grid_geom(ref_grid);
@@ -1260,6 +1267,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, const char *filename )
 }
 
 REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
+				    REF_MPI ref_mpi,
 				    const char *filename )
 {
   size_t end_of_string;
@@ -1268,37 +1276,37 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
 
   if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
     {
-      RSS( ref_import_lb8_ugrid( ref_grid_ptr, filename ), "lb8_ugrid failed");
+      RSS( ref_import_lb8_ugrid( ref_grid_ptr, ref_mpi, filename ), "lb8_ugrid failed");
     } 
   else 
     if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
       {
-	RSS( ref_import_b8_ugrid( ref_grid_ptr, filename ), "b8_ugrid failed");
+	RSS( ref_import_b8_ugrid( ref_grid_ptr, ref_mpi, filename ), "b8_ugrid failed");
       } 
     else 
       if( strcmp(&filename[end_of_string-9],".r8.ugrid") == 0 ) 
 	{
-	  RSS( ref_import_r8_ugrid( ref_grid_ptr, filename ), "r8_ugrid failed");
+	  RSS( ref_import_r8_ugrid( ref_grid_ptr, ref_mpi, filename ), "r8_ugrid failed");
 	} 
       else 
 	if( strcmp(&filename[end_of_string-6],".ugrid") == 0 ) 
 	  {
-	    RSS( ref_import_ugrid( ref_grid_ptr, filename ), "ugrid failed");
+	    RSS( ref_import_ugrid( ref_grid_ptr, ref_mpi, filename ), "ugrid failed");
 	  } 
 	else 
 	  if( strcmp(&filename[end_of_string-6],".fgrid") == 0 ) 
 	    {
-	      RSS( ref_import_fgrid( ref_grid_ptr, filename ), "fgrid failed");
+	      RSS( ref_import_fgrid( ref_grid_ptr, ref_mpi, filename ), "fgrid failed");
 	    } 
 	  else 
 	    if( strcmp(&filename[end_of_string-4],".msh") == 0 ) 
 	      {
-		RSS( ref_import_msh( ref_grid_ptr, filename ), "msh failed");
+		RSS( ref_import_msh( ref_grid_ptr, ref_mpi, filename ), "msh failed");
 	      }
 	    else 
 	      if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
 		{
-		  RSS( ref_import_meshb( ref_grid_ptr, filename ), 
+		  RSS( ref_import_meshb( ref_grid_ptr, ref_mpi, filename ), 
 		       "meshb failed");
 		} 
 	      else 

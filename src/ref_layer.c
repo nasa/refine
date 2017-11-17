@@ -27,7 +27,7 @@
 #include "ref_mpi.h"
 #include "ref_validation.h"
 
-REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
+REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr, REF_MPI ref_mpi )
 {
   REF_LAYER ref_layer;
 
@@ -36,7 +36,7 @@ REF_STATUS ref_layer_create( REF_LAYER *ref_layer_ptr )
   ref_layer = *ref_layer_ptr;
 
   RSS(ref_list_create(&(ref_layer_list(ref_layer))),"create list");
-  RSS(ref_grid_create(&(ref_layer_grid(ref_layer))),"create grid");
+  RSS(ref_grid_create(&(ref_layer_grid(ref_layer)),ref_mpi),"create grid");
 
   ref_layer->nnode_per_layer = REF_EMPTY;
   ref_layer->verbose = REF_FALSE;

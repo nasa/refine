@@ -45,14 +45,15 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
 
   if( REF_FALSE )
     { /* export for viz */
     REF_GRID ref_grid;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "fix" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
 
@@ -64,7 +65,7 @@ int main( int argc, char *argv[] )
   {
     REF_GRID ref_grid;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "fix" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
 
@@ -74,7 +75,7 @@ int main( int argc, char *argv[] )
   {
     REF_GRID ref_grid;
 
-    RSS( ref_fixture_tet2_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "fix" );
 
     RSS( ref_validation_cell_node( ref_grid ), "invalid pri" );
 
@@ -86,7 +87,7 @@ int main( int argc, char *argv[] )
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
     REF_BOOL valid;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "fix" );
     
     RSS( ref_cell_nodes( ref_grid_tri(ref_grid), 0, nodes), "tri0");
     RSS(ref_node_tri_twod_orientation(ref_grid_node(ref_grid), 
@@ -103,7 +104,7 @@ int main( int argc, char *argv[] )
   {
     REF_GRID ref_grid;
 
-    RSS( ref_fixture_pri_stack_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "fix" );
 
     if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_orig_stack" ), "see" );
@@ -121,7 +122,7 @@ int main( int argc, char *argv[] )
   {
     REF_GRID ref_grid;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "fix" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "fix" );
 
     if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ) 
       RSS( ref_export_tec_part( ref_grid, "ref_fixture_orig_pri" ), "see" );
@@ -139,12 +140,12 @@ int main( int argc, char *argv[] )
   if ( 2 == argc )
     {
       REF_GRID ref_grid;
-      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "fix" );
+      RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "fix" );
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
       RSS( ref_grid_free(ref_grid),"free");
     }
 
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   RSS( ref_mpi_stop( ), "stop" );
-
   return 0;
 }

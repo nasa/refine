@@ -33,8 +33,8 @@
 
 #include "ref_project.h"
 
-#include "ref_import.c"
-#include "ref_export.c"
+#include "ref_import.h"
+#include "ref_export.h"
 
 #include "ref_dict.h"
 #include "ref_mpi.h"
@@ -45,9 +45,13 @@
 #include "ref_subdiv.h"
 #include "ref_metric.h"
 
+#include "ref_malloc.h"
+
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+ 
   if (argc==2) 
     {
       REF_GRID ref_grid;
@@ -57,7 +61,8 @@ int main( int argc, char *argv[] )
       REF_INT edge;
 
       printf("import from %s\n",argv[1]);
-      RSS( ref_import_by_extension( &ref_grid, argv[1] ), "examine header" );
+      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
+				    argv[1] ), "examine header" );
       printf(" complete.\n");
 
       printf("imply metric\n");
@@ -100,15 +105,18 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free" );
       printf("done.\n");
 
+      RSS( ref_mpi_free( ref_mpi ), "free" );
       return 0;
     }
 
 
   {
+    REF_MPI ref_mpi;
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node, tri[4], cell;
-    RSS(ref_grid_create(&ref_grid),"create");
+    RSS(ref_mpi_create(&ref_mpi),"create");
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_node = ref_grid_node(ref_grid);
     RSS( ref_node_add( ref_node, 0, &node ), "node");
     ref_node_xyz(ref_node, 0, node ) = 0.0;
@@ -154,7 +162,9 @@ int main( int argc, char *argv[] )
     RSS( ref_project_edge( ref_grid, 0, 2, 1 ), "proj");
 
     RSS( ref_grid_free( ref_grid ), "free" );
+    RSS( ref_mpi_free( ref_mpi ), "free" );
   }
 
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

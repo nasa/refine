@@ -45,6 +45,7 @@
 
 int main( int argc, char *argv[] )
 {
+  REF_MPI ref_mpi;
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_DICT faceids;
@@ -83,7 +84,9 @@ int main( int argc, char *argv[] )
       return 1;
     }
 
-  RSS( ref_import_by_extension( &ref_grid, argv[1] ), "read grid" );
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+
+  RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "read grid" );
   ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
 
   nlayers = atoi( argv[2] );
@@ -243,6 +246,7 @@ int main( int argc, char *argv[] )
 
   RSS(ref_dict_free( faceids ), "free" );
   RSS(ref_grid_free(ref_grid),"free");
+  RSS( ref_mpi_free( ref_mpi ), "free" );
 
   return 0;
 }

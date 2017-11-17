@@ -41,13 +41,13 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
   RSS( ref_mpi_start( argc, argv ), "start" );
-
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
   {  /* make layers */
     REF_LAYER ref_layer;
 
-    RSS(ref_layer_create(&ref_layer),"create");
+    RSS(ref_layer_create(&ref_layer, ref_mpi),"create");
 
     REIS( 0, ref_layer_n(ref_layer), "check total layers");
 
@@ -59,9 +59,9 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_INT faceid;
     
-    RSS(ref_fixture_tet_brick_grid( &ref_grid ), "tet brick");
+    RSS(ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "tet brick");
     RSS(ref_metric_unit_node( ref_grid_node(ref_grid) ),"unit metric");
-    RSS(ref_layer_create( &ref_layer ),"create");
+    RSS(ref_layer_create( &ref_layer, ref_mpi),"create");
 
     faceid = 6; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
     faceid = 4; RSS(ref_layer_attach( ref_layer, ref_grid, faceid ),"attach");
@@ -86,6 +86,6 @@ int main( int argc, char *argv[] )
   }
 
   RSS( ref_mpi_stop(  ), "stop" );
-  
+  RSS( ref_mpi_free( ref_mpi ), "free" );
   return 0;
 }

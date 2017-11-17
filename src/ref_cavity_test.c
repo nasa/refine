@@ -50,7 +50,9 @@
 
 int main( int argc, char *argv[] )
 {
-
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_create( &ref_mpi ), "create" );
+  
   { /* init 2 */
     REF_CAVITY ref_cavity;
     REIS(REF_NULL, ref_cavity_free(NULL),"dont free NULL");
@@ -231,7 +233,7 @@ int main( int argc, char *argv[] )
     REF_INT face;
     REF_BOOL reversed;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
@@ -257,7 +259,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
 
@@ -279,7 +281,7 @@ int main( int argc, char *argv[] )
     REF_INT face;
     REF_BOOL reversed;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
@@ -299,7 +301,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT global, node, clone;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
@@ -328,7 +330,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT global, node;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
@@ -356,7 +358,7 @@ int main( int argc, char *argv[] )
     REF_INT global, node, face;
     REF_BOOL visible;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
@@ -390,7 +392,7 @@ int main( int argc, char *argv[] )
     REF_INT global, node, face;
     REF_BOOL visible;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
@@ -424,7 +426,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT node, opp;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick" );
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
     REIS( 32, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
@@ -456,7 +458,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT node, opp;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick" );
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
@@ -493,7 +495,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT global, node, clone, opp;
 
-    RSS( ref_fixture_pri_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
@@ -538,7 +540,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick" );
 
     RSS(ref_cavity_create(&ref_cavity,2),"create");
     RSS(ref_cavity_add_tri(ref_cavity,ref_grid,8),"insert first tri");
@@ -557,7 +559,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_tet2_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "brick" );
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
     RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first tri");
@@ -579,7 +581,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT node, opp;
 
-    RSS( ref_fixture_twod_brick_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick" );
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
@@ -600,7 +602,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
     RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
@@ -615,7 +617,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_tet2_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
     RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
@@ -647,7 +649,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REF_INT node, nnode;
 
-    RSS( ref_fixture_tet_brick_grid( &ref_grid ), "brick" );
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
     ref_node = ref_grid_node(ref_grid);
     nnode = ref_node_n(ref_node);
     RSS(ref_metric_unit_node( ref_node ), "unit metric");
@@ -674,7 +676,7 @@ int main( int argc, char *argv[] )
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_tet_grid( &ref_grid ), "pri" );
+    RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
     RSS(ref_cavity_add_ball(ref_cavity,ref_grid,0),"insert ball");
@@ -688,5 +690,6 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  RSS( ref_mpi_free(ref_mpi), "free");
   return 0;
 }
