@@ -388,15 +388,15 @@ REF_STATUS ref_collapse_edge_local_tets( REF_GRID ref_grid,
 
   each_ref_cell_having_node( ref_cell, node1, item, cell )
   for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-    if ( ref_mpi_id != ref_node_part(ref_node,
-                                     ref_cell_c2n(ref_cell,node,cell)) )
+    if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	 ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
       return REF_SUCCESS;
 
   /* may be able to relax node0 local if geom constraint is o.k. */
   each_ref_cell_having_node( ref_cell, node0, item, cell )
   for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-    if ( ref_mpi_id != ref_node_part(ref_node,
-                                     ref_cell_c2n(ref_cell,node,cell)) )
+    if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	 ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
       return REF_SUCCESS;
 
 
@@ -608,15 +608,15 @@ REF_STATUS ref_collapse_face_local_pris( REF_GRID ref_grid,
 
   each_ref_cell_having_node( ref_cell, remove, item, cell )
   for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-    if ( ref_mpi_id != ref_node_part(ref_node,
-                                     ref_cell_c2n(ref_cell,node,cell)) )
+    if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	 ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
       return REF_SUCCESS;
 
   /* may be able to relax keep local if geom constraint is o.k. */
   each_ref_cell_having_node( ref_cell, keep, item, cell )
   for ( node = 0; node < ref_cell_node_per(ref_cell); node++ )
-    if ( ref_mpi_id != ref_node_part(ref_node,
-                                     ref_cell_c2n(ref_cell,node,cell)) )
+    if ( ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+	 ref_node_part(ref_node, ref_cell_c2n(ref_cell,node,cell)) )
       return REF_SUCCESS;
 
 
