@@ -139,43 +139,8 @@ int main( int argc, char *argv[] )
   if ( 2 == argc )
     {
       REF_GRID ref_grid;
-      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "boom3d" );
+      RSS( ref_fixture_tet_brick_grid( &ref_grid ), "fix" );
       RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
-      RSS( ref_grid_free(ref_grid),"free");
-    }
-
-  if ( 3 == argc )
-    {
-      REF_GRID ref_grid;
-      REF_INT dn;
-      dn = atoi(argv[1]);
-      RSS( ref_fixture_hex_brick_grid( &ref_grid, dn ), "boom3d" );
-      RSS( ref_export_by_extension( ref_grid, argv[2] ), "export" );
-      RSS( ref_grid_free(ref_grid),"free");
-    }
-
-  if ( 5 == argc )
-    {
-      REF_GRID ref_grid;
-      REF_INT nx = atoi(argv[1]);
-      REF_INT nz = atoi(argv[2]);
-      REF_DBL rot_deg  = atof(argv[3]);
-      RSS( ref_fixture_boom2d_grid( &ref_grid, 
-				    nx, nz, rot_deg  ), "boom3d" );
-      RSS( ref_export_by_extension( ref_grid, argv[4] ), "export" );
-      RSS( ref_grid_free(ref_grid),"free");
-    }
-
-  if ( 6 == argc )
-    {
-      REF_GRID ref_grid;
-      REF_INT nx = atoi(argv[1]);
-      REF_INT nt = atoi(argv[2]);
-      REF_INT nr = atoi(argv[3]);
-      REF_DBL rot_deg  = atof(argv[4]);
-      RSS( ref_fixture_boom3d_grid( &ref_grid, 
-				    nx, nt, nr, rot_deg  ), "boom3d" );
-      RSS( ref_export_by_extension( ref_grid, argv[5] ), "export" );
       RSS( ref_grid_free(ref_grid),"free");
     }
 
