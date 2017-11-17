@@ -381,7 +381,7 @@ REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram,
 			       ref_edge_e2n(ref_edge, 1, edge), 
 			       &active ), "twod edge");
       active = ( active || !ref_grid_twod(ref_grid) );
-      if ( part == ref_mpi_id && active )
+      if ( part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active )
 	{
 	  RSS( ref_node_ratio( ref_grid_node(ref_grid), 
 			       ref_edge_e2n(ref_edge, 0, edge),
@@ -401,7 +401,7 @@ REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram,
 			       ref_edge_e2n(ref_edge, 1, edge), 
 			       &active ), "twod edge");
       active = ( active || !ref_grid_twod(ref_grid) );
-      if ( part == ref_mpi_id && active )
+      if ( part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active )
 	{
 	  RSS( ref_node_ratio( ref_grid_node(ref_grid), 
 			       ref_edge_e2n(ref_edge, 0, edge),
@@ -437,7 +437,8 @@ REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram,
     }
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
-      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) == ref_mpi_id )
+      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) ==
+	   ref_mpi_rank(ref_grid_mpi(ref_grid)) )
 	{
 	  if ( ref_grid_twod(ref_grid) )
 	    {
