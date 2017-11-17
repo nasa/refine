@@ -183,7 +183,8 @@ REF_STATUS ref_list_allgather( REF_LIST ref_list, REF_MPI ref_mpi )
 
   ref_malloc( counts, ref_mpi_m(ref_mpi), REF_INT );
 
-  RSS( ref_mpi_allgather( &(ref_list_n(ref_list)), counts, REF_INT_TYPE ), 
+  RSS( ref_mpi_allgather( ref_mpi,
+			  &(ref_list_n(ref_list)), counts, REF_INT_TYPE ), 
        "gather size");
 
   total_count = 0;
@@ -201,7 +202,8 @@ REF_STATUS ref_list_allgather( REF_LIST ref_list, REF_MPI ref_mpi )
       ref_malloc( ref_list->value, ref_list_max(ref_list), REF_INT );
     }
 
-  RSS( ref_mpi_allgatherv( local_copy, counts, ref_list->value, REF_INT_TYPE ), 
+  RSS( ref_mpi_allgatherv( ref_mpi,
+			   local_copy, counts, ref_list->value, REF_INT_TYPE ), 
        "gather values");
 
   ref_list_n( ref_list ) = total_count;

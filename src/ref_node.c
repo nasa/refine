@@ -535,7 +535,8 @@ REF_STATUS ref_node_shift_new_globals( REF_NODE ref_node )
 
   new_nodes = ref_node->new_n_global - ref_node->old_n_global;
 
-  RSS( ref_mpi_allgather( &new_nodes, everyones_new_nodes, REF_INT_TYPE ),
+  RSS( ref_mpi_allgather( ref_mpi,
+			  &new_nodes, everyones_new_nodes, REF_INT_TYPE ),
        "allgather");
 
   offset = 0;

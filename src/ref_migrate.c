@@ -662,7 +662,8 @@ REF_STATUS ref_migrate_new_part( REF_GRID ref_grid )
       n++;
 
     ref_malloc( partition_size, ref_mpi_m(ref_mpi), REF_INT );
-    RSS( ref_mpi_allgather( &n, partition_size, REF_INT_TYPE ), 
+    RSS( ref_mpi_allgather( ref_mpi,
+			    &n, partition_size, REF_INT_TYPE ), 
 	 "gather size of each part" );
 
     ref_malloc( vtxdist, ref_mpi_m(ref_mpi)+1, PARM_INT );

@@ -83,9 +83,11 @@ REF_STATUS ref_mpi_min( void *input, void *output, REF_TYPE type );
 REF_STATUS ref_mpi_max( void *input, void *output, REF_TYPE type );
 REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type );
 
-REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type );
+REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
+			      void *scalar, void *array, REF_TYPE type );
 
-REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts, 
+REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
+			       void *local_array, REF_INT *counts, 
 			       void *concatenated_array, REF_TYPE type );
 
 END_C_DECLORATION

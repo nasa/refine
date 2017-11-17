@@ -480,12 +480,13 @@ REF_STATUS ref_mpi_sum( void *input, void *output, REF_INT n, REF_TYPE type )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
+REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
+			      void *scalar, void *array, REF_TYPE type )
 {
 #ifdef HAVE_MPI
   MPI_Datatype datatype;
   
-  if ( 1 == ref_mpi_n ) 
+  if ( !ref_mpi_para(ref_mpi) ) 
     {
       switch (type)
 	{
@@ -509,13 +510,15 @@ REF_STATUS ref_mpi_allgather( void *scalar, void *array, REF_TYPE type )
     case REF_DBL_TYPE: *(REF_DBL *)array = *(REF_DBL *)scalar; break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts, 
+REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
+			       void *local_array, REF_INT *counts, 
 			       void *concatenated_array, REF_TYPE type )
 {
 #ifdef HAVE_MPI
@@ -525,7 +528,7 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
   REF_INT i;
   ref_type_mpi_type(type,datatype);
 
-  if ( 1 == ref_mpi_n ) 
+  if ( !ref_mpi_para(ref_mpi) ) 
     {
       switch (type)
 	{
@@ -542,13 +545,13 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
       return REF_SUCCESS;
     }
 
-  ref_malloc( displs, ref_mpi_n, REF_INT );
+  ref_malloc( displs, ref_mpi_m(ref_mpi), REF_INT );
 
   displs[0] = 0;
-  for (proc=1;proc<ref_mpi_n;proc++)
+  each_ref_mpi_worker( ref_mpi, proc )
     displs[proc] = displs[proc-1] + counts[proc-1];
 
-  MPI_Allgatherv( local_array, counts[ref_mpi_id], datatype, 
+  MPI_Allgatherv( local_array, counts[ref_mpi_rank(ref_mpi)], datatype, 
 		  concatenated_array, counts, displs, datatype, 
 		  MPI_COMM_WORLD);
 
@@ -568,6 +571,7 @@ REF_STATUS ref_mpi_allgatherv( void *local_array, REF_INT *counts,
       break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 
