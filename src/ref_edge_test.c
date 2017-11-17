@@ -96,7 +96,7 @@ int main( int argc, char *argv[] )
     for ( edge=0;edge<ref_edge_n(ref_edge);edge++ )
       {
 	RSS( ref_edge_part( ref_edge, edge, &part ), "edge part" );
-	if ( ref_mpi_id == part ) data[edge]=edge;
+	if ( ref_mpi_rank(ref_mpi) == part ) data[edge]=edge;
       }
 
     RSS( ref_edge_ghost_int( ref_edge, ref_mpi, data ), "ghost");
