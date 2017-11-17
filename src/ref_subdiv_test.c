@@ -204,7 +204,7 @@ int main( int argc, char *argv[] )
 
     if ( REF_SUCCESS == ref_node_local(ref_node,0,&node0) &&
 	 REF_SUCCESS == ref_node_local(ref_node,1,&node1) ) 
-      if ( ref_mpi_id == ref_node_part(ref_node,node0) )
+      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node0) )
 	RSS(ref_subdiv_mark_to_split(ref_subdiv,node0,node1),"mark edge");
 
     RSS(ref_subdiv_split(ref_subdiv),"split");

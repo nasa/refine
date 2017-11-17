@@ -395,7 +395,7 @@ static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
       if ( ref_subdiv_mark( ref_subdiv, edge ) )
 	{
 	  RSS( ref_edge_part(ref_edge,edge,&part), "edge part" );
-	  if ( ref_mpi_id == part )
+	  if ( ref_mpi_rank(ref_mpi) == part )
 	    {
 	      RSS( ref_node_next_global( ref_node, &global ),
 		   "next global");
@@ -484,7 +484,8 @@ static REF_STATUS ref_subdiv_add_local_cell( REF_SUBDIV ref_subdiv,
 
   for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
     has_local = has_local || 
-      ( ref_mpi_id == ref_node_part(ref_node,nodes[node]) );
+      ( ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
+	ref_node_part(ref_node,nodes[node]) );
   
   if ( has_local )
     RSS(ref_cell_add(ref_cell,nodes,&new_cell),"add");
@@ -1466,7 +1467,8 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 	 ref_adj_empty( ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
 	 ref_adj_empty( ref_cell_adj(ref_grid_hex(ref_grid)), node) )
       {
-	if ( ref_mpi_id == ref_node_part(ref_node,node) )
+	if ( ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
+	     ref_node_part(ref_node,node) )
 	  RSS( REF_FAILURE, "unused local node");
 	if ( !ref_adj_empty( ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
 	     !ref_adj_empty( ref_cell_adj(ref_grid_qua(ref_grid)), node) )
