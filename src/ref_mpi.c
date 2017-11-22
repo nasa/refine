@@ -48,10 +48,10 @@
 
 #endif
 
-REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
+REF_STATUS ref_mpi_create_from_comm( REF_MPI *ref_mpi_ptr,  void *comm_ptr )
 {
   REF_MPI ref_mpi;
-
+  
   ref_malloc( *ref_mpi_ptr, 1, REF_MPI_STRUCT );
   ref_mpi = ( *ref_mpi_ptr );
 
@@ -67,7 +67,7 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   {
     int running;
     ref_malloc( ref_mpi->comm, 1, MPI_Comm );
-    ref_mpi_comm(ref_mpi) = MPI_COMM_WORLD;
+    ref_mpi_comm(ref_mpi) = *((MPI_Comm *)(comm_ptr));
     REIS( MPI_SUCCESS, MPI_Initialized( &running ), "running?" );
     if ( running )
       {
@@ -77,6 +77,22 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
   ref_mpi->start_time = ref_mpi->first_time;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(comm_ptr);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
+{
+#ifdef HAVE_MPI
+  MPI_Comm comm = MPI_COMM_WORLD;
+  RSS(ref_mpi_create_from_comm( ref_mpi_ptr, (void *)(&(comm)) ),
+    "create from MPI_WORLD_COMM" );
+#else
+  RSS(ref_mpi_create_from_comm( ref_mpi_ptr, NULL ),
+    "create from NULL comm" );
 #endif
 
   return REF_SUCCESS;

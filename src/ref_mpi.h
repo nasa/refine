@@ -51,7 +51,12 @@ struct REF_MPI_STRUCT {
         ( part ) < ref_mpi_m(ref_mpi);	       \
         ( part )++ )
 
+/* pass void pointer to MPI_Comm */
+REF_STATUS ref_mpi_create_from_comm( REF_MPI *ref_mpi, void *comm );
+
+/* assumes MPI_COMM_WORLD */
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
+
 REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
 REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi, REF_MPI original );
 
