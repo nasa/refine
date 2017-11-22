@@ -31,6 +31,7 @@ BEGIN_C_DECLORATION
 struct REF_MPI_STRUCT {
   REF_INT n;
   REF_INT id;
+  void *comm;
   REF_DBL start_time;
   REF_DBL first_time;
 };

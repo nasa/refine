@@ -44,6 +44,8 @@
       RSS( REF_IMPLEMENT, "data type");					\
     }
 
+#define ref_mpi_comm(ref_mpi) ( *((MPI_Comm *)(ref_mpi->comm)) )
+
 #endif
 
 REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
@@ -56,17 +58,21 @@ REF_STATUS ref_mpi_create( REF_MPI *ref_mpi_ptr )
   ref_mpi->id = 0;
   ref_mpi->n = 1;
 
+  ref_mpi->comm = NULL;
+  
   ref_mpi->first_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
 #ifdef HAVE_MPI
   {
     int running;
+    ref_malloc( ref_mpi->comm, 1, MPI_Comm );
+    ref_mpi_comm(ref_mpi) = MPI_COMM_WORLD;
     REIS( MPI_SUCCESS, MPI_Initialized( &running ), "running?" );
     if ( running )
       {
-	MPI_Comm_size(MPI_COMM_WORLD,&(ref_mpi->n));
-	MPI_Comm_rank(MPI_COMM_WORLD,&(ref_mpi->id));
+	MPI_Comm_size(ref_mpi_comm(ref_mpi),&(ref_mpi->n));
+	MPI_Comm_rank(ref_mpi_comm(ref_mpi),&(ref_mpi->id));
       }
   }
   ref_mpi->first_time = (REF_DBL)MPI_Wtime();
@@ -80,6 +86,7 @@ REF_STATUS ref_mpi_free( REF_MPI ref_mpi )
 {
   if ( NULL == (void *)ref_mpi )
     return REF_NULL;
+  ref_free( ref_mpi->comm );
   ref_free( ref_mpi );
   return REF_SUCCESS;
 }
@@ -127,7 +134,7 @@ REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi )
 {
 #ifdef HAVE_MPI
   if ( ref_mpi_para(ref_mpi) )
-    MPI_Barrier( MPI_COMM_WORLD ); 
+    MPI_Barrier( ref_mpi_comm(ref_mpi) ); 
   ref_mpi->start_time = (REF_DBL)MPI_Wtime();
 #else
   ref_mpi->start_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
@@ -144,7 +151,7 @@ REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message )
   REF_DBL first, last;
   before_barrier = (REF_DBL)MPI_Wtime()-ref_mpi->start_time;
   if ( ref_mpi_para(ref_mpi) )
-    MPI_Barrier( MPI_COMM_WORLD ); 
+    MPI_Barrier( ref_mpi_comm(ref_mpi) ); 
   after_barrier = (REF_DBL)MPI_Wtime();
   elapsed = after_barrier - ref_mpi->first_time;
   after_barrier = after_barrier-ref_mpi->start_time;
@@ -188,7 +195,7 @@ REF_STATUS ref_mpi_bcast( REF_MPI ref_mpi,
 
  ref_type_mpi_type(type,datatype);
 
-  MPI_Bcast(data, n, datatype, 0, MPI_COMM_WORLD);
+  MPI_Bcast(data, n, datatype, 0, ref_mpi_comm(ref_mpi));
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
@@ -210,7 +217,7 @@ REF_STATUS ref_mpi_send( REF_MPI ref_mpi,
 
   tag = ref_mpi_m(ref_mpi)*dest+ref_mpi_rank(ref_mpi);
 
-  MPI_Send(data, n, datatype, dest, tag, MPI_COMM_WORLD);
+  MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
@@ -235,7 +242,7 @@ REF_STATUS ref_mpi_recv( REF_MPI ref_mpi,
 
   tag = ref_mpi_m(ref_mpi)*ref_mpi_rank(ref_mpi)+source;
 
-  MPI_Recv(data, n, datatype, source, tag, MPI_COMM_WORLD, &status);
+  MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
@@ -260,7 +267,7 @@ REF_STATUS ref_mpi_alltoall( REF_MPI ref_mpi,
 
   MPI_Alltoall(send, 1, datatype, 
 	       recv, 1, datatype, 
-	       MPI_COMM_WORLD );
+	       ref_mpi_comm(ref_mpi) );
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(send);
@@ -311,7 +318,7 @@ REF_STATUS ref_mpi_alltoallv( REF_MPI ref_mpi,
 
   MPI_Alltoallv(send, send_size_n, send_disp, datatype, 
 		recv, recv_size_n, recv_disp, datatype, 
-		MPI_COMM_WORLD );
+		ref_mpi_comm(ref_mpi) );
 
   free(recv_disp);
   free(send_disp);
@@ -350,7 +357,7 @@ REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
     }
   ref_type_mpi_type(type,datatype);
 
-  MPI_Reduce( input, output, 1, datatype, MPI_MIN, 0, MPI_COMM_WORLD);
+  MPI_Reduce( input, output, 1, datatype, MPI_MIN, 0, ref_mpi_comm(ref_mpi));
 
 #else
   switch (type)
@@ -373,7 +380,7 @@ REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean )
 
   if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
-  MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, ref_mpi_comm(ref_mpi));
   *boolean = MIN(output,1);
 
 #else
@@ -402,7 +409,7 @@ REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
     }
   ref_type_mpi_type(type,datatype);
 
-  MPI_Reduce( input, output, 1, datatype, MPI_MAX, 0, MPI_COMM_WORLD);
+  MPI_Reduce( input, output, 1, datatype, MPI_MAX, 0, ref_mpi_comm(ref_mpi));
 
 #else
   switch (type)
@@ -443,7 +450,7 @@ REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
   else
     {
       ref_type_mpi_type(type,datatype);
-      MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, MPI_COMM_WORLD);
+      MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, ref_mpi_comm(ref_mpi));
     }
 
 #else
@@ -487,7 +494,7 @@ REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
 
   MPI_Allgather( scalar, 1, datatype, 
 		 array, 1, datatype, 
-		 MPI_COMM_WORLD);
+		 ref_mpi_comm(ref_mpi));
 
 #else
   switch (type)
@@ -539,7 +546,7 @@ REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
 
   MPI_Allgatherv( local_array, counts[ref_mpi_rank(ref_mpi)], datatype, 
 		  concatenated_array, counts, displs, datatype, 
-		  MPI_COMM_WORLD);
+		  ref_mpi_comm(ref_mpi));
 
   ref_free( displs );
 
