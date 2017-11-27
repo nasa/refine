@@ -44,6 +44,7 @@
 #include    "ref_twod.h"
 #include   "ref_smooth.h"
 #include    "ref_clump.h"
+#include "ref_part.h"
 
 int main( int argc, char *argv[] )
 {
@@ -60,8 +61,18 @@ int main( int argc, char *argv[] )
 
   {
     REF_GRID from, to;
-    RSS( ref_fixture_twod_brick_grid( &from, ref_mpi ), "brick" );
-    RSS( ref_fixture_twod_brick_grid( &to, ref_mpi ), "brick" );
+    char file[] = "ref_interp_test.meshb";
+    if ( ref_mpi_once(ref_mpi) )
+      {
+	RSS( ref_fixture_tet_brick_grid( &from, ref_mpi ), "brick" );
+	RSS(ref_export_by_extension( from, file ),"export" );
+	RSS( ref_grid_free(from),"free");
+      }
+    RSS(ref_part_by_extension( &from, ref_mpi, file ), "import" );
+    RSS(ref_part_by_extension( &to, ref_mpi, file ), "import" );
+    if ( ref_mpi_once(ref_mpi) )
+      REIS(0, remove( file ), "test clean up");
+
     RSS( ref_grid_free(to),"free");
     RSS( ref_grid_free(from),"free");
   }

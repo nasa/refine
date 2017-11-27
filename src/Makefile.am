@@ -212,7 +212,7 @@ ref_inflate_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_interp_test
 noinst_PROGRAMS += ref_interp_test
 ref_interp_test_SOURCES = ref_interp_test.c
-ref_interp_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_interp_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_layer_test
 noinst_PROGRAMS += ref_layer_test
