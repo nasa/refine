@@ -22,15 +22,22 @@
 
 #include "ref_interp.h"
 
-int main( void )
+#include "ref_mpi.h"
+
+int main( int argc, char *argv[] )
 {
-  REF_INTERP ref_interp;
+  REF_MPI ref_mpi;
+  RSS( ref_mpi_start( argc, argv ), "start" );
+  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
-  RSS( ref_interp_create( &ref_interp ), "make interp" );
+  {
+    REF_INTERP ref_interp;
+    RSS( ref_interp_create( &ref_interp ), "make interp" );
+    REIS(0, ref_interp_steps(ref_interp), "steps" );
+    RSS( ref_interp_free( ref_interp ), "interp free" );
+  }
 
-  REIS(0, ref_interp_steps(ref_interp), "steps" );
-
-  RSS( ref_interp_free( ref_interp ), "interp free" );
-
+  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
+  RSS( ref_mpi_stop( ), "stop" );
   return 0;
 }
