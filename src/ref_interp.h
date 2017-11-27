@@ -27,6 +27,8 @@ typedef struct REF_INTERP_STRUCT REF_INTERP_STRUCT;
 typedef REF_INTERP_STRUCT * REF_INTERP;
 END_C_DECLORATION
 
+#include "ref_grid.h"
+
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_INT steps;
@@ -37,5 +39,8 @@ struct REF_INTERP_STRUCT {
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp );
 
 REF_STATUS ref_interp_free( REF_INTERP ref_interp );
+
+REF_STATUS ref_interp_map( REF_INTERP ref_interp, 
+			   REF_GRID from, REF_GRID to );
 
 #endif /* REF_INTERP_H */

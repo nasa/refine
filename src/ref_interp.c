@@ -43,3 +43,12 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
   ref_free( ref_interp );
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_interp_map( REF_INTERP ref_interp, 
+			       REF_GRID from, REF_GRID to )
+{
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_interp);
+  SUPRESS_UNUSED_COMPILER_WARNING(from);
+  SUPRESS_UNUSED_COMPILER_WARNING(to);
+  return REF_SUCCESS;
+}

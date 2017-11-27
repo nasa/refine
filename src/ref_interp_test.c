@@ -65,6 +65,7 @@ int main( int argc, char *argv[] )
     REF_GRID from, to;
     REF_INT node;
     char file[] = "ref_interp_test.meshb";
+    REF_INTERP ref_interp;
 
     if ( ref_mpi_once(ref_mpi) )
       {
@@ -84,10 +85,13 @@ int main( int argc, char *argv[] )
 	ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-8;
       }
 
+    RSS( ref_interp_create( &ref_interp ), "make interp" );
+    RSS( ref_interp_map(ref_interp, from, to), "map" );
+    RSS( ref_interp_free( ref_interp ), "interp free" );
+
     RSS( ref_grid_free(to),"free");
     RSS( ref_grid_free(from),"free");
   }
-
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
