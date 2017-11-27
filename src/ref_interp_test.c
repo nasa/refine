@@ -23,6 +23,27 @@
 #include "ref_interp.h"
 
 #include "ref_mpi.h"
+#include "ref_fixture.h"
+#include "ref_grid.h"
+#include  "ref_cell.h"
+#include   "ref_adj.h"
+#include  "ref_node.h"
+#include   "ref_matrix.h"
+#include   "ref_math.h"
+#include   "ref_sort.h"
+#include   "ref_list.h"
+#include  "ref_geom.h"
+#include   "ref_dict.h"
+#include   "ref_export.h"
+#include  "ref_gather.h"
+#include  "ref_adapt.h"
+#include   "ref_collapse.h"
+#include    "ref_edge.h"
+#include   "ref_split.h"
+#include    "ref_cavity.h"
+#include    "ref_twod.h"
+#include   "ref_smooth.h"
+#include    "ref_clump.h"
 
 int main( int argc, char *argv[] )
 {
@@ -36,6 +57,15 @@ int main( int argc, char *argv[] )
     REIS(0, ref_interp_steps(ref_interp), "steps" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
   }
+
+  {
+    REF_GRID from, to;
+    RSS( ref_fixture_twod_brick_grid( &from, ref_mpi ), "brick" );
+    RSS( ref_fixture_twod_brick_grid( &to, ref_mpi ), "brick" );
+    RSS( ref_grid_free(to),"free");
+    RSS( ref_grid_free(from),"free");
+  }
+
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
