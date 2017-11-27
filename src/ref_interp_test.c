@@ -45,6 +45,8 @@
 #include   "ref_smooth.h"
 #include    "ref_clump.h"
 #include "ref_part.h"
+#include  "ref_import.h"
+#include  "ref_migrate.h"
 
 int main( int argc, char *argv[] )
 {
@@ -61,7 +63,9 @@ int main( int argc, char *argv[] )
 
   {
     REF_GRID from, to;
+    REF_INT node;
     char file[] = "ref_interp_test.meshb";
+
     if ( ref_mpi_once(ref_mpi) )
       {
 	RSS( ref_fixture_tet_brick_grid( &from, ref_mpi ), "brick" );
@@ -72,6 +76,13 @@ int main( int argc, char *argv[] )
     RSS(ref_part_by_extension( &to, ref_mpi, file ), "import" );
     if ( ref_mpi_once(ref_mpi) )
       REIS(0, remove( file ), "test clean up");
+
+    each_ref_node_valid_node( ref_grid_node(to), node )
+      {
+	ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-8;
+	ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-8;
+	ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-8;
+      }
 
     RSS( ref_grid_free(to),"free");
     RSS( ref_grid_free(from),"free");
