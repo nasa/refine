@@ -101,7 +101,6 @@ int main( int argc, char *argv[] )
     {
       REF_GRID from, to;
       REF_INTERP ref_interp;
-      REF_DBL max_error;
 
       RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
       RSS(ref_part_by_extension( &from, ref_mpi, argv[1] ), "import" );
@@ -112,10 +111,8 @@ int main( int argc, char *argv[] )
       RSS( ref_interp_create( &ref_interp ), "make interp" );
       RSS( ref_interp_locate(ref_interp, from, to), "map" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "locate" ), "sw start");
-      RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
-      RSS( ref_mpi_stopwatch_stop( ref_mpi, "error" ), "sw start");
-      if ( ref_mpi_once(ref_mpi) )
-	printf("max error %e\n", max_error);
+      RSS( ref_interp_stats(ref_interp, from, to ), "err" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "stats" ), "sw start");
       RSS( ref_interp_free( ref_interp ), "interp free" );
 
       RSS( ref_grid_free(to),"free");
