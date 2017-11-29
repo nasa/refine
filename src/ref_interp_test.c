@@ -97,6 +97,31 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free(from),"free");
     }
 
+  if ( argc == 3 && !ref_mpi_para(ref_mpi) )
+    {
+      REF_GRID from, to;
+      REF_INTERP ref_interp;
+      REF_DBL max_error;
+
+      RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
+      RSS(ref_part_by_extension( &from, ref_mpi, argv[1] ), "import" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "read from grid" ), "sw start");
+      RSS(ref_part_by_extension( &to, ref_mpi, argv[2] ), "import" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "read to grid" ), "sw start");
+
+      RSS( ref_interp_create( &ref_interp ), "make interp" );
+      RSS( ref_interp_locate(ref_interp, from, to), "map" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "locate" ), "sw start");
+      RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "error" ), "sw start");
+      if ( ref_mpi_once(ref_mpi) )
+	printf("max error %e\n", max_error);
+      RSS( ref_interp_free( ref_interp ), "interp free" );
+
+      RSS( ref_grid_free(to),"free");
+      RSS( ref_grid_free(from),"free");
+    }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
   return 0;
