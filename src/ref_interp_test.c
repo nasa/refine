@@ -61,40 +61,41 @@ int main( int argc, char *argv[] )
     RSS( ref_interp_free( ref_interp ), "interp free" );
   }
 
-  {
-    REF_GRID from, to;
-    REF_INT node;
-    char file[] = "ref_interp_test.meshb";
-    REF_INTERP ref_interp;
-    REF_DBL max_error;
+  if ( !ref_mpi_para(ref_mpi) )
+    {
+      REF_GRID from, to;
+      REF_INT node;
+      char file[] = "ref_interp_test.meshb";
+      REF_INTERP ref_interp;
+      REF_DBL max_error;
 
-    if ( ref_mpi_once(ref_mpi) )
-      {
-	RSS( ref_fixture_tet_brick_grid( &from, ref_mpi ), "brick" );
-	RSS(ref_export_by_extension( from, file ),"export" );
-	RSS( ref_grid_free(from),"free");
-      }
-    RSS(ref_part_by_extension( &from, ref_mpi, file ), "import" );
-    RSS(ref_part_by_extension( &to, ref_mpi, file ), "import" );
-    if ( ref_mpi_once(ref_mpi) )
-      REIS(0, remove( file ), "test clean up");
+      if ( ref_mpi_once(ref_mpi) )
+	{
+	  RSS( ref_fixture_tet_brick_grid( &from, ref_mpi ), "brick" );
+	  RSS(ref_export_by_extension( from, file ),"export" );
+	  RSS( ref_grid_free(from),"free");
+	}
+      RSS(ref_part_by_extension( &from, ref_mpi, file ), "import" );
+      RSS(ref_part_by_extension( &to, ref_mpi, file ), "import" );
+      if ( ref_mpi_once(ref_mpi) )
+	REIS(0, remove( file ), "test clean up");
 
-    each_ref_node_valid_node( ref_grid_node(to), node )
-      {
-	ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-8;
-	ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-8;
-	ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-8;
-      }
+      each_ref_node_valid_node( ref_grid_node(to), node )
+	{
+	  ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-8;
+	  ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-8;
+	  ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-8;
+	}
 
-    RSS( ref_interp_create( &ref_interp ), "make interp" );
-    RSS( ref_interp_locate(ref_interp, from, to), "map" );
-    RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
-    RAS( 5.0e-15 > max_error, "large interp error" );
-    RSS( ref_interp_free( ref_interp ), "interp free" );
+      RSS( ref_interp_create( &ref_interp ), "make interp" );
+      RSS( ref_interp_locate(ref_interp, from, to), "map" );
+      RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
+      RAS( 5.0e-15 > max_error, "large interp error" );
+      RSS( ref_interp_free( ref_interp ), "interp free" );
 
-    RSS( ref_grid_free(to),"free");
-    RSS( ref_grid_free(from),"free");
-  }
+      RSS( ref_grid_free(to),"free");
+      RSS( ref_grid_free(from),"free");
+    }
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
