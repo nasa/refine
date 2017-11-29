@@ -66,6 +66,7 @@ int main( int argc, char *argv[] )
     REF_INT node;
     char file[] = "ref_interp_test.meshb";
     REF_INTERP ref_interp;
+    REF_DBL max_error;
 
     if ( ref_mpi_once(ref_mpi) )
       {
@@ -87,6 +88,8 @@ int main( int argc, char *argv[] )
 
     RSS( ref_interp_create( &ref_interp ), "make interp" );
     RSS( ref_interp_locate(ref_interp, from, to), "map" );
+    RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
+    RAS( 5.0e-15 > max_error, "large interp error" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 
     RSS( ref_grid_free(to),"free");

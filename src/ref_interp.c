@@ -18,7 +18,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <math.h>
 
 #include "ref_interp.h"
 
@@ -106,6 +106,47 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       &(ref_interp->node[4*node]), 
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhast");
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
+				 REF_GRID from_grid, REF_GRID to_grid,
+				 REF_DBL *max_error)
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_INT node;
+  REF_DBL xyz[3], error;
+  REF_INT i;
+
+  *max_error = 0.0;
+
+  RNS( ref_interp->node, "locate first" );
+  RNS( ref_interp->bary, "locate first" );
+
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      for(i=0;i<3;i++)
+	xyz[i] = 
+	  ref_interp->bary[0+4*node] *
+	  ref_node_xyz(from_node,i,ref_interp->node[0+4*node]) +
+	  ref_interp->bary[1+4*node] *
+	  ref_node_xyz(from_node,i,ref_interp->node[1+4*node]) +
+	  ref_interp->bary[2+4*node] *
+	  ref_node_xyz(from_node,i,ref_interp->node[2+4*node]) +
+	  ref_interp->bary[3+4*node] *
+	  ref_node_xyz(from_node,i,ref_interp->node[3+4*node]);
+      error = 
+	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
+	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
+	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
+      *max_error = MAX( *max_error, sqrt(error) );
     }
 
   return REF_SUCCESS;

@@ -44,5 +44,8 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp );
 
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid );
+REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
+				 REF_GRID from_grid, REF_GRID to_grid,
+				 REF_DBL *max_error );
 
 #endif /* REF_INTERP_H */
