@@ -32,6 +32,8 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_INT steps;
+  REF_INT *node;
+  REF_DBL *bary;
 };
 
 #define ref_interp_steps(ref_interp) ( (ref_interp)->steps )
@@ -40,7 +42,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp );
 
 REF_STATUS ref_interp_free( REF_INTERP ref_interp );
 
-REF_STATUS ref_interp_map( REF_INTERP ref_interp, 
-			   REF_GRID from, REF_GRID to );
+REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
+			      REF_GRID from_grid, REF_GRID to_grid );
 
 #endif /* REF_INTERP_H */

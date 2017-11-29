@@ -86,7 +86,7 @@ int main( int argc, char *argv[] )
       }
 
     RSS( ref_interp_create( &ref_interp ), "make interp" );
-    RSS( ref_interp_map(ref_interp, from, to), "map" );
+    RSS( ref_interp_locate(ref_interp, from, to), "map" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 
     RSS( ref_grid_free(to),"free");
