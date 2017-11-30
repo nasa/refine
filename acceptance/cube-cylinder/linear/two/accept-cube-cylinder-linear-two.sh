@@ -8,8 +8,8 @@ if [ $# -gt 0 ] ; then
     one=$1/one
     two=$1/src
 else
-    one=${HOME}/refine/strict/one
-    two=${HOME}/refine/strict/src
+    one=${HOME}/refine/egads/one
+    two=${HOME}/refine/egads/src
 fi
 
 field=linear
