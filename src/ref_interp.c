@@ -24,6 +24,8 @@
 
 #include "ref_malloc.h"
 
+#define MAX_NODE_LIST ( 100 )
+
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
 {
   REF_INTERP ref_interp;
@@ -32,8 +34,11 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp = ( *ref_interp_ptr );
 
   ref_interp->nexhaustive = 0;
+  ref_interp->guess = NULL;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
+
+  RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
 
   return REF_SUCCESS;
 }
@@ -42,8 +47,10 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
 {
   if ( NULL == (void *)ref_interp )
     return REF_NULL;
+  ref_list_free( ref_interp->ref_list );
   ref_free( ref_interp->bary );
   ref_free( ref_interp->cell );
+  ref_free( ref_interp->guess );
   ref_free( ref_interp );
   return REF_SUCCESS;
 }
@@ -83,6 +90,28 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, 
+				       REF_GRID ref_grid, REF_INT node )
+{ 
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
+  REF_INT other;
+  RSS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
+                                  &nneighbor, neighbors ), "list too small");
+  for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
+    {
+      other = neighbors[neighbor];
+      if ( ref_interp->cell[other] == REF_EMPTY &&
+	   ref_interp->guess[other] == REF_EMPTY )
+	{
+	  RSS(ref_list_add(ref_interp->ref_list, other), "enqueue" );
+	  ref_interp->guess[other] = ref_interp->cell[node];
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid )
 {
@@ -93,6 +122,9 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
+  ref_malloc_init( ref_interp->guess, 
+		   ref_node_max(to_node), 
+		   REF_INT, REF_EMPTY );
   ref_malloc_init( ref_interp->cell, 
 		   ref_node_max(to_node), 
 		   REF_INT, REF_EMPTY );
@@ -110,6 +142,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhast");
       (ref_interp->nexhaustive)++;
+      RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
     }
 
   return REF_SUCCESS;
@@ -208,6 +241,7 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 	     (REF_DBL)ref_interp->nexhaustive / 
 	     (REF_DBL)ref_node_n(to_node) * 100.0,
 	     ref_interp->nexhaustive, ref_node_n(to_node));
+      printf("nodes on queue %d\n",ref_list_n( ref_interp->ref_list ));
     }
 
   return REF_SUCCESS;

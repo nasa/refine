@@ -28,12 +28,15 @@ typedef REF_INTERP_STRUCT * REF_INTERP;
 END_C_DECLORATION
 
 #include "ref_grid.h"
+#include "ref_list.h"
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_INT nexhaustive;
+  REF_INT *guess;
   REF_INT *cell;
   REF_DBL *bary;
+  REF_LIST ref_list;
 };
 
 #define ref_interp_steps(ref_interp) ( (ref_interp)->steps )
