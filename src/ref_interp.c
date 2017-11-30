@@ -385,7 +385,9 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   REF_DBL xyz[3], error;
   REF_INT i;
   REF_DBL max_error = 0.0;
+  REF_DBL this_bary;
   REF_DBL min_bary = 1.0;
+  REF_INT extrapolate = 0;
 
   RNS( ref_interp->cell, "locate first" );
   RNS( ref_interp->bary, "locate first" );
@@ -411,13 +413,19 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
 	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
       max_error = MAX( max_error, sqrt(error) );
-      for(i=0;i<4;i++)
-	min_bary= MIN( min_bary, ref_interp->bary[i+4*node] );
+      this_bary = MIN( MIN( ref_interp->bary[0+4*node],
+			    ref_interp->bary[1+4*node] ),
+		       MIN( ref_interp->bary[2+4*node],
+			    ref_interp->bary[3+4*node] ) );
+      min_bary= MIN( min_bary, this_bary );
+      if ( this_bary < ref_interp->inside ) 
+	extrapolate++;
     }
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      printf("interp min bary %e max error %e\n", min_bary, max_error);
+      printf("interp min bary %e max error %e extrap %d\n", 
+	     min_bary, max_error, extrapolate );
       printf("exhastive %5.1f%% %d of %d\n", 
 	     (REF_DBL)ref_interp->nexhaustive / 
 	     (REF_DBL)ref_node_n(to_node) * 100.0,
