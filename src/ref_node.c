@@ -1972,7 +1972,8 @@ REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
   
   if ( !ref_node_valid(ref_node,nodes[0]) ||
        !ref_node_valid(ref_node,nodes[1]) ||
-       !ref_node_valid(ref_node,nodes[2]) ) 
+       !ref_node_valid(ref_node,nodes[2]) ||
+       !ref_node_valid(ref_node,nodes[3]) ) 
     RSS( REF_INVALID, "node invalid" );
 
   a = ref_node_xyz_ptr(ref_node,nodes[0]);
