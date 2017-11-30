@@ -31,7 +31,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_malloc( *ref_interp_ptr, 1, REF_INTERP_STRUCT );
   ref_interp = ( *ref_interp_ptr );
 
-  ref_interp->steps = 0;
+  ref_interp->nexhaustive = 0;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
 
@@ -109,6 +109,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       &(ref_interp->cell[node]), 
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhast");
+      (ref_interp->nexhaustive)++;
     }
 
   return REF_SUCCESS;
@@ -203,6 +204,10 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   if ( ref_mpi_once(ref_mpi) )
     {
       printf("interp min bary %e max error %e\n", min_bary, max_error);
+      printf("exhastive %5.1f%% %d of %d\n", 
+	     (REF_DBL)ref_interp->nexhaustive / 
+	     (REF_DBL)ref_node_n(to_node) * 100.0,
+	     ref_interp->nexhaustive, ref_node_n(to_node));
     }
 
   return REF_SUCCESS;

@@ -31,7 +31,7 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
-  REF_INT steps;
+  REF_INT nexhaustive;
   REF_INT *cell;
   REF_DBL *bary;
 };

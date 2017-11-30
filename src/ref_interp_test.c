@@ -57,7 +57,6 @@ int main( int argc, char *argv[] )
   {
     REF_INTERP ref_interp;
     RSS( ref_interp_create( &ref_interp ), "make interp" );
-    REIS(0, ref_interp_steps(ref_interp), "steps" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
   }
 
