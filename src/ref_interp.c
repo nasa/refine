@@ -267,7 +267,8 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
 {
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
-  while ( ref_list_n( ref_interp->ref_list ) )
+
+  while ( 0 < ref_list_n( ref_interp->ref_list ) )
     {
       RSS( ref_list_pop( ref_interp->ref_list, &node ), "pop queue");
       RUS( REF_EMPTY, ref_interp->guess[node], "no guess" );
