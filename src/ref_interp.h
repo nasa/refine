@@ -33,6 +33,10 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_INT nexhaustive;
+  REF_INT nwalk;
+  REF_INT nfail;
+  REF_INT steps;
+  REF_INT wasted;
   REF_INT *guess;
   REF_INT *cell;
   REF_DBL *bary;

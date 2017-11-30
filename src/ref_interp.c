@@ -34,6 +34,10 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp = ( *ref_interp_ptr );
 
   ref_interp->nexhaustive = 0;
+  ref_interp->nwalk = 0;
+  ref_interp->nfail = 0;
+  ref_interp->steps = 0;
+  ref_interp->wasted = 0;
   ref_interp->guess = NULL;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
@@ -145,6 +149,8 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
       /* give up if cell is invalid */
       if ( !ref_cell_valid(ref_cell,guess) )
 	{
+	  (ref_interp->nfail)++;
+	  (ref_interp->wasted)+=(step+1);
 	  return REF_SUCCESS;
 	}
 
@@ -162,6 +168,8 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
 	   bary[2] >= ref_interp->inside &&
 	   bary[3] >= ref_interp->inside )
 	{
+	  (ref_interp->steps) += (step+1);
+	  (ref_interp->nwalk)++;
 	  *tet = guess;
 	  return REF_SUCCESS;
 	}
@@ -413,7 +421,11 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 	     (REF_DBL)ref_interp->nexhaustive / 
 	     (REF_DBL)ref_node_n(to_node) * 100.0,
 	     ref_interp->nexhaustive, ref_node_n(to_node));
-      printf("nodes on queue %d\n",ref_list_n( ref_interp->ref_list ));
+      printf("walks: failed %d of %f, successful %d of %f\n",
+	     ref_interp->nfail, 
+	     (REF_DBL)ref_interp->wasted / (REF_DBL)ref_interp->nfail,
+	     ref_interp->nwalk, 
+	     (REF_DBL)ref_interp->steps / (REF_DBL)ref_interp->nwalk );
     }
 
   return REF_SUCCESS;
