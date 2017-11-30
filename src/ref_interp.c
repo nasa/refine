@@ -112,6 +112,19 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp, 
+				   REF_GRID from_grid, REF_GRID to_grid )
+{
+  REF_INT node;
+  while ( ref_list_n( ref_interp->ref_list ) )
+    {
+      RSS( ref_list_pop( ref_interp->ref_list, &node ), "pop queue");
+    }
+  SUPRESS_UNUSED_COMPILER_WARNING(from_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(to_grid);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid )
 {
@@ -134,6 +147,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
+      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
       if ( REF_EMPTY != ref_interp->cell[node] )
 	continue;
       RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
