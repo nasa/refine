@@ -32,7 +32,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp = ( *ref_interp_ptr );
 
   ref_interp->steps = 0;
-  ref_interp->node = NULL;
+  ref_interp->cell = NULL;
   ref_interp->bary = NULL;
 
   return REF_SUCCESS;
@@ -43,13 +43,13 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
   if ( NULL == (void *)ref_interp )
     return REF_NULL;
   ref_free( ref_interp->bary );
-  ref_free( ref_interp->node );
+  ref_free( ref_interp->cell );
   ref_free( ref_interp );
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
-						REF_INT *node, REF_DBL *bary )
+						REF_INT *cell, REF_DBL *bary )
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -76,8 +76,9 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   
   RUS( REF_EMPTY, best_guess, "failed to find cell");
 
-  RSS( ref_cell_nodes( ref_cell, best_guess, node), "cell" );
-  RSS( ref_node_bary4( ref_node, node, xyz, bary ), "bary");
+  *cell = best_guess;
+  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
   
   return REF_SUCCESS;
 }
@@ -92,8 +93,8 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
-  ref_malloc( ref_interp->node, 
-	      4*ref_node_max(to_node), 
+  ref_malloc( ref_interp->cell, 
+	      ref_node_max(to_node), 
 	      REF_INT );
   ref_malloc( ref_interp->bary, 
 	      4*ref_node_max(to_node), 
@@ -103,7 +104,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
     {
       RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
 					       ref_node_xyz_ptr(to_node,node),
-					       &(ref_interp->node[4*node]), 
+					       &(ref_interp->cell[node]), 
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhast");
     }
@@ -117,14 +118,16 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL xyz[3], error;
   REF_INT i;
 
   *max_error = 0.0;
 
-  RNS( ref_interp->node, "locate first" );
+  RNS( ref_interp->cell, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
   if ( ref_mpi_para(ref_mpi) )
@@ -132,16 +135,17 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes), "cn" );  
       for(i=0;i<3;i++)
 	xyz[i] = 
 	  ref_interp->bary[0+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[0+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[0]) +
 	  ref_interp->bary[1+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[1+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[1]) +
 	  ref_interp->bary[2+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[2+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[2]) +
 	  ref_interp->bary[3+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[3+4*node]);
+	  ref_node_xyz(from_node,i,nodes[3]);
       error = 
 	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
 	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
@@ -157,14 +161,16 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL xyz[3], error;
   REF_INT i;
   REF_DBL max_error = 0.0;
   REF_DBL min_bary = 1.0;
 
-  RNS( ref_interp->node, "locate first" );
+  RNS( ref_interp->cell, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
   if ( ref_mpi_para(ref_mpi) )
@@ -172,16 +178,17 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes), "cn" );  
       for(i=0;i<3;i++)
 	xyz[i] = 
 	  ref_interp->bary[0+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[0+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[0]) +
 	  ref_interp->bary[1+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[1+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[1]) +
 	  ref_interp->bary[2+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[2+4*node]) +
+	  ref_node_xyz(from_node,i,nodes[2]) +
 	  ref_interp->bary[3+4*node] *
-	  ref_node_xyz(from_node,i,ref_interp->node[3+4*node]);
+	  ref_node_xyz(from_node,i,nodes[3]);
       error = 
 	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
 	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
@@ -195,5 +202,6 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
     {
       printf("interp min bary %e max error %e\n", min_bary, max_error);
     }
+
   return REF_SUCCESS;
 }
