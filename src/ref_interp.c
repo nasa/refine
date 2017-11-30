@@ -93,15 +93,17 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
-  ref_malloc( ref_interp->cell, 
-	      ref_node_max(to_node), 
-	      REF_INT );
+  ref_malloc_init( ref_interp->cell, 
+		   ref_node_max(to_node), 
+		   REF_INT, REF_EMPTY );
   ref_malloc( ref_interp->bary, 
 	      4*ref_node_max(to_node), 
 	      REF_DBL );
 
   each_ref_node_valid_node( to_node, node )
     {
+      if ( REF_EMPTY != ref_interp->cell[node] )
+	continue;
       RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
 					       ref_node_xyz_ptr(to_node,node),
 					       &(ref_interp->cell[node]), 
