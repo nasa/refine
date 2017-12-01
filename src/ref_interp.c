@@ -39,6 +39,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->steps = 0;
   ref_interp->wasted = 0;
   ref_interp->ngeom = 0;
+  ref_interp->ngeomfail = 0;
   ref_interp->guess = NULL;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
@@ -74,6 +75,42 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   best_guess = REF_EMPTY;
   best_bary = -999.0;
   each_ref_cell_valid_cell( ref_cell, guess)
+    {
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
+	   REF_DIV_ZERO, "bary");
+      min_bary = MIN( MIN(current_bary[0],current_bary[1]),
+		      MIN(current_bary[2],current_bary[3]));
+      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+	{
+	  best_guess = guess;
+	  best_bary = min_bary;
+	}
+    }
+  
+  RUS( REF_EMPTY, best_guess, "failed to find cell");
+
+  *cell = best_guess;
+  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_exhaustive_tet_around_node( REF_GRID ref_grid,
+						  REF_INT node, REF_DBL *xyz,
+						  REF_INT *cell, REF_DBL *bary )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, guess, best_guess;
+  REF_DBL current_bary[4];
+  REF_DBL best_bary, min_bary;
+ 
+  best_guess = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_cell_having_node( ref_cell, node, item, guess )
     {
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
       RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
@@ -441,6 +478,9 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 	     (REF_DBL)ref_interp->wasted / (REF_DBL)ref_interp->nfail,
 	     ref_interp->nwalk, 
 	     (REF_DBL)ref_interp->steps / (REF_DBL)ref_interp->nwalk );
+      printf("geom nodes: failed %d, successful %d, of %d\n",
+	     ref_interp->ngeomfail,  ref_interp->ngeom,
+	     ref_interp->ngeom+ref_interp->ngeomfail);
     }
 
   return REF_SUCCESS;
@@ -455,38 +495,37 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tri = ref_grid_tri(from_grid);
   REF_LIST ref_list;
-  REF_INT node;
+  REF_INT to_n, from_n;
   REF_INT nfaceid, faceids[3];
   REF_DBL *xyz;
   REF_INT item;
-  REF_INT best_item;
-  REF_DBL dist, best_dist;
+  REF_INT i, best_item, cell;
+  REF_DBL dist, best_dist, bary[4];
   RSS( ref_list_create( &ref_list ), "create list" );
   
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
-  each_ref_node_valid_node( to_node, node )
+  each_ref_node_valid_node( to_node, to_n )
     {
-      if ( !ref_cell_node_empty( to_tri, node ) )
+      if ( !ref_cell_node_empty( to_tri, to_n ) )
 	{
 	  RXS( ref_cell_faceid_list_around( to_tri,
-					    node,
+					    to_n,
 					    3,
 					    &nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  if ( nfaceid >= 3 )
-	    RSS( ref_list_add( ref_list, node ), "add geom node" );
+	    RSS( ref_list_add( ref_list, to_n ), "add geom node" );
 	}
     }
-  printf("found %d geom nodes\n",ref_list_n(ref_list));
 	      
-  each_ref_node_valid_node( from_node, node )
+  each_ref_node_valid_node( from_node, from_n )
     {
-      if ( !ref_cell_node_empty( from_tri, node ) )
+      if ( !ref_cell_node_empty( from_tri, from_n ) )
 	{
 	  RXS( ref_cell_faceid_list_around( from_tri,
-					    node,
+					    from_n,
 					    3,
 					    &nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
@@ -498,9 +537,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		{
 		  xyz = ref_node_xyz_ptr(to_node,ref_list_value(ref_list,item));
 		  dist =
-		    pow(xyz[0]-ref_node_xyz(from_node,0,node),2) +
-		    pow(xyz[1]-ref_node_xyz(from_node,1,node),2) +
-		    pow(xyz[2]-ref_node_xyz(from_node,2,node),2) ;
+		    pow(xyz[0]-ref_node_xyz(from_node,0,from_n),2) +
+		    pow(xyz[1]-ref_node_xyz(from_node,1,from_n),2) +
+		    pow(xyz[2]-ref_node_xyz(from_node,2,from_n),2) ;
 		  dist = sqrt(dist);
 		  if ( dist < best_dist )
 		    {
@@ -508,12 +547,30 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		      best_item = item;
 		    }
 		}
-	      printf("%d best %e\n",best_item,best_dist);
+	      to_n = ref_list_value(ref_list,best_item);
+	      xyz = ref_node_xyz_ptr( to_node, to_n );
+	      RSS( ref_interp_exhaustive_tet_around_node( from_grid, from_n,
+							  xyz, &cell, bary),
+		   "tet around node");
+	      if ( bary[0] > ref_interp->inside &&
+		   bary[1] > ref_interp->inside &&
+		   bary[2] > ref_interp->inside &&
+		   bary[3] > ref_interp->inside )
+		{
+		  ref_interp->ngeom++;
+		  ref_interp->cell[to_n] = cell;
+		  for(i=0;i<4;i++)
+		    ref_interp->bary[i+4*to_n] = bary[i];
+		  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_n),
+		       "push" );
+		}
+	      else
+		{
+		  ref_interp->ngeomfail++;
+		}
 	    }
 	}
     }
-
-  ref_interp->ngeom = ref_list_n(ref_list);
   ref_list_free( ref_list );
   return REF_SUCCESS;
 }
