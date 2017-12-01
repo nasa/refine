@@ -44,7 +44,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
   ref_interp->inside = -1.0e-12; /* inside tolerence */
-  ref_interp->bound = -0.5; /* bound tolerence */
+  ref_interp->bound = -0.1; /* bound tolerence */
 
   RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
 
@@ -191,8 +191,6 @@ REF_STATUS ref_interp_extrap( REF_INTERP ref_interp, REF_GRID ref_grid,
       /* give up if cell is invalid */
       if ( !ref_cell_valid(ref_cell,guess) )
 	{
-	  printf("out %d, tet %d, bary %e %e %e %e inside %e\n",
-		 step,guess,bary[0],bary[1],bary[2],bary[3],ref_interp->inside);
 	  return REF_SUCCESS;
 	}
 
@@ -775,7 +773,6 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
   REF_INT node;
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT other;
-  REF_INT have, havenot;
 
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -784,17 +781,13 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
     {
       if ( REF_EMPTY != ref_interp->cell[node] )
 	continue;
-      printf("for node %d:\n",node);
       RSS( ref_cell_node_list_around( to_tet, node, MAX_NODE_LIST,
 				      &nneighbor, neighbors ), "list too small");
-      have = 0;
-      havenot=0;
       for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
 	{
 	  other = neighbors[neighbor];
 	  if ( ref_interp->cell[other] != REF_EMPTY )
 	    {
-	      have++;
 	      RSS( ref_interp_extrap( ref_interp,
 				      from_grid,
 				      ref_node_xyz_ptr(to_node,node),
@@ -804,36 +797,9 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 		   "walk");
 	      if ( ref_interp->cell[node] != REF_EMPTY )
 		{
-	  printf("tet %d, bary %e %e %e %e\n",ref_interp->cell[node],
-		 ref_interp->bary[0+4*node],
-		 ref_interp->bary[1+4*node],
-		 ref_interp->bary[2+4*node],
-		 ref_interp->bary[3+4*node]);
-		  printf("got it!\n");
 		  break;
 		}
 	    }
-	  else
-	    {
-	      havenot++;
-	    }
-	}
-      printf("have %d havenot %d\n",have,havenot);
-      if ( REF_EMPTY == ref_interp->cell[node] )
-	{
-	  RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
-						   ref_node_xyz_ptr(to_node,node),
-						   &(ref_interp->cell[node]), 
-						   &(ref_interp->bary[4*node]) ), 
-	      "exhaust");
-	  printf("tet %d, bary %e %e %e %e\n",ref_interp->cell[node],
-		 ref_interp->bary[0+4*node],
-		 ref_interp->bary[1+4*node],
-		 ref_interp->bary[2+4*node],
-		 ref_interp->bary[3+4*node]);
-	  (ref_interp->nexhaustive)++;
-	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
-	  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
 	}
       if ( REF_EMPTY != ref_interp->cell[node] )
 	{
