@@ -814,3 +814,39 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
+			   REF_GRID to_grid, const char *filename )
+  
+{
+  REF_NODE ref_node = ref_grid_node(to_grid); 
+  FILE *file;
+  REF_INT item;
+
+  file = fopen(filename,"w");
+  if (NULL == (void *)file) printf("unable to open %s\n",filename);
+  RNS(file, "unable to open file" );
+
+  fprintf(file, "title=\"refine interp\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  if ( 0 == ref_list_n(ref_interp->exhausted) )
+    {
+      fclose(file);
+      return REF_SUCCESS;
+    }
+  
+  fprintf(file,
+	  "zone t=exhaust, i=%d, datapacking=%s\n",
+	  ref_list_n(ref_interp->exhausted), "point");
+
+  each_ref_list_item( ref_interp->exhausted, item )
+    fprintf(file,"%.15e %.15e %.15e\n",
+	    ref_node_xyz(ref_node,0,ref_list_value(ref_interp->exhausted,item)),
+	    ref_node_xyz(ref_node,1,ref_list_value(ref_interp->exhausted,item)),
+	    ref_node_xyz(ref_node,2,ref_list_value(ref_interp->exhausted,item))
+	    );
+
+  fclose(file);
+  return REF_SUCCESS;
+}

@@ -70,8 +70,12 @@ int main( int argc, char *argv[] )
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "locate" ), "sw start");
       RSS( ref_interp_stats(ref_interp, from, to ), "err" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "stats" ), "sw start");
-      RSS( ref_interp_free( ref_interp ), "interp free" );
 
+      RSS(ref_export_tec_surf( to, "ref_interp_test_to.tec" ),"export" );
+      RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
+      RSS(ref_interp_tec( ref_interp, to, "ref_interp_test_exhaust.tec" ),"export" );
+      
+      RSS( ref_interp_free( ref_interp ), "interp free" );
       RSS( ref_grid_free(to),"free");
       RSS( ref_grid_free(from),"free");
 

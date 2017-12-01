@@ -61,5 +61,7 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 				 REF_DBL *max_error );
 REF_STATUS ref_interp_stats( REF_INTERP ref_interp, 
 			     REF_GRID from_grid, REF_GRID to_grid );
+REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
+			   REF_GRID to_grid, const char *filename );
 
 #endif /* REF_INTERP_H */
