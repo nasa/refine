@@ -284,6 +284,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT other;
+
+  RUS( REF_EMPTY, ref_interp->cell[node], "no cell for guess" );
+
   RSS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
                                   &nneighbor, neighbors ), "list too small");
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
@@ -310,7 +313,7 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
     {
       RSS( ref_list_pop( ref_interp->ref_list, &node ), "pop queue");
       RUS( REF_EMPTY, ref_interp->guess[node], "no guess" );
-      REIS( REF_EMPTY, ref_interp->cell[node], "already found?" );
+      REIS( REF_EMPTY, ref_interp->cell[node], "queued to node already found?");
       RSS( ref_interp_enclosing_tet( ref_interp,
 				     from_grid,
 				     ref_node_xyz_ptr(to_node,node),
