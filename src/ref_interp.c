@@ -44,6 +44,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
   ref_interp->inside = -1.0e-12; /* inside tolerence */
+  ref_interp->bound = -0.5; /* bound tolerence */
 
   RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
 
@@ -177,11 +178,14 @@ REF_STATUS ref_interp_extrap( REF_INTERP ref_interp, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT step, limit;
-
+  REF_INT node;
+  REF_INT cell_nodes[4];
+  REF_INT found;
+ 
   *tet = REF_EMPTY;
-
+  
   limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
-
+  
   for ( step=0; step < limit; step++)
     {
       /* give up if cell is invalid */
@@ -205,6 +209,66 @@ REF_STATUS ref_interp_extrap( REF_INTERP ref_interp, REF_GRID ref_grid,
 	   bary[1] >= ref_interp->inside &&
 	   bary[2] >= ref_interp->inside &&
 	   bary[3] >= ref_interp->inside )
+	{
+	  (ref_interp->steps) += (step+1);
+	  (ref_interp->nwalk)++;
+	  *tet = guess;
+	  return REF_SUCCESS;
+	}
+
+      for(node=0;node<4;node++)
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,0,guess);
+      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+					   cell_nodes, &found ) ) &&
+	   bary[0] >= ref_interp->bound &&
+	   bary[1] >= ref_interp->inside &&
+	   bary[2] >= ref_interp->inside &&
+	   bary[3] >= ref_interp->inside )
+	{
+	  (ref_interp->steps) += (step+1);
+	  (ref_interp->nwalk)++;
+	  *tet = guess;
+	  return REF_SUCCESS;
+	}
+      
+      for(node=0;node<4;node++)
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,1,guess);
+      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+					   cell_nodes, &found ) ) &&
+	   bary[0] >= ref_interp->inside &&
+	   bary[1] >= ref_interp->bound &&
+	   bary[2] >= ref_interp->inside &&
+	   bary[3] >= ref_interp->inside )
+	{
+	  (ref_interp->steps) += (step+1);
+	  (ref_interp->nwalk)++;
+	  *tet = guess;
+	  return REF_SUCCESS;
+	}
+      
+      for(node=0;node<4;node++)
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,2,guess);
+      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+					   cell_nodes, &found ) ) &&
+	   bary[0] >= ref_interp->inside &&
+	   bary[1] >= ref_interp->inside &&
+	   bary[2] >= ref_interp->bound &&
+	   bary[3] >= ref_interp->inside )
+	{
+	  (ref_interp->steps) += (step+1);
+	  (ref_interp->nwalk)++;
+	  *tet = guess;
+	  return REF_SUCCESS;
+	}
+      
+      for(node=0;node<4;node++)
+	cell_nodes[node]=ref_cell_f2n(ref_cell,node,0,guess);
+      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
+					   cell_nodes, &found ) ) &&
+	   bary[0] >= ref_interp->inside &&
+	   bary[1] >= ref_interp->inside &&
+	   bary[2] >= ref_interp->inside &&
+	   bary[3] >= ref_interp->bound )
 	{
 	  (ref_interp->steps) += (step+1);
 	  (ref_interp->nwalk)++;

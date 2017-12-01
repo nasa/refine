@@ -43,6 +43,7 @@ struct REF_INTERP_STRUCT {
   REF_INT *cell;
   REF_DBL *bary;
   REF_DBL inside;
+  REF_DBL bound;
   REF_LIST ref_list;
 };
 
