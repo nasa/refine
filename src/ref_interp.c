@@ -398,7 +398,8 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
-      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes), "cn" );  
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
+	   "node needs to be localized" );
       for(i=0;i<3;i++)
 	xyz[i] = 
 	  ref_interp->bary[0+4*node] *
@@ -443,7 +444,8 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
-      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes), "cn" );  
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
+	   "node needs to be localized" );
       for(i=0;i<3;i++)
 	xyz[i] = 
 	  ref_interp->bary[0+4*node] *
