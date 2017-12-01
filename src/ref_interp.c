@@ -38,6 +38,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->nfail = 0;
   ref_interp->steps = 0;
   ref_interp->wasted = 0;
+  ref_interp->ngeom = 0;
   ref_interp->guess = NULL;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
@@ -292,6 +293,9 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
+				  REF_GRID from_grid, REF_GRID to_grid );
+
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid )
 {
@@ -312,6 +316,8 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 	      4*ref_node_max(to_node), 
 	      REF_DBL );
 
+  RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
+  
   each_ref_node_valid_node( to_node, node )
     {
       RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
@@ -437,5 +443,36 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 	     (REF_DBL)ref_interp->steps / (REF_DBL)ref_interp->nwalk );
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
+				  REF_GRID from_grid, REF_GRID to_grid )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL to_tri = ref_grid_tri(to_grid);
+  REF_LIST ref_list;
+  REF_INT node;
+  REF_INT nfaceid, faceids[3];
+
+  RSS( ref_list_create( &ref_list ), "create list" );
+  
+  each_ref_node_valid_node( to_node, node )
+    {
+      if ( !ref_cell_node_empty( to_tri, node ) )
+	{
+	  RXS( ref_cell_faceid_list_around( to_tri,
+					    node,
+					    3,
+					    &nfaceid, faceids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  if ( nfaceid >= 3 )
+	    RSS( ref_list_add( ref_list, node ), "add geom node" );
+	}
+    }
+  printf("%d found %d geom nodes\n",ref_mpi_rank(ref_mpi),ref_list_n(ref_list));
+  ref_interp->ngeom = ref_list_n(ref_list);
+  ref_list_free( ref_list );
   return REF_SUCCESS;
 }

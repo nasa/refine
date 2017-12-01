@@ -37,6 +37,7 @@ struct REF_INTERP_STRUCT {
   REF_INT nfail;
   REF_INT steps;
   REF_INT wasted;
+  REF_INT ngeom;
   REF_INT *guess;
   REF_INT *cell;
   REF_DBL *bary;
