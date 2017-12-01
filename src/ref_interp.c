@@ -562,9 +562,12 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		{
 		  ref_interp->ngeom++;
 		  REIS( REF_EMPTY, ref_interp->cell[to_n],
-			"geom already found?" )
-		  REIS( REF_EMPTY, ref_interp->guess[to_n],
-			"geom already queued?" )
+			"geom already found?" );
+		  if ( REF_EMPTY != ref_interp->guess[to_n] )
+		    { /* need to dequeue */
+		      ref_interp->guess[to_n] = REF_EMPTY;
+		      RSS( ref_list_delete( ref_interp->ref_list, to_n ),"deq");
+		    }
 		  ref_interp->cell[to_n] = cell;
 		  for(i=0;i<4;i++)
 		    ref_interp->bary[i+4*to_n] = bary[i];
