@@ -47,6 +47,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->bound = -0.1; /* bound tolerence */
 
   RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
+  RSS( ref_list_create( &( ref_interp->exhausted ) ), "add list" );
 
   return REF_SUCCESS;
 }
@@ -55,6 +56,7 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
 {
   if ( NULL == (void *)ref_interp )
     return REF_NULL;
+  ref_list_free( ref_interp->exhausted );
   ref_list_free( ref_interp->ref_list );
   ref_free( ref_interp->bary );
   ref_free( ref_interp->cell );
@@ -544,6 +546,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       &(ref_interp->cell[node]), 
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhaust");
+      RSS( ref_list_add( ref_interp->exhausted, node ), "exhaust" );
       (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
       RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );

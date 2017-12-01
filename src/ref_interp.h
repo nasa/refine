@@ -45,6 +45,7 @@ struct REF_INTERP_STRUCT {
   REF_DBL inside;
   REF_DBL bound;
   REF_LIST ref_list;
+  REF_LIST exhausted;
 };
 
 #define ref_interp_steps(ref_interp) ( (ref_interp)->steps )
