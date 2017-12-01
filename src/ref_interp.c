@@ -358,9 +358,10 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 
   RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
   
+  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
+
   each_ref_node_valid_node( to_node, node )
     {
-      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
       if ( REF_EMPTY != ref_interp->cell[node] )
 	continue;
       RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
@@ -370,6 +371,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 	  "exhast");
       (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
+      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
     }
 
   return REF_SUCCESS;
