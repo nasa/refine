@@ -457,14 +457,15 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_LIST ref_list;
   REF_INT node;
   REF_INT nfaceid, faceids[3];
-  REF_DBL *to_xyz, *all_xyz;
-  REF_INT i, proc, item;
-  REF_INT *counts;
-  REF_INT total_count;
+  REF_DBL *xyz;
+  REF_INT item;
   REF_INT best_item;
   REF_DBL dist, best_dist;
   RSS( ref_list_create( &ref_list ), "create list" );
   
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
   each_ref_node_valid_node( to_node, node )
     {
       if ( !ref_cell_node_empty( to_tri, node ) )
@@ -478,32 +479,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	    RSS( ref_list_add( ref_list, node ), "add geom node" );
 	}
     }
-  printf("%d found %d geom nodes\n",ref_mpi_rank(ref_mpi),ref_list_n(ref_list));
-  ref_malloc( to_xyz, 3*ref_list_n(ref_list), REF_DBL );
-  each_ref_list_item( ref_list, item )
-    for (i=0;i<3;i++)
-      to_xyz[i+3*item] = ref_node_xyz(to_node,i,ref_list_value(ref_list,item));
-
-  ref_malloc( counts, ref_mpi_m(ref_mpi), REF_INT );
-  RSS( ref_mpi_allgather( ref_mpi,
-			  &(ref_list_n(ref_list)), counts, REF_INT_TYPE ), 
-       "gather size");
-
-  total_count = 0;
-  each_ref_mpi_part( ref_mpi, proc )
-    {
-      counts[proc] *= 3;
-      total_count += counts[proc];
-    }
-  ref_malloc( all_xyz, total_count, REF_DBL );
-  RSS( ref_mpi_allgatherv( ref_mpi,
-			   to_xyz, counts, all_xyz, REF_DBL_TYPE ), 
-       "gather values");
-  if ( ref_mpi_once( ref_mpi ) )
-    printf("total %d geom nodes\n",total_count/3);
+  printf("found %d geom nodes\n",ref_list_n(ref_list));
 	      
-  ref_interp->ngeom = ref_list_n(ref_list);
-
   each_ref_node_valid_node( from_node, node )
     {
       if ( !ref_cell_node_empty( from_tri, node ) )
@@ -517,12 +494,13 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	    {
 	      best_dist = 1.0e20;
 	      best_item = REF_EMPTY;
-	      for ( item = 0 ; item < total_count/3 ; item++ )
+	      each_ref_list_item( ref_list, item )
 		{
+		  xyz = ref_node_xyz_ptr(to_node,ref_list_value(ref_list,item));
 		  dist =
-		    pow(all_xyz[0+3*item]-ref_node_xyz(from_node,0,node),2) +
-		    pow(all_xyz[1+3*item]-ref_node_xyz(from_node,1,node),2) +
-		    pow(all_xyz[2+3*item]-ref_node_xyz(from_node,2,node),2) ;
+		    pow(xyz[0]-ref_node_xyz(from_node,0,node),2) +
+		    pow(xyz[1]-ref_node_xyz(from_node,1,node),2) +
+		    pow(xyz[2]-ref_node_xyz(from_node,2,node),2) ;
 		  dist = sqrt(dist);
 		  if ( dist < best_dist )
 		    {
@@ -530,15 +508,12 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		      best_item = item;
 		    }
 		}
-	      printf("%d best %e\n",ref_mpi_rank(ref_mpi),best_dist);
+	      printf("%d best %e\n",best_item,best_dist);
 	    }
 	}
     }
-  
 
-  ref_free(to_xyz);
-  ref_free(counts);
-  ref_free(all_xyz);
+  ref_interp->ngeom = ref_list_n(ref_list);
   ref_list_free( ref_list );
   return REF_SUCCESS;
 }
