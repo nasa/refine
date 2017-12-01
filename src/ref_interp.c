@@ -368,7 +368,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       ref_node_xyz_ptr(to_node,node),
 					       &(ref_interp->cell[node]), 
 					       &(ref_interp->bary[4*node]) ), 
-	  "exhast");
+	  "exhaust");
       (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
       RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
