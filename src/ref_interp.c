@@ -561,7 +561,10 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		   bary[3] > ref_interp->inside )
 		{
 		  ref_interp->ngeom++;
-		  REIS( REF_EMPTY, ref_interp->cell[to_n], "already found?" )
+		  REIS( REF_EMPTY, ref_interp->cell[to_n],
+			"geom already found?" )
+		  REIS( REF_EMPTY, ref_interp->guess[to_n],
+			"geom already queued?" )
 		  ref_interp->cell[to_n] = cell;
 		  for(i=0;i<4;i++)
 		    ref_interp->bary[i+4*to_n] = bary[i];
