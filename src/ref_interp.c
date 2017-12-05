@@ -172,176 +172,6 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_interp_extrap( REF_INTERP ref_interp, REF_GRID ref_grid, 
-			      REF_DBL *xyz, REF_INT guess,
-			      REF_INT *tet, REF_DBL *bary )
-{
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT step, limit;
-  REF_INT node;
-  REF_INT cell_nodes[4];
-  REF_INT found;
- 
-  *tet = REF_EMPTY;
-  
-  limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
-  
-  for ( step=0; step < limit; step++)
-    {
-      /* give up if cell is invalid */
-      if ( !ref_cell_valid(ref_cell,guess) )
-	{
-	  return REF_SUCCESS;
-	}
-
-      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
-      RXS( ref_node_bary4( ref_node, nodes, xyz, bary ), REF_DIV_ZERO, "bary");
-
-      if ( step > 990 )
-	{
-	  printf("step %d, tet %d, bary %e %e %e %e inside %e\n",
-		 step,guess,bary[0],bary[1],bary[2],bary[3],ref_interp->inside);
-	}
-      
-      if ( bary[0] >= ref_interp->inside &&
-	   bary[1] >= ref_interp->inside &&
-	   bary[2] >= ref_interp->inside &&
-	   bary[3] >= ref_interp->inside )
-	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
-	  *tet = guess;
-	  return REF_SUCCESS;
-	}
-
-      for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,0,guess);
-      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
-					   cell_nodes, &found ) ) &&
-	   bary[0] >= ref_interp->bound &&
-	   bary[1] >= ref_interp->inside &&
-	   bary[2] >= ref_interp->inside &&
-	   bary[3] >= ref_interp->inside )
-	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
-	  *tet = guess;
-	  return REF_SUCCESS;
-	}
-      
-      for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,1,guess);
-      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
-					   cell_nodes, &found ) ) &&
-	   bary[0] >= ref_interp->inside &&
-	   bary[1] >= ref_interp->bound &&
-	   bary[2] >= ref_interp->inside &&
-	   bary[3] >= ref_interp->inside )
-	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
-	  *tet = guess;
-	  return REF_SUCCESS;
-	}
-      
-      for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,2,guess);
-      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
-					   cell_nodes, &found ) ) &&
-	   bary[0] >= ref_interp->inside &&
-	   bary[1] >= ref_interp->inside &&
-	   bary[2] >= ref_interp->bound &&
-	   bary[3] >= ref_interp->inside )
-	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
-	  *tet = guess;
-	  return REF_SUCCESS;
-	}
-      
-      for(node=0;node<4;node++)
-	cell_nodes[node]=ref_cell_f2n(ref_cell,node,0,guess);
-      if ( ( REF_SUCCESS == ref_cell_with( ref_grid_tri( ref_grid ), 
-					   cell_nodes, &found ) ) &&
-	   bary[0] >= ref_interp->inside &&
-	   bary[1] >= ref_interp->inside &&
-	   bary[2] >= ref_interp->inside &&
-	   bary[3] >= ref_interp->bound )
-	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
-	  *tet = guess;
-	  return REF_SUCCESS;
-	}
-      
-      /* less than */
-      if ( bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[1], nodes[2], nodes[3],
-				     &guess ), "update 1 2 3");
-	  continue;
-	}
-
-      if ( bary[1] < bary[0] && bary[1] < bary[3] && bary[1] < bary[2] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[3], nodes[2],
-				     &guess ), "update 0 3 2");
-	  continue;
-	}
-
-      if ( bary[2] < bary[0] && bary[2] < bary[1] && bary[2] < bary[3] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[1], nodes[3],
-				     &guess ), "update 0 1 3");
-	  continue;
-	}
-
-      if ( bary[3] < bary[0] && bary[3] < bary[2] && bary[3] < bary[1] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[2], nodes[1],
-				     &guess ), "update 0 2 1");
-	  continue;
-	}
-      
-      /* less than or equal */
-      if ( bary[0] <= bary[1] && bary[0] <= bary[2] && bary[0] <= bary[3] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[1], nodes[2], nodes[3],
-				     &guess ), "update 1 2 3");
-	  continue;
-	}
-
-      if ( bary[1] <= bary[0] && bary[1] <= bary[3] && bary[1] <= bary[2] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[3], nodes[2],
-				     &guess ), "update 0 3 2");
-	  continue;
-	}
-
-      if ( bary[2] <= bary[0] && bary[2] <= bary[1] && bary[2] <= bary[3] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[1], nodes[3],
-				     &guess ), "update 0 1 3");
-	  continue;
-	}
-
-      if ( bary[3] <= bary[0] && bary[3] <= bary[2] && bary[3] <= bary[1] )
-	{
-	  RSS( ref_update_tet_guess( ref_cell, nodes[0], nodes[2], nodes[1],
-				     &guess ), "update 0 2 1");
-	  continue;
-	}
-
-      THROW("unable to find the next step");
-    }
-  
-  THROW("out of iterations");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid, 
 				     REF_DBL *xyz, REF_INT guess,
 				     REF_INT *tet, REF_DBL *bary )
@@ -539,6 +369,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 
   each_ref_node_valid_node( to_node, node )
     {
+      REF_DBL min_bary;
       if ( REF_EMPTY != ref_interp->cell[node] )
 	continue;
       RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
@@ -546,6 +377,12 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 					       &(ref_interp->cell[node]), 
 					       &(ref_interp->bary[4*node]) ), 
 	  "exhaust");
+      min_bary = MIN(MIN(ref_interp->bary[0+4*node],
+			 ref_interp->bary[1+4*node]),
+		     MIN(ref_interp->bary[2+4*node],
+			 ref_interp->bary[3+4*node]));
+      if ( min_bary >= ref_interp->inside) 
+	printf("exhastive interior %e\n",min_bary); 
       RSS( ref_list_add( ref_interp->exhausted, node ), "exhaust" );
       (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
@@ -791,7 +628,7 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 	  other = neighbors[neighbor];
 	  if ( ref_interp->cell[other] != REF_EMPTY )
 	    {
-	      RSS( ref_interp_extrap( ref_interp,
+	      RSS( ref_interp_enclosing_tet( ref_interp,
 				      from_grid,
 				      ref_node_xyz_ptr(to_node,node),
 				      ref_interp->cell[other],
@@ -806,6 +643,7 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 	}
       if ( REF_EMPTY != ref_interp->cell[node] )
 	{
+	  printf("adj\n");
 	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
 	  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid),
 	       "drain" );
