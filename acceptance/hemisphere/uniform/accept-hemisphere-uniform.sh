@@ -26,3 +26,5 @@ ${two}/ref_metric_test hemicurve1.meshb hemicurve1.metric > accept-hemisphere-un
 cat accept-hemisphere-uniform-01.status
 ../../check.rb accept-hemisphere-uniform-01.status 0.2 1.8
 
+${two}/ref_interp_test hemicurve.meshb hemicurve1.meshb
+${two}/ref_interp_test hemicurve1.meshb hemicurve.meshb
