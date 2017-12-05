@@ -224,3 +224,12 @@ cd ${source_dir}/acceptance/om6/recon
 trap - EXIT
 
 date
+
+LOG=${root_dir}/log.accept-hemisphere-uniform
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/hemisphere/uniform
+./accept-hemisphere-uniform.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
+
