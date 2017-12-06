@@ -2166,3 +2166,38 @@ REF_STATUS ref_node_dist_to_edge( REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
+REF_STATUS ref_node_dist_to_tri( REF_NODE ref_node, 
+				 REF_INT *nodes, REF_DBL *xyz,
+				 REF_DBL *distance )
+{
+  REF_DBL projection;
+  REF_DBL edge_dist0, edge_dist1, edge_dist2;
+  REF_DBL node_dist0, node_dist1, node_dist2;
+  REF_INT edge_nodes[2];
+  RSS( ref_node_tri_projection( ref_node, nodes, xyz, &projection ), "proj" );
+  projection = ABS( projection );
+  edge_nodes[0] = nodes[1]; edge_nodes[1] = nodes[2];
+  RSS( ref_node_dist_to_edge( ref_node, edge_nodes, xyz, &edge_dist0 ), "e0" );
+  edge_nodes[0] = nodes[2]; edge_nodes[1] = nodes[0];
+  RSS( ref_node_dist_to_edge( ref_node, edge_nodes, xyz, &edge_dist1 ), "e1" );
+  edge_nodes[0] = nodes[0]; edge_nodes[1] = nodes[1];
+  RSS( ref_node_dist_to_edge( ref_node, edge_nodes, xyz, &edge_dist2 ), "e2" );
+  node_dist0 =
+    pow(xyz[0]-ref_node_xyz(ref_node,0,nodes[0]),2) +
+    pow(xyz[1]-ref_node_xyz(ref_node,1,nodes[0]),2) +
+    pow(xyz[2]-ref_node_xyz(ref_node,2,nodes[0]),2) ;
+  node_dist1 =
+    pow(xyz[0]-ref_node_xyz(ref_node,0,nodes[1]),2) +
+    pow(xyz[1]-ref_node_xyz(ref_node,1,nodes[1]),2) +
+    pow(xyz[2]-ref_node_xyz(ref_node,2,nodes[1]),2) ;
+  node_dist2 =
+    pow(xyz[0]-ref_node_xyz(ref_node,0,nodes[2]),2) +
+    pow(xyz[1]-ref_node_xyz(ref_node,1,nodes[2]),2) +
+    pow(xyz[2]-ref_node_xyz(ref_node,2,nodes[2]),2) ;
+  *distance = MIN( MIN( MIN( projection, edge_dist0),
+			MIN( edge_dist1, edge_dist2) ),
+		   MIN( node_dist0,
+			MIN( node_dist1, node_dist2) ) );
+
+  return REF_SUCCESS;
+}
