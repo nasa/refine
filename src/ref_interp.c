@@ -391,7 +391,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 		     MIN(ref_interp->bary[2+4*node],
 			 ref_interp->bary[3+4*node]));
       if ( min_bary >= ref_interp->inside) 
-	printf("exhastive interior %e\n",min_bary); 
+	printf("exhaustive interior %e\n",min_bary); 
       RSS( ref_list_add( ref_interp->exhausted, node ), "exhaust" );
       (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
@@ -500,7 +500,7 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
     {
       printf("interp min bary %e max error %e extrap %d\n", 
 	     min_bary, max_error, extrapolate );
-      printf("exhastive %5.1f%% %d of %d\n", 
+      printf("exhaustive %5.1f%% %d of %d\n", 
 	     (REF_DBL)ref_interp->nexhaustive / 
 	     (REF_DBL)ref_node_n(to_node) * 100.0,
 	     ref_interp->nexhaustive, ref_node_n(to_node));
