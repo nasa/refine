@@ -340,6 +340,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 				  REF_GRID from_grid, REF_GRID to_grid );
 REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 			       REF_GRID from_grid, REF_GRID to_grid );
+REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp, 
+					 REF_GRID from_grid, REF_GRID to_grid );
 
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid )
@@ -366,6 +368,8 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
 
   RSS( ref_interp_try_adj( ref_interp, from_grid, to_grid), "adj" );
+
+  RSS( ref_interp_examine_remaining( ref_interp, from_grid, to_grid), "adj" );
 
   each_ref_node_valid_node( to_node, node )
     {
@@ -650,6 +654,31 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 	}
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp, 
+					 REF_GRID from_grid, REF_GRID to_grid )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL to_tri = ref_grid_tri(to_grid);
+  REF_INT node;
+  REF_INT remain;
+  
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  remain = 0;
+  each_ref_node_valid_node( to_node, node )
+    {
+      if ( REF_EMPTY != ref_interp->cell[node] )
+	continue;
+      remain++;
+      if (ref_cell_node_empty(to_tri,node))
+	printf("not on boundary\n");
+    }
+  printf("%d remaining\n",remain);
   return REF_SUCCESS;
 }
 
