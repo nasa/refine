@@ -65,15 +65,18 @@ int main( int argc, char *argv[] )
       RSS(ref_part_by_extension( &to, ref_mpi, argv[2] ), "import" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "read to grid" ), "sw start");
 
+      RSS(ref_export_tec_surf( to, "ref_interp_test_to.tec" ),"export" );
+      RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "export viz" ), "sw start");
+      
       RSS( ref_interp_create( &ref_interp ), "make interp" );
       RSS( ref_interp_locate(ref_interp, from, to), "map" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "locate" ), "sw start");
+      RSS(ref_interp_tec( ref_interp, to, "ref_interp_test_exhaust.tec" ),"export" );
+      RSS( ref_mpi_stopwatch_stop( ref_mpi, "tec" ), "sw start");
       RSS( ref_interp_stats(ref_interp, from, to ), "err" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "stats" ), "sw start");
 
-      RSS(ref_export_tec_surf( to, "ref_interp_test_to.tec" ),"export" );
-      RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
-      RSS(ref_interp_tec( ref_interp, to, "ref_interp_test_exhaust.tec" ),"export" );
       
       RSS( ref_interp_free( ref_interp ), "interp free" );
       RSS( ref_grid_free(to),"free");
