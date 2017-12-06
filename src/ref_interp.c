@@ -523,11 +523,14 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_CELL to_tri = ref_grid_tri(to_grid);
+  REF_CELL to_edg = ref_grid_edg(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tri = ref_grid_tri(from_grid);
+  REF_CELL from_edg = ref_grid_edg(from_grid);
   REF_LIST ref_list;
   REF_INT to_n, from_n;
   REF_INT nfaceid, faceids[3];
+  REF_INT nedgeid, edgeids[3];
   REF_DBL *xyz;
   REF_INT item;
   REF_INT i, best_item, cell;
@@ -541,12 +544,17 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
     {
       if ( !ref_cell_node_empty( to_tri, to_n ) )
 	{
+	  RXS( ref_cell_faceid_list_around( to_edg,
+					    to_n,
+					    3,
+					    &nedgeid, edgeids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
 	  RXS( ref_cell_faceid_list_around( to_tri,
 					    to_n,
 					    3,
 					    &nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
-	  if ( nfaceid >= 3 )
+	  if ( nfaceid >= 3 || nedgeid >= 2 )
 	    RSS( ref_list_add( ref_list, to_n ), "add geom node" );
 	}
     }
@@ -555,12 +563,17 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
     {
       if ( !ref_cell_node_empty( from_tri, from_n ) )
 	{
+	  RXS( ref_cell_faceid_list_around( from_edg,
+					    from_n,
+					    3,
+					    &nedgeid, edgeids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
 	  RXS( ref_cell_faceid_list_around( from_tri,
 					    from_n,
 					    3,
 					    &nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
-	  if ( nfaceid >= 3 )
+	  if ( nfaceid >= 3 || nedgeid >= 2 )
 	    {
 	      best_dist = 1.0e20;
 	      best_item = REF_EMPTY;
