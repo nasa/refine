@@ -118,14 +118,15 @@ REF_STATUS ref_interp_exhaustive_extrapolation( REF_GRID ref_grid, REF_DBL *xyz,
     {
       RSS( ref_cell_nodes( tri, guess, nodes), "cell" );
       RSS( ref_node_dist_to_tri( ref_node, nodes, xyz, &dist ), "dist");
-      if ( REF_EMPTY == best_tri || best_dist < dist )
+      if ( REF_EMPTY == best_tri || best_dist > dist )
 	{
 	  best_tri = guess;
 	  best_dist = dist;
 	}
     }
-  
+
   RUS( REF_EMPTY, best_tri, "failed to find tri");
+  printf("best tri dist %e\n",best_dist);
 
   RSS( ref_cell_nodes( tri, best_tri, nodes), "cell" );
   face_nodes[0] = nodes[0]; face_nodes[2] = nodes[2];
