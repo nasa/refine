@@ -1698,6 +1698,19 @@ int main( int argc, char *argv[] )
     RWDS( 1.0, bary[1], -1.0, "b1" );
     RWDS( 1.0, bary[2], -1.0, "b2" );
 
+    /* check scale */
+    ref_node_xyz(ref_node,0,nodes[1]) = 2.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
+
+    xyz[0] = 2.0;
+    xyz[1] = 2.0;
+    xyz[2] = 7.0;  /* out of plane */
+
+    RSS(ref_node_bary3d(ref_node, nodes, xyz, bary ), "bary");
+    RWDS(-1.0, bary[0], -1.0, "b0" );
+    RWDS( 1.0, bary[1], -1.0, "b1" );
+    RWDS( 1.0, bary[2], -1.0, "b2" );
+
     RSS(ref_node_free(ref_node),"free");
   }
 
