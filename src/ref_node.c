@@ -2088,3 +2088,39 @@ REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
   
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_tri_projection( REF_NODE ref_node, 
+				    REF_INT *nodes, REF_DBL *xyz,
+				    REF_DBL *projection )
+{
+  REF_DBL area;
+  REF_DBL *a, *b, *c, *d;
+  REF_DBL m11, m12, m13;
+  REF_DBL vol;
+  RSS( ref_node_tri_area( ref_node, nodes, &area ), "area" );
+
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  c = ref_node_xyz_ptr(ref_node,nodes[2]);
+  d = xyz;
+
+  m11 = (a[0]-d[0])*((b[1]-d[1])*(c[2]-d[2])-(c[1]-d[1])*(b[2]-d[2]));
+  m12 = (a[1]-d[1])*((b[0]-d[0])*(c[2]-d[2])-(c[0]-d[0])*(b[2]-d[2]));
+  m13 = (a[2]-d[2])*((b[0]-d[0])*(c[1]-d[1])-(c[0]-d[0])*(b[1]-d[1]));
+  vol =-( m11 - m12 + m13 )/6.0;
+
+  if ( ref_math_divisible(vol,area) )
+    {
+      *projection = 3.0*(vol/area);
+    }
+  else
+    {
+      *projection = 0.0;
+      printf("%s: %d: %s: div zero vol %.18e area %.18e\n",
+	     __FILE__,__LINE__,__func__,
+	     vol, area );
+      return REF_DIV_ZERO;
+    }
+
+  return REF_SUCCESS;
+}

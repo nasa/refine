@@ -1805,6 +1805,66 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* signed projection */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL xyz[3];
+    REF_DBL projection;
+
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+
+    for ( global=0;global<3;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+       }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+
+    xyz[0] = 0.2;
+    xyz[1] = 0.3;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_tri_projection(ref_node, nodes, xyz, &projection ), "bary");
+    RWDS( 0.0, projection, -1.0, "b0" );
+
+    xyz[0] = 0.4;
+    xyz[1] = 0.5;
+    xyz[2] = 1.0;
+
+    RSS(ref_node_tri_projection(ref_node, nodes, xyz, &projection ), "bary");
+    RWDS( 1.0, projection, -1.0, "b0" );
+
+    xyz[0] = 0.6;
+    xyz[1] = 0.7;
+    xyz[2] =-1.0;
+
+    RSS(ref_node_tri_projection(ref_node, nodes, xyz, &projection ), "bary");
+    RWDS(-1.0, projection, -1.0, "b0" );
+
+    /* check scale */
+    ref_node_xyz(ref_node,0,nodes[1]) = 2.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 2.0;
+
+    xyz[0] = 1.0;
+    xyz[1] = 3.0;
+    xyz[2] = 7.0;  /* out of plane */
+
+    RSS(ref_node_tri_projection(ref_node, nodes, xyz, &projection ), "bary");
+    RWDS( 7.0, projection, -1.0, "b0" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 

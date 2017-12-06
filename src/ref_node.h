@@ -218,6 +218,9 @@ REF_STATUS ref_node_bary3d( REF_NODE ref_node, REF_INT *nodes,
 REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
 			   REF_DBL *xyz, REF_DBL *bary );
 
+REF_STATUS ref_node_tri_projection( REF_NODE ref_node, 
+				    REF_INT *nodes, REF_DBL *xyz,
+				    REF_DBL *projection );
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */
