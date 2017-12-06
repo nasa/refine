@@ -363,13 +363,18 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 	      4*ref_node_max(to_node), 
 	      REF_DBL );
 
+  RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
   RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
   RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
 
   RSS( ref_interp_try_adj( ref_interp, from_grid, to_grid), "adj" );
-
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "adj" ), "locate clock");
+  
   RSS( ref_interp_examine_remaining( ref_interp, from_grid, to_grid), "adj" );
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "examine" ), "locate clock");
 
   each_ref_node_valid_node( to_node, node )
     {
