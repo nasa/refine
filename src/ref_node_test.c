@@ -1805,7 +1805,7 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  { /* signed projection */
+  { /* signed tri projection */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
     REF_DBL xyz[3];
@@ -1861,6 +1861,56 @@ int main( int argc, char *argv[] )
 
     RSS(ref_node_tri_projection(ref_node, nodes, xyz, &projection ), "bary");
     RWDS( 7.0, projection, -1.0, "b0" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
+  { /* dist to edge */
+    REF_NODE ref_node;
+    REF_INT nodes[2], global;
+    REF_DBL xyz[3];
+    REF_DBL dist;
+
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+
+    for ( global=0;global<2;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+       }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+
+    xyz[0] = 0.5;
+    xyz[1] = 1.0;
+    xyz[2] = 0.0;
+
+    RSS(ref_node_dist_to_edge(ref_node, nodes, xyz, &dist ), "bary");
+    RWDS( 1.0, dist, -1.0, "b0" );
+
+    /* 3:4:5 traiangle */
+    xyz[0] = 2.5;
+    xyz[1] = 1.5;
+    xyz[2] = 2.0;
+
+    RSS(ref_node_dist_to_edge(ref_node, nodes, xyz, &dist ), "bary");
+    RWDS( 2.5, dist, -1.0, "b0" );
+
+    /* 3:4:5 traiangle, shift edge */
+    ref_node_xyz(ref_node,0,nodes[0]) = 5.0;
+    ref_node_xyz(ref_node,0,nodes[1]) =10.0;
+    xyz[0] = 2.5;
+    xyz[1] = 1.5;
+    xyz[2] = 2.0;
+
+    RSS(ref_node_dist_to_edge(ref_node, nodes, xyz, &dist ), "bary");
+    RWDS( 2.5, dist, -1.0, "b0" );
 
     RSS(ref_node_free(ref_node),"free");
   }

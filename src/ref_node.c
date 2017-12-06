@@ -2124,3 +2124,45 @@ REF_STATUS ref_node_tri_projection( REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_dist_to_edge( REF_NODE ref_node, 
+				  REF_INT *nodes, REF_DBL *xyz,
+				  REF_DBL *distance )
+{
+  REF_DBL *a, *b;
+  REF_DBL direction[3], diff[3], normal[3];
+  REF_DBL len, dis, t;
+
+  a = ref_node_xyz_ptr(ref_node,nodes[0]);
+  b = ref_node_xyz_ptr(ref_node,nodes[1]);
+  direction[0] = b[0]-a[0];
+  direction[1] = b[1]-a[1];
+  direction[2] = b[2]-a[2];
+  diff[0] = xyz[0]-a[0];
+  diff[1] = xyz[1]-a[1];
+  diff[2] = xyz[2]-a[2];
+
+  dis=ref_math_dot(direction,diff);
+  len=ref_math_dot(direction,direction);
+
+  if ( ref_math_divisible(dis,len) )
+    {
+      t = dis/len;
+    }
+  else
+    {
+      *distance = 0.0;
+      printf("%s: %d: %s: div zero dis %.18e len %.18e\n",
+	     __FILE__,__LINE__,__func__,
+	     dis, len );
+      return REF_DIV_ZERO;
+    }
+
+  normal[0] = xyz[0]-(t*b[0]+(1.0-t)*a[0]);
+  normal[1] = xyz[1]-(t*b[1]+(1.0-t)*a[1]);
+  normal[2] = xyz[2]-(t*b[2]+(1.0-t)*a[2]);
+  
+  *distance = sqrt(ref_math_dot(normal,normal));
+
+  return REF_SUCCESS;
+}
