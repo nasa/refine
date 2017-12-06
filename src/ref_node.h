@@ -213,6 +213,8 @@ REF_STATUS ref_node_resize_aux( REF_NODE ref_node );
 
 REF_STATUS ref_node_bary3( REF_NODE ref_node, REF_INT *nodes,
 			   REF_DBL *xyz, REF_DBL *bary );
+REF_STATUS ref_node_bary3d( REF_NODE ref_node, REF_INT *nodes,
+			    REF_DBL *xyz, REF_DBL *bary );
 REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
 			   REF_DBL *xyz, REF_DBL *bary );
 

@@ -1964,6 +1964,53 @@ REF_STATUS ref_node_bary3( REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_bary3d( REF_NODE ref_node, REF_INT *nodes,
+			    REF_DBL *xyz, REF_DBL *bary )
+{
+  REF_DBL *xyz0, *xyz1, *xyz2;
+  REF_DBL total, normal[3], total_normal[3];
+  
+  if ( !ref_node_valid(ref_node,nodes[0]) ||
+       !ref_node_valid(ref_node,nodes[1]) ||
+       !ref_node_valid(ref_node,nodes[2]) ) 
+    RSS( REF_INVALID, "node invalid" );
+
+  xyz0 = ref_node_xyz_ptr(ref_node,nodes[0]);
+  xyz1 = ref_node_xyz_ptr(ref_node,nodes[1]);
+  xyz2 = ref_node_xyz_ptr(ref_node,nodes[2]);
+
+  RSS( ref_node_xyz_normal( xyz0,  xyz1, xyz2, total_normal ), "n0" );
+  
+  RSS( ref_node_xyz_normal( xyz,  xyz1, xyz2, normal ), "n0" );
+  bary[0]=ref_math_dot(normal,total_normal);
+  RSS( ref_node_xyz_normal( xyz0, xyz,  xyz2, normal ), "n1" );
+  bary[1]=ref_math_dot(normal,total_normal);
+  RSS( ref_node_xyz_normal( xyz0, xyz1, xyz,  normal ), "n2" );
+  bary[2]=ref_math_dot(normal,total_normal);
+  
+  total = bary[0]+bary[1]+bary[2];
+
+  if ( ref_math_divisible(bary[0],total) &&
+       ref_math_divisible(bary[1],total) &&
+       ref_math_divisible(bary[2],total) )
+    {
+      bary[0] /= total;
+      bary[1] /= total;
+      bary[2] /= total;
+    }
+  else
+    {
+      REF_INT i;
+      printf("%s: %d: %s: div zero total %.18e norms %.18e %.18e %.18e\n",
+	     __FILE__,__LINE__,__func__,
+	     total, bary[0], bary[1], bary[2] );
+      for(i=0;i<3;i++) bary[i] = 0.0;
+      return REF_DIV_ZERO;
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_bary4( REF_NODE ref_node, REF_INT *nodes,
 			   REF_DBL *xyz, REF_DBL *bary )
 {
