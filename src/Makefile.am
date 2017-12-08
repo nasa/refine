@@ -37,6 +37,7 @@ libref2_a_SOURCES = \
 	ref_node.c \
 	ref_part.c \
 	ref_project.c \
+	ref_search.c \
 	ref_shard.c \
 	ref_smooth.c \
 	ref_sort.c \
@@ -57,7 +58,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_project.h \
-	ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
+	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h 
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
@@ -263,6 +264,11 @@ TESTS += ref_project_test
 noinst_PROGRAMS += ref_project_test
 ref_project_test_SOURCES = ref_project_test.c
 ref_project_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_search_test
+noinst_PROGRAMS += ref_search_test
+ref_search_test_SOURCES = ref_search_test.c
+ref_search_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_shard_test
 noinst_PROGRAMS += ref_shard_test
