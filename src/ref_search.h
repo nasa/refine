@@ -38,7 +38,7 @@ struct REF_SEARCH_STRUCT {
   REF_INT *left, *right;
   REF_DBL *pos;
   REF_DBL *radius;
-  REF_DBL *left_radius, *right_radius;
+  REF_DBL *children_ball;
 };
 
 REF_STATUS ref_search_create( REF_SEARCH *ref_search, REF_INT n );

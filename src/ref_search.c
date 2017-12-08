@@ -43,8 +43,7 @@ REF_STATUS ref_search_create( REF_SEARCH *ref_search_ptr, REF_INT n )
 
   ref_malloc( ref_search->pos, ref_search->d*ref_search->n, REF_DBL );
   ref_malloc( ref_search->radius, ref_search->n, REF_DBL );
-  ref_malloc( ref_search->left_radius, ref_search->n, REF_DBL );
-  ref_malloc( ref_search->right_radius, ref_search->n, REF_DBL );
+  ref_malloc_init( ref_search->children_ball, ref_search->n, REF_DBL, 0.0 );
 
   return REF_SUCCESS;
 }
@@ -53,14 +52,70 @@ REF_STATUS ref_search_free( REF_SEARCH ref_search )
 {
   if ( NULL == (void *)ref_search )
     return REF_NULL;
-  ref_free( ref_search->right_radius );
-  ref_free( ref_search->left_radius );
+  ref_free( ref_search->children_ball );
   ref_free( ref_search->radius );
   ref_free( ref_search->pos );
   ref_free( ref_search->right );
   ref_free( ref_search->left );
   ref_free( ref_search->item );
   ref_free( ref_search );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_distance( REF_SEARCH ref_search,
+				REF_INT a, REF_INT b,
+				REF_DBL *distance )
+{
+  REF_INT i;
+  *distance = 0.0;
+  for (i=0;i<ref_search->d;i++)
+    (*distance) += pow( ref_search->pos[i+ref_search->d*b] -
+			ref_search->pos[i+ref_search->d*a] , 2 );
+  (*distance) = sqrt( *distance );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_home( REF_SEARCH ref_search,
+			    REF_INT child, REF_INT parent )
+{
+  REF_DBL child_distance;
+  REF_DBL left_distance, right_distance;
+
+  RSS( ref_search_distance( ref_search, child, parent, &child_distance), "d" );
+  ref_search->children_ball[parent] = MAX( ref_search->children_ball[parent],
+					   child_distance + 
+					   ref_search->radius[child] );
+
+  if ( REF_EMPTY == ref_search->left[parent] )
+    {
+      ref_search->left[parent] = child;
+      return REF_SUCCESS;
+    }
+
+  if ( REF_EMPTY == ref_search->right[parent] )
+    {
+      ref_search->right[parent] = child;
+      return REF_SUCCESS;
+    }
+
+  RSS( ref_search_distance( ref_search, child,
+			    ref_search->left[parent], 
+			    &left_distance), "left dist" );
+  RSS( ref_search_distance( ref_search, child,
+			    ref_search->right[parent], 
+			    &right_distance), "right dist" );
+
+  if ( left_distance < right_distance )
+    {
+      RSS( ref_search_home( ref_search, child, ref_search->left[parent] ),
+	   "recursively add to left child" );
+    }
+  else
+    {
+      RSS( ref_search_home( ref_search, child, ref_search->right[parent] ),
+	   "recursively add to right child" );
+    }
+
   return REF_SUCCESS;
 }
 
@@ -78,6 +133,8 @@ REF_STATUS ref_search_insert( REF_SEARCH ref_search,
   for (i=0;i<ref_search->d;i++)
     ref_search->pos[i+ref_search->d*location] = position[i];
   ref_search->radius[location] = radius;  
+
+  RSS( ref_search_home( ref_search, location, 0 ), "top level home" );
 
   return REF_SUCCESS;
 }
