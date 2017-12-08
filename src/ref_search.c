@@ -63,3 +63,21 @@ REF_STATUS ref_search_free( REF_SEARCH ref_search )
   ref_free( ref_search );
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_search_insert( REF_SEARCH ref_search,
+			      REF_INT item, REF_DBL *position, REF_DBL radius )
+{
+  REF_INT i, location;
+  if ( ref_search->empty >= ref_search->n )
+    RSS( REF_INCREASE_LIMIT, "need larger tree for more items" );
+
+  location = ref_search->empty;
+  (ref_search->empty)++;
+
+  ref_search->item[location] = item;
+  for (i=0;i<ref_search->d;i++)
+    ref_search->pos[i+ref_search->d*location] = position[i];
+  ref_search->radius[location] = radius;  
+
+  return REF_SUCCESS;
+}

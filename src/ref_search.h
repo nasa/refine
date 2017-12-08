@@ -45,4 +45,7 @@ REF_STATUS ref_search_create( REF_SEARCH *ref_search, REF_INT n );
 
 REF_STATUS ref_search_free( REF_SEARCH ref_search );
 
+REF_STATUS ref_search_insert( REF_SEARCH ref_search,
+			      REF_INT item, REF_DBL *position, REF_DBL radius );
+
 #endif /* REF_SEARCH_H */
