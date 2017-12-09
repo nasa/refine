@@ -81,6 +81,13 @@ REF_STATUS ref_search_home( REF_SEARCH ref_search,
   REF_DBL child_distance;
   REF_DBL left_distance, right_distance;
 
+  RUS( REF_EMPTY, child, "empty child" );
+  RUS( REF_EMPTY, parent, "empty parent" );
+  
+  /* done, don't add self to children */
+  if ( child == parent )
+    return REF_SUCCESS;
+  
   RSS( ref_search_distance( ref_search, child, parent, &child_distance), "d" );
   ref_search->children_ball[parent] = MAX( ref_search->children_ball[parent],
 					   child_distance + 
@@ -126,6 +133,9 @@ REF_STATUS ref_search_insert( REF_SEARCH ref_search,
   if ( ref_search->empty >= ref_search->n )
     RSS( REF_INCREASE_LIMIT, "need larger tree for more items" );
 
+  if ( item < 0 )
+    RSS( REF_INVALID, "item can not be negative" );
+  
   location = ref_search->empty;
   (ref_search->empty)++;
 
@@ -145,6 +155,11 @@ REF_STATUS ref_search_gather( REF_SEARCH ref_search, REF_LIST ref_list,
 {
   REF_INT i;
   REF_DBL distance;
+
+  if ( REF_EMPTY == parent)
+    return REF_SUCCESS;
+  if ( REF_EMPTY == ref_search->item[parent] )
+    return REF_SUCCESS;
   
   distance = 0.0;
   for (i=0;i<ref_search->d;i++)

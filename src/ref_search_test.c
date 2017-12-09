@@ -96,6 +96,30 @@ int main( int argc, char *argv[] )
     RSS( ref_search_free( ref_search ), "search free" );
   }
 
+  { /* tounch parent */
+    REF_SEARCH ref_search;
+    REF_LIST ref_list;
+    REF_INT item;
+    REF_DBL xyz[3],r;
+ 
+    RSS( ref_search_create( &ref_search, 10 ), "make search" );
+    RSS( ref_list_create( &ref_list ), "make list" );
+
+    item=10;xyz[0]=0.0;xyz[1]=0.0;xyz[2]=0.0;r=1.0;
+    RSS( ref_search_insert( ref_search, item, xyz, r ), "make search" );
+
+    xyz[0]=1.0;xyz[1]=1.0;xyz[2]=1.0;r=0.1;
+    RSS( ref_search_touching( ref_search, ref_list, xyz, r ), "touches" );
+    REIS( 0, ref_list_n(ref_list), "should skip" );
+    
+    xyz[0]=1.0;xyz[1]=1.0;xyz[2]=1.0;r=1.0;
+    RSS( ref_search_touching( ref_search, ref_list, xyz, r ), "touches" );
+    REIS( 1, ref_list_n(ref_list), "should gather" );
+    
+    RSS( ref_list_free( ref_list ), "list free" );
+    RSS( ref_search_free( ref_search ), "search free" );
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
   return 0;
