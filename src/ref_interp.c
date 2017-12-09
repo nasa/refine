@@ -768,7 +768,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   each_ref_cell_valid_cell_with_nodes( from_tet, cell, nodes )
     {
       RSS( ref_interp_bounding_sphere( from_node, nodes, center,&radius ), "b");
-      RSS( ref_search_insert( ref_search, cell, center, 3.0*radius ), "ins" );
+      RSS( ref_search_insert( ref_search, cell, center, 2.0*radius ), "ins" );
     }
 
   each_ref_node_valid_node( to_node, node )
