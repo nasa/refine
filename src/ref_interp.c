@@ -22,6 +22,8 @@
 
 #include "ref_interp.h"
 
+#include "ref_search.h"
+
 #include "ref_malloc.h"
 
 #define MAX_NODE_LIST ( 100 )
@@ -383,6 +385,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 				  REF_GRID from_grid, REF_GRID to_grid );
 REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 			       REF_GRID from_grid, REF_GRID to_grid );
+REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
+			    REF_GRID from_grid, REF_GRID to_grid );
 REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp, 
 					 REF_GRID from_grid, REF_GRID to_grid );
 
@@ -407,6 +411,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 	      REF_DBL );
 
   RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
+
   RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
@@ -415,6 +420,9 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 
   RSS( ref_interp_try_adj( ref_interp, from_grid, to_grid), "adj" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "adj" ), "locate clock");
+  
+  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "adj" );
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
   RSS( ref_interp_examine_remaining( ref_interp, from_grid, to_grid), "adj" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "examine" ), "locate clock");
@@ -715,6 +723,64 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 	}
     }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_bounding_sphere( REF_NODE ref_node, REF_INT *nodes,
+				       REF_DBL *center, REF_DBL *radius )
+{
+  REF_INT i;
+  for(i=0;i<3;i++)
+    center[i] = 0.25 * ( ref_node_xyz(ref_node,i,nodes[0]) +
+			 ref_node_xyz(ref_node,i,nodes[1]) +
+			 ref_node_xyz(ref_node,i,nodes[2]) +
+			 ref_node_xyz(ref_node,i,nodes[3]) );
+  *radius = 0.0;
+  for(i=0;i<4;i++)
+    *radius = MAX( *radius, sqrt( pow( ref_node_xyz(ref_node,0,nodes[i]) -
+				       center[0], 2) +
+				  pow( ref_node_xyz(ref_node,1,nodes[i]) -
+				       center[1], 2) +
+				  pow( ref_node_xyz(ref_node,2,nodes[i]) -
+				       center[2], 2) ) );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
+			    REF_GRID from_grid, REF_GRID to_grid )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_SEARCH ref_search;
+  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL center[3], radius;
+  REF_LIST ref_list;
+  REF_DBL fuzz = 1.0e-12;
+  
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  RSS( ref_list_create( &ref_list ), "create list" );
+  RSS( ref_search_create( &ref_search, ref_cell_n(from_tet) ), "mk sr" );
+  each_ref_cell_valid_cell_with_nodes( from_tet, cell, nodes )
+    {
+      RSS( ref_interp_bounding_sphere( from_node, nodes, center,&radius ), "b");
+      RSS( ref_search_insert( ref_search, cell, center, 3.0*radius ), "ins" );
+    }
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      if ( REF_EMPTY != ref_interp->cell[node] )
+	continue;
+      RSS( ref_search_touching( ref_search, ref_list,
+				ref_node_xyz_ptr(to_node,node), fuzz ), "tch" );
+      printf("canidates %d\n",ref_list_n(ref_list));
+      RSS( ref_list_erase(ref_list), "reset list" );
+    }
+  RSS( ref_search_free(ref_search), "free list" );
+  RSS( ref_list_free(ref_list), "free list" );
   return REF_SUCCESS;
 }
 
