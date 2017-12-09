@@ -102,6 +102,44 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_enclosing_tet_in_list( REF_GRID ref_grid,
+					     REF_LIST ref_list,
+					     REF_DBL *xyz,
+					     REF_INT *cell, REF_DBL *bary )
+{
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, guess, best_guess;
+  REF_DBL current_bary[4];
+  REF_DBL best_bary, min_bary;
+ 
+  best_guess = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_list_item( ref_list, item )
+    {
+      guess = ref_list_value( ref_list, item );
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
+	   REF_DIV_ZERO, "bary");
+      min_bary = MIN( MIN(current_bary[0],current_bary[1]),
+		      MIN(current_bary[2],current_bary[3]));
+      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+	{
+	  best_guess = guess;
+	  best_bary = min_bary;
+	}
+    }
+  
+  RUS( REF_EMPTY, best_guess, "failed to find cell");
+
+  *cell = best_guess;
+  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_exhaustive_extrapolation( REF_GRID ref_grid, REF_DBL *xyz,
 						REF_INT *cell, REF_DBL *bary )
 {
@@ -716,7 +754,6 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 	}
       if ( REF_EMPTY != ref_interp->cell[node] )
 	{
-	  printf("adj\n");
 	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
 	  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid),
 	       "drain" );
@@ -759,6 +796,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   REF_LIST ref_list;
   REF_DBL fuzz = 1.0e-12;
   REF_BOOL in_search;
+  REF_BOOL verify = REF_FALSE;
   
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -777,15 +815,25 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
 	continue;
       RSS( ref_search_touching( ref_search, ref_list,
 				ref_node_xyz_ptr(to_node,node), fuzz ), "tch" );
-      printf("canidates %d\n",ref_list_n(ref_list));
-      RSS( ref_interp_exhaustive_enclosing_tet( from_grid,
-						ref_node_xyz_ptr(to_node,node),
-						&(ref_interp->cell[node]), 
-						&(ref_interp->bary[4*node])),
-	   "exhaust verification");
-      RSS( ref_list_contains( ref_list, ref_interp->cell[node], &in_search ),
-	   "verify" );
-      if ( !in_search ) printf("didn't get it :(");
+      RSS( ref_interp_enclosing_tet_in_list( from_grid, ref_list,
+					     ref_node_xyz_ptr(to_node,node),
+					     &(ref_interp->cell[node]), 
+					     &(ref_interp->bary[4*node])),
+	   "best in list");
+      if ( verify )
+	{
+	  REF_INT verify_cell;
+	  REF_DBL verify_bary[4];
+	  RSS( ref_interp_exhaustive_enclosing_tet( from_grid,
+						    ref_node_xyz_ptr(to_node,
+								     node),
+						    &verify_cell, 
+						    verify_bary),
+	       "exhaust verification");
+	  RSS( ref_list_contains( ref_list, verify_cell, &in_search ), "hav");
+	  if ( !in_search ) printf("didn't get it :(");
+	  REIS( verify_cell, ref_interp->cell[node], "bad validation" );
+	}
       RSS( ref_list_erase(ref_list), "reset list" );
     }
   RSS( ref_search_free(ref_search), "free list" );
@@ -814,7 +862,6 @@ REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp,
       if (ref_cell_node_empty(to_tri,node))
 	printf("not on boundary\n");
     }
-  printf("%d remaining\n",remain);
   return REF_SUCCESS;
 }
 
