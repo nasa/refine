@@ -138,3 +138,42 @@ REF_STATUS ref_search_insert( REF_SEARCH ref_search,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_search_gather( REF_SEARCH ref_search, REF_LIST ref_list,
+			      REF_INT parent,
+			      REF_DBL *position, REF_DBL radius )
+{
+  REF_INT i;
+  REF_DBL distance;
+  
+  distance = 0.0;
+  for (i=0;i<ref_search->d;i++)
+    distance += pow( position[i] -
+			ref_search->pos[i+ref_search->d*parent] , 2 );
+  distance = sqrt( distance );
+
+  /* if the distance between me and the target are less than combined radii */
+  if ( distance <= ref_search->radius[parent]+radius )
+    {
+      RSS( ref_list_add( ref_list, ref_search->item[parent] ), "add item" );
+    }
+
+  /* if the distance between me and the target are less than children
+   * children_ball includes child radii, so only subtract target radius */
+  if ( distance-radius <= ref_search->children_ball[parent] )
+    {
+      RSS( ref_search_gather( ref_search, ref_list, ref_search->left[parent],
+			      position, radius ), "gthr");
+      RSS( ref_search_gather( ref_search, ref_list, ref_search->right[parent],
+			      position, radius ), "gthr");
+    }
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_touching( REF_SEARCH ref_search, REF_LIST ref_list,
+				REF_DBL *position, REF_DBL radius )
+{
+  RSS( ref_search_gather( ref_search, ref_list, 0, position, radius ), "gthr");
+  return REF_SUCCESS;
+}

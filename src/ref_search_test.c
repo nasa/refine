@@ -77,13 +77,13 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-  {
+  { /* create */
     REF_SEARCH ref_search;
     RSS( ref_search_create( &ref_search, 10 ), "make search" );
     RSS( ref_search_free( ref_search ), "search free" );
   }
 
-  {
+  { /* add parent */
     REF_SEARCH ref_search;
     REF_INT item;
     REF_DBL xyz[3],r;
