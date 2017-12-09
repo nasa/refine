@@ -758,6 +758,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   REF_DBL center[3], radius;
   REF_LIST ref_list;
   REF_DBL fuzz = 1.0e-12;
+  REF_BOOL in_search;
   
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -777,6 +778,14 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
       RSS( ref_search_touching( ref_search, ref_list,
 				ref_node_xyz_ptr(to_node,node), fuzz ), "tch" );
       printf("canidates %d\n",ref_list_n(ref_list));
+      RSS( ref_interp_exhaustive_enclosing_tet( from_grid,
+						ref_node_xyz_ptr(to_node,node),
+						&(ref_interp->cell[node]), 
+						&(ref_interp->bary[4*node])),
+	   "exhaust verification");
+      RSS( ref_list_contains( ref_list, ref_interp->cell[node], &in_search ),
+	   "verify" );
+      if ( !in_search ) printf("didn't get it :(");
       RSS( ref_list_erase(ref_list), "reset list" );
     }
   RSS( ref_search_free(ref_search), "free list" );
