@@ -408,107 +408,71 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL to_tri = ref_grid_tri(to_grid);
-  REF_CELL to_edg = ref_grid_edg(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_tri = ref_grid_tri(from_grid);
-  REF_CELL from_edg = ref_grid_edg(from_grid);
-  REF_LIST ref_list;
-  REF_INT to_n, from_n;
-  REF_INT nfaceid, faceids[3];
-  REF_INT nedgeid, edgeids[3];
+  REF_LIST to_geom_list, from_geom_list;
+  REF_INT to_geom_node, from_geom_node;
+  REF_INT to_item, from_item;
   REF_DBL *xyz;
-  REF_INT item;
-  REF_INT i, best_item, cell;
+  REF_INT i, best_geom_node, cell;
   REF_DBL dist, best_dist, bary[4];
-  RSS( ref_list_create( &ref_list ), "create list" );
-  
+
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
-  each_ref_node_valid_node( to_node, to_n )
+  RSS( ref_list_create( &to_geom_list ), "create list" );
+  RSS( ref_list_create( &from_geom_list ), "create list" );
+  RSS( ref_interp_geom_node_list( to_grid, to_geom_list ), "to list" );
+  RSS( ref_interp_geom_node_list( from_grid, from_geom_list ), "from list" );
+
+  each_ref_list_item_value( to_geom_list, to_item, to_geom_node )
     {
-      if ( !ref_cell_node_empty( to_tri, to_n ) )
+      xyz = ref_node_xyz_ptr(to_node,to_geom_node);
+      best_dist = 1.0e20;
+      best_geom_node = REF_EMPTY;
+      each_ref_list_item_value( from_geom_list, from_item, from_geom_node )
 	{
-	  RXS( ref_cell_faceid_list_around( to_edg,
-					    to_n,
-					    3,
-					    &nedgeid, edgeids ),
-	       REF_INCREASE_LIMIT, "count faceids" );
-	  RXS( ref_cell_faceid_list_around( to_tri,
-					    to_n,
-					    3,
-					    &nfaceid, faceids ),
-	       REF_INCREASE_LIMIT, "count faceids" );
-	  if ( nfaceid >= 3 || nedgeid >= 2 )
-	    RSS( ref_list_add( ref_list, to_n ), "add geom node" );
-	}
-    }
-	      
-  each_ref_node_valid_node( from_node, from_n )
-    {
-      if ( !ref_cell_node_empty( from_tri, from_n ) )
-	{
-	  RXS( ref_cell_faceid_list_around( from_edg,
-					    from_n,
-					    3,
-					    &nedgeid, edgeids ),
-	       REF_INCREASE_LIMIT, "count faceids" );
-	  RXS( ref_cell_faceid_list_around( from_tri,
-					    from_n,
-					    3,
-					    &nfaceid, faceids ),
-	       REF_INCREASE_LIMIT, "count faceids" );
-	  if ( nfaceid >= 3 || nedgeid >= 2 )
+	  dist =
+	    pow(xyz[0]-ref_node_xyz(from_node,0,from_geom_node),2) +
+	    pow(xyz[1]-ref_node_xyz(from_node,1,from_geom_node),2) +
+	    pow(xyz[2]-ref_node_xyz(from_node,2,from_geom_node),2) ;
+	  dist = sqrt(dist);
+	  if ( dist < best_dist )
 	    {
-	      best_dist = 1.0e20;
-	      best_item = REF_EMPTY;
-	      each_ref_list_item( ref_list, item )
-		{
-		  xyz = ref_node_xyz_ptr(to_node,ref_list_value(ref_list,item));
-		  dist =
-		    pow(xyz[0]-ref_node_xyz(from_node,0,from_n),2) +
-		    pow(xyz[1]-ref_node_xyz(from_node,1,from_n),2) +
-		    pow(xyz[2]-ref_node_xyz(from_node,2,from_n),2) ;
-		  dist = sqrt(dist);
-		  if ( dist < best_dist )
-		    {
-		      best_dist = dist;
-		      best_item = item;
-		    }
-		}
-	      to_n = ref_list_value(ref_list,best_item);
-	      xyz = ref_node_xyz_ptr( to_node, to_n );
-	      RSS( ref_interp_exhaustive_tet_around_node( from_grid, from_n,
-							  xyz, &cell, bary),
-		   "tet around node");
-	      if ( bary[0] > ref_interp->inside &&
-		   bary[1] > ref_interp->inside &&
-		   bary[2] > ref_interp->inside &&
-		   bary[3] > ref_interp->inside )
-		{
-		  ref_interp->n_geom++;
-		  REIS( REF_EMPTY, ref_interp->cell[to_n],
-			"geom already found?" );
-		  if ( REF_EMPTY != ref_interp->guess[to_n] )
-		    { /* need to dequeue */
-		      ref_interp->guess[to_n] = REF_EMPTY;
-		      RSS( ref_list_delete( ref_interp->ref_list, to_n ),"deq");
-		    }
-		  ref_interp->cell[to_n] = cell;
-		  for(i=0;i<4;i++)
-		    ref_interp->bary[i+4*to_n] = bary[i];
-		  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_n),
-		       "push" );
-		}
-	      else
-		{
-		  ref_interp->n_geom_fail++;
-		}
+	      best_dist = dist;
+	      best_geom_node = from_geom_node;
 	    }
 	}
+      RUS( REF_EMPTY, best_geom_node, "no geom node" );
+      RSS( ref_interp_exhaustive_tet_around_node( from_grid, best_geom_node,
+						  xyz, &cell, bary),
+	   "tet around node");
+      if ( bary[0] > ref_interp->inside &&
+	   bary[1] > ref_interp->inside &&
+	   bary[2] > ref_interp->inside &&
+	   bary[3] > ref_interp->inside )
+	{
+	  ref_interp->n_geom++;
+	  REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
+		"geom already found?" );
+	  if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
+	    { /* need to dequeue */
+	      ref_interp->guess[to_geom_node] = REF_EMPTY;
+	      RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
+	    }
+	  ref_interp->cell[to_geom_node] = cell;
+	  for(i=0;i<4;i++)
+	    ref_interp->bary[i+4*to_geom_node] = bary[i];
+	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
+	       "push" );
+	}
+      else
+	{
+	  ref_interp->n_geom_fail++;
+	}
     }
-  ref_list_free( ref_list );
+
+  ref_list_free( from_geom_list );
+  ref_list_free( to_geom_list );
   return REF_SUCCESS;
 }
 
@@ -764,7 +728,9 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
       printf("walks: %d successful, %.2f avg cells\n",
 	     ref_interp->n_walk, 
 	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
-      printf("to: %d nodes, from %d tet\n",
+      printf("geom nodes: %d failed, %d successful\n",
+	     ref_interp->n_geom_fail, ref_interp->n_geom);
+      printf("total: %d nodes, from %d tet\n",
 	     ref_node_n(to_node), ref_cell_n(ref_grid_tet(from_grid)) );
     }
 
