@@ -374,6 +374,35 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_geom_node_list( REF_GRID ref_grid, REF_LIST ref_list )
+{
+  REF_NODE ref_node = ref_grid_node( ref_grid );
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_INT nfaceid, faceids[3];
+  REF_INT nedgeid, edgeids[2];
+  REF_INT node;
+  each_ref_node_valid_node( ref_node, node )
+    {
+      if ( ref_node_owned(ref_node,node) )
+	{
+	  RXS( ref_cell_faceid_list_around( edg,
+					    node,
+					    2,
+					    &nedgeid, edgeids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  RXS( ref_cell_faceid_list_around( tri,
+					    node,
+					    3,
+					    &nfaceid, faceids ),
+	       REF_INCREASE_LIMIT, "count faceids" );
+	  if ( nfaceid >= 3 || nedgeid >= 2 )
+	    RSS( ref_list_add( ref_list, node ), "add geom node" );
+	}
+    }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 				  REF_GRID from_grid, REF_GRID to_grid )
 {
