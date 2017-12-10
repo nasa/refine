@@ -374,156 +374,6 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
 }
 
 REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
-				  REF_GRID from_grid, REF_GRID to_grid );
-REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
-			    REF_GRID from_grid, REF_GRID to_grid );
-
-REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
-			      REF_GRID from_grid, REF_GRID to_grid )
-{
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
-  REF_NODE to_node = ref_grid_node(to_grid);
-
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
-  ref_malloc_init( ref_interp->guess, 
-		   ref_node_max(to_node), 
-		   REF_INT, REF_EMPTY );
-  ref_malloc_init( ref_interp->cell, 
-		   ref_node_max(to_node), 
-		   REF_INT, REF_EMPTY );
-  ref_malloc( ref_interp->bary, 
-	      4*ref_node_max(to_node), 
-	      REF_DBL );
-
-  RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
-
-  RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
-  
-  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
-
-  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
-  
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
-				 REF_GRID from_grid, REF_GRID to_grid,
-				 REF_DBL *max_error)
-{
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
-  REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_NODE from_node = ref_grid_node(from_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node;
-  REF_DBL xyz[3], error;
-  REF_INT i;
-
-  *max_error = 0.0;
-
-  RNS( ref_interp->cell, "locate first" );
-  RNS( ref_interp->bary, "locate first" );
-
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
-  each_ref_node_valid_node( to_node, node )
-    {
-      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
-	   "node needs to be localized" );
-      for(i=0;i<3;i++)
-	xyz[i] = 
-	  ref_interp->bary[0+4*node] *
-	  ref_node_xyz(from_node,i,nodes[0]) +
-	  ref_interp->bary[1+4*node] *
-	  ref_node_xyz(from_node,i,nodes[1]) +
-	  ref_interp->bary[2+4*node] *
-	  ref_node_xyz(from_node,i,nodes[2]) +
-	  ref_interp->bary[3+4*node] *
-	  ref_node_xyz(from_node,i,nodes[3]);
-      error = 
-	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
-	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
-	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
-      *max_error = MAX( *max_error, sqrt(error) );
-    }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_stats( REF_INTERP ref_interp, 
-			     REF_GRID from_grid, REF_GRID to_grid)
-{
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
-  REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_NODE from_node = ref_grid_node(from_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node;
-  REF_DBL xyz[3], error;
-  REF_INT i;
-  REF_DBL max_error = 0.0;
-  REF_DBL this_bary;
-  REF_DBL min_bary = 1.0;
-  REF_INT extrapolate = 0;
-
-  RNS( ref_interp->cell, "locate first" );
-  RNS( ref_interp->bary, "locate first" );
-
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
-  each_ref_node_valid_node( to_node, node )
-    {
-      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
-	   "node needs to be localized" );
-      for(i=0;i<3;i++)
-	xyz[i] = 
-	  ref_interp->bary[0+4*node] *
-	  ref_node_xyz(from_node,i,nodes[0]) +
-	  ref_interp->bary[1+4*node] *
-	  ref_node_xyz(from_node,i,nodes[1]) +
-	  ref_interp->bary[2+4*node] *
-	  ref_node_xyz(from_node,i,nodes[2]) +
-	  ref_interp->bary[3+4*node] *
-	  ref_node_xyz(from_node,i,nodes[3]);
-      error = 
-	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
-	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
-	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
-      max_error = MAX( max_error, sqrt(error) );
-      this_bary = MIN( MIN( ref_interp->bary[0+4*node],
-			    ref_interp->bary[1+4*node] ),
-		       MIN( ref_interp->bary[2+4*node],
-			    ref_interp->bary[3+4*node] ) );
-      min_bary= MIN( min_bary, this_bary );
-      if ( this_bary < ref_interp->inside ) 
-	extrapolate++;
-    }
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      printf("interp min bary %e max error %e extrap %d\n", 
-	     min_bary, max_error, extrapolate );
-      printf("tree search: %d found, %.2f avg cells\n",
-	     ref_interp->n_tree,
-	     (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
-      printf("walks: %d successful, %.2f avg cells\n",
-	     ref_interp->n_walk, 
-	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
-      printf("geom nodes: failed %d, successful %d\n",
-	     ref_interp->n_geom_fail,  ref_interp->n_geom );
-    }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 				  REF_GRID from_grid, REF_GRID to_grid )
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
@@ -711,6 +561,152 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   RSS( ref_list_free(ref_list), "free list" );
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
+			      REF_GRID from_grid, REF_GRID to_grid )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  ref_malloc_init( ref_interp->guess, 
+		   ref_node_max(to_node), 
+		   REF_INT, REF_EMPTY );
+  ref_malloc_init( ref_interp->cell, 
+		   ref_node_max(to_node), 
+		   REF_INT, REF_EMPTY );
+  ref_malloc( ref_interp->bary, 
+	      4*ref_node_max(to_node), 
+	      REF_DBL );
+
+  RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
+
+  RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
+  
+  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
+
+  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
+  RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
+				 REF_GRID from_grid, REF_GRID to_grid,
+				 REF_DBL *max_error)
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_DBL xyz[3], error;
+  REF_INT i;
+
+  *max_error = 0.0;
+
+  RNS( ref_interp->cell, "locate first" );
+  RNS( ref_interp->bary, "locate first" );
+
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
+	   "node needs to be localized" );
+      for(i=0;i<3;i++)
+	xyz[i] = 
+	  ref_interp->bary[0+4*node] *
+	  ref_node_xyz(from_node,i,nodes[0]) +
+	  ref_interp->bary[1+4*node] *
+	  ref_node_xyz(from_node,i,nodes[1]) +
+	  ref_interp->bary[2+4*node] *
+	  ref_node_xyz(from_node,i,nodes[2]) +
+	  ref_interp->bary[3+4*node] *
+	  ref_node_xyz(from_node,i,nodes[3]);
+      error = 
+	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
+	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
+	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
+      *max_error = MAX( *max_error, sqrt(error) );
+    }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_stats( REF_INTERP ref_interp, 
+			     REF_GRID from_grid, REF_GRID to_grid)
+{
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_DBL xyz[3], error;
+  REF_INT i;
+  REF_DBL max_error = 0.0;
+  REF_DBL this_bary;
+  REF_DBL min_bary = 1.0;
+  REF_INT extrapolate = 0;
+
+  RNS( ref_interp->cell, "locate first" );
+  RNS( ref_interp->bary, "locate first" );
+
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
+	   "node needs to be localized" );
+      for(i=0;i<3;i++)
+	xyz[i] = 
+	  ref_interp->bary[0+4*node] *
+	  ref_node_xyz(from_node,i,nodes[0]) +
+	  ref_interp->bary[1+4*node] *
+	  ref_node_xyz(from_node,i,nodes[1]) +
+	  ref_interp->bary[2+4*node] *
+	  ref_node_xyz(from_node,i,nodes[2]) +
+	  ref_interp->bary[3+4*node] *
+	  ref_node_xyz(from_node,i,nodes[3]);
+      error = 
+	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
+	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
+	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
+      max_error = MAX( max_error, sqrt(error) );
+      this_bary = MIN( MIN( ref_interp->bary[0+4*node],
+			    ref_interp->bary[1+4*node] ),
+		       MIN( ref_interp->bary[2+4*node],
+			    ref_interp->bary[3+4*node] ) );
+      min_bary= MIN( min_bary, this_bary );
+      if ( this_bary < ref_interp->inside ) 
+	extrapolate++;
+    }
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      printf("interp min bary %e max error %e extrap %d\n", 
+	     min_bary, max_error, extrapolate );
+      printf("tree search: %d found, %.2f avg cells\n",
+	     ref_interp->n_tree,
+	     (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
+      printf("walks: %d successful, %.2f avg cells\n",
+	     ref_interp->n_walk, 
+	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
+      printf("geom nodes: failed %d, successful %d\n",
+	     ref_interp->n_geom_fail,  ref_interp->n_geom );
+    }
+
+  return REF_SUCCESS;
+}
+
 
 REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
 			   REF_GRID to_grid, const char *filename )
