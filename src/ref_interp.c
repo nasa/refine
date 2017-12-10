@@ -705,8 +705,8 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
       printf("walks: %d successful, %.2f avg cells\n",
 	     ref_interp->n_walk, 
 	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
-      printf("geom nodes: failed %d, successful %d\n",
-	     ref_interp->n_geom_fail,  ref_interp->n_geom );
+      printf("to: %d nodes, from %d tet\n",
+	     ref_node_n(to_node), ref_cell_n(ref_grid_tet(from_grid)) );
     }
 
   return REF_SUCCESS;
