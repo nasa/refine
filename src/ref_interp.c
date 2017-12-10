@@ -600,6 +600,36 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp, 
+				REF_GRID to_grid,
+				REF_DBL *min_bary )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(to_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_INT node;
+  REF_DBL this_bary;
+  
+  *min_bary = 1.0;
+
+  RNS( ref_interp->cell, "locate first" );
+  RNS( ref_interp->bary, "locate first" );
+
+  if ( ref_mpi_para(ref_mpi) )
+    RSS( REF_IMPLEMENT, "not para" );
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+      this_bary = MIN( MIN( ref_interp->bary[0+4*node],
+			    ref_interp->bary[1+4*node] ),
+		       MIN( ref_interp->bary[2+4*node],
+			    ref_interp->bary[3+4*node] ) );
+      *min_bary= MIN( *min_bary, this_bary );
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
 				 REF_GRID from_grid, REF_GRID to_grid,
 				 REF_DBL *max_error)
