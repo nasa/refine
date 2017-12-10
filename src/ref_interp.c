@@ -418,8 +418,6 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
 
 REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 				  REF_GRID from_grid, REF_GRID to_grid );
-REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
-			       REF_GRID from_grid, REF_GRID to_grid );
 REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
 			    REF_GRID from_grid, REF_GRID to_grid );
 
@@ -450,10 +448,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
 
-  RSS( ref_interp_try_adj( ref_interp, from_grid, to_grid), "adj" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "adj" ), "locate clock");
-  
-  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "adj" );
+  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
   return REF_SUCCESS;
@@ -677,54 +672,6 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
   ref_list_free( ref_list );
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp, 
-			       REF_GRID from_grid, REF_GRID to_grid )
-{
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
-  REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL to_tet = ref_grid_tet(to_grid);
-  REF_INT node;
-  REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
-  REF_INT other;
-
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
-  each_ref_node_valid_node( to_node, node )
-    {
-      if ( REF_EMPTY != ref_interp->cell[node] )
-	continue;
-      RSS( ref_cell_node_list_around( to_tet, node, MAX_NODE_LIST,
-				      &nneighbor, neighbors ), "list too small");
-      for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
-	{
-	  other = neighbors[neighbor];
-	  if ( ref_interp->cell[other] != REF_EMPTY )
-	    {
-	      RSS( ref_interp_enclosing_tet( ref_interp,
-				      from_grid,
-				      ref_node_xyz_ptr(to_node,node),
-				      ref_interp->cell[other],
-				      &(ref_interp->cell[node]),
-				      &(ref_interp->bary[4*node]) ), 
-		   "walk");
-	      if ( ref_interp->cell[node] != REF_EMPTY )
-		{
-		  break;
-		}
-	    }
-	}
-      if ( REF_EMPTY != ref_interp->cell[node] )
-	{
-	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
-	  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid),
-	       "drain" );
-	}
-    }
-
   return REF_SUCCESS;
 }
 
