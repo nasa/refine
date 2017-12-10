@@ -130,8 +130,8 @@ REF_STATUS ref_list_delete( REF_LIST ref_list, REF_INT item )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_shift( REF_LIST ref_list,
-                          REF_INT equal_and_above, REF_INT offset )
+REF_STATUS ref_list_apply_offset( REF_LIST ref_list,
+				  REF_INT equal_and_above, REF_INT offset )
 {
   REF_INT i;
 

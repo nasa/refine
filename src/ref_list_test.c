@@ -82,12 +82,12 @@ int main( int argc, char *argv[] )
     RSS(ref_list_free(ref_list),"free");
   }
 
-  { /* shift */
+  { /* apply offset */
     REF_INT last;
     RSS(ref_list_create(&ref_list),"create");
     RSS(ref_list_add(ref_list,20),"store");
     RSS(ref_list_add(ref_list,10),"store");
-    RSS(ref_list_shift(ref_list,15,27),"shift");
+    RSS(ref_list_apply_offset(ref_list,15,27),"shift");
 
     RSS(ref_list_pop(ref_list,&last),"rm");
     REIS(10,last,"has none");

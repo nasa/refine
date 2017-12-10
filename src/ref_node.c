@@ -563,8 +563,8 @@ REF_STATUS ref_node_shift_new_globals( REF_NODE ref_node )
 	    node-- )
 	ref_node->sorted_global[node] += offset;
 
-      RSS( ref_list_shift( ref_node->unused_global_list, 
-			   ref_node->old_n_global, offset ), "shift" );
+      RSS( ref_list_apply_offset( ref_node->unused_global_list, 
+				  ref_node->old_n_global, offset ), "shift" );
     }
 
   RSS( ref_node_initialize_n_global( ref_node, 
