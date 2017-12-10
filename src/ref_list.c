@@ -78,7 +78,7 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value )
+REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT last )
 {
 
   if ( ref_list_max(ref_list) == ref_list_n(ref_list) )
@@ -87,38 +87,38 @@ REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT value )
       ref_realloc( ref_list->value, ref_list_max(ref_list), REF_INT );
     }
 
-  ref_list->value[ref_list_n( ref_list )] = value;
+  ref_list->value[ref_list_n( ref_list )] = last;
 
   ref_list_n( ref_list )++;
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *value )
+REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *last )
 {
 
   if ( 0 == ref_list_n(ref_list) )
     {
-      *value = REF_EMPTY;
+      *last = REF_EMPTY;
       return REF_FAILURE;
     }
 
   ref_list_n( ref_list )--;
-  *value = ref_list->value[ref_list_n( ref_list )];
+  *last = ref_list->value[ref_list_n( ref_list )];
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_shift( REF_LIST ref_list, REF_INT *value )
+REF_STATUS ref_list_shift( REF_LIST ref_list, REF_INT *first )
 {
   REF_INT i;
   if ( 0 == ref_list_n(ref_list) )
     {
-      *value = REF_EMPTY;
+      *first = REF_EMPTY;
       return REF_FAILURE;
     }
 
-  *value = ref_list->value[0];
+  *first = ref_list->value[0];
 
   ref_list_n( ref_list )--;
   for ( i=0;i<ref_list_n( ref_list );i++)
