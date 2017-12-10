@@ -430,7 +430,6 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_INT node;
 
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -461,26 +460,6 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   
   RSS( ref_interp_examine_remaining( ref_interp, from_grid, to_grid), "adj" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "examine" ), "locate clock");
-
-  each_ref_node_valid_node( to_node, node )
-    {
-      REF_DBL min_bary;
-      if ( REF_EMPTY != ref_interp->cell[node] )
-	continue;
-      RSS(ref_interp_exhaustive_enclosing_tet( from_grid,
-					       ref_node_xyz_ptr(to_node,node),
-					       &(ref_interp->cell[node]), 
-					       &(ref_interp->bary[4*node]) ), 
-	  "exhaust");
-      min_bary = MIN(MIN(ref_interp->bary[0+4*node],
-			 ref_interp->bary[1+4*node]),
-		     MIN(ref_interp->bary[2+4*node],
-			 ref_interp->bary[3+4*node]));
-      if ( min_bary >= ref_interp->inside) 
-	printf("exhaustive interior %e\n",min_bary); 
-      RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
-      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
-    }
 
   return REF_SUCCESS;
 }
