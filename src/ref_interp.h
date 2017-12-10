@@ -32,6 +32,7 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
+  REF_BOOL instrument;
   REF_INT n_walk;
   REF_INT walk_steps;
   REF_INT n_geom;

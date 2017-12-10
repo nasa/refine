@@ -35,6 +35,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_malloc( *ref_interp_ptr, 1, REF_INTERP_STRUCT );
   ref_interp = ( *ref_interp_ptr );
 
+  ref_interp->instrument = REF_FALSE;
   ref_interp->n_walk = 0;
   ref_interp->walk_steps = 0;
   ref_interp->n_geom = 0;
@@ -581,16 +582,20 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 	      4*ref_node_max(to_node), 
 	      REF_DBL );
 
-  RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
+  if ( ref_interp->instrument)
+    RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
 
   RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
+  if ( ref_interp->instrument)
+    RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
   RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
+  if ( ref_interp->instrument)
+    RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
 
   RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
+  if ( ref_interp->instrument)
+    RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
   return REF_SUCCESS;
 }
