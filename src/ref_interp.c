@@ -35,13 +35,12 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_malloc( *ref_interp_ptr, 1, REF_INTERP_STRUCT );
   ref_interp = ( *ref_interp_ptr );
 
-  ref_interp->nexhaustive = 0;
-  ref_interp->nwalk = 0;
-  ref_interp->nfail = 0;
-  ref_interp->steps = 0;
-  ref_interp->wasted = 0;
-  ref_interp->ngeom = 0;
-  ref_interp->ngeomfail = 0;
+  ref_interp->n_walk = 0;
+  ref_interp->walk_steps = 0;
+  ref_interp->n_geom = 0;
+  ref_interp->n_geom_fail = 0;
+  ref_interp->n_tree = 0;
+  ref_interp->tree_cells = 0;
   ref_interp->guess = NULL;
   ref_interp->cell = NULL;
   ref_interp->bary = NULL;
@@ -49,7 +48,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->bound = -0.1; /* bound tolerence */
 
   RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
-  RSS( ref_list_create( &( ref_interp->exhausted ) ), "add list" );
+  RSS( ref_list_create( &( ref_interp->visualize ) ), "add list" );
 
   return REF_SUCCESS;
 }
@@ -58,7 +57,7 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
 {
   if ( NULL == (void *)ref_interp )
     return REF_NULL;
-  ref_list_free( ref_interp->exhausted );
+  ref_list_free( ref_interp->visualize );
   ref_list_free( ref_interp->ref_list );
   ref_free( ref_interp->bary );
   ref_free( ref_interp->cell );
@@ -273,8 +272,6 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
       /* give up if cell is invalid */
       if ( !ref_cell_valid(ref_cell,guess) )
 	{
-	  (ref_interp->nfail)++;
-	  (ref_interp->wasted)+=(step+1);
 	  return REF_SUCCESS;
 	}
 
@@ -292,8 +289,8 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
 	   bary[2] >= ref_interp->inside &&
 	   bary[3] >= ref_interp->inside )
 	{
-	  (ref_interp->steps) += (step+1);
-	  (ref_interp->nwalk)++;
+	  (ref_interp->walk_steps) += (step+1);
+	  (ref_interp->n_walk)++;
 	  *tet = guess;
 	  return REF_SUCCESS;
 	}
@@ -481,8 +478,6 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 			 ref_interp->bary[3+4*node]));
       if ( min_bary >= ref_interp->inside) 
 	printf("exhaustive interior %e\n",min_bary); 
-      RSS( ref_list_add( ref_interp->exhausted, node ), "exhaust" );
-      (ref_interp->nexhaustive)++;
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
       RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
     }
@@ -589,18 +584,14 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
     {
       printf("interp min bary %e max error %e extrap %d\n", 
 	     min_bary, max_error, extrapolate );
-      printf("exhaustive %5.1f%% %d of %d\n", 
-	     (REF_DBL)ref_interp->nexhaustive / 
-	     (REF_DBL)ref_node_n(to_node) * 100.0,
-	     ref_interp->nexhaustive, ref_node_n(to_node));
-      printf("walks: failed %d of %f, successful %d of %f\n",
-	     ref_interp->nfail, 
-	     (REF_DBL)ref_interp->wasted / (REF_DBL)ref_interp->nfail,
-	     ref_interp->nwalk, 
-	     (REF_DBL)ref_interp->steps / (REF_DBL)ref_interp->nwalk );
-      printf("geom nodes: failed %d, successful %d, of %d\n",
-	     ref_interp->ngeomfail,  ref_interp->ngeom,
-	     ref_interp->ngeom+ref_interp->ngeomfail);
+      printf("tree search: %d found, %.2f avg cells\n",
+	     ref_interp->n_tree,
+	     (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
+      printf("walks: %d successful, %.2f avg cells\n",
+	     ref_interp->n_walk, 
+	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
+      printf("geom nodes: failed %d, successful %d\n",
+	     ref_interp->n_geom_fail,  ref_interp->n_geom );
     }
 
   return REF_SUCCESS;
@@ -690,7 +681,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		   bary[2] > ref_interp->inside &&
 		   bary[3] > ref_interp->inside )
 		{
-		  ref_interp->ngeom++;
+		  ref_interp->n_geom++;
 		  REIS( REF_EMPTY, ref_interp->cell[to_n],
 			"geom already found?" );
 		  if ( REF_EMPTY != ref_interp->guess[to_n] )
@@ -706,7 +697,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 		}
 	      else
 		{
-		  ref_interp->ngeomfail++;
+		  ref_interp->n_geom_fail++;
 		}
 	    }
 	}
@@ -820,6 +811,8 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
 					     &(ref_interp->cell[node]), 
 					     &(ref_interp->bary[4*node])),
 	   "best in list");
+      (ref_interp->n_tree)++;
+      (ref_interp->tree_cells)+=ref_list_n(ref_list);
       if ( verify )
 	{
 	  REF_INT verify_cell;
@@ -867,12 +860,15 @@ REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp,
 
 REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
 			   REF_GRID to_grid, const char *filename )
-  
 {
   REF_NODE ref_node = ref_grid_node(to_grid); 
   FILE *file;
   REF_INT item;
 
+  /* skip if noting to show */
+  if ( 0 == ref_list_n(ref_interp->visualize) )
+    return REF_SUCCESS;
+  
   file = fopen(filename,"w");
   if (NULL == (void *)file) printf("unable to open %s\n",filename);
   RNS(file, "unable to open file" );
@@ -880,21 +876,15 @@ REF_STATUS ref_interp_tec( REF_INTERP ref_interp,
   fprintf(file, "title=\"refine interp\"\n");
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
-  if ( 0 == ref_list_n(ref_interp->exhausted) )
-    {
-      fclose(file);
-      return REF_SUCCESS;
-    }
-  
   fprintf(file,
 	  "zone t=exhaust, i=%d, datapacking=%s\n",
-	  ref_list_n(ref_interp->exhausted), "point");
+	  ref_list_n(ref_interp->visualize), "point");
 
-  each_ref_list_item( ref_interp->exhausted, item )
+  each_ref_list_item( ref_interp->visualize, item )
     fprintf(file,"%.15e %.15e %.15e\n",
-	    ref_node_xyz(ref_node,0,ref_list_value(ref_interp->exhausted,item)),
-	    ref_node_xyz(ref_node,1,ref_list_value(ref_interp->exhausted,item)),
-	    ref_node_xyz(ref_node,2,ref_list_value(ref_interp->exhausted,item))
+	    ref_node_xyz(ref_node,0,ref_list_value(ref_interp->visualize,item)),
+	    ref_node_xyz(ref_node,1,ref_list_value(ref_interp->visualize,item)),
+	    ref_node_xyz(ref_node,2,ref_list_value(ref_interp->visualize,item))
 	    );
 
   fclose(file);

@@ -32,20 +32,19 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
-  REF_INT nexhaustive;
-  REF_INT nwalk;
-  REF_INT nfail;
-  REF_INT steps;
-  REF_INT wasted;
-  REF_INT ngeom;
-  REF_INT ngeomfail;
+  REF_INT n_walk;
+  REF_INT walk_steps;
+  REF_INT n_geom;
+  REF_INT n_geom_fail;
+  REF_INT n_tree;
+  REF_INT tree_cells;
   REF_INT *guess;
   REF_INT *cell;
   REF_DBL *bary;
   REF_DBL inside;
   REF_DBL bound;
   REF_LIST ref_list;
-  REF_LIST exhausted;
+  REF_LIST visualize;
 };
 
 #define ref_interp_steps(ref_interp) ( (ref_interp)->steps )
