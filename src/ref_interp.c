@@ -422,8 +422,6 @@ REF_STATUS ref_interp_try_adj( REF_INTERP ref_interp,
 			       REF_GRID from_grid, REF_GRID to_grid );
 REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
 			    REF_GRID from_grid, REF_GRID to_grid );
-REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp, 
-					 REF_GRID from_grid, REF_GRID to_grid );
 
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid )
@@ -458,9 +456,6 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "adj" );
   RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
-  RSS( ref_interp_examine_remaining( ref_interp, from_grid, to_grid), "adj" );
-  RSS( ref_mpi_stopwatch_stop( ref_mpi, "examine" ), "locate clock");
-
   return REF_SUCCESS;
 }
 
@@ -810,30 +805,6 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
     }
   RSS( ref_search_free(ref_search), "free list" );
   RSS( ref_list_free(ref_list), "free list" );
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_examine_remaining( REF_INTERP ref_interp, 
-					 REF_GRID from_grid, REF_GRID to_grid )
-{
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
-  REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL to_tri = ref_grid_tri(to_grid);
-  REF_INT node;
-  REF_INT remain;
-  
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
-  remain = 0;
-  each_ref_node_valid_node( to_node, node )
-    {
-      if ( REF_EMPTY != ref_interp->cell[node] )
-	continue;
-      remain++;
-      if (ref_cell_node_empty(to_tri,node))
-	printf("not on boundary\n");
-    }
   return REF_SUCCESS;
 }
 
