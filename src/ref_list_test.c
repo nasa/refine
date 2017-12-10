@@ -87,7 +87,7 @@ int main( int argc, char *argv[] )
     RSS(ref_list_create(&ref_list),"create");
     RSS(ref_list_add(ref_list,20),"store");
     RSS(ref_list_add(ref_list,10),"store");
-    RSS(ref_list_apply_offset(ref_list,15,27),"shift");
+    RSS(ref_list_apply_offset(ref_list,15,27),"offset");
 
     RSS(ref_list_pop(ref_list,&last),"rm");
     REIS(10,last,"has none");
@@ -110,6 +110,21 @@ int main( int argc, char *argv[] )
     RSS(ref_list_pop(ref_list,&last),"rm");
     REIS(10,last,"has none");
 
+    RSS(ref_list_free(ref_list),"free");
+  }
+
+  { /* shift */
+    REF_INT first;
+    RSS(ref_list_create(&ref_list),"create");
+    RSS(ref_list_add(ref_list,30),"store");
+    RSS(ref_list_add(ref_list,40),"store");
+
+    RSS(ref_list_shift(ref_list,&first),"rm");
+    REIS(30,first,"has none");
+    RSS(ref_list_shift(ref_list,&first),"rm");
+    REIS(40,first,"has none");
+    REIS(REF_FAILURE,ref_list_shift(ref_list,&first),"rm");
+    
     RSS(ref_list_free(ref_list),"free");
   }
 
