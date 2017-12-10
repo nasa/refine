@@ -139,49 +139,6 @@ REF_STATUS ref_interp_enclosing_tet_in_list( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_exhaustive_extrapolation( REF_GRID ref_grid, REF_DBL *xyz,
-						REF_INT *cell, REF_DBL *bary )
-{
-  REF_CELL tri = ref_grid_tri(ref_grid);
-  REF_CELL tet = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT face_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT guess, best_tri;
-  REF_DBL dist, best_dist;
-  REF_INT expect_empty, best_tet;
-
-  best_tri = REF_EMPTY;
-  best_dist = 1.0e20;
-  each_ref_cell_valid_cell( tri, guess )
-    {
-      RSS( ref_cell_nodes( tri, guess, nodes), "cell" );
-      RSS( ref_node_dist_to_tri( ref_node, nodes, xyz, &dist ), "dist");
-      if ( REF_EMPTY == best_tri || best_dist > dist )
-	{
-	  best_tri = guess;
-	  best_dist = dist;
-	}
-    }
-
-  RUS( REF_EMPTY, best_tri, "failed to find tri");
-  printf("best tri dist %e\n",best_dist);
-
-  RSS( ref_cell_nodes( tri, best_tri, nodes), "cell" );
-  face_nodes[0] = nodes[0]; face_nodes[2] = nodes[2];
-  face_nodes[1] = nodes[1]; face_nodes[3] = face_nodes[0];
-  RSS( ref_cell_with_face( tet, face_nodes, 
-			   &best_tet, &expect_empty), "find with");
-  RUS( REF_EMPTY, best_tet, "failed to find tri");
-  REIS( REF_EMPTY, expect_empty, "not boundary");
-
-  *cell = best_tet;
-  RSS( ref_cell_nodes( tet, best_tet, nodes), "cell" );
-  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
-  
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_interp_exhaustive_tet_around_node( REF_GRID ref_grid,
 						  REF_INT node, REF_DBL *xyz,
 						  REF_INT *cell, REF_DBL *bary )
