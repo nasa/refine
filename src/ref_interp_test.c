@@ -115,18 +115,28 @@ int main( int argc, char *argv[] )
 	REIS(0, remove( file ), "test clean up");
 
       each_ref_node_valid_node( ref_grid_node(to), node )
-	{
-	  ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-8;
-	  ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-8;
-	  ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-8;
-	}
+	if ( ( 0.01 < ref_node_xyz(ref_grid_node(to),0,node) &&
+	       0.99 > ref_node_xyz(ref_grid_node(to),0,node) ) ||
+	     ( 0.01 < ref_node_xyz(ref_grid_node(to),1,node) &&
+	       0.99 > ref_node_xyz(ref_grid_node(to),1,node) ) ||
+	     ( 0.01 < ref_node_xyz(ref_grid_node(to),2,node) &&
+	       0.99 > ref_node_xyz(ref_grid_node(to),2,node) ) )
+	  {
+	    ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-4;
+	    ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-4;
+	    ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-4;
+	  }
+
+      RSS(ref_export_tec_surf( to, "ref_interp_test_to.tec" ),"export" );
+      RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
 
       RSS( ref_interp_create( &ref_interp ), "make interp" );
       RSS( ref_interp_locate(ref_interp, from, to), "map" );
+      RSS( ref_interp_stats(ref_interp, from, to), "min bary" );
       RSS( ref_interp_min_bary(ref_interp, to, &min_bary), "min bary" );
-      RAS( -2.0e-7 < min_bary, "large extrapolation" );
+      RAS( -0.121 < min_bary, "large extrapolation" );
       RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
-      RAS( 5.0e-15 > max_error, "large interp error" );
+      RAS( 5.0e-16 > max_error, "large interp error" );
       RSS( ref_interp_free( ref_interp ), "interp free" );
 
       RSS( ref_grid_free(to),"free");
