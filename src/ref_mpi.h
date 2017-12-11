@@ -106,6 +106,10 @@ REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
 			      REF_INT *total_size, void **concatenated,
 			      REF_TYPE type );
 
+REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
+			      REF_DBL *val, REF_INT *who,
+			      REF_INT n );
+
 END_C_DECLORATION
 
 #endif /* REF_MPI_H */

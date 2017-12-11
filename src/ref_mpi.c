@@ -624,3 +624,46 @@ REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
+			      REF_DBL *val, REF_INT *who,
+			      REF_INT n )
+{
+  REF_INT i; 
+  if ( !ref_mpi_para(ref_mpi) ) 
+    {
+      for(i=0;i<n;i++)
+	who[i] = ref_mpi_rank(ref_mpi);
+      return REF_SUCCESS;
+    }
+#ifdef HAVE_MPI  
+  {
+    typedef struct REF_MPI_DBLWHO REF_MPI_DBLWHO;
+    struct REF_MPI_DBLWHO { 
+      double val;
+      int   rank;
+    };
+    REF_MPI_DBLWHO *in, *out;
+    ref_malloc( in, n, REF_MPI_DBLWHO );
+    ref_malloc( out, n, REF_MPI_DBLWHO );
+
+    for (i=0; i<n; i++) 
+      { 
+        in[i].val = val[i]; 
+        in[i].rank = ref_mpi_rank(ref_mpi); 
+      }
+    MPI_Allreduce( in, out, n, MPI_DOUBLE_INT, MPI_MINLOC, 
+		   ref_mpi_comm(ref_mpi) );
+    for (i=0; i<n; i++) 
+      { 
+        val[i] = out[i].val; 
+        who[i] = out[i].rank;
+      }
+
+    ref_free( out );
+    ref_free( in );
+  }
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(val);
+#endif
+  return REF_SUCCESS;
+}

@@ -98,6 +98,31 @@ int main( int argc, char *argv[] )
     ref_free( separate );
   }
 
+  /* allminwho */
+  {
+    REF_INT part;
+    REF_DBL *val;
+    REF_INT *who;
+
+    ref_malloc( val, ref_mpi_m(ref_mpi), REF_DBL );
+    ref_malloc( who, ref_mpi_m(ref_mpi), REF_INT );
+      
+    each_ref_mpi_part( ref_mpi, part )
+      val[part] = 1.0;
+    val[ref_mpi_rank(ref_mpi)] = 0.0;
+
+    RSS( ref_mpi_allminwho( ref_mpi, val, who, ref_mpi_m(ref_mpi) ), "minloc");
+
+    each_ref_mpi_part( ref_mpi, part )
+      {
+	REIS( part, who[part], "who" );
+	RWDS( 0.0, val[part], -1.0, "min" );
+      }
+
+    ref_free( who );
+    ref_free( val );
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
