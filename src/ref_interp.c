@@ -436,10 +436,10 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 			  (void *)local_xyz,
 			  &total_xyz, (void **)&global_xyz, 
 			  REF_DBL_TYPE ), "cat");
-
-  for ( to_geom_node = 0; to_geom_node < total_xyz/3; to_geom_node++ )
+  
+  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
     {
-      xyz = &(global_xyz[3*to_geom_node]);
+      xyz = &(global_xyz[3*to_item]);
       best_dist = 1.0e20;
       best_geom_node = REF_EMPTY;
       each_ref_list_item_value( from_geom_list, from_item, from_geom_node )
@@ -465,6 +465,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	   bary[3] > ref_interp->inside )
 	{
 	  ref_interp->n_geom++;
+	  to_geom_node = ref_list_value(to_geom_list,to_item);
 	  REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
 		"geom already found?" );
 	  if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
