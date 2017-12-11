@@ -30,38 +30,41 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_start( argc, argv ), "start" );
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
+  if ( ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi) )
+    printf("number of processors %d \n",ref_mpi_m(ref_mpi));
+
   if ( !ref_mpi_para(ref_mpi) )
-    { /* start */
+    { /* no mpi or mpi with one proc */
       REIS( 1, ref_mpi_m(ref_mpi), "n" );
       REIS( 0, ref_mpi_rank(ref_mpi), "rank" );
       RAS( ref_mpi_once(ref_mpi), "master" );
     }
-  else
-    {
-      REF_INT part;
-      REF_INT *a_size, *b_size;
-      REF_INT bc;
 
-      if ( ref_mpi_once(ref_mpi) )
-	printf("number of processors %d \n",ref_mpi_m(ref_mpi));
+  /* bcast */
+  if ( ref_mpi_para(ref_mpi) )
+    {
+      REF_INT bc;
 
       bc = REF_EMPTY;
       if ( ref_mpi_once(ref_mpi) ) bc = 5;
-      RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
       RSS( ref_mpi_bcast( ref_mpi, &bc, 1, REF_INT_TYPE ), "bcast" );
-      RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer broadcast" ), "sw start");
       REIS( 5, bc, "bc wrong" );
+    }
+
+  /* alltoall */
+  if ( ref_mpi_para(ref_mpi) )
+    {
+      REF_INT part;
+      REF_INT *a_size, *b_size;
 
       ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
       ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
-
+      
       each_ref_mpi_part(ref_mpi, part)
 	a_size[part] = part;
 
-      RSS( ref_mpi_stopwatch_start( ref_mpi ), "sw start");
       RSS( ref_mpi_alltoall( ref_mpi,
 			     a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
-      RSS( ref_mpi_stopwatch_stop( ref_mpi, "integer alltoall" ), "sw start");
 
       each_ref_mpi_part(ref_mpi, part)
 	REIS(part, a_size[part], "a_size changed" );
