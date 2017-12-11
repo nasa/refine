@@ -122,13 +122,10 @@ int main( int argc, char *argv[] )
 	     ( 0.01 < ref_node_xyz(ref_grid_node(to),2,node) &&
 	       0.99 > ref_node_xyz(ref_grid_node(to),2,node) ) )
 	  {
-	    ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-4;
-	    ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-4;
-	    ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-4;
+	    ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-2;
+	    ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-2;
+	    ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-2;
 	  }
-
-      RSS(ref_export_tec_surf( to, "ref_interp_test_to.tec" ),"export" );
-      RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
 
       RSS( ref_interp_create( &ref_interp ), "make interp" );
       RSS( ref_interp_locate(ref_interp, from, to), "map" );
