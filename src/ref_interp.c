@@ -413,7 +413,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT to_geom_node, from_geom_node;
   REF_INT to_item, from_item;
   REF_DBL *xyz;
-  REF_INT i, best_geom_node, cell;
+  REF_DBL *local_xyz, *global_xyz;
+  REF_INT total_xyz, i, best_geom_node, cell;
   REF_DBL dist, best_dist, bary[4];
 
   if ( ref_mpi_para(ref_mpi) )
@@ -424,9 +425,21 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   RSS( ref_interp_geom_node_list( to_grid, to_geom_list ), "to list" );
   RSS( ref_interp_geom_node_list( from_grid, from_geom_list ), "from list" );
 
+  ref_malloc( local_xyz, 3*ref_list_n(to_geom_list), REF_DBL );
   each_ref_list_item_value( to_geom_list, to_item, to_geom_node )
     {
-      xyz = ref_node_xyz_ptr(to_node,to_geom_node);
+      local_xyz[0+3*to_item] = ref_node_xyz(to_node,0,to_geom_node);
+      local_xyz[1+3*to_item] = ref_node_xyz(to_node,1,to_geom_node);
+      local_xyz[2+3*to_item] = ref_node_xyz(to_node,2,to_geom_node);
+    }
+  RSS( ref_mpi_allconcat( ref_mpi, 3*ref_list_n(to_geom_list), 
+			  (void *)local_xyz,
+			  &total_xyz, (void **)&global_xyz, 
+			  REF_DBL_TYPE ), "cat");
+
+  for ( to_geom_node = 0; to_geom_node < total_xyz/3; to_geom_node++ )
+    {
+      xyz = &(global_xyz[3*to_geom_node]);
       best_dist = 1.0e20;
       best_geom_node = REF_EMPTY;
       each_ref_list_item_value( from_geom_list, from_item, from_geom_node )
@@ -471,6 +484,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
 
+  ref_free( global_xyz );
+  ref_free( local_xyz );
   ref_list_free( from_geom_list );
   ref_list_free( to_geom_list );
   return REF_SUCCESS;
