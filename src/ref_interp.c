@@ -492,6 +492,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
 
+  ref_free( best_node );
+  ref_free( best_dist );
+
   ref_free( global_xyz );
   ref_free( local_xyz );
   ref_list_free( from_geom_list );
