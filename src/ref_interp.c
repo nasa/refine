@@ -414,7 +414,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT to_item, from_item;
   REF_DBL *xyz;
   REF_DBL *local_xyz, *global_xyz;
-  REF_INT total_xyz, i, *best_node, cell;
+  REF_INT total_xyz, i, *best_node, *best_proc, cell;
   REF_DBL dist, *best_dist, bary[4];
 
   if ( ref_mpi_para(ref_mpi) )
@@ -439,6 +439,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   
   ref_malloc( best_dist, total_xyz/3, REF_DBL );
   ref_malloc( best_node, total_xyz/3, REF_INT );
+  ref_malloc( best_proc, total_xyz/3, REF_INT );
   for ( to_item = 0; to_item < total_xyz/3; to_item++ )
     {
       xyz = &(global_xyz[3*to_item]);
@@ -459,39 +460,44 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
 
-  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
-    {
-      RUS( REF_EMPTY, best_node[to_item], "no geom node" );
-      xyz = &(global_xyz[3*to_item]);
-      RSS( ref_interp_exhaustive_tet_around_node( from_grid, best_node[to_item],
-						  xyz, &cell, bary),
-	   "tet around node");
-      if ( bary[0] > ref_interp->inside &&
-	   bary[1] > ref_interp->inside &&
-	   bary[2] > ref_interp->inside &&
-	   bary[3] > ref_interp->inside )
-	{
-	  ref_interp->n_geom++;
-	  to_geom_node = ref_list_value(to_geom_list,to_item);
-	  REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
-		"geom already found?" );
-	  if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
-	    { /* need to dequeue */
-	      ref_interp->guess[to_geom_node] = REF_EMPTY;
-	      RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
-	    }
-	  ref_interp->cell[to_geom_node] = cell;
-	  for(i=0;i<4;i++)
-	    ref_interp->bary[i+4*to_geom_node] = bary[i];
-	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
-	       "push" );
-	}
-      else
-	{
-	  ref_interp->n_geom_fail++;
-	}
-    }
+  RSS( ref_mpi_allminwho( ref_mpi, best_dist, best_proc, total_xyz/3), "who" );
 
+  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
+    if ( ref_mpi_rank(ref_mpi) == best_proc[to_item] )
+      {
+	RUS( REF_EMPTY, best_node[to_item], "no geom node" );
+	xyz = &(global_xyz[3*to_item]);
+	RSS( ref_interp_exhaustive_tet_around_node( from_grid, 
+						    best_node[to_item],
+						    xyz, &cell, bary),
+	     "tet around node");
+	if ( bary[0] > ref_interp->inside &&
+	     bary[1] > ref_interp->inside &&
+	     bary[2] > ref_interp->inside &&
+	     bary[3] > ref_interp->inside )
+	  {
+	    ref_interp->n_geom++;
+	    to_geom_node = ref_list_value(to_geom_list,to_item);
+	    REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
+		  "geom already found?" );
+	    if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
+	      { /* need to dequeue */
+		ref_interp->guess[to_geom_node] = REF_EMPTY;
+		RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
+	      }
+	    ref_interp->cell[to_geom_node] = cell;
+	    for(i=0;i<4;i++)
+	      ref_interp->bary[i+4*to_geom_node] = bary[i];
+	    RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
+		 "push" );
+	  }
+	else
+	  {
+	    ref_interp->n_geom_fail++;
+	  }
+      }
+
+  ref_free( best_proc );
   ref_free( best_node );
   ref_free( best_dist );
 
