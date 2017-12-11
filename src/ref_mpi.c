@@ -285,11 +285,13 @@ REF_STATUS ref_mpi_alltoall( REF_MPI ref_mpi,
 	       recv, 1, datatype, 
 	       ref_mpi_comm(ref_mpi) );
 #else
+  switch (type)
+    {
+    case REF_INT_TYPE: ((REF_INT *)recv)[0] = ((REF_INT *)send)[0]; break;
+    case REF_DBL_TYPE: ((REF_DBL *)recv)[0] = ((REF_DBL *)send)[0]; break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
-  SUPRESS_UNUSED_COMPILER_WARNING(send);
-  SUPRESS_UNUSED_COMPILER_WARNING(recv);
-  SUPRESS_UNUSED_COMPILER_WARNING(type);
-  return REF_IMPLEMENT;
 #endif
 
   return REF_SUCCESS;
@@ -383,7 +385,6 @@ REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
     default: RSS( REF_IMPLEMENT, "data type");
     }
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
-  SUPRESS_UNUSED_COMPILER_WARNING(type);
 #endif
 
   return REF_SUCCESS;

@@ -31,8 +31,8 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
   if ( ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi) )
-    printf("number of processors %d \n",ref_mpi_m(ref_mpi));
-
+    printf("%s number of processors %d \n",argv[0],ref_mpi_m(ref_mpi));
+  
   if ( !ref_mpi_para(ref_mpi) )
     { /* no mpi or mpi with one proc */
       REIS( 1, ref_mpi_m(ref_mpi), "n" );
@@ -41,39 +41,37 @@ int main( int argc, char *argv[] )
     }
 
   /* bcast */
-  if ( ref_mpi_para(ref_mpi) )
-    {
-      REF_INT bc;
+  {
+    REF_INT bc;
 
-      bc = REF_EMPTY;
-      if ( ref_mpi_once(ref_mpi) ) bc = 5;
-      RSS( ref_mpi_bcast( ref_mpi, &bc, 1, REF_INT_TYPE ), "bcast" );
-      REIS( 5, bc, "bc wrong" );
-    }
+    bc = REF_EMPTY;
+    if ( ref_mpi_once(ref_mpi) ) bc = 5;
+    RSS( ref_mpi_bcast( ref_mpi, &bc, 1, REF_INT_TYPE ), "bcast" );
+    REIS( 5, bc, "bc wrong" );
+  }
 
   /* alltoall */
-  if ( ref_mpi_para(ref_mpi) )
-    {
-      REF_INT part;
-      REF_INT *a_size, *b_size;
+  {
+    REF_INT part;
+    REF_INT *a_size, *b_size;
 
-      ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
-      ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
+    ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
+    ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
       
-      each_ref_mpi_part(ref_mpi, part)
-	a_size[part] = part;
+    each_ref_mpi_part(ref_mpi, part)
+      a_size[part] = part;
 
-      RSS( ref_mpi_alltoall( ref_mpi,
-			     a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+    RSS( ref_mpi_alltoall( ref_mpi,
+			   a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
 
-      each_ref_mpi_part(ref_mpi, part)
-	REIS(part, a_size[part], "a_size changed" );
-      each_ref_mpi_part(ref_mpi, part)
-	REIS(ref_mpi_rank(ref_mpi), b_size[part], "b_size wrong" );
+    each_ref_mpi_part(ref_mpi, part)
+      REIS(part, a_size[part], "a_size changed" );
+    each_ref_mpi_part(ref_mpi, part)
+      REIS(ref_mpi_rank(ref_mpi), b_size[part], "b_size wrong" );
 
-      ref_free( b_size );
-      ref_free( a_size );
-    }
+    ref_free( b_size );
+    ref_free( a_size );
+  }
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
