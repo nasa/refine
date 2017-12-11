@@ -449,7 +449,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	    pow(xyz[1]-ref_node_xyz(from_node,1,from_geom_node),2) +
 	    pow(xyz[2]-ref_node_xyz(from_node,2,from_geom_node),2) ;
 	  dist = sqrt(dist);
-	  if ( dist < best_dist )
+	  if ( dist < best_dist || 0 == from_item )
 	    {
 	      best_dist = dist;
 	      best_geom_node = from_geom_node;
