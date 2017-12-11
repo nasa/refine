@@ -414,8 +414,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT to_item, from_item;
   REF_DBL *xyz;
   REF_DBL *local_xyz, *global_xyz;
-  REF_INT total_xyz, i, best_geom_node, cell;
-  REF_DBL dist, best_dist, bary[4];
+  REF_INT total_xyz, i, *best_node, cell;
+  REF_DBL dist, *best_dist, bary[4];
 
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -437,11 +437,13 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 			  &total_xyz, (void **)&global_xyz, 
 			  REF_DBL_TYPE ), "cat");
   
+  ref_malloc( best_dist, total_xyz/3, REF_DBL );
+  ref_malloc( best_node, total_xyz/3, REF_INT );
   for ( to_item = 0; to_item < total_xyz/3; to_item++ )
     {
       xyz = &(global_xyz[3*to_item]);
-      best_dist = 1.0e20;
-      best_geom_node = REF_EMPTY;
+      best_dist[to_item] = 1.0e20;
+      best_node[to_item] = REF_EMPTY;
       each_ref_list_item_value( from_geom_list, from_item, from_geom_node )
 	{
 	  dist =
@@ -449,14 +451,19 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	    pow(xyz[1]-ref_node_xyz(from_node,1,from_geom_node),2) +
 	    pow(xyz[2]-ref_node_xyz(from_node,2,from_geom_node),2) ;
 	  dist = sqrt(dist);
-	  if ( dist < best_dist || 0 == from_item )
+	  if ( dist < best_dist[to_item] || 0 == from_item )
 	    {
-	      best_dist = dist;
-	      best_geom_node = from_geom_node;
+	      best_dist[to_item] = dist;
+	      best_node[to_item] = from_geom_node;
 	    }
 	}
-      RUS( REF_EMPTY, best_geom_node, "no geom node" );
-      RSS( ref_interp_exhaustive_tet_around_node( from_grid, best_geom_node,
+    }
+
+  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
+    {
+      RUS( REF_EMPTY, best_node[to_item], "no geom node" );
+      xyz = &(global_xyz[3*to_item]);
+      RSS( ref_interp_exhaustive_tet_around_node( from_grid, best_node[to_item],
 						  xyz, &cell, bary),
 	   "tet around node");
       if ( bary[0] > ref_interp->inside &&
