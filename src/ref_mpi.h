@@ -101,6 +101,11 @@ REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
 			       void *local_array, REF_INT *counts, 
 			       void *concatenated_array, REF_TYPE type );
 
+REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
+			      REF_INT my_size, void *my_array,
+			      REF_INT *total_size, void **concatenated,
+			      REF_TYPE type );
+
 END_C_DECLORATION
 
 #endif /* REF_MPI_H */

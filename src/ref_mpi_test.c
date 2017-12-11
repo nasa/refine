@@ -73,6 +73,31 @@ int main( int argc, char *argv[] )
     ref_free( a_size );
   }
 
+  /* allconcat */
+  {
+    REF_INT total, part;
+    REF_INT *separate, *together;
+
+    ref_malloc( separate, 2, REF_INT );
+      
+    separate[0] = ref_mpi_rank(ref_mpi);
+    separate[1] = REF_EMPTY;
+
+    RSS( ref_mpi_allconcat( ref_mpi,
+			    2, (void *)separate,
+			    &total, (void **)&together, REF_INT_TYPE ), "allconcat");
+
+    REIS( 2*ref_mpi_m(ref_mpi), total, "expected size" );
+    each_ref_mpi_part( ref_mpi, part )
+      {
+	REIS( part, together[0+2*part], "const" );
+	REIS( REF_EMPTY, together[1+2*part], "const" );
+      }
+
+    ref_free( together );
+    ref_free( separate );
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 

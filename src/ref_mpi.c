@@ -588,3 +588,39 @@ REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
+			      REF_INT my_size, void *my_array,
+			      REF_INT *total_size, void **concatenated,
+			      REF_TYPE type )
+{
+  REF_INT proc;
+  REF_INT *counts;
+
+  ref_malloc( counts, ref_mpi_m(ref_mpi), REF_INT );
+  RSS( ref_mpi_allgather( ref_mpi,
+			  &my_size, counts, REF_INT_TYPE ), 
+       "gather size");
+  *total_size = 0;
+  each_ref_mpi_part( ref_mpi, proc )
+    (*total_size) += counts[proc];
+
+  switch (type)
+    {
+    case REF_INT_TYPE: 
+      ref_malloc( *((REF_INT **)concatenated), *total_size, REF_INT );
+      break;
+    case REF_DBL_TYPE:
+      ref_malloc( *((REF_DBL **)concatenated), *total_size, REF_DBL );
+      break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  RSS( ref_mpi_allgatherv( ref_mpi,
+			   my_array, counts, *concatenated, type ), 
+       "gather values");
+
+  ref_free( counts );
+
+  return REF_SUCCESS;
+}
+
