@@ -829,20 +829,22 @@ REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp,
   *min_bary = 1.0;
 
   RNS( ref_interp->cell, "locate first" );
+  RNS( ref_interp->part, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
   each_ref_node_valid_node( to_node, node )
-    {
-      RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
-      this_bary = MIN( MIN( ref_interp->bary[0+4*node],
-			    ref_interp->bary[1+4*node] ),
-		       MIN( ref_interp->bary[2+4*node],
-			    ref_interp->bary[3+4*node] ) );
-      *min_bary= MIN( *min_bary, this_bary );
-    }
+    if ( ref_node_owned(to_node,node) )
+      {
+	RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+	this_bary = MIN( MIN( ref_interp->bary[0+4*node],
+			      ref_interp->bary[1+4*node] ),
+			 MIN( ref_interp->bary[2+4*node],
+			      ref_interp->bary[3+4*node] ) );
+	*min_bary= MIN( *min_bary, this_bary );
+      }
+  this_bary = *min_bary;
+  RSS( ref_mpi_min( ref_mpi, &this_bary, min_bary, REF_DBL_TYPE ), "min");
+  RSS( ref_mpi_bcast( ref_mpi, min_bary, 1, REF_DBL_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
