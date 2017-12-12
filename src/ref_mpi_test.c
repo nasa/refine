@@ -123,7 +123,7 @@ int main( int argc, char *argv[] )
     ref_free( val );
   }
 
-  /* blindsend int */
+  /* blindsend int with 0,0 */
   {
     REF_INT i, part, size, n;
     REF_INT *send;
@@ -155,6 +155,47 @@ int main( int argc, char *argv[] )
       for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),10);i++ )
 	{
 	  REIS(part,recv[size],"recv mismatch");
+	  size++;
+	}
+    REIS( size, n, "size mismatch" );
+    
+    ref_free( recv );
+    ref_free( send );
+    ref_free( proc );
+  }
+
+  /* blindsend dbl with 0,1 */
+  {
+    REF_INT i, part, size, n;
+    REF_DBL *send;
+    REF_INT *proc;
+    REF_DBL *recv;
+
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      size += MAX(1,MIN(part,10));
+
+    ref_malloc( proc, size, REF_INT );
+    ref_malloc( send, size, REF_DBL );
+    
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      for ( i=0;i<MAX(1,MIN(part,10));i++ )
+	{
+	  proc[size] = part;
+	  send[size] = (REF_DBL)ref_mpi_rank(ref_mpi);
+	  size++;
+	}
+
+    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, size,
+			    (void **)&recv, &n, REF_DBL_TYPE ),
+	 "blindsend");
+
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      for ( i=0;i<MAX(1,MIN(ref_mpi_rank(ref_mpi),10));i++ )
+	{
+	  RWDS((REF_DBL)part,recv[size],-1,"recv mismatch");
 	  size++;
 	}
     REIS( size, n, "size mismatch" );
