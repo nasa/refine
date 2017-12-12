@@ -414,7 +414,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT to_item, from_item;
   REF_DBL *xyz;
   REF_DBL *local_xyz, *global_xyz;
-  REF_INT total_xyz, i, *best_node, *from_proc, cell;
+  REF_INT total_node, *source, i, *best_node, *from_proc, cell;
   REF_DBL dist, *best_dist, bary[4];
 
   if ( ref_mpi_para(ref_mpi) )
@@ -432,15 +432,15 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
       local_xyz[1+3*to_item] = ref_node_xyz(to_node,1,to_geom_node);
       local_xyz[2+3*to_item] = ref_node_xyz(to_node,2,to_geom_node);
     }
-  RSS( ref_mpi_allconcat( ref_mpi, 3*ref_list_n(to_geom_list), 
+  RSS( ref_mpi_allconcat( ref_mpi, 3, ref_list_n(to_geom_list), 
 			  (void *)local_xyz,
-			  &total_xyz, (void **)&global_xyz, 
+			  &total_node, &source, (void **)&global_xyz, 
 			  REF_DBL_TYPE ), "cat");
   
-  ref_malloc( best_dist, total_xyz/3, REF_DBL );
-  ref_malloc( best_node, total_xyz/3, REF_INT );
-  ref_malloc( from_proc, total_xyz/3, REF_INT );
-  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
+  ref_malloc( best_dist, total_node, REF_DBL );
+  ref_malloc( best_node, total_node, REF_INT );
+  ref_malloc( from_proc, total_node, REF_INT );
+  for ( to_item = 0; to_item < total_node; to_item++ )
     {
       xyz = &(global_xyz[3*to_item]);
       best_dist[to_item] = 1.0e20;
@@ -460,9 +460,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
 
-  RSS( ref_mpi_allminwho( ref_mpi, best_dist, from_proc, total_xyz/3), "who" );
+  RSS( ref_mpi_allminwho( ref_mpi, best_dist, from_proc, total_node), "who" );
 
-  for ( to_item = 0; to_item < total_xyz/3; to_item++ )
+  for ( to_item = 0; to_item < total_node; to_item++ )
     if ( ref_mpi_rank(ref_mpi) == from_proc[to_item] )
       {
 	RUS( REF_EMPTY, best_node[to_item], "no geom node" );
@@ -500,7 +500,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   ref_free( from_proc );
   ref_free( best_node );
   ref_free( best_dist );
-
+  
+  ref_free( source );
   ref_free( global_xyz );
   ref_free( local_xyz );
   ref_list_free( from_geom_list );

@@ -589,31 +589,47 @@ REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
 }
 
 REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
-			      REF_INT my_size, void *my_array,
-			      REF_INT *total_size, void **concatenated,
+			      REF_INT ldim, REF_INT my_size, void *my_array,
+			      REF_INT *total_size, REF_INT **source,
+			      void **concatenated,
 			      REF_TYPE type )
 {
-  REF_INT proc;
+  REF_INT proc, i, tot;
   REF_INT *counts;
 
   ref_malloc( counts, ref_mpi_m(ref_mpi), REF_INT );
   RSS( ref_mpi_allgather( ref_mpi,
-			  &my_size, counts, REF_INT_TYPE ), 
+			  (void *)(&my_size), (void *)counts, REF_INT_TYPE ), 
        "gather size");
+
   *total_size = 0;
   each_ref_mpi_part( ref_mpi, proc )
     (*total_size) += counts[proc];
+  ref_malloc( *source, *total_size, REF_INT );
 
+  tot = 0;
+  each_ref_mpi_part( ref_mpi, proc )
+    for(i=0;i<counts[proc];i++)
+      {
+	(*source)[tot] = proc;
+	tot++;
+      }
+  REIS( *total_size, tot, "count mismatch" );
+  
   switch (type)
     {
     case REF_INT_TYPE: 
-      ref_malloc( *((REF_INT **)concatenated), *total_size, REF_INT );
+      ref_malloc( *((REF_INT **)concatenated), ldim*(*total_size), REF_INT );
       break;
     case REF_DBL_TYPE:
-      ref_malloc( *((REF_DBL **)concatenated), *total_size, REF_DBL );
+      ref_malloc( *((REF_DBL **)concatenated), ldim*(*total_size), REF_DBL );
       break;
     default: RSS( REF_IMPLEMENT, "data type");
     }
+
+  /* pad ldim */
+  each_ref_mpi_part( ref_mpi, proc )
+    counts[proc] *= ldim;
 
   RSS( ref_mpi_allgatherv( ref_mpi,
 			   my_array, counts, *concatenated, type ), 
