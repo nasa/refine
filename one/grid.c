@@ -3380,42 +3380,6 @@ Grid *gridReconnectAllCell(Grid *grid, int oldNode, int newNode )
   return grid;
 }
 
-Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode );
-Grid *gridReconnectCellUnlessFrozen(Grid *grid, int oldNode, int newNode )
-{
-  AdjIterator it;
-  int cell, i, node;
-  GridBool frozen;
-
-  if (oldNode < 0 || oldNode >= grid->maxnode ) return NULL;
-  if (newNode < 0 || newNode >= grid->maxnode ) return NULL;
-  if (newNode == oldNode) return grid;
-  
-  it = adjFirst(grid->cellAdj,oldNode);
-  while (adjValid(it)){
-    cell = adjItem(it);
-    frozen = ( gridNodeFrozen(grid, grid->c2n[0+4*cell]) &&
-	       gridNodeFrozen(grid, grid->c2n[1+4*cell]) &&
-	       gridNodeFrozen(grid, grid->c2n[2+4*cell]) &&
-	       gridNodeFrozen(grid, grid->c2n[3+4*cell]) );
-    if (!frozen ) {
-      for (i=0;i<4;i++){
-	node = grid->c2n[i+4*cell];
-	if (oldNode == node) {
-	  grid->c2n[i+4*cell]=newNode;
-	  adjRemove( grid->cellAdj, oldNode, cell);
-	  adjRegister( grid->cellAdj, newNode, cell);
-	}
-      }
-      it = adjFirst(grid->cellAdj,oldNode);
-    }else{
-      it = adjNext(it);
-    }      
-  }
-  
-  return grid;
-}
-
 Grid *gridCell(Grid *grid, int cellId, int *nodes )
 {
   if ( cellId < 0 || cellId >= grid->maxcell ) return NULL;
