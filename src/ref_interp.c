@@ -414,8 +414,14 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT to_item, from_item;
   REF_DBL *xyz;
   REF_DBL *local_xyz, *global_xyz;
-  REF_INT total_node, *source, i, *best_node, *from_proc, cell;
-  REF_DBL dist, *best_dist, bary[4];
+  REF_INT *local_node, *global_node;
+  REF_INT total_node, *source, i, *best_node, *from_proc;
+  REF_DBL dist, *best_dist;
+  REF_INT nsend, nrecv;
+  REF_INT *send_proc;
+  REF_INT *send_cell, *recv_cell;
+  REF_INT *send_node, *recv_node;
+  REF_DBL *send_bary, *recv_bary;
 
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
@@ -425,9 +431,11 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   RSS( ref_interp_geom_node_list( to_grid, to_geom_list ), "to list" );
   RSS( ref_interp_geom_node_list( from_grid, from_geom_list ), "from list" );
 
+  ref_malloc( local_node, ref_list_n(to_geom_list), REF_INT );
   ref_malloc( local_xyz, 3*ref_list_n(to_geom_list), REF_DBL );
   each_ref_list_item_value( to_geom_list, to_item, to_geom_node )
     {
+      local_node[to_item] = to_geom_node;
       local_xyz[0+3*to_item] = ref_node_xyz(to_node,0,to_geom_node);
       local_xyz[1+3*to_item] = ref_node_xyz(to_node,1,to_geom_node);
       local_xyz[2+3*to_item] = ref_node_xyz(to_node,2,to_geom_node);
@@ -436,6 +444,11 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 			  (void *)local_xyz,
 			  &total_node, &source, (void **)&global_xyz, 
 			  REF_DBL_TYPE ), "cat");
+  ref_free(source);
+  RSS( ref_mpi_allconcat( ref_mpi, 1, ref_list_n(to_geom_list), 
+			  (void *)local_node,
+			  &total_node, &source, (void **)&global_node, 
+			  REF_INT_TYPE ), "cat");
   
   ref_malloc( best_dist, total_node, REF_DBL );
   ref_malloc( best_node, total_node, REF_INT );
@@ -462,48 +475,89 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 
   RSS( ref_mpi_allminwho( ref_mpi, best_dist, from_proc, total_node), "who" );
 
+  nsend = 0;
+  for ( to_item = 0; to_item < total_node; to_item++ )
+    if ( ref_mpi_rank(ref_mpi) == from_proc[to_item] )
+      nsend++;
+  
+  ref_malloc( send_bary, 4*nsend, REF_DBL );
+  ref_malloc( send_cell, nsend, REF_INT );
+  ref_malloc( send_node, nsend, REF_INT );
+  ref_malloc( send_proc, nsend, REF_INT );
+  
+  nsend = 0;
   for ( to_item = 0; to_item < total_node; to_item++ )
     if ( ref_mpi_rank(ref_mpi) == from_proc[to_item] )
       {
 	RUS( REF_EMPTY, best_node[to_item], "no geom node" );
 	xyz = &(global_xyz[3*to_item]);
+	send_node[nsend] = global_node[to_item];
+	send_proc[nsend] = source[to_item];
 	RSS( ref_interp_exhaustive_tet_around_node( from_grid, 
 						    best_node[to_item],
-						    xyz, &cell, bary),
+						    xyz,
+						    &(send_cell[nsend]),
+						    &(send_bary[4*nsend]) ),
 	     "tet around node");
-	if ( bary[0] > ref_interp->inside &&
-	     bary[1] > ref_interp->inside &&
-	     bary[2] > ref_interp->inside &&
-	     bary[3] > ref_interp->inside )
-	  {
-	    ref_interp->n_geom++;
-	    to_geom_node = ref_list_value(to_geom_list,to_item);
-	    REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
-		  "geom already found?" );
-	    if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
-	      { /* need to dequeue */
-		ref_interp->guess[to_geom_node] = REF_EMPTY;
-		RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
-	      }
-	    ref_interp->cell[to_geom_node] = cell;
-	    for(i=0;i<4;i++)
-	      ref_interp->bary[i+4*to_geom_node] = bary[i];
-	    RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
-		 "push" );
-	  }
-	else
-	  {
-	    ref_interp->n_geom_fail++;
-	  }
+	nsend++;
       }
+  
+  RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_node, 1, nsend,
+			  (void **)(&recv_node), &nrecv, REF_INT_TYPE ),
+       "blind send node" );
+  RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_cell, 1, nsend,
+			  (void **)(&recv_cell), &nrecv, REF_INT_TYPE ),
+       "blind send cell" );
+  RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_bary, 4, nsend,
+			  (void **)(&recv_bary), &nrecv, REF_DBL_TYPE ),
+       "blind send bary" );
 
+  for ( from_item = 0 ; from_item < nrecv ; from_item++ )
+    {
+      if ( recv_bary[0+4*from_item] > ref_interp->inside &&
+	   recv_bary[1+4*from_item] > ref_interp->inside &&
+	   recv_bary[2+4*from_item] > ref_interp->inside &&
+	   recv_bary[3+4*from_item] > ref_interp->inside )
+	{
+	  ref_interp->n_geom++;
+	  to_geom_node = recv_node[from_item];
+	  REIS( REF_EMPTY, ref_interp->cell[to_geom_node],
+		"geom already found?" );
+	  if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
+	    { /* need to dequeue */
+	      ref_interp->guess[to_geom_node] = REF_EMPTY;
+	      RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
+	    }
+	  ref_interp->cell[to_geom_node] = recv_cell[from_item];
+	  for(i=0;i<4;i++)
+	    ref_interp->bary[i+4*to_geom_node] = recv_bary[i+4*from_item];
+	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
+	       "push" );
+	}
+      else
+	{
+	  ref_interp->n_geom_fail++;
+	}
+    }
+
+  ref_free( recv_node );
+  ref_free( recv_cell );
+  ref_free( recv_bary );
+  
+  ref_free( send_bary );
+  ref_free( send_cell );
+  ref_free( send_node );
+  ref_free( send_proc );
+  
   ref_free( from_proc );
   ref_free( best_node );
   ref_free( best_dist );
-  
+
   ref_free( source );
+  ref_free( global_node );
   ref_free( global_xyz );
   ref_free( local_xyz );
+  ref_free( local_node );
   ref_list_free( from_geom_list );
   ref_list_free( to_geom_list );
   return REF_SUCCESS;
