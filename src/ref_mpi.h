@@ -93,6 +93,8 @@ REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
 			void *input, void *output, REF_TYPE type );
 REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
 			void *input, void *output, REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_allsum( REF_MPI ref_mpi,
+			   void *value, REF_INT n, REF_TYPE type );
 
 REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
 			      void *scalar, void *array, REF_TYPE type );

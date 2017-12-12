@@ -490,6 +490,31 @@ REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_allsum( REF_MPI ref_mpi,
+			void *value, REF_INT n, REF_TYPE type )
+{
+  REF_INT i;
+  void *temp = NULL;
+  switch (type)
+    {
+    case REF_INT_TYPE:
+      ref_malloc( temp, n, REF_INT );
+      for (i=0;i<n;i++)
+	((REF_INT *)temp)[i] = ((REF_INT *)value)[i];
+      break;
+    case REF_DBL_TYPE:
+      ref_malloc( temp, n, REF_DBL );
+      for (i=0;i<n;i++)
+	((REF_DBL *)temp)[i] = ((REF_DBL *)value)[i];
+      break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+  RSS( ref_mpi_sum( ref_mpi, temp, value, n, type ), "sum" );
+  ref_free(temp);
+  RSS( ref_mpi_bcast( ref_mpi, value, n, type ), "bcast" )
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
 			      void *scalar, void *array, REF_TYPE type )
 {

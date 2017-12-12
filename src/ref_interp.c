@@ -422,7 +422,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT *send_cell, *recv_cell;
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
-
+  
   if ( ref_mpi_para(ref_mpi) )
     RSS( REF_IMPLEMENT, "not para" );
 
