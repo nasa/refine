@@ -696,10 +696,10 @@ REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
 	    }
 	  break;
 	case REF_DBL_TYPE:
-	  ref_malloc( *((REF_INT **)recv), nsend, REF_INT );
+	  ref_malloc( *((REF_DBL **)recv), nsend, REF_DBL );
 	  for (i=0;i<nsend;i++)
 	    {
-	      (*((REF_INT **)recv))[i] = ((REF_INT *)send)[i];
+	      (*((REF_DBL **)recv))[i] = ((REF_DBL *)send)[i];
 	    }
 	  break;
 	default: RSS( REF_IMPLEMENT, "data type");
@@ -723,7 +723,7 @@ REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
   b_total = 0;
   each_ref_mpi_part( ref_mpi, part )
     b_total += b_size[part];
-
+  
   ref_malloc( a_next, ref_mpi_m(ref_mpi), REF_INT );
   a_next[0] = 0;
   each_ref_mpi_worker( ref_mpi, part )
