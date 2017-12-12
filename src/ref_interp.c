@@ -774,6 +774,15 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
  
   RSS( ref_search_free(ref_search), "free list" );
   RSS( ref_list_free(ref_list), "free list" );
+
+  each_ref_node_valid_node( to_node, node )
+    {
+      if ( !ref_node_owned(to_node,node) ||
+	   REF_EMPTY != ref_interp->cell[node] )
+	continue;
+      RUS( REF_EMPTY, ref_interp->cell[node], "node missed by tree");	
+    }
+
   return REF_SUCCESS;
 }
 
@@ -1013,7 +1022,7 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   RSS( ref_mpi_sum( ref_mpi, &node, &extrapolate, 1, REF_INT_TYPE ), "sum");
 
   RSS( ref_interp_max_error( ref_interp, from_grid, to_grid, &max_error),"me");
-  RSS( ref_interp_min_bary( ref_interp, from_grid, &min_bary),"mb");
+  RSS( ref_interp_min_bary( ref_interp, to_grid, &min_bary),"mb");
 
   if ( ref_mpi_once(ref_mpi) )
     {
