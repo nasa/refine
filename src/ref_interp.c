@@ -977,130 +977,15 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 {
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_NODE from_node = ref_grid_node(from_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node;
-  REF_DBL error;
-  REF_INT i;
-  REF_DBL max_error = 0.0;
-  REF_DBL this_bary;
-  REF_DBL min_bary = 1.0;
   REF_INT extrapolate = 0;
-  REF_INT receptor, n_recept, donation, n_donor;
-  REF_DBL *recept_xyz, *donor_xyz, *recept_bary, *donor_bary;
-  REF_INT *donor_node, *donor_ret, *donor_cell;
-  REF_INT *recept_proc,*recept_ret, *recept_node, *recept_cell;
+  REF_INT node;
+  REF_DBL this_bary, max_error, min_bary;
+
   RNS( ref_interp->cell, "locate first" );
   RNS( ref_interp->part, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      printf("tree search: %d found, %.2f avg cells\n",
-	     ref_interp->n_tree,
-	     (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
-      printf("walks: %d successful, %.2f avg cells\n",
-	     ref_interp->n_walk, 
-	     (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
-      printf("geom nodes: %d failed, %d successful\n",
-	     ref_interp->n_geom_fail, ref_interp->n_geom);
-    }
 
-  n_recept = 0;
-  each_ref_node_valid_node( to_node, node )
-    if ( ref_node_owned(to_node,node) )
-      {
-	n_recept++;
-      }
-  
-  ref_malloc( recept_bary, 4*n_recept, REF_DBL );
-  ref_malloc( recept_cell, n_recept, REF_INT );
-  ref_malloc( recept_node, n_recept, REF_INT );
-  ref_malloc( recept_ret,  n_recept, REF_INT );
-  ref_malloc( recept_proc, n_recept, REF_INT );
-
-  n_recept = 0;
-  each_ref_node_valid_node( to_node, node )
-    if ( ref_node_owned(to_node,node) )
-      {
-	RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized" );
-	for(i=0;i<4;i++)
-	  recept_bary[i+4*n_recept] = ref_interp->bary[i+4*node];
-	recept_proc[n_recept] = ref_interp->part[node];
-	recept_cell[n_recept] = ref_interp->cell[node];
-	recept_node[n_recept] = node;
-	recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
-	n_recept++;
-      }
-
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  recept_proc, (void *)recept_cell, 1, n_recept,
-			  (void **)(&donor_cell), &n_donor, REF_INT_TYPE ),
-       "blind send cell" );
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  recept_proc, (void *)recept_ret, 1, n_recept,
-			  (void **)(&donor_ret), &n_donor, REF_INT_TYPE ),
-       "blind send ret" );
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  recept_proc, (void *)recept_node, 1, n_recept,
-			  (void **)(&donor_node), &n_donor, REF_INT_TYPE ),
-       "blind send node" );
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  recept_proc, (void *)recept_bary, 4, n_recept,
-			  (void **)(&donor_bary), &n_donor, REF_DBL_TYPE ),
-       "blind send bary" );
-
-  ref_free(recept_proc);
-  ref_free(recept_ret);
-  ref_free(recept_node);
-  ref_free(recept_cell);
-  ref_free(recept_bary);
-
-  ref_malloc( donor_xyz, 3*n_donor, REF_DBL );
-
-  for ( donation = 0 ; donation < n_donor; donation++ )
-    {
-      RSS( ref_cell_nodes( from_cell, donor_cell[donation], nodes),
-	   "node needs to be localized" );
-      for(i=0;i<3;i++)
-	donor_xyz[i+3*donation] = 
-	  donor_bary[0+4*donation] *
-	  ref_node_xyz(from_node,i,nodes[0]) +
-	  donor_bary[1+4*donation] *
-	  ref_node_xyz(from_node,i,nodes[1]) +
-	  donor_bary[2+4*donation] *
-	  ref_node_xyz(from_node,i,nodes[2]) +
-	  donor_bary[3+4*donation] *
-	  ref_node_xyz(from_node,i,nodes[3]);
-    }
-  ref_free(donor_cell);
-  ref_free(donor_bary);
-
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  donor_ret, (void *)donor_xyz, 3, n_donor,
-			  (void **)(&recept_xyz), &n_recept, REF_DBL_TYPE ),
-       "blind send bary" );
-  RSS( ref_mpi_blindsend( ref_mpi, 
-			  donor_ret, (void *)donor_node, 1, n_donor,
-			  (void **)(&recept_node), &n_recept, REF_INT_TYPE ),
-       "blind send node" );
-  ref_free(donor_xyz);
-  ref_free(donor_node);
-  ref_free(donor_ret);
-
-  for ( receptor = 0 ; receptor < n_recept; receptor++ )
-    {
-      node = recept_node[receptor];
-      error = 
-	pow(recept_xyz[0+3*receptor]-ref_node_xyz(to_node,0,node),2) + 
-	pow(recept_xyz[1+3*receptor]-ref_node_xyz(to_node,1,node),2) + 
-	pow(recept_xyz[2+3*receptor]-ref_node_xyz(to_node,2,node),2) ;
-      max_error = MAX( max_error, sqrt(error) );
-    }
-  ref_free(recept_node);
-  ref_free(recept_xyz);
-  
   each_ref_node_valid_node( to_node, node )
     if ( ref_node_owned(to_node,node) )
       {
@@ -1108,21 +993,30 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 			      ref_interp->bary[1+4*node] ),
 			 MIN( ref_interp->bary[2+4*node],
 			      ref_interp->bary[3+4*node] ) );
-	min_bary= MIN( min_bary, this_bary );
 	if ( this_bary < ref_interp->inside ) 
 	  extrapolate++;
       }
-
-  this_bary = min_bary;
-  RSS( ref_mpi_min( ref_mpi, &this_bary, &min_bary, REF_DBL_TYPE ), "min");
-  error = max_error;
-  RSS( ref_mpi_max( ref_mpi, &error, &max_error, REF_DBL_TYPE ), "max");
   node = extrapolate;
   RSS( ref_mpi_sum( ref_mpi, &node, &extrapolate, 1, REF_INT_TYPE ), "sum");
 
+  RSS( ref_interp_max_error( ref_interp, from_grid, to_grid, &max_error),"me");
+  RSS( ref_interp_min_bary( ref_interp, from_grid, &min_bary),"mb");
+
   if ( ref_mpi_once(ref_mpi) )
-    printf("interp min bary %e max error %e extrap %d\n", 
-	   min_bary, max_error, extrapolate );
+    {
+      if ( ref_interp->n_tree > 0 )
+	printf("tree search: %d found, %.2f avg cells\n",
+	       ref_interp->n_tree,
+	       (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
+      if ( ref_interp->n_walk > 0 )
+	printf("walks: %d successful, %.2f avg cells\n",
+	       ref_interp->n_walk, 
+	       (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
+      printf("geom nodes: %d failed, %d successful\n",
+	     ref_interp->n_geom_fail, ref_interp->n_geom);
+      printf("interp min bary %e max error %e extrap %d\n", 
+	     min_bary, max_error, extrapolate );
+    }
 
   return REF_SUCCESS;
 }
