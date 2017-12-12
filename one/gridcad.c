@@ -1297,6 +1297,7 @@ Grid *gridSmoothVolumeNearNode(Grid *grid, int node, GridBool smoothOnSurface )
   if (!gridValidNode(grid,node)) return NULL;
 
   nlist =0;
+  nodelist[0] = EMPTY;
   for ( it0 = adjFirst(gridCellAdj(grid),node); 
 	adjValid(it0); 
 	it0 = adjNext(it0) ){
