@@ -316,7 +316,6 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
   
   THROW("out of iterations");
 
-  return REF_SUCCESS;
 }
 
 REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, 
