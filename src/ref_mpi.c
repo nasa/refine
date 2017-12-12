@@ -667,3 +667,106 @@ REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
+			      REF_INT *proc, void *send, REF_INT nsend,
+			      void **recv, REF_INT *nrecv,
+			      REF_TYPE type )
+{
+  REF_INT i, part;
+  REF_INT *a_size, *b_size;
+  REF_INT *a_next;
+  REF_INT a_total, b_total;
+
+  void *a_data;
+  
+  a_data = NULL;
+  *recv = NULL;
+
+  if ( !ref_mpi_para(ref_mpi) )
+    {
+      *nrecv = nsend;
+      switch (type)
+	{
+	case REF_INT_TYPE:
+	  ref_malloc( *((REF_INT **)recv), nsend, REF_INT );
+	  for (i=0;i<nsend;i++)
+	    {
+	      (*((REF_INT **)recv))[i] = ((REF_INT *)send)[i];
+	    }
+	  break;
+	case REF_DBL_TYPE:
+	  ref_malloc( *((REF_INT **)recv), nsend, REF_INT );
+	  for (i=0;i<nsend;i++)
+	    {
+	      (*((REF_INT **)recv))[i] = ((REF_INT *)send)[i];
+	    }
+	  break;
+	default: RSS( REF_IMPLEMENT, "data type");
+	}
+      return REF_SUCCESS;
+    }
+
+  ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
+  ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, 0 );
+
+  for (i=0;i<nsend;i++)
+    a_size[proc[i]]++;
+  
+  RSS( ref_mpi_alltoall( ref_mpi,
+			 a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part( ref_mpi, part )
+    a_total += a_size[part];
+
+  b_total = 0;
+  each_ref_mpi_part( ref_mpi, part )
+    b_total += b_size[part];
+
+  ref_malloc( a_next, ref_mpi_m(ref_mpi), REF_INT );
+  a_next[0] = 0;
+  each_ref_mpi_worker( ref_mpi, part )
+    a_next[part] = a_next[part-1]+a_size[part-1];
+
+  a_data = NULL;
+  *recv = NULL;
+  switch (type)
+    {
+    case REF_INT_TYPE:
+      a_data = malloc( a_total * sizeof( REF_INT ));
+      RNS( a_data, "malloc failed");
+      ref_malloc( *((REF_INT **)recv), b_total, REF_INT );
+      for (i=0;i<nsend;i++)
+	{
+	  ((REF_INT *)a_data)[a_next[proc[i]]] = ((REF_INT *)send)[i];
+	  a_next[proc[i]]++;
+	}
+      break;
+    case REF_DBL_TYPE:
+      a_data = malloc( a_total * sizeof( REF_DBL ));
+      RNS( a_data, "malloc failed");
+      ref_malloc( *((REF_DBL **)recv), b_total, REF_DBL );
+      for (i=0;i<nsend;i++)
+	{
+	  ((REF_DBL *)a_data)[a_next[proc[i]]] = ((REF_DBL *)send)[i];
+	  a_next[proc[i]]++;
+	}
+      break;
+    default: RSS( REF_IMPLEMENT, "data type");
+    }
+
+  RSS( ref_mpi_alltoallv( ref_mpi,
+			  a_data, a_size, *recv, b_size, 
+			  1, type ), 
+       "alltoallv global");
+
+  *nrecv = b_total;
+  
+  ref_free(a_next);
+  ref_free(a_data);
+  ref_free(b_size);
+  ref_free(a_size);
+
+  return REF_SUCCESS;
+}

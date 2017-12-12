@@ -123,6 +123,47 @@ int main( int argc, char *argv[] )
     ref_free( val );
   }
 
+  /* blindsend int */
+  {
+    REF_INT i, part, size, n;
+    REF_INT *send;
+    REF_INT *proc;
+    REF_INT *recv;
+
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      size += MIN(part,10);
+
+    ref_malloc( proc, size, REF_INT );
+    ref_malloc( send, size, REF_INT );
+    
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      for ( i=0;i<MIN(part,10);i++ )
+	{
+	  proc[size] = part;
+	  send[size] = ref_mpi_rank(ref_mpi);
+	  size++;
+	}
+
+    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, size,
+			    (void **)&recv, &n, REF_INT_TYPE ),
+	 "blindsend");
+
+    size = 0;
+    each_ref_mpi_part( ref_mpi, part )
+      for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),10);i++ )
+	{
+	  REIS(part,recv[size],"recv mismatch");
+	  size++;
+	}
+    REIS( size, n, "size mismatch" );
+    
+    ref_free( recv );
+    ref_free( send );
+    ref_free( proc );
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
