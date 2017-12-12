@@ -94,8 +94,6 @@ GridBool CADGeom_UpdateFaceGrid(int vol, int faceId, int nnode,
   return FALSE;
 }
 
-CADCurvePtr CADGeom_EdgeGrid( int, int );
-
 void *DList_SetIteratorToHead(DListPtr dlp,Iterator *dli)
 {
   SUPRESS_UNUSED_COMPILER_WARNING(dlp);

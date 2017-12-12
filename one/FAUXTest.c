@@ -28,8 +28,6 @@
 #include "FAKEGeom.h"
 #include "grid.h"
 
-void inspect_faux(void);
-
 int main( int argc, char *argv[] )
 {
   GridBool status;

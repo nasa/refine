@@ -155,7 +155,8 @@ void CADGeom_UseDefaultIOCallbacks( void );
 
 #define UG_SUCCESS           0
 
-
+void inspect_faux(void);
+ 
 END_C_DECLORATION
 
 #endif /* CADGEOM_H */
