@@ -609,9 +609,6 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   REF_DBL *send_bary, *recv_bary;
   REF_INT i, item;
 
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
   RSS( ref_list_create( &ref_list ), "create list" );
   RSS( ref_search_create( &ref_search, ref_cell_n(from_tet) ), "mk sr" );
   each_ref_cell_valid_cell_with_nodes( from_tet, cell, nodes )
@@ -785,17 +782,12 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
-  if ( ref_mpi_para(ref_mpi) )
+  if ( !ref_mpi_para(ref_mpi) )
     {
-      if ( ref_mpi_once(ref_mpi) )
-	printf("geom nodes: %d failed, %d successful\n",
-	       ref_interp->n_geom_fail, ref_interp->n_geom);
-      RSS( REF_IMPLEMENT, "not para" );
+      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
+      if ( ref_interp->instrument)
+	RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
     }
-
-  RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
-  if ( ref_interp->instrument)
-    RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
 
   RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
   if ( ref_interp->instrument)
