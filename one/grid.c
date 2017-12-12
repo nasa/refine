@@ -4265,6 +4265,7 @@ int gridNodeFaceIdDegree(Grid *grid, int node)
   if (!gridValidNode(grid,node)) return EMPTY;
 
   ids = 0;
+  id[0] = EMPTY;
   for ( it = adjFirst(grid->faceAdj,node); adjValid(it); it = adjNext(it) ){
     face = adjItem(it);
     faceId = grid->faceId[face];
@@ -4399,6 +4400,7 @@ int gridNodeEdgeIdDegree(Grid *grid, int node)
   if (!gridValidNode(grid,node)) return EMPTY;
 
   ids = 0;
+  id[0] = EMPTY;
   for ( it = adjFirst(grid->edgeAdj,node); adjValid(it); it = adjNext(it) ){
     edge = adjItem(it);
     edgeId = grid->edgeId[edge];
