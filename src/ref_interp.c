@@ -985,6 +985,19 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   RNS( ref_interp->part, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      if ( ref_interp->n_tree > 0 )
+	printf("tree search: %d found, %.2f avg cells\n",
+	       ref_interp->n_tree,
+	       (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
+      if ( ref_interp->n_walk > 0 )
+	printf("walks: %d successful, %.2f avg cells\n",
+	       ref_interp->n_walk, 
+	       (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
+      printf("geom nodes: %d failed, %d successful\n",
+	     ref_interp->n_geom_fail, ref_interp->n_geom);
+    }
 
   each_ref_node_valid_node( to_node, node )
     if ( ref_node_owned(to_node,node) )
@@ -1004,16 +1017,6 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 
   if ( ref_mpi_once(ref_mpi) )
     {
-      if ( ref_interp->n_tree > 0 )
-	printf("tree search: %d found, %.2f avg cells\n",
-	       ref_interp->n_tree,
-	       (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
-      if ( ref_interp->n_walk > 0 )
-	printf("walks: %d successful, %.2f avg cells\n",
-	       ref_interp->n_walk, 
-	       (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
-      printf("geom nodes: %d failed, %d successful\n",
-	     ref_interp->n_geom_fail, ref_interp->n_geom);
       printf("interp min bary %e max error %e extrap %d\n", 
 	     min_bary, max_error, extrapolate );
     }
