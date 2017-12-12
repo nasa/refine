@@ -253,6 +253,7 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
 
   /* ids1 is a list of degree1 face ids for node1 */
   degree1 = 0;
+  ids1[0] = REF_EMPTY; ids1[1] = REF_EMPTY; ids1[2] = REF_EMPTY;
   each_ref_cell_having_node( ref_cell, node1, item, cell )
   {
     RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
@@ -730,6 +731,7 @@ REF_STATUS ref_collapse_face_geometry( REF_GRID ref_grid,
   REF_BOOL already_have_it;
 
   degree1 = 0;
+  ids1[0] = REF_EMPTY; ids1[1] = REF_EMPTY;
   each_ref_cell_having_node( ref_cell, remove, item, cell )
   {
     RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
