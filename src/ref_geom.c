@@ -399,7 +399,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  REF_INT node0, node1;
 	  double closest[3];
 	  REF_INT next_node, current_node;
-	  REF_INT cell, geom;
+	  REF_INT geom;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
 	  REIS( 2, nchild, "expect to topo node for edge");
 	  toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
