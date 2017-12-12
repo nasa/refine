@@ -44,6 +44,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
   ref_interp->tree_cells = 0;
   ref_interp->guess = NULL;
   ref_interp->cell = NULL;
+  ref_interp->part = NULL;
   ref_interp->bary = NULL;
   ref_interp->inside = -1.0e-12; /* inside tolerence */
   ref_interp->bound = -0.1; /* bound tolerence */
@@ -61,6 +62,7 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
   ref_list_free( ref_interp->visualize );
   ref_list_free( ref_interp->ref_list );
   ref_free( ref_interp->bary );
+  ref_free( ref_interp->part );
   ref_free( ref_interp->cell );
   ref_free( ref_interp->guess );
   ref_free( ref_interp );
@@ -346,6 +348,7 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp,
 REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp, 
 				   REF_GRID from_grid, REF_GRID to_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
 
@@ -367,6 +370,7 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
 	}
       else
 	{
+	  ref_interp->part[node] = ref_mpi_rank(ref_mpi);
 	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
 	}
     }
@@ -417,7 +421,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT total_node, *source, i, *best_node, *from_proc;
   REF_DBL dist, *best_dist;
   REF_INT nsend, nrecv;
-  REF_INT *send_proc;
+  REF_INT *send_proc, *my_proc, *recv_proc;
   REF_INT *send_cell, *recv_cell;
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
@@ -480,6 +484,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   ref_malloc( send_cell, nsend, REF_INT );
   ref_malloc( send_node, nsend, REF_INT );
   ref_malloc( send_proc, nsend, REF_INT );
+  ref_malloc_init( my_proc, nsend, REF_INT, ref_mpi_rank(ref_mpi) );
   
   nsend = 0;
   for ( to_item = 0; to_item < total_node; to_item++ )
@@ -504,6 +509,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_cell, 1, nsend,
 			  (void **)(&recv_cell), &nrecv, REF_INT_TYPE ),
        "blind send cell" );
+  RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)my_proc, 1, nsend,
+			  (void **)(&recv_proc), &nrecv, REF_INT_TYPE ),
+       "blind send proc" );
   RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_bary, 4, nsend,
 			  (void **)(&recv_bary), &nrecv, REF_DBL_TYPE ),
        "blind send bary" );
@@ -525,6 +533,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	      RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
 	    }
 	  ref_interp->cell[to_geom_node] = recv_cell[from_item];
+	  ref_interp->part[to_geom_node] = recv_proc[from_item];
 	  for(i=0;i<4;i++)
 	    ref_interp->bary[i+4*to_geom_node] = recv_bary[i+4*from_item];
 	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
@@ -542,9 +551,11 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 
   ref_free( recv_node );
   ref_free( recv_cell );
+  ref_free( recv_proc );
   ref_free( recv_bary );
   
   ref_free( send_bary );
+  ref_free( my_proc );
   ref_free( send_cell );
   ref_free( send_node );
   ref_free( send_proc );
@@ -603,7 +614,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   REF_INT *local_node, *global_node;
   REF_INT *source, total_node;
   REF_INT nsend, nrecv;
-  REF_INT *send_proc;
+  REF_INT *send_proc, *my_proc, *recv_proc;
   REF_INT *send_cell, *recv_cell;
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
@@ -690,6 +701,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   ref_malloc( send_cell, nsend, REF_INT );
   ref_malloc( send_node, nsend, REF_INT );
   ref_malloc( send_proc, nsend, REF_INT );
+  ref_malloc_init( my_proc, nsend, REF_INT, ref_mpi_rank(ref_mpi) );
   nsend = 0;
   for ( node = 0; node < total_node; node++ )
     if ( ref_mpi_rank(ref_mpi) == from_proc[node] )
@@ -710,6 +722,9 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_cell, 1, nsend,
 			  (void **)(&recv_cell), &nrecv, REF_INT_TYPE ),
        "blind send cell" );
+  RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)my_proc, 1, nsend,
+			  (void **)(&recv_proc), &nrecv, REF_INT_TYPE ),
+       "blind send proc" );
   RSS( ref_mpi_blindsend( ref_mpi, send_proc, (void *)send_bary, 4, nsend,
 			  (void **)(&recv_bary), &nrecv, REF_DBL_TYPE ),
        "blind send bary" );
@@ -726,6 +741,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
 	  RSS( ref_list_delete( ref_interp->ref_list, node ),"deq");
 	}
       ref_interp->cell[node] = recv_cell[item];
+      ref_interp->part[node] = recv_proc[item];
       for(i=0;i<4;i++)
 	ref_interp->bary[i+4*node] = recv_bary[i+4*item];
       RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node),
@@ -736,9 +752,11 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
 
   ref_free( recv_node );
   ref_free( recv_cell );
+  ref_free( recv_proc );
   ref_free( recv_bary );
   
   ref_free( send_bary );
+  ref_free( my_proc );
   ref_free( send_cell );
   ref_free( send_node );
   ref_free( send_proc );
@@ -769,6 +787,9 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 		   ref_node_max(to_node), 
 		   REF_INT, REF_EMPTY );
   ref_malloc_init( ref_interp->cell, 
+		   ref_node_max(to_node), 
+		   REF_INT, REF_EMPTY );
+  ref_malloc_init( ref_interp->part, 
 		   ref_node_max(to_node), 
 		   REF_INT, REF_EMPTY );
   ref_malloc( ref_interp->bary, 

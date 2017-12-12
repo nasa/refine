@@ -41,6 +41,7 @@ struct REF_INTERP_STRUCT {
   REF_INT tree_cells;
   REF_INT *guess;
   REF_INT *cell;
+  REF_INT *part;
   REF_DBL *bary;
   REF_DBL inside;
   REF_DBL bound;
