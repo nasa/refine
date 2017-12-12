@@ -685,11 +685,12 @@ REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
 }
 
 REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
-			      REF_INT *proc, void *send, REF_INT nsend,
+			      REF_INT *proc, void *send,
+			      REF_INT ldim, REF_INT nsend,
 			      void **recv, REF_INT *nrecv,
 			      REF_TYPE type )
 {
-  REF_INT i, part;
+  REF_INT i, l, part;
   REF_INT *a_size, *b_size;
   REF_INT *a_next;
   REF_INT a_total, b_total;
@@ -705,15 +706,15 @@ REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
       switch (type)
 	{
 	case REF_INT_TYPE:
-	  ref_malloc( *((REF_INT **)recv), nsend, REF_INT );
-	  for (i=0;i<nsend;i++)
+	  ref_malloc( *((REF_INT **)recv), ldim * nsend, REF_INT );
+	  for (i=0;i<ldim*nsend;i++)
 	    {
 	      (*((REF_INT **)recv))[i] = ((REF_INT *)send)[i];
 	    }
 	  break;
 	case REF_DBL_TYPE:
-	  ref_malloc( *((REF_DBL **)recv), nsend, REF_DBL );
-	  for (i=0;i<nsend;i++)
+	  ref_malloc( *((REF_DBL **)recv), ldim * nsend, REF_DBL );
+	  for (i=0;i<ldim*nsend;i++)
 	    {
 	      (*((REF_DBL **)recv))[i] = ((REF_DBL *)send)[i];
 	    }
@@ -750,22 +751,26 @@ REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
   switch (type)
     {
     case REF_INT_TYPE:
-      a_data = malloc( a_total * sizeof( REF_INT ));
+      a_data = malloc( ldim * a_total * sizeof( REF_INT ));
       RNS( a_data, "malloc failed");
-      ref_malloc( *((REF_INT **)recv), b_total, REF_INT );
+      ref_malloc( *((REF_INT **)recv), ldim * b_total, REF_INT );
       for (i=0;i<nsend;i++)
 	{
-	  ((REF_INT *)a_data)[a_next[proc[i]]] = ((REF_INT *)send)[i];
+	  for (l=0;l<ldim;l++)
+	    ((REF_INT *)a_data)[l+ldim*a_next[proc[i]]] =
+	      ((REF_INT *)send)[l+ldim*i];
 	  a_next[proc[i]]++;
 	}
       break;
     case REF_DBL_TYPE:
-      a_data = malloc( a_total * sizeof( REF_DBL ));
+      a_data = malloc( ldim * a_total * sizeof( REF_DBL ));
       RNS( a_data, "malloc failed");
-      ref_malloc( *((REF_DBL **)recv), b_total, REF_DBL );
+      ref_malloc( *((REF_DBL **)recv), ldim * b_total, REF_DBL );
       for (i=0;i<nsend;i++)
 	{
-	  ((REF_DBL *)a_data)[a_next[proc[i]]] = ((REF_DBL *)send)[i];
+	  for (l=0;l<ldim;l++)
+	    ((REF_DBL *)a_data)[l+ldim*a_next[proc[i]]] =
+	      ((REF_DBL *)send)[l+ldim*i];
 	  a_next[proc[i]]++;
 	}
       break;
@@ -774,7 +779,7 @@ REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
 
   RSS( ref_mpi_alltoallv( ref_mpi,
 			  a_data, a_size, *recv, b_size, 
-			  1, type ), 
+			  ldim, type ), 
        "alltoallv global");
 
   *nrecv = b_total;

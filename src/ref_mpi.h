@@ -112,7 +112,8 @@ REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
 			      REF_INT n );
 
 REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
-			      REF_INT *proc, void *send, REF_INT nsend,
+			      REF_INT *proc, void *send,
+			      REF_INT ldim, REF_INT nsend,
 			      void **recv, REF_INT *nrecv,
 			      REF_TYPE type );
 

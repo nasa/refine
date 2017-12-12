@@ -135,7 +135,8 @@ int main( int argc, char *argv[] )
 
   /* blindsend int with 0,0 */
   {
-    REF_INT i, part, size, n;
+    REF_INT ldim = 2;
+    REF_INT l, i, part, size, n;
     REF_INT *send;
     REF_INT *proc;
     REF_INT *recv;
@@ -145,18 +146,21 @@ int main( int argc, char *argv[] )
       size += MIN(part,3);
 
     ref_malloc( proc, size, REF_INT );
-    ref_malloc( send, size, REF_INT );
+    ref_malloc( send, ldim*size, REF_INT );
     
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
       for ( i=0;i<MIN(part,3);i++ )
 	{
 	  proc[size] = part;
-	  send[size] = ref_mpi_rank(ref_mpi);
+	  for ( l=0;l<ldim;l++ )
+	    {
+	      send[l+ldim*size] = ref_mpi_rank(ref_mpi);
+	    }
 	  size++;
 	}
 
-    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, size,
+    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, ldim, size,
 			    (void **)&recv, &n, REF_INT_TYPE ),
 	 "blindsend");
 
@@ -164,7 +168,8 @@ int main( int argc, char *argv[] )
     each_ref_mpi_part( ref_mpi, part )
       for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),3);i++ )
 	{
-	  REIS(part,recv[size],"recv mismatch");
+	  for ( l=0;l<ldim;l++ )
+	    REIS(part,recv[l+ldim*size],"recv mismatch");
 	  size++;
 	}
     REIS( size, n, "size mismatch" );
@@ -176,6 +181,7 @@ int main( int argc, char *argv[] )
 
   /* blindsend dbl with 0,1 */
   {
+    REF_INT ldim = 1; /* must be 1 for this test */
     REF_INT i, part, size, n;
     REF_DBL *send;
     REF_INT *proc;
@@ -197,7 +203,7 @@ int main( int argc, char *argv[] )
 	  size++;
 	}
 
-    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, size,
+    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, ldim, size,
 			    (void **)&recv, &n, REF_DBL_TYPE ),
 	 "blindsend");
 
