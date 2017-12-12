@@ -132,14 +132,14 @@ int main( int argc, char *argv[] )
 
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      size += MIN(part,10);
+      size += MIN(part,3);
 
     ref_malloc( proc, size, REF_INT );
     ref_malloc( send, size, REF_INT );
     
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MIN(part,10);i++ )
+      for ( i=0;i<MIN(part,3);i++ )
 	{
 	  proc[size] = part;
 	  send[size] = ref_mpi_rank(ref_mpi);
@@ -152,7 +152,7 @@ int main( int argc, char *argv[] )
 
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),10);i++ )
+      for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),3);i++ )
 	{
 	  REIS(part,recv[size],"recv mismatch");
 	  size++;
@@ -173,14 +173,14 @@ int main( int argc, char *argv[] )
 
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      size += MAX(1,MIN(part,10));
+      size += MAX(1,MIN(part,3));
 
     ref_malloc( proc, size, REF_INT );
     ref_malloc( send, size, REF_DBL );
     
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MAX(1,MIN(part,10));i++ )
+      for ( i=0;i<MAX(1,MIN(part,3));i++ )
 	{
 	  proc[size] = part;
 	  send[size] = (REF_DBL)ref_mpi_rank(ref_mpi);
@@ -193,7 +193,7 @@ int main( int argc, char *argv[] )
 
     size = 0;
     each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MAX(1,MIN(ref_mpi_rank(ref_mpi),10));i++ )
+      for ( i=0;i<MAX(1,MIN(ref_mpi_rank(ref_mpi),3));i++ )
 	{
 	  RWDS((REF_DBL)part,recv[size],-1,"recv mismatch");
 	  size++;
