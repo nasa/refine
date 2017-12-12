@@ -859,37 +859,115 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
-  REF_DBL xyz[3], error;
+  REF_DBL error;
   REF_INT i;
+  REF_INT receptor, n_recept, donation, n_donor;
+  REF_DBL *recept_xyz, *donor_xyz, *recept_bary, *donor_bary;
+  REF_INT *donor_node, *donor_ret, *donor_cell;
+  REF_INT *recept_proc,*recept_ret, *recept_node, *recept_cell;
 
   *max_error = 0.0;
 
   RNS( ref_interp->cell, "locate first" );
+  RNS( ref_interp->part, "locate first" );
   RNS( ref_interp->bary, "locate first" );
 
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
+  n_recept = 0;
   each_ref_node_valid_node( to_node, node )
+    if ( ref_node_owned(to_node,node) )
+      {
+	n_recept++;
+      }
+  
+  ref_malloc( recept_bary, 4*n_recept, REF_DBL );
+  ref_malloc( recept_cell, n_recept, REF_INT );
+  ref_malloc( recept_node, n_recept, REF_INT );
+  ref_malloc( recept_ret,  n_recept, REF_INT );
+  ref_malloc( recept_proc, n_recept, REF_INT );
+
+  n_recept = 0;
+  each_ref_node_valid_node( to_node, node )
+    if ( ref_node_owned(to_node,node) )
+      {
+	RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized" );
+	for(i=0;i<4;i++)
+	  recept_bary[i+4*n_recept] = ref_interp->bary[i+4*node];
+	recept_proc[n_recept] = ref_interp->part[node];
+	recept_cell[n_recept] = ref_interp->cell[node];
+	recept_node[n_recept] = node;
+	recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+	n_recept++;
+      }
+
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_cell, 1, n_recept,
+			  (void **)(&donor_cell), &n_donor, REF_INT_TYPE ),
+       "blind send cell" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_ret, 1, n_recept,
+			  (void **)(&donor_ret), &n_donor, REF_INT_TYPE ),
+       "blind send ret" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_node, 1, n_recept,
+			  (void **)(&donor_node), &n_donor, REF_INT_TYPE ),
+       "blind send node" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_bary, 4, n_recept,
+			  (void **)(&donor_bary), &n_donor, REF_DBL_TYPE ),
+       "blind send bary" );
+
+  ref_free(recept_proc);
+  ref_free(recept_ret);
+  ref_free(recept_node);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  ref_malloc( donor_xyz, 3*n_donor, REF_DBL );
+
+  for ( donation = 0 ; donation < n_donor; donation++ )
     {
-      RSS( ref_cell_nodes( from_cell, ref_interp->cell[node], nodes),
+      RSS( ref_cell_nodes( from_cell, donor_cell[donation], nodes),
 	   "node needs to be localized" );
       for(i=0;i<3;i++)
-	xyz[i] = 
-	  ref_interp->bary[0+4*node] *
+	donor_xyz[i+3*donation] = 
+	  donor_bary[0+4*donation] *
 	  ref_node_xyz(from_node,i,nodes[0]) +
-	  ref_interp->bary[1+4*node] *
+	  donor_bary[1+4*donation] *
 	  ref_node_xyz(from_node,i,nodes[1]) +
-	  ref_interp->bary[2+4*node] *
+	  donor_bary[2+4*donation] *
 	  ref_node_xyz(from_node,i,nodes[2]) +
-	  ref_interp->bary[3+4*node] *
+	  donor_bary[3+4*donation] *
 	  ref_node_xyz(from_node,i,nodes[3]);
+    }
+  ref_free(donor_cell);
+  ref_free(donor_bary);
+
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  donor_ret, (void *)donor_xyz, 3, n_donor,
+			  (void **)(&recept_xyz), &n_recept, REF_DBL_TYPE ),
+       "blind send bary" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  donor_ret, (void *)donor_node, 1, n_donor,
+			  (void **)(&recept_node), &n_recept, REF_INT_TYPE ),
+       "blind send node" );
+  ref_free(donor_xyz);
+  ref_free(donor_node);
+  ref_free(donor_ret);
+
+  for ( receptor = 0 ; receptor < n_recept; receptor++ )
+    {
+      node = recept_node[receptor];
       error = 
-	pow(xyz[0]-ref_node_xyz(to_node,0,node),2) + 
-	pow(xyz[1]-ref_node_xyz(to_node,1,node),2) + 
-	pow(xyz[2]-ref_node_xyz(to_node,2,node),2) ;
+	pow(recept_xyz[0+3*receptor]-ref_node_xyz(to_node,0,node),2) + 
+	pow(recept_xyz[1+3*receptor]-ref_node_xyz(to_node,1,node),2) + 
+	pow(recept_xyz[2+3*receptor]-ref_node_xyz(to_node,2,node),2) ;
       *max_error = MAX( *max_error, sqrt(error) );
     }
+  ref_free(recept_node);
+  ref_free(recept_xyz);
+ 
+  error = *max_error;
+  RSS( ref_mpi_max( ref_mpi, &error, max_error, REF_DBL_TYPE ), "max");
 
   return REF_SUCCESS;
 }
@@ -1048,7 +1126,6 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
 
   return REF_SUCCESS;
 }
-
 
 REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
 			   REF_GRID to_grid, const char *filename )
