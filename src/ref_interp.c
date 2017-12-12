@@ -706,7 +706,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   for ( node = 0; node < total_node; node++ )
     if ( ref_mpi_rank(ref_mpi) == from_proc[node] )
       {
-	send_proc[nsend] = ref_mpi_rank(ref_mpi);
+	send_proc[nsend] = source[node];
 	send_node[nsend] = best_node[node];
 	send_cell[nsend] = best_cell[node];
 	RSS( ref_cell_nodes( from_tet, best_cell[node], nodes), "cell" );
@@ -734,7 +734,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
       (ref_interp->n_tree)++;
       node = recv_node[item];
       REIS( REF_EMPTY, ref_interp->cell[node],
-	    "geom already found?" );
+	    "tree already found?" );
       if ( REF_EMPTY != ref_interp->guess[node] )
 	{ /* need to dequeue */
 	  ref_interp->guess[node] = REF_EMPTY;
