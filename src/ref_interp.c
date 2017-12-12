@@ -421,9 +421,6 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
   REF_INT *send_cell, *recv_cell;
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
-  
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
 
   RSS( ref_list_create( &to_geom_list ), "create list" );
   RSS( ref_list_create( &from_geom_list ), "create list" );
@@ -539,6 +536,10 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	}
     }
 
+  RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->n_geom), 1, REF_INT_TYPE ), "as");
+  RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->n_geom_fail), 1, REF_INT_TYPE ), 
+       "as" );
+
   ref_free( recv_node );
   ref_free( recv_cell );
   ref_free( recv_bary );
@@ -648,9 +649,6 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
 
-  if ( ref_mpi_para(ref_mpi) )
-    RSS( REF_IMPLEMENT, "not para" );
-
   ref_malloc_init( ref_interp->guess, 
 		   ref_node_max(to_node), 
 		   REF_INT, REF_EMPTY );
@@ -668,6 +666,14 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
+  if ( ref_mpi_para(ref_mpi) )
+    {
+      if ( ref_mpi_once(ref_mpi) )
+	printf("geom nodes: %d failed, %d successful\n",
+	       ref_interp->n_geom_fail, ref_interp->n_geom);
+      RSS( REF_IMPLEMENT, "not para" );
+    }
+
   RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");

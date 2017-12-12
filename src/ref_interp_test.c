@@ -54,7 +54,7 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_start( argc, argv ), "start" );
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
 
-  if ( argc == 3 && !ref_mpi_para(ref_mpi) )
+  if ( argc == 3 )
     {
       REF_GRID from, to;
       REF_INTERP ref_interp;
