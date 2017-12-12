@@ -444,7 +444,6 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 
   THROW("max steps exceeded");
 
-  return REF_SUCCESS;
 }
 
 static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
