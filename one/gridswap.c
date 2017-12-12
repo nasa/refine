@@ -443,11 +443,11 @@ Grid *gridSwapFace(Grid *grid, Queue *queue, int n0, int n1, int n2 )
   return NULL;
 }
 
-Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 );
-Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 );
-Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 );
-Grid *gridSwapEdge6(Grid *grid, Queue *queue, int n0, int n1 );
-Grid *gridSwapEdge7(Grid *grid, Queue *queue, int n0, int n1 );
+static Grid *gridSwapEdge3(Grid *grid, Queue *queue, int n0, int n1 );
+static Grid *gridSwapEdge4(Grid *grid, Queue *queue, int n0, int n1 );
+static Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 );
+static Grid *gridSwapEdge6(Grid *grid, Queue *queue, int n0, int n1 );
+static Grid *gridSwapEdge7(Grid *grid, Queue *queue, int n0, int n1 );
 
 Grid *gridSwapEdge(Grid *grid, Queue *queue, int n0, int n1 )
 {
@@ -922,10 +922,10 @@ Grid *gridSwapEdge5(Grid *grid, Queue *queue, int n0, int n1 )
   return NULL;
 }
 
-Grid *gridGetCombo6( Grid *grid, double costs[20], 
-		     double *bestcost, int best[4] );
-Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
-			 int nodes[40][4], double costs[20] );
+static Grid *gridGetCombo6( Grid *grid, double costs[20], 
+			    double *bestcost, int best[4] );
+static Grid *gridConstructTet6( Grid *grid, int n0, int n1, 
+				int nodes[40][4], double costs[20] );
 
 Grid *gridSwapEdge6( Grid *grid, Queue *queue, int n0, int n1 )
 {
@@ -1098,9 +1098,9 @@ Grid *gridConstructTet6( Grid *grid, int n0, int n1,
   return grid;
 }
 
-Grid *gridGetCombo7( Grid *grid, double costs[35], 
+static Grid *gridGetCombo7( Grid *grid, double costs[35], 
 		     double *bestcost, int best[4] );
-Grid *gridConstructTet7( Grid *grid, int n0, int n1, 
+static Grid *gridConstructTet7( Grid *grid, int n0, int n1, 
 			 int nodes[70][4], double costs[35] );
 
 Grid *gridSwapEdge7( Grid *grid, Queue *queue, int n0, int n1 )
