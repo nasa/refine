@@ -109,13 +109,10 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-
   {
-    REF_MPI ref_mpi;
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node, tri[4], cell;
-    RSS(ref_mpi_create(&ref_mpi),"create");
     RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     ref_node = ref_grid_node(ref_grid);
     RSS( ref_node_add( ref_node, 0, &node ), "node");
@@ -162,7 +159,6 @@ int main( int argc, char *argv[] )
     RSS( ref_project_edge( ref_grid, 0, 2, 1 ), "proj");
 
     RSS( ref_grid_free( ref_grid ), "free" );
-    RSS( ref_mpi_free( ref_mpi ), "free" );
   }
 
   RSS( ref_mpi_free( ref_mpi ), "free" );
