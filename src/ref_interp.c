@@ -28,6 +28,23 @@
 
 #define MAX_NODE_LIST ( 100 )
 
+/* agents
+ * data: 
+ *  - proc i'm supposed to be on, set to search guess or from to return
+ *  - from node of the search
+ *  - from xyz
+ *  - to guess cell (node to hop parts)
+ *  - to cell
+ *  - to bary
+ *
+ * actions
+ *  - migrate
+ *  - walk (set to migrate after part boundary?)
+ *  - return
+ */
+
+
+
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
 			      REF_GRID from_grid, REF_GRID to_grid )
 {
