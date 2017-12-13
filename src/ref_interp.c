@@ -31,9 +31,9 @@
 /* agents
  * data: 
  *  - proc i'm supposed to be on, set to search guess or from when returning
- *  1 to node of the search
+ *  + to node of the search
  *  - to xyz
- *  1 from guess cell (or global node to hop parts?)
+ *  + from guess cell (or global node to hop parts?)
  *  - from cell
  *  - from bary
  *  - status
