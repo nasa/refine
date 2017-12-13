@@ -152,6 +152,15 @@ int main( int argc, char *argv[] )
     RAS( 7.0e-16 > max_error, "large interp error" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 
+    RSS( ref_interp_create( &ref_interp, to, from ), "make interp" );
+    RSS( ref_interp_locate(ref_interp), "map" );
+    RSS( ref_interp_stats(ref_interp), "min bary" );
+    RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
+    RAS( -0.121 < min_bary, "large extrapolation" );
+    RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
+    RAS( 7.0e-16 > max_error, "large interp error" );
+    RSS( ref_interp_free( ref_interp ), "interp free" );
+
     RSS( ref_grid_free(to),"free");
     RSS( ref_grid_free(from),"free");
   }
@@ -208,6 +217,15 @@ int main( int argc, char *argv[] )
     RAS( -0.241 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
     RAS( 9.0e-16 > max_error, "large interp error" );
+    RSS( ref_interp_free( ref_interp ), "interp free" );
+
+    RSS( ref_interp_create( &ref_interp, to, from ), "make interp" );
+    RSS( ref_interp_locate(ref_interp), "map" );
+    RSS( ref_interp_stats(ref_interp), "min bary" );
+    RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
+    RAS( -0.241 < min_bary, "large extrapolation" );
+    RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
+    RAS( 7.0e-16 > max_error, "large interp error" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 
     RSS( ref_grid_free(to),"free");
