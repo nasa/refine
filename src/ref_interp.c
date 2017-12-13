@@ -31,25 +31,24 @@
 /* agents
  * data: 
  *  - proc i'm supposed to be on, set to search guess or from when returning
- *  1 from node of the search
- *  - from xyz
- *  1 to guess cell (or global node to hop parts?)
- *  - to cell
- *  - to bary
+ *  1 to node of the search
+ *  - to xyz
+ *  1 from guess cell (or global node to hop parts?)
+ *  - from cell
+ *  - from bary
  *  - status
  *    - walking
  *    - found it
  *    - hit boundary
  *
- *  REF_BOOL ref_interp->agent
+ * to prevent multiple agents, don't make a new agent if one is active
+ *  REF_BOOL ref_interp->agent_hired
  *
  * actions
  *  - migrate
  *  - walk (set to migrate after part boundary?)
  *  - return
  *
- * how to prevent two agents? don't make a new agent if one is active
- * 
  */
 
 
