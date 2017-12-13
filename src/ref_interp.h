@@ -29,6 +29,7 @@ END_C_DECLORATION
 
 #include "ref_mpi.h"
 #include "ref_grid.h"
+#include "ref_agents.h"
 #include "ref_list.h"
 
 BEGIN_C_DECLORATION
@@ -49,7 +50,7 @@ struct REF_INTERP_STRUCT {
   REF_DBL *bary;
   REF_DBL inside;
   REF_DBL bound;
-  REF_LIST ref_list;
+  REF_AGENTS ref_agents;
   REF_LIST visualize;
 };
 

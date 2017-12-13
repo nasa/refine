@@ -51,7 +51,7 @@
  *
  */
 
-
+#define ref_interp_mpi(ref_interp) ( (ref_interp)->ref_mpi )
 
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
 			      REF_GRID from_grid, REF_GRID to_grid )
@@ -80,8 +80,9 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
   ref_interp->inside = -1.0e-12; /* inside tolerence */
   ref_interp->bound = -0.1; /* bound tolerence */
 
-  RSS( ref_list_create( &( ref_interp->ref_list ) ), "add list" );
-  RSS( ref_list_create( &( ref_interp->visualize ) ), "add list" );
+  RSS( ref_agents_create( &(ref_interp->ref_agents),
+			  ref_interp_mpi(ref_interp) ), "add agents" );
+  RSS( ref_list_create( &(ref_interp->visualize) ), "add list" );
 
   return REF_SUCCESS;
 }
@@ -91,7 +92,7 @@ REF_STATUS ref_interp_free( REF_INTERP ref_interp )
   if ( NULL == (void *)ref_interp )
     return REF_NULL;
   ref_list_free( ref_interp->visualize );
-  ref_list_free( ref_interp->ref_list );
+  ref_agents_free( ref_interp->ref_agents );
   ref_free( ref_interp->bary );
   ref_free( ref_interp->part );
   ref_free( ref_interp->cell );
@@ -369,7 +370,7 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
       if ( ref_interp->cell[other] == REF_EMPTY &&
 	   ref_interp->guess[other] == REF_EMPTY )
 	{
-	  RSS(ref_list_add(ref_interp->ref_list, other), "enqueue" );
+	  RSS(ref_agents_push(ref_interp->ref_agents, other), "enqueue" );
 	  ref_interp->guess[other] = ref_interp->cell[node];
 	}
     }
@@ -384,9 +385,9 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
 
-  while ( 0 < ref_list_n( ref_interp->ref_list ) )
+  while ( 0 < ref_agents_n( ref_interp->ref_agents ) )
     {
-      RSS( ref_list_pop( ref_interp->ref_list, &node ), "pop queue");
+      RSS( ref_agents_pop( ref_interp->ref_agents, &node ), "pop queue");
       RUS( REF_EMPTY, ref_interp->guess[node], "no guess" );
       REIS( REF_EMPTY, ref_interp->cell[node], "queued to node already found?");
       RSS( ref_interp_enclosing_tet( ref_interp,
@@ -562,7 +563,8 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp )
 	  if ( REF_EMPTY != ref_interp->guess[to_geom_node] )
 	    { /* need to dequeue */
 	      ref_interp->guess[to_geom_node] = REF_EMPTY;
-	      RSS( ref_list_delete( ref_interp->ref_list, to_geom_node ),"deq");
+	      RSS( ref_agents_delete( ref_interp->ref_agents, 
+				      to_geom_node ),"deq");
 	    }
 	  ref_interp->cell[to_geom_node] = recv_cell[from_item];
 	  ref_interp->part[to_geom_node] = recv_proc[from_item];
@@ -771,7 +773,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp )
       if ( REF_EMPTY != ref_interp->guess[node] )
 	{ /* need to dequeue */
 	  ref_interp->guess[node] = REF_EMPTY;
-	  RSS( ref_list_delete( ref_interp->ref_list, node ),"deq");
+	  RSS( ref_agents_delete( ref_interp->ref_agents, node ),"deq");
 	}
       ref_interp->cell[node] = recv_cell[item];
       ref_interp->part[node] = recv_proc[item];
