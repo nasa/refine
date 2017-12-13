@@ -28,13 +28,17 @@
 
 #define MAX_NODE_LIST ( 100 )
 
-REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr )
+REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
+			      REF_GRID from_grid, REF_GRID to_grid )
 {
   REF_INTERP ref_interp;
   
   ref_malloc( *ref_interp_ptr, 1, REF_INTERP_STRUCT );
   ref_interp = ( *ref_interp_ptr );
 
+  ref_interp_from_grid(ref_interp) = from_grid;
+  ref_interp_to_grid(ref_interp) = to_grid;
+  
   ref_interp->instrument = REF_FALSE;
   ref_interp->n_walk = 0;
   ref_interp->walk_steps = 0;
@@ -214,10 +218,11 @@ static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid, 
+REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, 
 				     REF_DBL *xyz, REF_INT guess,
 				     REF_INT *tet, REF_DBL *bary )
 {
+  REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -320,9 +325,9 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp, REF_GRID ref_grid,
 
 }
 
-REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, 
-				       REF_GRID ref_grid, REF_INT node )
-{ 
+REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
+{
+  REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT other;
@@ -345,9 +350,10 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp, 
-				   REF_GRID from_grid, REF_GRID to_grid )
+REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
@@ -358,7 +364,6 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
       RUS( REF_EMPTY, ref_interp->guess[node], "no guess" );
       REIS( REF_EMPTY, ref_interp->cell[node], "queued to node already found?");
       RSS( ref_interp_enclosing_tet( ref_interp,
-				     from_grid,
 				     ref_node_xyz_ptr(to_node,node),
 				     ref_interp->guess[node],
 				     &(ref_interp->cell[node]),
@@ -371,7 +376,7 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp,
       else
 	{
 	  ref_interp->part[node] = ref_mpi_rank(ref_mpi);
-	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node), "push" ); 
+	  RSS( ref_interp_push_onto_queue(ref_interp,node), "push" ); 
 	}
     }
   return REF_SUCCESS;
@@ -406,9 +411,10 @@ REF_STATUS ref_interp_geom_node_list( REF_GRID ref_grid, REF_LIST ref_list )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
-				  REF_GRID from_grid, REF_GRID to_grid )
+REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp )
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
@@ -536,7 +542,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp,
 	  ref_interp->part[to_geom_node] = recv_proc[from_item];
 	  for(i=0;i<4;i++)
 	    ref_interp->bary[i+4*to_geom_node] = recv_bary[i+4*from_item];
-	  RSS( ref_interp_push_onto_queue(ref_interp,to_grid,to_geom_node),
+	  RSS( ref_interp_push_onto_queue(ref_interp,to_geom_node),
 	       "push" );
 	}
       else
@@ -594,9 +600,10 @@ REF_STATUS ref_interp_bounding_sphere( REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_tree( REF_INTERP ref_interp, 
-			    REF_GRID from_grid, REF_GRID to_grid )
+REF_STATUS ref_interp_tree( REF_INTERP ref_interp )
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tet = ref_grid_tet(from_grid);
@@ -744,7 +751,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
       ref_interp->part[node] = recv_proc[item];
       for(i=0;i<4;i++)
 	ref_interp->bary[i+4*node] = recv_bary[i+4*item];
-      RSS( ref_interp_push_onto_queue(ref_interp,to_grid,node),
+      RSS( ref_interp_push_onto_queue(ref_interp,node),
 	   "push" );
     }
 
@@ -786,9 +793,10 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
-			      REF_GRID from_grid, REF_GRID to_grid )
+REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
 
@@ -808,18 +816,18 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
 
-  RSS( ref_interp_geom_nodes( ref_interp, from_grid, to_grid ), "geom nodes");
+  RSS( ref_interp_geom_nodes( ref_interp ), "geom nodes");
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
   if ( !ref_mpi_para(ref_mpi) )
     {
-      RSS( ref_interp_drain_queue( ref_interp, from_grid, to_grid), "drain" );
+      RSS( ref_interp_drain_queue( ref_interp ), "drain" );
       if ( ref_interp->instrument)
 	RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
     }
 
-  RSS( ref_interp_tree( ref_interp, from_grid, to_grid), "tree" );
+  RSS( ref_interp_tree( ref_interp), "tree" );
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
@@ -827,9 +835,9 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp,
 }
 
 REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp, 
-				REF_GRID to_grid,
 				REF_DBL *min_bary )
 {
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(to_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
@@ -859,9 +867,10 @@ REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp,
 }
 
 REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
-				 REF_GRID from_grid, REF_GRID to_grid,
 				 REF_DBL *max_error)
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
@@ -981,9 +990,10 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_stats( REF_INTERP ref_interp, 
-			     REF_GRID from_grid, REF_GRID to_grid)
+REF_STATUS ref_interp_stats( REF_INTERP ref_interp )
 {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_grid_mpi(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT extrapolate = 0;
@@ -1021,8 +1031,8 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   node = extrapolate;
   RSS( ref_mpi_sum( ref_mpi, &node, &extrapolate, 1, REF_INT_TYPE ), "sum");
 
-  RSS( ref_interp_max_error( ref_interp, from_grid, to_grid, &max_error),"me");
-  RSS( ref_interp_min_bary( ref_interp, to_grid, &min_bary),"mb");
+  RSS( ref_interp_max_error( ref_interp, &max_error),"me");
+  RSS( ref_interp_min_bary( ref_interp, &min_bary),"mb");
 
   if ( ref_mpi_once(ref_mpi) )
     {
@@ -1033,9 +1043,9 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
-			   REF_GRID to_grid, const char *filename )
+REF_STATUS ref_interp_tec( REF_INTERP ref_interp, const char *filename )
 {
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_NODE ref_node = ref_grid_node(to_grid); 
   FILE *file;
   REF_INT item;

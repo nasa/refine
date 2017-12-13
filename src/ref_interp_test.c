@@ -69,13 +69,13 @@ int main( int argc, char *argv[] )
       RSS(ref_export_tec_surf( from, "ref_interp_test_from.tec" ),"export" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "export viz" ), "sw start");
       
-      RSS( ref_interp_create( &ref_interp ), "make interp" );
+      RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
       ref_interp->instrument = REF_TRUE;
-      RSS( ref_interp_locate(ref_interp, from, to), "map" );
+      RSS( ref_interp_locate(ref_interp), "map" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "locate" ), "sw start");
-      RSS(ref_interp_tec( ref_interp, to, "ref_interp_test_exhaust.tec" ),"export" );
+      RSS(ref_interp_tec( ref_interp, "ref_interp_test_exhaust.tec" ),"export" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "tec" ), "sw start");
-      RSS( ref_interp_stats(ref_interp, from, to ), "err" );
+      RSS( ref_interp_stats(ref_interp ), "err" );
       RSS( ref_mpi_stopwatch_stop( ref_mpi, "stats" ), "sw start");
 
       
@@ -90,9 +90,14 @@ int main( int argc, char *argv[] )
 
 
   {
+    REF_GRID from, to;
     REF_INTERP ref_interp;
-    RSS( ref_interp_create( &ref_interp ), "make interp" );
+    RSS(ref_grid_create(&from,ref_mpi),"create");
+    RSS(ref_grid_create(&to,ref_mpi),"create");
+    RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
+    RSS(ref_grid_free(to),"free");
+    RSS(ref_grid_free(from),"free");
   }
 
   {
@@ -126,12 +131,12 @@ int main( int argc, char *argv[] )
 	  ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-2;
 	}
 
-    RSS( ref_interp_create( &ref_interp ), "make interp" );
-    RSS( ref_interp_locate(ref_interp, from, to), "map" );
-    RSS( ref_interp_stats(ref_interp, from, to), "min bary" );
-    RSS( ref_interp_min_bary(ref_interp, to, &min_bary), "min bary" );
+    RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
+    RSS( ref_interp_locate(ref_interp), "map" );
+    RSS( ref_interp_stats(ref_interp), "min bary" );
+    RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.121 < min_bary, "large extrapolation" );
-    RSS( ref_interp_max_error(ref_interp, from, to, &max_error), "err" );
+    RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
     RAS( 5.0e-16 > max_error, "large interp error" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 

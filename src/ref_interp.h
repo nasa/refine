@@ -32,6 +32,8 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
+  REF_GRID from_grid;
+  REF_GRID to_grid;
   REF_BOOL instrument;
   REF_INT n_walk;
   REF_INT walk_steps;
@@ -49,23 +51,20 @@ struct REF_INTERP_STRUCT {
   REF_LIST visualize;
 };
 
-#define ref_interp_steps(ref_interp) ( (ref_interp)->steps )
+#define ref_interp_from_grid(ref_interp) ( (ref_interp)->from_grid )
+#define ref_interp_to_grid(ref_interp) ( (ref_interp)->to_grid )
 
-REF_STATUS ref_interp_create( REF_INTERP *ref_interp );
+REF_STATUS ref_interp_create( REF_INTERP *ref_interp, 
+			      REF_GRID from_grid, REF_GRID to_grid );
 
 REF_STATUS ref_interp_free( REF_INTERP ref_interp );
 
-REF_STATUS ref_interp_locate( REF_INTERP ref_interp, 
-			      REF_GRID from_grid, REF_GRID to_grid );
-REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp, 
-				REF_GRID to_grid,
-				REF_DBL *min_bary );
-REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, 
-				 REF_GRID from_grid, REF_GRID to_grid,
-				 REF_DBL *max_error );
-REF_STATUS ref_interp_stats( REF_INTERP ref_interp, 
-			     REF_GRID from_grid, REF_GRID to_grid );
-REF_STATUS ref_interp_tec( REF_INTERP ref_interp, 
-			   REF_GRID to_grid, const char *filename );
+REF_STATUS ref_interp_locate( REF_INTERP ref_interp);
+
+REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp, REF_DBL *min_bary );
+REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, REF_DBL *max_error );
+REF_STATUS ref_interp_stats( REF_INTERP ref_interp );
+
+REF_STATUS ref_interp_tec( REF_INTERP ref_interp, const char *filename );
 
 #endif /* REF_INTERP_H */
