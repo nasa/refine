@@ -822,3 +822,59 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_split_edge_pattern( REF_GRID ref_grid, 
+				   REF_INT first, REF_INT skip )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_INT edge;
+  REF_BOOL allowed, geom_support;
+  REF_INT global, new_node;
+  
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+  
+  for ( edge = first ; edge < ref_edge_n(ref_edge); edge += skip )
+    {    
+      RSS( ref_cell_has_side( ref_grid_tet(ref_grid),
+			      ref_edge_e2n( ref_edge, 0, edge ),
+			      ref_edge_e2n( ref_edge, 1, edge ),
+			      &allowed ), "has side" );
+      if ( !allowed) continue;
+
+      RSS( ref_split_edge_mixed( ref_grid,
+				 ref_edge_e2n( ref_edge, 0, edge ),
+				 ref_edge_e2n( ref_edge, 1, edge ),
+				 &allowed ), "mixed" );
+      if ( !allowed) continue;
+
+      RSS( ref_split_edge_local_tets( ref_grid,
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
+				      &allowed ), "local tet" );
+      if ( !allowed ) continue;
+
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &new_node ), "new node");
+      RSS( ref_node_interpolate_edge( ref_node, 
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
+				      new_node ), "interp new node");
+      RSS( ref_geom_add_between( ref_grid, 
+				 ref_edge_e2n( ref_edge, 0, edge ),
+				 ref_edge_e2n( ref_edge, 1, edge ),
+				 new_node ), "geom new node");
+      RSS( ref_geom_constrain( ref_grid, new_node ), "geom constraint");
+      RSS( ref_geom_supported( ref_grid_geom(ref_grid), new_node,
+			     &geom_support ), "geom support");
+
+      RSS( ref_split_edge( ref_grid,
+			   ref_edge_e2n( ref_edge, 0, edge ),
+			   ref_edge_e2n( ref_edge, 1, edge ),
+			   new_node ), "split" );
+    }
+
+  ref_edge_free( ref_edge );
+
+  return REF_SUCCESS;
+}
+

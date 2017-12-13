@@ -68,6 +68,9 @@ REF_STATUS ref_split_prism_tri_quality( REF_GRID ref_grid,
 					REF_INT new_node,
 					REF_BOOL *allowed );
 
+REF_STATUS ref_split_edge_pattern( REF_GRID ref_grid, 
+				   REF_INT first, REF_INT skip );
+
 END_C_DECLORATION
 
 #endif /* REF_SPLIT_H */
