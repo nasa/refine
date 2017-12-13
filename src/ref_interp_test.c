@@ -47,6 +47,7 @@
 #include "ref_part.h"
 #include  "ref_import.h"
 #include  "ref_migrate.h"
+#include "ref_metric.h"
 
 REF_STATUS ref_interp_setup( REF_INTERP *ref_interp_ptr, REF_MPI ref_mpi )
 {
@@ -111,7 +112,7 @@ int main( int argc, char *argv[] )
     RSS( ref_interp_teardown( ref_interp ), "teardown");
   }
 
-  {
+  { /* bricks */
     REF_GRID from, to;
     REF_INT node;
     char file[] = "ref_interp_test.meshb";
@@ -148,7 +149,65 @@ int main( int argc, char *argv[] )
     RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.121 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
-    RAS( 5.0e-16 > max_error, "large interp error" );
+    RAS( 7.0e-16 > max_error, "large interp error" );
+    RSS( ref_interp_free( ref_interp ), "interp free" );
+
+    RSS( ref_grid_free(to),"free");
+    RSS( ref_grid_free(from),"free");
+  }
+
+  { /* odd/even split bricks */
+    REF_GRID from, to;
+    REF_INT node;
+    char even[] = "ref_interp_test_even.meshb";
+    char odd[] = "ref_interp_test_odd.meshb";
+    REF_INTERP ref_interp;
+    REF_DBL max_error, min_bary;
+
+    if ( ref_mpi_once(ref_mpi) )
+      {
+	REF_GRID ref_grid;
+
+	RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+	RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "m" );
+	RSS( ref_split_edge_pattern( ref_grid, 0, 2 ), "split" );
+	RSS( ref_export_by_extension( ref_grid, even ),"export" );
+	RSS( ref_grid_free(ref_grid),"free");
+
+	RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+	RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "m" );
+	RSS( ref_split_edge_pattern( ref_grid, 1, 2 ), "split" );
+	RSS( ref_export_by_extension( ref_grid, odd ),"export" );
+	RSS( ref_grid_free(ref_grid),"free");
+      }
+    RSS(ref_part_by_extension( &from, ref_mpi, even ), "import" );
+    RSS(ref_part_by_extension( &to, ref_mpi, odd ), "import" );
+    if ( ref_mpi_once(ref_mpi) )
+      {
+	REIS(0, remove( even ), "test clean up");
+	REIS(0, remove( odd ), "test clean up");
+      }
+
+    each_ref_node_valid_node( ref_grid_node(to), node )
+      if ( ( 0.01 < ref_node_xyz(ref_grid_node(to),0,node) &&
+	     0.99 > ref_node_xyz(ref_grid_node(to),0,node) ) ||
+	   ( 0.01 < ref_node_xyz(ref_grid_node(to),1,node) &&
+	     0.99 > ref_node_xyz(ref_grid_node(to),1,node) ) ||
+	   ( 0.01 < ref_node_xyz(ref_grid_node(to),2,node) &&
+	     0.99 > ref_node_xyz(ref_grid_node(to),2,node) ) )
+	{
+	  ref_node_xyz(ref_grid_node(to),0,node) += 1.0e-2;
+	  ref_node_xyz(ref_grid_node(to),1,node) += 2.0e-2;
+	  ref_node_xyz(ref_grid_node(to),2,node) += 4.0e-2;
+	}
+
+    RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
+    RSS( ref_interp_locate(ref_interp), "map" );
+    RSS( ref_interp_stats(ref_interp), "min bary" );
+    RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
+    RAS( -0.241 < min_bary, "large extrapolation" );
+    RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
+    RAS( 9.0e-16 > max_error, "large interp error" );
     RSS( ref_interp_free( ref_interp ), "interp free" );
 
     RSS( ref_grid_free(to),"free");
