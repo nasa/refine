@@ -50,6 +50,20 @@ int main( int argc, char *argv[] )
     RSS(ref_agents_free(ref_agents),"free");
   }
 
+  { /* add bunch testing realloc */
+    REF_INT id, max;
+    REF_AGENTS ref_agents;
+    RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
+
+    max = ref_agents->max;
+    for ( id = 0; id < 30000 ; id++ )
+      RSS(ref_agents_push(ref_agents,id),"add");
+
+    RAS(max < ref_agents->max,"grow max");
+
+    RSS(ref_agents_free(ref_agents),"free");
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
   return 0;
