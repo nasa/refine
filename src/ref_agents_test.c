@@ -36,7 +36,41 @@ int main( int argc, char *argv[] )
     RSS( ref_agents_free( ref_agents ), "agents free" );
   }
 
-  { /* remove max id */
+  { /* remove middle, pop all */
+    REF_INT node;
+    REF_AGENTS ref_agents;
+    RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
+
+    RSS(ref_agents_push(ref_agents,10),"add");
+    RSS(ref_agents_push(ref_agents,11),"add");
+    RSS(ref_agents_push(ref_agents,12),"add");
+
+    RSS(ref_agents_remove(ref_agents,1),"remove middle");
+
+    RSS(ref_agents_pop(ref_agents,&node),"pop");
+    REIS( 12, node, "wrong node");
+    RSS(ref_agents_pop(ref_agents,&node),"pop");
+    REIS( 10, node, "wrong node");
+
+    RSS(ref_agents_free(ref_agents),"free");
+  }
+
+  { /* delete first, last, middle */
+    REF_AGENTS ref_agents;
+    RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
+
+    RSS(ref_agents_push(ref_agents,10),"add");
+    RSS(ref_agents_push(ref_agents,11),"add");
+    RSS(ref_agents_push(ref_agents,12),"add");
+
+    RSS(ref_agents_delete(ref_agents,10),"del first");
+    RSS(ref_agents_delete(ref_agents,12),"del last");
+    RSS(ref_agents_delete(ref_agents,11),"del middle");
+
+    RSS(ref_agents_free(ref_agents),"free");
+  }
+
+   { /* remove max id */
     REF_INT id, max;
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
