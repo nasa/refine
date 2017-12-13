@@ -57,6 +57,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
 			      REF_GRID from_grid, REF_GRID to_grid )
 {
   REF_INTERP ref_interp;
+  REF_INT max = ref_node_max(ref_grid_node(to_grid));
   
   ref_malloc( *ref_interp_ptr, 1, REF_INTERP_STRUCT );
   ref_interp = ( *ref_interp_ptr );
@@ -73,10 +74,10 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
   ref_interp->n_geom_fail = 0;
   ref_interp->n_tree = 0;
   ref_interp->tree_cells = 0;
-  ref_interp->guess = NULL;
-  ref_interp->cell = NULL;
-  ref_interp->part = NULL;
-  ref_interp->bary = NULL;
+  ref_malloc_init( ref_interp->guess, max, REF_INT, REF_EMPTY );
+  ref_malloc_init( ref_interp->cell, max, REF_INT, REF_EMPTY );
+  ref_malloc_init( ref_interp->part, max, REF_INT, REF_EMPTY );
+  ref_malloc( ref_interp->bary, 4*max, REF_DBL );
   ref_interp->inside = -1.0e-12; /* inside tolerence */
   ref_interp->bound = -0.1; /* bound tolerence */
 
@@ -823,22 +824,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp )
 
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
 {
-  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
-  REF_NODE to_node = ref_grid_node(to_grid);
-
-  ref_malloc_init( ref_interp->guess, 
-		   ref_node_max(to_node), 
-		   REF_INT, REF_EMPTY );
-  ref_malloc_init( ref_interp->cell, 
-		   ref_node_max(to_node), 
-		   REF_INT, REF_EMPTY );
-  ref_malloc_init( ref_interp->part, 
-		   ref_node_max(to_node), 
-		   REF_INT, REF_EMPTY );
-  ref_malloc( ref_interp->bary, 
-	      4*ref_node_max(to_node), 
-	      REF_DBL );
 
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_start( ref_mpi ), "locate clock");
@@ -854,7 +840,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
 	RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
     }
 
-  RSS( ref_interp_tree( ref_interp), "tree" );
+  RSS( ref_interp_tree( ref_interp ), "tree" );
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "tree" ), "locate clock");
   
@@ -871,10 +857,6 @@ REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp,
   REF_DBL this_bary;
   
   *min_bary = 1.0;
-
-  RNS( ref_interp->cell, "locate first" );
-  RNS( ref_interp->part, "locate first" );
-  RNS( ref_interp->bary, "locate first" );
 
   each_ref_node_valid_node( to_node, node )
     if ( ref_node_owned(to_node,node) )
@@ -912,10 +894,6 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
   REF_INT *recept_proc,*recept_ret, *recept_node, *recept_cell;
 
   *max_error = 0.0;
-
-  RNS( ref_interp->cell, "locate first" );
-  RNS( ref_interp->part, "locate first" );
-  RNS( ref_interp->bary, "locate first" );
 
   n_recept = 0;
   each_ref_node_valid_node( to_node, node )
@@ -1025,10 +1003,6 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp )
   REF_INT extrapolate = 0;
   REF_INT node;
   REF_DBL this_bary, max_error, min_bary;
-
-  RNS( ref_interp->cell, "locate first" );
-  RNS( ref_interp->part, "locate first" );
-  RNS( ref_interp->bary, "locate first" );
 
   if ( ref_mpi_once(ref_mpi) )
     {
