@@ -145,7 +145,13 @@ int main( int argc, char *argv[] )
 
     RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
     RSS( ref_interp_locate(ref_interp), "map" );
-    RSS( ref_interp_stats(ref_interp), "min bary" );
+    REIS( 8, ref_interp->n_geom, "geom missing" );
+    REIS( 0, ref_interp->n_geom_fail, "geom fail" );
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+	REIS( 26, ref_interp->n_walk, "walk count" );
+	REIS( 30, ref_interp->n_tree, "tree count" );	
+      }
     RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.121 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
@@ -154,7 +160,13 @@ int main( int argc, char *argv[] )
 
     RSS( ref_interp_create( &ref_interp, to, from ), "make interp" );
     RSS( ref_interp_locate(ref_interp), "map" );
-    RSS( ref_interp_stats(ref_interp), "min bary" );
+    REIS( 8, ref_interp->n_geom, "geom missing" );
+    REIS( 0, ref_interp->n_geom_fail, "geom fail" );
+      if ( !ref_mpi_para(ref_mpi) )
+      {
+	REIS( 26, ref_interp->n_walk, "walk count" );
+	REIS( 30, ref_interp->n_tree, "tree count" );	
+      }
     RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.121 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
@@ -212,7 +224,13 @@ int main( int argc, char *argv[] )
 
     RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
     RSS( ref_interp_locate(ref_interp), "map" );
-    RSS( ref_interp_stats(ref_interp), "min bary" );
+    REIS( 8, ref_interp->n_geom, "geom missing" );
+    REIS( 0, ref_interp->n_geom_fail, "geom fail" );
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+	REIS( 129, ref_interp->n_walk, "walk count" );
+	REIS( 66, ref_interp->n_tree, "tree count" );	
+      }
     RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.241 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
@@ -221,7 +239,13 @@ int main( int argc, char *argv[] )
 
     RSS( ref_interp_create( &ref_interp, to, from ), "make interp" );
     RSS( ref_interp_locate(ref_interp), "map" );
-    RSS( ref_interp_stats(ref_interp), "min bary" );
+    REIS( 8, ref_interp->n_geom, "geom missing" );
+    REIS( 0, ref_interp->n_geom_fail, "geom fail" );
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+	REIS( 121, ref_interp->n_walk, "walk count" );
+	REIS( 75, ref_interp->n_tree, "tree count" );	
+      }
     RSS( ref_interp_min_bary(ref_interp, &min_bary), "min bary" );
     RAS( -0.241 < min_bary, "large extrapolation" );
     RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
