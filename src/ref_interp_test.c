@@ -48,6 +48,23 @@
 #include  "ref_import.h"
 #include  "ref_migrate.h"
 
+REF_STATUS ref_interp_setup( REF_INTERP *ref_interp_ptr, REF_MPI ref_mpi )
+{
+  REF_GRID from, to;
+  RSS(ref_grid_create(&from,ref_mpi),"create");
+  RSS(ref_grid_create(&to,ref_mpi),"create");
+  RSS( ref_interp_create( ref_interp_ptr, from, to ), "make interp" );
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_teardown( REF_INTERP ref_interp )
+{
+  RSS(ref_grid_free(ref_interp_from_grid(ref_interp)),"free");
+  RSS(ref_grid_free(ref_interp_to_grid(ref_interp)),"free");
+  RSS( ref_interp_free( ref_interp ), "interp free" );
+  return REF_SUCCESS;
+}
+
 int main( int argc, char *argv[] )
 {
   REF_MPI ref_mpi;
@@ -88,16 +105,10 @@ int main( int argc, char *argv[] )
       return 0;
     }
 
-
   {
-    REF_GRID from, to;
     REF_INTERP ref_interp;
-    RSS(ref_grid_create(&from,ref_mpi),"create");
-    RSS(ref_grid_create(&to,ref_mpi),"create");
-    RSS( ref_interp_create( &ref_interp, from, to ), "make interp" );
-    RSS( ref_interp_free( ref_interp ), "interp free" );
-    RSS(ref_grid_free(to),"free");
-    RSS(ref_grid_free(from),"free");
+    RSS( ref_interp_setup( &ref_interp, ref_mpi ), "setup");
+    RSS( ref_interp_teardown( ref_interp ), "teardown");
   }
 
   {
