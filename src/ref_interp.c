@@ -107,30 +107,30 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT guess, best_guess;
+  REF_INT candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
  
-  best_guess = REF_EMPTY;
+  best_candidate = REF_EMPTY;
   best_bary = -999.0;
-  each_ref_cell_valid_cell( ref_cell, guess)
+  each_ref_cell_valid_cell( ref_cell, candidate)
     {
-      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RSS( ref_cell_nodes( ref_cell, candidate, nodes), "cell" );
       RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
 	   REF_DIV_ZERO, "bary");
       min_bary = MIN( MIN(current_bary[0],current_bary[1]),
 		      MIN(current_bary[2],current_bary[3]));
-      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+      if ( REF_EMPTY == best_candidate || min_bary > best_bary )
 	{
-	  best_guess = guess;
+	  best_candidate = candidate;
 	  best_bary = min_bary;
 	}
     }
   
-  RUS( REF_EMPTY, best_guess, "failed to find cell");
+  RUS( REF_EMPTY, best_candidate, "failed to find cell");
 
-  *cell = best_guess;
-  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  *cell = best_candidate;
+  RSS( ref_cell_nodes( ref_cell, best_candidate, nodes), "cell" );
   RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
   
   return REF_SUCCESS;
@@ -144,31 +144,31 @@ REF_STATUS ref_interp_enclosing_tet_in_list( REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT item, guess, best_guess;
+  REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
  
-  best_guess = REF_EMPTY;
+  best_candidate = REF_EMPTY;
   best_bary = -999.0;
   each_ref_list_item( ref_list, item )
     {
-      guess = ref_list_value( ref_list, item );
-      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      candidate = ref_list_value( ref_list, item );
+      RSS( ref_cell_nodes( ref_cell, candidate, nodes), "cell" );
       RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
 	   REF_DIV_ZERO, "bary");
       min_bary = MIN( MIN(current_bary[0],current_bary[1]),
 		      MIN(current_bary[2],current_bary[3]));
-      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+      if ( REF_EMPTY == best_candidate || min_bary > best_bary )
 	{
-	  best_guess = guess;
+	  best_candidate = candidate;
 	  best_bary = min_bary;
 	}
     }
   
-  RUS( REF_EMPTY, best_guess, "failed to find cell");
+  RUS( REF_EMPTY, best_candidate, "failed to find cell");
 
-  *cell = best_guess;
-  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  *cell = best_candidate;
+  RSS( ref_cell_nodes( ref_cell, best_candidate, nodes), "cell" );
   RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
   
   return REF_SUCCESS;
@@ -181,30 +181,30 @@ REF_STATUS ref_interp_exhaustive_tet_around_node( REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT item, guess, best_guess;
+  REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
  
-  best_guess = REF_EMPTY;
+  best_candidate = REF_EMPTY;
   best_bary = -999.0;
-  each_ref_cell_having_node( ref_cell, node, item, guess )
+  each_ref_cell_having_node( ref_cell, node, item, candidate )
     {
-      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RSS( ref_cell_nodes( ref_cell, candidate, nodes), "cell" );
       RXS( ref_node_bary4( ref_node, nodes, xyz, current_bary ), 
 	   REF_DIV_ZERO, "bary");
       min_bary = MIN( MIN(current_bary[0],current_bary[1]),
 		      MIN(current_bary[2],current_bary[3]));
-      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+      if ( REF_EMPTY == best_candidate || min_bary > best_bary )
 	{
-	  best_guess = guess;
+	  best_candidate = candidate;
 	  best_bary = min_bary;
 	}
     }
   
-  RUS( REF_EMPTY, best_guess, "failed to find cell");
+  RUS( REF_EMPTY, best_candidate, "failed to find cell");
 
-  *cell = best_guess;
-  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  *cell = best_candidate;
+  RSS( ref_cell_nodes( ref_cell, best_candidate, nodes), "cell" );
   RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
   
   return REF_SUCCESS;
