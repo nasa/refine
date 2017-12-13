@@ -70,7 +70,7 @@ int main( int argc, char *argv[] )
     RSS(ref_agents_free(ref_agents),"free");
   }
 
-   { /* remove max id */
+  { /* remove max id */
     REF_INT id, max;
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
