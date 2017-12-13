@@ -54,7 +54,6 @@ struct REF_INTERP_STRUCT {
   REF_LIST visualize;
 };
 
-#define ref_interp_mpi(ref_interp) ( (ref_interp)->ref_mpi )
 #define ref_interp_from_grid(ref_interp) ( (ref_interp)->from_grid )
 #define ref_interp_to_grid(ref_interp) ( (ref_interp)->to_grid )
 
