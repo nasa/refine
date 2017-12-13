@@ -371,7 +371,8 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
       if ( ref_interp->cell[other] == REF_EMPTY &&
 	   ref_interp->guess[other] == REF_EMPTY )
 	{
-	  RSS(ref_agents_push(ref_interp->ref_agents, other), "enqueue" );
+	  RSS(ref_agents_push(ref_interp->ref_agents, 
+			      other, ref_interp->cell[node] ), "enqueue" );
 	  ref_interp->guess[other] = ref_interp->cell[node];
 	}
     }
@@ -384,11 +385,12 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_INT node;
+  REF_INT node, guess;
 
   while ( 0 < ref_agents_n( ref_interp->ref_agents ) )
     {
-      RSS( ref_agents_pop( ref_interp->ref_agents, &node ), "pop queue");
+      RSS( ref_agents_pop( ref_interp->ref_agents, 
+			   &node, &guess ), "pop queue");
       RUS( REF_EMPTY, ref_interp->guess[node], "no guess" );
       REIS( REF_EMPTY, ref_interp->cell[node], "queued to node already found?");
       RSS( ref_interp_enclosing_tet( ref_interp,

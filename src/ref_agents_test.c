@@ -37,19 +37,19 @@ int main( int argc, char *argv[] )
   }
 
   { /* remove middle, pop all */
-    REF_INT node;
+    REF_INT node, guess = 0;
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
-    RSS(ref_agents_push(ref_agents,10),"add");
-    RSS(ref_agents_push(ref_agents,11),"add");
-    RSS(ref_agents_push(ref_agents,12),"add");
+    RSS(ref_agents_push(ref_agents,10, guess),"add");
+    RSS(ref_agents_push(ref_agents,11, guess),"add");
+    RSS(ref_agents_push(ref_agents,12, guess),"add");
 
     RSS(ref_agents_remove(ref_agents,1),"remove middle");
 
-    RSS(ref_agents_pop(ref_agents,&node),"pop");
+    RSS(ref_agents_pop(ref_agents,&node,&guess),"pop");
     REIS( 12, node, "wrong node");
-    RSS(ref_agents_pop(ref_agents,&node),"pop");
+    RSS(ref_agents_pop(ref_agents,&node,&guess),"pop");
     REIS( 10, node, "wrong node");
 
     RSS(ref_agents_free(ref_agents),"free");
@@ -57,11 +57,12 @@ int main( int argc, char *argv[] )
 
   { /* delete first, last, middle */
     REF_AGENTS ref_agents;
+    REF_INT guess=0;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
-    RSS(ref_agents_push(ref_agents,10),"add");
-    RSS(ref_agents_push(ref_agents,11),"add");
-    RSS(ref_agents_push(ref_agents,12),"add");
+    RSS(ref_agents_push(ref_agents,10, guess),"add");
+    RSS(ref_agents_push(ref_agents,11, guess),"add");
+    RSS(ref_agents_push(ref_agents,12, guess),"add");
 
     RSS(ref_agents_delete(ref_agents,10),"del first");
     RSS(ref_agents_delete(ref_agents,12),"del last");
@@ -71,13 +72,13 @@ int main( int argc, char *argv[] )
   }
 
   { /* remove max id */
-    REF_INT id, max;
+    REF_INT id, max, guess = 0;
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
     max = ref_agents->max;
     for ( id = 0; id < max ; id++ )
-      RSS(ref_agents_push(ref_agents,id),"add");
+      RSS(ref_agents_push(ref_agents,id,guess),"add");
 
     RSS(ref_agents_remove(ref_agents,max-1),"remove last agents");
 
@@ -85,13 +86,13 @@ int main( int argc, char *argv[] )
   }
 
   { /* add bunch testing realloc */
-    REF_INT id, max;
+    REF_INT id, max, guess = 0;
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
     max = ref_agents->max;
     for ( id = 0; id < 30000 ; id++ )
-      RSS(ref_agents_push(ref_agents,id),"add");
+      RSS(ref_agents_push(ref_agents,id,guess),"add");
 
     RAS(max < ref_agents->max,"grow max");
 
