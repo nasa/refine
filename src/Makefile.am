@@ -6,6 +6,7 @@ lib_LIBRARIES = libref2.a
 libref2_a_SOURCES = \
 	ref_adapt.c \
 	ref_adj.c \
+	ref_agents.c \
 	ref_args.c \
 	ref_axi.c \
 	ref_cavity.c \
@@ -47,7 +48,7 @@ libref2_a_SOURCES = \
 	ref_twod.c \
 	ref_validation.c
 
-include_HEADERS = ref_adapt.h ref_adj.h ref_args.h ref_axi.h \
+include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h \
 	ref_dict.h ref_defs.h ref_edge.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
@@ -114,6 +115,11 @@ TESTS += ref_adj_test
 noinst_PROGRAMS += ref_adj_test
 ref_adj_test_SOURCES = ref_adj_test.c
 ref_adj_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_agents_test
+noinst_PROGRAMS += ref_agents_test
+ref_agents_test_SOURCES = ref_agents_test.c
+ref_agents_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_args_test
 noinst_PROGRAMS += ref_args_test
