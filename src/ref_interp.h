@@ -44,7 +44,7 @@ struct REF_INTERP_STRUCT {
   REF_INT n_geom_fail;
   REF_INT n_tree;
   REF_INT tree_cells;
-  REF_INT *guess;
+  REF_BOOL *agent_hired;
   REF_INT *cell;
   REF_INT *part;
   REF_DBL *bary;
