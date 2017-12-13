@@ -27,11 +27,13 @@ typedef struct REF_INTERP_STRUCT REF_INTERP_STRUCT;
 typedef REF_INTERP_STRUCT * REF_INTERP;
 END_C_DECLORATION
 
+#include "ref_mpi.h"
 #include "ref_grid.h"
 #include "ref_list.h"
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
+  REF_MPI ref_mpi;
   REF_GRID from_grid;
   REF_GRID to_grid;
   REF_BOOL instrument;
@@ -51,6 +53,7 @@ struct REF_INTERP_STRUCT {
   REF_LIST visualize;
 };
 
+#define ref_interp_mpi(ref_interp) ( (ref_interp)->ref_mpi )
 #define ref_interp_from_grid(ref_interp) ( (ref_interp)->from_grid )
 #define ref_interp_to_grid(ref_interp) ( (ref_interp)->to_grid )
 

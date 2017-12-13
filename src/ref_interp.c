@@ -38,6 +38,8 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
 
   ref_interp_from_grid(ref_interp) = from_grid;
   ref_interp_to_grid(ref_interp) = to_grid;
+
+  ref_interp_mpi(ref_interp) = ref_grid_mpi(ref_interp_from_grid(ref_interp));
   
   ref_interp->instrument = REF_FALSE;
   ref_interp->n_walk = 0;
@@ -352,9 +354,8 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 
 REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
 {
-  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
 
@@ -415,7 +416,7 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp )
 {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_LIST to_geom_list, from_geom_list;
@@ -604,7 +605,7 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp )
 {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tet = ref_grid_tet(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
@@ -795,9 +796,8 @@ REF_STATUS ref_interp_tree( REF_INTERP ref_interp )
 
 REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
 {
-  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
 
   ref_malloc_init( ref_interp->guess, 
@@ -838,7 +838,7 @@ REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp,
 				REF_DBL *min_bary )
 {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(to_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT node;
   REF_DBL this_bary;
@@ -871,7 +871,7 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
@@ -992,9 +992,8 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
 
 REF_STATUS ref_interp_stats( REF_INTERP ref_interp )
 {
-  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_MPI ref_mpi = ref_grid_mpi(from_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_INT extrapolate = 0;
   REF_INT node;
