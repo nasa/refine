@@ -36,6 +36,20 @@ int main( int argc, char *argv[] )
     RSS( ref_agents_free( ref_agents ), "agents free" );
   }
 
+  { /* remove max id */
+    REF_INT id, max;
+    REF_AGENTS ref_agents;
+    RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
+
+    max = ref_agents->max;
+    for ( id = 0; id < max ; id++ )
+      RSS(ref_agents_push(ref_agents,id),"add");
+
+    RSS(ref_agents_remove(ref_agents,max-1),"remove last agents");
+
+    RSS(ref_agents_free(ref_agents),"free");
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
   return 0;

@@ -68,6 +68,23 @@ REF_STATUS ref_agents_free( REF_AGENTS ref_agents )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
+{
+  REF_INT id;
+  for ( id = 0 ; id < ref_agent_max(ref_agents) ; id++ )
+    {
+      printf("%2d: %2d node %2d prev %2d next\n",
+	     id,
+	     ref_agent_node(ref_agents,id),
+	     ref_agent_previous(ref_agents,id),
+	     ref_agent_next(ref_agents,id));
+    }
+  printf("%d n %d max %d blank %d last\n",
+	 ref_agents->n, ref_agents->max, ref_agents->blank, ref_agents->last );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, REF_INT node )
 {
   REF_INT id;
@@ -91,6 +108,7 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents, REF_INT node )
     }
 
   id = ref_agents->blank;
+  ref_agents->blank = ref_agent_next(ref_agents,id);
 
   if ( REF_EMPTY != ref_agents->last )
     ref_agent_next(ref_agents,ref_agents->last) = id;
@@ -99,7 +117,6 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents, REF_INT node )
   ref_agent_next(ref_agents,id) = REF_EMPTY;
   ref_agent_node(ref_agents,id) = node;
 
-  ref_agents->blank = ref_agent_next(ref_agents,id);
   ref_agents->last = id;
 
   ref_agents_n(ref_agents)++;
