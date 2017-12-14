@@ -32,6 +32,7 @@ typedef enum REF_AGENT_MODES { REF_AGENT_UNUSED,
 			       REF_AGENT_AT_BOUNDARY,
 			       REF_AGENT_HOP_PART,
 			       REF_AGENT_ENCLOSING,
+			       REF_AGENT_NEW,
 			       REF_AGENT_MODE_LAST } REF_AGENT_MODE;
 END_C_DECLORATION
 
@@ -103,5 +104,7 @@ REF_STATUS ref_agents_pop( REF_AGENTS ref_agents,
 			   REF_INT *node, REF_INT *part,
 			   REF_INT *seed, REF_DBL *xyz );
 REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node );
+
+REF_STATUS ref_agents_migrate( REF_AGENTS ref_agents );
 
 #endif /* REF_AGENTS_H */

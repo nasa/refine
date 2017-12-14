@@ -88,11 +88,8 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
-			    REF_INT node, REF_INT part,
-			    REF_INT seed, REF_DBL *xyz )
+REF_STATUS ref_agents_new( REF_AGENTS ref_agents, REF_INT *id )
 {
-  REF_INT i, id;
 
   if ( REF_EMPTY == ref_agents->blank )
     {
@@ -112,16 +109,32 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
       ref_agents->blank = orig;
     }
 
-  id = ref_agents->blank;
-  ref_agents->blank = ref_agent_next(ref_agents,id);
+  *id = ref_agents->blank;
+  ref_agents->blank = ref_agent_next(ref_agents,*id);
 
   if ( REF_EMPTY != ref_agents->last )
-    ref_agent_next(ref_agents,ref_agents->last) = id;
+    ref_agent_next(ref_agents,ref_agents->last) = *id;
+
+  ref_agent_mode(ref_agents,*id) = REF_AGENT_NEW;
+  ref_agent_previous(ref_agents,*id) = ref_agents->last;
+  ref_agent_next(ref_agents,*id) = REF_EMPTY;
+
+  ref_agents->last = *id;
+
+  ref_agents_n(ref_agents)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
+			    REF_INT node, REF_INT part,
+			    REF_INT seed, REF_DBL *xyz )
+{
+  REF_INT i, id;
+
+  RSS( ref_agents_new( ref_agents, &id ), "new" );
 
   ref_agent_mode(ref_agents,id) = REF_AGENT_WALKING;
-  ref_agent_previous(ref_agents,id) = ref_agents->last;
-  ref_agent_next(ref_agents,id) = REF_EMPTY;
-
   ref_agent_home(ref_agents,id) = ref_mpi_rank(ref_agents->ref_mpi);
   ref_agent_node(ref_agents,id) = node;
   ref_agent_part(ref_agents,id) = part;
@@ -129,10 +142,6 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
   ref_agent_step(ref_agents,id) = 0;
   for (i=0;i<3;i++)
     ref_agent_xyz(ref_agents,i,id) = xyz[i];
- 
-  ref_agents->last = id;
-
-  ref_agents_n(ref_agents)++;
 
   return REF_SUCCESS;
 }
@@ -226,3 +235,77 @@ REF_STATUS ref_agents_dest( REF_AGENTS ref_agents, REF_INT id, REF_INT *dest )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_agents_migrate( REF_AGENTS ref_agents )
+{
+  REF_MPI ref_mpi = ref_agents->ref_mpi;
+  REF_INT i, id, nsend, nrecv, dest, rec;
+  REF_INT n_ints, n_dbls;
+  REF_INT *destination, *send_int, *recv_int;
+  REF_DBL *send_dbl, *recv_dbl;
+  nsend = 0;
+  each_active_ref_agent( ref_agents, id )
+    {
+      RSS( ref_agents_dest( ref_agents, id, &dest ), "dest" );
+      if ( ref_mpi_rank(ref_mpi) != dest )
+	{
+	  nsend++;
+	}
+    }
+  n_ints = 6;
+  n_dbls = 7;
+  ref_malloc_init( destination, nsend, REF_INT, REF_EMPTY );
+  ref_malloc_init( send_int, nsend*n_ints, REF_INT, REF_EMPTY );
+  ref_malloc_init( send_dbl, nsend*n_dbls, REF_DBL, 0.0 );
+  nsend = 0;
+  each_active_ref_agent( ref_agents, id )
+    {
+      RSS( ref_agents_dest( ref_agents, id, &dest ), "dest" );
+      if ( ref_mpi_rank(ref_mpi) != dest )
+	{
+	  destination[nsend] = dest;
+	  send_int[0+nsend*n_ints] = (REF_INT)ref_agent_mode(ref_agents,id);
+	  send_int[1+nsend*n_ints] = ref_agent_home(ref_agents,id);
+	  send_int[2+nsend*n_ints] = ref_agent_node(ref_agents,id);
+	  send_int[3+nsend*n_ints] = ref_agent_part(ref_agents,id);
+	  send_int[4+nsend*n_ints] = ref_agent_seed(ref_agents,id);
+	  send_int[5+nsend*n_ints] = ref_agent_step(ref_agents,id);
+
+	  for(i=0;i<3;i++)
+	    send_dbl[i+nsend*n_dbls] = ref_agent_xyz(ref_agents,i,id);
+	  for(i=0;i<4;i++)
+	    send_dbl[3+i+nsend*n_dbls] = ref_agent_bary(ref_agents,i,id);
+
+	  RSS(ref_agents_remove( ref_agents, id ), "poof" );
+
+	  nsend++;
+	}
+    }
+
+  RSS( ref_mpi_blindsend( ref_mpi, destination, (void *)send_int, n_ints, nsend,
+			  (void **)(&recv_int), &nrecv, REF_INT_TYPE ), "is");
+  RSS( ref_mpi_blindsend( ref_mpi, destination, (void *)send_dbl, n_dbls, nsend,
+			  (void **)(&recv_dbl), &nrecv, REF_DBL_TYPE ), "ds");
+  ref_free(send_dbl);
+  ref_free(send_int);
+
+  for (rec=0;rec<nrecv;rec++)
+    {
+      RSS(ref_agents_new( ref_agents, &id ), "new" );
+      ref_agent_mode(ref_agents,id) = (REF_AGENT_MODE)recv_int[0+rec*n_ints];
+      ref_agent_home(ref_agents,id) = recv_int[1+rec*n_ints];
+      ref_agent_node(ref_agents,id) = recv_int[2+rec*n_ints];
+      ref_agent_part(ref_agents,id) = recv_int[3+rec*n_ints];
+      ref_agent_seed(ref_agents,id) = recv_int[4+rec*n_ints];
+      ref_agent_step(ref_agents,id) = recv_int[5+rec*n_ints];
+
+      for(i=0;i<3;i++)
+	ref_agent_xyz(ref_agents,i,id) = recv_dbl[i+rec*n_dbls];
+      for(i=0;i<4;i++)
+	ref_agent_bary(ref_agents,i,id) = recv_dbl[3+i+rec*n_dbls];
+    }
+
+  ref_free(recv_dbl);
+  ref_free(recv_int);
+
+  return REF_SUCCESS;
+}

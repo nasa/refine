@@ -75,10 +75,12 @@ int main( int argc, char *argv[] )
     RSS(ref_agents_push(ref_agents,10, part,seed,xyz),"add");
     RSS(ref_agents_push(ref_agents,11, part,seed,xyz),"add");
     RSS(ref_agents_push(ref_agents,12, part,seed,xyz),"add");
+    REIS( 3, ref_agents_n(ref_agents), "wrong count");
 
     RSS(ref_agents_delete(ref_agents,10),"del first");
     RSS(ref_agents_delete(ref_agents,12),"del last");
     RSS(ref_agents_delete(ref_agents,11),"del middle");
+    REIS( 0, ref_agents_n(ref_agents), "wrong count");
 
     RSS(ref_agents_free(ref_agents),"free");
   }
