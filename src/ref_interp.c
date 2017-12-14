@@ -1037,7 +1037,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
   
   if ( !ref_mpi_para(ref_mpi) )
     {
-      RSS( ref_interp_drain_queue( ref_interp ), "drain" );
+      RSS( ref_interp_update_agents( ref_interp ), "drain" );
       if ( ref_interp->instrument)
 	RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
     }
