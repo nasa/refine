@@ -51,7 +51,7 @@ struct REF_AGENT_STRUCT {
 		 * from cell when ENCLOSE */
   REF_INT step; /* number of cells visited */
   REF_DBL xyz[3]; /* the to xyz that needs an interpolant */
-  REF_DBL bary[3]; /* the from bary of the from cell when ENCLOSE */
+  REF_DBL bary[4]; /* the from bary of the from cell when ENCLOSE */
 };
 struct REF_AGENTS_STRUCT {
   REF_INT n, max;
