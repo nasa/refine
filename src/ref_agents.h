@@ -29,9 +29,9 @@ typedef struct REF_AGENT_STRUCT REF_AGENT_STRUCT;
 typedef REF_AGENT_STRUCT * REF_AGENT;
 typedef enum REF_AGENT_MODES { REF_AGENT_UNUSED, 
 			       REF_AGENT_WALKING, 
-			       REF_AGENT_BOUNDARY,
+			       REF_AGENT_AT_BOUNDARY,
 			       REF_AGENT_HOP_PART,
-			       REF_AGENT_ENCLOSE,
+			       REF_AGENT_ENCLOSING,
 			       REF_AGENT_MODE_LAST } REF_AGENT_MODE;
 END_C_DECLORATION
 
@@ -49,6 +49,7 @@ struct REF_AGENT_STRUCT {
   REF_INT seed; /* cell guess when WALKING or BOUNDARY,
 		 * node guess when HOP_PART
 		 * from cell when ENCLOSE */
+  REF_INT step; /* number of cells visited */
   REF_DBL xyz[3]; /* the to xyz that needs an interpolant */
   REF_DBL bary[3]; /* the from bary of the from cell when ENCLOSE */
 };
@@ -66,12 +67,24 @@ struct REF_AGENTS_STRUCT {
 #define ref_agent_mode(ref_agents,id) ((ref_agents)->agent[(id)].mode)
 #define ref_agent_valid(ref_agents,id)			\
   (REF_AGENT_UNUSED != ref_agent_mode(ref_agents,id))
+#define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
+#define ref_agent_step(ref_agents,id) ((ref_agents)->agent[(id)].step)
+#define ref_agent_seed(ref_agents,id) ((ref_agents)->agent[(id)].seed)
+
+#define ref_agent_xyz(ref_agents,j,id) ((ref_agents)->agent[(id)].xyz[j])
+#define ref_agent_xyz_ptr(ref_agents,id) ((ref_agents)->agent[(id)].xyz)
+#define ref_agent_bary(ref_agents,j,id) ((ref_agents)->agent[(id)].bary[j])
 
 #define each_active_ref_agent( ref_agents, id )	\
   for ( (id) = 0 ;				\
 	(id) < ref_agents_max(ref_agents);	\
 	(id)++ )				\
     if ( ref_agent_valid( ref_agents, id ) )
+
+#define each_ref_agent_step( ref_agents, id, limit )	\
+  for (  ;						\
+	 ref_agent_step(ref_agents,id) < (limit);	\
+	 ref_agent_step(ref_agents,id)++ )
 
 REF_STATUS ref_agents_create( REF_AGENTS *ref_agents, REF_MPI ref_mpi );
 

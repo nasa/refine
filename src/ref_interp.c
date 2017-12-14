@@ -331,6 +331,161 @@ REF_STATUS ref_interp_enclosing_tet( REF_INTERP ref_interp,
 
 }
 
+static REF_STATUS ref_update_agent_seed( REF_INTERP ref_interp, REF_INT id,
+					 REF_INT node0,
+					 REF_INT node1,
+					 REF_INT node2  )
+{
+  REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tets = ref_grid_tet(ref_grid);
+  REF_AGENTS ref_agents = ref_interp->ref_agents;
+  REF_INT face_nodes[4], cell0, cell1;
+
+  face_nodes[0]=node0;
+  face_nodes[1]=node1;
+  face_nodes[2]=node2;
+  face_nodes[3]=node0;
+
+  RSS( ref_cell_with_face( tets, face_nodes, &cell0, &cell1 ), "next" );
+  if ( REF_EMPTY == cell0 )
+    THROW("bary update missing first");
+  if ( REF_EMPTY == cell1 )
+    { 
+      /* test for off proc and  */
+      if ( !ref_node_owned(ref_node,node0) &&
+	   !ref_node_owned(ref_node,node1) &&
+	   !ref_node_owned(ref_node,node2) )
+	RSS( REF_IMPLEMENT, "not para, yet" ); 
+      /* hit boundary, should verify */
+      ref_agent_mode(ref_agents,id) = REF_AGENT_AT_BOUNDARY;
+      return REF_SUCCESS;
+    }
+
+  if ( ref_agent_seed(ref_agents,id) == cell0 )
+    {
+      ref_agent_seed(ref_agents,id) = cell1;
+      return REF_SUCCESS;
+    }
+  if ( ref_agent_seed(ref_agents,id) == cell1 )
+    {
+      ref_agent_seed(ref_agents,id) = cell0;
+      return REF_SUCCESS;
+    }
+
+  return REF_NOT_FOUND;
+}
+
+REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
+{
+  REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i, limit;
+  REF_DBL bary[4];
+  REF_AGENTS ref_agents = ref_interp->ref_agents;
+  
+  limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
+
+  each_ref_agent_step( ref_agents, id, limit )
+    {
+      /* return if no longer walking */
+      if ( REF_AGENT_WALKING != ref_agent_mode(ref_agents,id) )
+	{
+	  return REF_SUCCESS;
+	}
+
+      RSS( ref_cell_nodes( ref_cell, ref_agent_seed(ref_agents,id), 
+			   nodes), "cell" );
+      /* when REF_DIV_ZERO, min bary is preserved */
+      RXS( ref_node_bary4( ref_node, nodes, 
+			   ref_agent_xyz_ptr(ref_agents,id), bary ), 
+	   REF_DIV_ZERO, "bary");
+
+      if ( ref_agent_step(ref_agents,id) > (limit-10) )
+	{
+	  printf("step %d, tet %d, bary %e %e %e %e inside %e\n",
+		 ref_agent_step(ref_agents,id),ref_agent_seed(ref_agents,id),
+		 bary[0],bary[1],bary[2],bary[3],ref_interp->inside);
+	}
+      
+      if ( bary[0] >= ref_interp->inside &&
+	   bary[1] >= ref_interp->inside &&
+	   bary[2] >= ref_interp->inside &&
+	   bary[3] >= ref_interp->inside )
+	{
+	  ref_agent_mode(ref_agents,id) = REF_AGENT_ENCLOSING;
+	  for(i=0;i<4;i++)
+	    ref_agent_bary(ref_agents,i,id) = bary[i];
+	  return REF_SUCCESS;
+	}
+      
+      /* less than */
+      if ( bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[1], nodes[2], nodes[3]), "1 2 3");
+	  continue;
+	}
+
+      if ( bary[1] < bary[0] && bary[1] < bary[3] && bary[1] < bary[2] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[3], nodes[2]), "0 3 2");
+	  continue;
+	}
+
+      if ( bary[2] < bary[0] && bary[2] < bary[1] && bary[2] < bary[3] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[1], nodes[3]), "0 1 3");
+	  continue;
+	}
+
+      if ( bary[3] < bary[0] && bary[3] < bary[2] && bary[3] < bary[1] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[2], nodes[1]), "0 2 1");
+	  continue;
+	}
+      
+      /* less than or equal */
+      if ( bary[0] <= bary[1] && bary[0] <= bary[2] && bary[0] <= bary[3] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[1], nodes[2], nodes[3]), "1 2 3");
+	  continue;
+	}
+
+      if ( bary[1] <= bary[0] && bary[1] <= bary[3] && bary[1] <= bary[2] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[3], nodes[2]), "0 3 2");
+	  continue;
+	}
+
+      if ( bary[2] <= bary[0] && bary[2] <= bary[1] && bary[2] <= bary[3] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[1], nodes[3]), "0 1 3");
+	  continue;
+	}
+
+      if ( bary[3] <= bary[0] && bary[3] <= bary[2] && bary[3] <= bary[1] )
+	{
+	  RSS( ref_update_agent_seed( ref_interp, id,
+				      nodes[0], nodes[2], nodes[1]), "0 2 1");
+	  continue;
+	}
+
+      THROW("unable to find the next step");
+    }
+  
+  THROW("out of iterations");
+
+}
+
 REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 {
   REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
@@ -391,6 +546,21 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
 	  RSS( ref_interp_push_onto_queue(ref_interp,node), "push" ); 
 	}
     }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
+{
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_AGENTS ref_agents = ref_interp->ref_agents;
+  REF_INT id;
+
+  each_active_ref_agent( ref_agents, id )
+    if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
+	 ref_mpi_rank(ref_mpi) == ref_agent_part(ref_agents,id))
+      {
+	RSS( ref_interp_walk_agent( ref_interp, id ), "walking" );
+      }
   return REF_SUCCESS;
 }
 

@@ -30,8 +30,6 @@
 #define ref_agent_home(ref_agents,id) ((ref_agents)->agent[(id)].home)
 #define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
 #define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
-#define ref_agent_seed(ref_agents,id) ((ref_agents)->agent[(id)].seed)
-#define ref_agent_xyz(ref_agents,j,id) ((ref_agents)->agent[(id)].xyz[j])
 
 
 REF_STATUS ref_agents_create( REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi )
@@ -125,7 +123,8 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
   ref_agent_home(ref_agents,id) = ref_mpi_rank(ref_agents->ref_mpi);
   ref_agent_node(ref_agents,id) = node;
   ref_agent_part(ref_agents,id) = part;
-  ref_agent_seed(ref_agents,id) = seed; 
+  ref_agent_seed(ref_agents,id) = seed;
+  ref_agent_step(ref_agents,id) = 0;
   for (i=0;i<3;i++)
     ref_agent_xyz(ref_agents,i,id) = xyz[i];
  
