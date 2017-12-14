@@ -556,46 +556,60 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT i, id, node;
+  REF_INT n_agents;
 
-  each_active_ref_agent( ref_agents, id )
-    if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
-	 ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
-      {
-	RSS( ref_interp_walk_agent( ref_interp, id ), "walking" );
-      }
+  n_agents = ref_agents_n(ref_agents);
+  RSS( ref_mpi_allsum( ref_mpi, &n_agents, 1, REF_INT_TYPE ), "sum");
 
-  each_active_ref_agent( ref_agents, id )
-    if ( REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents,id) &&
-	 ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
-      {
-	node = ref_agent_node(ref_agents,id);
-	RAS( ref_node_valid( ref_node, node ), "not vaild" );
-	RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
-	REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
-	RAS( ref_interp->agent_hired[node], "should have an agent" );
+  while ( n_agents > 0 )
+    {
+      each_active_ref_agent( ref_agents, id )
+	if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
+	     ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+	  {
+	    RSS( ref_interp_walk_agent( ref_interp, id ), "walking" );
+	  }
 
-	ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-	RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );	
-      }
+      each_active_ref_agent( ref_agents, id )
+	if ( REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents,id) &&
+	     ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+	  {
+	    node = ref_agent_node(ref_agents,id);
+	    RAS( ref_node_valid( ref_node, node ), "not vaild" );
+	    RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
+	    REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
+	    RAS( ref_interp->agent_hired[node], "should have an agent" );
 
-  each_active_ref_agent( ref_agents, id )
-    if ( REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents,id) &&
-	 ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
-      {
-	node = ref_agent_node(ref_agents,id);
-	RAS( ref_node_valid( ref_node, node ), "not vaild" );
-	RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
-	REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
-	RAS( ref_interp->agent_hired[node], "should have an agent" );
+	    ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+	    RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );	
+	  }
 
-	ref_interp->cell[node] = ref_agent_seed(ref_agents,id);
-	ref_interp->part[node] = ref_agent_part(ref_agents,id);
-	  for(i=0;i<4;i++)
-	    ref_interp->bary[i] = ref_agent_bary(ref_agents,i,id);
-	ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-	RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );
-	RSS( ref_interp_push_onto_queue(ref_interp,node), "push" );
-      }
+      each_active_ref_agent( ref_agents, id )
+	if ( REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents,id) &&
+	     ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+	  {
+	    node = ref_agent_node(ref_agents,id);
+	    RAS( ref_node_valid( ref_node, node ), "not vaild" );
+	    RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
+	    REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
+	    RAS( ref_interp->agent_hired[node], "should have an agent" );
+
+	    ref_interp->cell[node] = ref_agent_seed(ref_agents,id);
+	    ref_interp->part[node] = ref_agent_part(ref_agents,id);
+	    for(i=0;i<4;i++)
+	      ref_interp->bary[i] = ref_agent_bary(ref_agents,i,id);
+	    (ref_interp->walk_steps) += (ref_agent_step(ref_agents,id)+1);
+	    (ref_interp->n_walk)++;
+
+	    ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+	    RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );
+	    RSS( ref_interp_push_onto_queue(ref_interp,node), "push" );
+	  }
+
+      n_agents = ref_agents_n(ref_agents);
+      RSS( ref_mpi_allsum( ref_mpi, &n_agents, 1, REF_INT_TYPE ), "sum");
+
+    }
 
   return REF_SUCCESS;
 }
