@@ -72,7 +72,7 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
       if ( REF_AGENT_UNUSED != ref_agent_mode(ref_agents,id))
 	printf("%2d: %2d mode %2d prev %2d next\n",
 	       id,
-	       ref_agent_mode(ref_agents,id),
+	       (int)ref_agent_mode(ref_agents,id),
 	       ref_agent_previous(ref_agents,id),
 	       ref_agent_next(ref_agents,id));
     }
