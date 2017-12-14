@@ -504,7 +504,7 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
     {
       other = neighbors[neighbor];
-      /* may need to add ghost seeding? */
+      /* add ghost seeding via REF_AGENT_SUGGESTING mode */
       if ( ref_node_owned( ref_node, other ) &&
 	   ref_interp->cell[other] == REF_EMPTY &&
 	   !(ref_interp->agent_hired[other]) )
@@ -551,16 +551,52 @@ REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
 
 REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
 {
+  REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
-  REF_INT id;
+  REF_INT i, id, node;
 
   each_active_ref_agent( ref_agents, id )
     if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
-	 ref_mpi_rank(ref_mpi) == ref_agent_part(ref_agents,id))
+	 ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
       {
 	RSS( ref_interp_walk_agent( ref_interp, id ), "walking" );
       }
+
+  each_active_ref_agent( ref_agents, id )
+    if ( REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents,id) &&
+	 ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+      {
+	node = ref_agent_node(ref_agents,id);
+	RAS( ref_node_valid( ref_node, node ), "not vaild" );
+	RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
+	REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
+	RAS( ref_interp->agent_hired[node], "should have an agent" );
+
+	ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+	RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );	
+      }
+
+  each_active_ref_agent( ref_agents, id )
+    if ( REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents,id) &&
+	 ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+      {
+	node = ref_agent_node(ref_agents,id);
+	RAS( ref_node_valid( ref_node, node ), "not vaild" );
+	RAS( ref_node_owned( ref_node, node ), "ghost, not owned" );
+	REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
+	RAS( ref_interp->agent_hired[node], "should have an agent" );
+
+	ref_interp->cell[node] = ref_agent_seed(ref_agents,id);
+	ref_interp->part[node] = ref_agent_part(ref_agents,id);
+	  for(i=0;i<4;i++)
+	    ref_interp->bary[i] = ref_agent_bary(ref_agents,i,id);
+	ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+	RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );
+	RSS( ref_interp_push_onto_queue(ref_interp,node), "push" );
+      }
+
   return REF_SUCCESS;
 }
 

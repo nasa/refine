@@ -67,9 +67,12 @@ struct REF_AGENTS_STRUCT {
 #define ref_agent_mode(ref_agents,id) ((ref_agents)->agent[(id)].mode)
 #define ref_agent_valid(ref_agents,id)			\
   (REF_AGENT_UNUSED != ref_agent_mode(ref_agents,id))
+
+#define ref_agent_home(ref_agents,id) ((ref_agents)->agent[(id)].home)
+#define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
 #define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
-#define ref_agent_step(ref_agents,id) ((ref_agents)->agent[(id)].step)
 #define ref_agent_seed(ref_agents,id) ((ref_agents)->agent[(id)].seed)
+#define ref_agent_step(ref_agents,id) ((ref_agents)->agent[(id)].step)
 
 #define ref_agent_xyz(ref_agents,j,id) ((ref_agents)->agent[(id)].xyz[j])
 #define ref_agent_xyz_ptr(ref_agents,id) ((ref_agents)->agent[(id)].xyz)
