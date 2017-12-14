@@ -27,11 +27,6 @@
 #define ref_agent_previous(ref_agents,id) ((ref_agents)->agent[(id)].previous)
 #define ref_agent_next(ref_agents,id) ((ref_agents)->agent[(id)].next)
 
-#define ref_agent_home(ref_agents,id) ((ref_agents)->agent[(id)].home)
-#define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
-#define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
-
-
 REF_STATUS ref_agents_create( REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi )
 {
   REF_AGENTS ref_agents;
