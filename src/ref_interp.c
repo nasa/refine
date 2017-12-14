@@ -392,6 +392,7 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
 {
   REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT i, id, node;
@@ -407,6 +408,21 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
 	     ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
 	  {
 	    RSS( ref_interp_walk_agent( ref_interp, id ), "walking" );
+	  }
+
+      RSS( ref_agents_migrate( ref_agents ), "send it" );
+
+      each_active_ref_agent( ref_agents, id )
+	if ( REF_AGENT_HOP_PART == ref_agent_mode(ref_agents,id) &&
+	     ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+	  {
+	    RSS( ref_node_local( ref_node, ref_agent_seed(ref_agents,id), 
+				 &node), "localize" );
+	    ref_agent_mode(ref_agents,id) = REF_AGENT_WALKING;
+	    /* pick best from orbit? */
+	    ref_agent_seed(ref_agents,id) = ref_cell_first_with( ref_cell, 
+								 node );
+	    ref_agent_part(ref_agents,id) = ref_mpi_rank(ref_mpi);
 	  }
 
       each_active_ref_agent( ref_agents, id )
