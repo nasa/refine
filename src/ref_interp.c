@@ -28,29 +28,6 @@
 
 #define MAX_NODE_LIST ( 100 )
 
-/* agents
- * data: 
- *  - proc i'm supposed to be on, set to search guess or from when returning
- *  + to node of the search
- *  + to xyz
- *  + from guess cell (or global node to hop parts?)
- *  - from cell
- *  - from bary
- *  - status
- *    - walking
- *    - found it
- *    - hit boundary
- *
- * to prevent multiple agents, don't make a new agent if one is active
- *  REF_BOOL ref_interp->agent_hired
- *
- * actions
- *  - migrate
- *  - walk (set to migrate after part boundary?)
- *  - return
- *
- */
-
 #define ref_interp_mpi(ref_interp) ( (ref_interp)->ref_mpi )
 
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
