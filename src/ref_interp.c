@@ -374,7 +374,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 	{
 	  ref_interp->agent_hired[other] = REF_TRUE;
 	  RSS(ref_agents_push(ref_interp->ref_agents, 
-			      other, ref_interp->cell[node],
+			      other,
+			      ref_interp->part[node],
+			      ref_interp->cell[node],
 			      ref_node_xyz_ptr(ref_node,other) ), "enqueue" );
 	}
     }
@@ -385,19 +387,19 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 REF_STATUS ref_interp_drain_queue( REF_INTERP ref_interp )
 {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
-  REF_INT node, guess;
+  REF_INT node, part, seed_cell;
   REF_DBL xyz[3];
 
   while ( 0 < ref_agents_n( ref_interp->ref_agents ) )
     {
       RSS( ref_agents_pop( ref_interp->ref_agents, 
-			   &node, &guess, xyz ), "pop queue");
+			   &node, &part, &seed_cell, xyz ), "pop queue");
       RAS( ref_interp->agent_hired[node], "should have an agent" );
       ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
       REIS( REF_EMPTY, ref_interp->cell[node], "queued to node already found?");
       RSS( ref_interp_enclosing_tet( ref_interp,
 				     xyz,
-				     guess,
+				     seed_cell,
 				     &(ref_interp->cell[node]),
 				     &(ref_interp->bary[4*node]) ), 
 	   "walk");

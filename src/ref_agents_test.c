@@ -37,20 +37,20 @@ int main( int argc, char *argv[] )
   }
 
   { /* remove middle, pop all */
-    REF_INT node, guess = 0;
+    REF_INT node, part = 0, seed_cell = 0;
     REF_DBL xyz[] = {1.0,2.0,3.0};
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
-    RSS(ref_agents_push(ref_agents,10, guess,xyz),"add");
-    RSS(ref_agents_push(ref_agents,11, guess,xyz),"add");
-    RSS(ref_agents_push(ref_agents,12, guess,xyz),"add");
+    RSS(ref_agents_push(ref_agents,10, part,seed_cell,xyz),"add");
+    RSS(ref_agents_push(ref_agents,11, part,seed_cell,xyz),"add");
+    RSS(ref_agents_push(ref_agents,12, part,seed_cell,xyz),"add");
 
     RSS(ref_agents_remove(ref_agents,1),"remove middle");
 
-    RSS(ref_agents_pop(ref_agents,&node,&guess,xyz),"pop");
+    RSS(ref_agents_pop(ref_agents,&node,&part,&seed_cell,xyz),"pop");
     REIS( 12, node, "wrong node");
-    RSS(ref_agents_pop(ref_agents,&node,&guess,xyz),"pop");
+    RSS(ref_agents_pop(ref_agents,&node,&part,&seed_cell,xyz),"pop");
     REIS( 10, node, "wrong node");
 
     RSS(ref_agents_free(ref_agents),"free");
@@ -58,13 +58,13 @@ int main( int argc, char *argv[] )
 
   { /* delete first, last, middle */
     REF_AGENTS ref_agents;
-    REF_INT guess=0;
+    REF_INT part= 0, seed_cell=0;
     REF_DBL xyz[] = {1.0,2.0,3.0};
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
-    RSS(ref_agents_push(ref_agents,10, guess,xyz),"add");
-    RSS(ref_agents_push(ref_agents,11, guess,xyz),"add");
-    RSS(ref_agents_push(ref_agents,12, guess,xyz),"add");
+    RSS(ref_agents_push(ref_agents,10, part,seed_cell,xyz),"add");
+    RSS(ref_agents_push(ref_agents,11, part,seed_cell,xyz),"add");
+    RSS(ref_agents_push(ref_agents,12, part,seed_cell,xyz),"add");
 
     RSS(ref_agents_delete(ref_agents,10),"del first");
     RSS(ref_agents_delete(ref_agents,12),"del last");
@@ -74,14 +74,14 @@ int main( int argc, char *argv[] )
   }
 
   { /* remove max id */
-    REF_INT id, max, guess = 0;
+    REF_INT id, max, part = 0, seed_cell = 0;
     REF_DBL xyz[] = {1.0,2.0,3.0};
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
     max = ref_agents->max;
     for ( id = 0; id < max ; id++ )
-      RSS(ref_agents_push(ref_agents,id,guess,xyz),"add");
+      RSS(ref_agents_push(ref_agents,id,part,seed_cell,xyz),"add");
 
     RSS(ref_agents_remove(ref_agents,max-1),"remove last agents");
 
@@ -89,14 +89,14 @@ int main( int argc, char *argv[] )
   }
 
   { /* add bunch testing realloc */
-    REF_INT id, max, guess = 0;
+    REF_INT id, max, part = 0, seed_cell = 0;
     REF_DBL xyz[] = {1.0,2.0,3.0};
     REF_AGENTS ref_agents;
     RSS(ref_agents_create(&ref_agents,ref_mpi),"create");
 
     max = ref_agents->max;
     for ( id = 0; id < 30000 ; id++ )
-      RSS(ref_agents_push(ref_agents,id,guess,xyz),"add");
+      RSS(ref_agents_push(ref_agents,id,part,seed_cell,xyz),"add");
 
     RAS(max < ref_agents->max,"grow max");
 
