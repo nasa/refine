@@ -32,7 +32,7 @@
  * data: 
  *  - proc i'm supposed to be on, set to search guess or from when returning
  *  + to node of the search
- *  - to xyz
+ *  + to xyz
  *  + from guess cell (or global node to hop parts?)
  *  - from cell
  *  - from bary

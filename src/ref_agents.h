@@ -27,6 +27,11 @@ typedef struct REF_AGENTS_STRUCT REF_AGENTS_STRUCT;
 typedef REF_AGENTS_STRUCT * REF_AGENTS;
 typedef struct REF_AGENT_STRUCT REF_AGENT_STRUCT;
 typedef REF_AGENT_STRUCT * REF_AGENT;
+typedef enum REF_AGENT_MODES { REF_AGENT_WALKING, 
+			       REF_AGENT_BOUNDARY,
+			       REF_AGENT_HOP_PART,
+			       REF_AGENT_ENCLOSE,
+			       REF_AGENT_MODE_LAST } REF_AGENT_MODE;
 END_C_DECLORATION
 
 #include "ref_mpi.h"
@@ -36,6 +41,7 @@ struct REF_AGENT_STRUCT {
   REF_INT previous;
   REF_INT next;
   
+  REF_AGENT_MODE mode;
   REF_INT node;
   REF_INT part;
   REF_INT seed_cell;
