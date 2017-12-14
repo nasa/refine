@@ -204,3 +204,25 @@ REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_agents_dest( REF_AGENTS ref_agents, REF_INT id, REF_INT *dest )
+{
+  *dest = REF_EMPTY;
+  switch (ref_agent_mode(ref_agents,id))
+    {
+    case REF_AGENT_WALKING: 
+      *dest = ref_agent_part(ref_agents,id);
+      break;
+    case REF_AGENT_AT_BOUNDARY: 
+      *dest = ref_agent_home(ref_agents,id); 
+      break;
+    case REF_AGENT_HOP_PART:
+      *dest = ref_agent_part(ref_agents,id);
+      break;
+    case REF_AGENT_ENCLOSING:
+      *dest = ref_agent_home(ref_agents,id);
+      break;
+    default: THROW("has no dest");
+    }
+  return REF_SUCCESS;
+}
+
