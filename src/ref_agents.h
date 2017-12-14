@@ -38,14 +38,18 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_AGENT_STRUCT {
-  REF_INT previous;
+  REF_INT previous;   /* agent list navigation */
   REF_INT next;
   
   REF_AGENT_MODE mode;
-  REF_INT node;
-  REF_INT part;
-  REF_INT seed;
-  REF_DBL xyz[3];
+  REF_INT home; /* mpi rank of the to node that needs an interpolant */
+  REF_INT node; /* the to node that needs an interpolant */
+  REF_INT part; /* mpi rank of the seed */
+  REF_INT seed; /* cell guess when WALKING or BOUNDARY,
+		 * node guess when HOP_PART
+		 * from cell when ENCLOSE */
+  REF_DBL xyz[3]; /* the to xyz that needs an interpolant */
+  REF_DBL bary[3]; /* the from bary of the from cell when ENCLOSE */
 };
 struct REF_AGENTS_STRUCT {
   REF_INT n, max;
