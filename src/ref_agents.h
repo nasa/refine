@@ -27,7 +27,8 @@ typedef struct REF_AGENTS_STRUCT REF_AGENTS_STRUCT;
 typedef REF_AGENTS_STRUCT * REF_AGENTS;
 typedef struct REF_AGENT_STRUCT REF_AGENT_STRUCT;
 typedef REF_AGENT_STRUCT * REF_AGENT;
-typedef enum REF_AGENT_MODES { REF_AGENT_WALKING, 
+typedef enum REF_AGENT_MODES { REF_AGENT_UNUSED, 
+			       REF_AGENT_WALKING, 
 			       REF_AGENT_BOUNDARY,
 			       REF_AGENT_HOP_PART,
 			       REF_AGENT_ENCLOSE,
@@ -38,10 +39,10 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_AGENT_STRUCT {
+  REF_AGENT_MODE mode;
   REF_INT previous;   /* agent list navigation */
   REF_INT next;
   
-  REF_AGENT_MODE mode;
   REF_INT home; /* mpi rank of the to node that needs an interpolant */
   REF_INT node; /* the to node that needs an interpolant */
   REF_INT part; /* mpi rank of the seed */
@@ -60,6 +61,17 @@ struct REF_AGENTS_STRUCT {
 };
 
 #define ref_agents_n(ref_agents) ( (ref_agents)->n )
+#define ref_agents_max(ref_agents) ((ref_agents)->max)
+
+#define ref_agent_mode(ref_agents,id) ((ref_agents)->agent[(id)].mode)
+#define ref_agent_valid(ref_agents,id)			\
+  (REF_AGENT_UNUSED != ref_agent_mode(ref_agents,id))
+
+#define each_active_ref_agent( ref_agents, id )	\
+  for ( (id) = 0 ;				\
+	(id) < ref_agents_max(ref_agents);	\
+	(id)++ )				\
+    if ( ref_agent_valid( ref_agents, id ) )
 
 REF_STATUS ref_agents_create( REF_AGENTS *ref_agents, REF_MPI ref_mpi );
 

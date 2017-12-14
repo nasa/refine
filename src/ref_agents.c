@@ -26,16 +26,13 @@
 
 #define ref_agent_previous(ref_agents,id) ((ref_agents)->agent[(id)].previous)
 #define ref_agent_next(ref_agents,id) ((ref_agents)->agent[(id)].next)
-#define ref_agent_valid(ref_agents,id) (ref_agent_node(ref_agents,id) >= 0)
 
-#define ref_agent_mode(ref_agents,id) ((ref_agents)->agent[(id)].mode)
 #define ref_agent_home(ref_agents,id) ((ref_agents)->agent[(id)].home)
 #define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
 #define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
 #define ref_agent_seed(ref_agents,id) ((ref_agents)->agent[(id)].seed)
 #define ref_agent_xyz(ref_agents,j,id) ((ref_agents)->agent[(id)].xyz[j])
 
-#define ref_agent_max(ref_agents) ((ref_agents)->max)
 
 REF_STATUS ref_agents_create( REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi )
 {
@@ -54,11 +51,11 @@ REF_STATUS ref_agents_create( REF_AGENTS *ref_agents_ptr, REF_MPI ref_mpi )
 
   for (id=0;id<ref_agents->max;id++)
     {
-      ref_agent_node(ref_agents,id) = REF_EMPTY;
+      ref_agent_mode(ref_agents,id) = REF_AGENT_UNUSED;
       ref_agent_previous(ref_agents,id) = REF_EMPTY;
       ref_agent_next(ref_agents,id) = id+1;
     }
-  ref_agent_next(ref_agents,ref_agent_max(ref_agents)-1) = REF_EMPTY;
+  ref_agent_next(ref_agents,ref_agents_max(ref_agents)-1) = REF_EMPTY;
   ref_agents->blank = 0;
   ref_agents->last = REF_EMPTY;
 
@@ -77,7 +74,7 @@ REF_STATUS ref_agents_free( REF_AGENTS ref_agents )
 REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
 {
   REF_INT id;
-  for ( id = 0 ; id < ref_agent_max(ref_agents) ; id++ )
+  for ( id = 0 ; id < ref_agents->max ; id++ )
     {
       printf("%2d: %2d node %2d prev %2d next\n",
 	     id,
@@ -105,13 +102,13 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
       ref_agents->max = orig + chunk;
       ref_realloc( ref_agents->agent, ref_agents->max, REF_AGENT_STRUCT);
       
-      for (extra=orig;extra < ref_agent_max(ref_agents); extra++ ) 
+      for (extra=orig;extra < ref_agents->max; extra++ ) 
 	{
-	  ref_agent_node(ref_agents,extra) = REF_EMPTY;
+	  ref_agent_mode(ref_agents,extra) = REF_AGENT_UNUSED;
 	  ref_agent_previous(ref_agents,extra) = REF_EMPTY;
 	  ref_agent_next(ref_agents,extra) = extra+1;
 	}
-      ref_agent_next(ref_agents,ref_agent_max(ref_agents)-1) = REF_EMPTY;
+      ref_agent_next(ref_agents,ref_agents_max(ref_agents)-1) = REF_EMPTY;
       ref_agents->blank = orig;
     }
 
@@ -121,10 +118,10 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
   if ( REF_EMPTY != ref_agents->last )
     ref_agent_next(ref_agents,ref_agents->last) = id;
 
+  ref_agent_mode(ref_agents,id) = REF_AGENT_WALKING;
   ref_agent_previous(ref_agents,id) = ref_agents->last;
   ref_agent_next(ref_agents,id) = REF_EMPTY;
 
-  ref_agent_mode(ref_agents,id) = REF_AGENT_WALKING;
   ref_agent_home(ref_agents,id) = ref_mpi_rank(ref_agents->ref_mpi);
   ref_agent_node(ref_agents,id) = node;
   ref_agent_part(ref_agents,id) = part;
@@ -142,7 +139,7 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
 REF_STATUS ref_agents_remove( REF_AGENTS ref_agents, REF_INT id )
 {
 
-  if ( id < 0 || ref_agent_max(ref_agents) <= id )
+  if ( id < 0 || ref_agents_max(ref_agents) <= id )
     return REF_INVALID;
   if ( !ref_agent_valid(ref_agents,id) )
     return REF_INVALID;
@@ -158,7 +155,7 @@ REF_STATUS ref_agents_remove( REF_AGENTS ref_agents, REF_INT id )
     ref_agent_previous(ref_agents,ref_agent_next(ref_agents,id)) =
       ref_agent_previous(ref_agents,id);
 
-  ref_agent_node(ref_agents,id) = REF_EMPTY;
+  ref_agent_mode(ref_agents,id) = REF_AGENT_UNUSED;
   ref_agent_previous(ref_agents,id) = REF_EMPTY;
   ref_agent_next(ref_agents,id) = ref_agents->blank;
   ref_agents->blank = id;
@@ -197,11 +194,12 @@ REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node )
   if ( node < 0 )
     return REF_INVALID;
 
-  for ( id = 0 ; id < ref_agent_max(ref_agents) ; id++ )
+  each_active_ref_agent( ref_agents, id )
     {
       if ( node == ref_agent_node(ref_agents,id) )
 	RSS( ref_agents_remove( ref_agents, id ), "rm" );
     }
+
   return REF_SUCCESS;
 }
 
