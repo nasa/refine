@@ -69,14 +69,20 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
   REF_INT id;
   for ( id = 0 ; id < ref_agents->max ; id++ )
     {
-      printf("%2d: %2d node %2d prev %2d next\n",
+      printf("%2d: %2d mode %2d prev %2d next\n",
 	     id,
-	     ref_agent_node(ref_agents,id),
+	     ref_agent_mode(ref_agents,id),
 	     ref_agent_previous(ref_agents,id),
 	     ref_agent_next(ref_agents,id));
     }
-  printf("%d n %d max %d blank %d last\n",
+  printf("%d n %d max %d\nblank %d last\n",
 	 ref_agents->n, ref_agents->max, ref_agents->blank, ref_agents->last );
+  printf("%d REF_AGENT_UNUSED\n",REF_AGENT_UNUSED );
+  printf("%d REF_AGENT_WALKING\n",REF_AGENT_WALKING );
+  printf("%d REF_AGENT_AT_BOUNDARY\n",REF_AGENT_AT_BOUNDARY );
+  printf("%d REF_AGENT_HOP_PART\n",REF_AGENT_HOP_PART );
+  printf("%d REF_AGENT_ENCLOSING\n",REF_AGENT_ENCLOSING );
+  printf("%d REF_AGENT_MODE_LAST\n",REF_AGENT_MODE_LAST );
 
   return REF_SUCCESS;
 }
