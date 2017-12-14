@@ -196,8 +196,10 @@ static REF_STATUS ref_update_agent_seed( REF_INTERP ref_interp, REF_INT id,
   REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
+  REF_CELL tris = ref_grid_tri(ref_grid);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT face_nodes[4], cell0, cell1;
+  REF_INT tri;
 
   face_nodes[0]=node0;
   face_nodes[1]=node1;
@@ -214,7 +216,8 @@ static REF_STATUS ref_update_agent_seed( REF_INTERP ref_interp, REF_INT id,
 	   !ref_node_owned(ref_node,node1) &&
 	   !ref_node_owned(ref_node,node2) )
 	RSS( REF_IMPLEMENT, "not para, yet" ); 
-      /* hit boundary, should verify */
+      /* hit boundary, but verifying */
+      RSS( ref_cell_with( tris, face_nodes, &tri ), "boundary tri expected" );
       ref_agent_mode(ref_agents,id) = REF_AGENT_AT_BOUNDARY;
       return REF_SUCCESS;
     }
