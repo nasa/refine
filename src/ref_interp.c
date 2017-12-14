@@ -339,6 +339,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT other;
 
+  RAS( ref_node_valid( ref_node, node ), "invalid node" );
+  RAS( ref_node_owned( ref_node, node ), "ghost node" );
+
   RUS( REF_EMPTY, ref_interp->cell[node], "no cell for guess" );
 
   RSS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
@@ -346,7 +349,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
     {
       other = neighbors[neighbor];
-      if ( ref_interp->cell[other] == REF_EMPTY &&
+      /* may need to add ghost seeding? */
+      if ( ref_node_owned( ref_node, other ) &&
+	   ref_interp->cell[other] == REF_EMPTY &&
 	   !(ref_interp->agent_hired[other]) )
 	{
 	  ref_interp->agent_hired[other] = REF_TRUE;
