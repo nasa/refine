@@ -199,7 +199,7 @@ static REF_STATUS ref_update_agent_seed( REF_INTERP ref_interp, REF_INT id,
   REF_CELL tris = ref_grid_tri(ref_grid);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT face_nodes[4], cell0, cell1;
-  REF_INT tri;
+  REF_INT tri, node;
 
   face_nodes[0]=node0;
   face_nodes[1]=node1;
@@ -211,11 +211,18 @@ static REF_STATUS ref_update_agent_seed( REF_INTERP ref_interp, REF_INT id,
     THROW("bary update missing first");
   if ( REF_EMPTY == cell1 )
     { 
-      /* test for off proc and  */
+      /* if it is off proc */
       if ( !ref_node_owned(ref_node,node0) &&
 	   !ref_node_owned(ref_node,node1) &&
 	   !ref_node_owned(ref_node,node2) )
-	RSS( REF_IMPLEMENT, "not para, yet" ); 
+	{
+	  /* pick at pseudo random */
+	  node = face_nodes[rand() % 3];
+	  ref_agent_part(ref_agents,id) = ref_node_part(ref_node,node);
+	  ref_agent_seed(ref_agents,id) = ref_node_global(ref_node,node);
+	  ref_agent_mode(ref_agents,id) = REF_AGENT_HOP_PART;
+	  return REF_SUCCESS;
+	}
       /* hit boundary, but verifying */
       RSS( ref_cell_with( tris, face_nodes, &tri ), "boundary tri expected" );
       ref_agent_mode(ref_agents,id) = REF_AGENT_AT_BOUNDARY;
