@@ -33,10 +33,12 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 struct REF_AGENT_STRUCT {
-  REF_INT node;
-  REF_INT guess;
   REF_INT previous;
   REF_INT next;
+  
+  REF_INT node;
+  REF_INT guess;
+  REF_DBL xyz[3];
 };
 struct REF_AGENTS_STRUCT {
   REF_INT n, max;
@@ -55,10 +57,10 @@ REF_STATUS ref_agents_free( REF_AGENTS ref_agents );
 REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents );
 
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
-			    REF_INT node, REF_INT guess );
+			    REF_INT node, REF_INT guess, REF_DBL *xyz );
 REF_STATUS ref_agents_remove( REF_AGENTS ref_agents, REF_INT id );
 REF_STATUS ref_agents_pop( REF_AGENTS ref_agents, 
-			   REF_INT *node, REF_INT *guess );
+			   REF_INT *node, REF_INT *guess, REF_DBL *xyz );
 REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node );
 
 #endif /* REF_AGENTS_H */

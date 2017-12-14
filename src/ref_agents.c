@@ -24,11 +24,13 @@
 
 #include "ref_malloc.h"
 
-#define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
-#define ref_agent_guess(ref_agents,id) ((ref_agents)->agent[(id)].guess)
 #define ref_agent_previous(ref_agents,id) ((ref_agents)->agent[(id)].previous)
 #define ref_agent_next(ref_agents,id) ((ref_agents)->agent[(id)].next)
 #define ref_agent_valid(ref_agents,id) (ref_agent_node(ref_agents,id) >= 0)
+
+#define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
+#define ref_agent_guess(ref_agents,id) ((ref_agents)->agent[(id)].guess)
+#define ref_agent_xyz(ref_agents,j,id) ((ref_agents)->agent[(id)].xyz[j])
 
 #define ref_agent_max(ref_agents) ((ref_agents)->max)
 
@@ -87,9 +89,9 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
 }
 
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
-			    REF_INT node, REF_INT guess )
+			    REF_INT node, REF_INT guess, REF_DBL *xyz )
 {
-  REF_INT id;
+  REF_INT i, id;
 
   if ( REF_EMPTY == ref_agents->blank )
     {
@@ -117,9 +119,12 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
 
   ref_agent_previous(ref_agents,id) = ref_agents->last;
   ref_agent_next(ref_agents,id) = REF_EMPTY;
-  ref_agent_node(ref_agents,id) = node;
-  ref_agent_guess(ref_agents,id) = guess;
 
+  ref_agent_node(ref_agents,id) = node;
+  ref_agent_guess(ref_agents,id) = guess; 
+  for (i=0;i<3;i++)
+    ref_agent_xyz(ref_agents,i,id) = xyz[i];
+ 
   ref_agents->last = id;
 
   ref_agents_n(ref_agents)++;
@@ -157,9 +162,9 @@ REF_STATUS ref_agents_remove( REF_AGENTS ref_agents, REF_INT id )
 }
 
 REF_STATUS ref_agents_pop( REF_AGENTS ref_agents, 
-			   REF_INT *node, REF_INT *guess )
+			   REF_INT *node, REF_INT *guess, REF_DBL *xyz )
 {
-  REF_INT id;
+  REF_INT i, id;
 
   if ( REF_EMPTY == ref_agents->last )
     return REF_NOT_FOUND;
@@ -168,6 +173,8 @@ REF_STATUS ref_agents_pop( REF_AGENTS ref_agents,
 
   *node = ref_agent_node(ref_agents,id);
   *guess = ref_agent_guess(ref_agents,id);
+  for (i=0;i<3;i++)
+    xyz[i] = ref_agent_xyz(ref_agents,i,id);
 
   RSS( ref_agents_remove( ref_agents, id ), "rm" );
 
