@@ -36,6 +36,16 @@ int main( int argc, char *argv[] )
     RSS( ref_agents_free( ref_agents ), "agents free" );
   }
 
+  { /* push sets home */
+    REF_INT node= 0, part = 0, seed = 0;
+    REF_DBL xyz[] = {1.0,2.0,3.0};
+    REF_AGENTS ref_agents;
+    RSS( ref_agents_create( &ref_agents, ref_mpi ), "make agents" );
+    RSS(ref_agents_push(ref_agents,node,part,seed,xyz),"add");
+    REIS( ref_mpi_rank(ref_mpi), ref_agents->agent[0].home, "home not set" );
+    RSS( ref_agents_free( ref_agents ), "agents free" );
+  }
+
   { /* remove middle, pop all */
     REF_INT node, part = 0, seed = 0;
     REF_DBL xyz[] = {1.0,2.0,3.0};

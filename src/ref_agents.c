@@ -29,6 +29,7 @@
 #define ref_agent_valid(ref_agents,id) (ref_agent_node(ref_agents,id) >= 0)
 
 #define ref_agent_mode(ref_agents,id) ((ref_agents)->agent[(id)].mode)
+#define ref_agent_home(ref_agents,id) ((ref_agents)->agent[(id)].home)
 #define ref_agent_node(ref_agents,id) ((ref_agents)->agent[(id)].node)
 #define ref_agent_part(ref_agents,id) ((ref_agents)->agent[(id)].part)
 #define ref_agent_seed(ref_agents,id) ((ref_agents)->agent[(id)].seed)
@@ -124,6 +125,7 @@ REF_STATUS ref_agents_push( REF_AGENTS ref_agents,
   ref_agent_next(ref_agents,id) = REF_EMPTY;
 
   ref_agent_mode(ref_agents,id) = REF_AGENT_WALKING;
+  ref_agent_home(ref_agents,id) = ref_mpi_rank(ref_agents->ref_mpi);
   ref_agent_node(ref_agents,id) = node;
   ref_agent_part(ref_agents,id) = part;
   ref_agent_seed(ref_agents,id) = seed; 
