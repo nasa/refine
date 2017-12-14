@@ -287,6 +287,7 @@ REF_STATUS ref_agents_migrate( REF_AGENTS ref_agents )
 			  (void **)(&recv_dbl), &nrecv, REF_DBL_TYPE ), "ds");
   ref_free(send_dbl);
   ref_free(send_int);
+  ref_free(destination);
 
   for (rec=0;rec<nrecv;rec++)
     {
