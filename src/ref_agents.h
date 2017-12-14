@@ -44,7 +44,7 @@ struct REF_AGENT_STRUCT {
   REF_AGENT_MODE mode;
   REF_INT node;
   REF_INT part;
-  REF_INT seed_cell;
+  REF_INT seed;
   REF_DBL xyz[3];
 };
 struct REF_AGENTS_STRUCT {
@@ -65,11 +65,11 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents );
 
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
 			    REF_INT node, REF_INT part,
-			    REF_INT seed_cell, REF_DBL *xyz );
+			    REF_INT seed, REF_DBL *xyz );
 REF_STATUS ref_agents_remove( REF_AGENTS ref_agents, REF_INT id );
 REF_STATUS ref_agents_pop( REF_AGENTS ref_agents, 
 			   REF_INT *node, REF_INT *part,
-			   REF_INT *seed_cell, REF_DBL *xyz );
+			   REF_INT *seed, REF_DBL *xyz );
 REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node );
 
 #endif /* REF_AGENTS_H */
