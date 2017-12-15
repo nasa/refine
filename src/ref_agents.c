@@ -78,13 +78,6 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
     }
   printf("%d n %d max %d\nblank %d last\n",
 	 ref_agents->n, ref_agents->max, ref_agents->blank, ref_agents->last );
-  printf("%d REF_AGENT_UNUSED\n",REF_AGENT_UNUSED );
-  printf("%d REF_AGENT_WALKING\n",REF_AGENT_WALKING );
-  printf("%d REF_AGENT_AT_BOUNDARY\n",REF_AGENT_AT_BOUNDARY );
-  printf("%d REF_AGENT_HOP_PART\n",REF_AGENT_HOP_PART );
-  printf("%d REF_AGENT_SUGGESTION\n",REF_AGENT_SUGGESTION );
-  printf("%d REF_AGENT_ENCLOSING\n",REF_AGENT_ENCLOSING );
-  printf("%d REF_AGENT_MODE_LAST\n",REF_AGENT_MODE_LAST );
 
   return REF_SUCCESS;
 }
