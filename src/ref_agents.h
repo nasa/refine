@@ -27,14 +27,14 @@ typedef struct REF_AGENTS_STRUCT REF_AGENTS_STRUCT;
 typedef REF_AGENTS_STRUCT * REF_AGENTS;
 typedef struct REF_AGENT_STRUCT REF_AGENT_STRUCT;
 typedef REF_AGENT_STRUCT * REF_AGENT;
-typedef enum REF_AGENT_MODES { REF_AGENT_UNUSED, 
-			       REF_AGENT_WALKING, 
-			       REF_AGENT_AT_BOUNDARY,
-			       REF_AGENT_HOP_PART,
-			       REF_AGENT_SUGGESTION,
-			       REF_AGENT_ENCLOSING,
-			       REF_AGENT_NEW,
-			       REF_AGENT_MODE_LAST } REF_AGENT_MODE;
+typedef enum REF_AGENT_MODES { /* 0 */ REF_AGENT_UNUSED, 
+			       /* 1 */ REF_AGENT_WALKING, 
+			       /* 2 */ REF_AGENT_AT_BOUNDARY,
+			       /* 3 */ REF_AGENT_HOP_PART,
+			       /* 4 */ REF_AGENT_SUGGESTION,
+			       /* 5 */ REF_AGENT_ENCLOSING,
+			       /* 6 */ REF_AGENT_NEW,
+			       /* 7 */ REF_AGENT_MODE_LAST } REF_AGENT_MODE;
 END_C_DECLORATION
 
 #include "ref_mpi.h"
@@ -98,6 +98,8 @@ REF_STATUS ref_agents_free( REF_AGENTS ref_agents );
 REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents );
 REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id,
 			      const char *context );
+REF_STATUS ref_agents_population( REF_AGENTS ref_agents,
+				  const char *context );
 
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
 			    REF_INT node, REF_INT part,

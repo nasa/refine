@@ -421,7 +421,9 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
     {
       if ( ref_interp->instrument &&
 	   ref_mpi_once(ref_interp->ref_mpi) )
-	printf(" %d sweep %d active\n",sweep,n_agents);
+	printf(" %2d sweep",sweep);
+      if ( ref_interp->instrument )
+	ref_agents_population( ref_agents, "agent pop" );
       sweep++;
       each_active_ref_agent( ref_agents, id )
 	if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&

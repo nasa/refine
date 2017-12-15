@@ -104,6 +104,34 @@ REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_agents_population( REF_AGENTS ref_agents,
+				  const char *context )
+{
+  REF_MPI ref_mpi = ref_agents->ref_mpi;
+  REF_INT id, *counts;
+  ref_malloc_init( counts, REF_AGENT_MODE_LAST, REF_INT, 0 );
+  for ( id = 0 ; id < ref_agents->max ; id++ )
+    {
+      RAS( 0 <= ref_agent_mode(ref_agents,id), "last" ); 
+      RAS( REF_AGENT_MODE_LAST > ref_agent_mode(ref_agents,id), "last" ); 
+      counts[ref_agent_mode(ref_agents,id)]++;
+    }
+  RSS( ref_mpi_allsum( ref_mpi, counts,
+		       REF_AGENT_MODE_LAST, REF_INT_TYPE ), "as");
+  if (ref_mpi_once(ref_mpi))
+    {
+      REF_INT total = 0;
+      for(id=1;id<REF_AGENT_MODE_LAST;id++)
+	total += counts[id];
+      printf(" %5d of",total);
+      for(id=1;id<REF_AGENT_MODE_LAST;id++)
+	printf(" %d:%4d",id,counts[id]);
+      printf(" %s\n",context);
+    }
+  ref_free(counts);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_agents_new( REF_AGENTS ref_agents, REF_INT *id )
 {
 
