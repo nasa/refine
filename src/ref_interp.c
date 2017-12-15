@@ -271,11 +271,11 @@ REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
 			   ref_agent_xyz_ptr(ref_agents,id), bary ), 
 	   REF_DIV_ZERO, "bary");
 
-      if ( ref_agent_step(ref_agents,id) > (limit-10) )
+      if ( ref_agent_step(ref_agents,id) > (limit-20) )
 	{
-	  printf("step %d, tet %d, bary %e %e %e %e inside %e\n",
-		 ref_agent_step(ref_agents,id),ref_agent_seed(ref_agents,id),
+	  printf("bary %e %e %e %e inside %e\n",
 		 bary[0],bary[1],bary[2],bary[3],ref_interp->inside);
+	  RSS( ref_agents_tattle( ref_agents, id, "many steps" ), "tat");
 	}
       
       if ( bary[0] >= ref_interp->inside &&
