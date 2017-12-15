@@ -26,7 +26,7 @@
 
 #include "ref_malloc.h"
 
-#define MAX_NODE_LIST ( 100 )
+#define MAX_NODE_LIST ( 200 )
 
 #define ref_interp_mpi(ref_interp) ( (ref_interp)->ref_mpi )
 
@@ -371,8 +371,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 
   RUS( REF_EMPTY, ref_interp->cell[node], "no cell for guess" );
   
-  RSS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
-                                  &nneighbor, neighbors ), "list too small");
+  RXS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
+                                  &nneighbor, neighbors ), 
+       REF_INCREASE_LIMIT, "neighbors");
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
     {
       other = neighbors[neighbor];
