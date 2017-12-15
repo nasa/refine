@@ -39,6 +39,7 @@ struct REF_INTERP_STRUCT {
   REF_GRID to_grid;
   REF_BOOL instrument;
   REF_INT n_walk;
+  REF_INT n_terminated;
   REF_INT walk_steps;
   REF_INT n_geom;
   REF_INT n_geom_fail;

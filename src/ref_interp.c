@@ -46,6 +46,7 @@ REF_STATUS ref_interp_create( REF_INTERP *ref_interp_ptr,
   
   ref_interp->instrument = REF_FALSE;
   ref_interp->n_walk = 0;
+  ref_interp->n_terminated = 0;
   ref_interp->walk_steps = 0;
   ref_interp->n_geom = 0;
   ref_interp->n_geom_fail = 0;
@@ -253,7 +254,7 @@ REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
   REF_DBL bary[4];
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   
-  limit = 1000; /* was 10e6^(1/3), required 108 for twod testcase  */
+  limit = 215; /* 10e6^(1/3), required 108 for twod testcase  */
 
   each_ref_agent_step( ref_agents, id, limit )
     {
@@ -271,7 +272,7 @@ REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
 			   ref_agent_xyz_ptr(ref_agents,id), bary ), 
 	   REF_DIV_ZERO, "bary");
 
-      if ( ref_agent_step(ref_agents,id) > (limit-20) )
+      if ( ref_agent_step(ref_agents,id) > (limit) )
 	{
 	  printf("bary %e %e %e %e inside %e\n",
 		 bary[0],bary[1],bary[2],bary[3],ref_interp->inside);
@@ -349,9 +350,11 @@ REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
 
       THROW("unable to find the next step");
     }
-  
-  THROW("out of iterations");
 
+  /* steps reached limit */
+  ref_agent_mode(ref_agents,id) = REF_AGENT_TERMINATED;
+
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
@@ -469,7 +472,8 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 	  }
 
       each_active_ref_agent( ref_agents, id )
-	if ( REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents,id) &&
+	if ( ( REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents,id) || 
+	       REF_AGENT_TERMINATED == ref_agent_mode(ref_agents,id) ) &&
 	     ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
 	  {
 	    node = ref_agent_node(ref_agents,id);
@@ -477,7 +481,11 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 	    RAS( ref_node_owned( to_node, node ), "ghost, not owned" );
 	    REIS( REF_EMPTY, ref_interp->cell[node], "already found?");
 	    RAS( ref_interp->agent_hired[node], "should have an agent" );
-
+	    if ( REF_AGENT_TERMINATED == ref_agent_mode(ref_agents,id) )
+	      {
+		(ref_interp->walk_steps) += (ref_agent_step(ref_agents,id)+1);
+		(ref_interp->n_terminated)++;
+	      }
 	    ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
 	    RSS( ref_agents_remove( ref_agents, id ), "no longer neeeded" );	
 	  }
@@ -512,6 +520,8 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
   RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->walk_steps), 1, 
 		       REF_INT_TYPE ), "sum");
   RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->n_walk), 1, 
+		       REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->n_terminated), 1, 
 		       REF_INT_TYPE ), "sum");
 
   each_ref_node_valid_node( to_node, node )
@@ -1118,10 +1128,11 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp )
 	printf("tree search: %d found, %.2f avg cells\n",
 	       ref_interp->n_tree,
 	       (REF_DBL)ref_interp->tree_cells / (REF_DBL)ref_interp->n_tree);
-      if ( ref_interp->n_walk > 0 )
-	printf("walks: %d successful, %.2f avg cells\n",
+      if ( ref_interp->n_walk > 0 || ref_interp->n_terminated > 0)
+	printf("walks: %d successful, %.2f avg cells, %d terminated\n",
 	       ref_interp->n_walk, 
-	       (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk );
+	       (REF_DBL)ref_interp->walk_steps / (REF_DBL)ref_interp->n_walk,
+	       ref_interp->n_terminated );
       printf("geom nodes: %d failed, %d successful\n",
 	     ref_interp->n_geom_fail, ref_interp->n_geom);
     }
