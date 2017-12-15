@@ -1,6 +1,8 @@
 
 eigen repeated roots, 2x6.2500e-02 for 4 core cube-cylinder/polar-2/two
 
+curvature metric/limit para inspect
+
 remove tet walking from grid
 
 better bary/next face choice
