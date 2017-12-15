@@ -398,12 +398,17 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT i, id, node;
   REF_INT n_agents;
+  REF_INT sweep = 0;
 
   n_agents = ref_agents_n(ref_agents);
   RSS( ref_mpi_allsum( ref_mpi, &n_agents, 1, REF_INT_TYPE ), "sum");
 
   while ( n_agents > 0 )
     {
+      if ( ref_interp->instrument &&
+	   ref_mpi_once(ref_interp->ref_mpi) )
+	printf(" %d sweep %d active\n",sweep,n_agents);
+      sweep++;
       each_active_ref_agent( ref_agents, id )
 	if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
 	     ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
