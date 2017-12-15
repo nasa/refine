@@ -95,12 +95,18 @@ LOG=${root_dir}/log.unit-para
 trap "cat $LOG" EXIT
 cd ${build_dir}/src
 echo para-unit > $LOG 2>&1
+mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_mpi_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_part_test >> $LOG 2>&1
-mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_mpi_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_part_test >> $LOG 2>&1
-mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
 trap - EXIT
 
 date
