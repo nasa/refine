@@ -387,7 +387,7 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
 	    }
 	}
       else
-	{  /* add ghost seeding via REF_AGENT_SUGGESTING mode */
+	{  /* add ghost seeding via REF_AGENT_SUGGESTION mode */
 	  RSS(ref_agents_push(ref_agents, 
 			      other,
 			      ref_interp->part[node],
@@ -419,12 +419,14 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 
   while ( n_agents > 0 )
     {
+      
       if ( ref_interp->instrument &&
 	   ref_mpi_once(ref_interp->ref_mpi) )
 	printf(" %2d sweep",sweep);
       if ( ref_interp->instrument )
 	ref_agents_population( ref_agents, "agent pop" );
       sweep++;
+      
       each_active_ref_agent( ref_agents, id )
 	if ( REF_AGENT_WALKING == ref_agent_mode(ref_agents,id) &&
 	     ref_agent_part(ref_agents,id) == ref_mpi_rank(ref_mpi) )
