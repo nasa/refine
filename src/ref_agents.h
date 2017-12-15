@@ -46,7 +46,7 @@ struct REF_AGENT_STRUCT {
   REF_INT next;
   
   REF_INT home; /* mpi rank of the to node that needs an interpolant */
-  REF_INT node; /* the to node that needs an interpolant */
+  REF_INT node; /* the to node that needs an interpolant (global for SUGGEST)*/
   REF_INT part; /* mpi rank of the seed */
   REF_INT seed; /* cell guess when WALKING or BOUNDARY,
 		 * global node guess when HOP_PART or SUGGESTION

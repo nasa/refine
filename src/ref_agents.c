@@ -244,7 +244,7 @@ REF_STATUS ref_agents_dest( REF_AGENTS ref_agents, REF_INT id, REF_INT *dest )
       *dest = ref_agent_part(ref_agents,id);
       break;
     case REF_AGENT_SUGGESTION:
-      *dest = ref_agent_part(ref_agents,id);
+      *dest = ref_agent_home(ref_agents,id);
       break;
     case REF_AGENT_ENCLOSING:
       *dest = ref_agent_home(ref_agents,id);
