@@ -504,10 +504,18 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 	    RSS( ref_interp_push_onto_queue(ref_interp,node), "push" );
 	  }
 
+      if ( ref_interp->instrument )
+	ref_agents_population( ref_agents, "agent enlc" );
+
       n_agents = ref_agents_n(ref_agents);
       RSS( ref_mpi_allsum( ref_mpi, &n_agents, 1, REF_INT_TYPE ), "sum");
 
     }
+
+  RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->walk_steps), 1, 
+		       REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_allsum( ref_mpi, &(ref_interp->n_walk), 1, 
+		       REF_INT_TYPE ), "sum");
 
   each_ref_node_valid_node( to_node, node )
     {
