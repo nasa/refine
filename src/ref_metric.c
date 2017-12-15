@@ -27,6 +27,8 @@
 #include "ref_cell.h"
 #include "ref_edge.h"
 
+#include "ref_interp.h"
+
 #include "ref_malloc.h"
 #include "ref_matrix.h"
 #include "ref_math.h"
@@ -263,6 +265,9 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
   REF_DBL log_parent_m[3][6];
   REF_DBL log_interpolated_m[6];
 
+  if( ref_mpi_para(ref_grid_mpi(ref_grid)) )
+    RSS(REF_IMPLEMENT,"twod ref_metric_interpolate not para");
+
   if (!ref_grid_twod(ref_grid))
     RSS(REF_IMPLEMENT,"ref_metric_interpolate only implemented for twod");
 
@@ -304,56 +309,131 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
   return REF_SUCCESS;
 }
 
-
-REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent_grid )
+REF_STATUS ref_metric_interpolate( REF_GRID to_grid, REF_GRID from_grid )
 {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_NODE parent_node = ref_grid_node(parent_grid);
-  REF_INT node, tet, ixyz, ibary, im;
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_INTERP ref_interp;
+  REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL xyz[3], interpolated_xyz[3], bary[4];
-  REF_DBL tol = 1.0e-8;
+  REF_DBL max_error, tol = 1.0e-8;
   REF_DBL log_parent_m[4][6];
   REF_DBL log_interpolated_m[6];
+  REF_INT receptor, n_recept, donation, n_donor;
+  REF_DBL *recept_m, *donor_m, *recept_bary, *donor_bary;
+  REF_INT *donor_node, *donor_ret, *donor_cell;
+  REF_INT *recept_proc,*recept_ret, *recept_node, *recept_cell;
   
-  if (ref_grid_twod(ref_grid))
+  if (ref_grid_twod(to_grid))
     {
-      RSS( ref_metric_interpolate_twod( ref_grid, parent_grid ), "2d version");
+      RSS( ref_metric_interpolate_twod( to_grid, from_grid ), "2d version");
       return REF_SUCCESS;
     }
   
-  each_ref_node_valid_node( ref_node, node )
+  RSS( ref_interp_create( &ref_interp, from_grid, to_grid ), "make interp" );
+  RSS( ref_interp_locate(ref_interp), "map" );
+
+  RSS( ref_interp_max_error(ref_interp, &max_error), "err" );
+  RSB( max_error > tol, "large interp error", 
+       { if ( ref_mpi_once(ref_mpi) ) 
+	   printf(" %e max_error greater than %e tol\n",max_error,tol); } );
+
+  n_recept = 0;
+  each_ref_node_valid_node( to_node, node )
+    if ( ref_node_owned(to_node,node) )
+      {
+	n_recept++;
+      }
+  
+  ref_malloc( recept_bary, 4*n_recept, REF_DBL );
+  ref_malloc( recept_cell, n_recept, REF_INT );
+  ref_malloc( recept_node, n_recept, REF_INT );
+  ref_malloc( recept_ret,  n_recept, REF_INT );
+  ref_malloc( recept_proc, n_recept, REF_INT );
+
+  n_recept = 0;
+  each_ref_node_valid_node( to_node, node )
+    if ( ref_node_owned(to_node,node) )
+      {
+	RUS( REF_EMPTY, ref_interp->cell[node], "node needs to be localized" );
+	for(ibary=0;ibary<4;ibary++)
+	  recept_bary[ibary+4*n_recept] = ref_interp->bary[ibary+4*node];
+	recept_proc[n_recept] = ref_interp->part[node];
+	recept_cell[n_recept] = ref_interp->cell[node];
+	recept_node[n_recept] = node;
+	recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+	n_recept++;
+      }
+
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_cell, 1, n_recept,
+			  (void **)(&donor_cell), &n_donor, REF_INT_TYPE ),
+       "blind send cell" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_ret, 1, n_recept,
+			  (void **)(&donor_ret), &n_donor, REF_INT_TYPE ),
+       "blind send ret" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_node, 1, n_recept,
+			  (void **)(&donor_node), &n_donor, REF_INT_TYPE ),
+       "blind send node" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  recept_proc, (void *)recept_bary, 4, n_recept,
+			  (void **)(&donor_bary), &n_donor, REF_DBL_TYPE ),
+       "blind send bary" );
+
+  ref_free(recept_proc);
+  ref_free(recept_ret);
+  ref_free(recept_node);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  ref_malloc( donor_m, 6*n_donor, REF_DBL );
+
+  for ( donation = 0 ; donation < n_donor; donation++ )
     {
-      for (ixyz=0; ixyz<3; ixyz++)
-	xyz[ixyz] = ref_node_xyz(ref_node,ixyz,node); 
-      tet = ref_node_guess(ref_node,node);
-      RSS( ref_grid_enclosing_tet( parent_grid, xyz,
-				   &tet, bary ), "enclosing tet" );
-      if ( ref_node_guess_allocated(ref_node) )
-	ref_node_raw_guess(ref_node,node) = tet;
-      RSS( ref_cell_nodes( ref_grid_tet(parent_grid), tet, nodes ), "c2n");
-      for (ixyz=0; ixyz<3; ixyz++)
-	{
-	  interpolated_xyz[ixyz] = 0.0;
-	  for (ibary=0; ibary<4; ibary++)
-	    interpolated_xyz[ixyz] += 
-	      bary[ibary]*ref_node_real(parent_node,ixyz,nodes[ibary]);
-	}
-      for (ixyz=0; ixyz<3; ixyz++)
-	RWDS( xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
+      RSS( ref_cell_nodes( from_cell, donor_cell[donation], nodes),
+	   "node needs to be localized" );
       for (ibary=0; ibary<4; ibary++)
-	RSS( ref_matrix_log_m( ref_node_metric_ptr(parent_node,nodes[ibary]),
+	RSS( ref_matrix_log_m( ref_node_metric_ptr(from_node,nodes[ibary]),
 			       log_parent_m[ibary] ), "log(parentM)");
       for (im=0; im<6; im++)
 	{
 	  log_interpolated_m[im] = 0.0;
 	  for (ibary=0; ibary<4; ibary++)
 	    log_interpolated_m[im] += 
-	      bary[ibary]*log_parent_m[ibary][im];
+	      donor_bary[ibary+4*donation]*log_parent_m[ibary][im];
 	}
       RSS(ref_matrix_exp_m( log_interpolated_m, 
-			    ref_node_metric_ptr(ref_node,node) ),"exp(intrpM)");
+			    &(donor_m[6*donation]) ),"exp(intrpM)");
     }
+  ref_free(donor_cell);
+  ref_free(donor_bary);
+
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  donor_ret, (void *)donor_m, 6, n_donor,
+			  (void **)(&recept_m), &n_recept, REF_DBL_TYPE ),
+       "blind send bary" );
+  RSS( ref_mpi_blindsend( ref_mpi, 
+			  donor_ret, (void *)donor_node, 1, n_donor,
+			  (void **)(&recept_node), &n_recept, REF_INT_TYPE ),
+       "blind send node" );
+  ref_free(donor_m);
+  ref_free(donor_node);
+  ref_free(donor_ret);
+
+  for ( receptor = 0 ; receptor < n_recept; receptor++ )
+    {
+      node = recept_node[receptor];
+      for (im=0; im<6; im++)
+	ref_node_metric(to_node,im,node) = recept_m[im+6*receptor];
+    }
+  ref_free(recept_node);
+  ref_free(recept_m);
+ 
+  RSS( ref_interp_free( ref_interp ), "interp free" );
 
   return REF_SUCCESS;
 }

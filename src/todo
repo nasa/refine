@@ -1,4 +1,6 @@
 
+remove tet walking from grid
+
 better bary/next face choice
 
 rename ref_mpi_m to ref_mpi_n
