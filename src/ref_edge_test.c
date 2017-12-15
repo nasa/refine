@@ -62,23 +62,24 @@ int main( int argc, char *argv[] )
     RSS(ref_edge_free(ref_edge),"edge");
     RSS(ref_grid_free(ref_grid),"free");
   }
+  
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* find edge with nodes */
+      REF_EDGE ref_edge;
+      REF_GRID ref_grid;
+      REF_INT edge;
 
-  { /* find edge with nodes */
-    REF_EDGE ref_edge;
-    REF_GRID ref_grid;
-    REF_INT edge;
+      RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"pri");
+      RSS(ref_edge_create(&ref_edge,ref_grid),"create");
 
-    RSS(ref_fixture_pri_grid(&ref_grid,ref_mpi),"pri");
-    RSS(ref_edge_create(&ref_edge,ref_grid),"create");
+      RSS( ref_edge_with( ref_edge, 0, 1, &edge ), "find" );
+      REIS( 0, edge, "right one" );
+      REIS( REF_NOT_FOUND,ref_edge_with( ref_edge, 0, 4, &edge ), "not found" );
+      REIS( REF_EMPTY, edge, "not found" );
 
-    RSS( ref_edge_with( ref_edge, 0, 1, &edge ), "find" );
-    REIS( 0, edge, "right one" );
-    REIS( REF_NOT_FOUND,ref_edge_with( ref_edge, 0, 4, &edge ), "not found" );
-    REIS( REF_EMPTY, edge, "not found" );
-
-    RSS(ref_edge_free(ref_edge),"edge");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_edge_free(ref_edge),"edge");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   { /* ref_edge_ghost */
     REF_EDGE ref_edge;
