@@ -239,3 +239,11 @@ trap - EXIT
 
 date
 
+LOG=${root_dir}/log.accept-hemisphere-uniform-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/hemisphere/uniform
+./accept-hemisphere-uniform-para.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
+
