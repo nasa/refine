@@ -95,6 +95,7 @@ REF_STATUS ref_agents_create( REF_AGENTS *ref_agents, REF_MPI ref_mpi );
 REF_STATUS ref_agents_free( REF_AGENTS ref_agents );
 
 REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents );
+REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id );
 
 REF_STATUS ref_agents_push( REF_AGENTS ref_agents, 
 			    REF_INT node, REF_INT part,
