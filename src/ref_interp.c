@@ -505,6 +505,12 @@ REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 
     }
 
+  each_ref_node_valid_node( to_node, node )
+    {
+      if ( ref_node_owned(to_node,node) )
+	REIS( REF_FALSE, ref_interp->agent_hired[node], "should be done");
+    }
+
   return REF_SUCCESS;
 }
 
