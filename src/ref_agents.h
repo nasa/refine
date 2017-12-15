@@ -31,6 +31,7 @@ typedef enum REF_AGENT_MODES { REF_AGENT_UNUSED,
 			       REF_AGENT_WALKING, 
 			       REF_AGENT_AT_BOUNDARY,
 			       REF_AGENT_HOP_PART,
+			       REF_AGENT_SUGGESTION,
 			       REF_AGENT_ENCLOSING,
 			       REF_AGENT_NEW,
 			       REF_AGENT_MODE_LAST } REF_AGENT_MODE;
@@ -48,7 +49,7 @@ struct REF_AGENT_STRUCT {
   REF_INT node; /* the to node that needs an interpolant */
   REF_INT part; /* mpi rank of the seed */
   REF_INT seed; /* cell guess when WALKING or BOUNDARY,
-		 * global node guess when HOP_PART
+		 * global node guess when HOP_PART or SUGGESTION
 		 * from cell when ENCLOSE */
   REF_INT step; /* number of cells visited */
   REF_DBL xyz[3]; /* the to xyz that needs an interpolant */
