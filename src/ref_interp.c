@@ -263,8 +263,8 @@ REF_STATUS ref_interp_walk_agent( REF_INTERP ref_interp, REF_INT id )
 	  return REF_SUCCESS;
 	}
 
-      RSS( ref_cell_nodes( ref_cell, ref_agent_seed(ref_agents,id), 
-			   nodes), "cell" );
+      RSB( ref_cell_nodes( ref_cell, ref_agent_seed(ref_agents,id), 
+			   nodes), "cell", {ref_agents_tattle(ref_agents,id);} );
       /* when REF_DIV_ZERO, min bary is preserved */
       RXS( ref_node_bary4( ref_node, nodes, 
 			   ref_agent_xyz_ptr(ref_agents,id), bary ), 
