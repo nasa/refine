@@ -33,8 +33,9 @@ typedef enum REF_AGENT_MODES { /* 0 */ REF_AGENT_UNUSED,
 			       /* 3 */ REF_AGENT_HOP_PART,
 			       /* 4 */ REF_AGENT_SUGGESTION,
 			       /* 5 */ REF_AGENT_ENCLOSING,
-			       /* 6 */ REF_AGENT_NEW,
-			       /* 7 */ REF_AGENT_MODE_LAST } REF_AGENT_MODE;
+			       /* 6 */ REF_AGENT_TERMINATED,
+			       /* 7 */ REF_AGENT_NEW,
+			       /* 8 */ REF_AGENT_MODE_LAST } REF_AGENT_MODE;
 END_C_DECLORATION
 
 #include "ref_mpi.h"

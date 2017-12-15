@@ -88,7 +88,7 @@ REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id,
   printf("%d: %d id %d mode %d home %d node %d part %d seed %s\n",
 	 ref_mpi_rank(ref_agents->ref_mpi),
 	 id,
-	 ref_agent_mode(ref_agents,id),
+	 (int)ref_agent_mode(ref_agents,id),
 	 ref_agent_home(ref_agents,id),
 	 ref_agent_node(ref_agents,id),
 	 ref_agent_part(ref_agents,id),
@@ -268,6 +268,9 @@ REF_STATUS ref_agents_dest( REF_AGENTS ref_agents, REF_INT id, REF_INT *dest )
       *dest = ref_agent_home(ref_agents,id);
       break;
     case REF_AGENT_ENCLOSING:
+      *dest = ref_agent_home(ref_agents,id);
+      break;
+    case REF_AGENT_TERMINATED:
       *dest = ref_agent_home(ref_agents,id);
       break;
     default: THROW("has no dest");
