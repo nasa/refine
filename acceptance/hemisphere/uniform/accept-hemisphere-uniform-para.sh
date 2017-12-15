@@ -19,7 +19,7 @@ geomfile=hemisphere.egads
 # ref_driver -i hemisphere.meshb -g hemisphere.egads -r 4 -o hemicurve
 
 ${two}/ref_acceptance hemicurve.meshb hemicurve.metric 0.1
-mpiexec -np 8 ${two}/ref_driver -i hemicurve.meshb -g ${geomfile} -m hemicurve.metric -o hemicurve1 -r 1 -s 20
+mpiexec -np 4 ${two}/ref_driver -i hemicurve.meshb -g ${geomfile} -m hemicurve.metric -o hemicurve1 -r 1 -s 20
 ${two}/ref_acceptance hemicurve1.meshb hemicurve1.metric 0.1
 ${two}/ref_metric_test hemicurve1.meshb hemicurve1.metric > accept-hemisphere-uniform-para-01.status
 
