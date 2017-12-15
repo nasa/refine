@@ -403,7 +403,7 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
+REF_STATUS ref_interp_process_agents( REF_INTERP ref_interp )
 {
   REF_NODE from_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_NODE to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
@@ -929,7 +929,7 @@ REF_STATUS ref_interp_locate( REF_INTERP ref_interp )
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "geom" ), "locate clock");
   
-  RSS( ref_interp_update_agents( ref_interp ), "drain" );
+  RSS( ref_interp_process_agents( ref_interp ), "drain" );
   if ( ref_interp->instrument)
     RSS( ref_mpi_stopwatch_stop( ref_mpi, "drain" ), "locate clock");
 
