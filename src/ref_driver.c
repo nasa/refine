@@ -193,12 +193,12 @@ int main( int argc, char *argv[] )
     }
 
   if (curvature_metric)
-    RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
-
-  if ( !ref_mpi_para(ref_mpi) && !curvature_metric)
+    {
+      RSS( ref_metric_interpolated_curvature( ref_grid ), "interp curve" );
+    }
+  else
     {
       RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
-      RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
     }
 
   RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
@@ -211,12 +211,15 @@ int main( int argc, char *argv[] )
 
   if ( curvature_constraint )
     {
+      if ( ref_mpi_once(ref_mpi) )
+	printf("constrain curvature\n");
       RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "crv const");
     }
   if ( sanitize_metric )
     {
-      printf("sanitizing metric\n");
+      if ( ref_mpi_once(ref_mpi) )
+	printf("sanitizing metric\n");
       RSS( ref_metric_sanitize( ref_grid ), "sant metric");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
