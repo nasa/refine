@@ -3,7 +3,7 @@ eigen repeated roots, 2x6.2500e-02 for 4 core cube-cylinder/polar-2/two
 
 curvature metric/limit para inspect (after ref_driver crv const)
 
-remove tet walking from grid
+remove tet walking from grid (ref_layer uses?)
 
 rename ref_mpi_m to ref_mpi_n
 
