@@ -57,6 +57,7 @@ struct REF_INTERP_STRUCT {
 
 #define ref_interp_from_grid(ref_interp) ( (ref_interp)->from_grid )
 #define ref_interp_to_grid(ref_interp) ( (ref_interp)->to_grid )
+#define ref_interp_bary(ref_interp,j,node) ( (ref_interp)->bary[(j)+4*(node)] )
 
 REF_STATUS ref_interp_create( REF_INTERP *ref_interp, 
 			      REF_GRID from_grid, REF_GRID to_grid );
