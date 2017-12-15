@@ -365,7 +365,8 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   RAS( ref_node_owned( ref_node, node ), "ghost node" );
 
   RUS( REF_EMPTY, ref_interp->cell[node], "no cell for guess" );
-
+  RAS( ref_cell_valid(ref_cell,ref_interp->cell[node]), "expected valid" );
+  
   RSS( ref_cell_node_list_around( ref_cell, node, MAX_NODE_LIST,
                                   &nneighbor, neighbors ), "list too small");
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
@@ -422,7 +423,6 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
 	    /* pick best from orbit? */
 	    ref_agent_seed(ref_agents,id) = ref_cell_first_with( ref_cell, 
 								 node );
-	    ref_agent_part(ref_agents,id) = ref_mpi_rank(ref_mpi);
 	  }
 
       each_active_ref_agent( ref_agents, id )
