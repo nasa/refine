@@ -88,15 +88,18 @@ REF_STATUS ref_agents_inspect( REF_AGENTS ref_agents )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id )
+REF_STATUS ref_agents_tattle( REF_AGENTS ref_agents, REF_INT id,
+			      const char *context )
 {
-  printf("%d id %d mode %d home %d node %d part %d seed\n",
+  printf("%d: %d id %d mode %d home %d node %d part %d seed %s\n",
+	 ref_mpi_rank(ref_agents->ref_mpi),
 	 id,
 	 ref_agent_mode(ref_agents,id),
 	 ref_agent_home(ref_agents,id),
 	 ref_agent_node(ref_agents,id),
 	 ref_agent_part(ref_agents,id),
-	 ref_agent_seed(ref_agents,id) );
+	 ref_agent_seed(ref_agents,id),
+	 context );
   return REF_SUCCESS;
 }
 
