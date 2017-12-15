@@ -359,8 +359,9 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
-  REF_INT other;
+  REF_INT id, other;
 
   RAS( ref_node_valid( ref_node, node ), "invalid node" );
   RAS( ref_node_owned( ref_node, node ), "ghost node" );
@@ -372,18 +373,31 @@ REF_STATUS ref_interp_push_onto_queue( REF_INTERP ref_interp, REF_INT node )
   for ( neighbor = 0; neighbor < nneighbor; neighbor++ )
     {
       other = neighbors[neighbor];
-      /* add ghost seeding via REF_AGENT_SUGGESTING mode */
-      if ( ref_node_owned( ref_node, other ) &&
-	   ref_interp->cell[other] == REF_EMPTY &&
-	   !(ref_interp->agent_hired[other]) )
+      if ( ref_node_owned( ref_node, other ) )
 	{
-	  ref_interp->agent_hired[other] = REF_TRUE;
-	  RSS(ref_agents_push(ref_interp->ref_agents, 
+	  if ( ref_interp->cell[other] == REF_EMPTY &&
+	       !(ref_interp->agent_hired[other]) )
+	    {
+	      ref_interp->agent_hired[other] = REF_TRUE;
+	      RSS(ref_agents_push(ref_agents, 
+				  other,
+				  ref_interp->part[node],
+				  ref_interp->cell[node],
+				  ref_node_xyz_ptr(ref_node,other) ), "enque" );
+	    }
+	}
+      else
+	{  /* add ghost seeding via REF_AGENT_SUGGESTING mode */
+	  RSS(ref_agents_push(ref_agents, 
 			      other,
 			      ref_interp->part[node],
 			      ref_interp->cell[node],
-			      ref_node_xyz_ptr(ref_node,other) ), "enqueue" );
-	}
+			      ref_node_xyz_ptr(ref_node,other) ), "enque" );
+	  id = ref_agents->last;
+	  ref_agent_mode(ref_agents,id) = REF_AGENT_SUGGESTION;
+	  ref_agent_home(ref_agents,id) = ref_node_part(ref_node,other);
+	  ref_agent_node(ref_agents,id) = ref_node_global(ref_node,other);
+	}	    
     }
 
   return REF_SUCCESS;
@@ -428,6 +442,26 @@ REF_STATUS ref_interp_update_agents( REF_INTERP ref_interp )
 	    /* pick best from orbit? */
 	    ref_agent_seed(ref_agents,id) = ref_cell_first_with( from_cell, 
 								 node );
+	  }
+
+      each_active_ref_agent( ref_agents, id )
+	if ( REF_AGENT_SUGGESTION == ref_agent_mode(ref_agents,id) &&
+	     ref_agent_home(ref_agents,id) == ref_mpi_rank(ref_mpi) )
+	  {
+	    RSS( ref_node_local( to_node, ref_agent_node(ref_agents,id), 
+				 &node), "localize" );
+	    if ( REF_EMPTY != ref_interp->cell[node] ||
+		 ref_interp->agent_hired[node] )
+	      {
+		RSS( ref_agents_remove( ref_interp->ref_agents, id ),
+		     "already got one" );
+	      }
+	    else
+	      {
+		ref_agent_mode(ref_interp->ref_agents,id) = REF_AGENT_WALKING;
+		ref_agent_node(ref_interp->ref_agents,id) = node;
+		ref_interp->agent_hired[node] = REF_TRUE;
+	      }
 	  }
 
       each_active_ref_agent( ref_agents, id )
