@@ -3,7 +3,7 @@ ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 ref_metric curvature uses different gradation parameters?
 
-use ref_node_ghost_dbl in ref_node_ghost_real
+get rid of aux and interp instead
 
 init metric to unit?
 
