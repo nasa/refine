@@ -419,53 +419,91 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  { /* shift globals */
-    REF_INT local, global, node;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* shift globals */
+      REF_INT local, global, node;
+      REF_NODE ref_node;
+
+      RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+      global = 10;
+      RSS(ref_node_add(ref_node,global,&local),"add");
+      global = 20;
+      RSS(ref_node_add(ref_node,global,&local),"add");
+
+      RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
+
+      RSS( ref_node_next_global( ref_node, &global ), "next");
+      REIS( 30, global, "expected n global");
+      RSS(ref_node_add(ref_node,global,&local),"add");
+
+      RSS(ref_node_shift_new_globals(ref_node),"shift");
+
+      RSS(ref_node_local(ref_node,30,&node),"return global");
+      REIS(2,node,"wrong local");
+
+      RSS(ref_node_free(ref_node),"free");
+    }
+
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* eliminate unused globals */
+      REF_INT local, global, node;
+      REF_NODE ref_node;
+
+      RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+      global = 10;
+      RSS(ref_node_add(ref_node,global,&local),"add");
+      global = 20;
+      RSS(ref_node_add(ref_node,global,&local),"add");
+      global = 30;
+      RSS(ref_node_add(ref_node,global,&local),"add");
+
+      RSS(ref_node_remove(ref_node,1),"rm");
+
+      RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
+
+      RSS(ref_node_eliminate_unused_globals(ref_node),"unused");
+
+      RSS(ref_node_local(ref_node,29,&node),"return global");
+      REIS(2,node,"wrong local");
+
+      RSS(ref_node_free(ref_node),"free");
+    }
+
+  { /* ghost int */
     REF_NODE ref_node;
+    REF_INT local, ghost, global;
+    REF_INT data[2];
 
     RSS(ref_node_create(&ref_node,ref_mpi),"create");
 
-    global = 10;
+    global = ref_mpi_rank(ref_mpi);
     RSS(ref_node_add(ref_node,global,&local),"add");
-    global = 20;
-    RSS(ref_node_add(ref_node,global,&local),"add");
+    ref_node_part(ref_node,local) = global;
+    data[local] = ref_mpi_rank(ref_mpi);
 
-    RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
+    global = ref_mpi_rank(ref_mpi)+1;
+    if ( global >= ref_mpi_m(ref_mpi) )
+      global = 0;
+    if ( ref_mpi_para(ref_mpi ) )
+      {
+	RSS(ref_node_add(ref_node,global,&ghost),"add");
+	ref_node_part(ref_node,ghost) = global;
+	data[ghost] = REF_EMPTY;
+      }
+      
+    RSS( ref_node_ghost_int(ref_node,data), "update ghosts" );
 
-    RSS( ref_node_next_global( ref_node, &global ), "next");
-    REIS( 30, global, "expected n global");
-    RSS(ref_node_add(ref_node,global,&local),"add");
-
-    RSS(ref_node_shift_new_globals(ref_node),"shift");
-
-    RSS(ref_node_local(ref_node,30,&node),"return global");
-    REIS(2,node,"wrong local");
-
-    RSS(ref_node_free(ref_node),"free");
-  }
-
-  { /* eliminate unused globals */
-    REF_INT local, global, node;
-    REF_NODE ref_node;
-
-    RSS(ref_node_create(&ref_node,ref_mpi),"create");
-
-    global = 10;
-    RSS(ref_node_add(ref_node,global,&local),"add");
-    global = 20;
-    RSS(ref_node_add(ref_node,global,&local),"add");
-    global = 30;
-    RSS(ref_node_add(ref_node,global,&local),"add");
-
-    RSS(ref_node_remove(ref_node,1),"rm");
-
-    RSS( ref_node_initialize_n_global( ref_node, 30 ), "init n glob" );
-
-    RSS(ref_node_eliminate_unused_globals(ref_node),"unused");
-
-    RSS(ref_node_local(ref_node,29,&node),"return global");
-    REIS(2,node,"wrong local");
-
+    global = ref_mpi_rank(ref_mpi);
+    REIS( global, data[local], "local changed" );
+    if ( ref_mpi_para(ref_mpi ) )
+      {
+	global = ref_mpi_rank(ref_mpi)+1;
+	if ( global >= ref_mpi_m(ref_mpi) )
+	  global = 0;
+	REIS( global, data[ghost], "local changed" );
+      }
     RSS(ref_node_free(ref_node),"free");
   }
 
