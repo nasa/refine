@@ -146,6 +146,8 @@ REF_STATUS ref_node_in_bounding_box( REF_NODE ref_node, REF_DBL *bounding_box,
 
 REF_STATUS ref_node_ghost_real( REF_NODE ref_node );
 REF_STATUS ref_node_ghost_int( REF_NODE ref_node, REF_INT *scalar );
+REF_STATUS ref_node_ghost_dbl( REF_NODE ref_node,
+			       REF_DBL *vector, REF_INT ldim );
 
 REF_STATUS ref_node_edge_twod( REF_NODE ref_node, 
 			       REF_INT node0, REF_INT node1, 

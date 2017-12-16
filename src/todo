@@ -1,4 +1,6 @@
 
+use ref_node_ghost_dbl in ref_node_ghost_real and unit test
+
 init metric to unit?
 
 eigen repeated roots, 2x6.2500e-02 for 4 core cube-cylinder/polar-2/two
