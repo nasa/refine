@@ -507,6 +507,47 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* ghost dbl */
+    REF_NODE ref_node;
+    REF_INT local, ghost, global;
+    REF_INT ldim = 2;
+    REF_DBL data[4];
+
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+    global = ref_mpi_rank(ref_mpi);
+    RSS(ref_node_add(ref_node,global,&local),"add");
+    ref_node_part(ref_node,local) = global;
+    data[0+ldim*local] =      (REF_DBL)ref_mpi_rank(ref_mpi);
+    data[1+ldim*local] = 10.0*(REF_DBL)ref_mpi_rank(ref_mpi);
+
+    global = ref_mpi_rank(ref_mpi)+1;
+    if ( global >= ref_mpi_m(ref_mpi) )
+      global = 0;
+    if ( ref_mpi_para(ref_mpi ) )
+      {
+	RSS(ref_node_add(ref_node,global,&ghost),"add");
+	ref_node_part(ref_node,ghost) = global;
+	data[0+ldim*ghost] = -1.0;
+	data[1+ldim*ghost] = -1.0;
+      }
+      
+    RSS( ref_node_ghost_dbl(ref_node,data,ldim), "update ghosts" );
+
+    global = ref_mpi_rank(ref_mpi);
+    RWDS(      (REF_DBL)global, data[0+ldim*local], -1.0, "local changed" );
+    RWDS( 10.0*(REF_DBL)global, data[1+ldim*local], -1.0, "local changed" );
+    if ( ref_mpi_para(ref_mpi ) )
+      {
+	global = ref_mpi_rank(ref_mpi)+1;
+	if ( global >= ref_mpi_m(ref_mpi) )
+	  global = 0;
+	RWDS(      (REF_DBL)global, data[0+ldim*ghost], -1.0, "local changed" );
+	RWDS( 10.0*(REF_DBL)global, data[1+ldim*ghost], -1.0, "local changed" );
+      }
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   { /* twod edge */
     REF_NODE ref_node;
     REF_INT node0, node1, global;

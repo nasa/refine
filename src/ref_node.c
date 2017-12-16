@@ -940,7 +940,7 @@ REF_STATUS ref_node_ghost_dbl( REF_NODE ref_node,
 
   RSS( ref_mpi_alltoallv( ref_mpi,
 			  b_vector, b_size, a_vector, a_size, 
-			  ldim, REF_INT_TYPE ), 
+			  ldim, REF_DBL_TYPE ), 
        "alltoallv global");
 
   for (node=0;node<a_total;node++)
