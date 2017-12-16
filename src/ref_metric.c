@@ -493,6 +493,8 @@ REF_STATUS ref_metric_gradation( REF_DBL *metric, REF_GRID ref_grid, REF_DBL r )
 
   ref_edge_free( ref_edge );
 
+  RSS( ref_node_ghost_dbl(ref_grid_node(ref_grid),metric,6), "update ghosts" );
+
   return REF_SUCCESS;
 }
 
