@@ -1,6 +1,7 @@
 
-ref_sudiv to prevent parition artifacts?
-  subdiv add geom
+ref_sudiv to prevent parition artifacts? 
+  subdiv avoid geom
+  other stencils
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
