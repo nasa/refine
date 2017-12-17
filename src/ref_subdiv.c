@@ -1460,7 +1460,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   /* tri comes last, it can make qua elements too */
   RSS( ref_subdiv_split_tri( ref_subdiv ), "split tri" );
 
-  /* remove unused nods on partition boundaries */
+  /* remove unused nodes on partition boundaries */
   each_ref_node_valid_node( ref_node, node )
     if ( ref_adj_empty( ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
 	 ref_adj_empty( ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
