@@ -49,6 +49,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_STATUS status;
 
+  RAS( !ref_grid_twod(ref_grid), "only 3D" );
+  
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
@@ -508,6 +510,8 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_INT global;
 
+  RAS( ref_grid_twod(ref_grid), "only 2D" );
+  
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
