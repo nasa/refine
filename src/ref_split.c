@@ -35,6 +35,8 @@
 #include "ref_geom.h"
 #include "ref_cavity.h"
 
+#include "ref_subdiv.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass( REF_GRID ref_grid )
@@ -48,8 +50,14 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_STATUS status;
-
+  REF_BOOL subdiv_para_edges = REF_FALSE; /* subdiv and geom intersection */
+  REF_LIST ref_list = NULL;
+  REF_SUBDIV ref_subdiv = NULL;
+  
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
+
+  if ( subdiv_para_edges )
+    RSS( ref_list_create( &ref_list ), "list for stuck edges" );
   
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -146,8 +154,15 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      &allowed_local ), "local tet" );
       if ( !allowed_local )
 	{
-	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
-	  ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
+	  if ( subdiv_para_edges )
+	    {
+	      RSS( ref_list_add( ref_list, edge ), "push");
+	    }
+	  else
+	    {
+	      ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge ))++;
+	      ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge ))++;
+	    }
 	  RSS( ref_node_remove( ref_node, new_node ), "remove new node");
 	  RSS( ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
 	  continue;
@@ -174,11 +189,35 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge )) = 0;
 
     }
-  
+	 
   ref_free( edges );
   ref_free( order );
   ref_free( ratio );
 
+  if ( subdiv_para_edges )
+    {
+      RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
+
+      each_ref_list_item_value( ref_list, i, edge)
+	{
+	  RSS( ref_cell_has_side( ref_grid_tet(ref_grid),
+				  ref_edge_e2n( ref_edge, 0, edge ),
+				  ref_edge_e2n( ref_edge, 1, edge ),
+				  &allowed ), "has side" );
+	  if ( !allowed) continue;
+      
+	  RSS( ref_subdiv_mark_to_split( ref_subdiv,
+					 ref_edge_e2n( ref_edge, 0, edge ),
+					 ref_edge_e2n( ref_edge, 1, edge ) ),
+	       "mark edge to para split" );
+	}
+
+      RSS(ref_subdiv_split(ref_subdiv),"split");
+      RSS(ref_subdiv_free(ref_subdiv),"free");
+
+      ref_list_free( ref_list );
+    }
+	 
   ref_edge_free( ref_edge );
 
   return REF_SUCCESS;
