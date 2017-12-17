@@ -6,7 +6,8 @@ ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
 init metric to unit?
-cache curvature metric or apply to input, limit after ever interp?
+cache curvature metric or apply to input
+always limit implied metric distance after every interp?
 remove tet walking from grid (ref_layer uses?)
 eigen solver slow for repeated roots, 2x6.2500e-02
 
