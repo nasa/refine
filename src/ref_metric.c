@@ -794,6 +794,8 @@ REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid )
     }
 
   ref_free( total_node_volume );
+  
+  RSS( ref_node_ghost_dbl(ref_node,metric,6), "update ghosts" );  
 
   return REF_SUCCESS;
 }
@@ -810,7 +812,6 @@ REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid )
   ref_malloc_init( total_node_volume, ref_node_max(ref_node),
 		   REF_DBL, 0.0 );
 
-  
   each_ref_node_valid_node( ref_node, node )
     if ( ref_adj_valid( ref_adj_first( ref_cell_adj(ref_grid_pyr(ref_grid)), 
 				       node ) ) ||
@@ -876,6 +877,8 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
       }
 
   ref_free( total_node_volume );
+
+  RSS( ref_node_ghost_dbl(ref_node,metric,6), "update ghosts" );
 
   return REF_SUCCESS;
 }
