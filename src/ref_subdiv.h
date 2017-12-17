@@ -72,7 +72,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv );
 
 REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv );
 
-REF_STATUS ref_subdiv_undo_impossible_marks( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_test_impossible_marks( REF_SUBDIV ref_subdiv );
 
 END_C_DECLORATION
 
