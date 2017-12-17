@@ -1,7 +1,9 @@
 
 ref_sudiv to prevent parition artifacts? 
-  subdiv avoid geom
+subdiv and geom interaction	
   add other stencils, for no relaxation: orlt eccomas
+  undo relaxation when geom problem?
+  how does quality limits fit?
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
