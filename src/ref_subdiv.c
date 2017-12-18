@@ -376,6 +376,37 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_mark_deactivate_geom_support( REF_SUBDIV ref_subdiv )
+{
+  REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
+  REF_INT edge;
+  REF_BOOL needs_support;
+  
+  RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
+			   ref_subdiv_mpi(ref_subdiv),
+			   ref_subdiv->mark), "ghost mark" );
+
+  for ( edge = 0; edge < ref_edge_n(ref_edge) ; edge++ )
+    {
+      if ( ref_subdiv_mark( ref_subdiv, edge ) )
+	{
+	  RSS( ref_geom_support_between( ref_subdiv_grid(ref_subdiv),
+					 ref_edge_e2n( ref_edge, 0, edge ),
+					 ref_edge_e2n( ref_edge, 1, edge ),
+					 &needs_support ), "support check" );
+	  if ( needs_support )
+	    ref_subdiv_mark( ref_subdiv, edge ) = 0;
+	}
+    }
+
+  /* not be required but here for safety? */
+  RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
+			   ref_subdiv_mpi(ref_subdiv),
+			   ref_subdiv->mark), "ghost mark" );
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_subdiv_new_node( REF_SUBDIV ref_subdiv )
 {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
@@ -1448,6 +1479,8 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT node;
 
   RSS(ref_subdiv_mark_relax(ref_subdiv),"relax marks");
+  RSS(ref_subdiv_mark_deactivate_geom_support(ref_subdiv),"geom marks");
+  /* relax negatively by turning edges off */
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv),"possible");
   RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
 
