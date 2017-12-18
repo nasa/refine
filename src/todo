@@ -1,5 +1,5 @@
 
-ref_sudiv to prevent parition artifacts? 
+ref_sudiv to prevent partition artifacts? 
 subdiv and geom interaction	
   add other stencils, for no relaxation: orlt eccomas
   undo relaxation when geom problem?
