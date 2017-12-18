@@ -1151,6 +1151,42 @@ REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_support_between( REF_GRID ref_grid,
+				     REF_INT node0, REF_INT node1, 
+				     REF_BOOL *needs_support )
+{
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT item0, item1;
+  REF_INT geom0, geom1;
+  REF_INT type, id;
+  REF_BOOL has_id;
+
+  *needs_support = REF_FALSE;
+  /* assume face check is sufficient */
+  each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				   node0, item0, geom0)
+    each_ref_adj_node_item_with_ref( ref_geom_adj(ref_geom),
+				     node1, item1, geom1)
+    {
+      type = REF_GEOM_FACE;
+      if ( ref_geom_type(ref_geom,geom0) == type &&
+	   ref_geom_type(ref_geom,geom1) == type &&
+	   ref_geom_id(ref_geom,geom0) == ref_geom_id(ref_geom,geom1) )
+	{
+	  id = ref_geom_id(ref_geom,geom0);
+	  RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid),node0,node1,id,
+				   &has_id), "has edge id");
+	  if ( has_id )
+	    {
+	      *needs_support = REF_TRUE;
+	      return REF_SUCCESS;
+	    }
+	}
+    }
+    
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_eval_edge_face_uv( REF_GEOM ref_geom, REF_INT edge_geom )
 {
 #ifdef HAVE_EGADS

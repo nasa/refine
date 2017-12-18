@@ -163,6 +163,9 @@ REF_STATUS ref_geom_tuv( REF_GEOM ref_geom, REF_INT node,
 REF_STATUS ref_geom_add_between( REF_GRID ref_grid,
 				 REF_INT node0, REF_INT node1, 
 				 REF_INT new_node );
+REF_STATUS ref_geom_support_between( REF_GRID ref_grid,
+				     REF_INT node0, REF_INT node1, 
+				     REF_BOOL *needs_support );
 
 REF_STATUS ref_geom_constrain( REF_GRID ref_grid, REF_INT node );
 
