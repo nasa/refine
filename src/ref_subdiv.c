@@ -85,6 +85,8 @@ REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid )
   ref_malloc_init( ref_subdiv->node, ref_edge_n(ref_subdiv_edge(ref_subdiv)),
 		   REF_INT, REF_EMPTY );
 
+  ref_subdiv->instrument = REF_FALSE;
+  
   return REF_SUCCESS;
 }
 

@@ -36,6 +36,7 @@ struct REF_SUBDIV_STRUCT {
   REF_EDGE edge;
   REF_INT *mark;
   REF_INT *node;
+  REF_INT instrument;
 };
 
 #define ref_subdiv_grid( ref_subdiv ) ((ref_subdiv)->grid)
