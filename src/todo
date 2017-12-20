@@ -1,4 +1,6 @@
 
+remove private methods from headers : ref_part ref_gather
+
 reference implementation of Lp metric
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
