@@ -402,6 +402,82 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+#define demote_2_1(ce0,ce1,ce2)			     \
+  {						     \
+    REF_INT ge0, ge1, ge2, sum;			     \
+    ge0 = ref_cell_c2e( ref_cell, ce0, cell );	     \
+    ge1 = ref_cell_c2e( ref_cell, ce1, cell );	     \
+    ge2 = ref_cell_c2e( ref_cell, ce2, cell );	     \
+    sum	=					     \
+    ref_subdiv_mark( ref_subdiv, ge0 ) +	     \
+    ref_subdiv_mark( ref_subdiv, ge1 ) +	     \
+    ref_subdiv_mark( ref_subdiv, ge2 );		     \
+    if ( 2 == sum )				     \
+      {						     \
+	again = REF_TRUE;			     \
+	if ( ref_subdiv_mark( ref_subdiv, ge0 ) )    \
+	  {					     \
+	    ref_subdiv_mark( ref_subdiv, ge1 ) = 0;  \
+	    ref_subdiv_mark( ref_subdiv, ge2 ) = 0;  \
+	  }					     \
+	else					     \
+	  {					     \
+	    ref_subdiv_mark( ref_subdiv, ge2 ) = 0;  \
+	  }					     \
+      }						     \
+  }
+
+REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
+{
+  REF_INT group, cell, nsweeps, nmark;
+  REF_CELL ref_cell;
+  REF_BOOL again;
+
+  if (ref_subdiv->instrument)
+    {
+      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
+      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
+	printf(" %d edges marked before unmark relaxation\n",nmark);
+    }
+  
+  nsweeps = 0;
+  again = REF_TRUE;
+  while (again)
+    {
+      nsweeps++;
+      again = REF_FALSE;
+
+      RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
+			       ref_subdiv_mpi(ref_subdiv),
+			       ref_subdiv->mark), "ghost mark" );
+
+      each_ref_grid_ref_cell( ref_subdiv_grid(ref_subdiv), group, ref_cell )
+	each_ref_cell_valid_cell( ref_cell, cell )
+	{
+	  switch ( ref_cell_node_per(ref_cell) )
+	    {
+	      case 4:
+		demote_2_1(3,5,4);
+		break;
+	    default:
+		RSS(REF_IMPLEMENT,"implement cell type");
+		break;    
+	    }
+	}
+
+      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
+    }
+
+  if (ref_subdiv->instrument)
+    {
+      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
+      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
+	printf(" %d edges marked after %d unmark relaxations\n",nmark,nsweeps);
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_unmark_geom_support( REF_SUBDIV ref_subdiv )
 {
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);

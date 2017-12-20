@@ -305,6 +305,24 @@ int main( int argc, char *argv[] )
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
+  { /* unrelax 2 to 1 */
+    REF_SUBDIV ref_subdiv;
+    RSS(set_up_tet_for_subdiv(&ref_subdiv,ref_mpi),"set up");
+
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,1,2),"mark edge 0");
+    RSS(ref_subdiv_mark_to_split(ref_subdiv,2,3),"mark edge 2");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
+    REIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
+
+    RSS(ref_subdiv_unmark_relax(ref_subdiv),"split");
+
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
+    REIS(0,ref_subdiv_mark(ref_subdiv,5),"yet");
+
+    RSS( tear_down( ref_subdiv ), "tear down");
+  }
+
   { /* new nodes */
     REF_SUBDIV ref_subdiv;
     REF_NODE ref_node;
