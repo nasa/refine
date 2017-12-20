@@ -129,11 +129,19 @@ REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv )
 
 REF_STATUS ref_subdiv_mark_n( REF_SUBDIV ref_subdiv, REF_INT *n )
 {
-  REF_INT edge;
+  REF_INT edge, part;
 
   *n = 0;
   for ( edge=0 ; edge < ref_edge_n(ref_subdiv_edge(ref_subdiv)) ; edge++ )
-    if ( 0 != ref_subdiv_mark( ref_subdiv, edge ) ) (*n)++;
+    if ( 0 != ref_subdiv_mark( ref_subdiv, edge ) )
+      {
+	RSS( ref_edge_part( ref_subdiv_edge(ref_subdiv),
+			    edge, &part),"edge part")
+	  if (part == ref_mpi_rank(ref_subdiv_mpi( ref_subdiv )) )
+	    (*n)++;
+      }
+  RSS( ref_mpi_allsum( ref_subdiv_mpi( ref_subdiv ),
+       n, 1, REF_INT_TYPE ), "allsum" );
 
   return REF_SUCCESS;
 }
@@ -330,13 +338,22 @@ static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
-  REF_INT group, cell;
+  REF_INT group, cell, sweeps, nmark;
   REF_CELL ref_cell;
   REF_BOOL again;
 
+  if (ref_subdiv->instrument)
+    {
+      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
+      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
+	printf(" %d edges marked before relaxation\n",nmark);
+    }
+  
+  sweeps = 0;
   again = REF_TRUE;
   while (again)
     {
+      sweeps++;
       again = REF_FALSE;
 
       RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
@@ -373,6 +390,13 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 	  }
 
       RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
+    }
+
+  if (ref_subdiv->instrument)
+    {
+      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
+      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
+	printf(" %d edges marked after %d relaxations\n",nmark,nsweeps);
     }
 
   return REF_SUCCESS;
