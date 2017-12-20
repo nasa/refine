@@ -1089,6 +1089,7 @@ REF_STATUS ref_part_metric_solb( REF_NODE ref_node, const char *filename )
     {
       REIS( next_position, ftell(file), "end location" );
       REIS(0,fclose(file),"close file");
+      RSS( ref_dict_free( ref_dict ), "free dict" );
     }
   
   return REF_SUCCESS;
