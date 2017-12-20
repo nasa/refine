@@ -1,9 +1,5 @@
 
-ref_sudiv to prevent partition artifacts? 
-subdiv and geom interaction	
-  add other stencils, for no relaxation: orlt eccomas
-  undo relaxation when geom problem?
-  how does quality limits fit?
+reference implementation of Lp metric
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
@@ -18,19 +14,16 @@ rename ref_mpi_m to ref_mpi_n
 
 rename ref_list_add to ref_list_push
 
-reference implementation of Lp metric
-
 mixed element 2d for twest
 
 rename ref_cell_faceid_list_around to ref_cell_id_list_around
+reuse faceid around in ref_collapse_edge_geometry
 
 merge ref_split_edge_local_tets ref_split_edge_local_prism
   to ref_split_edge_local_cell
 merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   to ref_smooth_local_cell_about
 merge ref_collapse_face_local_*
-
-make a ref_node_local
 
 egads recon
  clean up method
@@ -40,8 +33,6 @@ egads recon
    revert on failure (wrap?)
    for faces start from interior?
    or walk edges?
-
-reuse faceid around in ref_collapse_edge_geometry
 
 store metric in log form
 
@@ -143,9 +134,17 @@ low priority surface reconstruction when EGADS not available
 
 +++++++++++++++++
 
++ ref_sudiv to prevent partition artifacts? 
++ subdiv and geom interaction	
+  + add other stencils, for no relaxation: orlt eccomas
+  + undo relaxation when geom problem?
+  + how does quality limits fit?
+
 + remove unused ref_project
 
-+interp metric parallel
++ make a ref_node_owned
+
++ interp metric parallel
   + hemisphere testcase
 
 + accept comm as argument
