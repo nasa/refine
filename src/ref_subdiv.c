@@ -457,7 +457,10 @@ REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
 	  switch ( ref_cell_node_per(ref_cell) )
 	    {
 	      case 4:
-		demote_2_1(3,5,4);
+		demote_2_1(5,4,3);
+		demote_2_1(5,1,2);
+		demote_2_1(0,4,2);
+		demote_2_1(0,1,3);
 		break;
 	    default:
 		RSS(REF_IMPLEMENT,"implement cell type");
