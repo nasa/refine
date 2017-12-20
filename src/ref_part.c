@@ -1307,11 +1307,16 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
 REF_STATUS ref_part_scalar( REF_NODE ref_node,
 			   REF_DBL *scalar, const char *filename )
 {
+  REF_DICT ref_dict;
   FILE *file;
   REF_INT chunk;
   REF_DBL *data;
   REF_INT nnode_read, section_size;
   REF_INT node, local, global;
+  REF_BOOL solb_format = REF_FALSE;
+  size_t end_of_string;
+  REF_BOOL available;
+  REF_INT version, dim, nnode, ntype, type, next_position;
 
   file = NULL;
   if ( ref_mpi_once(ref_node_mpi(ref_node)) )
@@ -1319,8 +1324,33 @@ REF_STATUS ref_part_scalar( REF_NODE ref_node,
       file = fopen(filename,"r");
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
       RNS(file, "unable to open file" );
-    }
 
+      end_of_string = strlen(filename);
+      if( strcmp(&filename[end_of_string-5],".solb") == 0 )
+	solb_format = REF_TRUE;
+      if ( solb_format )
+	{
+	  RSS( ref_dict_create( &ref_dict ), "create dict" );
+	  RSS( ref_import_meshb_header( filename, &version, ref_dict), "head");
+	  RSS( ref_import_meshb_jump( file, version, ref_dict,
+				      3, &available, &next_position ), "jump" );
+	  RAS( available, "meshb missing dimension" );
+	  REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+	  REIS( 3, dim, "only 3D supported" );
+      
+	  RSS( ref_import_meshb_jump( file, version, ref_dict,
+				      62, &available, &next_position ), "jmp" );
+	  RAS( available, "SolAtVertices missing" );
+	  REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
+	  REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
+	  REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
+	  REIS( ref_node_n_global(ref_node), nnode, "global nnode" );
+	  REIS( 1, ntype, "number of solutions" );
+	  REIS( 1, type, "scalar solution type" );
+	}
+    }
+  RSS( ref_mpi_all_or( ref_node_mpi(ref_node), &solb_format ), "bcast");
+ 
   chunk = MAX( 100000, 
 	       ref_node_n_global(ref_node)/ref_mpi_m(ref_node_mpi(ref_node)) );
   chunk = MIN( chunk, ref_node_n_global(ref_node) );
@@ -1334,8 +1364,15 @@ REF_STATUS ref_part_scalar( REF_NODE ref_node,
       if ( ref_mpi_once(ref_node_mpi(ref_node)) )
 	{
 	  for (node=0;node<section_size;node++)
-	    REIS( 1, fscanf( file, "%lf", 
-			     &(data[node]) ), "data scalar read error" );
+	    if (solb_format)
+	      {
+		REIS(1,fread(&(data[node]),sizeof(REF_DBL), 1, file),"dat");
+	      }
+	    else
+	      {
+		REIS( 1, fscanf( file, "%lf", 
+				 &(data[node]) ), "data scalar read error" );
+	      }
 	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
 			      data, chunk, REF_DBL_TYPE ), "bcast" );
 	}
@@ -1356,9 +1393,15 @@ REF_STATUS ref_part_scalar( REF_NODE ref_node,
     }
 
   ref_free( data );
-if ( ref_mpi_once(ref_node_mpi(ref_node)) )
-    REIS(0,fclose(file),"close file");
-
+  
+  if ( ref_mpi_once(ref_node_mpi(ref_node)) )
+    {
+      if ( solb_format )
+	REIS( next_position, ftell(file), "end location" );
+      REIS(0,fclose(file),"close file");
+      if ( solb_format )
+	RSS( ref_dict_free( ref_dict ), "free dict" );
+    }
   return REF_SUCCESS;
 }
 
