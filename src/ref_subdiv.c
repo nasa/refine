@@ -402,68 +402,79 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-#define demote_2_1(ce0,ce1,ce2)			     \
-  {						     \
-    REF_INT ge0, ge1, ge2, sum;			     \
-    ge0 = ref_cell_c2e( ref_cell, ce0, cell );	     \
-    ge1 = ref_cell_c2e( ref_cell, ce1, cell );	     \
-    ge2 = ref_cell_c2e( ref_cell, ce2, cell );	     \
-    sum	=					     \
-    ref_subdiv_mark( ref_subdiv, ge0 ) +	     \
-    ref_subdiv_mark( ref_subdiv, ge1 ) +	     \
-    ref_subdiv_mark( ref_subdiv, ge2 );		     \
-    if ( 2 == sum )				     \
-      {						     \
-	again = REF_TRUE;			     \
-	if ( ref_subdiv_mark( ref_subdiv, ge0 ) )    \
-	  {					     \
-	    ref_subdiv_mark( ref_subdiv, ge1 ) = 0;  \
-	    ref_subdiv_mark( ref_subdiv, ge2 ) = 0;  \
-	  }					     \
-	else					     \
-	  {					     \
-	    ref_subdiv_mark( ref_subdiv, ge0 ) = 0;  \
-	    ref_subdiv_mark( ref_subdiv, ge2 ) = 0;  \
-	  }					     \
-      }						     \
-  }
+REF_STATUS ref_subdiv_unmark_one_of_two( REF_SUBDIV ref_subdiv,
+					 REF_INT e0, REF_INT e1 )
+{
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid( ref_subdiv ));
+  REF_EDGE ref_edge = ref_subdiv_edge( ref_subdiv );
+  REF_INT e0min, e0max;
+  REF_INT e1min, e1max;
+  e0min = MIN( ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, e0 ) ),
+	       ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, e0 ) ) );
+  e0max = MAX( ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, e0 ) ),
+	       ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, e0 ) ) );
+  e1min = MIN( ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, e1 ) ),
+	       ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, e1 ) ) );
+  e1max = MAX( ref_node_global(ref_node,ref_edge_e2n( ref_edge, 0, e1 ) ),
+	       ref_node_global(ref_node,ref_edge_e2n( ref_edge, 1, e1 ) ) );
+  if ( e0min == e1min )
+    {
+      if ( e0max < e1max )
+	{
+	  ref_subdiv_mark( ref_subdiv, e1 ) = 0;
+	}
+      else
+	{
+	  ref_subdiv_mark( ref_subdiv, e0 ) = 0;
+	}
+    }
+  else
+    {
+      if ( e0min < e1min )
+	{
+	  ref_subdiv_mark( ref_subdiv, e1 ) = 0;
+	}
+      else
+	{
+	  ref_subdiv_mark( ref_subdiv, e0 ) = 0;
+	}
+    }
 
-#define demote_keep_first()						\
-  {									\
-    REF_INT ge0, ge1, ge2, ge3, ge4, ge5, sum;				\
-    ge0 = ref_cell_c2e( ref_cell, 0, cell );				\
-    ge1 = ref_cell_c2e( ref_cell, 1, cell );				\
-    ge2 = ref_cell_c2e( ref_cell, 2, cell );				\
-    ge3 = ref_cell_c2e( ref_cell, 3, cell );				\
-    ge4 = ref_cell_c2e( ref_cell, 4, cell );				\
-    ge5 = ref_cell_c2e( ref_cell, 5, cell );				\
-    sum = ref_subdiv_mark( ref_subdiv, ge0 )				\
-        + ref_subdiv_mark( ref_subdiv, ge1 )				\
-        + ref_subdiv_mark( ref_subdiv, ge2 )				\
-        + ref_subdiv_mark( ref_subdiv, ge3 )				\
-        + ref_subdiv_mark( ref_subdiv, ge4 )				\
-        + ref_subdiv_mark( ref_subdiv, ge5 );				\
-    if ( 2 == sum )							\
-      {									\
-	REF_INT iedge, keep_edge;					\
-	again = REF_TRUE;						\
-	keep_edge=REF_EMPTY;						\
-	for(iedge=0;iedge<6;iedge++)					\
-	  if ( 1 == ref_subdiv_mark( ref_subdiv,			\
-				     ref_cell_c2e( ref_cell,		\
-						   iedge, cell ) ) )	\
-	    {								\
-	      keep_edge = iedge; break;					\
-	    }								\
-	RUS( REF_EMPTY, keep_edge, "mark missing" );			\
-	for(iedge=0;iedge<6;iedge++)					\
-	  ref_subdiv_mark( ref_subdiv,					\
-			   ref_cell_c2e( ref_cell, iedge, cell ) ) = 0;	\
-	ref_subdiv_mark( ref_subdiv,					\
-			 ref_cell_c2e( ref_cell, keep_edge, cell ) ) = 1; \
-      }									\
-  }
+  return REF_SUCCESS;
+}
 
+REF_STATUS ref_subdiv_unmark_tet_face( REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
+				       REF_INT cell, REF_BOOL *again,
+				       REF_INT s0, REF_INT s1, REF_INT s2 )
+{
+  REF_INT e0, e1, e2;
+  e0 = ref_cell_c2e( ref_cell, s0, cell );
+  e1 = ref_cell_c2e( ref_cell, s1, cell );
+  e2 = ref_cell_c2e( ref_cell, s2, cell );
+  if (  ref_subdiv_mark( ref_subdiv, e0 ) &&
+        ref_subdiv_mark( ref_subdiv, e1 ) &&
+       !ref_subdiv_mark( ref_subdiv, e2 ) )
+    {
+      ref_subdiv_unmark_one_of_two( ref_subdiv, e0, e1 );
+      *again = REF_TRUE;
+    }
+  if (  ref_subdiv_mark( ref_subdiv, e0 ) &&
+       !ref_subdiv_mark( ref_subdiv, e1 ) &&
+        ref_subdiv_mark( ref_subdiv, e2 ) )
+    {
+      ref_subdiv_unmark_one_of_two( ref_subdiv, e0, e2 );
+      *again = REF_TRUE;
+    }
+  if ( !ref_subdiv_mark( ref_subdiv, e0 ) &&
+        ref_subdiv_mark( ref_subdiv, e1 ) &&
+        ref_subdiv_mark( ref_subdiv, e2 ) )
+    {
+      ref_subdiv_unmark_one_of_two( ref_subdiv, e1, e2 );
+      *again = REF_TRUE;
+    }
+
+  return REF_SUCCESS;
+}
 REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
 {
   REF_INT group, cell, nsweeps, nmark;
@@ -494,14 +505,21 @@ REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
 	  switch ( ref_cell_node_per(ref_cell) )
 	    {
 	    case 4:
-	      demote_2_1(5,4,3);
-	      demote_2_1(5,1,2);
-	      demote_2_1(0,4,2);
-	      demote_2_1(0,1,3);
-	      demote_keep_first();
+	      RSS( ref_subdiv_unmark_tet_face( ref_subdiv, ref_cell,
+					       cell, &again,
+					       3, 4, 5 ), "face 0" );
+	      RSS( ref_subdiv_unmark_tet_face( ref_subdiv, ref_cell,
+					       cell, &again,
+					       1, 2, 5 ), "face 1" );
+	      RSS( ref_subdiv_unmark_tet_face( ref_subdiv, ref_cell,
+					       cell, &again,
+					       0, 4, 2 ), "face 2" );
+	      RSS( ref_subdiv_unmark_tet_face( ref_subdiv, ref_cell,
+					       cell, &again,
+					       0, 1, 3 ), "face 3" );
 	      break;
 	    default:
-	      RSS(REF_IMPLEMENT,"implement cell type");
+	      /* RSS(REF_IMPLEMENT,"implement cell type"); */
 	      break;    
 	    }
 	}

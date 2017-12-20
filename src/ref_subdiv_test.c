@@ -317,8 +317,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_unmark_relax(ref_subdiv),"split");
 
-    REIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
-    REIS(0,ref_subdiv_mark(ref_subdiv,4),"yet");
+    REIS(0,ref_subdiv_mark(ref_subdiv,5),"yet");
+    REIS(1,ref_subdiv_mark(ref_subdiv,4),"yet");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
@@ -335,8 +335,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_unmark_relax(ref_subdiv),"split");
 
-    REIS(1,ref_subdiv_mark(ref_subdiv,5),"yet");
-    REIS(0,ref_subdiv_mark(ref_subdiv,3),"yet");
+    REIS(0,ref_subdiv_mark(ref_subdiv,5),"yet");
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
@@ -353,8 +353,8 @@ int main( int argc, char *argv[] )
 
     RSS(ref_subdiv_unmark_relax(ref_subdiv),"split");
 
-    REIS(1,ref_subdiv_mark(ref_subdiv,4),"yet");
-    REIS(0,ref_subdiv_mark(ref_subdiv,3),"yet");
+    REIS(0,ref_subdiv_mark(ref_subdiv,4),"yet");
+    REIS(1,ref_subdiv_mark(ref_subdiv,3),"yet");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
