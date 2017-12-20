@@ -972,6 +972,14 @@ REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node,
 
   if ( ref_mpi_once(ref_mpi) )
     REIS( next_position, ftell(file), "solb metric record len inconsistent");
+
+  if ( ref_mpi_once(ref_mpi) )
+    { /* End */
+      keyword_code = 54;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"end kw");
+      next_position = 0;
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+    }
   
   return REF_SUCCESS;
 }
