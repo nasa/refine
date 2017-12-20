@@ -70,6 +70,7 @@ REF_STATUS ref_gather_node( REF_NODE ref_node,
 			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file );
 REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
 REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
+REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node, FILE *file );
 
 REF_STATUS ref_gather_geom( REF_NODE ref_node,
 			    REF_GEOM ref_geom, 
