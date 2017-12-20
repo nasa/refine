@@ -197,7 +197,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   if ( subdiv_para_edges )
     {
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
-
+      ref_subdiv->instrument = REF_TRUE;
       each_ref_list_item_value( ref_list, i, edge)
 	{
 	  RSS( ref_cell_has_side( ref_grid_tet(ref_grid),
