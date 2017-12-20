@@ -606,6 +606,43 @@ se.^-0.5
     RSS( ref_grid_free( parent_grid ), "free");
   }
 
+  {
+    REF_GRID ref_grid, truth;
+    REF_INT node, im;
+    REF_DBL tol = -1.0;
+    char meshb[] = "ref_metric_test.meshb";
+    char solb[] = "ref_interp_test-metric.solb";
+
+    if ( ref_mpi_once(ref_mpi) )
+      {
+	RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+	RSS( ref_export_by_extension( ref_grid, meshb ),"export" );
+	RSS( ref_grid_free(ref_grid),"free");
+      }
+    
+    RSS( ref_part_by_extension( &truth, ref_mpi, meshb ), "import" );
+    RSS( ref_metric_ugawg_node( ref_grid_node(truth), 1 ), "m" );
+    RSS( ref_gather_metric( truth, solb ),"export" );
+    
+    RSS( ref_part_by_extension( &ref_grid, ref_mpi, meshb ), "import" );
+    RSS( ref_part_metric( ref_grid_node(ref_grid), solb ),"export" );
+
+    if ( REF_FALSE && ref_mpi_once(ref_mpi) )
+      {
+	REIS(0, remove( meshb ), "test meshb clean up");
+	REIS(0, remove( solb ), "test solb clean up");
+      }
+    
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      for(im=0;im<6;im++)
+	RWDS( ref_node_metric(ref_grid_node(truth),im,node),
+	      ref_node_metric(ref_grid_node(ref_grid),im,node),
+	      tol, "metric wrong");    
+
+    RSS( ref_grid_free( ref_grid ), "free");
+    RSS( ref_grid_free( truth ), "free");
+  }
+
   RSS( ref_mpi_free(ref_mpi), "free");
   RSS( ref_mpi_stop( ), "stop" );
   return 0;
