@@ -54,8 +54,8 @@ REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar );
 
 REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename );
-REF_STATUS ref_part_ratio( REF_NODE ref_node, 
-			   REF_DBL *ratio, const char *filename );
+REF_STATUS ref_part_scalar( REF_NODE ref_node, 
+			    REF_DBL *scalar, const char *filename );
 
 END_C_DECLORATION
 

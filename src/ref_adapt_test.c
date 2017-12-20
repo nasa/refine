@@ -101,7 +101,7 @@ int main( int argc, char *argv[] )
 
           ref_malloc( node_ratio, ref_node_max(ref_node), REF_DBL );
 
-          RSS(ref_part_ratio( ref_node,
+          RSS(ref_part_scalar( ref_node,
 			      node_ratio, argv[3] ), "part metric" );
           ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read ratio");
 

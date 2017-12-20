@@ -1304,8 +1304,8 @@ REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_ratio( REF_NODE ref_node,
-			   REF_DBL *ratio, const char *filename )
+REF_STATUS ref_part_scalar( REF_NODE ref_node,
+			   REF_DBL *scalar, const char *filename )
 {
   FILE *file;
   REF_INT chunk;
@@ -1335,7 +1335,7 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node,
 	{
 	  for (node=0;node<section_size;node++)
 	    REIS( 1, fscanf( file, "%lf", 
-			     &(data[node]) ), "data ratio read error" );
+			     &(data[node]) ), "data scalar read error" );
 	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
 			      data, chunk, REF_DBL_TYPE ), "bcast" );
 	}
@@ -1350,7 +1350,7 @@ REF_STATUS ref_part_ratio( REF_NODE ref_node,
 	  RXS( ref_node_local( ref_node, global, &local ), 
 	       REF_NOT_FOUND, "local" );
 	  if ( REF_EMPTY != local )
-	    ratio[local] = data[node];
+	    scalar[local] = data[node];
 	}
       nnode_read += section_size;
     }
