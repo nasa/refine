@@ -1005,6 +1005,95 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_part_metric_solb( REF_NODE ref_node, const char *filename )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_DICT ref_dict;
+  FILE *file;
+  REF_INT chunk;
+  REF_DBL *metric;
+  REF_INT nnode_read, section_size;
+  REF_INT node, local, global, im;
+  REF_BOOL available;
+  REF_INT version, dim, nnode, ntype, type, next_position;
+  
+  file = NULL;
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      RSS( ref_dict_create( &ref_dict ), "create dict" );
+      RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  3, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing dimension" );
+      REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+      REIS( 3, dim, "only 3D supported" );
+      
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  62, &available, &next_position ), "jump" );
+      RAS( available, "SolAtVertices missing" );
+      REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
+      REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
+      REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
+      REIS( ref_node_n_global(ref_node), nnode, "global nnode" );
+      REIS( 1, ntype, "number of solutions" );
+      REIS( 3, type, "metric solution type" );
+    }
+
+  chunk = MAX( 100000, 
+	       ref_node_n_global(ref_node)/ref_mpi_m(ref_node_mpi(ref_node)) );
+  chunk = MIN( chunk, ref_node_n_global(ref_node) );
+
+  ref_malloc_init( metric, 6*chunk, REF_DBL, -1.0 );
+  
+  nnode_read = 0;
+  while ( nnode_read < ref_node_n_global(ref_node) )
+    {
+      section_size = MIN(chunk,ref_node_n_global(ref_node)-nnode_read);
+      if ( ref_mpi_once(ref_node_mpi(ref_node)) )
+	{
+	  for (node=0;node<section_size;node++)
+	    {
+	      REIS(1,fread(&(metric[0+6*node]),sizeof(REF_DBL), 1, file),"m11");
+	      REIS(1,fread(&(metric[1+6*node]),sizeof(REF_DBL), 1, file),"m12");
+	      /* transposed 3,2 */
+	      REIS(1,fread(&(metric[3+6*node]),sizeof(REF_DBL), 1, file),"m22");
+	      REIS(1,fread(&(metric[2+6*node]),sizeof(REF_DBL), 1, file),"m31");
+	      REIS(1,fread(&(metric[4+6*node]),sizeof(REF_DBL), 1, file),"m32");
+	      REIS(1,fread(&(metric[5+6*node]),sizeof(REF_DBL), 1, file),"m33");
+	    }
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      else
+	{
+	  RSS( ref_mpi_bcast( ref_node_mpi(ref_node),
+			      metric, 6*chunk, REF_DBL_TYPE ), "bcast" );
+	}
+      for (node=0;node<section_size;node++)
+	{
+	  global = node + nnode_read;
+	  RXS( ref_node_local( ref_node, global, &local ), 
+	       REF_NOT_FOUND, "local" );
+	  if ( REF_EMPTY != local )
+	    for(im=0;im<6;im++)
+	      ref_node_metric(ref_node,im,local) = metric[im+6*node];
+	}
+      nnode_read += section_size;
+    }
+
+  ref_free( metric );
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      REIS( next_position, ftell(file), "end location" );
+      REIS(0,fclose(file),"close file");
+    }
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
 {
   FILE *file;
@@ -1017,7 +1106,22 @@ REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename )
   REF_INT nnode, ntype, type;
   REF_INT status;
   char line[1024];
+  REF_BOOL solb_format = REF_FALSE;
 
+  if ( ref_mpi_once(ref_node_mpi(ref_node)) )
+    {
+      end_of_string = strlen(filename);
+      if( strcmp(&filename[end_of_string-5],".solb") == 0 )
+	solb_format = REF_TRUE;
+    }
+  RSS( ref_mpi_all_or( ref_node_mpi(ref_node), &solb_format ), "bcast");
+
+  if ( solb_format )
+    {
+      RSS( ref_part_metric_solb( ref_node, filename), "-metric.solb" );
+      return REF_SUCCESS;
+    }
+      
   file = NULL;
   sol_format = REF_FALSE;
   if ( ref_mpi_once(ref_node_mpi(ref_node)) )
