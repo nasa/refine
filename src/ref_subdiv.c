@@ -422,9 +422,46 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 	  }					     \
 	else					     \
 	  {					     \
+	    ref_subdiv_mark( ref_subdiv, ge0 ) = 0;  \
 	    ref_subdiv_mark( ref_subdiv, ge2 ) = 0;  \
 	  }					     \
       }						     \
+  }
+
+#define demote_keep_first()						\
+  {									\
+    REF_INT ge0, ge1, ge2, ge3, ge4, ge5, sum;				\
+    ge0 = ref_cell_c2e( ref_cell, 0, cell );				\
+    ge1 = ref_cell_c2e( ref_cell, 1, cell );				\
+    ge2 = ref_cell_c2e( ref_cell, 2, cell );				\
+    ge3 = ref_cell_c2e( ref_cell, 3, cell );				\
+    ge4 = ref_cell_c2e( ref_cell, 4, cell );				\
+    ge5 = ref_cell_c2e( ref_cell, 5, cell );				\
+    sum = ref_subdiv_mark( ref_subdiv, ge0 )				\
+        + ref_subdiv_mark( ref_subdiv, ge1 )				\
+        + ref_subdiv_mark( ref_subdiv, ge2 )				\
+        + ref_subdiv_mark( ref_subdiv, ge3 )				\
+        + ref_subdiv_mark( ref_subdiv, ge4 )				\
+        + ref_subdiv_mark( ref_subdiv, ge5 );				\
+    if ( 2 == sum )							\
+      {									\
+	REF_INT iedge, keep_edge;					\
+	again = REF_TRUE;						\
+	keep_edge=REF_EMPTY;						\
+	for(iedge=0;iedge<6;iedge++)					\
+	  if ( 1 == ref_subdiv_mark( ref_subdiv,			\
+				     ref_cell_c2e( ref_cell,		\
+						   iedge, cell ) ) )	\
+	    {								\
+	      keep_edge = iedge; break;					\
+	    }								\
+	RUS( REF_EMPTY, keep_edge, "mark missing" );			\
+	for(iedge=0;iedge<6;iedge++)					\
+	  ref_subdiv_mark( ref_subdiv,					\
+			   ref_cell_c2e( ref_cell, iedge, cell ) ) = 0;	\
+	ref_subdiv_mark( ref_subdiv,					\
+			 ref_cell_c2e( ref_cell, keep_edge, cell ) ) = 1; \
+      }									\
   }
 
 REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
@@ -456,26 +493,27 @@ REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
 	{
 	  switch ( ref_cell_node_per(ref_cell) )
 	    {
-	      case 4:
-		demote_2_1(5,4,3);
-		demote_2_1(5,1,2);
-		demote_2_1(0,4,2);
-		demote_2_1(0,1,3);
-		break;
+	    case 4:
+	      demote_2_1(5,4,3);
+	      demote_2_1(5,1,2);
+	      demote_2_1(0,4,2);
+	      demote_2_1(0,1,3);
+	      demote_keep_first();
+	      break;
 	    default:
-		RSS(REF_IMPLEMENT,"implement cell type");
-		break;    
+	      RSS(REF_IMPLEMENT,"implement cell type");
+	      break;    
 	    }
 	}
-
-      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
-    }
 
   if (ref_subdiv->instrument)
     {
       RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
       if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
 	printf(" %d edges marked after %d unmark relaxations\n",nmark,nsweeps);
+    }
+
+      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
     }
 
   return REF_SUCCESS;
@@ -1593,8 +1631,10 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
 
   RSS(ref_subdiv_mark_relax(ref_subdiv),"relax marks");
   RSS(ref_subdiv_unmark_geom_support(ref_subdiv),"geom marks");
-  /* relax negatively by turning edges off */
+  RSS(ref_subdiv_unmark_relax(ref_subdiv),"relax marks");
+
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv),"possible");
+
   RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
 
   RSS( ref_subdiv_split_tet( ref_subdiv ), "split tet" );
