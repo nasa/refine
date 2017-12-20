@@ -402,7 +402,7 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_mark_deactivate_geom_support( REF_SUBDIV ref_subdiv )
+REF_STATUS ref_subdiv_unmark_geom_support( REF_SUBDIV ref_subdiv )
 {
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge;
@@ -430,6 +430,14 @@ REF_STATUS ref_subdiv_mark_deactivate_geom_support( REF_SUBDIV ref_subdiv )
 			   ref_subdiv_mpi(ref_subdiv),
 			   ref_subdiv->mark), "ghost mark" );
 
+  if (ref_subdiv->instrument)
+    {
+      REF_INT nmark;
+      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
+      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
+	printf(" %d edges marked without geom support\n",nmark);
+    }
+  
   return REF_SUCCESS;
 }
 
@@ -1505,7 +1513,7 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   REF_INT node;
 
   RSS(ref_subdiv_mark_relax(ref_subdiv),"relax marks");
-  RSS(ref_subdiv_mark_deactivate_geom_support(ref_subdiv),"geom marks");
+  RSS(ref_subdiv_unmark_geom_support(ref_subdiv),"geom marks");
   /* relax negatively by turning edges off */
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv),"possible");
   RSS(ref_subdiv_new_node(ref_subdiv),"new nodes");
