@@ -373,40 +373,41 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
-  {  /* imply metric tet prism */
-    REF_DBL tol = 0.00001;
-    REF_GRID ref_grid;
-    REF_DBL *metric;
-    REF_INT node;
+  if ( !ref_mpi_para(ref_mpi) )
+    {  /* imply metric tet prism */
+      REF_DBL tol = 0.00001;
+      REF_GRID ref_grid;
+      REF_DBL *metric;
+      REF_INT node;
 
-    RSS( ref_fixture_pri_tet_cap_grid( &ref_grid, ref_mpi ), "tet" );
+      RSS( ref_fixture_pri_tet_cap_grid( &ref_grid, ref_mpi ), "tet" );
 
-    ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+      ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
 
-    RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
+      RSS( ref_metric_imply_from( metric, ref_grid ), "imply" );
 
-    node = 6;
-    RWDS( 1.00, metric[0+6*node], tol, "m[0]");
-    RWDS( 0.50, metric[1+6*node], tol, "m[1]");
-    RWDS( 0.05, metric[2+6*node], tol, "m[2]");
-    RWDS( 1.00, metric[3+6*node], tol, "m[3]");
-    RWDS( 0.05, metric[4+6*node], tol, "m[4]");
-    RWDS( 0.67, metric[5+6*node], tol, "m[5]");
+      node = 6;
+      RWDS( 1.00, metric[0+6*node], tol, "m[0]");
+      RWDS( 0.50, metric[1+6*node], tol, "m[1]");
+      RWDS( 0.05, metric[2+6*node], tol, "m[2]");
+      RWDS( 1.00, metric[3+6*node], tol, "m[3]");
+      RWDS( 0.05, metric[4+6*node], tol, "m[4]");
+      RWDS( 0.67, metric[5+6*node], tol, "m[5]");
 
-    RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply" );
+      RSS( ref_metric_imply_non_tet( metric, ref_grid ), "imply" );
 
-    node = 6;
-    RWDS( 1.00, metric[0+6*node], tol, "m[0]");
-    RWDS( 0.50, metric[1+6*node], tol, "m[1]");
-    RWDS( 0.05, metric[2+6*node], tol, "m[2]");
-    RWDS( 1.00, metric[3+6*node], tol, "m[3]");
-    RWDS( 0.05, metric[4+6*node], tol, "m[4]");
-    RWDS( 0.67, metric[5+6*node], tol, "m[5]");
+      node = 6;
+      RWDS( 1.00, metric[0+6*node], tol, "m[0]");
+      RWDS( 0.50, metric[1+6*node], tol, "m[1]");
+      RWDS( 0.05, metric[2+6*node], tol, "m[2]");
+      RWDS( 1.00, metric[3+6*node], tol, "m[3]");
+      RWDS( 0.05, metric[4+6*node], tol, "m[4]");
+      RWDS( 0.67, metric[5+6*node], tol, "m[5]");
 
-    ref_free( metric );
+      ref_free( metric );
 
-    RSS(ref_grid_free(ref_grid),"free"); 
-  }
+      RSS(ref_grid_free(ref_grid),"free"); 
+    }
 
   {  /* imply metric pyr */
     REF_DBL tol = 0.00001;
@@ -556,30 +557,31 @@ se.^-0.5
     RSS( ref_grid_free( ref_grid ), "free");
   }
 
-  {
-    REF_GRID ref_grid, parent_grid;
-    REF_INT node, im;
-    REF_DBL tol = -1.0;
+  if ( !ref_mpi_para(ref_mpi) )
+    {
+      REF_GRID ref_grid, parent_grid;
+      REF_INT node, im;
+      REF_DBL tol = -1.0;
 
-    RSS( ref_fixture_twod_brick_grid( &parent_grid, ref_mpi ), "brick");
-    RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick");
-    RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
+      RSS( ref_fixture_twod_brick_grid( &parent_grid, ref_mpi ), "brick");
+      RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick");
+      RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
  
-    RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
+      RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
 	   "oly" );
-    RSS( ref_metric_twod_node( ref_grid_node(parent_grid) ), "2d" );
+      RSS( ref_metric_twod_node( ref_grid_node(parent_grid) ), "2d" );
 
-    RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
+      RSS( ref_metric_interpolate( ref_grid, parent_grid ), "interp" );
 
-    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
-      for(im=0;im<6;im++)
-	RWDS( ref_node_metric(ref_grid_node(parent_grid),im,node),
-	      ref_node_metric(ref_grid_node(ref_grid),im,node),
-	      tol, "interpolant");    
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	for(im=0;im<6;im++)
+	  RWDS( ref_node_metric(ref_grid_node(parent_grid),im,node),
+		ref_node_metric(ref_grid_node(ref_grid),im,node),
+		tol, "interpolant");    
 
-    RSS( ref_grid_free( ref_grid ), "free");
-    RSS( ref_grid_free( parent_grid ), "free");
-  }
+      RSS( ref_grid_free( ref_grid ), "free");
+      RSS( ref_grid_free( parent_grid ), "free");
+    }
 
   {
     REF_GRID ref_grid, parent_grid;
