@@ -50,12 +50,14 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_STATUS status;
-  REF_BOOL subdiv_para_edges = REF_FALSE; /* subdiv and geom intersection */
+  REF_BOOL subdiv_para_edges;
   REF_LIST ref_list = NULL;
   REF_SUBDIV ref_subdiv = NULL;
   
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
 
+  subdiv_para_edges = ref_mpi_para(ref_grid_mpi(ref_grid));
+  
   if ( subdiv_para_edges )
     RSS( ref_list_create( &ref_list ), "list for stuck edges" );
   
