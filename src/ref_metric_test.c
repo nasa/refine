@@ -611,7 +611,7 @@ se.^-0.5
     REF_INT node, im;
     REF_DBL tol = -1.0;
     char meshb[] = "ref_metric_test.meshb";
-    char solb[] = "ref_interp_test-metric.solb";
+    char solb[] = "ref_metric_test-metric.solb";
 
     if ( ref_mpi_once(ref_mpi) )
       {
@@ -627,7 +627,7 @@ se.^-0.5
     RSS( ref_part_by_extension( &ref_grid, ref_mpi, meshb ), "import" );
     RSS( ref_part_metric( ref_grid_node(ref_grid), solb ),"export" );
 
-    if ( REF_FALSE && ref_mpi_once(ref_mpi) )
+    if ( ref_mpi_once(ref_mpi) )
       {
 	REIS(0, remove( meshb ), "test meshb clean up");
 	REIS(0, remove( solb ), "test solb clean up");
