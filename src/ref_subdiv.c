@@ -338,7 +338,7 @@ static REF_STATUS ref_subdiv_node_between( REF_SUBDIV ref_subdiv,
 
 REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 {
-  REF_INT group, cell, sweeps, nmark;
+  REF_INT group, cell, nsweeps, nmark;
   REF_CELL ref_cell;
   REF_BOOL again;
 
@@ -349,11 +349,11 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
 	printf(" %d edges marked before relaxation\n",nmark);
     }
   
-  sweeps = 0;
+  nsweeps = 0;
   again = REF_TRUE;
   while (again)
     {
-      sweeps++;
+      nsweeps++;
       again = REF_FALSE;
 
       RSS( ref_edge_ghost_int( ref_subdiv_edge(ref_subdiv),
