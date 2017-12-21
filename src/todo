@@ -1,4 +1,6 @@
 
+reduce validation redundancy of volume stats and complexity
+
 remove private methods from headers : ref_part ref_gather
 
 reference implementation of Lp metric

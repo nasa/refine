@@ -64,6 +64,8 @@ REF_STATUS ref_metric_l2_projection_hessian( REF_GRID ref_grid, REF_DBL *scalar,
 					     REF_DBL *hessian );
 REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric, 
 					    REF_GRID ref_grid );
+REF_STATUS ref_metric_complexity( REF_DBL *metric, REF_GRID ref_grid,
+				  REF_DBL *complexity);
 REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
 			  REF_INT p_norm, REF_DBL gradation, 
 			  REF_DBL complexity );

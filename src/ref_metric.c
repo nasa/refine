@@ -1068,6 +1068,9 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   REF_INT i, neighbor, nint;
   REF_DBL log_m[6];
 
+  if ( ref_grid_twod(ref_grid) )
+    RSS( REF_IMPLEMENT, "2D not implmented" );
+
   /* each boundary node */
   each_ref_node_valid_node(ref_node, node)
     if ( !ref_cell_node_empty( tris, node ) )
@@ -1103,3 +1106,75 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_complexity( REF_DBL *metric, REF_GRID ref_grid,
+				  REF_DBL *complexity)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL volume, det;
+  if (ref_grid_twod(ref_grid) ) ref_cell = ref_grid_tri(ref_grid);
+  *complexity = 0.0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      if ( ref_grid_twod(ref_grid) )
+	{
+	  RSS( ref_node_tri_area( ref_node, nodes, &volume ), "area" );
+	}
+      else
+	{
+	  RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
+	}
+      for ( cell_node = 0 ; 
+	    cell_node < ref_cell_node_per( ref_cell ) ;
+	    cell_node++ )
+	{
+	  RSS( ref_matrix_det_m( &(metric[6*nodes[cell_node]]), &det ),"det");
+	  (*complexity) += 
+	    sqrt(det)*volume/((REF_DBL)ref_cell_node_per(ref_cell));
+	}
+    }
+  RSS( ref_mpi_allsum( ref_grid_mpi(ref_grid), 
+		       &complexity, 1, REF_DBL_TYPE ),"dbl sum");
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+			  REF_INT p_norm, REF_DBL gradation, 
+			  REF_DBL target_complexity )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_INT dimension = 3;
+  REF_INT relaxations;
+  REF_DBL det;
+  REF_DBL current_complexity;
+  if ( ref_grid_twod(ref_grid) )
+    RSS( REF_IMPLEMENT, "2D not implmented" );
+  RSS( ref_metric_l2_projection_hessian( ref_grid, scalar, metric ), "l2");
+  RSS( ref_metric_extrapolate_boundary( metric, ref_grid ), "bound extrap");
+  /* local scaling */
+  each_ref_node_valid_node(ref_node, node)
+    {
+      ref_matrix_det_m( &(metric[6*node]), &det );
+      for (i=0;i<6;i++)
+	metric[i+6*node] *= pow(det,-(2+p_norm+dimension));
+    }
+  /* global scaling and gradation limiting */
+  for (relaxations=0;relaxations<10;relaxations++)
+    {
+      RSS( ref_metric_complexity(metric, ref_grid, &current_complexity),"cmp");
+      if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+	printf("complexity %e\n",current_complexity);
+      for (i=0;i<6;i++)
+	metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
+      RSS( ref_metric_gradation( metric, ref_grid, gradation ), "gradation" );
+    }
+  RSS( ref_metric_complexity(metric, ref_grid, &current_complexity),"cmp");
+  for (i=0;i<6;i++)
+    metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
+  if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    printf("complexity %e\n",target_complexity);
+  return REF_SUCCESS;
+}
