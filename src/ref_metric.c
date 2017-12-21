@@ -1148,18 +1148,19 @@ REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   REF_INT i, node;
   REF_INT dimension = 3;
   REF_INT relaxations;
-  REF_DBL det;
+  REF_DBL det, exponent;
   REF_DBL current_complexity;
   if ( ref_grid_twod(ref_grid) )
     RSS( REF_IMPLEMENT, "2D not implmented" );
   RSS( ref_metric_l2_projection_hessian( ref_grid, scalar, metric ), "l2");
   RSS( ref_metric_extrapolate_boundary( metric, ref_grid ), "bound extrap");
   /* local scaling */
+  exponent = -1.0/((REF_DBL)(2*p_norm+dimension));
   each_ref_node_valid_node(ref_node, node)
     {
       ref_matrix_det_m( &(metric[6*node]), &det );
       for (i=0;i<6;i++)
-	metric[i+6*node] *= pow(det,-(2+p_norm+dimension));
+	metric[i+6*node] *= pow(det,exponent);
     }
   /* global scaling and gradation limiting */
   for (relaxations=0;relaxations<10;relaxations++)
@@ -1167,13 +1168,15 @@ REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
       RSS( ref_metric_complexity(metric, ref_grid, &current_complexity),"cmp");
       if (ref_mpi_once(ref_grid_mpi(ref_grid)))
 	printf("complexity %e\n",current_complexity);
-      for (i=0;i<6;i++)
-	metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
+      each_ref_node_valid_node(ref_node, node)
+	for (i=0;i<6;i++)
+	  metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
       RSS( ref_metric_gradation( metric, ref_grid, gradation ), "gradation" );
     }
   RSS( ref_metric_complexity(metric, ref_grid, &current_complexity),"cmp");
-  for (i=0;i<6;i++)
-    metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
+  each_ref_node_valid_node(ref_node, node)
+    for (i=0;i<6;i++)
+      metric[i+6*node] *= pow(target_complexity/current_complexity,2.0/3.0);
   if (ref_mpi_once(ref_grid_mpi(ref_grid)))
     printf("complexity %e\n",target_complexity);
   return REF_SUCCESS;
