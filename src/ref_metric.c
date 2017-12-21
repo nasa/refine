@@ -1053,6 +1053,53 @@ REF_STATUS ref_metric_l2_projection_hessian( REF_GRID ref_grid, REF_DBL *scalar,
   ref_free(dsdx);
   ref_free(grad);
 
-  
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric, 
+					    REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tris = ref_grid_tri(ref_grid);
+  REF_CELL tets = ref_grid_tet(ref_grid);
+  REF_INT node;
+  REF_INT max_node = 200, nnode;
+  REF_INT node_list[200];
+  REF_INT i, neighbor, nint;
+  REF_DBL log_m[6];
+
+  /* each boundary node */
+  each_ref_node_valid_node(ref_node, node)
+    if ( !ref_cell_node_empty( tris, node ) )
+      {
+	RSS( ref_cell_node_list_around( tets, node, 
+					max_node, &nnode, node_list ), 
+	     "node degree of boundary is large" );
+	nint = 0;
+	for (neighbor=0;neighbor<nnode;neighbor++)
+	  if ( ref_cell_node_empty( tris, node_list[neighbor] ) )
+	    nint++;
+	if ( 0 < nint )
+	  {
+	    for (i=0;i<6;i++)
+	      metric[i+6*node] = 0.0;
+	    for (neighbor=0;neighbor<nnode;neighbor++)
+	      if ( ref_cell_node_empty( tris, node_list[neighbor] ) )
+		{
+		  RSS( ref_matrix_log_m( &(metric[6*node_list[neighbor]]), 
+					 log_m ), "log" );
+		  for (i=0;i<6;i++)
+		    metric[i+6*node] += log_m[i];
+		}
+	    for (i=0;i<6;i++)
+	      log_m[i] = metric[i+6*node] / (REF_DBL)nint;
+	    RSS( ref_matrix_exp_m( log_m, &(metric[6*node]) ), "exp" );
+	  }
+	
+      }
+
+  RSS( ref_node_ghost_dbl(ref_node,metric,6), "update ghosts" );
+
+  return REF_SUCCESS;
+}
+
