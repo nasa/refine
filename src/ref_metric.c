@@ -933,3 +933,64 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_l2_projection_grad( REF_GRID ref_grid, REF_DBL *scalar,
+					  REF_DBL *grad)
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT i, node, cell, group, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL div_by_zero;
+  REF_DBL cell_vol, cell_grad[3];
+  REF_DBL *vol;
+  
+  ref_malloc_init( vol, ref_node_max(ref_node), REF_DBL, 0.0 );
+
+  each_ref_node_valid_node(ref_node, node)
+    for (i=0;i<3;i++)
+      grad[i+3*node] = 0.0;
+  
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+    {
+      switch ( ref_cell_node_per(ref_cell) )
+	{
+	case 4:
+	  RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+	  RSS(ref_node_tet_grad(ref_node, nodes, scalar, cell_grad), "grad");
+	  for (cell_node=0;cell_node<4;cell_node++)
+	    for (i=0;i<3;i++)
+	      grad[i+3*nodes[cell_node]] += cell_vol*cell_grad[i];
+	  for (cell_node=0;cell_node<4;cell_node++)
+	    vol[nodes[cell_node]] += cell_vol;
+	  break;
+	default:
+	  RSS(REF_IMPLEMENT,"implement cell type");
+	  break;    
+	}
+    }
+
+  div_by_zero = REF_FALSE;
+  each_ref_node_valid_node(ref_node, node)
+    {
+      if ( ref_math_divisible(grad[0+3*node],vol[node]) &&
+	   ref_math_divisible(grad[1+3*node],vol[node]) &&
+	   ref_math_divisible(grad[2+3*node],vol[node]) )
+	{
+	  for (i=0;i<3;i++)
+	    grad[i+3*node] /= vol[node];
+	}
+      else
+	{
+	  div_by_zero = REF_TRUE;
+	  for (i=0;i<3;i++)
+	  grad[i+3*node] = 0.0;
+	}
+    }
+  RSS( ref_mpi_all_or( ref_grid_mpi(ref_grid), &div_by_zero ), "mpi all or" );
+  RSS( ref_node_ghost_dbl(ref_node,grad,3), "update ghosts" );
+  
+  ref_free(vol);
+  
+  return (div_by_zero?REF_DIV_ZERO:REF_SUCCESS);
+}
