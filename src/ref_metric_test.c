@@ -678,6 +678,45 @@ se.^-0.5
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
+  {  /* l2-projection hessian zero, constant gradient */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *hessian;
+    REF_INT node;
+
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick");
+    
+    ref_malloc( scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+    ref_malloc( hessian, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      {
+	scalar[node] =
+	  1.3*ref_node_xyz(ref_grid_node(ref_grid),0,node) +
+	  3.5*ref_node_xyz(ref_grid_node(ref_grid),1,node) +
+	  7.2*ref_node_xyz(ref_grid_node(ref_grid),2,node) +
+	  15.0;
+      }
+
+    RSS( ref_metric_l2_projection_hessian( ref_grid, scalar,
+					   hessian ), "l2 hess" );
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      {
+	RWDS( 0.0, hessian[0+6*node], tol, "m11");
+	RWDS( 0.0, hessian[1+6*node], tol, "m12");
+	RWDS( 0.0, hessian[2+6*node], tol, "m13");
+	RWDS( 0.0, hessian[3+6*node], tol, "m22");
+	RWDS( 0.0, hessian[4+6*node], tol, "m23");
+	RWDS( 0.0, hessian[5+6*node], tol, "m33");
+      }
+
+    ref_free( hessian );
+    ref_free( scalar );
+
+    RSS(ref_grid_free(ref_grid),"free"); 
+  }
+
   RSS( ref_mpi_free(ref_mpi), "free");
   RSS( ref_mpi_stop( ), "stop" );
   return 0;

@@ -60,6 +60,8 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 			   REF_GRID ref_grid );
 REF_STATUS ref_metric_l2_projection_grad( REF_GRID ref_grid, REF_DBL *scalar,
 					  REF_DBL *grad );
+REF_STATUS ref_metric_l2_projection_hessian( REF_GRID ref_grid, REF_DBL *scalar,
+					     REF_DBL *hessian );
 
 END_C_DECLORATION
 
