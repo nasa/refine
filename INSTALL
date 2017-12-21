@@ -1,5 +1,21 @@
 
-(Quick Start) If You Received a *.tar.gz File to run with FUN3D
+Note To Git Users ONLY!
+=======================
+
+(Skip this step and goto `Quick Start` or `Basic Installation' if you
+have a *.tar.gz file.)
+
+   Run ./bootstrap to create the configure script. Create a build
+directory. Change (cd) to the build dir and and run: 
+
+ % ./bootstrap
+ % mkdir -p build
+ % cd build
+ % ../configure --prefix=`pwd`.
+ % make
+ % make install
+
+(Quick Start) If You Received a *.tar.gz File
 ===============================================================
 
 run (replace `x.x.x' with the current version number):
@@ -11,7 +27,7 @@ run (replace `x.x.x' with the current version number):
  % make
  % make install
 
-This will place two libraries, librefine.a and libFAUXGeom.a, in lib 
+This will place libraries in refine-x.x.x/lib 
 
 Read the `Basic Installation' section for more detailed instructions.
 
@@ -25,18 +41,6 @@ You will need to run/rerun the FUN3D ./configure script. Add this
 argument
 
   --with-refine=/my/path/to/refine-x.x.x
-
-Note To Git Users ONLY!
-=======================
-
-(Skip this step and goto `Basic Installation' if you have a *.tar.gz 
-file.)
-
-   Run ./autogen.sh to set the package up to install inside an
-architecture directory (e.g., Linux). It will run ./bootstrap
-to create the configure script. Then it will create an arch
-directory. Finally, it will cd to the arch dir and and run: 
-../configure --prefix=`pwd`.
 
 Basic Installation
 ==================
