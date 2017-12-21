@@ -1994,6 +1994,57 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
+  { /* tet gradient, right tet */
+    REF_NODE ref_node;
+    REF_INT nodes[4], global;
+    REF_DBL grad[3], scalar[4];
+
+    RSS(ref_node_create(&ref_node,ref_mpi),"create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&(nodes[0])),"add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&(nodes[1])),"add");
+    global = 2;
+    RSS(ref_node_add(ref_node,global,&(nodes[2])),"add");
+    global = 3;
+    RSS(ref_node_add(ref_node,global,&(nodes[3])),"add");
+
+    for ( global=0;global<4;global++)
+      {
+	ref_node_xyz(ref_node,0,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,1,nodes[global]) = 0.0;
+	ref_node_xyz(ref_node,2,nodes[global]) = 0.0;
+      }
+
+    ref_node_xyz(ref_node,0,nodes[1]) = 1.0;
+    ref_node_xyz(ref_node,1,nodes[2]) = 1.0;
+    ref_node_xyz(ref_node,2,nodes[3]) = 1.0;
+
+    /* zero gradient */
+    scalar[nodes[0]] = 0.0;
+    scalar[nodes[1]] = 0.0;
+    scalar[nodes[2]] = 0.0;
+    scalar[nodes[3]] = 0.0;
+
+    RSS(ref_node_tet_grad(ref_node, nodes, scalar, grad), "vol");
+    RWDS( 0.0, grad[0], -1.0, "gradx expected" );
+    RWDS( 0.0, grad[1], -1.0, "grady expected" );
+    RWDS( 0.0, grad[2], -1.0, "gradz expected" );
+
+    /* 1-3-5 gradient */
+    scalar[nodes[0]] = 0.0;
+    scalar[nodes[1]] = 1.0;
+    scalar[nodes[2]] = 3.0;
+    scalar[nodes[3]] = 5.0;
+    RSS(ref_node_tet_grad(ref_node, nodes, scalar, grad), "vol");
+    RWDS( 1.0, grad[0], -1.0, "gradx expected" );
+    RWDS( 3.0, grad[1], -1.0, "grady expected" );
+    RWDS( 5.0, grad[2], -1.0, "gradz expected" );
+
+    RSS(ref_node_free(ref_node),"free");
+  }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 

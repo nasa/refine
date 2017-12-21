@@ -2189,3 +2189,58 @@ REF_STATUS ref_node_dist_to_tri( REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_tet_grad( REF_NODE ref_node, 
+			      REF_INT *nodes, REF_DBL *scalar,
+			      REF_DBL *gradient )
+{
+  REF_DBL vol, norm1[3], norm2[3], norm3[3];
+  REF_INT face[3];
+  
+  gradient[0] = 0.0;
+  gradient[1] = 0.0;
+  gradient[2] = 0.0;
+  
+  RSS( ref_node_tet_vol( ref_node, nodes, &vol ), "vol");
+  vol *= -6.0;
+
+  face[0]=nodes[0];face[1]=nodes[3];face[2]=nodes[2];
+  RSS( ref_node_tri_normal( ref_node, face, norm1 ), "vol");
+
+  face[0]=nodes[0];face[1]=nodes[1];face[2]=nodes[3];
+  RSS( ref_node_tri_normal( ref_node, face, norm2 ), "vol");
+
+  face[0]=nodes[0];face[1]=nodes[2];face[2]=nodes[1];
+  RSS( ref_node_tri_normal( ref_node, face, norm3 ), "vol");
+
+  gradient[0] =
+    (scalar[nodes[1]]-scalar[nodes[0]])*norm1[0] +
+    (scalar[nodes[2]]-scalar[nodes[0]])*norm2[0] +
+    (scalar[nodes[3]]-scalar[nodes[0]])*norm3[0] ;
+  gradient[1] =
+    (scalar[nodes[1]]-scalar[nodes[0]])*norm1[1] +
+    (scalar[nodes[2]]-scalar[nodes[0]])*norm2[1] +
+    (scalar[nodes[3]]-scalar[nodes[0]])*norm3[1] ;
+  gradient[2] =
+    (scalar[nodes[1]]-scalar[nodes[0]])*norm1[2] +
+    (scalar[nodes[2]]-scalar[nodes[0]])*norm2[2] +
+    (scalar[nodes[3]]-scalar[nodes[0]])*norm3[2] ;
+
+  if ( ref_math_divisible(gradient[0],vol) &&
+       ref_math_divisible(gradient[1],vol) &&
+       ref_math_divisible(gradient[2],vol) )
+    {
+      gradient[0] /= vol;
+      gradient[1] /= vol;
+      gradient[2] /= vol;
+    }
+  else
+    {
+      gradient[0] = 0.0;
+      gradient[1] = 0.0;
+      gradient[2] = 0.0;
+      return REF_DIV_ZERO;
+    }
+	 
+  return REF_SUCCESS;
+}
