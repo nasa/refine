@@ -2,5 +2,15 @@
 Refine is a 3D mixed-element grid adaptation framework implemented in
 the C language.
 
-See the INSTALL file for build instructions.
+If you checked out the reposity with git, 
+[requires automake >= 1.7 and autoconf >= 2.53]
+
+ % ./bootstrap
+ % mkdir -p build
+ % cd build
+ % ../configure --prefix=`pwd`.
+ % make
+ % make install
+
+See the INSTALL file for further build instructions.
 
