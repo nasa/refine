@@ -8,7 +8,7 @@ If you checked out the reposity with git,
  % ./bootstrap
  % mkdir -p build
  % cd build
- % ../configure --prefix=`pwd`.
+ % ../configure --prefix=`pwd`
  % make
  % make install
 

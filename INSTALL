@@ -11,7 +11,7 @@ directory. Change (cd) to the build dir and and run:
  % ./bootstrap
  % mkdir -p build
  % cd build
- % ../configure --prefix=`pwd`.
+ % ../configure --prefix=`pwd`
  % make
  % make install
 
