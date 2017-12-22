@@ -801,6 +801,52 @@ se.^-0.5
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
+  if ( !ref_mpi_para(ref_mpi) )
+    {
+      REF_GRID ref_grid;
+      REF_DBL *metric;
+      REF_INT node;
+      REF_DBL tol = -1.0;
+      
+      RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "brick");
+    
+      ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+      each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+	{
+	  metric[0+6*node] = 1.0;
+	  metric[1+6*node] = 0.0;
+	  metric[2+6*node] = 0.0;
+	  metric[3+6*node] = 1.0;
+	  metric[4+6*node] = 0.0;
+	  metric[5+6*node] = 1.0;
+	}
+      node=0;
+      metric[0+6*node] = 1.0;
+      metric[1+6*node] = 0.0;
+      metric[2+6*node] = 0.0;
+      metric[3+6*node] = 1.0;
+      metric[4+6*node] = 0.0;
+      metric[5+6*node] = 4.0;
+
+      RSS( ref_metric_to_node( metric, ref_grid_node(ref_grid) ), "set node" );
+      RSS( ref_metric_gradation( metric, ref_grid, 1.1 ), "grad");
+
+      node = 0;
+      RWDS( 1.0, metric[0+6*node], tol, "m[0]");
+      RWDS( 1.0, metric[3+6*node], tol, "m[3]");
+      RWDS( 4.0, metric[5+6*node], tol, "m[5]");
+
+      node = 3;
+      RWDS( 1.0, metric[0+6*node], tol, "m[0]");
+      RWDS( 1.0, metric[3+6*node], tol, "m[3]");
+      RWDS( 2.510964529452534, metric[5+6*node], tol, "m[5]");
+    
+      ref_free( metric );
+
+      RSS(ref_grid_free(ref_grid),"free"); 
+    }
+
   RSS( ref_mpi_free(ref_mpi), "free");
   RSS( ref_mpi_stop( ), "stop" );
   return 0;
