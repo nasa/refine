@@ -201,7 +201,7 @@ int main( int argc, char *argv[] )
       if (ngeom>0)
 	{
 	  if ( ref_mpi_once(ref_mpi) )
-	    printf("constrain curvature before caching backgound metric\n");
+	    printf("constrain curvature before caching background metric\n");
 	  RSS( ref_metric_constrain_curvature( ref_grid ), "geom const");
 	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "geom const");
 	}
