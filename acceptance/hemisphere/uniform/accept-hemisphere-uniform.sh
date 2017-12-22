@@ -18,13 +18,14 @@ geomfile=hemisphere.egads
 # ref_geom_test hemisphere.egads hemisphere.meshb
 # ref_driver -i hemisphere.meshb -g hemisphere.egads -r 4 -o hemicurve
 
-${two}/ref_acceptance hemicurve.meshb hemicurve.metric 0.1
-${two}/ref_driver -i hemicurve.meshb -g ${geomfile} -m hemicurve.metric -o hemicurve1 -r 1
-${two}/ref_acceptance hemicurve1.meshb hemicurve1.metric 0.1
-${two}/ref_metric_test hemicurve1.meshb hemicurve1.metric > accept-hemisphere-uniform-01.status
+${two}/ref_acceptance hemicurve.meshb hemicurve-metric.solb 0.1
+${two}/ref_driver -i hemicurve.meshb -g ${geomfile} -m hemicurve-metric.solb -o hemicurve1 -r 1
+${two}/ref_acceptance hemicurve1.meshb hemicurve1-metric.solb 0.1
+${two}/ref_metric_test hemicurve1.meshb hemicurve1-metric.solb > accept-hemisphere-uniform-01.status
 
 cat accept-hemisphere-uniform-01.status
 ../../check.rb accept-hemisphere-uniform-01.status 0.2 1.8
 
 ${two}/ref_interp_test hemicurve.meshb hemicurve1.meshb
 ${two}/ref_interp_test hemicurve1.meshb hemicurve.meshb
+
