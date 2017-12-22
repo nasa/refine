@@ -317,3 +317,20 @@
    fun:MPI_Init
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:pmix_bfrop_unpack_string
+   fun:pmix_bfrop_unpack
+   fun:job_data
+   fun:pmix_usock_process_msg
+   fun:event_process_active_single_queue
+   fun:event_process_active
+   fun:opal_libevent2022_event_base_loop
+   fun:progress_engine
+   fun:_pthread_body
+   fun:_pthread_start
+   fun:thread_start
+}
