@@ -616,7 +616,7 @@ REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid )
 
   ref_malloc( curvature_metric, 6*ref_node_max(ref_node), REF_DBL );
   RSS( ref_metric_from_curvature( curvature_metric, ref_grid ), "curve" );
-  for ( gradation =0 ; gradation<10 ; gradation++ )
+  for ( gradation =0 ; gradation<5 ; gradation++ )
     {
       RSS( ref_metric_gradation( curvature_metric, ref_grid, 1.5 ), "grad");
     }
