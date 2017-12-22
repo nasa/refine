@@ -200,6 +200,7 @@ int main( int argc, char *argv[] )
     {
       if (ngeom>0)
 	{
+	  RSS( ref_validation_cell_volume(ref_grid),"vol");
 	  if ( ref_mpi_once(ref_mpi) )
 	    printf("constrain curvature before caching background metric\n");
 	  RSS( ref_metric_constrain_curvature( ref_grid ), "geom const");
