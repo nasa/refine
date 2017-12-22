@@ -182,6 +182,8 @@ int main( int argc, char *argv[] )
 
   RNS( ref_grid, "input grid required" );
 
+  ref_grid_adapt(ref_grid,instrument) = REF_TRUE; /* timing datails */
+	       
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                          REF_GEOM_FACE, &ngeom ), "count ngeom" );
   if (ngeom>0)
