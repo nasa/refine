@@ -181,6 +181,7 @@ int main( int argc, char *argv[] )
     }
 
   RNS( ref_grid, "input grid required" );
+  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read inputs");
 
   ref_grid_adapt(ref_grid,instrument) = REF_TRUE; /* timing datails */
 	       
@@ -211,7 +212,6 @@ int main( int argc, char *argv[] )
   RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
 					   tecplot_movie ), "show time" );
 
-  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
   RSS( ref_validation_cell_volume(ref_grid),"vol");
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
