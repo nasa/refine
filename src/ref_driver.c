@@ -87,6 +87,7 @@ int main( int argc, char *argv[] )
   REF_BOOL tecplot_movie = REF_FALSE;
   REF_BOOL sanitize_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
+  REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
   char output_project[1024];
   char output_filename[1024];
@@ -188,6 +189,7 @@ int main( int argc, char *argv[] )
                          REF_GEOM_FACE, &ngeom ), "count ngeom" );
   if (ngeom>0)
     {
+      curvature_constraint = REF_TRUE;
       RSS( ref_geom_verify_topo( ref_grid ), "geom topo" );
       RSS( ref_geom_verify_param( ref_grid ), "geom param" );
     }
@@ -198,14 +200,6 @@ int main( int argc, char *argv[] )
     }
   else
     {
-      if (ngeom>0)
-	{
-	  RSS( ref_validation_cell_volume(ref_grid),"vol");
-	  if ( ref_mpi_once(ref_mpi) )
-	    printf("constrain curvature before caching background metric\n");
-	  RSS( ref_metric_constrain_curvature( ref_grid ), "geom const");
-	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "geom const");
-	}
       RSS( ref_grid_deep_copy( &background_grid, ref_grid ), "import" );
     }
 
@@ -216,11 +210,20 @@ int main( int argc, char *argv[] )
   RSS( ref_histogram_quality( ref_grid ), "gram");
   RSS( ref_histogram_ratio( ref_grid ), "gram");
 
+  if ( curvature_constraint )
+    {
+      if ( ref_mpi_once(ref_mpi) )
+	printf("constrain curvature\n");
+      RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "crv const");
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
+    }
   if ( sanitize_metric )
     {
       if ( ref_mpi_once(ref_mpi) )
 	printf("sanitizing metric\n");
       RSS( ref_metric_sanitize( ref_grid ), "sant metric");
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
       RSS( ref_histogram_quality( ref_grid ), "gram");
       RSS( ref_histogram_ratio( ref_grid ), "gram");
     }
@@ -244,6 +247,11 @@ int main( int argc, char *argv[] )
           RSS( ref_metric_interpolate( ref_grid, background_grid ),
                "interp" );
           ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "interp");
+        }
+      if ( curvature_constraint )
+        {
+          RSS( ref_metric_constrain_curvature( ref_grid ), "crv const");
+          ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "crv const");
         }
       if ( sanitize_metric )
         {
