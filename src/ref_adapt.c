@@ -75,6 +75,8 @@ REF_STATUS ref_adapt_deep_copy( REF_ADAPT *ref_adapt_ptr, REF_ADAPT original )
 
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
 
+  ref_adapt->instrument = original->instrument;
+
   return REF_SUCCESS;
 }
 
