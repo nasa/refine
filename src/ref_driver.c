@@ -161,7 +161,7 @@ int main( int argc, char *argv[] )
           printf("       [-g geometry.egads]\n");
           printf("       [-r segments_per_curvature_radian]\n");
           printf("       [-p parameterization-restart.gas]\n");
-          printf("       [-m input_project.metric] (curvature metric when missing)\n");
+          printf("       [-m input_project.{solb,sol,metric}] (curvature metric when missing)\n");
           printf("       [-s adapt_cycles] default is 15\n");
           printf("       [-o output_project]\n");
           printf("       [-c] output clumps\n");
@@ -169,13 +169,12 @@ int main( int argc, char *argv[] )
           printf("       [-t] tecplot movie\n");
           printf("       [-d] debug verbose\n");
           printf("./ref_geom_test ega.egads \n");
-          printf("./ref_geom_test ega.egads ega.ugrid\n");
-          printf("./ref_acceptance ega.ugrid ega.metric 0.1\n");
-          printf("./ref_driver -i ega.ugrid -g ega.egads -p ref_geom_test.gas -m ega.metric\n");
-          printf("cp ref_driver.b8.ugrid ref_driver1.b8.ugrid\n");
-          printf("cp ref_driver.gas ref_driver1.gas\n");
-          printf("./ref_acceptance ref_driver1.b8.ugrid ref_driver1.metric 0.1\n");
-          printf("./ref_driver -i ref_driver1.b8.ugrid -g ega.egads -p ref_driver1.gas -m ref_driver1.metric\n");
+          printf("./ref_geom_test ega.egads ega.meshb\n");
+          printf("./ref_acceptance ega.meshb ega-metric.solb 0.1\n");
+          printf("./ref_driver -i ega.meshb -g ega.egads -m ega-metric.solb\n");
+          printf("cp ref_driver.meshb ref_driver1.meshb\n");
+          printf("./ref_acceptance ref_driver1.meshb ref_driver1-metric.solb 0.1\n");
+          printf("./ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1-metric.solb\n");
           return 1;
         }
     }
@@ -270,7 +269,7 @@ int main( int argc, char *argv[] )
            "export");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather meshb");
     }
-  snprintf( output_filename, 1024, "%s-metric.metric", output_project );
+  snprintf( output_filename, 1024, "%s-metric.solb", output_project );
   RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
   if ( !ref_mpi_para(ref_mpi) )
     {
