@@ -40,6 +40,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL collapse_ratio_limit;
 
   REF_DBL smooth_min_quality;
+  REF_BOOL instrument;
 };
 
 REF_STATUS ref_adapt_create( REF_ADAPT *ref_adapt );
