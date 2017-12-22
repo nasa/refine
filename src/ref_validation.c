@@ -331,13 +331,16 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 	    cell_node < ref_cell_node_per( ref_cell ) ;
 	    cell_node++ )
 	{
-	  RSS( ref_matrix_det_m( ref_node_metric_ptr(ref_node, 
-						     nodes[cell_node]), 
-				 &det),"det");
-	  complexity += sqrt(det)*volume/((REF_DBL)ref_cell_node_per(ref_cell));
+	  if (ref_node_owned(ref_node,nodes[cell_node]) )
+	    {
+	      RSS( ref_matrix_det_m( ref_node_metric_ptr(ref_node, 
+							 nodes[cell_node]), 
+				     &det),"det");
+	      complexity += sqrt(det)*volume /
+		((REF_DBL)ref_cell_node_per(ref_cell));
+	    }
 	}
     }
-
   volume = min_volume;
   RSS( ref_mpi_min( ref_mpi, &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
   volume = max_volume;
