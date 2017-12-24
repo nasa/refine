@@ -1099,7 +1099,7 @@ REF_STATUS ref_metric_l2_projection_hessian( REF_GRID ref_grid, REF_DBL *scalar,
       hessian[1+6*node] = 0.5*(gradx[1+3*node]+grady[0+3*node]);
       hessian[2+6*node] = 0.5*(gradx[2+3*node]+gradz[0+3*node]);
       hessian[3+6*node] = grady[1+3*node];
-      hessian[4+6*node] = 0.5*(grady[2+3*node]+gradz[2+3*node]);
+      hessian[4+6*node] = 0.5*(grady[2+3*node]+gradz[1+3*node]);
       hessian[5+6*node] = gradz[2+3*node];
     }
 
