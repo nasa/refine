@@ -7,14 +7,14 @@ the C language.
 
 If you checked out the repository with git, 
 [requires automake >= 1.7 and autoconf >= 2.53]
-
+```
  % ./bootstrap
  % mkdir -p build
  % cd build
  % ../configure --prefix=`pwd`
  % make
  % make install
-
+```
 See the INSTALL file for further build instructions.
 
 # Metric for Control of Interpolation Error in Lp-norm
