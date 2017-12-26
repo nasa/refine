@@ -184,6 +184,7 @@ int main( int argc, char *argv[] )
   ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read inputs");
 
   ref_grid_adapt(ref_grid,instrument) = REF_TRUE; /* timing datails */
+  ref_grid_adapt(ref_grid,collapse_per_pass) = 5; /* timing datails */
 	       
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                          REF_GEOM_FACE, &ngeom ), "count ngeom" );
