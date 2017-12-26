@@ -1,4 +1,7 @@
 
+README: $(srcdir)/README.md
+	cp $(srcdir)/README.md README
+
 SUBDIRS = src one util
 SUBDIRS += acceptance
 
