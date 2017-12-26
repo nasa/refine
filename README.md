@@ -24,15 +24,16 @@ an implementation of the Lp-norm metric is provided.
 ```
 ./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb
 ```
-Where:
+Where,
  - `project.meshb` is the grid in libMeshb format
  - `project-mach.solb` is a scalar field (Mach number) in libMeshb format
  - `2` is the norm order
  - `1.5` is the gradation limit
  - `3.e4` is the complexity
  - `project-metric.solb` is the output metric in libMeshb format
- See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
- for details on the libMeshb format.
+
+See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
+for details on the libMeshb format.
 
 # Metric Conformity Evaluation
 In conjunction with the
@@ -42,9 +43,11 @@ provided.
 ```
 ./build/src/ref_histogram_test project.meshb project-metric.solb
 ```
+Where,
  - `project.meshb` is the grid in libMeshb format
  - `project-metric.solb` is the metric in libMeshb format
- See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb) for details on the libMeshb format.
+
+See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb) for details on the libMeshb format.
 Histograms are written as `ref_histogram_quality.tec` and
 `ref_histogram_ratio.tec`, where each of the two the columns are
 mean ratio/edge length and normalized count.  
