@@ -342,13 +342,6 @@ REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv )
   REF_CELL ref_cell;
   REF_BOOL again;
 
-  if (ref_subdiv->instrument)
-    {
-      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
-      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
-	printf(" %d edges marked before relaxation\n",nmark);
-    }
-  
   nsweeps = 0;
   again = REF_TRUE;
   while (again)
@@ -500,13 +493,6 @@ REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
   REF_CELL ref_cell;
   REF_BOOL again;
 
-  if (ref_subdiv->instrument)
-    {
-      RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
-      if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
-	printf(" %d edges marked before unmark relaxation\n",nmark);
-    }
-  
   nsweeps = 0;
   again = REF_TRUE;
   while (again)
@@ -571,16 +557,16 @@ REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv )
 	    }
 	}
 
+      RUS( 50, nsweeps, "too many sweeps, stop inf loop");
+  
+      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
+    }
+
   if (ref_subdiv->instrument)
     {
       RSS( ref_subdiv_mark_n( ref_subdiv, &nmark ), "count" );
       if ( ref_mpi_once( ref_subdiv_mpi(ref_subdiv) ) )
 	printf(" %d edges marked after %d unmark relaxations\n",nmark,nsweeps);
-    }
-
-  RUS( 50, nsweeps, "too many sweeps, stop inf loop");
-  
-      RSS( ref_mpi_all_or( ref_subdiv_mpi(ref_subdiv), &again ), "mpi all or" );
     }
 
   return REF_SUCCESS;
