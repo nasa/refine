@@ -1129,8 +1129,8 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   REF_CELL tris = ref_grid_tri(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
   REF_INT node;
-  REF_INT max_node = 200, nnode;
-  REF_INT node_list[200];
+  REF_INT max_node = 400, nnode;
+  REF_INT node_list[400];
   REF_INT i, neighbor, nint;
   REF_DBL log_m[6];
 
@@ -1141,9 +1141,9 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   each_ref_node_valid_node(ref_node, node)
     if ( !ref_cell_node_empty( tris, node ) )
       {
-	RSS( ref_cell_node_list_around( tets, node, 
+	RXS( ref_cell_node_list_around( tets, node, 
 					max_node, &nnode, node_list ), 
-	     "node degree of boundary is large" );
+	     REF_INCREASE_LIMIT, "unable to build neighbor list " );
 	nint = 0;
 	for (neighbor=0;neighbor<nnode;neighbor++)
 	  if ( ref_cell_node_empty( tris, node_list[neighbor] ) )
