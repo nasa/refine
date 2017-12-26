@@ -1247,7 +1247,8 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass( REF_DBL *metric,
 	break;
     }
 
-
+  ref_free( needs_donor );
+  
   REIS( 0, remain, "untouched boundary nodes remain" );
   
   return REF_SUCCESS;
