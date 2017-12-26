@@ -371,7 +371,7 @@ int main( int argc, char *argv[] )
       if ( argc > 3 )
 	{
 	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[3] ),
-	       "ld eg" );
+	       "load egads geom" );
 	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "load geom");
 	}
       ref_grid_adapt(ref_grid,instrument) = REF_TRUE; /* timing datails */
