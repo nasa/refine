@@ -36,9 +36,10 @@ function adapt_cycle {
 adapt_cycle accept-3d-two-00
 adapt_cycle accept-3d-two-01
 adapt_cycle accept-3d-two-02
+adapt_cycle accept-3d-two-03
 
-cat accept-3d-two-02.status
-../../../check.rb accept-3d-two-02.status 0.08 2.0
+cat accept-3d-two-03.status
+../../../check.rb accept-3d-two-03.status 0.08 2.0
 
 
 
