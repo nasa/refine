@@ -52,6 +52,8 @@ REF_STATUS ref_adapt_create( REF_ADAPT *ref_adapt_ptr )
 
   ref_adapt->smooth_min_quality = 1.0e-3;
 
+  ref_adapt->collapse_per_pass = 1;
+
   ref_adapt->instrument = REF_FALSE;
   
   return REF_SUCCESS;
@@ -74,6 +76,8 @@ REF_STATUS ref_adapt_deep_copy( REF_ADAPT *ref_adapt_ptr, REF_ADAPT original )
   ref_adapt->collapse_ratio_limit = original->collapse_ratio_limit ;
 
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
+
+  ref_adapt->collapse_per_pass = original->collapse_per_pass;
 
   ref_adapt->instrument = original->instrument;
 
@@ -167,6 +171,7 @@ REF_STATUS ref_adapt_pass( REF_GRID ref_grid )
 REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
 {
   REF_INT ngeom;
+  REF_INT pass;
   
   RSS( ref_gather_ngeom( ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                          REF_GEOM_FACE, &ngeom ), "count ngeom" );
@@ -175,14 +180,17 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
     RSS( ref_geom_verify_topo( ref_grid ), "adapt preflight check");
   if ( ref_grid_adapt(ref_grid,instrument) )
     ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt start");
-  
-  RSS( ref_collapse_pass( ref_grid ), "col pass");
-  ref_gather_blocking_frame( ref_grid, "collapse" );
-  if (ngeom>0)
-    RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
-  if ( ref_grid_adapt(ref_grid,instrument) )
-    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt col");
 
+  for( pass = 0; pass <ref_grid_adapt(ref_grid,collapse_per_pass);pass++)
+    {
+      RSS( ref_collapse_pass( ref_grid ), "col pass");
+      ref_gather_blocking_frame( ref_grid, "collapse" );
+      if (ngeom>0)
+	RSS( ref_geom_verify_topo( ref_grid ), "collapse geom typo check");
+      if ( ref_grid_adapt(ref_grid,instrument) )
+	ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt col");
+    }
+  
   RSS( ref_split_pass( ref_grid ), "split pass");
   ref_gather_blocking_frame( ref_grid, "split" );
   if (ngeom>0)

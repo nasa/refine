@@ -40,6 +40,9 @@ struct REF_ADAPT_STRUCT {
   REF_DBL collapse_ratio_limit;
 
   REF_DBL smooth_min_quality;
+
+  REF_INT collapse_per_pass;
+
   REF_BOOL instrument;
 };
 
