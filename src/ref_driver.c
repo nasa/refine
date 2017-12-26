@@ -278,7 +278,7 @@ int main( int argc, char *argv[] )
            "export");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather meshb");
     }
-  snprintf( output_filename, 1024, "%s-metric.solb", output_project );
+  snprintf( output_filename, 1024, "%s-final-metric.solb", output_project );
   RSS(ref_gather_metric( ref_grid, output_filename ),"met met" );
   if ( !ref_mpi_para(ref_mpi) )
     {
