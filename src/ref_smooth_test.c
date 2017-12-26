@@ -47,6 +47,7 @@
 #include "ref_split.h"
 
 #include "ref_metric.h"
+#include "ref_validation.h"
 
 #include "ref_fixture.h"
 
@@ -362,15 +363,28 @@ int main( int argc, char *argv[] )
     {
       REF_GRID ref_grid;
 
-      RSS( ref_import_by_extension( &ref_grid, ref_mpi,
-				    argv[1] ), "examine header" );
-
+      RSS( ref_part_by_extension( &ref_grid, ref_mpi,
+				  argv[1] ), "examine header" );
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
       RSS( ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "get metric");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read metric");
+      if ( argc > 3 )
+	{
+	  RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[3] ),
+	       "ld eg" );
+	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "load geom");
+	}
+      ref_grid_adapt(ref_grid,instrument) = REF_TRUE; /* timing datails */
 
-      RSS( ref_histogram_quality( ref_grid ), "qual");
+      RSS( ref_validation_cell_volume(ref_grid),"vol");
+      RSS( ref_histogram_quality( ref_grid ), "gram");
+      RSS( ref_histogram_ratio( ref_grid ), "gram");
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "stats");
 
-      RSS( ref_export_tec_surf( ref_grid, "ref_smooth_test_0.tec" ),
-           "surf");
+      RSS( ref_adapt_parameter( ref_grid ), "param");
+      RSS( ref_smooth_threed_pass( ref_grid ), "smooth pass");
+      if ( ref_grid_adapt(ref_grid,instrument) )
+	ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt mov");
 
       RSS( ref_grid_free( ref_grid ), "free");
     }
