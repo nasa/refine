@@ -8,8 +8,8 @@ if [ $# -gt 0 ] ; then
     one=$1/one
     two=$1/src
 else
-    one=${HOME}/refine/strict/one
-    two=${HOME}/refine/strict/src
+    one=${HOME}/refine/egads/one
+    two=${HOME}/refine/egads/src
 fi
 
 ${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
@@ -36,10 +36,9 @@ function adapt_cycle {
 adapt_cycle accept-3d-two-00
 adapt_cycle accept-3d-two-01
 adapt_cycle accept-3d-two-02
-adapt_cycle accept-3d-two-03
 
-cat accept-3d-two-03.status
-../../../check.rb accept-3d-two-03.status 0.05 2.0
+cat accept-3d-two-02.status
+../../../check.rb accept-3d-two-03.status 0.08 2.0
 
 
 
