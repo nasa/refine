@@ -1172,6 +1172,87 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_extrapolate_boundary_multipass( REF_DBL *metric, 
+						      REF_GRID ref_grid )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tris = ref_grid_tri(ref_grid);
+  REF_CELL tets = ref_grid_tet(ref_grid);
+  REF_INT node;
+  REF_INT max_node = 400, nnode;
+  REF_INT node_list[400];
+  REF_INT i, neighbor, nint;
+  REF_DBL log_m[6];
+  REF_BOOL *needs_donor;
+  REF_INT pass, remain;
+  
+  if ( ref_grid_twod(ref_grid) )
+    RSS( REF_IMPLEMENT, "2D not implmented" );
+
+  ref_malloc_init( needs_donor, ref_node_max(ref_node),
+		   REF_BOOL, REF_FALSE );
+
+  /* each boundary node */
+  each_ref_node_valid_node(ref_node, node)
+    if ( !ref_cell_node_empty( tris, node ) )
+      {
+	needs_donor[node] = REF_TRUE;
+      }
+
+  RSS( ref_node_ghost_int(ref_node,needs_donor), "update ghosts" );
+
+  for(pass=0;pass<10;pass++)
+    {
+      each_ref_node_valid_node(ref_node, node)
+	if ( ref_node_owned(ref_node,node) && needs_donor[node] )
+	  {
+	    RXS( ref_cell_node_list_around( tets, node, 
+					    max_node, &nnode, node_list ), 
+		 REF_INCREASE_LIMIT, "unable to build neighbor list " );
+	    nint = 0;
+	    for (neighbor=0;neighbor<nnode;neighbor++)
+	      if ( !needs_donor[node_list[neighbor]] )
+		nint++;
+	    if ( 0 < nint )
+	      {
+		for (i=0;i<6;i++)
+		  metric[i+6*node] = 0.0;
+		for (neighbor=0;neighbor<nnode;neighbor++)
+		  if ( !needs_donor[node_list[neighbor]] )
+		    {
+		      RSS( ref_matrix_log_m( &(metric[6*node_list[neighbor]]), 
+					     log_m ), "log" );
+		      for (i=0;i<6;i++)
+			metric[i+6*node] += log_m[i];
+		    }
+		for (i=0;i<6;i++)
+		  log_m[i] = metric[i+6*node] / (REF_DBL)nint;
+		RSS( ref_matrix_exp_m( log_m, &(metric[6*node]) ), "exp" );
+		needs_donor[node] = REF_FALSE;
+	      }
+	  }
+
+      RSS( ref_node_ghost_int(ref_node,needs_donor), "update ghosts" );
+      RSS( ref_node_ghost_dbl(ref_node,metric,6), "update ghosts" );
+
+      remain = 0;
+      each_ref_node_valid_node(ref_node, node)
+	if ( ref_node_owned(ref_node,node) && needs_donor[node] )
+	  remain++;
+
+      RSS( ref_mpi_allsum(ref_grid_mpi(ref_grid), &remain, 1, REF_INT_TYPE ),
+	   "sum updates" );
+
+      if ( 0 == remain )
+	break;
+    }
+
+
+  REIS( 0, remain, "untouched boundary nodes remain" );
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_complexity( REF_DBL *metric, REF_GRID ref_grid,
 				  REF_DBL *complexity)
 {
@@ -1223,7 +1304,8 @@ REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   if ( ref_grid_twod(ref_grid) )
     RSS( REF_IMPLEMENT, "2D not implmented" );
   RSS( ref_metric_l2_projection_hessian( ref_grid, scalar, metric ), "l2");
-  RSS( ref_metric_extrapolate_boundary( metric, ref_grid ), "bound extrap");
+  RSS( ref_metric_extrapolate_boundary_multipass( metric, ref_grid ),
+       "bound extrap");
   /* local scaling */
   exponent = -1.0/((REF_DBL)(2*p_norm+dimension));
   each_ref_node_valid_node(ref_node, node)

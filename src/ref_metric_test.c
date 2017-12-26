@@ -801,6 +801,44 @@ se.^-0.5
     RSS(ref_grid_free(ref_grid),"free"); 
   }
 
+  {  /* multipass boundary averaging constant metric */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+    REF_INT node;
+
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick");
+    
+    ref_malloc( metric, 6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      {
+	metric[0+6*node] = 100.0;
+	metric[1+6*node] =   7.0;
+	metric[2+6*node] =  22.0;
+	metric[3+6*node] = 200.0;
+	metric[4+6*node] =  15.0;
+	metric[5+6*node] = 300.0;
+      }
+
+    RSS( ref_metric_extrapolate_boundary_multipass( metric, ref_grid ),
+	 "bound extrap" );
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      {
+	RWDS( 100.0, metric[0+6*node], tol, "m11");
+	RWDS(   7.0, metric[1+6*node], tol, "m12");
+	RWDS(  22.0, metric[2+6*node], tol, "m13");
+	RWDS( 200.0, metric[3+6*node], tol, "m22");
+	RWDS(  15.0, metric[4+6*node], tol, "m23");
+	RWDS( 300.0, metric[5+6*node], tol, "m33");
+      }
+
+    ref_free( metric );
+
+    RSS(ref_grid_free(ref_grid),"free"); 
+  }
+
   if ( !ref_mpi_para(ref_mpi) )
     {
       REF_GRID ref_grid;
