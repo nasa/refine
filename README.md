@@ -38,8 +38,8 @@ for details on the libMeshb format.
 # Metric Conformity Evaluation
 In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
-an implementation of descriptive statistics for edge lengths and mean ratio is
-provided.
+an implementation of descriptive statistics for
+edge lengths and mean ratio is provided.
 ```
 ./build/src/ref_histogram_test project.meshb project-metric.solb
 ```
@@ -47,7 +47,8 @@ Where,
  - `project.meshb` is the grid in libMeshb format
  - `project-metric.solb` is the metric in libMeshb format
 
-See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb) for details on the libMeshb format.
+See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
+for details on the libMeshb format.
 Histograms are written as `ref_histogram_quality.tec` and
 `ref_histogram_ratio.tec`, where each of the two the columns are
 mean ratio/edge length and normalized count.  
