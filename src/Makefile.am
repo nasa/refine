@@ -148,7 +148,7 @@ ref_clump_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -l
 TESTS += ref_collapse_test
 noinst_PROGRAMS += ref_collapse_test
 ref_collapse_test_SOURCES = ref_collapse_test.c
-ref_collapse_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_collapse_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_dict_test
 noinst_PROGRAMS += ref_dict_test
