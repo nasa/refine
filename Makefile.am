@@ -7,5 +7,5 @@ SUBDIRS += acceptance
 
 AUTOMAKE_OPTIONS = 1.7
 
-EXTRA_DIST = bootstrap # for fun3d subpackaging
+EXTRA_DIST = README.md bootstrap # for repackaging dist
 
