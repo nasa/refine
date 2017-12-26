@@ -1018,7 +1018,10 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
       RSS( ref_smooth_geom_edge( ref_grid, node ), "ideal node for edge" );
       ref_node_age(ref_node,node) = 0;
     }
-  
+
+  if ( ref_grid_adapt(ref_grid,instrument) )
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "mov edge");
+
   /* smooth faces if we have geom skip edges*/
   each_ref_geom_face( ref_geom, geom )
     {
@@ -1038,9 +1041,12 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
       ref_node_age(ref_node,node) = 0;
     }
   
+  if ( ref_grid_adapt(ref_grid,instrument) )
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "mov face");
+
   /* smooth faces without geom*/
 
-  
+
   /* smooth interior */
   each_ref_node_valid_node( ref_node, node )
     {
@@ -1061,6 +1067,9 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 	}
     }
   
+  if ( ref_grid_adapt(ref_grid,instrument) )
+    ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "mov int");
+
   /* smooth bad ones */
   {
     REF_DBL quality, min_quality = 0.10;
