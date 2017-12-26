@@ -62,6 +62,7 @@ int main( int argc, char *argv[] )
   if ( argc > 2 )
     {
       REF_GRID ref_grid;
+      REF_INT pass;
       RSS( ref_part_by_extension( &ref_grid, ref_mpi,
 				  argv[1] ), "examine header" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "read grid");
@@ -79,15 +80,18 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "stats");
 
-      RSS( ref_adapt_parameter( ref_grid ), "param");
-      RSS( ref_collapse_pass( ref_grid ), "col pass");
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt col");
+      for (pass=0;pass<5;pass++)
+	{
+	  RSS( ref_adapt_parameter( ref_grid ), "param");
+	  RSS( ref_collapse_pass( ref_grid ), "col pass");
+	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt col");
 
-      RSS( ref_validation_cell_volume(ref_grid),"vol");
-      RSS( ref_histogram_quality( ref_grid ), "gram");
-      RSS( ref_histogram_ratio( ref_grid ), "gram");
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "stats");
-
+	  RSS( ref_validation_cell_volume(ref_grid),"vol");
+	  RSS( ref_histogram_quality( ref_grid ), "gram");
+	  RSS( ref_histogram_ratio( ref_grid ), "gram");
+	  ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "stats");
+	}
+	  
       RSS( ref_grid_free( ref_grid ), "free");
 
       RSS( ref_mpi_free( ref_mpi ), "free" );
