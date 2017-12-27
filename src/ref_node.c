@@ -1110,10 +1110,10 @@ REF_STATUS ref_node_tet_epic_quality( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
-REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node, 
-					 REF_INT *nodes, 
-					 REF_DBL *quality,
-					 REF_DBL *d_quality )
+REF_STATUS ref_node_tet_epic_dquality_dnode0( REF_NODE ref_node, 
+					      REF_INT *nodes, 
+					      REF_DBL *quality,
+					      REF_DBL *d_quality )
 {
   REF_DBL l0,l1,l2,l3,l4,l5;
   REF_DBL d_l0[3],d_l1[3],d_l2[3];
@@ -1179,6 +1179,27 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
    }
 
   return REF_SUCCESS;  
+}
+
+REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node, 
+					 REF_INT *nodes, 
+					 REF_DBL *quality, 
+					 REF_DBL *d_quality )
+{
+  switch (ref_node->tet_quality)
+    {
+    case REF_NODE_EPIC_QUALITY:
+      RSS( ref_node_tet_epic_dquality_dnode0(ref_node,nodes,
+					     quality,d_quality), "epic");
+      break;
+    case REF_NODE_JAC_QUALITY:
+      RSS( REF_IMPLEMENT, "implement jac dquality_dnode0");
+      break;
+    default:
+      THROW("case not recognized");
+      break;
+    }
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_tet_jac_quality( REF_NODE ref_node, 
