@@ -87,6 +87,8 @@ REF_STATUS ref_smooth_geom_face( REF_GRID ref_grid,
 
 REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid );
 
+REF_STATUS ref_smooth_threed_post_split( REF_GRID ref_grid, REF_INT node );
+
 END_C_DECLORATION
 
 #endif /* REF_SMOOTH_H */

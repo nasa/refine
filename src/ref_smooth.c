@@ -1105,3 +1105,29 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+
+REF_STATUS ref_smooth_threed_post_split( REF_GRID ref_grid, REF_INT node )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_BOOL allowed, interior;
+
+  RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
+  if ( !allowed )
+    {
+      ref_node_age(ref_node,node)++;
+      return REF_SUCCESS;
+    }
+
+  interior =
+    ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+    ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+  if ( interior )
+    {
+
+      RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal tet node" );
+      ref_node_age(ref_node,node) = 0;
+    }
+
+  return REF_SUCCESS;
+}
+

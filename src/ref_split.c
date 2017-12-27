@@ -35,6 +35,7 @@
 #include "ref_geom.h"
 #include "ref_cavity.h"
 
+#include "ref_smooth.h"
 #include "ref_subdiv.h"
 
 #define MAX_CELL_SPLIT (100)
@@ -190,6 +191,9 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       ref_node_age(ref_node,ref_edge_e2n( ref_edge, 0, edge )) = 0;
       ref_node_age(ref_node,ref_edge_e2n( ref_edge, 1, edge )) = 0;
 
+      RSS( ref_smooth_threed_post_split( ref_grid, new_node ),
+	   "smooth after split" );
+      
     }
 	 
   ref_free( edges );
