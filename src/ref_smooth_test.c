@@ -394,22 +394,6 @@ int main( int argc, char *argv[] )
       RSS( ref_grid_free( ref_grid ), "free");
     }
 
-  if ( argc == 2 )
-    {
-      REF_GRID ref_grid;
-      REF_INT target_node;
-
-      RSS( ref_mpi_start( argc, argv ), "start" );
-
-      RSS( ref_smooth_tet_tri_fixture( &ref_grid, ref_mpi,
-				       &target_node ), "fix" );
-      
-      RSS( ref_export_by_extension( ref_grid, argv[1] ),
-           "fixture");
-
-      RSS( ref_grid_free( ref_grid ), "free");
-    }
-
   {   
     REF_GRID ref_grid;
     REF_INT node, cell;
@@ -635,6 +619,19 @@ int main( int argc, char *argv[] )
    
    RSS( ref_grid_free( ref_grid ), "free");
  }
+
+ if ( argc == 2 && !ref_mpi_para(ref_mpi) )
+   { /* interior node on a brick */
+     REF_GRID ref_grid;
+     REF_INT target_node=37;
+     
+     RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+     RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
+
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     
+     RSS( ref_grid_free( ref_grid ), "free");
+   }
 
  RSS( ref_mpi_free( ref_mpi ), "free" );
  RSS( ref_mpi_stop( ), "stop" );
