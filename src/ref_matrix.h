@@ -36,6 +36,8 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_matrix_sqrt_vt_m_v_deriv( REF_DBL *m_upper_tri, REF_DBL *v, 
 					 REF_DBL *f, REF_DBL *df_dv );
+REF_STATUS ref_matrix_vt_m_v_deriv( REF_DBL *m_upper_tri, REF_DBL *v, 
+				    REF_DBL *f, REF_DBL *df_dv );
 
 REF_STATUS ref_matrix_det_m( REF_DBL *m_upper_tri, REF_DBL *det );
 

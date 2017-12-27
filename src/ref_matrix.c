@@ -47,6 +47,26 @@ REF_STATUS ref_matrix_sqrt_vt_m_v_deriv( REF_DBL *m, REF_DBL *v,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_vt_m_v_deriv( REF_DBL *m, REF_DBL *v, 
+				    REF_DBL *f, REF_DBL *df_dv )
+{
+  *f = ( 
+    (v)[0] * ( (m)[0]*(v)[0] + (m)[1]*(v)[1] + (m)[2]*(v)[2] ) +
+    (v)[1] * ( (m)[1]*(v)[0] + (m)[3]*(v)[1] + (m)[4]*(v)[2] ) +
+    (v)[2] * ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) );
+
+  df_dv[0] = ( (m)[0]*(v)[0] + (m)[1]*(v)[1] + (m)[2]*(v)[2] ) +
+    (v)[0] * (m)[0] + (v)[1] * (m)[1] + (v)[2]*(m)[2];
+
+  df_dv[1] = ( (m)[1]*(v)[0] + (m)[3]*(v)[1] + (m)[4]*(v)[2] ) +
+    (v)[0] * (m)[1] + (v)[1] * (m)[3] + (v)[2]*(m)[4];
+
+  df_dv[2] = ( (m)[2]*(v)[0] + (m)[4]*(v)[1] + (m)[5]*(v)[2] ) +
+    (v)[0] * (m)[2] + (v)[1] * (m)[4] + (v)[2]*(m)[5];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_det_m( REF_DBL *m, REF_DBL *det )
 {
 
