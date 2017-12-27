@@ -1181,6 +1181,77 @@ REF_STATUS ref_node_tet_epic_dquality_dnode0( REF_NODE ref_node,
   return REF_SUCCESS;  
 }
 
+REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node, 
+					     REF_INT *nodes, 
+					     REF_DBL *quality,
+					     REF_DBL *d_quality )
+{
+  REF_DBL mlog0[6], mlog1[6], mlog2[6], mlog3[6];
+  REF_DBL mlog[6], m[6], jac[9];
+  REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
+  REF_INT i;
+
+  REF_DBL l2, det, volume, volume_in_metric, num;
+  REF_DBL d_volume[3];
+ 
+  RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
+  if ( volume <= ref_node_min_volume(ref_node)  )
+    {
+      *quality = volume-ref_node_min_volume(ref_node);
+      for(i=0;i<3;i++) d_quality[i] = d_volume[i];
+      return REF_SUCCESS;
+    }
+
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0),"log0");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1),"log1");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2),"log2");
+  RSS( ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[3]), mlog3),"log3");
+  for (i=0;i<6;i++)
+    mlog[i]=(mlog0[i]+mlog1[i]+mlog2[i]+mlog3[i])/4.0;
+  RSS( ref_matrix_exp_m(mlog, m),"exp");
+  RSS( ref_matrix_jacob_m(m, jac),"jac");
+  
+  for (i=0;i<3;i++)
+    e0[i] = ref_node_xyz(ref_node,i,nodes[1])-ref_node_xyz(ref_node,i,nodes[0]);
+  for (i=0;i<3;i++)
+    e1[i] = ref_node_xyz(ref_node,i,nodes[2])-ref_node_xyz(ref_node,i,nodes[0]);
+  for (i=0;i<3;i++)
+    e2[i] = ref_node_xyz(ref_node,i,nodes[3])-ref_node_xyz(ref_node,i,nodes[0]);
+  for (i=0;i<3;i++)
+    e3[i] = ref_node_xyz(ref_node,i,nodes[2])-ref_node_xyz(ref_node,i,nodes[1]);
+  for (i=0;i<3;i++)
+    e4[i] = ref_node_xyz(ref_node,i,nodes[3])-ref_node_xyz(ref_node,i,nodes[1]);
+  for (i=0;i<3;i++)
+    e5[i] = ref_node_xyz(ref_node,i,nodes[3])-ref_node_xyz(ref_node,i,nodes[2]);
+
+  l2 = ref_matrix_vt_m_v( m, e0 )
+    + ref_matrix_vt_m_v( m, e1 )
+    + ref_matrix_vt_m_v( m, e2 )
+    + ref_matrix_vt_m_v( m, e3 )
+    + ref_matrix_vt_m_v( m, e4 )
+    + ref_matrix_vt_m_v( m, e5 );
+
+  RSS( ref_matrix_det_m(m, &det),"det(mavg)");
+  volume_in_metric = sqrt( det ) * volume;
+  
+  num = pow(volume_in_metric,2.0/3.0);
+
+  if ( ref_math_divisible(num,l2) )
+    {
+      /* 36/3^(1/3) */
+      *quality = 24.9610058766228 * num / l2;
+    }
+  else
+    {
+      printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n",
+	     __FILE__,__LINE__,__func__,
+	     volume, num, l2 );
+      *quality = -1.0;
+    }
+
+  return REF_SUCCESS;  
+}
+
 REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node, 
 					 REF_INT *nodes, 
 					 REF_DBL *quality, 
@@ -1193,7 +1264,8 @@ REF_STATUS ref_node_tet_dquality_dnode0( REF_NODE ref_node,
 					     quality,d_quality), "epic");
       break;
     case REF_NODE_JAC_QUALITY:
-      RSS( REF_IMPLEMENT, "implement jac dquality_dnode0");
+      RSS( ref_node_tet_jac_dquality_dnode0(ref_node,nodes,
+					    quality,d_quality), "jac");
       break;
     default:
       THROW("case not recognized");
