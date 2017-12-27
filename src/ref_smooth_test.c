@@ -626,6 +626,9 @@ int main( int argc, char *argv[] )
      REF_INT target_node=37;
      
      RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+     ref_node_xyz(ref_grid_node(ref_grid),0,target_node) += 0.1;
+     ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.02;
+     ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.04;
      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
 
      RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
