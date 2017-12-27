@@ -1193,6 +1193,7 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
 
   REF_DBL l2, det, volume, volume_in_metric, num;
   REF_DBL d_volume[3];
+  REF_DBL temp, d_e0[3], d_e1[3], d_e2[3];
  
   RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
   if ( volume <= ref_node_min_volume(ref_node)  )
@@ -1231,6 +1232,15 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
     + ref_matrix_vt_m_v( m, e4 )
     + ref_matrix_vt_m_v( m, e5 );
 
+  *quality = l2;
+  RSS( ref_matrix_vt_m_v_deriv( m, e0, &temp, d_e0 ), "d_e0" );
+  RSS( ref_matrix_vt_m_v_deriv( m, e1, &temp, d_e1 ), "d_e1" );
+  RSS( ref_matrix_vt_m_v_deriv( m, e2, &temp, d_e2 ), "d_e2" );
+  d_quality[0] = -d_e0[0] - d_e1[0] -d_e2[0];
+  d_quality[1] = -d_e0[1] - d_e1[1] -d_e2[1];
+  d_quality[2] = -d_e0[2] - d_e1[2] -d_e2[2];
+  return REF_SUCCESS;
+  
   RSS( ref_matrix_det_m(m, &det),"det(mavg)");
   volume_in_metric = sqrt( det ) * volume;
   

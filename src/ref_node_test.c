@@ -865,12 +865,12 @@ int main( int argc, char *argv[] )
 	ref_node_metric(ref_node,5,nodes[global]) = 20.0;
        }
 
+    ref_node->tet_quality = REF_NODE_JAC_QUALITY;
+
+    FD_NODES0( ref_node_tet_dquality_dnode0 );
+
     if (REF_FALSE)
       {
-	ref_node->tet_quality = REF_NODE_JAC_QUALITY;
-
-	FD_NODES0( ref_node_tet_dquality_dnode0 );
-
 	RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
 					  &f_quality, d_quality), "deriv" );
 	RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
