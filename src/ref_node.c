@@ -1245,10 +1245,11 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
 
   num = pow(volume_in_metric,2.0/3.0);
 
-  *quality = volume_in_metric;
-  d_quality[0] = sqrt_det * d_volume[0];
-  d_quality[1] = sqrt_det * d_volume[1];
-  d_quality[2] = sqrt_det * d_volume[2];
+  *quality = num;
+  d_quality[0] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[0];
+  d_quality[1] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[1];
+  d_quality[2] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[2];
+
   return REF_SUCCESS;  
   
   if ( ref_math_divisible(num,l2) )
