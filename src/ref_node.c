@@ -1251,17 +1251,13 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
   d_num[1] = (2.0/3.0) * pow_vim * sqrt_det * d_volume[1];
   d_num[2] = (2.0/3.0) * pow_vim * sqrt_det * d_volume[2];
   
-  *quality = num;
-  d_quality[0] = d_num[0];
-  d_quality[1] = d_num[1];
-  d_quality[2] = d_num[2];
-
-  return REF_SUCCESS;  
-  
   if ( ref_math_divisible(num,l2) )
     {
       /* 36/3^(1/3) */
       *quality = 24.9610058766228 * num / l2;
+      d_quality[0] = 24.9610058766228 * (d_num[0]*l2 - num*d_l2[0]) / (l2*l2);
+      d_quality[1] = 24.9610058766228 * (d_num[1]*l2 - num*d_l2[1]) / (l2*l2);
+      d_quality[2] = 24.9610058766228 * (d_num[2]*l2 - num*d_l2[2]) / (l2*l2);
     }
   else
     {
@@ -1269,6 +1265,9 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
 	     __FILE__,__LINE__,__func__,
 	     volume, num, l2 );
       *quality = -1.0;
+      d_quality[0] = 0.0;
+      d_quality[1] = 0.0;
+      d_quality[2] = 0.0;
     }
 
   return REF_SUCCESS;  

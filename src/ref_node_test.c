@@ -869,13 +869,10 @@ int main( int argc, char *argv[] )
 
     FD_NODES0( ref_node_tet_dquality_dnode0 );
 
-    if (REF_FALSE)
-      {
-	RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
-					  &f_quality, d_quality), "deriv" );
-	RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-	RWDS( quality, f_quality, -1.0, "vol expected" );
-      }
+    RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
+				      &f_quality, d_quality), "deriv" );
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+    RWDS( quality, f_quality, -1.0, "same expected" );
     
     ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
 
@@ -884,7 +881,7 @@ int main( int argc, char *argv[] )
     RSS( ref_node_tet_dquality_dnode0(ref_node, nodes, 
 				      &f_quality, d_quality), "deriv" );
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    RWDS( quality, f_quality, -1.0, "vol expected" );
+    RWDS( quality, f_quality, -1.0, "same expected" );
 
     /* test negative tet */
     ref_node_xyz(ref_node,2,nodes[3]) = -1.9;
