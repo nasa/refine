@@ -1191,10 +1191,11 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
   REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
   REF_INT i;
 
-  REF_DBL l2, det, sqrt_det, volume, volume_in_metric, num;
+  REF_DBL l2, det, volume, volume_in_metric, num;
   REF_DBL d_volume[3];
-  REF_DBL temp, d_e0[3], d_e1[3], d_e2[3], d_l2[3];
- 
+  REF_DBL temp, d_e0[3], d_e1[3], d_e2[3], d_l2[3], d_num[3];
+  REF_DBL sqrt_det, pow_vim;
+  
   RSS( ref_node_tet_dvol_dnode0( ref_node, nodes, &volume, d_volume ), "vol");
   if ( volume <= ref_node_min_volume(ref_node)  )
     {
@@ -1245,10 +1246,15 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
 
   num = pow(volume_in_metric,2.0/3.0);
 
+  pow_vim = pow(volume_in_metric,-1.0/3.0);
+  d_num[0] = (2.0/3.0) * pow_vim * sqrt_det * d_volume[0];
+  d_num[1] = (2.0/3.0) * pow_vim * sqrt_det * d_volume[1];
+  d_num[2] = (2.0/3.0) * pow_vim * sqrt_det * d_volume[2];
+  
   *quality = num;
-  d_quality[0] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[0];
-  d_quality[1] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[1];
-  d_quality[2] = (2.0/3.0) * pow(volume_in_metric,-1.0/3.0)* sqrt_det * d_volume[2];
+  d_quality[0] = d_num[0];
+  d_quality[1] = d_num[1];
+  d_quality[2] = d_num[2];
 
   return REF_SUCCESS;  
   
