@@ -1191,7 +1191,7 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
   REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
   REF_INT i;
 
-  REF_DBL l2, det, volume, volume_in_metric, num;
+  REF_DBL l2, det, sqrt_det, volume, volume_in_metric, num;
   REF_DBL d_volume[3];
   REF_DBL temp, d_e0[3], d_e1[3], d_e2[3], d_l2[3];
  
@@ -1239,17 +1239,18 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0( REF_NODE ref_node,
   d_l2[1] = -d_e0[1] - d_e1[1] -d_e2[1];
   d_l2[2] = -d_e0[2] - d_e1[2] -d_e2[2];
     
-  *quality = l2;
-  d_quality[0] = d_l2[0];
-  d_quality[1] = d_l2[1];
-  d_quality[2] = d_l2[2];
-  return REF_SUCCESS;
-  
   RSS( ref_matrix_det_m(m, &det),"det(mavg)");
-  volume_in_metric = sqrt( det ) * volume;
-  
+  sqrt_det = sqrt( det );
+  volume_in_metric = sqrt_det * volume;
+
   num = pow(volume_in_metric,2.0/3.0);
 
+  *quality = volume_in_metric;
+  d_quality[0] = sqrt_det * d_volume[0];
+  d_quality[1] = sqrt_det * d_volume[1];
+  d_quality[2] = sqrt_det * d_volume[2];
+  return REF_SUCCESS;  
+  
   if ( ref_math_divisible(num,l2) )
     {
       /* 36/3^(1/3) */
