@@ -1168,6 +1168,9 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_INT worst, degree;
   REF_DBL min_qual;
   REF_INT i;
+  REF_DBL dir[3];
+  REF_DBL m1,m0,alpha, min_alpha;
+  REF_INT mate;
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1211,13 +1214,33 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       degree++;
     }
   printf(" %d worst %f\n",worst,min_qual);
-
+  dir[0]=grads[0+3*worst];
+  dir[1]=grads[1+3*worst];
+  dir[2]=grads[2+3*worst];
+  RSS(ref_math_normalize( dir ), "norm");
+  m0 = ref_math_dot( dir, &(grads[3*worst]) );
+  mate = REF_EMPTY;
+  min_alpha = 1.0e10;
   for(i=0;i<degree;i++)
     {
       if ( i == worst )
 	continue;
-      
+      m1 = ref_math_dot( dir, &(grads[3*i]) );
+      /*
+	cost = quals[i]+alpha*m1;
+	cost = quals[worst]+alpha*m0;
+	quals[i]+alpha*m1 = quals[worst]+alpha*m0;
+      */
+      if ( !ref_math_divisible((quals[worst]-quals[i]),(m1-m0)) )
+	THROW("same slope");
+      alpha = (quals[worst]-quals[i])/(m1-m0);
+      if ( (alpha > 0.0 && alpha < min_alpha) )
+	{
+	  min_alpha = alpha;
+	  mate = i;
+	}
     }
+  printf(" %d mate %e alpha \n",mate,min_alpha);
   ref_free(grads);
   ref_free(quals);
   ref_free(cells);
