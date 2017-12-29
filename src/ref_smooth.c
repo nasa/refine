@@ -30,6 +30,8 @@
 #include "ref_geom.h"
 #include "ref_clump.h"
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_smooth_tri_steepest_descent( REF_GRID ref_grid, REF_INT node )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1155,8 +1157,18 @@ REF_STATUS ref_smooth_tet_report_quality_around( REF_GRID ref_grid,
 
 REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality, d_quality[3];
   REF_BOOL allowed, interior;
-
+  REF_INT *cells;
+  REF_DBL *quals, *grads;
+  REF_INT worst, degree;
+  REF_DBL min_qual;
+  REF_INT i;
+  
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
     return REF_SUCCESS;
@@ -1168,6 +1180,46 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     return REF_SUCCESS;
 
   RSS( ref_smooth_tet_report_quality_around( ref_grid, node ), "rep");
-  
+
+  RSS( ref_adj_degree( ref_cell_adj(ref_cell), node, &degree ), "deg" );
+
+  ref_malloc( cells,   degree, REF_INT );
+  ref_malloc( quals,   degree, REF_DBL );
+  ref_malloc( grads, 3*degree, REF_DBL );
+
+  min_qual = 1.0;
+  worst = REF_EMPTY;
+  degree = 0;
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      /* need flip */
+      RSS( ref_node_tet_dquality_dnode0( ref_node,
+					 nodes,
+					 &quality,
+					 d_quality ), "qual" );
+      if ( quality < min_qual || REF_EMPTY == worst )
+	{
+	  worst = degree;
+	  min_qual = quality;
+	}
+      cells[degree]=cell;
+      quals[degree]=quality;
+      grads[0+3*degree]=d_quality[0];
+      grads[1+3*degree]=d_quality[1];
+      grads[2+3*degree]=d_quality[2];
+      degree++;
+    }
+  printf(" %d worst %f\n",worst,min_qual);
+
+  for(i=0;i<degree;i++)
+    {
+      if ( i == worst )
+	continue;
+      
+    }
+  ref_free(grads);
+  ref_free(quals);
+  ref_free(cells);
   return REF_SUCCESS;
 }
