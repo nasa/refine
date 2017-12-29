@@ -363,6 +363,39 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"free");
   }
 
+  { /* orient */
+    REF_INT nnode, node0, nodes[4];
+    nnode = 4;
+    node0=0;
+    nodes[0]=0;nodes[1]=1;nodes[2]=2;nodes[3]=3;
+    RSS( ref_cell_orient_node0( nnode, node0, nodes), "orient");
+    REIS( 0, nodes[0], "nodes[0]" );
+    REIS( 1, nodes[1], "nodes[1]" );
+    REIS( 2, nodes[2], "nodes[2]" );
+    REIS( 3, nodes[3], "nodes[3]" );
+    node0=1;
+    nodes[0]=0;nodes[1]=1;nodes[2]=2;nodes[3]=3;
+    RSS( ref_cell_orient_node0( nnode, node0, nodes), "orient");
+    REIS( 1, nodes[0], "nodes[0]" );
+    REIS( 0, nodes[1], "nodes[1]" );
+    REIS( 3, nodes[2], "nodes[2]" );
+    REIS( 2, nodes[3], "nodes[3]" );
+    node0=2;
+    nodes[0]=0;nodes[1]=1;nodes[2]=2;nodes[3]=3;
+    RSS( ref_cell_orient_node0( nnode, node0, nodes), "orient");
+    REIS( 2, nodes[0], "nodes[0]" );
+    REIS( 3, nodes[1], "nodes[1]" );
+    REIS( 0, nodes[2], "nodes[2]" );
+    REIS( 1, nodes[3], "nodes[3]" );
+    node0=3;
+    nodes[0]=0;nodes[1]=1;nodes[2]=2;nodes[3]=3;
+    RSS( ref_cell_orient_node0( nnode, node0, nodes), "orient");
+    REIS( 3, nodes[0], "nodes[0]" );
+    REIS( 2, nodes[1], "nodes[1]" );
+    REIS( 1, nodes[2], "nodes[2]" );
+    REIS( 0, nodes[3], "nodes[3]" );
+  }
+
   { /* adj */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];

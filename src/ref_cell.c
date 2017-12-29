@@ -644,6 +644,48 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_orient_node0( REF_INT nnode, REF_INT node0,
+				  REF_INT *nodes )
+{
+  REF_INT temp;
+  REIS(4,nnode,"only implemented for tets");
+  if ( node0 == nodes[0] )
+    return REF_SUCCESS;
+  if ( node0 == nodes[1] )
+    {
+      temp = nodes[0];
+      nodes[0] = nodes[1];
+      nodes[1] = temp;
+      temp = nodes[2];
+      nodes[2] = nodes[3];
+      nodes[3] = temp;
+      return REF_SUCCESS;
+    }
+  if ( node0 == nodes[2] )
+    {
+      temp = nodes[0];
+      nodes[0] = nodes[2];
+      nodes[2] = temp;
+      temp = nodes[3];
+      nodes[3] = nodes[1];
+      nodes[1] = temp;
+      return REF_SUCCESS;
+    }
+  if ( node0 == nodes[3] )
+    {
+      temp = nodes[0];
+      nodes[0] = nodes[3];
+      nodes[3] = temp;
+      temp = nodes[2];
+      nodes[2] = nodes[1];
+      nodes[1] = temp;
+      return REF_SUCCESS;
+    }
+    
+  RSS( REF_NOT_FOUND, "node0 not found in nodes" );
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_has_side( REF_CELL ref_cell,
                               REF_INT node0, REF_INT node1,
                               REF_BOOL *has_side)
