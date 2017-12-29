@@ -1138,17 +1138,19 @@ REF_STATUS ref_smooth_tet_report_quality_around( REF_GRID ref_grid,
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT item, cell;
+  REF_INT item, cell, i;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
 
+  i=0;
   each_ref_cell_having_node( ref_cell, node, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
       RSS( ref_node_tet_quality( ref_node,
 				 nodes,
 				 &quality ), "qual" );
-      printf("%6.3f", quality);
+      printf(" %d:%5.3f", i, quality);
+      i++;
     }
   printf("\n");
 
