@@ -1193,7 +1193,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   each_ref_cell_having_node( ref_cell, node, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-      /* need flip */
+      RSS( ref_cell_orient_node0( 4, node, nodes ), "orient" );
       RSS( ref_node_tet_dquality_dnode0( ref_node,
 					 nodes,
 					 &quality,
