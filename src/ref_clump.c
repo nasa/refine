@@ -50,7 +50,7 @@ static REF_STATUS ref_clump_zone_around( FILE *f,
                            jacob ), "jac");
 
   fprintf(f,
-          "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
           "point", zonetype );
 
@@ -114,7 +114,7 @@ static REF_STATUS ref_clump_cell_zone( FILE *f,
     }
 
   fprintf(f,
-          "zone t=%s, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           zonetype, ref_dict_n(node_dict), ref_dict_n(ref_dict),
           "point", zonetype );
 
@@ -324,7 +324,7 @@ REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
   fprintf(f, "variables = \"x\" \"y\" \"z\"\n");
 
   fprintf(f,
-          "zone t=clump, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=\"clump\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(tri_dict),
           "point", "fequadrilateral" );
 

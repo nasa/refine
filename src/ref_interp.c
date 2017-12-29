@@ -1182,7 +1182,7 @@ REF_STATUS ref_interp_tec( REF_INTERP ref_interp, const char *filename )
   fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
 
   fprintf(file,
-	  "zone t=exhaust, i=%d, datapacking=%s\n",
+	  "zone t=\"exhaust\", i=%d, datapacking=%s\n",
 	  ref_list_n(ref_interp->visualize), "point");
 
   each_ref_list_item( ref_interp->visualize, item )

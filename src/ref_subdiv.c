@@ -1729,7 +1729,7 @@ static REF_STATUS ref_subdiv_tec_zone( REF_SUBDIV ref_subdiv,
   REF_INT cell_edge, edge, node;
 
   fprintf(file,
-	  "zone t=celledge, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"celledge\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  2*ref_cell_edge_per(ref_cell), ref_cell_edge_per(ref_cell), "point", "felineseg" );
   
   for ( cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++ )
@@ -1930,7 +1930,7 @@ static REF_STATUS ref_subdiv_test_pri( REF_DBL xyz[6][3], REF_BOOL *possible )
 
   if ( ! *possible )
     {
-      printf("zone t=bad, nodes=6, elements=1, datapacking=point, zonetype=febrick");
+      printf("zone t=\"bad\", nodes=6, elements=1, datapacking=point, zonetype=febrick");
       for (i=0;i<6;i++)
 	printf(" %.16e %.16e %.16e\n",xyz[i][0],xyz[i][1],xyz[i][2]);
       printf(" 1 2 3 3 4 5 6 6\n");

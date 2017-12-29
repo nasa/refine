@@ -1060,7 +1060,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   fprintf(f,
-          "zone t=old, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
           "point", zonetype );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )
@@ -1103,7 +1103,7 @@ REF_STATUS ref_cavity_tec( REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   fprintf(f,
-          "zone t=new, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+          "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
           ref_dict_n(node_dict), ref_dict_n(face_dict),
           "point", zonetype );
   for ( item = 0; item < ref_dict_n(node_dict); item++ )

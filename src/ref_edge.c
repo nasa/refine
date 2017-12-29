@@ -364,7 +364,7 @@ REF_STATUS ref_edge_tec_int( REF_EDGE ref_edge, REF_NODE ref_node,
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"s\"\n");
 
   fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  2*ref_edge_n(ref_edge), ref_edge_n(ref_edge), "point", "felineseg" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )
@@ -407,7 +407,7 @@ REF_STATUS ref_edge_tec_dbl( REF_EDGE ref_edge, REF_NODE ref_node,
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"r\"\n");
 
   fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  2*ref_edge_n(ref_edge), ref_edge_n(ref_edge), "point", "felineseg" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )
@@ -451,7 +451,7 @@ REF_STATUS ref_edge_tec_ratio( REF_EDGE ref_edge, REF_NODE ref_node,
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"ratio\"\n");
 
   fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  2*ref_edge_n(ref_edge), ref_edge_n(ref_edge), "point", "felineseg" );
 
   for ( edge = 0; edge < ref_edge_n(ref_edge); edge++ )

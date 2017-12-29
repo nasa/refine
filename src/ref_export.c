@@ -365,7 +365,7 @@ REF_STATUS ref_export_tec_edge_zone( REF_GRID ref_grid, FILE *file )
 	   "extract this edge");
 
       fprintf(file,
-	 "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	 "zone t=\"edge%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	      boundary_tag, nnode, nedge, "point", "felineseg" );
 
       for ( node = 0; node < nnode; node++ )
@@ -426,7 +426,7 @@ REF_STATUS ref_export_tec_surf_zone( REF_GRID ref_grid, FILE *file )
 	   "extract this boundary");
 
       fprintf(file,
-	  "zone t=surf%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"surf%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	      boundary_tag, nnode, nface, "point", "fequadrilateral" );
 
       for ( node = 0; node < nnode; node++ )
@@ -510,7 +510,7 @@ REF_STATUS ref_export_tec_vol_zone( REF_GRID ref_grid, FILE *file  )
 	  if ( REF_EMPTY != o2n[node] ) n2o[o2n[node]] = node;
 
 	fprintf(file,
-		"zone t=e%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+		"zone t=\"e%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 		node_per, nnode, ref_cell_n(ref_cell), "point", "febrick" );
 
 	for ( node = 0; node < nnode; node++ )
@@ -582,7 +582,7 @@ REF_STATUS ref_export_tec_int( REF_GRID ref_grid, REF_INT *scalar,
     ncell += ref_cell_n(ref_cell);
 
   fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), ncell, "point", "febrick" );
 
   RSS( ref_node_compact( ref_node, &o2n, &n2o), "compact" );
@@ -722,7 +722,7 @@ REF_STATUS ref_export_tec_metric_axis( REF_GRID ref_grid,
 	ncell += ref_cell_n(ref_cell);
 
       fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  ref_node_n(ref_node), ncell, "point", "febrick" );
 
       RSS( ref_node_compact( ref_node, &o2n, &n2o ), "compact" );
@@ -824,7 +824,7 @@ REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid,
   ncell = nnode*n;
 
   fprintf(file,
-	  "zone t=scalar, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  3*ncell, 3*ncell, "point", "felineseg" );
 
   for ( node = 0; node < nnode; node++ )
@@ -908,7 +908,7 @@ REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid,
   ncell = nnode*n;
 
   fprintf(file,
-	  "zone t=met, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"met\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  3*ncell, 3*ncell, "point", "felineseg" );
 
   for ( node = 0; node < nnode; node++ )
@@ -952,7 +952,7 @@ REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid,
       ncell++;
  
   fprintf(file,
-	  "zone t=tri, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  nnode, ncell, "point", "fetriangle" );
 
   for ( node = 0; node < nnode; node++ )

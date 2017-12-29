@@ -235,7 +235,7 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
       fprintf(file, "title=\"tecplot refine partion file\"\n");
       fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
       fprintf(file,
-	"zone t=part, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	"zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	      nnode, ntri, "point", "fetriangle" );
     }
 

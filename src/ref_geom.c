@@ -2292,7 +2292,7 @@ REF_STATUS ref_geom_edge_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     }
   
   fprintf(file,
-	  "zone t=edge%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"edge%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, nedg, "point", "felineseg" );
 
   each_ref_dict_key_value( ref_dict, item, node, geom )
@@ -2353,7 +2353,7 @@ REF_STATUS ref_geom_face_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     }
   
   fprintf(file,
-	  "zone t=face%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, ntri, "point", "fetriangle" );
 
   each_ref_dict_key_value( ref_dict, item, node, geom )
@@ -2416,7 +2416,7 @@ REF_STATUS ref_geom_norm_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     }
   
   fprintf(file,
-	  "zone t=norm%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"norm%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, ntri, "point", "fetriangle" );
   
   each_ref_dict_key_value( ref_dict, item, node, geom )
@@ -2482,7 +2482,7 @@ REF_STATUS ref_geom_curve_tec_zone( REF_GRID ref_grid, REF_INT id, FILE *file )
     }
   
   fprintf(file,
-	  "zone t=curve%d, nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+	  "zone t=\"curve%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
 	  id, nnode, ntri, "point", "fetriangle" );
   
   each_ref_dict_key_value( ref_dict, item, node, geom )
