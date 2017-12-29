@@ -1242,7 +1242,19 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  mate = i;
 	}
     }
+  RUS( REF_EMPTY, mate, "mate not found" );
   printf(" %d mate %e alpha \n",mate,min_alpha);
+  m1 = ref_math_dot( dir, &(grads[3*mate]) );
+  printf(" predicted %f %f \n",
+	 min_alpha*m0+quals[worst],
+	 min_alpha*m1+quals[mate]);
+
+  ref_node_xyz(ref_node,0,node) += alpha*dir[0];
+  ref_node_xyz(ref_node,1,node) += alpha*dir[1];
+  ref_node_xyz(ref_node,2,node) += alpha*dir[2];
+  RSS( ref_smooth_tet_report_quality_around( ref_grid, node ), "rep");
+  
+
   ref_free(grads);
   ref_free(quals);
   ref_free(cells);
