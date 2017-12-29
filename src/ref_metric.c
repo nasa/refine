@@ -440,55 +440,63 @@ REF_STATUS ref_metric_interpolate( REF_GRID to_grid, REF_GRID from_grid )
 
 REF_STATUS ref_metric_gradation( REF_DBL *metric, REF_GRID ref_grid, REF_DBL r )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
-  REF_DBL *metric_limit;
-  REF_DBL ratio, lr;
-  REF_DBL l0[6], l1[6];
-  REF_DBL m0[6], m1[6];
+  REF_DBL ratio, enlarge, log_r;
+  REF_DBL direction[3];
+  REF_DBL limit_metric[6], limited[6];
   REF_INT node, i;
   REF_INT edge, node0, node1;
 
+  log_r = log(r);
+  
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( metric_orig, 
-	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
-  ref_malloc( metric_limit, 
 	      6*ref_node_max(ref_grid_node(ref_grid)), REF_DBL );
   
   each_ref_node_valid_node( ref_grid_node(ref_grid), node )
     {
       for (i=0;i<6;i++) metric_orig[i+6*node] = metric[i+6*node];
     }
-  each_ref_node_valid_node( ref_grid_node(ref_grid), node )
-    {
-      for (i=0;i<6;i++) metric_limit[i+6*node] = metric[i+6*node]*(1.0/r/r);
-    }
 
+  /* F. Alauzet doi:10.1016/j.finel.2009.06.028 equation (9) */
+  
   each_ref_edge( ref_edge, edge )
     {
       node0 = ref_edge_e2n( ref_edge, 0, edge );
       node1 = ref_edge_e2n( ref_edge, 1, edge );
-      RSS( ref_node_ratio( ref_grid_node(ref_grid), 
-			   node0, node1, &ratio),"ratio");
-      lr = pow(r,ratio);
-      for (i=0;i<6;i++) l0[i] = metric_limit[i+6*node0] * (1.0/lr/lr);
-      for (i=0;i<6;i++) l1[i] = metric_limit[i+6*node1] * (1.0/lr/lr);
+      direction[0] = ( ref_node_xyz(ref_node,0,node1) -
+		       ref_node_xyz(ref_node,0,node0) );
+      direction[1] = ( ref_node_xyz(ref_node,1,node1) -
+		       ref_node_xyz(ref_node,1,node0) );
+      direction[2] = ( ref_node_xyz(ref_node,2,node1) -
+		       ref_node_xyz(ref_node,2,node0) );
+
+      ratio = ref_matrix_sqrt_vt_m_v( &(metric_orig[6*node1]), 
+				      direction );
+      enlarge = pow(1.0+ratio*log_r,-2.0);
+      for (i=0;i<6;i++) limit_metric[i] = metric_orig[i+6*node1] * enlarge;
       RSS( ref_matrix_intersect( &(metric_orig[6*node0]), 
-				 l1,
-				 m0 ), "m0" );  
+				 limit_metric,
+				 limited), "limit m0 with enlarged m1" );  
+      RSS( ref_matrix_intersect( &(metric[6*node0]), 
+				 limited,
+				 &(metric[6*node0])), "update m0" );
+
+      ratio = ref_matrix_sqrt_vt_m_v( &(metric_orig[6*node0]), 
+				      direction );
+      enlarge = pow(1.0+ratio*log_r,-2.0);
+      for (i=0;i<6;i++) limit_metric[i] = metric_orig[i+6*node0] * enlarge;
       RSS( ref_matrix_intersect( &(metric_orig[6*node1]), 
-				 l0,
-				 m1 ), "m1" );
-      RSS( ref_matrix_intersect( m0,
-				 &(metric[6*node0]), 
-				 &(metric[6*node0]) ), "m0" );  
-      RSS( ref_matrix_intersect( m1,
-				 &(metric[6*node1]), 
-				 &(metric[6*node1]) ), "m0" );  
+				 limit_metric,
+				 limited), "limit m1 with enlarged m0" );  
+      RSS( ref_matrix_intersect( &(metric[6*node1]), 
+				 limited,
+				 &(metric[6*node1])), "update m1" );
     }
 
-  ref_free( metric_limit );
   ref_free( metric_orig );
 
   ref_edge_free( ref_edge );

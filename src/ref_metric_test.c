@@ -878,7 +878,7 @@ se.^-0.5
       node = 3;
       RWDS( 1.0, metric[0+6*node], tol, "m[0]");
       RWDS( 1.0, metric[3+6*node], tol, "m[3]");
-      RWDS( 2.510964529452534, metric[5+6*node], tol, "m[5]");
+      RWDS( 2.821716527185583, metric[5+6*node], tol, "m[5]");
     
       ref_free( metric );
 
