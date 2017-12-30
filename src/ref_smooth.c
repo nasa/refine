@@ -1172,7 +1172,9 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_INT i;
   REF_DBL dir[3];
   REF_DBL m1,m0,alpha, min_alpha;
-  REF_INT mate;
+  REF_INT mate, reductions;
+  REF_DBL predicted, requirement;
+  REF_DBL xyz[3];
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1184,6 +1186,10 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   if ( !interior )
     return REF_SUCCESS;
 
+  xyz[0] = ref_node_xyz(ref_node,0,node);
+  xyz[1] = ref_node_xyz(ref_node,1,node);
+  xyz[2] = ref_node_xyz(ref_node,2,node);
+  
   RSS( ref_smooth_tet_report_quality_around( ref_grid, node ), "rep");
 
   RSS( ref_adj_degree( ref_cell_adj(ref_cell), node, &degree ), "deg" );
@@ -1234,7 +1240,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	quals[i]+alpha*m1 = quals[worst]+alpha*m0;
       */
       if ( !ref_math_divisible((quals[worst]-quals[i]),(m1-m0)) )
-	THROW("same slope");
+	continue;
       alpha = (quals[worst]-quals[i])/(m1-m0);
       if ( (alpha > 0.0 && alpha < min_alpha) )
 	{
@@ -1245,19 +1251,22 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   RUS( REF_EMPTY, mate, "mate not found" );
   printf(" %d mate %e alpha \n",mate,min_alpha);
 
-  ref_node_xyz(ref_node,0,node) += alpha*dir[0];
-  ref_node_xyz(ref_node,1,node) += alpha*dir[1];
-  ref_node_xyz(ref_node,2,node) += alpha*dir[2];
-  RSS( ref_smooth_tet_report_quality_around( ref_grid, node ), "rep");
-  
-  RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality ), "rep");
-
-  m1 = ref_math_dot( dir, &(grads[3*mate]) );
-  printf(" predicted %f %f actual %f\n",
-	 min_alpha*m0+quals[worst],
-	 min_alpha*m1+quals[mate],
-	 quality);
-
+  alpha = min_alpha;
+  for (reductions=0;reductions<8;reductions++)
+    {
+      ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
+      ref_node_xyz(ref_node,1,node) = xyz[1]+alpha*dir[1];
+      ref_node_xyz(ref_node,2,node) = xyz[2]+alpha*dir[2];
+      
+      RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality ), "rep");
+      predicted = alpha*m0+quals[worst];
+      requirement = 0.9*alpha*m0+quals[worst];
+      printf(" %d alpha %e predicted %f required %f actual %f\n",
+	     reductions, alpha, predicted, requirement, quality );
+      if ( quality > requirement )
+	break;
+      alpha *= 0.5;
+    }
 
   ref_free(grads);
   ref_free(quals);

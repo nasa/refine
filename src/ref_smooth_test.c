@@ -632,6 +632,10 @@ int main( int argc, char *argv[] )
      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
 
      RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
      
      RSS( ref_grid_free( ref_grid ), "free");
    }
