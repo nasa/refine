@@ -1263,7 +1263,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       requirement = 0.9*alpha*m0+quals[worst];
       printf(" %d alpha %e predicted %f required %f actual %f\n",
 	     reductions, alpha, predicted, requirement, quality );
-      if ( quality > requirement )
+      if ( quality > requirement || alpha < 1.0e-12 )
 	break;
       alpha *= 0.5;
     }
