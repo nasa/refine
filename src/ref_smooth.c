@@ -1175,6 +1175,8 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_INT mate, reductions;
   REF_DBL predicted, requirement;
   REF_DBL xyz[3];
+  REF_DBL active_tol = 1.0e-12;
+  REF_INT nactive;
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1222,6 +1224,17 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       degree++;
     }
   printf(" %d worst %f\n",worst,min_qual);
+  nactive=0;
+  for(i=0;i<degree;i++)
+    {
+      if ( i == worst )
+	continue;
+      if ( (quals[i]-quals[worst]) < active_tol )
+	{
+	  nactive++;
+	  printf(" %d active %f\n",i,quals[i]);
+	}
+    }
   dir[0]=grads[0+3*worst];
   dir[1]=grads[1+3*worst];
   dir[2]=grads[2+3*worst];
