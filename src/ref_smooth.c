@@ -1169,7 +1169,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL *quals, *grads;
   REF_INT worst, degree;
   REF_DBL min_qual;
-  REF_INT i;
+  REF_INT i, j;
   REF_DBL dir[3];
   REF_DBL m1,m0,alpha, min_alpha;
   REF_INT mate, reductions;
@@ -1192,8 +1192,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   xyz[1] = ref_node_xyz(ref_node,1,node);
   xyz[2] = ref_node_xyz(ref_node,2,node);
   
-  RSS( ref_smooth_tet_report_quality_around( ref_grid, node ), "rep");
-
   RSS( ref_adj_degree( ref_cell_adj(ref_cell), node, &degree ), "deg" );
 
   ref_malloc( cells,   degree, REF_INT );
@@ -1224,7 +1222,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       grads[2+3*degree]=d_quality[2];
       degree++;
     }
-  printf(" %d worst %f\n",worst,min_qual);
   active[0] = worst;
   nactive=1;
   for(i=0;i<degree;i++)
@@ -1235,19 +1232,40 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	{
 	  active[nactive]=i;
 	  nactive++;
-	  printf(" %d active %f\n",i,quals[i]);
 	}
     }
-  dir[0]=grads[0+3*worst];
-  dir[1]=grads[1+3*worst];
-  dir[2]=grads[2+3*worst];
+  if ( 1 == nactive )
+    {
+      dir[0]=grads[0+3*worst];
+      dir[1]=grads[1+3*worst];
+      dir[2]=grads[2+3*worst];
+    }
+  else
+    {
+      REF_DBL g00,g11,g01,s;
+      REIS(2, nactive, "implement nactive>2" );
+      g00 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[0]]) );
+      g11 = ref_math_dot( &(grads[3*active[1]]), &(grads[3*active[1]]) );
+      g01 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[1]]) );
+      if ( !ref_math_divisible((g00-g01),(g00 + g11 - 2*g01)) )
+	THROW("singular");
+      s = (g00-g01)/(g00 + g11 - 2*g01);
+      for(i=0;i<3;i++)
+	dir[i]=s*grads[i+3*active[1]]+(1.0-s)*grads[i+3*active[0]];
+    }
+  
   RSS(ref_math_normalize( dir ), "norm");
   m0 = ref_math_dot( dir, &(grads[3*worst]) );
   mate = REF_EMPTY;
   min_alpha = 1.0e10;
   for(i=0;i<degree;i++)
     {
-      if ( i == worst )
+      REF_BOOL skip;
+      skip = REF_FALSE;
+      for(j=0;j<nactive;j++)
+	if ( i == active[j])
+	  skip = REF_TRUE;
+      if ( skip )
 	continue;
       m1 = ref_math_dot( dir, &(grads[3*i]) );
       /*
@@ -1265,7 +1283,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	}
     }
   RUS( REF_EMPTY, mate, "mate not found" );
-  printf(" %d mate %e alpha \n",mate,min_alpha);
+  printf(" %f %d active \n",min_qual,nactive);
 
   alpha = min_alpha;
   for (reductions=0;reductions<8;reductions++)
