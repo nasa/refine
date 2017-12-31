@@ -1165,7 +1165,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, d_quality[3];
   REF_BOOL allowed, interior;
-  REF_INT *cells;
+  REF_INT *cells, *active;
   REF_DBL *quals, *grads;
   REF_INT worst, degree;
   REF_DBL min_qual;
@@ -1197,6 +1197,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   RSS( ref_adj_degree( ref_cell_adj(ref_cell), node, &degree ), "deg" );
 
   ref_malloc( cells,   degree, REF_INT );
+  ref_malloc( active,   degree, REF_INT );
   ref_malloc( quals,   degree, REF_DBL );
   ref_malloc( grads, 3*degree, REF_DBL );
 
@@ -1224,13 +1225,15 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       degree++;
     }
   printf(" %d worst %f\n",worst,min_qual);
-  nactive=0;
+  active[0] = worst;
+  nactive=1;
   for(i=0;i<degree;i++)
     {
       if ( i == worst )
 	continue;
-      if ( (quals[i]-quals[worst]) < active_tol )
+      if ( (quals[i]-quals[active[0]]) < active_tol )
 	{
+	  active[nactive]=i;
 	  nactive++;
 	  printf(" %d active %f\n",i,quals[i]);
 	}
@@ -1283,6 +1286,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 
   ref_free(grads);
   ref_free(quals);
+  ref_free(active);
   ref_free(cells);
   return REF_SUCCESS;
 }
