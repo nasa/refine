@@ -627,9 +627,9 @@ int main( int argc, char *argv[] )
      REF_INT step;
      
      RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
-     ref_node_xyz(ref_grid_node(ref_grid),0,target_node) += 0.1;
-     ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.02;
-     ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.04;
+     ref_node_xyz(ref_grid_node(ref_grid),0,target_node) += 0.15;
+     ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.05;
+     ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.07;
      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
 
      for ( step=0 ; step < 50 ; step++ )
