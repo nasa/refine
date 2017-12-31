@@ -1283,7 +1283,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	}
     }
   RUS( REF_EMPTY, mate, "mate not found" );
-  printf(" %f %d active \n",min_qual,nactive);
 
   alpha = min_alpha;
   for (reductions=0;reductions<8;reductions++)
@@ -1295,8 +1294,8 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality ), "rep");
       predicted = alpha*m0+quals[worst];
       requirement = 0.9*alpha*m0+quals[worst];
-      printf(" %d alpha %e predicted %f required %f actual %f\n",
-	     reductions, alpha, predicted, requirement, quality );
+      printf(" %d alpha %e min %f required %f actual %f\n",
+	     nactive, alpha, min_qual, requirement, quality );
       if ( quality > requirement || alpha < 1.0e-12 )
 	break;
       alpha *= 0.5;
