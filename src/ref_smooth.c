@@ -1243,7 +1243,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   else
     {
       REF_DBL g00,g11,g01,s;
-      REIS(2, nactive, "implement nactive>2" );
       g00 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[0]]) );
       g11 = ref_math_dot( &(grads[3*active[1]]), &(grads[3*active[1]]) );
       g01 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[1]]) );
