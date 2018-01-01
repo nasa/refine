@@ -1173,7 +1173,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL dir[3];
   REF_DBL m1,m0,alpha, min_alpha;
   REF_INT mate, reductions;
-  REF_DBL predicted, requirement;
+  REF_DBL requirement;
   REF_DBL xyz[3];
   REF_DBL active_tol = 1.0e-12;
   REF_INT nactive;
@@ -1291,7 +1291,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       ref_node_xyz(ref_node,2,node) = xyz[2]+alpha*dir[2];
       
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality ), "rep");
-      predicted = alpha*m0+quals[worst];
       requirement = 0.9*alpha*m0+quals[worst];
       printf(" %d alpha %e min %f required %f actual %f\n",
 	     nactive, alpha, min_qual, requirement, quality );
