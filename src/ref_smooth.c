@@ -1177,6 +1177,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL xyz[3];
   REF_DBL active_tol = 1.0e-12;
   REF_INT nactive;
+  REF_DBL last_alpha, last_qual;
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1284,6 +1285,8 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   RUS( REF_EMPTY, mate, "mate not found" );
 
   alpha = min_alpha;
+  last_alpha = 0.0;
+  last_qual = 0.0;
   for (reductions=0;reductions<8;reductions++)
     {
       ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
@@ -1296,6 +1299,19 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	     nactive, alpha, min_qual, requirement, quality );
       if ( quality > requirement || alpha < 1.0e-12 )
 	break;
+      if ( reductions > 0 && quality < last_qual && quality > min_qual )
+	{
+	  printf("use last alpha %e min %f last_qual %f actual %f\n",
+		 last_alpha, min_qual, last_qual, quality );
+	  alpha = last_alpha;
+	  quality = last_qual;
+	  ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
+	  ref_node_xyz(ref_node,1,node) = xyz[1]+alpha*dir[1];
+	  ref_node_xyz(ref_node,2,node) = xyz[2]+alpha*dir[2];
+	  break;
+	}
+      last_alpha = alpha;
+      last_qual = quality;
       alpha *= 0.5;
     }
 
