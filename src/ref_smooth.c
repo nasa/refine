@@ -1169,7 +1169,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL *quals, *grads;
   REF_INT worst, degree;
   REF_DBL min_qual;
-  REF_INT i, j;
+  REF_INT i, j, ixyz;
   REF_DBL dir[3];
   REF_DBL m1,m0,alpha, min_alpha;
   REF_INT mate, reductions;
@@ -1239,6 +1239,19 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   for (i=0;i<nactive;i++)
     printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
 	   grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
+
+  if ( 2 == nactive )
+    {
+      REF_DBL g00,g11,g01,s;
+      g00 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[0]]) );
+      g11 = ref_math_dot( &(grads[3*active[1]]), &(grads[3*active[1]]) );
+      g01 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[1]]) );
+      if ( !ref_math_divisible((g00-g01),(g00 + g11 - 2*g01)) )
+	THROW("singular");
+      s = (g00-g01)/(g00 + g11 - 2*g01);
+      printf("s %f\n",s);
+    }
+
   if ( 1 == nactive )
     {
       dir[0]=grads[0+3*worst];
@@ -1247,7 +1260,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     }
   else
     {
-      REF_INT nrow, ncol, ixyz;
+      REF_INT nrow, ncol;
       nrow = nactive+1;
       ncol = nrow+1;
       RAS( nactive < 4, "optimization complete" );
@@ -1280,11 +1293,25 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	dir[i]=0;
       for(i=0;i<nactive;i++)
 	for(ixyz=0;ixyz<3;ixyz++)
-	  dir[ixyz]+=ab[i+nrow*nrow]*grads[ixyz+3*active[1]];
+	  {
+	    REF_DBL x = ab[i+nrow*nrow];
+	    x = MAX(MIN(1.0,x),0.0);
+	    dir[ixyz]+=x*grads[ixyz+3*active[1]];
+	  }
     }
   
   RSS(ref_math_normalize( dir ), "norm");
+  for(i=0;i<nactive;i++)
+    {
+      printf("slope %10.5f for %f\n",
+	     ref_math_dot( dir, &(grads[3*active[i]]) ),
+	     quals[active[i]]);
+    }
+
+
   m0 = ref_math_dot( dir, &(grads[3*worst]) );
+  printf("m0 %e\n",m0);
+  RAS(m0>0.0,"m0 not positive");
   mate = REF_EMPTY;
   min_alpha = 1.0e10;
   for(i=0;i<degree;i++)
@@ -1316,7 +1343,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   alpha = min_alpha;
   last_alpha = 0.0;
   last_qual = 0.0;
-  for (reductions=0;reductions<8;reductions++)
+  for (reductions=0;reductions<15;reductions++)
     {
       ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
       ref_node_xyz(ref_node,1,node) = xyz[1]+alpha*dir[1];
