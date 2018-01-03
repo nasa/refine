@@ -1178,6 +1178,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL active_tol = 1.0e-12;
   REF_INT nactive;
   REF_DBL last_alpha, last_qual;
+  REF_DBL ab[30];
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1243,15 +1244,37 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     }
   else
     {
-      REF_DBL g00,g11,g01,s;
-      g00 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[0]]) );
-      g11 = ref_math_dot( &(grads[3*active[1]]), &(grads[3*active[1]]) );
-      g01 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[1]]) );
-      if ( !ref_math_divisible((g00-g01),(g00 + g11 - 2*g01)) )
-	THROW("singular");
-      s = (g00-g01)/(g00 + g11 - 2*g01);
+      REF_INT nrow, ncol, ixyz;
+      nrow = nactive+1;
+      ncol = nrow+1;
+      /* solve min 0.5 x^t Q x s.t. A x = b */
+      /* by Q At x = 0
+       *    A  0 l = b */
+      for (i=0;i<nrow;i++)
+	for (j=0;j<ncol;j++)
+	  ab[i+j*nrow] = 0.0;
+      for (i=0;i<nactive;i++)
+	for (j=0;j<nactive;j++)
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    ab[i+j*nrow] += 2.0*grads[ixyz+3*active[i]]*grads[ixyz+3*active[j]];
+      j = nrow-1;
+      for (i=0;i<nrow-1;i++)
+	ab[i+j*nrow] = 1.0;
+      i = nrow-1;
+      for (j=0;j<nrow-1;j++)
+	ab[i+j*nrow] = 1.0;
+      i = nrow-1;
+      j = ncol-1;
+      ab[i+j*nrow] = 1.0;
+      RSS( ref_matrix_show_ab(nrow,ncol, ab ), "show");
+      RSS( ref_matrix_solve_ab(nrow,ncol, ab ), "solve");
+      RSS( ref_matrix_show_ab(nrow,ncol, ab ), "for sho");
+
       for(i=0;i<3;i++)
-	dir[i]=s*grads[i+3*active[1]]+(1.0-s)*grads[i+3*active[0]];
+	dir[i]=0;
+      for(j=0;j<nactive;j++)
+	for(i=0;i<3;i++)
+	  dir[i]+=ab[j+nrow*nrow]*grads[i+3*active[j]];
     }
   
   RSS(ref_math_normalize( dir ), "norm");
