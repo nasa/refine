@@ -1326,8 +1326,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       requirement = 0.9*alpha*m0+quals[worst];
       printf(" %d alpha %e min %f required %f actual %f\n",
 	     nactive, alpha, min_qual, requirement, quality );
-      if ( quality > requirement || alpha < 1.0e-12 )
-	break;
       if ( reductions > 0 && quality < last_qual && quality > min_qual )
 	{
 	  printf("use last alpha %e min %f last_qual %f actual %f\n",
@@ -1339,6 +1337,8 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  ref_node_xyz(ref_node,2,node) = xyz[2]+alpha*dir[2];
 	  break;
 	}
+      if ( quality > requirement || alpha < 1.0e-12 )
+	break;
       last_alpha = alpha;
       last_qual = quality;
       alpha *= 0.5;
