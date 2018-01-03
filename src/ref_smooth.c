@@ -1236,6 +1236,9 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  nactive++;
 	}
     }
+  for (i=0;i<nactive;i++)
+    printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
+	   grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
   if ( 1 == nactive )
     {
       dir[0]=grads[0+3*worst];
@@ -1273,11 +1276,11 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       RSS( ref_matrix_solve_ab(nrow,ncol, ab ), "solve");
       RSS( ref_matrix_show_ab(nrow,ncol, ab ), "for sho");
 
-      for(i=0;i<3;i++)
+      for(ixyz=0;ixyz<3;ixyz++)
 	dir[i]=0;
-      for(j=0;j<nactive;j++)
-	for(i=0;i<3;i++)
-	  dir[i]+=ab[j+nrow*nrow]*grads[i+3*active[j]];
+      for(i=0;i<nactive;i++)
+	for(ixyz=0;ixyz<3;ixyz++)
+	  dir[ixyz]+=ab[i+nrow*nrow]*grads[ixyz+3*active[1]];
     }
   
   RSS(ref_math_normalize( dir ), "norm");

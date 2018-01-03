@@ -636,7 +636,7 @@ int main( int argc, char *argv[] )
      ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.05;
      ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.07;
 
-     for ( step=0 ; step < 100 ; step++ )
+     for ( step=0 ; step < 20 ; step++ )
        RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
      
      RSS( ref_grid_free( ref_grid ), "free");
