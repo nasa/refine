@@ -1296,7 +1296,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  {
 	    REF_DBL x = ab[i+nrow*nrow];
 	    x = MAX(MIN(1.0,x),0.0);
-	    dir[ixyz]+=x*grads[ixyz+3*active[1]];
+	    dir[ixyz]+=x*grads[ixyz+3*active[i]];
 	  }
     }
   
