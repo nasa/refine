@@ -1247,6 +1247,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       REF_INT nrow, ncol, ixyz;
       nrow = nactive+1;
       ncol = nrow+1;
+      RAS( nactive < 4, "optimization complete" );
       /* solve min 0.5 x^t Q x s.t. A x = b */
       /* by Q At x = 0
        *    A  0 l = b */
