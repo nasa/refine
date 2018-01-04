@@ -1172,7 +1172,7 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   REF_INT i, j, ixyz;
   REF_DBL dir[3];
   REF_DBL m1,m0,alpha, min_alpha;
-  REF_INT mate, reductions;
+  REF_INT mate, reductions, max_reductions;
   REF_DBL requirement;
   REF_DBL xyz[3];
   REF_DBL active_tol = 1.0e-12;
@@ -1336,7 +1336,8 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   alpha = min_alpha;
   last_alpha = 0.0;
   last_qual = 0.0;
-  for (reductions=0;reductions<15;reductions++)
+  max_reductions = 15;
+  for (reductions=0;reductions<max_reductions;reductions++)
     {
       ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
       ref_node_xyz(ref_node,1,node) = xyz[1]+alpha*dir[1];
@@ -1365,7 +1366,13 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
       last_qual = quality;
       alpha *= 0.5;
     }
-
+  if ( max_reductions <= reductions )
+    {
+      ref_node_xyz(ref_node,0,node) = xyz[0];
+      ref_node_xyz(ref_node,1,node) = xyz[1];
+      ref_node_xyz(ref_node,2,node) = xyz[2];
+      *complete = REF_TRUE;
+    }
   ref_free(grads);
   ref_free(quals);
   ref_free(active);
