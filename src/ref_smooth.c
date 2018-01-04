@@ -1252,6 +1252,62 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       printf("s %f\n",s);
     }
 
+  RAS( nactive < 4, "optimization complete" );
+
+  if ( 1 < nactive )
+    {
+      REF_INT k;
+      REF_DBL N[16];
+      REF_DBL NNt[16];
+      REF_DBL invNNt[16];
+      REF_DBL P[16];
+      /* N(i,:) = [ 1 -grad ] */
+      for (i=0;i<nactive;i++)
+	{
+	  N[i+nactive*0] = 1.0;
+	  for (ixyz=0;ixyz<3;ixyz++)
+	    N[i+nactive*(1+ixyz)] = -grads[ixyz+3*active[i]];
+	}
+      RSS( ref_matrix_show_ab(nactive,4,N), "show" );
+      /* P = I - Nt [N Nt]^-1 N */
+      for (i=0;i<nactive;i++)
+	for (j=0;j<nactive;j++)
+	  NNt[i+j*nactive]=0.0;
+      for (i=0;i<nactive;i++)
+	for (j=0;j<nactive;j++)
+	  for (k=0;k<4;k++)
+	    NNt[i+j*nactive] += N[i+nactive*k]*N[j+nactive*k];
+      RSS( ref_matrix_show_ab(nactive,nactive,NNt), "show" );
+      RSS( ref_matrix_inv_gen(nactive, NNt, invNNt ), "inv" );
+      RSS( ref_matrix_show_ab(nactive,nactive,invNNt), "show" );
+      for (i=0;i<nactive;i++)
+	for (j=0;j<nactive;j++)
+	  P[i+j*nactive]=0.0;
+      for (i=0;i<nactive;i++)
+	P[i+i*nactive]=1.0;
+      for (i=0;i<nactive;i++)
+	for (j=0;j<nactive;j++)
+	  for (k=0;k<4;k++)
+	    P[i+j*nactive] -= N[i+nactive*k]*invNNt[i+j*nactive]*N[j+nactive*k];
+      RSS( ref_matrix_show_ab(nactive,nactive,P), "show" );
+
+      for (ixyz=0;ixyz<3;ixyz++)
+	{
+	  dir[ixyz]=0.0;
+	  for (i=0;i<nactive;i++)
+	    dir[ixyz]=P[i]*grads[ixyz+3*active[i]];
+	}
+      
+      RSS(ref_math_normalize( dir ), "norm");
+      for(i=0;i<nactive;i++)
+	{
+	  printf("slope %10.5f for %f\n",
+		 ref_math_dot( dir, &(grads[3*active[i]]) ),
+		 quals[active[i]]);
+	}
+
+    }
+  
   if ( 1 == nactive )
     {
       dir[0]=grads[0+3*worst];
@@ -1263,7 +1319,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       REF_INT nrow, ncol;
       nrow = nactive+1;
       ncol = nrow+1;
-      RAS( nactive < 4, "optimization complete" );
       /* G = [ g0; g1; ...]
        * Q = 2 G^t G
        * solve min 0.5 x^t Q x s.t. A x = b
