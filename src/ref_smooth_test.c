@@ -636,7 +636,21 @@ int main( int argc, char *argv[] )
      ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.05;
      ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.07;
 
-     for ( step=0 ; step < 40 ; step++ )
+     /*
+g = [   -1.39198   -2.11594   -1.14377
+        -1.23966   -1.23996   -0.74840]
+N = [ [1;1] -g ]
+NNt= N*N'
+invNNt= inv(NNt)
+NtinvNNt = N'*invNNt
+NtinvNNtN = N'*invNNt*N
+P = eye(4)-NtinvNNtN
+q = P(2:4,1)
+dir=q./norm(q)
+m = g*dir
+      */
+     
+     for ( step=0 ; step < 6 ; step++ )
        RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
      
      RSS( ref_grid_free( ref_grid ), "free");
