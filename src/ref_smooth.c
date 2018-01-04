@@ -1178,6 +1178,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL active_tol = 1.0e-12;
   REF_INT nactive;
   REF_DBL last_alpha, last_qual;
+  REF_BOOL verbose = REF_FALSE;
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1235,9 +1236,10 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  nactive++;
 	}
     }
-  for (i=0;i<nactive;i++)
-    printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
-	   grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
+  if ( verbose) 
+    for (i=0;i<nactive;i++)
+      printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
+	     grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
 
   RAS( nactive < 4, "optimization complete" );
 
@@ -1302,9 +1304,10 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     }
   
   RSS(ref_math_normalize( dir ), "norm");
-
+  
   m0 = ref_math_dot( dir, &(grads[3*worst]) );
-  printf("m0 %e\n",m0);
+  if ( verbose) 
+    printf("m0 %e\n",m0);
   RAS(m0>0.0,"m0 not positive");
   mate = REF_EMPTY;
   min_alpha = 1.0e10;
@@ -1345,12 +1348,14 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       
       RSS( ref_smooth_tet_quality_around( ref_grid, node, &quality ), "rep");
       requirement = 0.9*alpha*m0+quals[worst];
-      printf(" %d alpha %e min %f required %f actual %f\n",
-	     nactive, alpha, min_qual, requirement, quality );
+      if ( verbose) 
+	printf(" %d alpha %e min %f required %f actual %f\n",
+	       nactive, alpha, min_qual, requirement, quality );
       if ( reductions > 0 && quality < last_qual && quality > min_qual )
 	{
-	  printf("use last alpha %e min %f last_qual %f actual %f\n",
-		 last_alpha, min_qual, last_qual, quality );
+	  if ( verbose) 
+	    printf("use last alpha %e min %f last_qual %f actual %f\n",
+		   last_alpha, min_qual, last_qual, quality );
 	  alpha = last_alpha;
 	  quality = last_qual;
 	  ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];

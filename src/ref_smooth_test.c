@@ -625,13 +625,12 @@ int main( int argc, char *argv[] )
      REF_GRID ref_grid;
      REF_INT target_node=37;
      REF_INT step;
-     REF_DBL quality;
+     REF_DBL quality, orig;
      
      RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
      RSS( ref_smooth_tet_quality_around( ref_grid, target_node,
-					 &quality ), "orig qual");
-     printf("original %f\n",quality);
+					 &orig ), "orig qual");
      ref_node_xyz(ref_grid_node(ref_grid),0,target_node) += 0.15;
      ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.05;
      ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.07;
@@ -653,7 +652,9 @@ m = g*dir
      for ( step=0 ; step < 100 ; step++ )
        {
 	 RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
-	 printf("original %f\n",quality);
+	 RSS( ref_smooth_tet_quality_around( ref_grid, target_node,
+					     &quality ), "orig qual");
+	 printf("%d: remaining %e\n",step,orig-quality);
        }
      RSS( ref_grid_free( ref_grid ), "free");
    }
