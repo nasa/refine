@@ -1302,13 +1302,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     }
   
   RSS(ref_math_normalize( dir ), "norm");
-  for(i=0;i<nactive;i++)
-    {
-      printf("slope %10.5f for %f\n",
-	     ref_math_dot( dir, &(grads[3*active[i]]) ),
-	     quals[active[i]]);
-    }
-
 
   m0 = ref_math_dot( dir, &(grads[3*worst]) );
   printf("m0 %e\n",m0);
