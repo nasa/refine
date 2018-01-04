@@ -1097,7 +1097,7 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
 		  ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
 		if ( interior )
 		  {
-		    RSS( ref_smooth_nso( ref_grid, node ), "ideal" );
+		    RSS( ref_smooth_tet_improve( ref_grid, node ), "ideal" );
 		    ref_node_age(ref_node,node) = 0;
 		  }
 	      }
