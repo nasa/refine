@@ -1178,7 +1178,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_DBL active_tol = 1.0e-12;
   REF_INT nactive;
   REF_DBL last_alpha, last_qual;
-  REF_DBL ab[30];
   
   RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
   if ( !allowed )
@@ -1254,8 +1253,14 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 
   RAS( nactive < 4, "optimization complete" );
 
-  if ( 1 < nactive )
+  if ( 1 == nactive )
     {
+      dir[0]=grads[0+3*worst];
+      dir[1]=grads[1+3*worst];
+      dir[2]=grads[2+3*worst];
+    }
+  else
+    { /* Charalambous and Conn DOI:10.1137/0715011 equ (3.2)  */
       REF_INT k;
       REF_DBL N[16];
       REF_DBL NNt[16];
@@ -1319,62 +1324,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 
       for (ixyz=0;ixyz<3;ixyz++)
 	dir[ixyz]=P[1+ixyz];
-      
-      RSS(ref_math_normalize( dir ), "norm");
-      for(i=0;i<nactive;i++)
-	{
-	  printf("slope %10.5f for %f\n",
-		 ref_math_dot( dir, &(grads[3*active[i]]) ),
-		 quals[active[i]]);
-	}
-
-    }
-  
-  if ( 1 == nactive )
-    {
-      dir[0]=grads[0+3*worst];
-      dir[1]=grads[1+3*worst];
-      dir[2]=grads[2+3*worst];
-    }
-  else
-    {
-      REF_INT nrow, ncol;
-      nrow = nactive+1;
-      ncol = nrow+1;
-      /* G = [ g0; g1; ...]
-       * Q = 2 G^t G
-       * solve min 0.5 x^t Q x s.t. A x = b
-       * by | Q A^t | x = 0
-       *    | A  0  | l = b */
-      for (i=0;i<nrow;i++)
-	for (j=0;j<ncol;j++)
-	  ab[i+j*nrow] = 0.0;
-      for (i=0;i<nactive;i++)
-	for (j=0;j<nactive;j++)
-	  for (ixyz=0;ixyz<3;ixyz++)
-	    ab[i+j*nrow] += 2.0*grads[ixyz+3*active[i]]*grads[ixyz+3*active[j]];
-      j = nrow-1;
-      for (i=0;i<nrow-1;i++)
-	ab[i+j*nrow] = 1.0;
-      i = nrow-1;
-      for (j=0;j<nrow-1;j++)
-	ab[i+j*nrow] = 1.0;
-      i = nrow-1;
-      j = ncol-1;
-      ab[i+j*nrow] = 1.0;
-      RSS( ref_matrix_show_ab(nrow,ncol, ab ), "show");
-      RSS( ref_matrix_solve_ab(nrow,ncol, ab ), "solve");
-      RSS( ref_matrix_show_ab(nrow,ncol, ab ), "for sho");
-
-      for(ixyz=0;ixyz<3;ixyz++)
-	dir[i]=0;
-      for(i=0;i<nactive;i++)
-	for(ixyz=0;ixyz<3;ixyz++)
-	  {
-	    REF_DBL x = ab[i+nrow*nrow];
-	    x = MAX(MIN(1.0,x),0.0);
-	    dir[ixyz]+=x*grads[ixyz+3*active[i]];
-	  }
     }
   
   RSS(ref_math_normalize( dir ), "norm");
