@@ -1305,7 +1305,12 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   if ( verbose )
     for (i=0;i<nactive;i++)
       printf("slope %e\n",ref_math_dot( dir, &(grads[3*active[i]]) ));
-  RAS(m0>0.0,"m0 not positive");
+  if ( 0.0 >= m0 )
+    {
+      printf("%s: %d: %s: m0 not positive %e",__FILE__,__LINE__,__func__,m0);
+      *complete = REF_TRUE;
+      goto success_clean_and_return;
+    }
   mate = REF_EMPTY;
   min_alpha = 1.0e10;
   for(i=0;i<degree;i++)
