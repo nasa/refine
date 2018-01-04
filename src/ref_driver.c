@@ -153,6 +153,7 @@ int main( int argc, char *argv[] )
           break;
         case 'd':
           debug_verbose = REF_TRUE;
+	  ref_mpi->debug = REF_TRUE;
           break;
         case '?':
         default:
@@ -291,7 +292,7 @@ int main( int argc, char *argv[] )
       RSS(ref_geom_save( ref_grid, output_filename ),"geom tec" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "tec");
     }
-  if (debug_verbose && !ref_grid_twod(ref_grid) )
+  if (debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi) )
     {
       snprintf( output_filename, 1024, "%s_metric_ellipse.tec", output_project );
       RSS( ref_export_tec_metric_ellipse( ref_grid, output_project ), "al");
@@ -302,7 +303,7 @@ int main( int argc, char *argv[] )
       RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump stuck");
     }
-  if ( debug_verbose && !ref_grid_twod(ref_grid) )
+  if ( debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi) )
     {
       RSS(ref_cavity_tet_quality( ref_grid ),
           "clump" );

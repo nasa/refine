@@ -46,6 +46,10 @@
 
 #define ref_mpi_comm(ref_mpi) ( *((MPI_Comm *)(ref_mpi->comm)) )
 
+#define ref_mpi_where_am_i(ref_mpi)					\
+  if (ref_mpi->debug)							\
+    printf("%4d: %s: %d: %s:\n",(ref_mpi)->id,__FILE__,__LINE__,__func__);
+
 #endif
 
 REF_STATUS ref_mpi_create_from_comm( REF_MPI *ref_mpi_ptr,  void *comm_ptr )
@@ -379,6 +383,7 @@ REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
     }
   ref_type_mpi_type(type,datatype);
 
+  ref_mpi_where_am_i(ref_mpi);
   MPI_Reduce( input, output, 1, datatype, MPI_MIN, 0, ref_mpi_comm(ref_mpi));
 
 #else
@@ -401,6 +406,7 @@ REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean )
 
   if ( !ref_mpi_para(ref_mpi) ) return REF_SUCCESS;
 
+  ref_mpi_where_am_i(ref_mpi);
   MPI_Allreduce( boolean, &output, 1, MPI_INT, MPI_SUM, ref_mpi_comm(ref_mpi));
   *boolean = MIN(output,1);
 
@@ -430,6 +436,7 @@ REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
     }
   ref_type_mpi_type(type,datatype);
 
+  ref_mpi_where_am_i(ref_mpi);
   MPI_Reduce( input, output, 1, datatype, MPI_MAX, 0, ref_mpi_comm(ref_mpi));
 
 #else
@@ -471,7 +478,9 @@ REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
   else
     {
       ref_type_mpi_type(type,datatype);
-      MPI_Reduce( input, output, n, datatype, MPI_SUM, 0, ref_mpi_comm(ref_mpi));
+      ref_mpi_where_am_i(ref_mpi);
+      MPI_Reduce( input, output, n, datatype, MPI_SUM, 0,
+		  ref_mpi_comm(ref_mpi));
     }
 
 #else
@@ -696,6 +705,7 @@ REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
         in[i].val = val[i]; 
         in[i].rank = ref_mpi_rank(ref_mpi); 
       }
+    ref_mpi_where_am_i(ref_mpi);
     MPI_Allreduce( in, out, n, MPI_DOUBLE_INT, MPI_MINLOC, 
 		   ref_mpi_comm(ref_mpi) );
     for (i=0; i<n; i++) 
