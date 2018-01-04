@@ -1383,11 +1383,17 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
       last_qual = quality;
       alpha *= 0.5;
     }
+  
   if ( max_reductions <= reductions )
-    {
+    { /* used all the reductions, step is small, marginal gains remain */
       ref_node_xyz(ref_node,0,node) = xyz[0];
       ref_node_xyz(ref_node,1,node) = xyz[1];
       ref_node_xyz(ref_node,2,node) = xyz[2];
+      *complete = REF_TRUE;
+    }
+  
+  if ( 3 == nactive &&  (quality - min_qual) < 1.0e-5 )
+    { /* very small step toward forth active, marginal gains remain */
       *complete = REF_TRUE;
     }
   
