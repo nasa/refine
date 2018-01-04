@@ -1236,7 +1236,7 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   if ( 4 <= nactive )
     {
       *complete = REF_TRUE;
-      return REF_SUCCESS;
+      goto success_clean_and_return;
     }
 
   if ( 1 == nactive )
@@ -1390,6 +1390,9 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
       ref_node_xyz(ref_node,2,node) = xyz[2];
       *complete = REF_TRUE;
     }
+  
+ success_clean_and_return:
+
   ref_free(grads);
   ref_free(quals);
   ref_free(active);
