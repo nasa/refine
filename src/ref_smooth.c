@@ -1304,7 +1304,7 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   m0 = ref_math_dot( dir, &(grads[3*worst]) );
   if ( verbose )
     for (i=0;i<nactive;i++)
-      printf("slope %f\n",ref_math_dot( dir, &(grads[3*active[i]]) ));
+      printf("slope %e\n",ref_math_dot( dir, &(grads[3*active[i]]) ));
   RAS(m0>0.0,"m0 not positive");
   mate = REF_EMPTY;
   min_alpha = 1.0e10;
@@ -1332,7 +1332,23 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
 	  mate = i;
 	}
     }
-  RUS( REF_EMPTY, mate, "mate not found" );
+  if ( REF_EMPTY == mate )
+    {
+      if ( verbose )
+	{
+	  for (i=0;i<nactive;i++)
+	    printf("active slope %f %d\n",
+		   ref_math_dot( dir, &(grads[3*active[i]]) ), i);
+	  for (i=0;i<degree;i++)
+	    printf("all %f slope %f %d %e\n",
+		   quals[i],ref_math_dot( dir, &(grads[3*i]) ), i,
+		   (1.0-quals[i])/ref_math_dot( dir, &(grads[3*i]) ));
+	}
+      min_alpha = (1.0-quals[0])/ref_math_dot( dir, &(grads[3*0]) );
+      for (i=1;i<degree;i++)
+	min_alpha = MIN( min_alpha,
+			 (1.0-quals[i])/ref_math_dot( dir, &(grads[3*i]) ) );
+    }
 
   alpha = min_alpha;
   last_alpha = 0.0;
