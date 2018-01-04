@@ -1268,14 +1268,13 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       REF_DBL NtinvNNt[16];
       REF_DBL NtinvNNtN[16];
       REF_DBL P[16];
-      /* N(i,:) = [ 1 -grad ] */
+
       for (i=0;i<nactive;i++)
 	{
 	  N[i+nactive*0] = 1.0;
 	  for (ixyz=0;ixyz<3;ixyz++)
 	    N[i+nactive*(1+ixyz)] = -grads[ixyz+3*active[i]];
 	}
-      RSS( ref_matrix_show_ab(nactive,4,N), "show" );
       /* P = I - Nt [N Nt]^-1 N */
       for (i=0;i<nactive;i++)
 	for (j=0;j<nactive;j++)
@@ -1284,11 +1283,7 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	for (j=0;j<nactive;j++)
 	  for (k=0;k<4;k++)
 	    NNt[i+j*nactive] += N[i+nactive*k]*N[j+nactive*k];
-      RSS( ref_matrix_show_ab(nactive,nactive,NNt), "show" );
-      printf("NNt = \n");
       RSS( ref_matrix_inv_gen(nactive, NNt, invNNt ), "inv" );
-      printf("invNNt = \n");
-      RSS( ref_matrix_show_ab(nactive,nactive,invNNt), "show" );
 
       for (i=0;i<4;i++)
 	for (j=0;j<nactive;j++)
@@ -1299,9 +1294,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  for (k=0;k<nactive;k++)
 	    NtinvNNt[i+4*j] += N[k+i*nactive]*invNNt[k+j*nactive]; 
 
-      printf("NtinvNNt = \n");
-      RSS( ref_matrix_show_ab(4,nactive,NtinvNNt), "show" );
-
       for (i=0;i<4;i++)
 	for (j=0;j<4;j++)
 	  NtinvNNtN[i+4*j] = 0.0; 
@@ -1311,16 +1303,11 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
 	  for (k=0;k<nactive;k++)
 	    NtinvNNtN[i+4*j] += NtinvNNt[i+k*4] * N[k+j*nactive]; 
 
-      printf("NtinvNNtN = \n");
-      RSS( ref_matrix_show_ab(4,4,NtinvNNtN), "show" );
-
       for (i=0;i<4;i++)
 	for (j=0;j<4;j++)
 	  P[i+j*4]=-NtinvNNtN[i+j*4];
       for (i=0;i<4;i++)
 	P[i+i*4] += 1.0;
-      printf("P = \n");
-      RSS( ref_matrix_show_ab(4,4,P), "show" );
 
       for (ixyz=0;ixyz<3;ixyz++)
 	dir[ixyz]=P[1+ixyz];
