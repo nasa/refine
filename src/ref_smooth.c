@@ -1157,14 +1157,14 @@ REF_STATUS ref_smooth_tet_report_quality_around( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
+REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
+				REF_BOOL *complete )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, d_quality[3];
-  REF_BOOL allowed, interior;
   REF_INT *cells, *active;
   REF_DBL *quals, *grads;
   REF_INT worst, degree;
@@ -1179,16 +1179,8 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   REF_INT nactive;
   REF_DBL last_alpha, last_qual;
   REF_BOOL verbose = REF_FALSE;
-  
-  RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
-  if ( !allowed )
-    return REF_SUCCESS;
 
-  interior =
-    ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
-    ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
-  if ( !interior )
-    return REF_SUCCESS;
+  *complete = REF_FALSE;
 
   xyz[0] = ref_node_xyz(ref_node,0,node);
   xyz[1] = ref_node_xyz(ref_node,1,node);
@@ -1241,7 +1233,11 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
       printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
 	     grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
 
-  RAS( nactive < 4, "optimization complete" );
+  if ( 4 <= nactive )
+    {
+      *complete = REF_TRUE;
+      return REF_SUCCESS;
+    }
 
   if ( 1 == nactive )
     {
@@ -1374,5 +1370,31 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
   ref_free(quals);
   ref_free(active);
   ref_free(cells);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
+{
+  REF_BOOL allowed, interior;
+  REF_BOOL complete = REF_FALSE;
+  REF_INT step;
+
+  RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
+  if ( !allowed )
+    return REF_SUCCESS;
+
+  interior =
+    ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) &&
+    ref_cell_node_empty( ref_grid_qua( ref_grid ), node );
+  if ( !interior )
+    return REF_SUCCESS;
+
+  for (step=0;step<100;step++)
+    {
+      RSS( ref_smooth_nso_step( ref_grid, node, &complete ), "step" );
+      if (complete)
+	break;
+    }
+
   return REF_SUCCESS;
 }

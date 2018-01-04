@@ -620,17 +620,16 @@ int main( int argc, char *argv[] )
    RSS( ref_grid_free( ref_grid ), "free");
  }
 
- if ( argc == 2 && !ref_mpi_para(ref_mpi) )
+ if ( !ref_mpi_para(ref_mpi) )
    { /* interior node on a brick */
      REF_GRID ref_grid;
      REF_INT target_node=37;
-     REF_INT step;
-     REF_DBL quality, orig, last;
+     REF_DBL quality, original;
      
      RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
      RSS( ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit node" );
      RSS( ref_smooth_tet_quality_around( ref_grid, target_node,
-					 &orig ), "orig qual");
+					 &original ), "orig qual");
      ref_node_xyz(ref_grid_node(ref_grid),0,target_node) += 0.15;
      ref_node_xyz(ref_grid_node(ref_grid),1,target_node) += 0.05;
      ref_node_xyz(ref_grid_node(ref_grid),2,target_node) += 0.07;
@@ -648,15 +647,11 @@ q = P(2:4,1)
 dir=q./norm(q)
 m = g*dir
       */
-     last = orig;
-     for ( step=0 ; step < 100 ; step++ )
-       {
-	 RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
-	 RSS( ref_smooth_tet_quality_around( ref_grid, target_node,
-					     &quality ), "orig qual");
-	 printf("%d: remaining %e improve %e\n",step,orig-quality,quality-last);
-	 last = quality;
-       }
+
+     RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+     RSS( ref_smooth_tet_quality_around( ref_grid, target_node,
+					 &quality ), "orig qual");
+     RWDS( original, quality, 1.0e-6, "not recovered" );
      RSS( ref_grid_free( ref_grid ), "free");
    }
 
