@@ -1239,18 +1239,6 @@ REF_STATUS ref_smooth_nso( REF_GRID ref_grid, REF_INT node )
     printf("%2d: %10.5f %10.5f %10.5f\n",active[i],
 	   grads[0+3*active[i]],grads[1+3*active[i]],grads[2+3*active[i]]);
 
-  if ( 2 == nactive )
-    {
-      REF_DBL g00,g11,g01,s;
-      g00 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[0]]) );
-      g11 = ref_math_dot( &(grads[3*active[1]]), &(grads[3*active[1]]) );
-      g01 = ref_math_dot( &(grads[3*active[0]]), &(grads[3*active[1]]) );
-      if ( !ref_math_divisible((g00-g01),(g00 + g11 - 2*g01)) )
-	THROW("singular");
-      s = (g00-g01)/(g00 + g11 - 2*g01);
-      printf("s %f\n",s);
-    }
-
   RAS( nactive < 4, "optimization complete" );
 
   if ( 1 == nactive )
