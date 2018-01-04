@@ -47,7 +47,7 @@
 #define ref_mpi_comm(ref_mpi) ( *((MPI_Comm *)(ref_mpi->comm)) )
 
 #define ref_mpi_where_am_i(ref_mpi)					\
-  if (ref_mpi->debug)							\
+  if (ref_mpi_once(ref_mpi) && (ref_mpi)->debug)			\
     printf("%4d: %s: %d: %s:\n",(ref_mpi)->id,__FILE__,__LINE__,__func__);
 
 #endif
