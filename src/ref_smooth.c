@@ -1353,7 +1353,7 @@ REF_STATUS ref_smooth_nso_step( REF_GRID ref_grid, REF_INT node,
   alpha = min_alpha;
   last_alpha = 0.0;
   last_qual = 0.0;
-  max_reductions = 15;
+  max_reductions = 8;
   for (reductions=0;reductions<max_reductions;reductions++)
     {
       ref_node_xyz(ref_node,0,node) = xyz[0]+alpha*dir[0];
