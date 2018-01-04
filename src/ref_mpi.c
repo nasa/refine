@@ -63,6 +63,8 @@ REF_STATUS ref_mpi_create_from_comm( REF_MPI *ref_mpi_ptr,  void *comm_ptr )
   ref_mpi->first_time = (REF_DBL)clock(  )/((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
+  ref_mpi->debug = REF_FALSE;
+
 #ifdef HAVE_MPI
   {
     int running;
@@ -119,6 +121,8 @@ REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi_ptr, REF_MPI original )
 
   ref_mpi->first_time = original->first_time;
   ref_mpi->start_time = original->start_time;
+
+  ref_mpi->debug = original->debug;
 
   return REF_SUCCESS;
 }

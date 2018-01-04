@@ -34,6 +34,7 @@ struct REF_MPI_STRUCT {
   void *comm;
   REF_DBL start_time;
   REF_DBL first_time;
+  REF_BOOL debug;
 };
 
 #define ref_mpi_m(ref_mpi) ( (ref_mpi)->n )
