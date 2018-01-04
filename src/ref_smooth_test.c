@@ -650,9 +650,11 @@ dir=q./norm(q)
 m = g*dir
       */
      
-     for ( step=0 ; step < 6 ; step++ )
-       RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
-     
+     for ( step=0 ; step < 100 ; step++ )
+       {
+	 RSS( ref_smooth_nso( ref_grid, target_node ), "fix" );
+	 printf("original %f\n",quality);
+       }
      RSS( ref_grid_free( ref_grid ), "free");
    }
 
