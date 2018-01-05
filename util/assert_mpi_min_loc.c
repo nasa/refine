@@ -1,3 +1,4 @@
+/* mpicc -g -o assert_mpi_min_loc assert_mpi_min_loc.c */
 #include <stdlib.h>
 #include <stdio.h>
 #include "mpi.h"
