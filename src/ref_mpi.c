@@ -46,8 +46,11 @@
 
 #define ref_mpi_comm(ref_mpi) ( *((MPI_Comm *)(ref_mpi->comm)) )
 
+#define ref_mpi_debugging(ref_mpi)		\
+  (ref_mpi_once(ref_mpi) && (ref_mpi)->debug)
+
 #define ref_mpi_where_am_i(ref_mpi)					\
-  if (ref_mpi_once(ref_mpi) && (ref_mpi)->debug)			\
+  if ( ref_mpi_debugging(ref_mpi) )					\
     printf("%4d: %s: %d: %s:\n",(ref_mpi)->id,__FILE__,__LINE__,__func__);
 
 #endif
@@ -706,6 +709,8 @@ REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
         in[i].rank = ref_mpi_rank(ref_mpi); 
       }
     ref_mpi_where_am_i(ref_mpi);
+    if ( ref_mpi_debugging(ref_mpi) )
+      printf("MPI_MINLOC %d\n",n);
     MPI_Allreduce( in, out, n, MPI_DOUBLE_INT, MPI_MINLOC, 
 		   ref_mpi_comm(ref_mpi) );
     for (i=0; i<n; i++) 
