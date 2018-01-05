@@ -1007,6 +1007,9 @@ REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
   return REF_SUCCESS;
 }
 
+
+/* Alauzet and A. Loseille doi:10.1016/j.jcp.2009.09.020
+ * section 2.2.4.1. A double L2-projection */ 
 REF_STATUS ref_metric_l2_projection_grad( REF_GRID ref_grid, REF_DBL *scalar,
 					  REF_DBL *grad)
 {
