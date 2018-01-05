@@ -145,7 +145,7 @@ int main( int argc, char *argv[] )
     for (i=0;i<n;i++)
       val[i] = (REF_DBL)ref_mpi_rank(ref_mpi);
 
-    RSS( ref_mpi_allminwho( ref_mpi, val, who, ref_mpi_m(ref_mpi) ), "minloc");
+    RSS( ref_mpi_allminwho( ref_mpi, val, who, n ), "minloc");
 
     for (i=0;i<n;i++)
       {
