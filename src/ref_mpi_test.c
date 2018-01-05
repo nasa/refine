@@ -108,7 +108,7 @@ int main( int argc, char *argv[] )
     ref_free( separate );
   }
 
-  /* allminwho */
+  /* allminwho, one per rank */
   {
     REF_INT part;
     REF_DBL *val;
@@ -127,6 +127,30 @@ int main( int argc, char *argv[] )
       {
 	REIS( part, who[part], "who" );
 	RWDS( 0.0, val[part], -1.0, "min" );
+      }
+
+    ref_free( who );
+    ref_free( val );
+  }
+
+  /* allminwho, 1403 */
+  {
+    REF_INT i, n = 1403;
+    REF_DBL *val;
+    REF_INT *who;
+
+    ref_malloc( val, n, REF_DBL );
+    ref_malloc( who, n, REF_INT );
+      
+    for (i=0;i<n;i++)
+      val[i] = (REF_DBL)ref_mpi_rank(ref_mpi);
+
+    RSS( ref_mpi_allminwho( ref_mpi, val, who, ref_mpi_m(ref_mpi) ), "minloc");
+
+    for (i=0;i<n;i++)
+      {
+	REIS( 0, who[i], "who" );
+	RWDS( 0.0, val[i], -1.0, "min" );
       }
 
     ref_free( who );
