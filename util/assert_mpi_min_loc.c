@@ -27,7 +27,7 @@ int main( int argc, char *argv[] )
     }
   if ( 0 == rank )
     printf("calling MPI_Allreduce( %d, MPI_DOUBLE_INT, MPI_MINLOC) with %d\n",
-	   nproc);
+	   n, nproc);
   MPI_Allreduce( in, out, n, MPI_DOUBLE_INT, MPI_MINLOC, 
 		 MPI_COMM_WORLD );
   if ( 0 == rank )
