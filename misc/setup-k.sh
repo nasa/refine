@@ -5,7 +5,7 @@ set -x
 ./bootstrap
 
 module_path="/u/shared/fun3d/fun3d_users/modules"
-zoltan_path="${module_path}/Zoltan/3.82-mpt-2.14-intel_2015.3.187"
+zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.2-intel_2017.2.174"
 
 egads_path="/u/mpark/local/pkgs/ESP111/EngSketchPad"
 
