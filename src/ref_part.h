@@ -36,8 +36,6 @@ BEGIN_C_DECLORATION
 REF_STATUS ref_part_by_extension( REF_GRID *ref_grid, 
 				  REF_MPI ref_mpi, const char *filename );
 
-REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
-			  REF_NODE ref_node, REF_INT nnode );
 REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 				REF_NODE ref_node, REF_INT nnode,
 				FILE *file );

@@ -36,6 +36,94 @@
 #include "ref_import.h"
 
 
+static REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
+				 REF_BOOL has_id,
+				 REF_NODE ref_node, REF_INT nnode )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT node, new_node;
+  REF_INT part;
+  REF_INT n, id;
+  REF_DBL dbl;
+  REF_DBL *xyz;
+
+  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      part = 0;
+      for (node=0;node<ref_part_first( nnode, ref_mpi_m(ref_mpi), 1 ); node++)
+	{
+	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
+	  ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 0, new_node ) = dbl;
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 1, new_node ) = dbl;
+	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
+	  if (swap_endian) SWAP_DBL(dbl);
+	  ref_node_xyz( ref_node, 2, new_node ) = dbl;
+	  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+	}
+      each_ref_mpi_worker( ref_mpi, part )
+	{
+	  n = ref_part_first( nnode, ref_mpi_m(ref_mpi), part+1 )
+            - ref_part_first( nnode, ref_mpi_m(ref_mpi), part );
+	  RSS( ref_mpi_send( ref_mpi,
+			     &n, 1, REF_INT_TYPE, part ), "send" );
+	  if ( n > 0 )
+	    {
+	      ref_malloc( xyz, 3*n, REF_DBL);
+	      for (node=0;node<n; node++)
+		{
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[0+3*node] = dbl;
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[1+3*node] = dbl;
+		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
+		  if (swap_endian) SWAP_DBL(dbl);
+		  xyz[2+3*node] = dbl;
+		  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id");
+		}
+	      RSS( ref_mpi_send( ref_mpi,
+				 xyz, 3*n, REF_DBL_TYPE, part ), "send" );
+	      free(xyz);
+	    }
+	}
+    }
+  else
+    {
+      RSS( ref_mpi_recv( ref_mpi,
+			 &n, 1, REF_INT_TYPE, 0 ), "recv" );
+      if ( n > 0 )
+	{
+	  ref_malloc( xyz, 3*n, REF_DBL);
+	  RSS( ref_mpi_recv( ref_mpi,
+			     xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
+	  for (node=0;node<n; node++)
+	    {
+	      RSS( ref_node_add(ref_node, 
+				node+ref_part_first( nnode, 
+						     ref_mpi_m(ref_mpi), 
+						     ref_mpi_rank(ref_mpi) ),
+				&new_node ), "new_node");
+	      ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
+	      ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
+	      ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
+	      ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
+	    }
+	  free(xyz);
+	}
+
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, 
 			   REF_MPI ref_mpi, const char *filename )
 {
@@ -212,93 +300,6 @@ REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
       fclose( file );
-    }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian, REF_BOOL has_id,
-			  REF_NODE ref_node, REF_INT nnode )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT node, new_node;
-  REF_INT part;
-  REF_INT n, id;
-  REF_DBL dbl;
-  REF_DBL *xyz;
-
-  RSS( ref_node_initialize_n_global( ref_node, nnode ), "init nnodesg");
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      part = 0;
-      for (node=0;node<ref_part_first( nnode, ref_mpi_m(ref_mpi), 1 ); node++)
-	{
-	  RSS( ref_node_add(ref_node, node, &new_node ), "new_node");
-	  ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
-	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
-	  if (swap_endian) SWAP_DBL(dbl);
-	  ref_node_xyz( ref_node, 0, new_node ) = dbl;
-	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
-	  if (swap_endian) SWAP_DBL(dbl);
-	  ref_node_xyz( ref_node, 1, new_node ) = dbl;
-	  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
-	  if (swap_endian) SWAP_DBL(dbl);
-	  ref_node_xyz( ref_node, 2, new_node ) = dbl;
-	  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
-	}
-      each_ref_mpi_worker( ref_mpi, part )
-	{
-	  n = ref_part_first( nnode, ref_mpi_m(ref_mpi), part+1 )
-            - ref_part_first( nnode, ref_mpi_m(ref_mpi), part );
-	  RSS( ref_mpi_send( ref_mpi,
-			     &n, 1, REF_INT_TYPE, part ), "send" );
-	  if ( n > 0 )
-	    {
-	      ref_malloc( xyz, 3*n, REF_DBL);
-	      for (node=0;node<n; node++)
-		{
-		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "x" );
-		  if (swap_endian) SWAP_DBL(dbl);
-		  xyz[0+3*node] = dbl;
-		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "y" );
-		  if (swap_endian) SWAP_DBL(dbl);
-		  xyz[1+3*node] = dbl;
-		  RES(1, fread( &dbl, sizeof(REF_DBL), 1, file ), "z" );
-		  if (swap_endian) SWAP_DBL(dbl);
-		  xyz[2+3*node] = dbl;
-		  if (has_id) REIS( 1, fread(&(id),sizeof(id), 1, file ), "id");
-		}
-	      RSS( ref_mpi_send( ref_mpi,
-				 xyz, 3*n, REF_DBL_TYPE, part ), "send" );
-	      free(xyz);
-	    }
-	}
-    }
-  else
-    {
-      RSS( ref_mpi_recv( ref_mpi,
-			 &n, 1, REF_INT_TYPE, 0 ), "recv" );
-      if ( n > 0 )
-	{
-	  ref_malloc( xyz, 3*n, REF_DBL);
-	  RSS( ref_mpi_recv( ref_mpi,
-			     xyz, 3*n, REF_DBL_TYPE, 0 ), "recv" );
-	  for (node=0;node<n; node++)
-	    {
-	      RSS( ref_node_add(ref_node, 
-				node+ref_part_first( nnode, 
-						     ref_mpi_m(ref_mpi), 
-						     ref_mpi_rank(ref_mpi) ),
-				&new_node ), "new_node");
-	      ref_node_part(ref_node,new_node) = ref_mpi_rank(ref_mpi);
-	      ref_node_xyz( ref_node, 0, new_node ) = xyz[0+3*node];
-	      ref_node_xyz( ref_node, 1, new_node ) = xyz[1+3*node];
-	      ref_node_xyz( ref_node, 2, new_node ) = xyz[2+3*node];
-	    }
-	  free(xyz);
-	}
-
     }
 
   return REF_SUCCESS;
