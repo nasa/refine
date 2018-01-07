@@ -3,8 +3,6 @@ reduce validation redundancy of volume stats and complexity
 
 remove private methods from headers : ref_part ref_gather
 
-reference implementation of Lp metric
-
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
@@ -28,6 +26,9 @@ merge ref_split_edge_local_tets ref_split_edge_local_prism
 merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   to ref_smooth_local_cell_about
 merge ref_collapse_face_local_*
+
+refactor ref_export to extract compact_n2o twod and cell
+with ref_grid_boundary_nodes
 
 egads recon
  clean up method
@@ -61,8 +62,6 @@ insert optimized node location (uv,xyz) with validity constraint
 
 ideal tri/tet use log avg m?
 
-quadratic programming optimize min element quality
-
 histogram history plots
 
 ellipsoid viz 
@@ -70,15 +69,6 @@ ellipsoid viz
 docs?
 provide dense api (or pack)
 provide 2D api
-
-EGADS questions:
-- degnerate edges (faces)
-  EG_getTopology (mtype edge)
-- surface normal (direction and inside/outside orientation)
-  EG_getTopology (mtype sforward is UxV out of domain)
-- easiest way to build the planar delta wing
-  - draw 2D planform, extrude, trim with booleans
-- for initial grids, set .tParams, vtess to visualize
 
 time adapt pass elements
 profile
@@ -93,12 +83,7 @@ create jenkins test
 - make check stack fuzz
 
 interp metric on curved surface
- make debug tecplot status
  interpolate in u,v,s
- better bary/next face choice ?
-
-refactor ref_export to extract compact_n2o twod and cell
-with ref_grid_boundary_nodes
 
 validate normal deviation (make metric big across cylinder)
 -- insert with ball
@@ -108,9 +93,10 @@ validate normal deviation (make metric big across cylinder)
 ideal tet using principle direction? but faces dissaggree? optimizer?
 
 smooth
- sort worst to best? edge, surface, volume sequence
+ sort worst to best? sort biggest neighbor difference?
+   for edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
- freitag smoothing
+ minmax optimize uv
  surface smoothing without geom
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
@@ -137,6 +123,20 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ EGADS questions:
+  + degnerate edges (faces)
+    EG_getTopology (mtype edge)
+  + surface normal (direction and inside/outside orientation)
+    EG_getTopology (mtype sforward is UxV out of domain)
+  + easiest way to build the planar delta wing
+    + draw 2D planform, extrude, trim with booleans
+  + for initial grids, set .tParams, vtess to visualize
+
++ quadratic programming optimize min element quality
++ freitag smoothing
+
++ reference implementation of Lp metric
 
 + ref_sudiv to prevent partition artifacts? 
 + subdiv and geom interaction	
