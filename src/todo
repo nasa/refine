@@ -1,6 +1,4 @@
 
-reduce validation redundancy of volume stats and complexity
-
 remove private methods from headers : ref_part ref_gather
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
