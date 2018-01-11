@@ -1143,7 +1143,6 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
   REF_INT max_node = 400, nnode;
   REF_INT node_list[400];
   REF_INT i, neighbor, nint;
-  REF_DBL log_m[6];
 
   if ( ref_grid_twod(ref_grid) )
     RSS( REF_IMPLEMENT, "2D not implmented" );
@@ -1166,16 +1165,13 @@ REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric,
 	    for (neighbor=0;neighbor<nnode;neighbor++)
 	      if ( ref_cell_node_empty( tris, node_list[neighbor] ) )
 		{
-		  RSS( ref_matrix_log_m( &(metric[6*node_list[neighbor]]), 
-					 log_m ), "log" );
+		  /* use Euclidean average, these are derivatives */
 		  for (i=0;i<6;i++)
-		    metric[i+6*node] += log_m[i];
+		    metric[i+6*node] += metric[i+6*node_list[neighbor]];
 		}
 	    for (i=0;i<6;i++)
-	      log_m[i] = metric[i+6*node] / (REF_DBL)nint;
-	    RSS( ref_matrix_exp_m( log_m, &(metric[6*node]) ), "exp" );
+	      metric[i+6*node] /= (REF_DBL)nint;
 	  }
-	
       }
 
   RSS( ref_node_ghost_dbl(ref_node,metric,6), "update ghosts" );
