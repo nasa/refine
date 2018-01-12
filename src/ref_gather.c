@@ -724,6 +724,266 @@ static REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_cell( REF_NODE ref_node,
+				   REF_CELL ref_cell, 
+				   REF_BOOL faceid_insted_of_c2n,
+				   REF_BOOL always_id,
+				   REF_BOOL swap_endian,
+				   REF_BOOL select_faceid,
+				   REF_INT faceid,
+				   FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per = ref_cell_node_per(ref_cell);
+  REF_INT size_per = ref_cell_size_per(ref_cell);
+  REF_INT ncell;
+  REF_INT *c2n;
+  REF_INT proc;
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
+	     ( !select_faceid ||
+	       nodes[ref_cell_node_per(ref_cell)] == faceid ))
+	  {
+	    if ( faceid_insted_of_c2n )
+	      {
+		node = node_per;
+		if (swap_endian) SWAP_INT(nodes[node]);
+		REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+		     "cel node");
+	      }
+	    else
+	      {
+		for ( node = 0; node < node_per; node++ )
+		  {
+		    nodes[node] = ref_node_global(ref_node,nodes[node]);
+		    nodes[node]++;
+		    if (swap_endian) SWAP_INT(nodes[node]);
+		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+			 "cel node");
+		  }
+		if ( always_id )
+		  {
+		    if (ref_cell_last_node_is_an_id(ref_cell))
+		      {
+			node = node_per;
+			if (swap_endian) SWAP_INT(nodes[node]);
+			REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
+			     "cel node");
+		      }
+		    else
+		      {
+			node = 0;
+			if (swap_endian) SWAP_INT(node);
+			REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
+			     "cel node");
+		      }
+		  }
+	      }
+	  }
+    }
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      each_ref_mpi_worker( ref_mpi, proc )
+	{
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
+	  if ( ncell > 0 )
+	    {
+	      ref_malloc(c2n, ncell*size_per, REF_INT);
+	      RSS( ref_mpi_recv( ref_mpi,
+				 c2n, ncell*size_per, 
+				 REF_INT_TYPE, proc ), "recv c2n");
+	      for ( cell = 0; cell < ncell; cell++ )
+		if ( faceid_insted_of_c2n )
+		  {
+		    node = node_per;
+		    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
+		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
+				   sizeof(REF_INT),1,file),"cell");
+		  }
+		else
+		  {
+		    for ( node = 0; node < node_per; node++ )
+		      {
+			c2n[node+size_per*cell]++;
+			if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
+			REIS(1, fwrite(&(c2n[node+size_per*cell]),
+				       sizeof(REF_INT),1,file),"cell");
+		      }
+		    if ( always_id )
+		      {
+			if (ref_cell_last_node_is_an_id(ref_cell))
+			  {
+			    node = node_per;
+			    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
+			    REIS(1, fwrite(&(c2n[node+size_per*cell]),
+					   sizeof(REF_INT),1,file),
+				 "cel node");
+			  }
+			else
+			  {
+			    node = 0;
+			    if (swap_endian) SWAP_INT(node);
+			    REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
+				 "cel node");
+			  }
+		      }
+		  }
+	      ref_free(c2n);
+	    }
+	}
+    }
+  else
+    {
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
+	     ( !select_faceid ||
+	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
+	  ncell++;
+      RSS( ref_mpi_send( ref_mpi,
+			 &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
+      if ( ncell > 0 )
+	{
+	  ref_malloc(c2n, ncell*size_per, REF_INT);
+	  ncell = 0;
+	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+	    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
+		 ( !select_faceid ||
+		   nodes[ref_cell_node_per(ref_cell)] == faceid ) )
+	      {
+		for ( node = 0; node < node_per; node++ )
+		  c2n[node+size_per*ncell] = 
+		    ref_node_global(ref_node,nodes[node]);
+		for ( node = node_per; node < size_per; node++ )
+		  c2n[node+size_per*ncell] = nodes[node];
+		ncell++;
+	      }
+	  RSS( ref_mpi_send( ref_mpi,
+			     c2n, ncell*size_per, 
+			     REF_INT_TYPE, 0 ), "send c2n");
+	  ref_free(c2n);
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_geom( REF_NODE ref_node,
+				   REF_GEOM ref_geom, 
+				   REF_INT type, FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT geom, node, id, i;
+  REF_INT ngeom;
+  REF_INT *node_id;
+  REF_DBL *param;
+  REF_INT proc;
+  double filler = 0.0;
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      each_ref_geom_of( ref_geom, type, geom )
+	{
+	  if ( ref_mpi_rank(ref_mpi) !=
+	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
+	    continue;
+	  node = ref_node_global(ref_node,ref_geom_node(ref_geom,geom)) + 1;
+	  id = ref_geom_id(ref_geom,geom);
+	  REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
+	  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
+	  for ( i = 0; i < type ; i++ )
+	    REIS(1, fwrite(&(ref_geom_param(ref_geom,i,geom)),
+			   sizeof(double),1,file),"id");
+	  if ( 0 < type )
+	    REIS(1, fwrite(&(filler),
+			   sizeof(double),1,file),"id");
+	}
+    }
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      each_ref_mpi_worker( ref_mpi, proc )
+	{
+	  RSS( ref_mpi_recv( ref_mpi,
+			     &ngeom, 1, REF_INT_TYPE, proc ), "recv ngeom");
+	  if (ngeom >0)
+	    {
+	      ref_malloc(node_id, 2*ngeom, REF_INT);
+	      ref_malloc(param, 2*ngeom, REF_DBL);
+	      RSS( ref_mpi_recv( ref_mpi,
+				 node_id, 2*ngeom, 
+				 REF_INT_TYPE, proc ), "recv node_id");
+	      RSS( ref_mpi_recv( ref_mpi,
+				 param, 2*ngeom, 
+				 REF_DBL_TYPE, proc ), "recv param");
+	      for ( geom = 0; geom < ngeom; geom++ )
+		{
+		  node = node_id[0+2*geom] + 1;
+		  id   = node_id[1+2*geom];
+		  REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
+		  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
+		  for ( i = 0; i < type ; i++ )
+		    REIS(1, fwrite(&(param[i+2*geom]),
+				   sizeof(double),1,file),"id");
+		  if ( 0 < type )
+		    REIS(1, fwrite(&(filler),
+				   sizeof(double),1,file),"id");
+		}
+	      ref_free(param);
+	      ref_free(node_id);
+	    }
+	}
+    }
+  else
+    {
+      ngeom = 0;
+      each_ref_geom_of( ref_geom, type, geom )
+	{
+	  if ( ref_mpi_rank(ref_mpi) !=
+	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
+	    continue;
+	  ngeom++;
+	}
+      RSS( ref_mpi_send( ref_mpi,
+			 &ngeom, 1, REF_INT_TYPE, 0 ), "send ngeom");
+      if ( ngeom > 0 )
+	{
+	  ref_malloc(node_id, 2*ngeom, REF_INT);
+	  ref_malloc_init(param, 2*ngeom, REF_DBL, 0.0 ); /* prevent uninit */
+	  ngeom = 0;
+	  each_ref_geom_of( ref_geom, type, geom )
+	    {
+	      if ( ref_mpi_rank(ref_mpi) !=
+		   ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
+		continue;
+	      node_id[0+2*ngeom] =
+		ref_node_global(ref_node,ref_geom_node(ref_geom,geom));
+	      node_id[1+2*ngeom] = ref_geom_id(ref_geom,geom);
+	      for ( i = 0; i < type ; i++ )
+		param[i+2*ngeom] = ref_geom_param(ref_geom,i,geom);
+	      ngeom++;
+	    }
+	  RSS( ref_mpi_send( ref_mpi,
+			     node_id, 2*ngeom, 
+			     REF_INT_TYPE, 0 ), "send node_id");
+	  RSS( ref_mpi_send( ref_mpi,
+			     param, 2*ngeom, 
+			     REF_DBL_TYPE, 0 ), "send param");
+	  ref_free(param);
+	  ref_free(node_id);
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 {
   REF_BOOL verbose = REF_FALSE;
@@ -1099,266 +1359,6 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
 
   RSS( ref_mpi_sum( ref_mpi, &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
   RSS( ref_mpi_bcast( ref_mpi, ngeom, 1, REF_INT_TYPE ), "bcast");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_cell( REF_NODE ref_node,
-			    REF_CELL ref_cell, 
-			    REF_BOOL faceid_insted_of_c2n,
-			    REF_BOOL always_id,
-			    REF_BOOL swap_endian,
-			    REF_BOOL select_faceid,
-			    REF_INT faceid,
-			    FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, node;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT size_per = ref_cell_size_per(ref_cell);
-  REF_INT ncell;
-  REF_INT *c2n;
-  REF_INT proc;
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
-	     ( !select_faceid ||
-	       nodes[ref_cell_node_per(ref_cell)] == faceid ))
-	  {
-	    if ( faceid_insted_of_c2n )
-	      {
-		node = node_per;
-		if (swap_endian) SWAP_INT(nodes[node]);
-		REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-		     "cel node");
-	      }
-	    else
-	      {
-		for ( node = 0; node < node_per; node++ )
-		  {
-		    nodes[node] = ref_node_global(ref_node,nodes[node]);
-		    nodes[node]++;
-		    if (swap_endian) SWAP_INT(nodes[node]);
-		    REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-			 "cel node");
-		  }
-		if ( always_id )
-		  {
-		    if (ref_cell_last_node_is_an_id(ref_cell))
-		      {
-			node = node_per;
-			if (swap_endian) SWAP_INT(nodes[node]);
-			REIS(1, fwrite(&(nodes[node]),sizeof(REF_INT),1,file),
-			     "cel node");
-		      }
-		    else
-		      {
-			node = 0;
-			if (swap_endian) SWAP_INT(node);
-			REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
-			     "cel node");
-		      }
-		  }
-	      }
-	  }
-    }
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      each_ref_mpi_worker( ref_mpi, proc )
-	{
-	  RSS( ref_mpi_recv( ref_mpi,
-			     &ncell, 1, REF_INT_TYPE, proc ), "recv ncell");
-	  if ( ncell > 0 )
-	    {
-	      ref_malloc(c2n, ncell*size_per, REF_INT);
-	      RSS( ref_mpi_recv( ref_mpi,
-				 c2n, ncell*size_per, 
-				 REF_INT_TYPE, proc ), "recv c2n");
-	      for ( cell = 0; cell < ncell; cell++ )
-		if ( faceid_insted_of_c2n )
-		  {
-		    node = node_per;
-		    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
-		    REIS(1, fwrite(&(c2n[node+size_per*cell]),
-				   sizeof(REF_INT),1,file),"cell");
-		  }
-		else
-		  {
-		    for ( node = 0; node < node_per; node++ )
-		      {
-			c2n[node+size_per*cell]++;
-			if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
-			REIS(1, fwrite(&(c2n[node+size_per*cell]),
-				       sizeof(REF_INT),1,file),"cell");
-		      }
-		    if ( always_id )
-		      {
-			if (ref_cell_last_node_is_an_id(ref_cell))
-			  {
-			    node = node_per;
-			    if (swap_endian) SWAP_INT(c2n[node+size_per*cell]);
-			    REIS(1, fwrite(&(c2n[node+size_per*cell]),
-					   sizeof(REF_INT),1,file),
-				 "cel node");
-			  }
-			else
-			  {
-			    node = 0;
-			    if (swap_endian) SWAP_INT(node);
-			    REIS(1, fwrite(&(node),sizeof(REF_INT),1,file),
-				 "cel node");
-			  }
-		      }
-		  }
-	      ref_free(c2n);
-	    }
-	}
-    }
-  else
-    {
-      ncell = 0;
-      each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
-	     ( !select_faceid ||
-	       nodes[ref_cell_node_per(ref_cell)] == faceid ) )
-	  ncell++;
-      RSS( ref_mpi_send( ref_mpi,
-			 &ncell, 1, REF_INT_TYPE, 0 ), "send ncell");
-      if ( ncell > 0 )
-	{
-	  ref_malloc(c2n, ncell*size_per, REF_INT);
-	  ncell = 0;
-	  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-	    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
-		 ( !select_faceid ||
-		   nodes[ref_cell_node_per(ref_cell)] == faceid ) )
-	      {
-		for ( node = 0; node < node_per; node++ )
-		  c2n[node+size_per*ncell] = 
-		    ref_node_global(ref_node,nodes[node]);
-		for ( node = node_per; node < size_per; node++ )
-		  c2n[node+size_per*ncell] = nodes[node];
-		ncell++;
-	      }
-	  RSS( ref_mpi_send( ref_mpi,
-			     c2n, ncell*size_per, 
-			     REF_INT_TYPE, 0 ), "send c2n");
-	  ref_free(c2n);
-	}
-    }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_geom( REF_NODE ref_node,
-			    REF_GEOM ref_geom, 
-			    REF_INT type, FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT geom, node, id, i;
-  REF_INT ngeom;
-  REF_INT *node_id;
-  REF_DBL *param;
-  REF_INT proc;
-  double filler = 0.0;
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      each_ref_geom_of( ref_geom, type, geom )
-	{
-	  if ( ref_mpi_rank(ref_mpi) !=
-	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
-	    continue;
-	  node = ref_node_global(ref_node,ref_geom_node(ref_geom,geom)) + 1;
-	  id = ref_geom_id(ref_geom,geom);
-	  REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
-	  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
-	  for ( i = 0; i < type ; i++ )
-	    REIS(1, fwrite(&(ref_geom_param(ref_geom,i,geom)),
-			   sizeof(double),1,file),"id");
-	  if ( 0 < type )
-	    REIS(1, fwrite(&(filler),
-			   sizeof(double),1,file),"id");
-	}
-    }
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      each_ref_mpi_worker( ref_mpi, proc )
-	{
-	  RSS( ref_mpi_recv( ref_mpi,
-			     &ngeom, 1, REF_INT_TYPE, proc ), "recv ngeom");
-	  if (ngeom >0)
-	    {
-	      ref_malloc(node_id, 2*ngeom, REF_INT);
-	      ref_malloc(param, 2*ngeom, REF_DBL);
-	      RSS( ref_mpi_recv( ref_mpi,
-				 node_id, 2*ngeom, 
-				 REF_INT_TYPE, proc ), "recv node_id");
-	      RSS( ref_mpi_recv( ref_mpi,
-				 param, 2*ngeom, 
-				 REF_DBL_TYPE, proc ), "recv param");
-	      for ( geom = 0; geom < ngeom; geom++ )
-		{
-		  node = node_id[0+2*geom] + 1;
-		  id   = node_id[1+2*geom];
-		  REIS(1, fwrite(&(node),sizeof(int),1,file),"node");
-		  REIS(1, fwrite(&(id),sizeof(int),1,file),"id");
-		  for ( i = 0; i < type ; i++ )
-		    REIS(1, fwrite(&(param[i+2*geom]),
-				   sizeof(double),1,file),"id");
-		  if ( 0 < type )
-		    REIS(1, fwrite(&(filler),
-				   sizeof(double),1,file),"id");
-		}
-	      ref_free(param);
-	      ref_free(node_id);
-	    }
-	}
-    }
-  else
-    {
-      ngeom = 0;
-      each_ref_geom_of( ref_geom, type, geom )
-	{
-	  if ( ref_mpi_rank(ref_mpi) !=
-	       ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
-	    continue;
-	  ngeom++;
-	}
-      RSS( ref_mpi_send( ref_mpi,
-			 &ngeom, 1, REF_INT_TYPE, 0 ), "send ngeom");
-      if ( ngeom > 0 )
-	{
-	  ref_malloc(node_id, 2*ngeom, REF_INT);
-	  ref_malloc_init(param, 2*ngeom, REF_DBL, 0.0 ); /* prevent uninit */
-	  ngeom = 0;
-	  each_ref_geom_of( ref_geom, type, geom )
-	    {
-	      if ( ref_mpi_rank(ref_mpi) !=
-		   ref_node_part(ref_node,ref_geom_node(ref_geom,geom)) )
-		continue;
-	      node_id[0+2*ngeom] =
-		ref_node_global(ref_node,ref_geom_node(ref_geom,geom));
-	      node_id[1+2*ngeom] = ref_geom_id(ref_geom,geom);
-	      for ( i = 0; i < type ; i++ )
-		param[i+2*ngeom] = ref_geom_param(ref_geom,i,geom);
-	      ngeom++;
-	    }
-	  RSS( ref_mpi_send( ref_mpi,
-			     node_id, 2*ngeom, 
-			     REF_INT_TYPE, 0 ), "send node_id");
-	  RSS( ref_mpi_send( ref_mpi,
-			     param, 2*ngeom, 
-			     REF_DBL_TYPE, 0 ), "send param");
-	  ref_free(param);
-	  ref_free(node_id);
-	}
-    }
 
   return REF_SUCCESS;
 }

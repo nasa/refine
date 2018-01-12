@@ -61,16 +61,6 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
 			     REF_INT type, REF_INT *ngeom );
 
-REF_STATUS ref_gather_geom( REF_NODE ref_node,
-			    REF_GEOM ref_geom, 
-			    REF_INT type, FILE *file );
-REF_STATUS ref_gather_cell( REF_NODE ref_node,
-			    REF_CELL ref_cell, 
-			    REF_BOOL faceid_insted_of_c2n, REF_BOOL always_id,
-			    REF_BOOL swap_endian,
-			    REF_BOOL select_faceid, REF_INT faceid,
-			    FILE *file );
-
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */
