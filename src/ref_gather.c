@@ -82,6 +82,89 @@ static REF_STATUS ref_gather_ncell_below_quality( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
+					    FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i;
+  REF_INT global, local;
+  REF_STATUS status;
+  REF_INT dim=6;
+
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
+
+  ref_malloc( local_xyzm, dim*chunk, REF_DBL );
+  ref_malloc( xyzm, dim*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<dim*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
+	    {
+	      local_xyzm[0+dim*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+dim*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+dim*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[3+dim*i] = (REF_DBL)ref_node_part(ref_node,local);
+	      local_xyzm[4+dim*i] = (REF_DBL)ref_node_age(ref_node,local);
+	      local_xyzm[5+dim*i] = 1.0;
+	    }
+	  else
+	    {
+	      local_xyzm[0+dim*i] = 0.0;
+	      local_xyzm[1+dim*i] = 0.0;
+	      local_xyzm[2+dim*i] = 0.0;
+	      local_xyzm[3+dim*i] = 0.0;
+	      local_xyzm[4+dim*i] = 0.0;
+	      local_xyzm[5+dim*i] = 0.0;
+	    }
+	}
+
+      for (i=0;i<n;i++)
+	if ( (ABS( local_xyzm[5+dim*i] - 1.0 ) > 0.1) &&
+	     (ABS( local_xyzm[5+dim*i] - 0.0 ) > 0.1) )
+	  {
+	    printf("error gather node before sum %d %f\n",
+		   first+i, local_xyzm[5+dim*i]);
+	  }
+
+      RSS( ref_mpi_sum( ref_mpi,
+			local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
+
+      if ( ref_mpi_once(ref_mpi) )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[5+dim*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[5+dim*i]);
+	      }
+	    fprintf(file,"%.15e %.15e %.15e %.0f %.0f\n",
+		    xyzm[0+dim*i], xyzm[1+dim*i], xyzm[2+dim*i], 
+		    xyzm[3+dim*i], xyzm[4+dim*i]);
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 				       const char *zone_title )
 {
@@ -284,6 +367,183 @@ static REF_STATUS ref_gather_node( REF_NODE ref_node,
   ref_free( xyzm );
   ref_free( local_xyzm );
 
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_node_metric( REF_NODE ref_node,
+					  FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i, im;
+  REF_INT global, local;
+  REF_STATUS status;
+
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
+
+  ref_malloc( local_xyzm, 7*chunk, REF_DBL );
+  ref_malloc( xyzm, 7*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<7*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
+	    {
+	      for (im=0;im<6;im++)
+		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
+	      local_xyzm[6+7*i] = 1.0;
+	    }
+	  else
+	    {
+	      for (im=0;im<7;im++)
+		local_xyzm[im+7*i] = 0.0;
+	    }
+	}
+
+      RSS( ref_mpi_sum( ref_mpi, local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
+
+      if ( ref_mpi_once(ref_mpi) )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[6+7*i]);
+	      }
+	    fprintf(file,"%.15e %.15e %.15e %.15e %.15e %.15e \n",
+		    xyzm[0+7*i], xyzm[1+7*i], xyzm[2+7*i], 
+		    xyzm[3+7*i], xyzm[4+7*i], xyzm[5+7*i]);
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node,
+					       FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i, im;
+  REF_INT global, local;
+  REF_STATUS status;
+  int next_position, keyword_code;
+  int code, version, dim;
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      code = 1;
+      REIS(1, fwrite(&code,sizeof(int),1,file),"code");
+      version = 2;
+      REIS(1, fwrite(&version,sizeof(int),1,file),"version");
+      next_position = 4+4+4+ftell(file);
+      keyword_code = 3;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"dim code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      dim = 3;
+      REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
+    }
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      next_position = 4+4+4+4+4+ref_node_n_global(ref_node)*(6*8)+ftell(file);
+      keyword_code = 62;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+      REIS(1, fwrite(&(ref_node_n_global(ref_node)),
+		     sizeof(int),1,file),"nnode");
+      keyword_code = 1; /* one solution at node */
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"n solutions");
+      keyword_code = 3; /* solution type 3, metric */
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"metric solution");
+    }
+  
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
+
+  ref_malloc( local_xyzm, 7*chunk, REF_DBL );
+  ref_malloc( xyzm, 7*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<7*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
+	    {
+	      for (im=0;im<6;im++)
+		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
+	      local_xyzm[6+7*i] = 1.0;
+	    }
+	  else
+	    {
+	      for (im=0;im<7;im++)
+		local_xyzm[im+7*i] = 0.0;
+	    }
+	}
+
+      RSS( ref_mpi_sum( ref_mpi, local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
+
+      if ( ref_mpi_once(ref_mpi) )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[6+7*i]);
+	      }
+	    REIS(1, fwrite(&(xyzm[0+7*i]),sizeof(REF_DBL),1,file),"m11");
+	    REIS(1, fwrite(&(xyzm[1+7*i]),sizeof(REF_DBL),1,file),"m12");
+	    /* transposed 3,2 */
+	    REIS(1, fwrite(&(xyzm[3+7*i]),sizeof(REF_DBL),1,file),"m22");
+	    REIS(1, fwrite(&(xyzm[2+7*i]),sizeof(REF_DBL),1,file),"m13");
+	    REIS(1, fwrite(&(xyzm[4+7*i]),sizeof(REF_DBL),1,file),"m23");
+	    REIS(1, fwrite(&(xyzm[5+7*i]),sizeof(REF_DBL),1,file),"m33");
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  if ( ref_mpi_once(ref_mpi) )
+    REIS( next_position, ftell(file), "solb metric record len inconsistent");
+
+  if ( ref_mpi_once(ref_mpi) )
+    { /* End */
+      keyword_code = 54;
+      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"end kw");
+      next_position = 0;
+      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
+    }
+  
   return REF_SUCCESS;
 }
 
@@ -663,266 +923,6 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
   RSS( ref_mpi_sum( ref_mpi, &ngeom_local, ngeom, 1, REF_INT_TYPE ), "sum");
   RSS( ref_mpi_bcast( ref_mpi, ngeom, 1, REF_INT_TYPE ), "bcast");
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
-				     FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i;
-  REF_INT global, local;
-  REF_STATUS status;
-  REF_INT dim=6;
-
-  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
-
-  ref_malloc( local_xyzm, dim*chunk, REF_DBL );
-  ref_malloc( xyzm, dim*chunk, REF_DBL );
-
-  nnode_written = 0;
-  while ( nnode_written < ref_node_n_global(ref_node) )
-    {
-      first = nnode_written;
-      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
-
-      nnode_written += n;
-
-      for (i=0;i<dim*chunk;i++)
-	local_xyzm[i] = 0.0;
-
-      for (i=0;i<n;i++)
-	{
-	  global = first + i;
-	  status = ref_node_local( ref_node, global, &local );
-	  RXS( status, REF_NOT_FOUND, "node local failed" );
-	  if ( REF_SUCCESS == status &&
-	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
-	    {
-	      local_xyzm[0+dim*i] = ref_node_xyz(ref_node,0,local);
-	      local_xyzm[1+dim*i] = ref_node_xyz(ref_node,1,local);
-	      local_xyzm[2+dim*i] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[3+dim*i] = (REF_DBL)ref_node_part(ref_node,local);
-	      local_xyzm[4+dim*i] = (REF_DBL)ref_node_age(ref_node,local);
-	      local_xyzm[5+dim*i] = 1.0;
-	    }
-	  else
-	    {
-	      local_xyzm[0+dim*i] = 0.0;
-	      local_xyzm[1+dim*i] = 0.0;
-	      local_xyzm[2+dim*i] = 0.0;
-	      local_xyzm[3+dim*i] = 0.0;
-	      local_xyzm[4+dim*i] = 0.0;
-	      local_xyzm[5+dim*i] = 0.0;
-	    }
-	}
-
-      for (i=0;i<n;i++)
-	if ( (ABS( local_xyzm[5+dim*i] - 1.0 ) > 0.1) &&
-	     (ABS( local_xyzm[5+dim*i] - 0.0 ) > 0.1) )
-	  {
-	    printf("error gather node before sum %d %f\n",
-		   first+i, local_xyzm[5+dim*i]);
-	  }
-
-      RSS( ref_mpi_sum( ref_mpi,
-			local_xyzm, xyzm, dim*n, REF_DBL_TYPE ), "sum" );
-
-      if ( ref_mpi_once(ref_mpi) )
-	for ( i=0; i<n; i++ )
-	  {
-	    if ( ABS( xyzm[5+dim*i] - 1.0 ) > 0.1 )
-	      {
-		printf("error gather node %d %f\n",first+i, xyzm[5+dim*i]);
-	      }
-	    fprintf(file,"%.15e %.15e %.15e %.0f %.0f\n",
-		    xyzm[0+dim*i], xyzm[1+dim*i], xyzm[2+dim*i], 
-		    xyzm[3+dim*i], xyzm[4+dim*i]);
-	  }
-    }
-
-  ref_free( xyzm );
-  ref_free( local_xyzm );
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_node_metric( REF_NODE ref_node,
-				   FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
-  REF_STATUS status;
-
-  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
-
-  ref_malloc( local_xyzm, 7*chunk, REF_DBL );
-  ref_malloc( xyzm, 7*chunk, REF_DBL );
-
-  nnode_written = 0;
-  while ( nnode_written < ref_node_n_global(ref_node) )
-    {
-      first = nnode_written;
-      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
-
-      nnode_written += n;
-
-      for (i=0;i<7*chunk;i++)
-	local_xyzm[i] = 0.0;
-
-      for (i=0;i<n;i++)
-	{
-	  global = first + i;
-	  status = ref_node_local( ref_node, global, &local );
-	  RXS( status, REF_NOT_FOUND, "node local failed" );
-	  if ( REF_SUCCESS == status &&
-	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
-	    {
-	      for (im=0;im<6;im++)
-		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
-	      local_xyzm[6+7*i] = 1.0;
-	    }
-	  else
-	    {
-	      for (im=0;im<7;im++)
-		local_xyzm[im+7*i] = 0.0;
-	    }
-	}
-
-      RSS( ref_mpi_sum( ref_mpi, local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
-
-      if ( ref_mpi_once(ref_mpi) )
-	for ( i=0; i<n; i++ )
-	  {
-	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
-	      {
-		printf("error gather node %d %f\n",first+i, xyzm[6+7*i]);
-	      }
-	    fprintf(file,"%.15e %.15e %.15e %.15e %.15e %.15e \n",
-		    xyzm[0+7*i], xyzm[1+7*i], xyzm[2+7*i], 
-		    xyzm[3+7*i], xyzm[4+7*i], xyzm[5+7*i]);
-	  }
-    }
-
-  ref_free( xyzm );
-  ref_free( local_xyzm );
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node,
-					FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
-  REF_STATUS status;
-  int next_position, keyword_code;
-  int code, version, dim;
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      code = 1;
-      REIS(1, fwrite(&code,sizeof(int),1,file),"code");
-      version = 2;
-      REIS(1, fwrite(&version,sizeof(int),1,file),"version");
-      next_position = 4+4+4+ftell(file);
-      keyword_code = 3;
-      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"dim code");
-      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-      dim = 3;
-      REIS(1, fwrite(&dim,sizeof(int),1,file),"dim");
-    }
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      next_position = 4+4+4+4+4+ref_node_n_global(ref_node)*(6*8)+ftell(file);
-      keyword_code = 62;
-      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
-      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-      REIS(1, fwrite(&(ref_node_n_global(ref_node)),
-		     sizeof(int),1,file),"nnode");
-      keyword_code = 1; /* one solution at node */
-      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"n solutions");
-      keyword_code = 3; /* solution type 3, metric */
-      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"metric solution");
-    }
-  
-  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
-
-  ref_malloc( local_xyzm, 7*chunk, REF_DBL );
-  ref_malloc( xyzm, 7*chunk, REF_DBL );
-
-  nnode_written = 0;
-  while ( nnode_written < ref_node_n_global(ref_node) )
-    {
-      first = nnode_written;
-      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
-
-      nnode_written += n;
-
-      for (i=0;i<7*chunk;i++)
-	local_xyzm[i] = 0.0;
-
-      for (i=0;i<n;i++)
-	{
-	  global = first + i;
-	  status = ref_node_local( ref_node, global, &local );
-	  RXS( status, REF_NOT_FOUND, "node local failed" );
-	  if ( REF_SUCCESS == status &&
-	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
-	    {
-	      for (im=0;im<6;im++)
-		local_xyzm[im+7*i] = ref_node_metric(ref_node,im,local);
-	      local_xyzm[6+7*i] = 1.0;
-	    }
-	  else
-	    {
-	      for (im=0;im<7;im++)
-		local_xyzm[im+7*i] = 0.0;
-	    }
-	}
-
-      RSS( ref_mpi_sum( ref_mpi, local_xyzm, xyzm, 7*n, REF_DBL_TYPE ), "sum" );
-
-      if ( ref_mpi_once(ref_mpi) )
-	for ( i=0; i<n; i++ )
-	  {
-	    if ( ABS( xyzm[6+7*i] - 1.0 ) > 0.1 )
-	      {
-		printf("error gather node %d %f\n",first+i, xyzm[6+7*i]);
-	      }
-	    REIS(1, fwrite(&(xyzm[0+7*i]),sizeof(REF_DBL),1,file),"m11");
-	    REIS(1, fwrite(&(xyzm[1+7*i]),sizeof(REF_DBL),1,file),"m12");
-	    /* transposed 3,2 */
-	    REIS(1, fwrite(&(xyzm[3+7*i]),sizeof(REF_DBL),1,file),"m22");
-	    REIS(1, fwrite(&(xyzm[2+7*i]),sizeof(REF_DBL),1,file),"m13");
-	    REIS(1, fwrite(&(xyzm[4+7*i]),sizeof(REF_DBL),1,file),"m23");
-	    REIS(1, fwrite(&(xyzm[5+7*i]),sizeof(REF_DBL),1,file),"m33");
-	  }
-    }
-
-  ref_free( xyzm );
-  ref_free( local_xyzm );
-
-  if ( ref_mpi_once(ref_mpi) )
-    REIS( next_position, ftell(file), "solb metric record len inconsistent");
-
-  if ( ref_mpi_once(ref_mpi) )
-    { /* End */
-      keyword_code = 54;
-      REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"end kw");
-      next_position = 0;
-      REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
-    }
-  
   return REF_SUCCESS;
 }
 

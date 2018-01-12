@@ -61,10 +61,6 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
 			     REF_INT type, REF_INT *ngeom );
 
-REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node, FILE *file );
-REF_STATUS ref_gather_node_metric( REF_NODE ref_node, FILE *file );
-REF_STATUS ref_gather_node_metric_solb( REF_NODE ref_node, FILE *file );
-
 REF_STATUS ref_gather_geom( REF_NODE ref_node,
 			    REF_GEOM ref_geom, 
 			    REF_INT type, FILE *file );
