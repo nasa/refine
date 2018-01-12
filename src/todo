@@ -74,9 +74,20 @@ docs?
 provide dense api (or pack)
  maybe just a copy
  reference to pointers with a free other
+ nodes an cell
+ cell needs native number and owership
 provide 2D api
 meshb geom assoc only read and write
 kill tabs
+ref cell owner part
+node
+ xyz
+ native id
+ part
+cell
+ nodes in local index that allow to get xyz....
+ native id
+ part
 
 time adapt pass elements
 profile
