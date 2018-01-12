@@ -142,16 +142,9 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   if (ref_grid_once(ref_grid))
     printf("target quality %6.4f\n",target);
   
-  ref_adapt->split_ratio = 1.5;
-  ref_adapt->split_quality_absolute = 0.001;
-  ref_adapt->split_quality_relative = 0.6;
-
-  ref_adapt->collapse_ratio = 0.6;
   ref_adapt->collapse_quality_absolute = target;
-  ref_adapt->collapse_ratio_limit = 3.0;
-
   ref_adapt->smooth_min_quality = target;
-
+  
   return REF_SUCCESS;
 }
 
