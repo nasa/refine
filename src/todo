@@ -68,8 +68,6 @@ histogram history plots
 ellipsoid viz 
 
 Marshall
-mpi instructions in INSTALL
-kill values.h, replace with float.h
 docs?
 provide dense api (or pack)
  maybe just a copy
@@ -144,6 +142,9 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ mpi instructions in INSTALL
++ kill malloc.h values.h limits.h float.h
 
 + EGADS questions:
   + degnerate edges (faces)
