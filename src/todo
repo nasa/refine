@@ -2,8 +2,6 @@
 ref_matrix fix diag gen repeat 12 turned off with REF_FALSE
 gen eigen solver slow for repeated roots, 2x6.2500e-02
 
-remove private methods from headers for : ref_part ref_gather
-
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
@@ -143,6 +141,7 @@ low priority surface reconstruction when EGADS not available
 
 +++++++++++++++++
 
++ remove private methods from headers for : ref_part ref_gather
 + mpi instructions in INSTALL
 + kill malloc.h values.h limits.h float.h
 
