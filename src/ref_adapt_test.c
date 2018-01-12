@@ -151,7 +151,7 @@ int main( int argc, char *argv[] )
         }
 
       ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
-      RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ),
+      RSS( ref_gather_by_extension( ref_grid, "ref_adapt_test.b8.ugrid" ),
            "gather");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather");
 
@@ -235,7 +235,7 @@ int main( int argc, char *argv[] )
         }
 
       ref_mpi_stopwatch_start(ref_grid_mpi(ref_grid) );
-      RSS( ref_gather_b8_ugrid( ref_grid, "ref_adapt_test.b8.ugrid" ),
+      RSS( ref_gather_by_extension( ref_grid, "ref_adapt_test.b8.ugrid" ),
            "gather");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "gather");
 

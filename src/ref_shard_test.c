@@ -145,7 +145,7 @@ int main( int argc, char *argv[] )
 	  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid),"shard");
 	}
       if ( ref_mpi_para(ref_grid_mpi(ref_grid)) ){
-	RSS( ref_gather_b8_ugrid( ref_grid, file ),"export" );
+	RSS( ref_gather_by_extension( ref_grid, file ),"export" );
       }else{
 	RSS( ref_export_by_extension( ref_grid, file ),"export" );
       }

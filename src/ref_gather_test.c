@@ -57,7 +57,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "set up tet" );
 
-      RSS( ref_gather_b8_ugrid( ref_grid, "ref_gather_test.b8.ugrid" ), 
+      RSS( ref_gather_by_extension( ref_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
 
       RSS( ref_grid_free( ref_grid ), "free");
@@ -79,7 +79,7 @@ int main( int argc, char *argv[] )
       ref_geom_cad_data(ref_geom)[0] = 5;
       ref_geom_cad_data(ref_geom)[1] = 4;
       ref_geom_cad_data(ref_geom)[2] = 3;
-      RSS( ref_gather_meshb( export_grid, file ), 
+      RSS( ref_gather_by_extension( export_grid, file ), 
 	   "gather");
       RSS(ref_grid_free(export_grid),"free");
 
@@ -108,12 +108,12 @@ int main( int argc, char *argv[] )
       ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "balance");
 
       ref_mpi_stopwatch_start( ref_grid_mpi(import_grid) );
-      RSS( ref_gather_meshb( import_grid, "ref_gather_test.meshb" ), 
+      RSS( ref_gather_by_extension( import_grid, "ref_gather_test.meshb" ), 
 	   "gather");
       ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "meshb");
 
       ref_mpi_stopwatch_start( ref_grid_mpi(import_grid) );
-      RSS( ref_gather_b8_ugrid( import_grid, "ref_gather_test.b8.ugrid" ), 
+      RSS( ref_gather_by_extension( import_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
       ref_mpi_stopwatch_stop( ref_grid_mpi(import_grid), "b8.ugrid");
 

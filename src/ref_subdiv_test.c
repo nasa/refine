@@ -159,7 +159,8 @@ int main( int argc, char *argv[] )
 
       RSS(ref_export_tec_part(ref_grid,"ref_subdiv_splt"),"split part");
 
-      RSS(ref_gather_b8_ugrid(ref_grid,"ref_subdiv_test.b8.ugrid"),"gather");
+      RSS(ref_gather_by_extension( ref_grid,
+				   "ref_subdiv_test.b8.ugrid"),"gather");
 
       RSS( tear_down( ref_subdiv ), "tear down");
     }
