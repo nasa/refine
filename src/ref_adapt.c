@@ -19,6 +19,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "ref_adapt.h"
 #include "ref_edge.h"
@@ -31,6 +32,9 @@
 #include "ref_swap.h"
 #include "ref_smooth.h"
 #include "ref_cavity.h"
+
+#include "ref_node.h"
+#include "ref_matrix.h"
 
 #include "ref_gather.h"
 
@@ -94,13 +98,18 @@ REF_STATUS ref_adapt_free( REF_ADAPT ref_adapt )
 REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
 {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL det, complexity, part_complexity;
   REF_DBL quality, min_quality;
+  REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
   REF_DBL target;
+  REF_INT cell_node;
+  REF_INT node, part_nnode, total_nnode;
   
   if ( ref_grid_twod(ref_grid) )
     {
@@ -110,7 +119,11 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
     {
       ref_cell = ref_grid_tet(ref_grid);
     }
+  
   min_quality = 1.0;
+  min_volume = 1.0e100;
+  max_volume = -1.0e100;
+  complexity = 0.0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
       if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) ==
@@ -123,25 +136,66 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
 	      if ( !active_twod ) continue;
 	      RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
 					 nodes,&quality ), "qual");
+	      RSS( ref_node_tri_area( ref_grid_node(ref_grid),
+				      nodes,&volume ), "vol");
 	    }
 	  else
 	    {
 	      RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
 					 nodes,&quality ), "qual");
+	      RSS( ref_node_tet_vol( ref_grid_node(ref_grid),
+				     nodes,&volume ), "vol");
 	    }
 	  min_quality = MIN(min_quality,quality);
+	  min_volume = MIN( min_volume, volume);
+	  max_volume = MAX( max_volume, volume);
+	}
+      for ( cell_node = 0 ; 
+	    cell_node < ref_cell_node_per( ref_cell ) ;
+	    cell_node++ )
+	{
+	  if (ref_node_owned(ref_node,nodes[cell_node]) )
+	    {
+	      RSS( ref_matrix_det_m( ref_node_metric_ptr(ref_node, 
+							 nodes[cell_node]), 
+				     &det),"det");
+	      complexity += sqrt(det)*volume /
+		((REF_DBL)ref_cell_node_per(ref_cell));
+	    }
 	}
     }
-  RSS( ref_mpi_min( ref_grid_mpi(ref_grid),
-		    &min_quality, &quality, REF_DBL_TYPE ), "min" );
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &quality, 1, REF_DBL_TYPE ), "min" );
-  min_quality = quality;
+  quality = min_quality;
+  RSS( ref_mpi_min( ref_mpi, &quality, &min_quality, REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_bcast( ref_mpi, &quality, 1, REF_DBL_TYPE ), "min" );
+  volume = min_volume;
+  RSS( ref_mpi_min( ref_mpi, &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
+  RSS( ref_mpi_bcast( ref_mpi, &min_volume, 1, REF_DBL_TYPE ), "min" );
+  volume = max_volume;
+  RSS( ref_mpi_max( ref_mpi, &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
+  RSS( ref_mpi_bcast( ref_mpi, &max_volume, 1, REF_DBL_TYPE ), "min" );
 
-  target = MAX(MIN(0.1, quality),1.0e-3);
-  if (ref_grid_once(ref_grid))
-    printf("target quality %6.4f\n",target);
+  part_nnode=0;
+  each_ref_node_valid_node( ref_node, node )
+    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) part_nnode++;
+  RSS( ref_mpi_sum( ref_mpi,
+		    &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
+  RSS( ref_mpi_bcast( ref_mpi, &total_nnode, 1, REF_INT_TYPE ), "min" );
+  if (ref_grid_twod(ref_grid) )
+    total_nnode = total_nnode / 2;
   
+  part_complexity=complexity;
+  RSS( ref_mpi_sum( ref_mpi,
+		    &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
+  RSS( ref_mpi_bcast( ref_mpi, &complexity, 1, REF_DBL_TYPE ), "min" );
+  
+  target = MAX(MIN(0.1, min_quality),1.0e-3);
+  if (ref_grid_once(ref_grid))
+    {
+      printf("target quality %6.4f\n",target);
+      printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
+	     total_nnode, complexity, (REF_DBL)total_nnode/complexity,
+	     max_volume, min_volume);
+    }
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
   

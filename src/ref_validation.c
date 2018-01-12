@@ -23,7 +23,6 @@
 #include "ref_validation.h"
 
 #include "ref_face.h"
-#include "ref_matrix.h"
 #include "ref_export.h"
 #include "ref_mpi.h"
 
@@ -288,23 +287,14 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 
 REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell;
   REF_DBL volume;
-  REF_DBL min_volume, max_volume;
-  REF_INT cell_node;
-  REF_DBL part_complexity, complexity, det;
-  REF_BOOL first_volume;
-  REF_INT part_nnode, total_nnode, node;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_cell = ref_grid_tet(ref_grid);
   if (ref_grid_twod(ref_grid) ) ref_cell = ref_grid_tri(ref_grid);
 
-  min_volume = 1.0e100; max_volume = -1.0e100;
-  first_volume = REF_TRUE;
-  complexity = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     {
       if ( ref_grid_twod(ref_grid) )
@@ -316,52 +306,6 @@ REF_STATUS ref_validation_cell_volume( REF_GRID ref_grid )
 	  RSS( ref_node_tet_vol( ref_node, nodes, &volume ), "vol" );
 	}
       RAS ( volume>0.0, "negative volume tet");
-      if ( first_volume )
-	{
-	  min_volume = volume;
-	  max_volume = volume;
-	  first_volume = REF_FALSE;
-	}
-      else
-	{
-	  min_volume = MIN( min_volume, volume);
-	  max_volume = MAX( max_volume, volume);
-	}
-      for ( cell_node = 0 ; 
-	    cell_node < ref_cell_node_per( ref_cell ) ;
-	    cell_node++ )
-	{
-	  if (ref_node_owned(ref_node,nodes[cell_node]) )
-	    {
-	      RSS( ref_matrix_det_m( ref_node_metric_ptr(ref_node, 
-							 nodes[cell_node]), 
-				     &det),"det");
-	      complexity += sqrt(det)*volume /
-		((REF_DBL)ref_cell_node_per(ref_cell));
-	    }
-	}
-    }
-  volume = min_volume;
-  RSS( ref_mpi_min( ref_mpi, &volume, &min_volume, REF_DBL_TYPE ), "mpi min");
-  volume = max_volume;
-  RSS( ref_mpi_max( ref_mpi, &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
-
-  part_nnode=0;
-  each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) part_nnode++;
-  RSS( ref_mpi_sum( ref_mpi,
-		    &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
-
-  part_complexity=complexity;
-  RSS( ref_mpi_sum( ref_mpi,
-		    &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
-
-  if ( ref_grid_once(ref_grid) )
-    {
-      if (ref_grid_twod(ref_grid) ) total_nnode = total_nnode / 2;
-      printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
-	     total_nnode, complexity, (REF_DBL)total_nnode/complexity,
-	     max_volume, min_volume);
     }
 
   return REF_SUCCESS;
