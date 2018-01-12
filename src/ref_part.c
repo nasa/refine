@@ -651,177 +651,11 @@ static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-			      const char *filename )
-{
-  FILE *file;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
-
-  long conn_offset, faceid_offset;
-
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-
-  REF_BOOL swap_endian = REF_TRUE;
-  REF_BOOL has_id = REF_FALSE;
-  REF_BOOL instrument = REF_FALSE;
-
-  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
-  ref_grid = *ref_grid_ptr;
-  ref_node = ref_grid_node(ref_grid);
-
-  if (instrument) ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
-
-  /* header */
-
-  file = NULL;
-  if ( ref_grid_once(ref_grid) )
-    {
-      file = fopen(filename,"r");
-      if (NULL == (void *)file) printf("unable to open %s\n",filename);
-      RNS(file, "unable to open file" );
-
-      RES( 1, fread( &nnode, sizeof(REF_INT), 1, file ), "nnode" );
-      RES( 1, fread( &ntri, sizeof(REF_INT), 1, file ), "ntri" );
-      RES( 1, fread( &nqua, sizeof(REF_INT), 1, file ), "nqua" );
-      RES( 1, fread( &ntet, sizeof(REF_INT), 1, file ), "ntet" );
-      RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
-      RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
-      RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
-
-      if (swap_endian) SWAP_INT(nnode);
-      if (swap_endian) SWAP_INT(ntri);
-      if (swap_endian) SWAP_INT(nqua);
-      if (swap_endian) SWAP_INT(ntet);
-      if (swap_endian) SWAP_INT(npyr);
-      if (swap_endian) SWAP_INT(npri);
-      if (swap_endian) SWAP_INT(nhex);
-    }
-
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &nnode, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &ntri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &nqua, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &ntet, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &npyr, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &npri, 1, REF_INT_TYPE ), "bcast" ); 
-  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
-		      &nhex, 1, REF_INT_TYPE ), "bcast" ); 
-
-  /* guess twod status */
-
-  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
-    ref_grid_twod(ref_grid) = REF_TRUE;
-
-  RSS( ref_part_node( file, swap_endian, has_id,
-		      ref_node, nnode ), "part node" ); 
-  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "nodes");
-
-  if ( 0 < ntri )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode;
-      faceid_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)3*(long)ntri
-	+ (long)4*(long)4*(long)nqua;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tri" );
-    }
-
-  if ( 0 < nqua )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)3*(long)ntri;
-      faceid_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)4*(long)ntri
-	+ (long)4*(long)4*(long)nqua;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "qua" );
-    }
-
-  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "bound");
-
-  if ( 0 < ntet )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)4*(long)ntri
-	+ (long)4*(long)5*(long)nqua;
-      faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tet" );
-    }
-
-  if ( 0 < npyr )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)4*(long)ntri
-	+ (long)4*(long)5*(long)nqua
-	+ (long)4*(long)4*(long)ntet;
-      faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "pyr" );
-    }
-
-  if ( 0 < npri )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)4*(long)ntri
-	+ (long)4*(long)5*(long)nqua
-	+ (long)4*(long)4*(long)ntet
-	+ (long)4*(long)5*(long)npyr;
-      faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "pri" );
-    }
-
-  if ( 0 < nhex )
-    {
-      conn_offset = (long)4*(long)7
-	+ (long)8*(long)3*(long)nnode
-	+ (long)4*(long)4*(long)ntri
-	+ (long)4*(long)5*(long)nqua
-	+ (long)4*(long)4*(long)ntet
-	+ (long)4*(long)5*(long)npyr
-	+ (long)4*(long)6*(long)npri;
-      faceid_offset = REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "hex" );
-    }
-
-  if ( ref_grid_once(ref_grid) )
-    REIS(0,fclose(file),"close file");
-
-  /* ghost xyz */
-
-  RSS( ref_node_ghost_real( ref_node ), "ghost real");
-
-  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
-				   REF_NODE ref_node, REF_INT nnode,
-				   FILE *file, 
-				   long conn_offset, 
-				   long faceid_offset )
+static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
+					  REF_NODE ref_node, REF_INT nnode,
+					  FILE *file, 
+					  long conn_offset, 
+					  long faceid_offset )
 {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT ncell_read;
@@ -1003,6 +837,172 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   free(sent_c2n);
 
   RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "fill ghosts");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			      const char *filename )
+{
+  FILE *file;
+  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+
+  long conn_offset, faceid_offset;
+
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+
+  REF_BOOL swap_endian = REF_TRUE;
+  REF_BOOL has_id = REF_FALSE;
+  REF_BOOL instrument = REF_FALSE;
+
+  RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  if (instrument) ref_mpi_stopwatch_start( ref_grid_mpi(ref_grid) );
+
+  /* header */
+
+  file = NULL;
+  if ( ref_grid_once(ref_grid) )
+    {
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+
+      RES( 1, fread( &nnode, sizeof(REF_INT), 1, file ), "nnode" );
+      RES( 1, fread( &ntri, sizeof(REF_INT), 1, file ), "ntri" );
+      RES( 1, fread( &nqua, sizeof(REF_INT), 1, file ), "nqua" );
+      RES( 1, fread( &ntet, sizeof(REF_INT), 1, file ), "ntet" );
+      RES( 1, fread( &npyr, sizeof(REF_INT), 1, file ), "npyr" );
+      RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
+      RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
+
+      if (swap_endian) SWAP_INT(nnode);
+      if (swap_endian) SWAP_INT(ntri);
+      if (swap_endian) SWAP_INT(nqua);
+      if (swap_endian) SWAP_INT(ntet);
+      if (swap_endian) SWAP_INT(npyr);
+      if (swap_endian) SWAP_INT(npri);
+      if (swap_endian) SWAP_INT(nhex);
+    }
+
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nnode, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &ntri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nqua, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &ntet, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &npyr, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &npri, 1, REF_INT_TYPE ), "bcast" ); 
+  RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
+		      &nhex, 1, REF_INT_TYPE ), "bcast" ); 
+
+  /* guess twod status */
+
+  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
+    ref_grid_twod(ref_grid) = REF_TRUE;
+
+  RSS( ref_part_node( file, swap_endian, has_id,
+		      ref_node, nnode ), "part node" ); 
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "nodes");
+
+  if ( 0 < ntri )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode;
+      faceid_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)3*(long)ntri
+	+ (long)4*(long)4*(long)nqua;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "tri" );
+    }
+
+  if ( 0 < nqua )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)3*(long)ntri;
+      faceid_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)4*(long)nqua;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "qua" );
+    }
+
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "bound");
+
+  if ( 0 < ntet )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua;
+      faceid_offset = (long)REF_EMPTY;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "tet" );
+    }
+
+  if ( 0 < npyr )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet;
+      faceid_offset = (long)REF_EMPTY;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "pyr" );
+    }
+
+  if ( 0 < npri )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet
+	+ (long)4*(long)5*(long)npyr;
+      faceid_offset = (long)REF_EMPTY;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "pri" );
+    }
+
+  if ( 0 < nhex )
+    {
+      conn_offset = (long)4*(long)7
+	+ (long)8*(long)3*(long)nnode
+	+ (long)4*(long)4*(long)ntri
+	+ (long)4*(long)5*(long)nqua
+	+ (long)4*(long)4*(long)ntet
+	+ (long)4*(long)5*(long)npyr
+	+ (long)4*(long)6*(long)npri;
+      faceid_offset = REF_EMPTY;
+      RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
+				   ref_node, nnode, 
+				   file, conn_offset, faceid_offset ), "hex" );
+    }
+
+  if ( ref_grid_once(ref_grid) )
+    REIS(0,fclose(file),"close file");
+
+  /* ghost xyz */
+
+  RSS( ref_node_ghost_real( ref_node ), "ghost real");
+
+  if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
 
   return REF_SUCCESS;
 }
