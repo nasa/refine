@@ -45,8 +45,6 @@ REF_STATUS ref_gather_free( REF_GATHER ref_gather );
 #define ref_gather_blocking_frame( ref_grid, zone_title )		\
   RSS( ref_gather_tec_movie_frame( ref_grid, zone_title ), "movie frame" )
 
-REF_STATUS ref_gather_plot( REF_GRID ref_grid, const char *filename );
-
 REF_STATUS ref_gather_tec_movie_record_button( REF_GATHER ref_gather,
 					       REF_BOOL on_or_off );
 REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,

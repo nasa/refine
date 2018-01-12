@@ -97,20 +97,6 @@ int main( int argc, char *argv[] )
 	}
     }
   
-  if ( 0 == argc ) /* off, octave is not quiet */
-    {
-      REF_GRID ref_grid;
-
-      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "set up tet" );
-
-      RSS( ref_gather_plot( ref_grid, "ref_gather_script.eps" ), 
-	   "gather");
-
-      RSS( ref_grid_free( ref_grid ), "free");
-      if ( ref_mpi_once(ref_mpi) ) 
-	REIS(0, remove( "ref_gather_script.eps" ), "test clean up");
-    }
-
   if ( 1 < argc )
     {
       REF_GRID import_grid;
