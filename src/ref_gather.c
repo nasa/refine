@@ -209,6 +209,84 @@ REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename  )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_node( REF_NODE ref_node,
+				   REF_BOOL swap_endian, REF_BOOL has_id,
+				   FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_DBL swapped_dbl;
+  REF_INT nnode_written, first, n, i;
+  REF_INT global, local;
+  REF_INT id = 0;
+  REF_STATUS status;
+
+  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
+
+  ref_malloc( local_xyzm, 4*chunk, REF_DBL );
+  ref_malloc( xyzm, 4*chunk, REF_DBL );
+
+  nnode_written = 0;
+  while ( nnode_written < ref_node_n_global(ref_node) )
+    {
+
+      first = nnode_written;
+      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
+
+      nnode_written += n;
+
+      for (i=0;i<4*chunk;i++)
+	local_xyzm[i] = 0.0;
+
+      for (i=0;i<n;i++)
+	{
+	  global = first + i;
+	  status = ref_node_local( ref_node, global, &local );
+	  RXS( status, REF_NOT_FOUND, "node local failed" );
+	  if ( REF_SUCCESS == status &&
+	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
+	    {
+	      local_xyzm[0+4*i] = ref_node_xyz(ref_node,0,local);
+	      local_xyzm[1+4*i] = ref_node_xyz(ref_node,1,local);
+	      local_xyzm[2+4*i] = ref_node_xyz(ref_node,2,local);
+	      local_xyzm[3+4*i] = 1.0;
+	    }
+	  else
+	    {
+	      local_xyzm[0+4*i] = 0.0;
+	      local_xyzm[1+4*i] = 0.0;
+	      local_xyzm[2+4*i] = 0.0;
+	      local_xyzm[3+4*i] = 0.0;
+	    }
+	}
+
+      RSS( ref_mpi_sum( ref_mpi,
+			local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
+      
+      if ( ref_mpi_once(ref_mpi) )
+	for ( i=0; i<n; i++ )
+	  {
+	    if ( ABS( xyzm[3+4*i] - 1.0 ) > 0.1 )
+	      {
+		printf("error gather node %d %f\n",first+i, xyzm[3+4*i]);
+	      }
+	    swapped_dbl = xyzm[0+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
+	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
+	    swapped_dbl = xyzm[1+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
+	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
+	    swapped_dbl = xyzm[2+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
+	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
+	    if (has_id) REIS(1, fwrite(&id,sizeof(REF_INT),1,file),"id");
+	  }
+    }
+
+  ref_free( xyzm );
+  ref_free( local_xyzm );
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
 {
   REF_BOOL verbose = REF_FALSE;
@@ -588,82 +666,6 @@ REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_node( REF_NODE ref_node,
-			    REF_BOOL swap_endian, REF_BOOL has_id, FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_DBL swapped_dbl;
-  REF_INT nnode_written, first, n, i;
-  REF_INT global, local;
-  REF_INT id = 0;
-  REF_STATUS status;
-
-  chunk = ref_node_n_global(ref_node)/ref_mpi_m(ref_mpi) + 1;
-
-  ref_malloc( local_xyzm, 4*chunk, REF_DBL );
-  ref_malloc( xyzm, 4*chunk, REF_DBL );
-
-  nnode_written = 0;
-  while ( nnode_written < ref_node_n_global(ref_node) )
-    {
-
-      first = nnode_written;
-      n = MIN( chunk, ref_node_n_global(ref_node)-nnode_written );
-
-      nnode_written += n;
-
-      for (i=0;i<4*chunk;i++)
-	local_xyzm[i] = 0.0;
-
-      for (i=0;i<n;i++)
-	{
-	  global = first + i;
-	  status = ref_node_local( ref_node, global, &local );
-	  RXS( status, REF_NOT_FOUND, "node local failed" );
-	  if ( REF_SUCCESS == status &&
-	       ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,local) )
-	    {
-	      local_xyzm[0+4*i] = ref_node_xyz(ref_node,0,local);
-	      local_xyzm[1+4*i] = ref_node_xyz(ref_node,1,local);
-	      local_xyzm[2+4*i] = ref_node_xyz(ref_node,2,local);
-	      local_xyzm[3+4*i] = 1.0;
-	    }
-	  else
-	    {
-	      local_xyzm[0+4*i] = 0.0;
-	      local_xyzm[1+4*i] = 0.0;
-	      local_xyzm[2+4*i] = 0.0;
-	      local_xyzm[3+4*i] = 0.0;
-	    }
-	}
-
-      RSS( ref_mpi_sum( ref_mpi,
-			local_xyzm, xyzm, 4*n, REF_DBL_TYPE ), "sum" );
-      
-      if ( ref_mpi_once(ref_mpi) )
-	for ( i=0; i<n; i++ )
-	  {
-	    if ( ABS( xyzm[3+4*i] - 1.0 ) > 0.1 )
-	      {
-		printf("error gather node %d %f\n",first+i, xyzm[3+4*i]);
-	      }
-	    swapped_dbl = xyzm[0+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
-	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"x");
-	    swapped_dbl = xyzm[1+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
-	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"y");
-	    swapped_dbl = xyzm[2+4*i]; if (swap_endian) SWAP_DBL(swapped_dbl);
-	    REIS(1, fwrite(&swapped_dbl,sizeof(REF_DBL),1,file),"z");
-	    if (has_id) REIS(1, fwrite(&id,sizeof(REF_INT),1,file),"id");
-	  }
-    }
-
-  ref_free( xyzm );
-  ref_free( local_xyzm );
-
-  return REF_SUCCESS;
-}
 REF_STATUS ref_gather_node_tec_part( REF_NODE ref_node,
 				     FILE *file )
 {
