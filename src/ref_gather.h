@@ -70,12 +70,6 @@ REF_STATUS ref_gather_cell( REF_NODE ref_node,
 			    REF_BOOL swap_endian,
 			    REF_BOOL select_faceid, REF_INT faceid,
 			    FILE *file );
-REF_STATUS ref_gather_cell_tec( REF_NODE ref_node,
-				REF_CELL ref_cell,
-				FILE *file );
-REF_STATUS ref_gather_cell_quality_tec( REF_NODE ref_node,
-					REF_CELL ref_cell, 
-					REF_DBL min_quality, FILE *file );
 
 END_C_DECLORATION
 
