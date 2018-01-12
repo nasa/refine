@@ -41,8 +41,6 @@ REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 				   FILE *file, 
 				   long conn_offset,
 				   long faceid_offset );
-REF_STATUS ref_part_ghost_xyz( REF_GRID ref_grid );
-REF_STATUS ref_part_ghost_int( REF_GRID ref_grid, REF_INT *scalar );
 
 REF_STATUS ref_part_bamg_metric( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_part_metric( REF_NODE ref_node, const char *filename );
