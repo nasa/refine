@@ -348,10 +348,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       best_dist = 1.0e20;
       each_ref_node_valid_node( ref_node, node )
 	{
-	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-					    node,
-					    REF_GEOM_MAX_FACEIDS,
-					    &nfaceid, faceids ),
+	  RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+					node,
+					REF_GEOM_MAX_FACEIDS,
+					&nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  dist = sqrt( pow(xyz[0]-ref_node_xyz(ref_node,0,node),2) +
 		       pow(xyz[1]-ref_node_xyz(ref_node,1,node),2) +
@@ -364,10 +364,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	}
       printf(" topo node id %3d node %6d dist %.4e fid",
 	     id,best_node,best_dist);
-      RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-					best_node,
-					REF_GEOM_MAX_FACEIDS,
-					&nfaceid, faceids ),
+      RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+				    best_node,
+				    REF_GEOM_MAX_FACEIDS,
+				    &nfaceid, faceids ),
 	   REF_INCREASE_LIMIT, "count faceids" );
       for (i=0;i<nfaceid;i++)
 	printf(" %d", faceids[i]);
@@ -416,10 +416,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
 	  printf("  node0 id %2d index %3d t %f dist %e fid",
 		 toponode0,node0,trange[0],dist);
-	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-					    node0,
-					    REF_GEOM_MAX_FACEIDS,
-					    &nfaceid0, faceids0 ),
+	  RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+					node0,
+					REF_GEOM_MAX_FACEIDS,
+					&nfaceid0, faceids0 ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  for (i=0;i<nfaceid0;i++)
 	    printf(" %d", faceids0[i]);
@@ -440,10 +440,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		       pow(xyz[2]-ref_node_xyz(ref_node,2,node),2) );
 	  printf("  node1 id %2d index %3d t %f dist %e fid",
 		 toponode1,node1,trange[1],dist);
-	  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-					    node1,
-					    REF_GEOM_MAX_FACEIDS,
-					    &nfaceid1, faceids1 ),
+	  RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+					node1,
+					REF_GEOM_MAX_FACEIDS,
+					&nfaceid1, faceids1 ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  for (i=0;i<nfaceid1;i++)
 	    printf(" %d", faceids1[i]);
@@ -470,10 +470,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 			 pow(closest[2]-ref_node_xyz(ref_node,2,best_node),2) );
 	    printf("   best_node %5d t %f best_dist %e fid",
 		   best_node,param[0],dist);
-	    RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-					      best_node,
-					      REF_GEOM_MAX_FACEIDS,
-					      &nfaceid, faceids ),
+	    RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+					  best_node,
+					  REF_GEOM_MAX_FACEIDS,
+					  &nfaceid, faceids ),
 		 REF_INCREASE_LIMIT, "count faceids" );
 	    for (i=0;i<nfaceid;i++)
 	      printf(" %d", faceids[i]);
@@ -504,10 +504,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		  if ( REF_SUCCESS == ref_geom_find( ref_geom, next_node,
 						     REF_GEOM_EDGE, id, &geom ))
 		    continue; /* this canidate is already part of the edge */
-		  RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-						    next_node,
-						    REF_GEOM_MAX_FACEIDS,
-						    &nfaceid, faceids ),
+		  RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+						next_node,
+						REF_GEOM_MAX_FACEIDS,
+						&nfaceid, faceids ),
 		       REF_INCREASE_LIMIT, "count faceids" );
 		  if ( nfaceid < 2 )
 		    continue; /* should be between faces */
@@ -547,10 +547,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 				   param, closest), "EG eval");
 	      printf("   best_node %5d t %f best_dist %e fid",
 		     best_node,param[0],best_dist);
-	      RXS( ref_cell_faceid_list_around( ref_grid_tri( ref_grid ),
-						best_node,
-						REF_GEOM_MAX_FACEIDS,
-						&nfaceid, faceids ),
+	      RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
+					    best_node,
+					    REF_GEOM_MAX_FACEIDS,
+					    &nfaceid, faceids ),
 		   REF_INCREASE_LIMIT, "count faceids" );
 	      for (i=0;i<nfaceid;i++)
 		printf(" %d", faceids[i]);

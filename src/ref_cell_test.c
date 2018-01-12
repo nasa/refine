@@ -725,20 +725,20 @@ int main( void )
 
     RSS(ref_tri(&ref_cell),"create");
 
-    RSS(ref_cell_faceid_list_around(ref_cell,0,3,&nfaceid,faceids),"no list");
+    RSS(ref_cell_id_list_around(ref_cell,0,3,&nfaceid,faceids),"no list");
     REIS(0,nfaceid, "mis count");
     
     nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add tri");
 
-    RSS(ref_cell_faceid_list_around(ref_cell,0,3,&nfaceid,faceids),"list1");
+    RSS(ref_cell_id_list_around(ref_cell,0,3,&nfaceid,faceids),"list1");
     REIS(1,nfaceid, "mis count");
     REIS(10,faceids[0], "not in list");
 
     nodes[0] = 0; nodes[1] = 2; nodes[2] = 3; nodes[3] = 20;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    RSS(ref_cell_faceid_list_around(ref_cell,0,3,&nfaceid,faceids),"list2");
+    RSS(ref_cell_id_list_around(ref_cell,0,3,&nfaceid,faceids),"list2");
     REIS(2,nfaceid, "mis count");
     REIS(20,faceids[0], "not in list");
     REIS(10,faceids[1], "not in list");
@@ -746,7 +746,7 @@ int main( void )
     nodes[0] = 0; nodes[1] = 2; nodes[2] = 3; nodes[3] = 30;
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
-    RSS(ref_cell_faceid_list_around(ref_cell,0,3,&nfaceid,faceids),"list3");
+    RSS(ref_cell_id_list_around(ref_cell,0,3,&nfaceid,faceids),"list3");
     REIS(3,nfaceid, "mis count");
     REIS(30,faceids[0], "not in list");
     REIS(20,faceids[1], "not in list");
@@ -756,7 +756,7 @@ int main( void )
     RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
 
     REIS( REF_INCREASE_LIMIT,
-	  ref_cell_faceid_list_around(ref_cell,0,3,&nfaceid,faceids),
+	  ref_cell_id_list_around(ref_cell,0,3,&nfaceid,faceids),
 	  "list4");
     REIS(3,nfaceid, "mis count");
     REIS(40,faceids[0], "not in list");

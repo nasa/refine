@@ -546,15 +546,15 @@ REF_STATUS ref_interp_geom_node_list( REF_GRID ref_grid, REF_LIST ref_list )
     {
       if ( ref_node_owned(ref_node,node) )
 	{
-	  RXS( ref_cell_faceid_list_around( edg,
-					    node,
-					    2,
-					    &nedgeid, edgeids ),
+	  RXS( ref_cell_id_list_around( edg,
+					node,
+					2,
+					&nedgeid, edgeids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
-	  RXS( ref_cell_faceid_list_around( tri,
-					    node,
-					    3,
-					    &nfaceid, faceids ),
+	  RXS( ref_cell_id_list_around( tri,
+					node,
+					3,
+					&nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  if ( nfaceid >= 3 || nedgeid >= 2 )
 	    RSS( ref_list_add( ref_list, node ), "add geom node" );

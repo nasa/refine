@@ -908,32 +908,32 @@ REF_STATUS ref_cell_node_list_around( REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_faceid_list_around( REF_CELL ref_cell,
-					REF_INT node,
-					REF_INT max_faceid, REF_INT *nfaceid,
-					REF_INT *faceids )
+REF_STATUS ref_cell_id_list_around( REF_CELL ref_cell,
+				    REF_INT node,
+				    REF_INT max_ids, REF_INT *n_ids,
+				    REF_INT *ids )
 {
   REF_INT item, cell, id, deg;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL already_have_it;
   
-  *nfaceid = 0;
+  *n_ids = 0;
   each_ref_cell_having_node( ref_cell, node, item, cell )
     {
       RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
       id = nodes[ref_cell_node_per(ref_cell)];
       already_have_it = REF_FALSE;
-      for (deg = 0; deg<*nfaceid; deg++)
-	if ( id == faceids[deg] )
+      for (deg = 0; deg < *n_ids; deg++)
+	if ( id == ids[deg] )
 	  already_have_it = REF_TRUE;
       if ( !already_have_it )
 	{
-	  if (*nfaceid >= max_faceid)
+	  if (*n_ids >= max_ids)
 	    {
 	      return REF_INCREASE_LIMIT;
 	    }
-	  faceids[*nfaceid] = id;
-	  (*nfaceid)++;
+	  ids[*n_ids] = id;
+	  (*n_ids)++;
 	}
     }
 
