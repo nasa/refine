@@ -124,8 +124,354 @@ static REF_STATUS ref_part_node( FILE *file, REF_BOOL swap_endian,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, 
-			   REF_MPI ref_mpi, const char *filename )
+static REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom,
+				       REF_INT ngeom, REF_INT type,
+				       REF_NODE ref_node, REF_INT nnode,
+				       FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT chunk;
+  REF_INT *sent_node;
+  REF_INT *sent_id;
+  REF_DBL *sent_param;
+  REF_INT *read_node;
+  REF_INT *read_id;
+  REF_DBL *read_param;
+  REF_DBL filler;
+
+  REF_INT ngeom_read, ngeom_keep;
+  REF_INT section_size; 
+
+  REF_INT *dest;
+  REF_INT *geom_to_send;
+  REF_INT *start_to_send;
+
+  REF_INT geom_to_receive;
+ 
+  REF_INT geom, i;
+  REF_INT part, node;
+  REF_INT new_location;
+
+  chunk = MAX(1000000, ngeom/ref_mpi_m(ref_mpi));
+  chunk = MIN( chunk, ngeom );
+  
+  ref_malloc( sent_node, chunk, REF_INT );
+  ref_malloc( sent_id, chunk, REF_INT );
+  ref_malloc( sent_param, 2*chunk, REF_DBL );
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      ref_malloc( geom_to_send, ref_mpi_m(ref_mpi), REF_INT );
+      ref_malloc( start_to_send, ref_mpi_m(ref_mpi), REF_INT );
+      ref_malloc( read_node, chunk, REF_INT );
+      ref_malloc( read_id, chunk, REF_INT );
+      ref_malloc( read_param, 2*chunk, REF_DBL );
+      ref_malloc( dest, chunk, REF_INT );
+
+      ngeom_read = 0;
+      while ( ngeom_read < ngeom )
+	{
+	  section_size = MIN(chunk,ngeom-ngeom_read);
+	  for (geom=0;geom<section_size;geom++)
+	    {
+	      REIS(1, fread(&(read_node[geom]),sizeof(REF_INT), 1, file ), "n");
+	      REIS(1, fread(&(read_id[geom]),sizeof(REF_INT), 1, file ), "n");
+	      for ( i = 0; i < 2 ; i++ )
+		read_param[i+2*geom] = 0.0; /* ensure init */
+	      for ( i = 0; i < type ; i++ )
+		REIS( 1, fread(&(read_param[i+2*geom]),
+			       sizeof(double), 1, file ), "param" );
+	      if ( 0 < type )
+		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
+	    }
+	  for (geom=0;geom<section_size;geom++)
+	    read_node[geom]--;
+
+	  ngeom_read += section_size;
+
+	  for (geom=0;geom<section_size;geom++)
+	    dest[geom] = ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
+					    read_node[geom] );
+
+	  each_ref_mpi_part( ref_mpi, part )
+	    geom_to_send[part] = 0;
+	  for (geom=0;geom<section_size;geom++)
+	    geom_to_send[dest[geom]]++;
+
+	  start_to_send[0]=0;
+	  each_ref_mpi_worker( ref_mpi, part )
+	    start_to_send[part] = start_to_send[part-1]+geom_to_send[part-1];
+
+	  each_ref_mpi_part( ref_mpi, part )
+	    geom_to_send[part] = 0;
+	  for (geom=0;geom<section_size;geom++)
+	    {
+	      new_location = start_to_send[dest[geom]]
+		+ geom_to_send[dest[geom]];
+	      sent_node[new_location] = read_node[geom];
+	      sent_id[new_location] = read_id[geom];
+	      sent_param[0+2*new_location] = read_param[0+2*geom];
+	      sent_param[1+2*new_location] = read_param[1+2*geom];
+	      geom_to_send[dest[geom]]++;
+	    }
+
+	  /* master keepers */
+	  ngeom_keep = geom_to_send[0];
+	  for (geom=0;geom<ngeom_keep;geom++)
+	    {
+	      RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
+	      RSS( ref_geom_add( ref_geom,
+				 node, type, sent_id[geom],
+				 &(sent_param[2*geom]) ), "add geom");
+	    }
+	  
+	  /* ship it! */
+	  each_ref_mpi_worker( ref_mpi, part )
+	    if ( 0 < geom_to_send[part] ) 
+	      {
+		RSS( ref_mpi_send( ref_mpi,
+				   &(geom_to_send[part]), 
+				   1, REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_node[start_to_send[part]]), 
+				   geom_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_id[start_to_send[part]]), 
+				   geom_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_param[2*start_to_send[part]]), 
+				   2*geom_to_send[part], 
+				   REF_DBL_TYPE, part ), "send" );
+	      }
+
+	}
+
+      ref_free(dest);
+      ref_free(read_param);
+      ref_free(read_id);
+      ref_free(read_node);
+      ref_free(start_to_send);
+      ref_free(geom_to_send);
+
+      /* signal we are done */
+      each_ref_mpi_worker( ref_mpi, part )
+	RSS( ref_mpi_send( ref_mpi,
+			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+
+    }
+  else
+    {
+      do {
+	RSS( ref_mpi_recv( ref_mpi,
+			   &geom_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	if ( geom_to_receive > 0 )
+	  {
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_node, geom_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_id, geom_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_param, 2*geom_to_receive, 
+			       REF_DBL_TYPE, 0 ), "send" );
+	    for (geom=0;geom<geom_to_receive;geom++)
+	      {
+		RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
+		RSS( ref_geom_add( ref_geom,
+				   node, type, sent_id[geom],
+				   &(sent_param[2*geom]) ), "add geom");
+	      }
+	  }
+      } while ( geom_to_receive != end_of_message );
+    }
+
+  free(sent_param);
+  free(sent_id);
+  free(sent_node);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
+				       REF_NODE ref_node, REF_INT nnode,
+				       FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT ncell_read;
+  REF_INT chunk;
+  REF_INT end_of_message = REF_EMPTY;
+  REF_INT elements_to_receive;
+  REF_INT *c2n;
+  REF_INT *c2t;
+  REF_INT *sent_c2n;
+  REF_INT *dest;
+  REF_INT *sent_part;
+  REF_INT *elements_to_send;
+  REF_INT *start_to_send;
+  REF_INT node_per, size_per;
+  REF_INT section_size;
+  REF_INT cell;
+  REF_INT part, node;
+  REF_INT ncell_keep;
+  REF_INT new_location;
+
+  chunk = MAX(1000000, ncell/ref_mpi_m(ref_mpi));
+
+  size_per = ref_cell_size_per(ref_cell);
+  node_per = ref_cell_node_per(ref_cell);
+
+  ref_malloc( sent_c2n, size_per*chunk, REF_INT );
+
+  if ( ref_mpi_once(ref_mpi) )
+    {
+
+      ref_malloc( elements_to_send, ref_mpi_m(ref_mpi), REF_INT );
+      ref_malloc( start_to_send, ref_mpi_m(ref_mpi), REF_INT );
+      ref_malloc( c2n, size_per*chunk, REF_INT );
+      ref_malloc( c2t, (node_per+1)*chunk, REF_INT );
+      ref_malloc( dest, chunk, REF_INT );
+
+      ncell_read = 0;
+      while ( ncell_read < ncell )
+	{
+	  section_size = MIN(chunk,ncell-ncell_read);
+	  if ( node_per == size_per)
+	    {
+	      RES((size_t)(section_size*(node_per+1)),
+		  fread( c2t,
+			 sizeof(REF_INT), section_size*(node_per+1), file ), "cn" );
+	      for (cell=0;cell<section_size;cell++)
+		for (node=0;node<node_per;node++)
+		  c2n[node+size_per*cell] = c2t[node+(node_per+1)*cell];
+	    }
+	  else
+	    {
+	      RES((size_t)(section_size*size_per),
+		  fread( c2n,
+			 sizeof(REF_INT), section_size*size_per, file ), "cn" );
+	    }
+	  for (cell=0;cell<section_size;cell++)
+	    for (node=0;node<node_per;node++)
+	      c2n[node+size_per*cell]--;
+
+	  ncell_read += section_size;
+
+	  for (cell=0;cell<section_size;cell++)
+	    dest[cell] = ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
+					    c2n[size_per*cell] );
+
+	  each_ref_mpi_part( ref_mpi, part )
+	    elements_to_send[part] = 0;
+	  for (cell=0;cell<section_size;cell++)
+	    elements_to_send[dest[cell]]++;
+
+	  start_to_send[0]=0;
+	  each_ref_mpi_worker( ref_mpi, part )
+	    start_to_send[part] = 
+	    start_to_send[part-1]+elements_to_send[part-1];
+
+	  each_ref_mpi_part( ref_mpi, part )
+	    elements_to_send[part] = 0;
+	  for (cell=0;cell<section_size;cell++)
+	    {
+	      new_location = start_to_send[dest[cell]]
+		+ elements_to_send[dest[cell]];
+	      for (node=0;node<size_per;node++)
+		sent_c2n[node+size_per*new_location] = c2n[node+size_per*cell];
+	      elements_to_send[dest[cell]]++;
+	    }
+
+	  /* master keepers */
+
+	  ncell_keep = elements_to_send[0];
+	  if ( 0 < ncell_keep )
+	    { 
+	      ref_malloc_init( sent_part, size_per*ncell_keep, 
+			       REF_INT, REF_EMPTY );
+
+	      for (cell=0;cell<ncell_keep;cell++)
+		for (node=0;node<node_per;node++)
+		  sent_part[node+size_per*cell] =
+		    ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
+				       sent_c2n[node+size_per*cell] );
+
+	      RSS( ref_cell_add_many_global( ref_cell, ref_node,
+					     ncell_keep, 
+					     sent_c2n, sent_part,
+					     ref_mpi_rank(ref_mpi) ),"glob");
+
+	      ref_free(sent_part);
+	    }
+
+	  each_ref_mpi_worker( ref_mpi, part )
+	    if ( 0 < elements_to_send[part] ) 
+	      {
+		RSS( ref_mpi_send( ref_mpi,
+				   &(elements_to_send[part]), 
+				   1, REF_INT_TYPE, part ), "send" );
+		RSS( ref_mpi_send( ref_mpi,
+				   &(sent_c2n[size_per*start_to_send[part]]), 
+				   size_per*elements_to_send[part], 
+				   REF_INT_TYPE, part ), "send" );
+	      }
+
+	}
+
+      ref_free(dest);
+      ref_free(c2t);
+      ref_free(c2n);
+      ref_free(start_to_send);
+      ref_free(elements_to_send);
+
+      /* signal we are done */
+      each_ref_mpi_worker( ref_mpi, part )
+	RSS( ref_mpi_send( ref_mpi,
+			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
+
+    }  
+  else
+    {
+      do {
+	RSS( ref_mpi_recv( ref_mpi,
+			   &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
+	if ( elements_to_receive > 0 )
+	  {
+	    RSS( ref_mpi_recv( ref_mpi,
+			       sent_c2n, size_per*elements_to_receive, 
+			       REF_INT_TYPE, 0 ), "send" );
+
+	    ref_malloc_init( sent_part, size_per*elements_to_receive, 
+			     REF_INT, REF_EMPTY );
+
+	    for (cell=0;cell<elements_to_receive;cell++)
+	      for (node=0;node<node_per;node++)
+		sent_part[node+size_per*cell] =
+		  ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
+				     sent_c2n[node+size_per*cell] );
+
+	    RSS( ref_cell_add_many_global( ref_cell, ref_node,
+					   elements_to_receive, 
+					   sent_c2n, sent_part,
+					   ref_mpi_rank(ref_mpi)), "many glob");
+
+	    ref_free( sent_part );
+	  }
+      } while ( elements_to_receive != end_of_message );
+    }
+
+  free(sent_c2n);
+
+  RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "fill ghosts");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr, 
+				  REF_MPI ref_mpi, const char *filename )
 {
   REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
@@ -467,351 +813,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
   if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom, REF_INT ngeom, REF_INT type,
-				REF_NODE ref_node, REF_INT nnode,
-				FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT end_of_message = REF_EMPTY;
-  REF_INT chunk;
-  REF_INT *sent_node;
-  REF_INT *sent_id;
-  REF_DBL *sent_param;
-  REF_INT *read_node;
-  REF_INT *read_id;
-  REF_DBL *read_param;
-  REF_DBL filler;
-
-  REF_INT ngeom_read, ngeom_keep;
-  REF_INT section_size; 
-
-  REF_INT *dest;
-  REF_INT *geom_to_send;
-  REF_INT *start_to_send;
-
-  REF_INT geom_to_receive;
- 
-  REF_INT geom, i;
-  REF_INT part, node;
-  REF_INT new_location;
-
-  chunk = MAX(1000000, ngeom/ref_mpi_m(ref_mpi));
-  chunk = MIN( chunk, ngeom );
-  
-  ref_malloc( sent_node, chunk, REF_INT );
-  ref_malloc( sent_id, chunk, REF_INT );
-  ref_malloc( sent_param, 2*chunk, REF_DBL );
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-      ref_malloc( geom_to_send, ref_mpi_m(ref_mpi), REF_INT );
-      ref_malloc( start_to_send, ref_mpi_m(ref_mpi), REF_INT );
-      ref_malloc( read_node, chunk, REF_INT );
-      ref_malloc( read_id, chunk, REF_INT );
-      ref_malloc( read_param, 2*chunk, REF_DBL );
-      ref_malloc( dest, chunk, REF_INT );
-
-      ngeom_read = 0;
-      while ( ngeom_read < ngeom )
-	{
-	  section_size = MIN(chunk,ngeom-ngeom_read);
-	  for (geom=0;geom<section_size;geom++)
-	    {
-	      REIS(1, fread(&(read_node[geom]),sizeof(REF_INT), 1, file ), "n");
-	      REIS(1, fread(&(read_id[geom]),sizeof(REF_INT), 1, file ), "n");
-	      for ( i = 0; i < 2 ; i++ )
-		read_param[i+2*geom] = 0.0; /* ensure init */
-	      for ( i = 0; i < type ; i++ )
-		REIS( 1, fread(&(read_param[i+2*geom]),
-			       sizeof(double), 1, file ), "param" );
-	      if ( 0 < type )
-		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
-	    }
-	  for (geom=0;geom<section_size;geom++)
-	    read_node[geom]--;
-
-	  ngeom_read += section_size;
-
-	  for (geom=0;geom<section_size;geom++)
-	    dest[geom] = ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
-					    read_node[geom] );
-
-	  each_ref_mpi_part( ref_mpi, part )
-	    geom_to_send[part] = 0;
-	  for (geom=0;geom<section_size;geom++)
-	    geom_to_send[dest[geom]]++;
-
-	  start_to_send[0]=0;
-	  each_ref_mpi_worker( ref_mpi, part )
-	    start_to_send[part] = start_to_send[part-1]+geom_to_send[part-1];
-
-	  each_ref_mpi_part( ref_mpi, part )
-	    geom_to_send[part] = 0;
-	  for (geom=0;geom<section_size;geom++)
-	    {
-	      new_location = start_to_send[dest[geom]]
-		+ geom_to_send[dest[geom]];
-	      sent_node[new_location] = read_node[geom];
-	      sent_id[new_location] = read_id[geom];
-	      sent_param[0+2*new_location] = read_param[0+2*geom];
-	      sent_param[1+2*new_location] = read_param[1+2*geom];
-	      geom_to_send[dest[geom]]++;
-	    }
-
-	  /* master keepers */
-	  ngeom_keep = geom_to_send[0];
-	  for (geom=0;geom<ngeom_keep;geom++)
-	    {
-	      RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
-	      RSS( ref_geom_add( ref_geom,
-				 node, type, sent_id[geom],
-				 &(sent_param[2*geom]) ), "add geom");
-	    }
-	  
-	  /* ship it! */
-	  each_ref_mpi_worker( ref_mpi, part )
-	    if ( 0 < geom_to_send[part] ) 
-	      {
-		RSS( ref_mpi_send( ref_mpi,
-				   &(geom_to_send[part]), 
-				   1, REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( ref_mpi,
-				   &(sent_node[start_to_send[part]]), 
-				   geom_to_send[part], 
-				   REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( ref_mpi,
-				   &(sent_id[start_to_send[part]]), 
-				   geom_to_send[part], 
-				   REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( ref_mpi,
-				   &(sent_param[2*start_to_send[part]]), 
-				   2*geom_to_send[part], 
-				   REF_DBL_TYPE, part ), "send" );
-	      }
-
-	}
-
-      ref_free(dest);
-      ref_free(read_param);
-      ref_free(read_id);
-      ref_free(read_node);
-      ref_free(start_to_send);
-      ref_free(geom_to_send);
-
-      /* signal we are done */
-      each_ref_mpi_worker( ref_mpi, part )
-	RSS( ref_mpi_send( ref_mpi,
-			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
-
-    }
-  else
-    {
-      do {
-	RSS( ref_mpi_recv( ref_mpi,
-			   &geom_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
-	if ( geom_to_receive > 0 )
-	  {
-	    RSS( ref_mpi_recv( ref_mpi,
-			       sent_node, geom_to_receive, 
-			       REF_INT_TYPE, 0 ), "send" );
-	    RSS( ref_mpi_recv( ref_mpi,
-			       sent_id, geom_to_receive, 
-			       REF_INT_TYPE, 0 ), "send" );
-	    RSS( ref_mpi_recv( ref_mpi,
-			       sent_param, 2*geom_to_receive, 
-			       REF_DBL_TYPE, 0 ), "send" );
-	    for (geom=0;geom<geom_to_receive;geom++)
-	      {
-		RSS( ref_node_local( ref_node, sent_node[geom], &node ), "g2l");
-		RSS( ref_geom_add( ref_geom,
-				   node, type, sent_id[geom],
-				   &(sent_param[2*geom]) ), "add geom");
-	      }
-	  }
-      } while ( geom_to_receive != end_of_message );
-    }
-
-  free(sent_param);
-  free(sent_id);
-  free(sent_node);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
-				REF_NODE ref_node, REF_INT nnode,
-				FILE *file )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell_read;
-  REF_INT chunk;
-  REF_INT end_of_message = REF_EMPTY;
-  REF_INT elements_to_receive;
-  REF_INT *c2n;
-  REF_INT *c2t;
-  REF_INT *sent_c2n;
-  REF_INT *dest;
-  REF_INT *sent_part;
-  REF_INT *elements_to_send;
-  REF_INT *start_to_send;
-  REF_INT node_per, size_per;
-  REF_INT section_size;
-  REF_INT cell;
-  REF_INT part, node;
-  REF_INT ncell_keep;
-  REF_INT new_location;
-
-  chunk = MAX(1000000, ncell/ref_mpi_m(ref_mpi));
-
-  size_per = ref_cell_size_per(ref_cell);
-  node_per = ref_cell_node_per(ref_cell);
-
-  ref_malloc( sent_c2n, size_per*chunk, REF_INT );
-
-  if ( ref_mpi_once(ref_mpi) )
-    {
-
-      ref_malloc( elements_to_send, ref_mpi_m(ref_mpi), REF_INT );
-      ref_malloc( start_to_send, ref_mpi_m(ref_mpi), REF_INT );
-      ref_malloc( c2n, size_per*chunk, REF_INT );
-      ref_malloc( c2t, (node_per+1)*chunk, REF_INT );
-      ref_malloc( dest, chunk, REF_INT );
-
-      ncell_read = 0;
-      while ( ncell_read < ncell )
-	{
-	  section_size = MIN(chunk,ncell-ncell_read);
-	  if ( node_per == size_per)
-	    {
-	      RES((size_t)(section_size*(node_per+1)),
-		  fread( c2t,
-			 sizeof(REF_INT), section_size*(node_per+1), file ), "cn" );
-	      for (cell=0;cell<section_size;cell++)
-		for (node=0;node<node_per;node++)
-		  c2n[node+size_per*cell] = c2t[node+(node_per+1)*cell];
-	    }
-	  else
-	    {
-	      RES((size_t)(section_size*size_per),
-		  fread( c2n,
-			 sizeof(REF_INT), section_size*size_per, file ), "cn" );
-	    }
-	  for (cell=0;cell<section_size;cell++)
-	    for (node=0;node<node_per;node++)
-	      c2n[node+size_per*cell]--;
-
-	  ncell_read += section_size;
-
-	  for (cell=0;cell<section_size;cell++)
-	    dest[cell] = ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
-					    c2n[size_per*cell] );
-
-	  each_ref_mpi_part( ref_mpi, part )
-	    elements_to_send[part] = 0;
-	  for (cell=0;cell<section_size;cell++)
-	    elements_to_send[dest[cell]]++;
-
-	  start_to_send[0]=0;
-	  each_ref_mpi_worker( ref_mpi, part )
-	    start_to_send[part] = 
-	    start_to_send[part-1]+elements_to_send[part-1];
-
-	  each_ref_mpi_part( ref_mpi, part )
-	    elements_to_send[part] = 0;
-	  for (cell=0;cell<section_size;cell++)
-	    {
-	      new_location = start_to_send[dest[cell]]
-		+ elements_to_send[dest[cell]];
-	      for (node=0;node<size_per;node++)
-		sent_c2n[node+size_per*new_location] = c2n[node+size_per*cell];
-	      elements_to_send[dest[cell]]++;
-	    }
-
-	  /* master keepers */
-
-	  ncell_keep = elements_to_send[0];
-	  if ( 0 < ncell_keep )
-	    { 
-	      ref_malloc_init( sent_part, size_per*ncell_keep, 
-			       REF_INT, REF_EMPTY );
-
-	      for (cell=0;cell<ncell_keep;cell++)
-		for (node=0;node<node_per;node++)
-		  sent_part[node+size_per*cell] =
-		    ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
-				       sent_c2n[node+size_per*cell] );
-
-	      RSS( ref_cell_add_many_global( ref_cell, ref_node,
-					     ncell_keep, 
-					     sent_c2n, sent_part,
-					     ref_mpi_rank(ref_mpi) ),"glob");
-
-	      ref_free(sent_part);
-	    }
-
-	  each_ref_mpi_worker( ref_mpi, part )
-	    if ( 0 < elements_to_send[part] ) 
-	      {
-		RSS( ref_mpi_send( ref_mpi,
-				   &(elements_to_send[part]), 
-				   1, REF_INT_TYPE, part ), "send" );
-		RSS( ref_mpi_send( ref_mpi,
-				   &(sent_c2n[size_per*start_to_send[part]]), 
-				   size_per*elements_to_send[part], 
-				   REF_INT_TYPE, part ), "send" );
-	      }
-
-	}
-
-      ref_free(dest);
-      ref_free(c2t);
-      ref_free(c2n);
-      ref_free(start_to_send);
-      ref_free(elements_to_send);
-
-      /* signal we are done */
-      each_ref_mpi_worker( ref_mpi, part )
-	RSS( ref_mpi_send( ref_mpi,
-			   &end_of_message, 1, REF_INT_TYPE, part ), "send" );
-
-    }  
-  else
-    {
-      do {
-	RSS( ref_mpi_recv( ref_mpi,
-			   &elements_to_receive, 1, REF_INT_TYPE, 0 ), "recv" );
-	if ( elements_to_receive > 0 )
-	  {
-	    RSS( ref_mpi_recv( ref_mpi,
-			       sent_c2n, size_per*elements_to_receive, 
-			       REF_INT_TYPE, 0 ), "send" );
-
-	    ref_malloc_init( sent_part, size_per*elements_to_receive, 
-			     REF_INT, REF_EMPTY );
-
-	    for (cell=0;cell<elements_to_receive;cell++)
-	      for (node=0;node<node_per;node++)
-		sent_part[node+size_per*cell] =
-		  ref_part_implicit( nnode, ref_mpi_m(ref_mpi), 
-				     sent_c2n[node+size_per*cell] );
-
-	    RSS( ref_cell_add_many_global( ref_cell, ref_node,
-					   elements_to_receive, 
-					   sent_c2n, sent_part,
-					   ref_mpi_rank(ref_mpi)), "many glob");
-
-	    ref_free( sent_part );
-	  }
-      } while ( elements_to_receive != end_of_message );
-    }
-
-  free(sent_c2n);
-
-  RSS( ref_migrate_shufflin_cell( ref_node, ref_cell ), "fill ghosts");
 
   return REF_SUCCESS;
 }
