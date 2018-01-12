@@ -67,9 +67,14 @@ histogram history plots
 
 ellipsoid viz 
 
+Marshall
+mpi instructions in INSTALL
+kill values.h, replace with float.h
 docs?
 provide dense api (or pack)
+ maybe just a copy
 provide 2D api
+
 
 time adapt pass elements
 profile
@@ -117,6 +122,8 @@ partition boundary artifacts
 - graph agglomeration to remove artifacts
    - age
    - parallel agglomeration to protect age
+
+implemetnt INRIA space filling curve native parition
 
 low priority surface reconstruction when EGADS not available
 - consult white
