@@ -1,7 +1,8 @@
 
-ref_matrix fix diag gen repeat 12
+ref_matrix fix diag gen repeat 12 turned off with REF_FALSE
+gen eigen solver slow for repeated roots, 2x6.2500e-02
 
-remove private methods from headers : ref_part ref_gather
+remove private methods from headers for : ref_part ref_gather
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
@@ -10,7 +11,6 @@ init metric to unit?
 cache curvature metric or apply to input
 always limit implied metric distance after every interp?
 remove tet walking from grid (ref_layer uses?)
-eigen solver slow for repeated roots, 2x6.2500e-02
 
 rename ref_mpi_m to ref_mpi_n
 
@@ -49,6 +49,7 @@ collapse
 smarter adapt parameters
  prevent slivers by setting collapse limits
  tighten limits near convergence
+ rigorous way to set these
 
 cavity operator in 2D/3D
  eliminate short edges (cavity)
