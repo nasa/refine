@@ -57,6 +57,31 @@ REF_STATUS ref_gather_tec_movie_record_button( REF_GATHER ref_gather,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_ncell_below_quality( REF_NODE ref_node,
+						  REF_CELL ref_cell, 
+						  REF_DBL min_quality,
+						  REF_INT *ncell )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell_local;
+  REF_DBL quality;
+
+  ncell_local = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
+      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
+	   quality < min_quality )
+	ncell_local++;
+    }
+
+  RSS( ref_mpi_sum( ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
+  RSS( ref_mpi_bcast( ref_mpi, ncell, 1, REF_INT_TYPE ), "bcast");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
 				       const char *zone_title )
 {
@@ -106,9 +131,9 @@ REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
   {
     REF_INT ntet;
     REF_DBL min_quality = 0.10;
-    RSS( ref_gather_ncell_quality( ref_node,
-				   ref_grid_tet(ref_grid),
-				   min_quality, &ntet ), "ntri");
+    RSS( ref_gather_ncell_below_quality( ref_node,
+					 ref_grid_tet(ref_grid),
+					 min_quality, &ntet ), "ntri");
     
     if ( ref_grid_once(ref_grid) )
       {
@@ -538,29 +563,6 @@ REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell,
 		    &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
   RSS( ref_mpi_bcast( ref_mpi,
 		      ncell, 1, REF_INT_TYPE ), "bcast");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_ncell_quality( REF_NODE ref_node, REF_CELL ref_cell, 
-				     REF_DBL min_quality, REF_INT *ncell )
-{
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell_local;
-  REF_DBL quality;
-
-  ncell_local = 0;
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-    {
-      RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-      if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,nodes[0]) &&
-	   quality < min_quality )
-	ncell_local++;
-    }
-
-  RSS( ref_mpi_sum( ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE ), "sum");
-  RSS( ref_mpi_bcast( ref_mpi, ncell, 1, REF_INT_TYPE ), "bcast");
 
   return REF_SUCCESS;
 }
