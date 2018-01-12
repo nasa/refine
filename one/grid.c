@@ -20,17 +20,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <limits.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
-#ifdef __APPLE__       /* Not needed on Mac OS X */
-#include <float.h>
-#else
-#include <malloc.h>
-#include <values.h>
 #endif
 
 #include "sort.h"

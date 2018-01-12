@@ -24,14 +24,6 @@
 #include "config.h"
 #endif
 
-#include <limits.h>
-#ifdef __APPLE__       /* Not needed on Mac OS X */
-#include <float.h>
-#else
-#include <malloc.h>
-#include <values.h>
-#endif
-
 #include "gridmath.h"
 #include "gridcad.h"
 #include "gridshape.h"

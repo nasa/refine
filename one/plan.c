@@ -17,9 +17,7 @@
  */
 
 #include <stdlib.h>
-#ifndef __APPLE__       /* Not needed on Mac OS X */
-#include <malloc.h>
-#endif
+
 #include "plan.h"
 #include "sort.h"
 

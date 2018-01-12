@@ -73,8 +73,10 @@ kill values.h, replace with float.h
 docs?
 provide dense api (or pack)
  maybe just a copy
+ reference to pointers with a free other
 provide 2D api
-
+meshb geom assoc only read and write
+kill tabs
 
 time adapt pass elements
 profile

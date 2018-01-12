@@ -27,11 +27,7 @@
 #include "config.h"
 #endif
 
-#ifdef __APPLE__       /* Not needed on Mac OS X */
 #include <float.h>
-#else
-#include <values.h>
-#endif
 
 #include "refine_defs.h"
 #include "adj.h"

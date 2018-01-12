@@ -25,11 +25,6 @@
 #include "config.h"
 #endif
 
-#ifdef __APPLE__       /* Not needed on Mac OS X */
-#else
-#include <malloc.h>
-#endif
-
 #include "FAKEGeom.h"
 #include "gridmath.h"
 
