@@ -1,11 +1,11 @@
 
 From a Git Clone
-=======================
+================
 
 (Skip this step and goto `Quick Start` or `Basic Installation' if you
 have a *.tar.gz file.)
 
-   Run ./bootstrap to create the configure script. Create a build
+Run ./bootstrap to create the configure script. Create a build
 directory. Change (cd) to the build dir and and run: 
 
  % ./bootstrap
@@ -15,19 +15,39 @@ directory. Change (cd) to the build dir and and run:
  % make
  % make install
 
+Common Dependencies
+===================
+
+The following options can be combined with each other.
+
+For MPI,
+
+../configure CFLAGS='-DHAVE_MPI' CC=mpicc
+
+For Zoltan
+
+../configure --with-zoltan=/path/to/zoltan/install
+
+For EGADS [ may require OpenCASCADE to be added to your shared library
+load path or the use of rpath, see EGADS instructions]
+
+../configure --with-EGADS=/path/to/egads/package
+
 (Quick Start) If You Received a *.tar.gz File
-===============================================================
+=============================================
 
 run (replace `x.x.x' with the current version number):
 
  % gunzip refine-x.x.x.tar.gz
  % tar xvf refine-x.x.x.tar
  % cd refine-x.x.x
- % ./configure --prefix=`pwd`
+ % mkdir -p build
+ % cd build
+ % ../configure --prefix=`pwd`
  % make
  % make install
 
-This will place libraries in refine-x.x.x/lib 
+This will place libraries in refine-x.x.x/build/lib
 
 Read the `Basic Installation' section for more detailed instructions.
 
@@ -37,10 +57,10 @@ Note To FUN3D Users
 Please see the `Adaptation and Error Estimation' section of
 http://fun3d.larc.nasa.gov/
 
-You will need to run/rerun the FUN3D ./configure script. Add this
+You will need to run/rerun the FUN3D ./configure script and add this
 argument
 
-  --with-refine=/my/path/to/refine-x.x.x
+  --with-refine=/path/to/refine-x.x.x/build
 
 Basic Installation
 ==================
