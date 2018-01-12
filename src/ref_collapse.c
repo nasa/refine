@@ -238,10 +238,9 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
                                        REF_BOOL *allowed )
 {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT deg, degree1;
-  REF_INT id, ids1[3];
-  REF_BOOL already_have_it;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT degree1;
+  REF_INT ids1[3];
 
   REF_INT ncell;
   REF_INT cell_to_collapse[MAX_CELL_COLLAPSE];
@@ -251,26 +250,6 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
 
   *allowed = REF_FALSE;
 
-  /* ids1 is a list of degree1 face ids for node1 */
-  degree1 = 0;
-  ids1[0] = REF_EMPTY; ids1[1] = REF_EMPTY; ids1[2] = REF_EMPTY;
-  each_ref_cell_having_node( ref_cell, node1, item, cell )
-  {
-    RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
-    id = nodes[3];
-    already_have_it = REF_FALSE;
-    for (deg = 0; deg<degree1; deg++)
-      if ( id == ids1[deg] )
-        already_have_it = REF_TRUE;
-    if ( !already_have_it )
-      {
-        ids1[degree1] = id;
-        degree1++;
-        if ( 3 == degree1 )
-          break;
-      }
-  }
-
   RSS( ref_geom_is_a( ref_grid_geom(ref_grid),
                       node1, REF_GEOM_NODE, &geom_node1), "node check");
   if ( geom_node1 )
@@ -278,6 +257,13 @@ REF_STATUS ref_collapse_edge_geometry( REF_GRID ref_grid,
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
+
+  /* ids1 is a list of degree1 face ids for node1 */
+  RXS( ref_cell_id_list_around( ref_cell,
+				node1,
+				3,
+				&degree1, ids1 ),
+       REF_INCREASE_LIMIT, "count faceids" );
 
   switch ( degree1 )
     {
