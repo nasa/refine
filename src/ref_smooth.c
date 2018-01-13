@@ -590,6 +590,120 @@ REF_STATUS ref_smooth_twod_tri_improve( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_smooth_node_same_normal( REF_GRID ref_grid,
+					       REF_INT node,
+					       REF_BOOL *allowed )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normal[3], first_normal[3];
+  REF_DBL dot;
+  REF_STATUS status;
+  REF_BOOL first_tri;
+
+  *allowed = REF_TRUE;
+  
+  first_tri = REF_TRUE;
+  each_ref_cell_having_node( ref_cell, node, item, cell )
+    {
+      RSS( ref_cell_nodes( ref_cell, cell, nodes ), "nodes" );
+      RSS( ref_node_tri_normal( ref_node, nodes, normal ), "orig normal" );
+      if ( first_tri )
+	{
+	  first_tri = REF_FALSE;
+	  first_normal[0] = normal[0];
+	  first_normal[1] = normal[1];
+	  first_normal[2] = normal[2];
+	  RSS( ref_math_normalize( first_normal ),
+	       "original triangle has zero area" );
+	}
+      status = ref_math_normalize( normal );
+      if ( REF_DIV_ZERO == status )
+	{   /* new triangle face has zero area */
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;
+	}
+      RSS( status, "new normal length" );
+      dot = ref_math_dot( first_normal, normal );
+      /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
+      if ( dot < ( 1.0-1.0e-8 ) ) 
+	{
+	  *allowed = REF_FALSE;
+	  return REF_SUCCESS;
+	}
+    }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_smooth_no_geom_tri_improve( REF_GRID ref_grid,
+						  REF_INT node )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT tries;
+  REF_DBL ideal[3], original[3];
+  REF_DBL backoff, tri_quality0, tri_quality, tet_quality;
+  REF_INT ixyz;
+  REF_INT n_ids, ids[2];
+  REF_BOOL allowed, geom_face;
+  
+  /* can't handle mixed elements */
+  if ( !ref_cell_node_empty( ref_grid_qua( ref_grid ), node ) )
+    return REF_SUCCESS;
+
+  /* don't move edge nodes */
+  RXS( ref_cell_id_list_around( ref_grid_tri(ref_grid),
+				node,
+				2,
+				&n_ids, ids ),
+       REF_INCREASE_LIMIT, "count faceids" );
+  if ( n_ids > 1 )
+    return REF_SUCCESS;
+  
+  /* not for nodes with geom support */
+  RSS( ref_geom_is_a( ref_grid_geom(ref_grid),
+		      node, REF_GEOM_FACE, &geom_face), "face check");
+  if ( geom_face )
+    return REF_SUCCESS;
+
+  RSS( ref_smooth_node_same_normal(ref_grid,node, &allowed), "normal dev" );
+  if ( !allowed )
+    return REF_SUCCESS;
+  
+  for (ixyz = 0; ixyz<3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node,ixyz,node);
+
+  RSS( ref_smooth_tri_weighted_ideal( ref_grid, node, ideal ), "ideal" );
+
+  RSS( ref_smooth_tri_quality_around( ref_grid, node, &tri_quality0),"q");
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++)
+    {
+      for (ixyz = 0; ixyz<3; ixyz++)
+	ref_node_xyz(ref_node,ixyz,node) = backoff*ideal[ixyz] +
+	  (1.0 - backoff) * original[ixyz];
+      RSS( ref_smooth_tet_quality_around( ref_grid, node, &tet_quality),"q");
+      if ( tet_quality > ref_grid_adapt(ref_grid,smooth_min_quality) )
+	{
+	  RSS( ref_smooth_tri_quality_around( ref_grid, node,
+					      &tri_quality),"q");
+	  if ( tri_quality > tri_quality0 )
+	    {
+	      return REF_SUCCESS;
+	    }
+	}
+      backoff *= 0.5;
+    }
+
+  for (ixyz = 0; ixyz<3; ixyz++)
+    ref_node_xyz(ref_node,ixyz,node) = original[ixyz];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_local_pris_about( REF_GRID ref_grid, 
 					REF_INT about_node, 
 					REF_BOOL *allowed )
@@ -1047,7 +1161,18 @@ REF_STATUS ref_smooth_threed_pass( REF_GRID ref_grid )
     ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "mov face");
 
   /* smooth faces without geom*/
-
+  each_ref_node_valid_node( ref_node, node )
+    if ( !ref_cell_node_empty( ref_grid_tri( ref_grid ), node ) )
+      {
+	RSS( ref_smooth_local_tet_about( ref_grid, node, &allowed ), "para" );
+	if ( !allowed )
+	  {
+	    ref_node_age(ref_node,node)++;
+	    continue;
+	  }
+	RSS( ref_smooth_no_geom_tri_improve( ref_grid, node ),
+	     "no geom smooth" );
+      }
 
   /* smooth interior */
   each_ref_node_valid_node( ref_node, node )

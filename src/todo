@@ -109,7 +109,6 @@ smooth
    for edge, surface, volume sequence
  requeue neighbors with large changes? particulary quality drops
  minmax optimize uv
- surface smoothing without geom
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
@@ -155,6 +154,7 @@ low priority surface reconstruction when EGADS not available
 
 + quadratic programming optimize min element quality
 + freitag smoothing
++ alauzet surface smoothing without geom
 
 + reference implementation of Lp metric
 
