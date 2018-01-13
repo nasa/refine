@@ -540,8 +540,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_improve( REF_GRID ref_grid,
-				   REF_INT node )
+REF_STATUS ref_smooth_twod_tri_improve( REF_GRID ref_grid,
+					REF_INT node )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
@@ -636,7 +636,7 @@ REF_STATUS ref_smooth_twod_pass( REF_GRID ref_grid )
 	}
 
       ref_node_age(ref_node,node) = 0;
-      RSS( ref_smooth_tri_improve( ref_grid, node ), "improve" );
+      RSS( ref_smooth_twod_tri_improve( ref_grid, node ), "improve" );
     }
 
   return REF_SUCCESS;

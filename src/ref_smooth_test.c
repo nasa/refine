@@ -499,7 +499,7 @@ int main( int argc, char *argv[] )
 
     RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality0),"q");
 
-    RSS( ref_smooth_tri_improve( ref_grid, node ),"imp");
+    RSS( ref_smooth_twod_tri_improve( ref_grid, node ),"imp");
 
     RSS( ref_smooth_tri_quality_around( ref_grid, node, &quality1),"q");
 
