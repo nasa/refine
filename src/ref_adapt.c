@@ -202,7 +202,6 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
     }
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
-  ref_adapt->split_ratio = max_edge;
   
   return REF_SUCCESS;
 }
