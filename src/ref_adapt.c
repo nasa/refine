@@ -107,7 +107,7 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   REF_DBL quality, min_quality;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
-  REF_DBL target, max_edge;
+  REF_DBL target;
   REF_INT cell_node;
   REF_INT node, part_nnode, total_nnode;
   REF_DBL nodes_per_complexity;
@@ -192,11 +192,10 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   nodes_per_complexity = (REF_DBL)total_nnode/complexity;
 
   target = MAX(MIN(0.1, min_quality),1.0e-3);
-  max_edge = MAX(1.5, 0.5*nodes_per_complexity);
     
   if (ref_grid_once(ref_grid))
     {
-      printf("target quality %6.4f edge split %6.2f\n",target,max_edge);
+      printf("quality floor %6.4f\n",target);
       printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
 	     total_nnode, complexity, nodes_per_complexity,
 	     max_volume, min_volume);
