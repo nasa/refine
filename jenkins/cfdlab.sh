@@ -251,3 +251,5 @@ trap - EXIT
 
 date
 
+grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
+
