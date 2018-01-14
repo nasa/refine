@@ -1,4 +1,6 @@
 
+measure gradation and see if there is a connection to histogram convergence
+
 ref_matrix fix diag gen repeat 12 turned off with REF_FALSE
 gen eigen solver slow for repeated roots, 2x6.2500e-02
 
