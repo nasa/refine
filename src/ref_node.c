@@ -945,20 +945,13 @@ REF_STATUS ref_node_span( REF_NODE ref_node, REF_INT node0, REF_INT node1,
  
   ratio = r_min * (r-1.0) / ( r * log(r) );
 
-  if ( r_min <= ratio && ratio <= r_max )
+  if ( r_min <= 1.0 && 1.0 <= r_max )
     {
       *span = 1.0;
       return REF_SUCCESS;
     }
 
-  if ( r_max < ratio )
-    {
-      *span = ratio / r_max;
-    }
-  else
-    {
-      *span = ratio / r_min;
-    }
+  *span = ratio;
     
   return REF_SUCCESS;  
 }
