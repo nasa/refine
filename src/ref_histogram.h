@@ -85,10 +85,13 @@ REF_STATUS ref_histogram_gather_stat( REF_HISTOGRAM ref_histogram,
 REF_STATUS ref_histogram_print_stat( REF_HISTOGRAM ref_histogram );
 
 
+REF_STATUS ref_histogram_add_span( REF_HISTOGRAM ref_histogram, 
+				   REF_GRID ref_grid );
 REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram, 
 				    REF_GRID ref_grid );
 REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram, 
 				      REF_GRID ref_grid );
+REF_STATUS ref_histogram_span( REF_GRID ref_grid );
 REF_STATUS ref_histogram_ratio( REF_GRID ref_grid );
 REF_STATUS ref_histogram_quality( REF_GRID ref_grid );
 
