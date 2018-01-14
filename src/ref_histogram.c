@@ -369,61 +369,6 @@ REF_STATUS ref_histogram_print_stat( REF_HISTOGRAM ref_histogram )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_histogram_add_span( REF_HISTOGRAM ref_histogram, 
-				   REF_GRID ref_grid )
-{
-  REF_EDGE ref_edge;
-  REF_INT edge, part;
-  REF_DBL span;
-  REF_BOOL active;
-
-  RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges" );
-
-  for (edge=0;edge< ref_edge_n(ref_edge);edge++)
-    {
-      RSS( ref_edge_part( ref_edge, edge, &part ), "edge part");
-      RSS( ref_node_edge_twod( ref_grid_node(ref_grid), 
-			       ref_edge_e2n(ref_edge, 0, edge),
-			       ref_edge_e2n(ref_edge, 1, edge), 
-			       &active ), "twod edge");
-      active = ( active || !ref_grid_twod(ref_grid) );
-      if ( part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active )
-	{
-	  RSS( ref_node_span( ref_grid_node(ref_grid), 
-			      ref_edge_e2n(ref_edge, 0, edge),
-			      ref_edge_e2n(ref_edge, 1, edge), 
-			      &span ), "rat");
-	  RSS( ref_histogram_add( ref_histogram, span ), "add");
-	}
-    }
-
-  RSS( ref_histogram_gather( ref_histogram, ref_grid_mpi(ref_grid) ), "gather");
-
-  for (edge=0;edge< ref_edge_n(ref_edge);edge++)
-    {
-      RSS( ref_edge_part( ref_edge, edge, &part ), "edge part");
-      RSS( ref_node_edge_twod( ref_grid_node(ref_grid), 
-			       ref_edge_e2n(ref_edge, 0, edge),
-			       ref_edge_e2n(ref_edge, 1, edge), 
-			       &active ), "twod edge");
-      active = ( active || !ref_grid_twod(ref_grid) );
-      if ( part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active )
-	{
-	  RSS( ref_node_span( ref_grid_node(ref_grid), 
-			       ref_edge_e2n(ref_edge, 0, edge),
-			       ref_edge_e2n(ref_edge, 1, edge), 
-			       &span ), "rat");
-	  RSS( ref_histogram_add_stat( ref_histogram, span ), "add");
-	}
-    }
-  RSS( ref_histogram_gather_stat( ref_histogram, 
-				  ref_grid_mpi(ref_grid) ), "gather");
-
-  RSS( ref_edge_free(ref_edge), "free edge" );
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_histogram_add_ratio( REF_HISTOGRAM ref_histogram, 
 				    REF_GRID ref_grid )
 {
@@ -521,26 +466,6 @@ REF_STATUS ref_histogram_add_quality( REF_HISTOGRAM ref_histogram,
 
   RSS( ref_histogram_gather( ref_histogram, ref_grid_mpi(ref_grid) ), "gather");
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_histogram_span( REF_GRID ref_grid )
-{
-  REF_HISTOGRAM ref_histogram;
-
-  RSS( ref_histogram_create(&ref_histogram),"create");
-  
-  if ( REF_FALSE )
-    RSS( ref_histogram_debug(ref_histogram,"ref_histogram.len"),"dbug");
-
-  RSS( ref_histogram_add_span( ref_histogram, ref_grid ), "add span" );
-  
-  if ( ref_grid_once(ref_grid) )
-    RSS( ref_histogram_print( ref_histogram, ref_grid, "edge span"), "print");
-  if ( ref_grid_once(ref_grid) ) 
-    RSS( ref_histogram_print_stat( ref_histogram), "pr stat");
-
-  RSS( ref_histogram_free(ref_histogram), "free gram" );
   return REF_SUCCESS;
 }
 
