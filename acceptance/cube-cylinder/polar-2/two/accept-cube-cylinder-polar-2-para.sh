@@ -18,8 +18,9 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
     sweeps=$3
+    cores=$4
 
-    mpiexec -np 4 ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -t
+    mpiexec -np ${cores} ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -t
     mv ref_gather_movie.tec ${inproj}_movie.tec
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
@@ -30,12 +31,12 @@ function adapt_cycle {
 
 ${two}/ref_acceptance -ugawg ${field} ega.meshb ega.metric
 
-adapt_cycle ega para01 2
-adapt_cycle para01 para02 5
-adapt_cycle para02 para03 10
-adapt_cycle para03 para04 15
+adapt_cycle ega para01 2 1
+adapt_cycle para01 para02 5 1
+adapt_cycle para02 para03 10 4
+adapt_cycle para03 para04 15 4
 
 cat para04.status
-../../../check.rb para04.status 0.02 2.2
+../../../check.rb para04.status 0.05 3.0
 
 exit
