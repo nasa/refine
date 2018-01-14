@@ -18,6 +18,9 @@ end
 throw("min edge missing") if (min_edge.nil?)
 throw("max edge missing") if (max_edge.nil?)
 
+puts "RAC min edge #{min_edge} limit #{min_limit}"
+puts "RAC max edge #{max_edge} limit #{max_limit}"
+
 need_to_throw = false
 if ( min_limit > min_edge )
   puts "min edge #{min_edge} short of limit #{min_limit}"
