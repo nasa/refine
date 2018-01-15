@@ -1,7 +1,8 @@
 
-mixed element 2d for twest
-
 unify efficient plotting diagnostics in parallel
+ tri tet mr < 0.1
+ edge > 4
+ clump degree > 50
 
 measure gradation and see if there is a connection to histogram convergence
 
@@ -113,6 +114,7 @@ merge ref_collapse_face_local_*
 
 +++++++++++++++++
 
++ mixed element 2d for twest
 + rename ref_list_add to ref_list_push
 
 + rename ref_cell_faceid_list_around to ref_cell_id_list_around
