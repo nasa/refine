@@ -490,7 +490,11 @@ REF_STATUS ref_smooth_tri_weighted_ideal( REF_GRID ref_grid,
     }
   else
     {
-      printf("normalization = %e\n",normalization);
+      printf("normalization = %e at %e %e %e\n",
+	     normalization,
+	     ref_node_xyz(ref_grid_node(ref_grid),0,node),
+	     ref_node_xyz(ref_grid_node(ref_grid),1,node),
+	     ref_node_xyz(ref_grid_node(ref_grid),2,node) );
       return REF_DIV_ZERO;
     }
 
