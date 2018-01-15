@@ -486,8 +486,11 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
       THROW("unable to find the next step");
     }
 
-  THROW("max steps exceeded");
+  /* exhaustive search when walk runs out of iterations */
+  RSS( ref_grid_exhaustive_enclosing_tri( ref_grid, xyz,
+					  tri, bary ), "enclose");
 
+  return REF_SUCCESS;
 }
 
 static REF_STATUS ref_update_tet_guess( REF_CELL ref_cell,
