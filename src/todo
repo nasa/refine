@@ -12,17 +12,11 @@ get rid of aux and interp instead
 init metric to unit?
 cache curvature metric or apply to input
 always limit implied metric distance after every interp?
-remove tet walking from grid (ref_layer uses?)
+remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
 rename ref_mpi_m to ref_mpi_n
 
 mixed element 2d for twest
-
-merge ref_split_edge_local_tets ref_split_edge_local_prism
-  to ref_split_edge_local_cell
-merge ref_smooth_local_tet_about ref_smooth_local_pris_about
-  to ref_smooth_local_cell_about
-merge ref_collapse_face_local_*
 
 refactor ref_export to extract compact_n2o twod and cell
 with ref_grid_boundary_nodes
@@ -136,6 +130,13 @@ low priority surface reconstruction when EGADS not available
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+ooooooooooooooooo
+
+merge ref_split_edge_local_tets ref_split_edge_local_prism
+  to ref_split_edge_local_cell
+merge ref_smooth_local_tet_about ref_smooth_local_pris_about
+  to ref_smooth_local_cell_about
+merge ref_collapse_face_local_*
 
 +++++++++++++++++
 
@@ -299,5 +300,4 @@ low priority surface reconstruction when EGADS not available
 +  don't collapse remove geom nodes
 
 + open source, clean up, and move repo to gitlab
-
 
