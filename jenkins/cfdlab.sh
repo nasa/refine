@@ -131,6 +131,14 @@ trap - EXIT
 
 date
 
+LOG=${root_dir}/log.accept-2d-mixed-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/mixed
+./accept-2d-mixed.sh ${build_dir} > $LOG 2>&1
+trap - EXIT
+
+date
+
 LOG=${root_dir}/log.accept-3d-linear-one
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/one
