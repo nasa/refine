@@ -793,7 +793,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	      nodes[5]=n1;
 	      nodes[6]=n2;
 	      nodes[7]=n3;
-	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+	      RSS( ref_cell_add( ref_grid_hex(ref_grid), nodes, &new_cell ), 
 		   "hex for qua");
 	    }
 	}
