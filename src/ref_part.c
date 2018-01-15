@@ -905,7 +905,7 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   /* guess twod status */
 
-  if ( 0 == ntet && 0 == npyr && 0 != npri && 0 == nhex )
+  if ( 0 == ntet && 0 == npyr && ( 0 != npri || 0 != nhex ) )
     ref_grid_twod(ref_grid) = REF_TRUE;
 
   RSS( ref_part_node( file, swap_endian, has_id,
