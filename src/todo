@@ -41,6 +41,7 @@ smarter adapt parameters
  prevent slivers by setting collapse limits
  tighten limits near convergence
  rigorous way to set these
+ process complete test
 
 cavity operator in 2D/3D
  eliminate short edges (cavity)
@@ -110,6 +111,7 @@ refactor ref_geom to remove methods and tests, how is it used, what is needed?
 
 - refactor twod migrate
 - have graph in migrate
+- space filling curve partition
 - agree on age
 - agree on agglomeration
 
@@ -130,6 +132,7 @@ low priority surface reconstruction when EGADS not available
 - consult white
 -- approximate normal as angle weighted, 
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+
 ooooooooooooooooo
 
 merge ref_split_edge_local_tets ref_split_edge_local_prism
