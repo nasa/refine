@@ -671,7 +671,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT dummy, row;
   REF_DBL x, y, z;
   REF_INT nnode, node, new_node;
-  REF_INT nedge, edge, n0, n1, n2, id;
+  REF_INT nedge, edge, n0, n1, n2, n3, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
@@ -759,6 +759,42 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	      nodes[5]=n2;
 	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
 		   "prism for tri");
+	    }
+	}
+
+      if ( 0 == strcmp("Quadrilaterals",line))
+	{
+	  REIS( 1, fscanf(file, "%d", &ntri), "read ntri" );
+	  for (tri=0;tri<ntri;tri++)
+	    {
+	      REIS( 5, fscanf(file, "%d %d %d %d %d",
+			      &n0, &n1, &n2, &n3, &dummy ), 
+		    "read quad" );
+	      n0--; n1--; n2--; n3--;
+	      nodes[0]=n0+nnode;
+	      nodes[1]=n1+nnode;
+	      nodes[2]=n2+nnode;
+	      nodes[3]=n3+nnode;
+	      nodes[4]=1;
+	      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+		   "qua face for qua");
+	      nodes[0]=n3;
+	      nodes[1]=n2;
+	      nodes[2]=n1;
+	      nodes[3]=n0;
+	      nodes[4]=2;
+	      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
+		   "qua face for qua");
+	      nodes[0]=n0+nnode;
+	      nodes[1]=n1+nnode;
+	      nodes[2]=n2+nnode;
+	      nodes[3]=n3+nnode;
+	      nodes[4]=n0;
+	      nodes[5]=n1;
+	      nodes[6]=n2;
+	      nodes[7]=n3;
+	      RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+		   "hex for qua");
 	    }
 	}
 
