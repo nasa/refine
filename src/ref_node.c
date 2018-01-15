@@ -413,7 +413,7 @@ REF_STATUS ref_node_remove( REF_NODE ref_node, REF_INT node )
   for(sorted_node=location;sorted_node<ref_node_n(ref_node)-1;sorted_node++)
     ref_node->sorted_local[sorted_node]=ref_node->sorted_local[sorted_node+1];
 
-  RSS( ref_list_add( ref_node->unused_global_list, ref_node->global[node] ),
+  RSS( ref_list_push( ref_node->unused_global_list, ref_node->global[node] ),
        "store unused global" );
 
   ref_node->global[node] = ref_node->blank;

@@ -78,7 +78,7 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT last )
+REF_STATUS ref_list_push( REF_LIST ref_list, REF_INT last )
 {
 
   if ( ref_list_max(ref_list) == ref_list_n(ref_list) )

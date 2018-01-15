@@ -56,7 +56,7 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list );
         ( item )++,						    \
 	  ( value ) = ref_list_value( ref_list, item ) )
 
-REF_STATUS ref_list_add( REF_LIST ref_list, REF_INT last );
+REF_STATUS ref_list_push( REF_LIST ref_list, REF_INT last );
 REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *last );
 REF_STATUS ref_list_shift( REF_LIST ref_list, REF_INT *first );
 REF_STATUS ref_list_delete( REF_LIST ref_list, REF_INT value );

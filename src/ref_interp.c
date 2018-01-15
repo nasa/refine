@@ -557,7 +557,7 @@ REF_STATUS ref_interp_geom_node_list( REF_GRID ref_grid, REF_LIST ref_list )
 					&nfaceid, faceids ),
 	       REF_INCREASE_LIMIT, "count faceids" );
 	  if ( nfaceid >= 3 || nedgeid >= 2 )
-	    RSS( ref_list_add( ref_list, node ), "add geom node" );
+	    RSS( ref_list_push( ref_list, node ), "add geom node" );
 	}
     }
   return REF_SUCCESS;

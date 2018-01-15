@@ -159,7 +159,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 	{
 	  if ( subdiv_para_edges )
 	    {
-	      RSS( ref_list_add( ref_list, edge ), "push");
+	      RSS( ref_list_push( ref_list, edge ), "push");
 	    }
 	  else
 	    {

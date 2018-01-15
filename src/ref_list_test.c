@@ -51,7 +51,7 @@ int main( int argc, char *argv[] )
     REF_INT item;
     RSS(ref_list_create(&ref_list),"create");
     item = 27;
-    RSS(ref_list_add(ref_list,item),"add");
+    RSS(ref_list_push(ref_list,item),"add");
     REIS(1,ref_list_n(ref_list),"has one");
     RSS(ref_list_free(ref_list),"free");
   }
@@ -63,7 +63,7 @@ int main( int argc, char *argv[] )
     REIS(REF_FAILURE,ref_list_pop(ref_list,&last),"rm");
 
     item = 27;
-    RSS(ref_list_add(ref_list,item),"add");
+    RSS(ref_list_push(ref_list,item),"add");
     RSS(ref_list_pop(ref_list,&last),"rm");
     REIS(0,ref_list_n(ref_list),"has none");
 
@@ -76,7 +76,7 @@ int main( int argc, char *argv[] )
     max = ref_list_max(ref_list);
     for (item=0; item <= max; item++)
       {
-	RSS(ref_list_add(ref_list,item),"store");
+	RSS(ref_list_push(ref_list,item),"store");
       }
     RAS(ref_list_max(ref_list)>max, "more?");
     RSS(ref_list_free(ref_list),"free");
@@ -85,8 +85,8 @@ int main( int argc, char *argv[] )
   { /* apply offset */
     REF_INT last;
     RSS(ref_list_create(&ref_list),"create");
-    RSS(ref_list_add(ref_list,20),"store");
-    RSS(ref_list_add(ref_list,10),"store");
+    RSS(ref_list_push(ref_list,20),"store");
+    RSS(ref_list_push(ref_list,10),"store");
     RSS(ref_list_apply_offset(ref_list,15,27),"offset");
 
     RSS(ref_list_pop(ref_list,&last),"rm");
@@ -101,8 +101,8 @@ int main( int argc, char *argv[] )
   { /* sort */
     REF_INT last;
     RSS(ref_list_create(&ref_list),"create");
-    RSS(ref_list_add(ref_list,20),"store");
-    RSS(ref_list_add(ref_list,10),"store");
+    RSS(ref_list_push(ref_list,20),"store");
+    RSS(ref_list_push(ref_list,10),"store");
     RSS(ref_list_sort(ref_list),"sort");
 
     RSS(ref_list_pop(ref_list,&last),"rm");
@@ -116,8 +116,8 @@ int main( int argc, char *argv[] )
   { /* shift */
     REF_INT first;
     RSS(ref_list_create(&ref_list),"create");
-    RSS(ref_list_add(ref_list,30),"store");
-    RSS(ref_list_add(ref_list,40),"store");
+    RSS(ref_list_push(ref_list,30),"store");
+    RSS(ref_list_push(ref_list,40),"store");
 
     RSS(ref_list_shift(ref_list,&first),"rm");
     REIS(30,first,"has none");
@@ -130,8 +130,8 @@ int main( int argc, char *argv[] )
 
   { /* erase */
     RSS(ref_list_create(&ref_list),"create");
-    RSS(ref_list_add(ref_list,20),"store");
-    RSS(ref_list_add(ref_list,10),"store");
+    RSS(ref_list_push(ref_list,20),"store");
+    RSS(ref_list_push(ref_list,10),"store");
     RSS(ref_list_sort(ref_list),"sort");
 
     RSS(ref_list_erase(ref_list),"rm -rf");
@@ -144,7 +144,7 @@ int main( int argc, char *argv[] )
   { /* allgather */
     RSS(ref_list_create(&ref_list),"create");
 
-    RSS(ref_list_add(ref_list,ref_mpi_rank(ref_mpi)),"store");
+    RSS(ref_list_push(ref_list,ref_mpi_rank(ref_mpi)),"store");
 
     RSS(ref_list_allgather(ref_list,ref_mpi),"gather");
 
@@ -158,7 +158,7 @@ int main( int argc, char *argv[] )
     REF_BOOL contains;
     RSS(ref_list_create(&ref_list),"create");
     item = 27;
-    RSS(ref_list_add(ref_list,item),"add");
+    RSS(ref_list_push(ref_list,item),"add");
     RSS(ref_list_contains(ref_list, item, &contains), "have");
     REIS(REF_TRUE,contains,"does have");
     RSS(ref_list_contains(ref_list, 5, &contains), "have");
@@ -173,9 +173,9 @@ int main( int argc, char *argv[] )
     item = 5;
     REIS(REF_NOT_FOUND,ref_list_delete(ref_list,item),"rm");
 
-    item = 21;RSS(ref_list_add(ref_list,item),"add");
-    item = 22;RSS(ref_list_add(ref_list,item),"add");
-    item = 23;RSS(ref_list_add(ref_list,item),"add");
+    item = 21;RSS(ref_list_push(ref_list,item),"add");
+    item = 22;RSS(ref_list_push(ref_list,item),"add");
+    item = 23;RSS(ref_list_push(ref_list,item),"add");
     REIS(3,ref_list_n(ref_list),"has 3");
 
     item = 21;RSS(ref_list_delete(ref_list, item), "have");

@@ -64,7 +64,7 @@ REF_STATUS ref_layer_attach( REF_LAYER ref_layer,
   /* copy nodes into local copy that provides compact index */
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
     if ( faceid == nodes[ref_cell_node_per(ref_cell)] )
-      RSS( ref_list_add( ref_layer_list(ref_layer), cell ), "parent" );
+      RSS( ref_list_push( ref_layer_list(ref_layer), cell ), "parent" );
   
   return REF_SUCCESS;
 }

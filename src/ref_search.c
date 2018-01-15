@@ -170,7 +170,7 @@ REF_STATUS ref_search_gather( REF_SEARCH ref_search, REF_LIST ref_list,
   /* if the distance between me and the target are less than combined radii */
   if ( distance <= ref_search->radius[parent]+radius )
     {
-      RSS( ref_list_add( ref_list, ref_search->item[parent] ), "add item" );
+      RSS( ref_list_push( ref_list, ref_search->item[parent] ), "add item" );
     }
 
   /* if the distance between me and the target are less than children

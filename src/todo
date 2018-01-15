@@ -16,8 +16,6 @@ remove tet walking from grid (ref_layer uses?)
 
 rename ref_mpi_m to ref_mpi_n
 
-rename ref_list_add to ref_list_push
-
 mixed element 2d for twest
 
 merge ref_split_edge_local_tets ref_split_edge_local_prism
@@ -140,6 +138,8 @@ low priority surface reconstruction when EGADS not available
      Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
 
 +++++++++++++++++
+
++ rename ref_list_add to ref_list_push
 
 + rename ref_cell_faceid_list_around to ref_cell_id_list_around
 + reuse faceid around in ref_collapse_edge_geometry

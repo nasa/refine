@@ -224,7 +224,7 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
   if ( already_have_it )
     return REF_SUCCESS;
 
-  RSS( ref_list_add( ref_cavity_list(ref_cavity), tet ),
+  RSS( ref_list_push( ref_cavity_list(ref_cavity), tet ),
        "save tet");
 
   each_ref_cell_cell_face( ref_cell, cell_face )
@@ -307,7 +307,7 @@ REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face[2];
 
-  RSS( ref_list_add( ref_cavity_list(ref_cavity), tri ),
+  RSS( ref_list_push( ref_cavity_list(ref_cavity), tri ),
        "save tri");
 
   RSS( ref_cell_nodes( ref_grid_tri(ref_grid), tri, nodes ),
