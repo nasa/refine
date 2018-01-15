@@ -273,6 +273,9 @@ static REF_STATUS ref_metric_interpolate_twod( REF_GRID ref_grid, REF_GRID paren
 
   each_ref_node_valid_node( ref_node, node )
     {
+      /* skip mixed element nodes, they can't move */
+      if ( !ref_cell_node_empty(ref_grid_hex(ref_grid),node ) )
+	continue;   
       for (ixyz=0; ixyz<3; ixyz++)
 	xyz[ixyz] = ref_node_xyz(ref_node,ixyz,node); 
       tri = ref_node_guess(ref_node,node);
