@@ -408,7 +408,7 @@ REF_STATUS ref_grid_exhaustive_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 
   *tri = best_guess;
   RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
-  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+  RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
   
   return REF_SUCCESS;
 }
