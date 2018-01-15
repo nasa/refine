@@ -14,121 +14,94 @@ get rid of aux and interp instead
 initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
-remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
 rename ref_mpi_m to ref_mpi_n
 
+refactor ref_geom to remove methods and tests, how is it used, what is needed?
 egads recon
  clean up method
  examine the t values to ensure it is monotonic
  switch to EG_invEvaluateGuess
-   why not working for edges (initialized to right node t?)
+   why is is not working for edges (initialized to right node t?)
+   why is is not working for faces near edges (start from faces interior)
    revert on failure (wrap?)
-   for faces start from interior?
-   or walk edges?
 
-store metric in log form
+always store metric in log form
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
-collapse
- examine triangle MR
-
-smarter adapt parameters
- prevent slivers by setting collapse limits
- tighten limits near convergence
- rigorous way to set these
+robustness and metric conformity
+ histogram history plots
  process complete test
+ smarter adapt parameters
+  adjustable parameters
+  tighten limits near convergence
+  rigorous way to set these
+ split
+  insert optimized node location (uv,xyz) with validity constraint
+ collapse
+  examine triangle MR
+  prevent slivers
+ smooth
+  sort worst to best? sort biggest neighbor difference?
+    for edge, surface, volume sequence
+  ideal tri/tet use log avg m?
+  requeue neighbors with large changes? particulary quality drops
+  minmax optimize uv
+ cavity operator in 2D/3D
+  eliminate short edges and sliver deletion
+  is parallel geom edge split needed?
 
-cavity operator in 2D/3D
- eliminate short edges (cavity)
- sliver deletion
-
+performance
+ time adapt pass elements
+ profile
+ make faster, more efficient
+ don't balloon up in size
+ insert once, right place
+ freeze regions
+  unfreeze when areas need help
+  zero partition cost
+ implemetnt INRIA space filling curve native partitioner
+ 
 layer insert
  cavity recover triangle side
  cavity recover tet face
+ remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
-insert optimized node location (uv,xyz) with validity constraint
-
-ideal tri/tet use log avg m?
-
-histogram history plots
-
-ellipsoid viz 
+viz
+ ellipsoid metric or something cheaper
 
 Marshall
-docs?
+kill tabs
+meshb geom assoc only read and write
 provide dense api (or pack)
  maybe just a copy
  reference to pointers with a free other
  nodes an cell
  cell needs native number and owership
+ node
+  xyz
+  native id
+  part
+ cell
+  nodes in local index that allow to get xyz....
+  native id
+  part
 provide 2D api
-meshb geom assoc only read and write
-kill tabs
-ref cell owner part
-node
- xyz
- native id
- part
-cell
- nodes in local index that allow to get xyz....
- native id
- part
-
-time adapt pass elements
-profile
-make faster, more efficient
-don't balloon up in size
-insert once, right place
 
 make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
 
 create jenkins test
 - make check stack fuzz
+- acceptance: validate normal deviation (make metric big across cylinder)
 
 interp metric on curved surface
  interpolate in u,v,s
 
-validate normal deviation (make metric big across cylinder)
--- insert with ball
--- create an embbeded surface as a debug measure,
-      create norm/tests for problems
-
 ideal tet using principle direction? but faces dissaggree? optimizer?
 
-smooth
- sort worst to best? sort biggest neighbor difference?
-   for edge, surface, volume sequence
- requeue neighbors with large changes? particulary quality drops
- minmax optimize uv
-
-refactor ref_geom to remove methods and tests, how is it used, what is needed?
-
-- refactor twod migrate
-- have graph in migrate
-- space filling curve partition
-- agree on age
-- agree on agglomeration
-
-http://www.cs.sandia.gov/Zoltan/ug_html/ug_query_lb.html#Graph-based%20Functions
-http://www.cs.sandia.gov/Zoltan/ug_html/ug_alg_phg.html
-
-partition boundary artifacts
- - graph based partitioner
-   - provide zoltan callbacks
-   - rebuild zoltan?
-- graph agglomeration to remove artifacts
-   - age
-   - parallel agglomeration to protect age
-
-implemetnt INRIA space filling curve native parition
-
-low priority surface reconstruction when EGADS not available
-- consult white
--- approximate normal as angle weighted, 
-     Ref/borouchaki-villard-laug-george-cmame-2005-surface-reconstruction.pdf
+low priority, surface reconstruction when EGADS not available
 
 ooooooooooooooooo
 
