@@ -331,8 +331,13 @@ static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,
 
   RSS( ref_cell_list_with2( ref_cell, node0, node1,
 			    max_cell, &ncell, cell_list ), "next" );
-  if ( ncell == 1 )
-    THROW("bary update hit boundary");
+  if ( REF_EMPTY == cell_list[0] )
+    THROW("bary update missing first");
+  if ( REF_EMPTY == cell_list[1] )
+    { /* hit boundary */
+      *guess = REF_EMPTY;
+      return REF_SUCCESS;
+    }
 
   if ( *guess == cell_list[0] )
     {
@@ -376,6 +381,38 @@ REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_exhaustive_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
+					      REF_INT *tri, REF_DBL *bary )
+{
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT guess, best_guess;
+  REF_DBL best_bary, min_bary;
+ 
+  best_guess = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_cell_valid_cell( ref_cell, guess)
+    {
+      RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
+      RXS( ref_node_bary3( ref_node, nodes, xyz, bary ), REF_DIV_ZERO, "bary");
+      min_bary = MIN( MIN(bary[0],bary[1]),bary[2] );
+      if ( REF_EMPTY == best_guess || min_bary > best_bary )
+	{
+	  best_guess = guess;
+	  best_bary = min_bary;
+	}
+    }
+  
+  RUS( REF_EMPTY, best_guess, "failed to find cell");
+
+  *tri = best_guess;
+  RSS( ref_cell_nodes( ref_cell, best_guess, nodes), "cell" );
+  RSS( ref_node_bary4( ref_node, nodes, xyz, bary ), "bary");
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
                                   REF_INT *tri, REF_DBL *bary )
 {
@@ -401,6 +438,13 @@ REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 
   for ( step=0; step < limit; step++)
     {
+      if ( !ref_cell_valid(ref_cell,guess) )
+	{
+	  RSS( ref_grid_exhaustive_enclosing_tri( ref_grid, xyz,
+						  tri, bary ), "enclose");
+	  return REF_SUCCESS;
+	}
+
       RSS( ref_cell_nodes( ref_cell, guess, nodes), "cell" );
       RSS( ref_node_bary3( ref_node, nodes, xyz, bary ), "bary");
 
@@ -538,7 +582,7 @@ REF_STATUS ref_grid_enclosing_tet( REF_GRID ref_grid, REF_DBL *xyz,
 
   for ( step=0; step < limit; step++)
     {
-      /* exhastive serach if cell is invalid */
+      /* exhaustive search if cell is invalid */
       if ( !ref_cell_valid(ref_cell,guess) )
 	{
 	  RSS( ref_grid_exhaustive_enclosing_tet( ref_grid, xyz,
