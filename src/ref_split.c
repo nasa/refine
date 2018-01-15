@@ -544,6 +544,19 @@ REF_STATUS ref_split_edge_quality( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_split_edge_twod_mixed( REF_GRID ref_grid, 
+					     REF_INT node0, REF_INT node1,
+					     REF_BOOL *allowed )
+{
+  REF_BOOL hex_side;
+
+  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),"hex");
+
+  *allowed = ( !hex_side );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -571,6 +584,12 @@ REF_STATUS ref_split_twod_pass( REF_GRID ref_grid )
 			       ref_edge_e2n( ref_edge, 1, edge ),
 			       &active ), "act" );
       if ( !active ) continue;
+
+      RSS( ref_split_edge_twod_mixed( ref_grid, 
+				      ref_edge_e2n( ref_edge, 0, edge ),
+				      ref_edge_e2n( ref_edge, 1, edge ),
+				      &allowed ), "act" );
+      if ( !allowed ) continue;
 
       RSS( ref_node_ratio( ref_node, 
 			   ref_edge_e2n( ref_edge, 0, edge ),
