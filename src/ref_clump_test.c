@@ -69,7 +69,7 @@ int main( int argc, char *argv[] )
 
       RSS( ref_swap_pass( ref_grid ), "flip traige" );
 
-      RSS( ref_clump_stuck_edges( ref_grid, 0.5 ), "stuck edge" );
+      RSS( ref_clump_short_edges( ref_grid, 0.5 ), "stuck edge" );
       RSS( ref_export_tec_surf( ref_grid, "clump_surf.tec" ), "surf" );
       RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
 					       REF_TRUE ), "gather on" );      

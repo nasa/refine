@@ -300,8 +300,8 @@ int main( int argc, char *argv[] )
     }
   if ( output_clumps && !ref_grid_twod(ref_grid) )
     {
-      RSS(ref_clump_stuck_edges( ref_grid, 0.5 ), "clump" );
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump stuck");
+      RSS(ref_clump_short_edges( ref_grid, 0.5 ), "clump" );
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump short");
     }
   if ( debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi) )
     {

@@ -367,7 +367,7 @@ REF_STATUS ref_clump_tri_around( REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
+REF_STATUS ref_clump_short_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -385,7 +385,7 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
     {
       if (ntarget >= 100)
 	{
-	  printf("over 100 stuck edges, giving up\n");
+	  printf("over 100 short edges, giving up\n");
 	  break;
 	}
       node0 = ref_edge_e2n( ref_edge, 0, edge );
@@ -405,7 +405,7 @@ REF_STATUS ref_clump_stuck_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_clump_stuck_edges_twod( REF_GRID ref_grid )
+REF_STATUS ref_clump_short_edges_twod( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
