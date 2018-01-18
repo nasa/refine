@@ -57,7 +57,9 @@ int main( int argc, char *argv[] )
       REF_MPI ref_mpi;
       REF_GRID ref_grid;
       RSS( ref_mpi_create( &ref_mpi ), "create" );
+      ref_mpi_stopwatch_start( ref_mpi );
       RSS( ref_import_by_extension( &ref_grid, ref_mpi, argv[1] ), "import" );
+       ref_mpi_stopwatch_stop( ref_mpi, "import");
       if ( 2 < argc )
 	{
 	  RSS(ref_part_metric( ref_grid_node(ref_grid), argv[2] ), "part m");
@@ -66,14 +68,11 @@ int main( int argc, char *argv[] )
 	{
 	  RSS(ref_metric_unit_node( ref_grid_node(ref_grid) ), "unit m");
 	}
-
-      RSS( ref_swap_pass( ref_grid ), "flip traige" );
-
-      RSS( ref_clump_short_edges( ref_grid, 0.5 ), "stuck edge" );
+      ref_mpi_stopwatch_stop( ref_mpi, "metric");
+      RSS( ref_clump_long_edges( ref_grid, 1.0 ), "long edge" );
       RSS( ref_export_tec_surf( ref_grid, "clump_surf.tec" ), "surf" );
-      RSS( ref_gather_tec_movie_record_button( ref_grid_gather(ref_grid),
-					       REF_TRUE ), "gather on" );      
-      RSS( ref_gather_tec_movie_frame( ref_grid, "clump" ), "gather" );      
+      ref_mpi_stopwatch_stop( ref_mpi, "output");
+      
       RSS( ref_grid_free(ref_grid),"free");
       RSS( ref_mpi_free( ref_mpi ), "free" );
     }

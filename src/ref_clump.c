@@ -450,6 +450,45 @@ REF_STATUS ref_clump_short_edges_twod( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_clump_long_edges( REF_GRID ref_grid, REF_DBL ratio_tol )
+{
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_INT ntarget;
+  REF_INT node0, node1;
+  REF_INT edge;
+  REF_DBL edge_ratio;
+
+  char filename[1024];
+
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
+
+  ntarget = 0;
+  for (edge = 0; edge<ref_edge_n(ref_edge); edge++)
+    {
+      if (ntarget >= 100)
+	{
+	  printf("over 100 short edges, giving up\n");
+	  break;
+	}
+      node0 = ref_edge_e2n( ref_edge, 0, edge );
+      node1 = ref_edge_e2n( ref_edge, 1, edge );
+      RSS( ref_node_ratio( ref_node, node0, node1,
+                           &edge_ratio ), "ratio");
+      if ( edge_ratio >
+	   ratio_tol*ref_grid_adapt(ref_grid,collapse_ratio_limit ) )
+	{
+	  sprintf(filename,"clump%d.t",ntarget);
+	  RSS(ref_clump_between(ref_grid, node0, node1, filename ), "dump");
+	  ntarget++;
+	}
+    }
+
+  RSS( ref_edge_free( ref_edge ), "free edges" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_clump_tet_quality( REF_GRID ref_grid, REF_DBL min_quality,
                                   const char *filename )
 {
