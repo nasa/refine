@@ -74,7 +74,7 @@ viz
 
 Marshall
 kill tabs
-meshb geom assoc only read and write
+meshb geom assoc only read (write full for now)
 provide dense api (or pack)
  maybe just a copy
  reference to pointers with a free other
