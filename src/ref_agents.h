@@ -113,4 +113,6 @@ REF_STATUS ref_agents_delete( REF_AGENTS ref_agents, REF_INT node );
 
 REF_STATUS ref_agents_migrate( REF_AGENTS ref_agents );
 
+END_C_DECLORATION
+
 #endif /* REF_AGENTS_H */
