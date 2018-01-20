@@ -1,8 +1,10 @@
 
-unify efficient plotting diagnostics in parallel
+unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
- edge > 4
+ edge > 3
  clump degree > 50
+
+ref_metric_test --lp should optionally provide intermediate steps
 
 measure gradation and see if there is a connection to histogram convergence
 
