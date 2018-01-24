@@ -4,15 +4,19 @@ set -x
 
 ./bootstrap
 
-zoltan_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-4.9.2/zoltan-3.83-xvmrwrify56h4ceh4oacyns2t36wlx25"
+zoltan_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-7.2.0/zoltan-3.83-xxyq2a3qxwtcrdt3otmiflhgqaz7gial"
 egads_path="/Users/mpark/esp/EngSketchPad"
+gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
+
+# set DYLD_LIBRARY_PATH for libzoltan.dylib
 
 mkdir -p strict
 ( cd strict && \
     ../configure \
     --prefix=`pwd` \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
+    CFLAGS="${gccflags}" \
+    CC=gcc-7 \
+    FC=gfortran-7 \
     ) \
     || exit
 
@@ -21,8 +25,9 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
+    CFLAGS="${gccflags}" \
+    CC=gcc-7 \
+    FC=gfortran-7 \
     ) \
     || exit
 
@@ -34,6 +39,6 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     CC=mpicc \
     FC=mpif90 \
-    CFLAGS='-DHAVE_MPI -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wno-long-long' \
+    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
     ) \
     || exit
