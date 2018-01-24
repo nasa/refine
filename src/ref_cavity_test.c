@@ -399,40 +399,41 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* visible twod */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_CAVITY ref_cavity;
-    REF_INT global, node, face;
-    REF_BOOL visible;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* visible twod */
+      REF_GRID ref_grid;
+      REF_NODE ref_node;
+      REF_CAVITY ref_cavity;
+      REF_INT global, node, face;
+      REF_BOOL visible;
 
-    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
-    ref_node = ref_grid_node(ref_grid);
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
+      ref_node = ref_grid_node(ref_grid);
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
-    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
 
-    RSS( ref_node_next_global( ref_node, &global ), "next global");
-    RSS( ref_node_add( ref_node, global, &node ), "new node");
-    RSS(ref_metric_unit_node( ref_node ), "unit metric");
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &node ), "new node");
+      RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
-    ref_node_xyz(ref_node,0,node) = 0.2;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 0.3;
-    face = 0;
-    RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
-    REIS( REF_TRUE, visible, "vis" );
+      ref_node_xyz(ref_node,0,node) = 0.2;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 0.3;
+      face = 0;
+      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
+      REIS( REF_TRUE, visible, "vis" );
 
-    ref_node_xyz(ref_node,0,node) = 0.6;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 0.6;
-    face = 0;
-    RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
-    REIS( REF_FALSE, visible, "vis" );
+      ref_node_xyz(ref_node,0,node) = 0.6;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 0.6;
+      face = 0;
+      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
+      REIS( REF_FALSE, visible, "vis" );
 
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   { /* gobble */
     REF_GRID ref_grid;
