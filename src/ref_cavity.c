@@ -105,7 +105,7 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
   if ( REF_EMPTY != face )
     {
       if ( reversed )
-        {
+        { /* two faces with opposite orientation destroy each other */
           ref_cavity_f2n(ref_cavity,0,face) = REF_EMPTY;
           ref_cavity_f2n(ref_cavity,1,face) = ref_cavity_blank(ref_cavity);
           ref_cavity_blank(ref_cavity) = face;
@@ -113,11 +113,12 @@ REF_STATUS ref_cavity_insert( REF_CAVITY ref_cavity, REF_INT *nodes )
           return REF_SUCCESS;
         }
       else
-        {
+        { /* can't happen, added same face twice */
           return REF_INVALID;
         }
     }
 
+  /* if I need to grow my array of faces */
   if ( REF_EMPTY == ref_cavity_blank(ref_cavity) )
     {
       orig = ref_cavity_max(ref_cavity);
