@@ -103,6 +103,7 @@ mpiexec -np 2 ./ref_metric_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_mpi_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_node_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_part_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_cavity_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
@@ -111,6 +112,7 @@ mpiexec -np 8 ./ref_metric_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_mpi_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_node_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_part_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_cavity_test >> $LOG 2>&1
 trap - EXIT
 
 date
