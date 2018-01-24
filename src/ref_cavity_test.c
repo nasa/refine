@@ -341,19 +341,21 @@ int main( int argc, char *argv[] )
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
-    RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
+    if ( ref_cell_valid(ref_grid_tet(ref_grid),0)  )
+      {
+        RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
 
-    RSS( ref_node_next_global( ref_node, &global ), "next global");
-    RSS( ref_node_add( ref_node, global, &node ), "new node");
-    ref_node_xyz(ref_node,0,node) = 0.1;
-    ref_node_xyz(ref_node,1,node) = 0.2;
-    ref_node_xyz(ref_node,2,node) = 0.3;
+        RSS( ref_node_next_global( ref_node, &global ), "next global");
+        RSS( ref_node_add( ref_node, global, &node ), "new node");
+        ref_node_xyz(ref_node,0,node) = 0.1;
+        ref_node_xyz(ref_node,1,node) = 0.2;
+        ref_node_xyz(ref_node,2,node) = 0.3;
 
-    RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
+        RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
 
-    REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
-    REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "nodes" );
-
+        REIS( 5, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+        REIS( 4, ref_cell_n(ref_grid_tet(ref_grid)), "nodes" );
+      }
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
   }
@@ -369,24 +371,29 @@ int main( int argc, char *argv[] )
     ref_node = ref_grid_node(ref_grid);
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
-    RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
+    if ( ref_cell_valid(ref_grid_tet(ref_grid),0)  )
+      {
+        RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
 
-    RSS( ref_node_next_global( ref_node, &global ), "next global");
-    RSS( ref_node_add( ref_node, global, &node ), "new node");
+        RSS( ref_node_next_global( ref_node, &global ), "next global");
+        RSS( ref_node_add( ref_node, global, &node ), "new node");
 
-    ref_node_xyz(ref_node,0,node) = 0.1;
-    ref_node_xyz(ref_node,1,node) = 0.2;
-    ref_node_xyz(ref_node,2,node) = 0.3;
-    face = 0;
-    RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
-    REIS( REF_TRUE, visible, "vis" );
+        ref_node_xyz(ref_node,0,node) = 0.1;
+        ref_node_xyz(ref_node,1,node) = 0.2;
+        ref_node_xyz(ref_node,2,node) = 0.3;
+        face = 0;
+        RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
+                               &visible ),"free");
+        REIS( REF_TRUE, visible, "vis" );
 
-    ref_node_xyz(ref_node,0,node) = 1.0;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 1.0;
-    face = 0;
-    RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
-    REIS( REF_FALSE, visible, "vis" );
+        ref_node_xyz(ref_node,0,node) = 1.0;
+        ref_node_xyz(ref_node,1,node) = 1.0;
+        ref_node_xyz(ref_node,2,node) = 1.0;
+        face = 0;
+        RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
+                               &visible ),"free");
+        REIS( REF_FALSE, visible, "vis" );
+      }
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
