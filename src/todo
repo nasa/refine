@@ -1,4 +1,18 @@
 
+cavity operator parallel
+ enlarge needs separate return codes of boundary and parallel
+ create separate list of para edges on and off geom
+ subdiv off geom edges
+ with an array of cavity made from para edge on geom
+   enlarge returns complete, same part request, or boundary
+   replace completed cavities
+   deactive cavity constrained by boundaries
+   new part empty
+   apply cavity requests
+   max ghost
+   deactivate collisions
+   migrate
+
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -53,7 +67,6 @@ robustness and metric conformity
   minmax optimize uv
  cavity operator in 2D/3D
   eliminate short edges and sliver deletion
-  is parallel geom edge split needed?
 
 performance
  time adapt pass elements
