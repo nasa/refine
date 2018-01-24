@@ -570,25 +570,26 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  { /* enlarge shrink threed face */
-    REF_GRID ref_grid;
-    REF_CAVITY ref_cavity;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* enlarge shrink threed face */
+      REF_GRID ref_grid;
+      REF_CAVITY ref_cavity;
 
-    RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "brick" );
+      RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "brick" );
 
-    RSS(ref_cavity_create(&ref_cavity,3),"create");
-    RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first tri");
-    REIS( 4, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),"enl face 1");
-    REIS( 6, ref_cavity_n(ref_cavity), "n" );
-    REIS( 2, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    RSS(ref_cavity_shrink_face(ref_cavity,ref_grid,5),"insert first tri");
-    REIS( 4, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS( ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_cavity_create(&ref_cavity,3),"create");
+      RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first tri");
+      REIS( 4, ref_cavity_n(ref_cavity), "n" );
+      REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      RSS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),"enl face 1");
+      REIS( 6, ref_cavity_n(ref_cavity), "n" );
+      REIS( 2, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      RSS(ref_cavity_shrink_face(ref_cavity,ref_grid,5),"insert first tri");
+      REIS( 4, ref_cavity_n(ref_cavity), "n" );
+      REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      RSS(ref_cavity_free(ref_cavity),"free");
+      RSS( ref_grid_free(ref_grid),"free");
+    }
 
   { /* small edge */
     REF_GRID ref_grid;
@@ -620,10 +621,13 @@ int main( int argc, char *argv[] )
     RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
-    RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
-    REIS( 4, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+        RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
+        REIS( 4, ref_cavity_n(ref_cavity), "n" );
+        REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      }
+
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
   }
@@ -635,9 +639,12 @@ int main( int argc, char *argv[] )
     RSS( ref_fixture_tet2_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
-    RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
-    REIS( 6, ref_cavity_n(ref_cavity), "n" );
-    REIS( 2, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+        RSS(ref_cavity_add_edge(ref_cavity,ref_grid,1,2),"insert edge");
+        REIS( 6, ref_cavity_n(ref_cavity), "n" );
+        REIS( 2, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      }
     
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
@@ -694,12 +701,15 @@ int main( int argc, char *argv[] )
     RSS( ref_fixture_tet_grid( &ref_grid, ref_mpi ), "pri" );
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
-    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,0),"insert ball");
+    if ( !ref_mpi_para(ref_mpi) )
+      {
+        RSS(ref_cavity_add_ball(ref_cavity,ref_grid,0),"insert ball");
 
-    REIS( 4, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+        REIS( 4, ref_cavity_n(ref_cavity), "n" );
+        REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
     
-    RSS( ref_cavity_replace_tet(ref_cavity, ref_grid, 0 ), "replace" );
+        RSS( ref_cavity_replace_tet(ref_cavity, ref_grid, 0 ), "replace" );
+      }
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
