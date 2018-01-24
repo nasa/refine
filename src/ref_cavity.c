@@ -220,6 +220,8 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
   REF_INT face_nodes[4];
   REF_INT already_have_it;
 
+  RAS( ref_cell_valid(ref_grid_tet(ref_grid),tet), "invalid tet" );
+
   RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet, &already_have_it ),
        "have tet?");
   if ( already_have_it )
