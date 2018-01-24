@@ -288,11 +288,14 @@ int main( int argc, char *argv[] )
 
     RSS(ref_cavity_create(&ref_cavity,3),"create");
 
-    RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
+    if ( ref_cell_valid(ref_grid_tet(ref_grid),0) )
+      { /* for parallel, skip test for part with no tets */
+        RSS(ref_cavity_add_tet(ref_cavity,ref_grid,0),"insert first");
 
-    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
-    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
-    REIS(REF_FALSE,reversed,"not rev");
+        nodes[0] = 0; nodes[1] = 1; nodes[2] = 2;
+        RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
+        REIS(REF_FALSE,reversed,"not rev");
+      }
 
     RSS(ref_cavity_free(ref_cavity),"free");
     RSS(ref_grid_free(ref_grid),"free");
