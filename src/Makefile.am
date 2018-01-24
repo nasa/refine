@@ -133,7 +133,7 @@ ref_axi_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_cavity_test
 noinst_PROGRAMS += ref_cavity_test
 ref_cavity_test_SOURCES = ref_cavity_test.c
-ref_cavity_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_cavity_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
