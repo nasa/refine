@@ -227,53 +227,55 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* add triangle adds faces*/
-    REF_GRID ref_grid;
-    REF_CAVITY ref_cavity;
-    REF_INT nodes[2];
-    REF_INT face;
-    REF_BOOL reversed;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* add triangle adds faces*/
+      REF_GRID ref_grid;
+      REF_CAVITY ref_cavity;
+      REF_INT nodes[2];
+      REF_INT face;
+      REF_BOOL reversed;
 
-    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
 
-    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
+      RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
 
-    nodes[0] = 1; nodes[1] = 2;
-    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
-    REIS(REF_FALSE,reversed,"not rev");
+      nodes[0] = 1; nodes[1] = 2;
+      RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 0");
+      REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0] = 2; nodes[1] = 0;
-    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 1");
-    REIS(REF_FALSE,reversed,"not rev");
+      nodes[0] = 2; nodes[1] = 0;
+      RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 1");
+      REIS(REF_FALSE,reversed,"not rev");
 
-    nodes[0] = 1; nodes[1] = 2;
-    RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 2");
-    REIS(REF_FALSE,reversed,"not rev");
+      nodes[0] = 1; nodes[1] = 2;
+      RSS(ref_cavity_find(ref_cavity,nodes,&face,&reversed),"find 2");
+      REIS(REF_FALSE,reversed,"not rev");
 
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
-  { /* add rm triangle counts */
-    REF_GRID ref_grid;
-    REF_CAVITY ref_cavity;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* add rm triangle counts */
+      REF_GRID ref_grid;
+      REF_CAVITY ref_cavity;
+      
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
 
-    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
+      REIS( 3, ref_cavity_n(ref_cavity), "n" );
+      REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
+      RSS(ref_cavity_rm_tri(ref_cavity,ref_grid,1),"insert first");
+      REIS( 0, ref_cavity_n(ref_cavity), "n" );
+      REIS( 0, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
 
-    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,1),"insert first");
-    REIS( 3, ref_cavity_n(ref_cavity), "n" );
-    REIS( 1, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-    RSS(ref_cavity_rm_tri(ref_cavity,ref_grid,1),"insert first");
-    REIS( 0, ref_cavity_n(ref_cavity), "n" );
-    REIS( 0, ref_list_n(ref_cavity_list(ref_cavity)), "l" );
-
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   { /* add tet */
     REF_GRID ref_grid;
@@ -296,34 +298,35 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* insert tri node */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_CAVITY ref_cavity;
-    REF_INT global, node, clone;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* insert tri node */
+      REF_GRID ref_grid;
+      REF_NODE ref_node;
+      REF_CAVITY ref_cavity;
+      REF_INT global, node, clone;
 
-    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
-    ref_node = ref_grid_node(ref_grid);
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
+      ref_node = ref_grid_node(ref_grid);
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
-    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
 
-    RSS( ref_node_next_global( ref_node, &global ), "next global");
-    RSS( ref_node_add( ref_node, global, &node ), "new node");
-    ref_node_xyz(ref_node,0,node) = 0.2;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 0.3;
-    RSS( ref_node_twod_clone( ref_node, node, &clone ), "new node");
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &node ), "new node");
+      ref_node_xyz(ref_node,0,node) = 0.2;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 0.3;
+      RSS( ref_node_twod_clone( ref_node, node, &clone ), "new node");
 
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
+      RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
 
-    REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
-    REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
-    REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
+      REIS( 8, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+      REIS( 6, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
+      REIS( 3, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
 
-    RSS(ref_cavity_free(ref_cavity),"free");
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   { /* insert tet node */
     REF_GRID ref_grid;
@@ -490,52 +493,53 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  { /* insert and remove tri node */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_CAVITY ref_cavity;
-    REF_INT global, node, clone, opp;
+  if ( !ref_mpi_para(ref_mpi) )
+    { /* insert and remove tri node */
+      REF_GRID ref_grid;
+      REF_NODE ref_node;
+      REF_CAVITY ref_cavity;
+      REF_INT global, node, clone, opp;
 
-    RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
-    ref_node = ref_grid_node(ref_grid);
+      RSS( ref_fixture_pri_grid( &ref_grid, ref_mpi ), "pri" );
+      ref_node = ref_grid_node(ref_grid);
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
-    RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_add_tri(ref_cavity,ref_grid,0),"insert first");
 
-    RSS( ref_node_next_global( ref_node, &global ), "next global");
-    RSS( ref_node_add( ref_node, global, &node ), "new node");
-    ref_node_xyz(ref_node,0,node) = 0.1;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 0.1;
-    RSS( ref_node_twod_clone( ref_node, node, &clone ), "new node");
-    RSS(ref_metric_unit_node( ref_node ), "unit metric");
+      RSS( ref_node_next_global( ref_node, &global ), "next global");
+      RSS( ref_node_add( ref_node, global, &node ), "new node");
+      ref_node_xyz(ref_node,0,node) = 0.1;
+      ref_node_xyz(ref_node,1,node) = 1.0;
+      ref_node_xyz(ref_node,2,node) = 0.1;
+      RSS( ref_node_twod_clone( ref_node, node, &clone ), "new node");
+      RSS(ref_metric_unit_node( ref_node ), "unit metric");
 
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
-    RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone ),"free");
+      RSS(ref_cavity_free(ref_cavity),"free");
 
-    RSS(ref_cavity_create(&ref_cavity,2),"create");
+      RSS(ref_cavity_create(&ref_cavity,2),"create");
 
-    node = 0;
-    RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
+      node = 0;
+      RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opp), "opp");
 
-    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
+      RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
 
-    ref_node_xyz(ref_node,0,node) = 0.3;
-    ref_node_xyz(ref_node,0,opp ) = 0.3;
-    ref_node_xyz(ref_node,2,node) = 0.3;
-    ref_node_xyz(ref_node,2,opp ) = 0.3;
+      ref_node_xyz(ref_node,0,node) = 0.3;
+      ref_node_xyz(ref_node,0,opp ) = 0.3;
+      ref_node_xyz(ref_node,2,node) = 0.3;
+      ref_node_xyz(ref_node,2,opp ) = 0.3;
 
-    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
-    RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
+      RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+      RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
-    RSS(ref_cavity_free(ref_cavity),"free");
+      RSS(ref_cavity_free(ref_cavity),"free");
 
-    REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
-    REIS( 2, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
-    REIS( 1, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
+      REIS( 6, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
+      REIS( 2, ref_cell_n(ref_grid_tri(ref_grid)), "nodes" );
+      REIS( 1, ref_cell_n(ref_grid_pri(ref_grid)), "nodes" );
 
-    RSS(ref_grid_free(ref_grid),"free");
-  }
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   { /* enlarge shrink twod face */
     REF_GRID ref_grid;

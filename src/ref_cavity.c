@@ -307,6 +307,8 @@ REF_STATUS ref_cavity_add_tri( REF_CAVITY ref_cavity,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face[2];
 
+  RUS( REF_EMPTY, tri, "index marked empty" ); 
+
   RSS( ref_list_push( ref_cavity_list(ref_cavity), tri ),
        "save tri");
 
