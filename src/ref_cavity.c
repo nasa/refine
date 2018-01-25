@@ -891,51 +891,6 @@ REF_STATUS ref_cavity_shrink_face( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_tet_quality( REF_GRID ref_grid )
-{
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_CAVITY ref_cavity;
-  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL min_quality = 0.10;
-  REF_DBL quality;
-  REF_INT count;
-  char filename[1024];
-  REF_BOOL improved;
-  REF_BOOL debug = REF_FALSE;
-  count = 0;
-  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
-  {
-    node = nodes[0];
-    RSS( ref_node_tet_quality( ref_node, nodes, &quality ), "qual");
-    if ( quality < min_quality )
-      {
-        snprintf( filename, 1024, "cavity%04d.tec", count ); count++;
-        RSS(ref_cavity_create(&ref_cavity,3),"create");
-        RSS(ref_cavity_add_tet(ref_cavity,ref_grid,cell),"insert first");
-        if (debug)
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
-
-        RXS(ref_cavity_enlarge_face(ref_cavity,ref_grid,0),
-            REF_INVALID,"remove problem");
-        if (debug)
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
-
-        RXS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),
-            REF_INVALID,"enlarge viz");
-        RSS(ref_cavity_change(ref_cavity, ref_grid, node,
-                              &improved), "change" );
-        if (debug)
-          RSS(ref_cavity_tec(ref_cavity, ref_grid, node, filename ),"tec");
-        if (REF_FALSE && improved)
-          RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"replace");
-        RSS(ref_cavity_free(ref_cavity),"free");
-      }
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_twod_pass( REF_GRID ref_grid )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);

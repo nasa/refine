@@ -249,14 +249,6 @@ REF_STATUS ref_adapt_threed_pass( REF_GRID ref_grid )
   if ( ref_grid_adapt(ref_grid,instrument) )
     ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "adapt spl");
 
-  if ( REF_FALSE )
-    {
-      RSS( ref_cavity_tet_quality( ref_grid ), "split pass");
-      ref_gather_blocking_frame( ref_grid, "split" );
-      if (ngeom>0)
-        RSS( ref_geom_verify_topo( ref_grid ), "cavity geom typo check");
-    }
-
   RSS( ref_smooth_threed_pass( ref_grid ), "smooth pass");
   ref_gather_blocking_frame( ref_grid, "smooth" );
   if (ngeom>0)

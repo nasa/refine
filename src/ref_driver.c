@@ -303,16 +303,6 @@ int main( int argc, char *argv[] )
       RSS(ref_clump_short_edges( ref_grid, 0.5 ), "clump" );
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump short");
     }
-  if ( debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi) )
-    {
-      RSS(ref_cavity_tet_quality( ref_grid ),
-          "clump" );
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "cavity tet quality");
-      snprintf( output_filename, 1024, "%s_tet_qual.tec", output_project );
-      RSS(ref_clump_tet_quality( ref_grid, 0.01, output_filename ),
-          "clump" );
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "clump tet quality");
-    }
 
   if ( NULL != background_grid )
     RSS(ref_grid_free( background_grid ), "free");
