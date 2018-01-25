@@ -42,6 +42,7 @@
 
 REF_STATUS ref_split_pass( REF_GRID ref_grid )
 {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *ratio;
@@ -50,17 +51,21 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_BOOL allowed, allowed_quality, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
-  REF_BOOL subdiv_para_edges;
+  REF_BOOL span_parts;
   REF_LIST para_no_geom = NULL;
+  REF_LIST para_cavity = NULL;
   REF_SUBDIV ref_subdiv = NULL;
   
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
 
-  subdiv_para_edges = ref_mpi_para(ref_grid_mpi(ref_grid));
-  
-  if ( subdiv_para_edges )
-    RSS( ref_list_create( &para_no_geom ), "list for stuck edges" );
-  
+  span_parts = ref_mpi_para(ref_grid_mpi(ref_grid));
+
+  if ( span_parts )
+    {
+      RSS( ref_list_create( &para_no_geom ), "list for stuck edges" );
+      RSS( ref_list_create( &para_cavity ), "list for stuck cavity" );
+    }
+
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
   ref_malloc( ratio, ref_edge_n(ref_edge), REF_DBL );
@@ -119,8 +124,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				   new_node,
 				   &allowed_quality ), "edge qual" );
       valid_cavity = REF_FALSE;
-      if ( !allowed_quality && geom_support &&
-	   !ref_mpi_para(ref_grid_mpi(ref_grid)) )
+      if ( !allowed_quality && geom_support )
 	{
 	  RSS( ref_cavity_create( &ref_cavity, 3 ), "cav create" );
 	  RSS( ref_cavity_add_edge( ref_cavity, ref_grid,
@@ -135,9 +139,13 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
                                            new_node ), "enlarge" );
 	  if ( REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity) )
 	    {
-	      RSS( ref_cavity_local( ref_cavity, ref_grid,
-				     &allowed_local ), "cav local");
-	      valid_cavity = allowed_local;	      
+	      valid_cavity = REF_TRUE;	      
+	    }
+	  if ( REF_CAVITY_PARTITION_CONSTRAINED == 
+               ref_cavity_state(ref_cavity) )
+	    {
+              if (span_parts) 
+                RSS( ref_list_push( para_cavity, edge ), "push");
 	    }
 	  RSS( ref_cavity_free( ref_cavity ), "cav free" );
 	  ref_cavity = (REF_CAVITY)NULL;
@@ -156,7 +164,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      &allowed_local ), "local tet" );
       if ( !allowed_local )
 	{
-	  if ( subdiv_para_edges )
+	  if ( span_parts )
 	    {
 	      RSS( ref_list_push( para_no_geom, edge ), "push");
 	    }
@@ -194,14 +202,13 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 
       RSS( ref_smooth_threed_post_split( ref_grid, new_node ),
 	   "smooth after split" );
-      
     }
 	 
   ref_free( edges );
   ref_free( order );
   ref_free( ratio );
 
-  if ( subdiv_para_edges )
+  if ( span_parts )
     {
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
       ref_subdiv->instrument = REF_TRUE;
@@ -222,7 +229,16 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS(ref_subdiv_split(ref_subdiv),"split");
       RSS(ref_subdiv_free(ref_subdiv),"free");
 
+      {
+        REF_INT n_cavity;
+        n_cavity = ref_list_n(para_cavity);
+        RSS( ref_mpi_allsum( ref_mpi, &n_cavity, 1, REF_INT_TYPE ), "cavs");
+        if (ref_mpi_once(ref_mpi))
+          printf("cavities with part constraints %d\n",n_cavity);
+      }
+
       ref_list_free( para_no_geom );
+      ref_list_free( para_cavity );
     }
 	 
   ref_edge_free( ref_edge );
