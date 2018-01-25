@@ -24,6 +24,12 @@
 BEGIN_C_DECLORATION
 typedef struct REF_CAVITY_STRUCT REF_CAVITY_STRUCT;
 typedef REF_CAVITY_STRUCT * REF_CAVITY;
+typedef enum REF_CAVITY_STATES {
+  /* 0 */ REF_CAVITY_UNKNOWN,
+  /* 1 */ REF_CAVITY_VISIBLE,
+  /* 2 */ REF_CAVITY_BOUNDARY_CONSTRAINED,
+  /* 3 */ REF_CAVITY_PARTITION_CONSTRAINED,
+  /* 4 */ REF_CAVITY_STATUS_LAST } REF_CAVITY_STATE;
 END_C_DECLORATION
 
 #include "ref_grid.h"
@@ -32,6 +38,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_CAVITY_STRUCT {
+  REF_CAVITY_STATE state;
   REF_INT node_per;
   REF_INT n;
   REF_INT max;
@@ -47,6 +54,7 @@ REF_STATUS ref_cavity_inspect( REF_CAVITY ref_cavity );
 
 #define ref_cavity_n( ref_cavity ) (( ref_cavity )->n )
 #define ref_cavity_node_per( ref_cavity ) (( ref_cavity )->node_per )
+#define ref_cavity_state( ref_cavity ) (( ref_cavity )->state )
 
 #define ref_cavity_f2n(ref_cavity,node,cavity) \
   (( ref_cavity )->f2n[( node )+ref_cavity_node_per(ref_cavity)*( cavity )] )

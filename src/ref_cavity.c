@@ -40,8 +40,10 @@ REF_STATUS ref_cavity_create( REF_CAVITY *ref_cavity_ptr, REF_INT node_per )
   ref_malloc( *ref_cavity_ptr, 1, REF_CAVITY_STRUCT );
   ref_cavity = ( *ref_cavity_ptr );
 
-  ref_cavity_n(ref_cavity) = 0;
+  ref_cavity_state( ref_cavity ) = REF_CAVITY_UNKNOWN;
   ref_cavity_node_per(ref_cavity) = node_per;
+
+  ref_cavity_n(ref_cavity) = 0;
 
   ref_cavity_max(ref_cavity) = 10;
 
@@ -611,6 +613,9 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   REF_BOOL keep_growing;
   REF_STATUS status;
 
+  REIS( REF_CAVITY_UNKNOWN, ref_cavity_state( ref_cavity ), 
+        "state already known" );
+
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge start %d tets %d faces\n",
 	   ref_list_n(ref_cavity_list(ref_cavity)),
@@ -660,6 +665,8 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   if (ref_cavity_debug(ref_cavity))
     RSS( ref_cavity_topo( ref_cavity, ref_grid, node ), "topo");
     
+  ref_cavity_state( ref_cavity ) = REF_CAVITY_VISIBLE;
+
   return REF_SUCCESS;
 }
 
