@@ -668,8 +668,6 @@ int main( int argc, char *argv[] )
     node = 39;
     ref_node_xyz(ref_node,0,node) = 0.5;
     RSS(ref_cavity_create(&ref_cavity,3),"create");
-    if ( 2 == argc )
-      ref_cavity_debug(ref_cavity) = REF_TRUE;
     RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
     REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
@@ -679,9 +677,6 @@ int main( int argc, char *argv[] )
 
     RAS( nnode>ref_node_n(ref_node), "node count did not decrease" );
     
-    if ( 2 == argc )
-      RSS( ref_export_by_extension( ref_grid, argv[1] ), "export" );
-
     RSS( ref_grid_free(ref_grid),"free");
   }
 
