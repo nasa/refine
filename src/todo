@@ -1,6 +1,6 @@
 
 cavity operator parallel
- enlarge needs separate return codes of boundary and parallel
+ + enlarge needs separate return codes of boundary and parallel
  create separate list of para edges on and off geom
  subdiv off geom edges
  with an array of cavity made from para edge on geom

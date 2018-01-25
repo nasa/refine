@@ -51,7 +51,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_BOOL subdiv_para_edges;
-  REF_LIST ref_list = NULL;
+  REF_LIST para_no_geom = NULL;
   REF_SUBDIV ref_subdiv = NULL;
   
   RAS( !ref_grid_twod(ref_grid), "only 3D" );
@@ -59,7 +59,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   subdiv_para_edges = ref_mpi_para(ref_grid_mpi(ref_grid));
   
   if ( subdiv_para_edges )
-    RSS( ref_list_create( &ref_list ), "list for stuck edges" );
+    RSS( ref_list_create( &para_no_geom ), "list for stuck edges" );
   
   RSS( ref_edge_create( &ref_edge, ref_grid ), "orig edges" );
 
@@ -158,7 +158,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 	{
 	  if ( subdiv_para_edges )
 	    {
-	      RSS( ref_list_push( ref_list, edge ), "push");
+	      RSS( ref_list_push( para_no_geom, edge ), "push");
 	    }
 	  else
 	    {
@@ -205,7 +205,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
     {
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
       ref_subdiv->instrument = REF_TRUE;
-      each_ref_list_item_value( ref_list, i, edge)
+      each_ref_list_item_value( para_no_geom, i, edge)
 	{
 	  RSS( ref_cell_has_side( ref_grid_tet(ref_grid),
 				  ref_edge_e2n( ref_edge, 0, edge ),
@@ -222,7 +222,7 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
       RSS(ref_subdiv_split(ref_subdiv),"split");
       RSS(ref_subdiv_free(ref_subdiv),"free");
 
-      ref_list_free( ref_list );
+      ref_list_free( para_no_geom );
     }
 	 
   ref_edge_free( ref_edge );
