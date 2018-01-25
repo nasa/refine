@@ -107,8 +107,6 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                        REF_GRID ref_grid, REF_INT node );
 REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
                                       REF_GRID ref_grid, REF_INT node );
-REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
-                                    REF_GRID ref_grid, REF_INT node );
 
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face );

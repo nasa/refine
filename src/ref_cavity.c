@@ -708,15 +708,6 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_make_visible( REF_CAVITY ref_cavity,
-                                    REF_GRID ref_grid, REF_INT node )
-{
-  RSB( ref_cavity_shrink_visible(ref_cavity,ref_grid,node),
-       "shrink failed",
-       ref_cavity_tec(ref_cavity,ref_grid,node,"ref_cavity_fail.tec"));
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face )
 {
