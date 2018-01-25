@@ -58,6 +58,7 @@ int main( int argc, char *argv[] )
     REF_CAVITY ref_cavity;
     REIS(REF_NULL, ref_cavity_free(NULL),"dont free NULL");
     RSS(ref_cavity_create(&ref_cavity,2),"create");
+    REIS( REF_CAVITY_UNKNOWN, ref_cavity_state(ref_cavity), "unkn cavity");
     REIS( 0, ref_cavity_n(ref_cavity), "init no cavity");
     REIS( 2, ref_cavity_node_per(ref_cavity), "init per");
     RSS(ref_cavity_free(ref_cavity),"free");
@@ -360,7 +361,7 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  { /* visible tet */
+  { /* visible three node face */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -383,7 +384,7 @@ int main( int argc, char *argv[] )
         ref_node_xyz(ref_node,2,node) = 0.3;
         face = 0;
         RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
-                               &visible ),"free");
+                               &visible ),"viz");
         REIS( REF_TRUE, visible, "vis" );
 
         ref_node_xyz(ref_node,0,node) = 1.0;
@@ -391,7 +392,7 @@ int main( int argc, char *argv[] )
         ref_node_xyz(ref_node,2,node) = 1.0;
         face = 0;
         RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
-                               &visible ),"free");
+                               &visible ),"viz");
         REIS( REF_FALSE, visible, "vis" );
       }
 
@@ -400,7 +401,7 @@ int main( int argc, char *argv[] )
   }
 
   if ( !ref_mpi_para(ref_mpi) )
-    { /* visible twod */
+    { /* visible two node face */
       REF_GRID ref_grid;
       REF_NODE ref_node;
       REF_CAVITY ref_cavity;
@@ -421,21 +422,23 @@ int main( int argc, char *argv[] )
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 0.3;
       face = 0;
-      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
+      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
+                             &visible ),"viz");
       REIS( REF_TRUE, visible, "vis" );
 
       ref_node_xyz(ref_node,0,node) = 0.6;
       ref_node_xyz(ref_node,1,node) = 1.0;
       ref_node_xyz(ref_node,2,node) = 0.6;
       face = 0;
-      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible ),"free");
+      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, 
+                             &visible ),"viz");
       REIS( REF_FALSE, visible, "vis" );
 
       RSS(ref_cavity_free(ref_cavity),"free");
       RSS(ref_grid_free(ref_grid),"free");
     }
 
-  { /* gobble */
+  { /* twod gobble */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -457,6 +460,8 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,opp ) = 0.5;
 
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+    REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+          "enlarge not successful" );
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
     REIS( 30, ref_node_n(ref_grid_node(ref_grid)), "nodes" );
@@ -467,7 +472,7 @@ int main( int argc, char *argv[] )
     RSS( ref_grid_free(ref_grid),"free");
   }
 
-  { /* gobble gooble*/
+  { /* twod gobble gooble */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -484,6 +489,8 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+    REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+          "enlarge not successful" );
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
@@ -494,6 +501,8 @@ int main( int argc, char *argv[] )
     ref_node_xyz(ref_node,2,node) = 0.5;
     ref_node_xyz(ref_node,2,opp ) = 0.5;
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+    REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+          "enlarge not successful" );
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
@@ -541,6 +550,8 @@ int main( int argc, char *argv[] )
       ref_node_xyz(ref_node,2,opp ) = 0.3;
 
       RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+      REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+            "enlarge not successful" );
       RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, opp ),"free");
 
       RSS(ref_cavity_free(ref_cavity),"free");
@@ -661,6 +672,8 @@ int main( int argc, char *argv[] )
       ref_cavity_debug(ref_cavity) = REF_TRUE;
     RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
     RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"insert first");
+    REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+          "enlarge not successful" );
     RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, node ),"free");
     RSS(ref_cavity_free(ref_cavity),"free");
 
