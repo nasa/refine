@@ -1,8 +1,10 @@
 
 cavity operator parallel
  + enlarge needs separate return codes of boundary and parallel
- create separate list of para edges on and off geom
- subdiv off geom edges
+ + protect cavity op so it can be used in middle of parts
+ + create separate list of para edges on and off geom
+ + subdiv off geom edges
+ + report para blocked parts
  with an array of cavity made from para edge on geom
    enlarge returns complete, same part request, or boundary
    replace completed cavities
