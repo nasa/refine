@@ -50,7 +50,6 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
   REF_BOOL allowed, allowed_quality, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
-  REF_STATUS status;
   REF_BOOL subdiv_para_edges;
   REF_LIST ref_list = NULL;
   REF_SUBDIV ref_subdiv = NULL;
@@ -132,9 +131,9 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				      ref_edge_e2n( ref_edge, 0, edge ),
 				      ref_edge_e2n( ref_edge, 1, edge ),
 				      new_node ), "cav split" );
-	  status = ref_cavity_enlarge_visible( ref_cavity, ref_grid,
-					       new_node );
-	  if ( REF_SUCCESS == status )
+	  RSS( ref_cavity_enlarge_visible( ref_cavity, ref_grid,
+                                           new_node ), "enlarge" );
+	  if ( REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity) )
 	    {
 	      RSS( ref_cavity_local( ref_cavity, ref_grid,
 				     &allowed_local ), "cav local");
@@ -182,6 +181,8 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
 				    new_node ), "cav split" );
 	  RSS( ref_cavity_enlarge_visible( ref_cavity, ref_grid,
 					   new_node ), "cav enlarge");
+          REIS( REF_CAVITY_VISIBLE, ref_cavity_state( ref_cavity ), 
+                "enlarge not successful" );
 	  RSS( ref_cavity_replace_tet( ref_cavity, ref_grid,
 				       new_node ), "cav replace" );
 	  RSS( ref_cavity_free( ref_cavity ), "cav free" );

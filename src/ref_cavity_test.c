@@ -654,7 +654,7 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_free(ref_cavity),"free");
   }
 
-  { /* tet brick insert */
+  { /* tet brick insert (on every part) */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -676,6 +676,28 @@ int main( int argc, char *argv[] )
     RSS(ref_cavity_free(ref_cavity),"free");
 
     RAS( nnode>ref_node_n(ref_node), "node count did not decrease" );
+    
+    RSS( ref_grid_free(ref_grid),"free");
+  }
+
+  { /* tet brick can not insert outside of boundary (on every part) */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CAVITY ref_cavity;
+    REF_INT node;
+
+    RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_metric_unit_node( ref_node ), "unit metric");
+
+    node = 39;
+    ref_node_xyz(ref_node,0,node) = -0.5;
+    RSS(ref_cavity_create(&ref_cavity,3),"create");
+    RSS(ref_cavity_add_ball(ref_cavity,ref_grid,node),"insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity,ref_grid,node),"enlarge");
+    REIS( REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state( ref_cavity ), 
+          "enlarge wrong state" );
+    RSS(ref_cavity_free(ref_cavity),"free");
     
     RSS( ref_grid_free(ref_grid),"free");
   }

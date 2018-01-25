@@ -609,9 +609,12 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                        REF_GRID ref_grid, REF_INT node )
 {
   REF_INT face;
+  REF_BOOL local;
   REF_BOOL visible;
   REF_BOOL keep_growing;
-  REF_STATUS status;
+
+  RAS( ref_node_owned(ref_grid_node(ref_grid), node), 
+       "cavity part must own node" );
 
   REIS( REF_CAVITY_UNKNOWN, ref_cavity_state( ref_cavity ), 
         "state already known" );
@@ -621,6 +624,14 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
 	   ref_list_n(ref_cavity_list(ref_cavity)),
 	   ref_cavity_n(ref_cavity));
   
+  /* make sure all cell nodes to be replaced are owned */
+  RSS( ref_cavity_local( ref_cavity, ref_grid, &local ), "locality" );
+  if ( !local )
+    {
+      ref_cavity_state( ref_cavity ) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+
   keep_growing = REF_TRUE;
   while (keep_growing)
     {
@@ -639,20 +650,17 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
                                node, face, &visible ),"free");
         if ( !visible )
           {
-            status =  ref_cavity_enlarge_face( ref_cavity, ref_grid, face );
-            RXS( status, REF_INVALID, "enlarge face" );
-            if ( REF_SUCCESS == status )
-              {
-                keep_growing = REF_TRUE;
-              }
-            else
+            RSS( ref_cavity_enlarge_face( ref_cavity, ref_grid, face ),
+                 "enlarge face" );
+            if ( REF_CAVITY_UNKNOWN != ref_cavity_state( ref_cavity ) )
               {
 		if ( ref_cavity_debug(ref_cavity) )
 		  RSS( ref_cavity_tec( ref_cavity, ref_grid, node,
 				       "enlarge.tec" ),
 		       "tec for enlarge_face fail" );
-                return status;
+                return REF_SUCCESS;
               }
+            keep_growing = REF_TRUE;
           }
       }
     }
@@ -718,10 +726,22 @@ REF_STATUS ref_cavity_shrink_visible( REF_CAVITY ref_cavity,
 REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
                                     REF_GRID ref_grid, REF_INT face )
 {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ncell, cells[2];
-  REF_INT face_nodes[4];
+  REF_INT face_node, face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
   REF_INT tet0, tet1;
+
+  /* make sure all face nodes are owned */
+  each_ref_cavity_face_node( ref_cavity, face_node )
+    {
+      if ( !ref_node_owned(ref_node,
+                           ref_cavity_f2n(ref_cavity,face_node,face)) )
+        {
+          ref_cavity_state( ref_cavity ) = REF_CAVITY_PARTITION_CONSTRAINED;
+          return REF_SUCCESS;
+        }
+    }
 
   switch ( ref_cavity_node_per( ref_cavity ) )
     {
@@ -758,7 +778,13 @@ REF_STATUS ref_cavity_enlarge_face( REF_CAVITY ref_cavity,
       if ( REF_EMPTY == tet0 )
         THROW("cavity tets missing");
       if ( REF_EMPTY == tet1 )
-        return REF_INVALID; /* boundary */
+        {
+          REF_INT tri;
+          RSS( ref_cell_with( ref_grid_tri(ref_grid), face_nodes, &tri ),
+               "verify boundary face" );
+          ref_cavity_state( ref_cavity ) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+          return REF_SUCCESS;
+        }
 
       RSS( ref_list_contains( ref_cavity_list(ref_cavity), tet0,
                               &have_cell0 ), "cell0" );
@@ -973,41 +999,37 @@ REF_STATUS ref_cavity_local( REF_CAVITY ref_cavity, REF_GRID ref_grid,
                              REF_BOOL *local )
 {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT item, cell;
+  REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face, face_node;
-  REF_INT rank = ref_mpi_rank(ref_grid_mpi(ref_grid));
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  if ( 2 == ref_cavity_node_per( ref_cavity ) )
+    ref_cell = ref_grid_tri(ref_grid);
   
-  REIS(3,ref_cavity_node_per( ref_cavity ), "only implemented for tets" );
-
   *local = REF_FALSE;
-
+  
   each_ref_list_item( ref_cavity_list(ref_cavity), item )
     {
       cell = ref_list_value( ref_cavity_list(ref_cavity), item );
-      RSS( ref_cell_nodes( ref_grid_tet(ref_grid), cell, nodes), "cell");
-      if ( rank != ref_node_part( ref_node, nodes[0] ) ||
-	   rank != ref_node_part( ref_node, nodes[1] ) ||
-	   rank != ref_node_part( ref_node, nodes[2] ) ||
-	   rank != ref_node_part( ref_node, nodes[3] ) )
-	{
-	  *local = REF_FALSE;
-	  return REF_SUCCESS;
-	}
+      RSS( ref_cell_nodes( ref_cell, cell, nodes), "cell");
+      each_ref_cell_cell_node( ref_cell, cell_node )
+	if ( !ref_node_owned(ref_node,nodes[cell_node] ) )
+          {
+            *local = REF_FALSE;
+            return REF_SUCCESS;
+          }
     }
 
   each_ref_cavity_valid_face( ref_cavity, face )
     {
       each_ref_cavity_face_node( ref_cavity, face_node )
-	nodes[face_node] = ref_cavity_f2n(ref_cavity,face_node,face);
-      if ( rank != ref_node_part( ref_node, nodes[0] ) ||
-	   rank != ref_node_part( ref_node, nodes[1] ) ||
-	   rank != ref_node_part( ref_node, nodes[2] ) )
-	{
-	  *local = REF_FALSE;
-	  return REF_SUCCESS;
-	}
-  }
+	if ( !ref_node_owned(ref_node,
+                             ref_cavity_f2n(ref_cavity,face_node,face) ) )
+          {
+            *local = REF_FALSE;
+            return REF_SUCCESS;
+          }
+    }       
 
   *local = REF_TRUE;
   return REF_SUCCESS;
