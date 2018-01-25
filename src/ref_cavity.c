@@ -219,7 +219,7 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
 {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell_face, node;
-  REF_INT face_nodes[4];
+  REF_INT face_nodes[3];
   REF_INT already_have_it;
 
   RAS( ref_cell_valid(ref_grid_tet(ref_grid),tet), "invalid tet" );
@@ -233,11 +233,17 @@ REF_STATUS ref_cavity_add_tet( REF_CAVITY ref_cavity,
        "save tet");
 
   each_ref_cell_cell_face( ref_cell, cell_face )
-  {
-    for (node = 0; node<3; node++)
-      face_nodes[node] = ref_cell_f2n(ref_cell,node,cell_face,tet);
-    RSS( ref_cavity_insert( ref_cavity, face_nodes ), "tet side" );
-  }
+    {
+      each_ref_cavity_face_node( ref_cavity, node )
+        {
+          face_nodes[node] = ref_cell_f2n(ref_cell,node,cell_face,tet);
+          if ( !ref_node_owned(ref_grid_node(ref_grid),face_nodes[node]) )
+            {
+              ref_cavity_state( ref_cavity ) = REF_CAVITY_PARTITION_CONSTRAINED;
+            }
+        }
+      RSS( ref_cavity_insert( ref_cavity, face_nodes ), "tet side" );
+    }
 
   return REF_SUCCESS;
 }
@@ -616,14 +622,14 @@ REF_STATUS ref_cavity_enlarge_visible( REF_CAVITY ref_cavity,
   RAS( ref_node_owned(ref_grid_node(ref_grid), node), 
        "cavity part must own node" );
 
-  REIS( REF_CAVITY_UNKNOWN, ref_cavity_state( ref_cavity ), 
-        "state already known" );
-
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge start %d tets %d faces\n",
 	   ref_list_n(ref_cavity_list(ref_cavity)),
 	   ref_cavity_n(ref_cavity));
   
+  if ( REF_CAVITY_UNKNOWN != ref_cavity_state( ref_cavity ) )
+    return REF_SUCCESS;
+
   /* make sure all cell nodes to be replaced are owned */
   RSS( ref_cavity_local( ref_cavity, ref_grid, &local ), "locality" );
   if ( !local )
