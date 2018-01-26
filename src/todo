@@ -1,20 +1,4 @@
 
-cavity operator parallel
- + enlarge needs separate return codes of boundary and parallel
- + protect cavity op so it can be used in middle of parts
- + create separate list of para edges on and off geom
- + subdiv off geom edges
- + report para blocked parts
- with an array of cavity made from para edge on geom
-   enlarge returns complete, same part request, or boundary
-   replace completed cavities
-   deactive cavity constrained by boundaries
-   new part empty
-   apply cavity requests
-   max ghost
-   deactivate collisions
-   migrate
-
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -24,7 +8,7 @@ ref_metric_test --lp should optionally provide intermediate steps
 
 measure gradation and see if there is a connection to histogram convergence
 
-ref_matrix fix diag gen repeat 12 turned off with REF_FALSE
+ref_matrix fix diag gen repeat roots 1 2 turned off with REF_FALSE
 gen eigen solver slow for repeated roots, 2x6.2500e-02
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
@@ -69,6 +53,16 @@ robustness and metric conformity
   minmax optimize uv
  cavity operator in 2D/3D
   eliminate short edges and sliver deletion
+  cavity operator parallel
+   with an array of cavity made from para edge on geom
+   enlarge returns complete, same part request, or boundary
+   replace completed cavities
+   deactivate cavity constrained by boundaries
+   new part empty
+   apply cavity requests
+   max ghost
+   deactivate collisions
+   migrate
 
 performance
  time adapt pass elements
@@ -186,6 +180,13 @@ merge ref_collapse_face_local_*
   + face based grow and shrink
   + shrink needs list delete
   + parallel protection
+
++ cavity operator parallel
+  + enlarge needs separate return codes of boundary and parallel
+  + protect cavity op so it can be used in middle of parts
+  + create separate list of para edges on and off geom
+  + subdiv off geom edges
+  + report para blocked parts
 
 + layer
   + add loop to cube case
