@@ -29,7 +29,7 @@ ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-uniform-two-02.status
 
 cat accept-cube-cylinder-uniform-two-02.status
-../../../check.rb accept-cube-cylinder-uniform-two-02.status 0.10 2.0
+../../../check.rb accept-cube-cylinder-uniform-two-02.status 0.08 2.0
 
 
 
