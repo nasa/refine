@@ -103,13 +103,13 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL det, complexity, part_complexity;
+  REF_DBL det, complexity;
   REF_DBL quality, min_quality;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
   REF_DBL target;
   REF_INT cell_node;
-  REF_INT node, part_nnode, total_nnode;
+  REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   
   if ( ref_grid_twod(ref_grid) )
@@ -127,30 +127,27 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   complexity = 0.0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
-      if ( ref_node_part(ref_grid_node(ref_grid),nodes[0]) ==
-	   ref_mpi_rank(ref_mpi) )
-	{
-	  if ( ref_grid_twod(ref_grid) )
-	    {
-	      RSS( ref_node_node_twod( ref_grid_node(ref_grid),nodes[0], 
-				       &active_twod ), "active twod tri" );
-	      if ( !active_twod ) continue;
-	      RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
-					 nodes,&quality ), "qual");
-	      RSS( ref_node_tri_area( ref_grid_node(ref_grid),
-				      nodes,&volume ), "vol");
-	    }
-	  else
-	    {
-	      RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
-					 nodes,&quality ), "qual");
-	      RSS( ref_node_tet_vol( ref_grid_node(ref_grid),
-				     nodes,&volume ), "vol");
-	    }
-	  min_quality = MIN(min_quality,quality);
-	  min_volume = MIN( min_volume, volume);
-	  max_volume = MAX( max_volume, volume);
-	}
+      if ( ref_grid_twod(ref_grid) )
+        {
+          RSS( ref_node_node_twod( ref_grid_node(ref_grid),nodes[0], 
+                                   &active_twod ), "active twod tri" );
+          if ( !active_twod ) continue;
+          RSS( ref_node_tri_quality( ref_grid_node(ref_grid),
+                                     nodes,&quality ), "qual");
+          RSS( ref_node_tri_area( ref_grid_node(ref_grid),
+                                  nodes,&volume ), "vol");
+        }
+      else
+        {
+          RSS( ref_node_tet_quality( ref_grid_node(ref_grid),
+                                     nodes,&quality ), "qual");
+          RSS( ref_node_tet_vol( ref_grid_node(ref_grid),
+                                 nodes,&volume ), "vol");
+        }
+      min_quality = MIN(min_quality,quality);
+      min_volume = MIN( min_volume, volume);
+      max_volume = MAX( max_volume, volume);
+
       for ( cell_node = 0 ; 
 	    cell_node < ref_cell_node_per( ref_cell ) ;
 	    cell_node++ )
@@ -175,21 +172,17 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
   RSS( ref_mpi_max( ref_mpi, &volume, &max_volume, REF_DBL_TYPE ), "mpi max");
   RSS( ref_mpi_bcast( ref_mpi, &max_volume, 1, REF_DBL_TYPE ), "min" );
 
-  part_nnode=0;
+  nnode=0;
   each_ref_node_valid_node( ref_node, node )
-    if ( ref_mpi_rank(ref_mpi) == ref_node_part(ref_node,node) ) part_nnode++;
-  RSS( ref_mpi_sum( ref_mpi,
-		    &part_nnode, &total_nnode, 1, REF_INT_TYPE ), "int sum");
-  RSS( ref_mpi_bcast( ref_mpi, &total_nnode, 1, REF_INT_TYPE ), "min" );
+    if ( ref_node_owned(ref_node,node) )
+      nnode++;
+  RSS( ref_mpi_allsum( ref_mpi, &nnode, 1, REF_INT_TYPE ), "int sum");
   if (ref_grid_twod(ref_grid) )
-    total_nnode = total_nnode / 2;
+    nnode = nnode / 2;
   
-  part_complexity=complexity;
-  RSS( ref_mpi_sum( ref_mpi,
-		    &part_complexity, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
-  RSS( ref_mpi_bcast( ref_mpi, &complexity, 1, REF_DBL_TYPE ), "min" );
+  RSS( ref_mpi_allsum( ref_mpi, &complexity, 1, REF_DBL_TYPE ),"dbl sum");
 
-  nodes_per_complexity = (REF_DBL)total_nnode/complexity;
+  nodes_per_complexity = (REF_DBL)nnode/complexity;
 
   target = MAX(MIN(0.1, min_quality),1.0e-3);
     
@@ -197,7 +190,7 @@ REF_STATUS ref_adapt_parameter( REF_GRID ref_grid )
     {
       printf("quality floor %6.4f\n",target);
       printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
-	     total_nnode, complexity, nodes_per_complexity,
+	     nnode, complexity, nodes_per_complexity,
 	     max_volume, min_volume);
     }
   ref_adapt->collapse_quality_absolute = target;

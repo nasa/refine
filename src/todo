@@ -1,6 +1,4 @@
 
-uninit memory in ref_adapt cmplexity
-
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -127,6 +125,8 @@ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
 merge ref_collapse_face_local_*
 
 +++++++++++++++++
+
++ fix uninit memory in ref_adapt cmplexity
 
 + mixed element 2d for twest
 + rename ref_list_add to ref_list_push
