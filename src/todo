@@ -1,4 +1,6 @@
 
+uninit memory in ref_adapt cmplexity
+
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
