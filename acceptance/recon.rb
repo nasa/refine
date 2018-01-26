@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 status_file = ARGV[0] || 'recon' 
-max_limit = ARGV[1] || '1e-12'
+max_limit = ARGV[1] || '2e-12'
 max_limit = max_limit.to_f
 
 lines = IO.readlines(status_file)
