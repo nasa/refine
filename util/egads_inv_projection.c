@@ -68,6 +68,19 @@ int main( void )
 	EG_getBodyTopos(solid, NULL, FACE, &nface, &faces), "EG face topo");
 
   faceid = 2;
+
+  input_xyz[0] =  25.0;
+  input_xyz[1] =   0.0;
+  input_xyz[2] =  25.0;
+  is_equal( EGADS_SUCCESS,
+            EG_invEvaluate(faces[faceid - 1],
+                           input_xyz,
+                           param, output_xyz), "EG inv  eval");
+
+  printf(" input %f %f %f\n",input_xyz[0],input_xyz[1],input_xyz[2]);
+  printf("output %f %f %f\n",output_xyz[0],output_xyz[1],output_xyz[2]);
+  printf(" param %f %f\n",param[0],param[1]);
+  
   input_xyz[0] =  25.0;
   input_xyz[1] =   0.0;
   input_xyz[2] = -25.0;
@@ -78,6 +91,7 @@ int main( void )
 
   printf(" input %f %f %f\n",input_xyz[0],input_xyz[1],input_xyz[2]);
   printf("output %f %f %f\n",output_xyz[0],output_xyz[1],output_xyz[2]);
-  
+  printf(" param %f %f\n",param[0],param[1]);
+    
   return 0;
 }
