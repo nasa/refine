@@ -629,6 +629,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       REF_INT geom0,geom1,geom2;
       REF_INT faceid;
       double closest[3];
+      REF_BOOL inv_eval_wrapper = REF_FALSE;
       updates = 0;
       pass++;
       each_ref_cell_valid_cell_with_nodes( ref_grid_tri(ref_grid), cell, nodes)
@@ -645,10 +646,20 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[0],
 				 REF_GEOM_FACE, faceid, param ), "geom0");
-	      REIS( EGADS_SUCCESS,
-		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
-				   ref_node_xyz_ptr(ref_node,nodes[1]),
-				   param, closest), "EG eval");
+              if ( inv_eval_wrapper )
+                {
+                  for (i=0;i<3;i++)
+                    closest[i] = ref_node_xyz(ref_node,i,nodes[1]);
+                  RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
+                                              param, closest), "inv eval" );
+                }
+              else
+                {
+                  REIS( EGADS_SUCCESS,
+                        EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+                                       ref_node_xyz_ptr(ref_node,nodes[1]),
+                                       param, closest), "EG eval");
+                }
 	      RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_FACE,
 			       faceid, param ), "add face");
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[1]),2)+
@@ -660,10 +671,20 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[1],
 				 REF_GEOM_FACE, faceid, param ), "geom1");
-	      REIS( EGADS_SUCCESS,
-		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
-				   ref_node_xyz_ptr(ref_node,nodes[2]),
-				   param, closest), "EG eval");
+              if ( inv_eval_wrapper )
+                {
+                  for (i=0;i<3;i++)
+                    closest[i] = ref_node_xyz(ref_node,i,nodes[2]);
+                  RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
+                                              param, closest), "inv eval" );
+                }
+              else
+                {
+                  REIS( EGADS_SUCCESS,
+                        EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+                                       ref_node_xyz_ptr(ref_node,nodes[2]),
+                                       param, closest), "EG eval");
+                }
 	      RSS(ref_geom_add(ref_geom, nodes[2], REF_GEOM_FACE,
 			       faceid, param ), "add face");
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[2]),2)+
@@ -675,10 +696,20 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[2],
 				 REF_GEOM_FACE, faceid, param ), "geom2");
-	      REIS( EGADS_SUCCESS,
-		    EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
-				   ref_node_xyz_ptr(ref_node,nodes[0]),
-				   param, closest), "EG eval");
+              if ( inv_eval_wrapper )
+                {
+                  for (i=0;i<3;i++)
+                    closest[i] = ref_node_xyz(ref_node,i,nodes[0]);
+                  RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
+                                              param, closest), "inv eval" );
+                }
+              else
+                {
+                  REIS( EGADS_SUCCESS,
+                        EG_invEvaluate(((ego *)(ref_geom->faces))[faceid - 1],
+                                       ref_node_xyz_ptr(ref_node,nodes[0]),
+                                       param, closest), "EG eval");
+                }
 	      RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_FACE,
 			       faceid, param ), "add face");
 	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[0]),2)+
