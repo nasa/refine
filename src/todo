@@ -20,6 +20,9 @@ always limit implied metric distance after every interp?
 
 rename ref_mpi_m to ref_mpi_n
 
+ref_geom_add_between should update adjacent face UV with edge T
+(constrain does clean up already)
+
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 egads recon
  clean up method
