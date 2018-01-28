@@ -16,4 +16,4 @@ geomfile=onera-m6-sharp-te.egads
 
 ${two}/ref_geom_test --recon om6-curv-no-geom.meshb ${geomfile} > accept-om6-recon.status
 
-../../recon.rb accept-om6-recon.status 
+../../recon.rb accept-om6-recon.status 1.0e-8

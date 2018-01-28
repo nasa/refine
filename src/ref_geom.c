@@ -346,17 +346,23 @@ REF_STATUS ref_geom_face_surface( REF_GEOM ref_geom, REF_INT faceid,
     case TOROIDAL:
       *surface = REF_GEOM_TOROIDAL;
       break;
+    case TRIMMED:
+      *surface = REF_GEOM_TRIMMED;
+      break;
+    case BEZIER:
+      *surface = REF_GEOM_BEZIER;
+      break;
+    case BSPLINE:
+      *surface = REF_GEOM_BSPLINE;
+      break;
+    case OFFSET:
+      *surface = REF_GEOM_OFFSET;
+      break;
     case CONICAL:
       *surface = REF_GEOM_CONICAL;
       break;
     case EXTRUSION:
       *surface = REF_GEOM_EXTRUSION;
-      break;
-    case 6:
-      *surface = REF_GEOM_UNKNOWN;
-      break;
-    case 8:
-      *surface = REF_GEOM_UNKNOWN;
       break;
     default:
       printf("mtype %d\n",mtype);
