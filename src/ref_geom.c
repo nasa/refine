@@ -1494,7 +1494,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   int egads_status;
   REF_BOOL allow_recovery = REF_TRUE;
   object = (ego)NULL;
-  REF_BOOL report = REF_FALSE;
+  REF_BOOL debug_inv_eval = REF_FALSE;
 
   switch (type)
     {
@@ -1518,32 +1518,16 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
 
-  if ( REF_FALSE && REF_GEOM_FACE )
+  if ( debug_inv_eval && REF_GEOM_FACE == type )
     { /* projection debug code */
-      ego esurf, *eloops, eref;
-      int oclass, mtype, nloop,*senses,*pinfo;
-      double data[18], *preal;
       REF_DBL param_xyz[3];
+      printf("face %d\n",id);
+      printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
       REIS( EGADS_SUCCESS,
-	    EG_getTopology(object,
-			   &esurf, &oclass, &mtype,
-			   data, &nloop, &eloops, &senses), "topo" );
-      REIS( EGADS_SUCCESS,
-	    EG_getGeometry(esurf, &oclass, &mtype,
-			   &eref, &pinfo, &preal),"geom");
-      EG_free(pinfo);
-      EG_free(preal);
-      if (mtype == PLANE)
-        {
-          printf("face %d is PLANE\n",id);
-          printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
-	  REIS( EGADS_SUCCESS,
-		EG_evaluate(object, param, param_xyz ), "EG eval");
-          printf(" guess  %f %f %f (%F %f)\n",
-                 param_xyz[0],param_xyz[1],param_xyz[2],
-                 param[0],param[1]);
-          report = REF_TRUE;
-        }
+            EG_evaluate(object, param, param_xyz ), "EG eval");
+      printf(" guess  %f %f %f (%F %f)\n",
+             param_xyz[0],param_xyz[1],param_xyz[2],
+             param[0],param[1]);
     }
   
   if (!allow_recovery)
@@ -1556,7 +1540,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
 				     param, closest);
   if ( EGADS_SUCCESS == egads_status )
     {
-      if ( report )
+      if ( debug_inv_eval && REF_GEOM_FACE == type )
         {
           REF_DBL dist;
           dist = sqrt(pow(closest[0]-xyz[0],2)+
@@ -1578,7 +1562,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REIS( EGADS_SUCCESS,
 	EG_invEvaluate(object, xyz,
 		       param, closest), "EG inv eval");
-      if ( report )
+      if ( debug_inv_eval && REF_GEOM_FACE == type )
         {
           REF_DBL dist;
           dist = sqrt(pow(closest[0]-xyz[0],2)+
