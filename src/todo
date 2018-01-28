@@ -1,4 +1,12 @@
 
+uncomment egads lite methods
+prevent leaks of cad data
+add cad model data to testing meshb files (with recon that drops old data)
+meshb geom assoc and cad model only read (write full for now)
+swap para builds to egads lite
+
+add chunk size to minloc
+
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -88,8 +96,6 @@ viz
 
 Marshall
 kill tabs
-meshb geom assoc only read (write full for now)
-meshb cad model only read (write full for now)
 provide dense api (or pack)
  maybe just a copy
  reference to pointers with a free other
