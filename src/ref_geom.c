@@ -662,9 +662,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                 }
 	      RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_FACE,
 			       faceid, param ), "add face");
-	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[1]),2)+
-			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[1]),2)+
-			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[1]),2));
 	    }
 	  if ( REF_EMPTY != geom1 && REF_EMPTY == geom2 )
 	    {
@@ -687,9 +684,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                 }
 	      RSS(ref_geom_add(ref_geom, nodes[2], REF_GEOM_FACE,
 			       faceid, param ), "add face");
-	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[2]),2)+
-			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[2]),2)+
-			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[2]),2));
 	    }
 	  if ( REF_EMPTY != geom2 && REF_EMPTY == geom0 )
 	    {
@@ -712,9 +706,6 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                 }
 	      RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_FACE,
 			       faceid, param ), "add face");
-	      dist=sqrt(pow(closest[0]-ref_node_xyz(ref_node,0,nodes[0]),2)+
-			pow(closest[1]-ref_node_xyz(ref_node,1,nodes[0]),2)+
-			pow(closest[2]-ref_node_xyz(ref_node,2,nodes[0]),2));
 	    }
 	}
       printf(" pass %3d updates %d\n",pass, updates);
