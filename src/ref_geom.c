@@ -43,24 +43,10 @@
 #include "ref_math.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
+static REF_STATUS ref_geom_initialize( REF_GEOM ref_geom )
 {
-  REF_GEOM ref_geom;
   REF_INT geom;
-  ( *ref_geom_ptr ) = NULL;
-
-  ref_malloc( *ref_geom_ptr, 1, REF_GEOM_STRUCT );
-
-  ref_geom = ( *ref_geom_ptr );
-
   ref_geom_n(ref_geom) = 0;
-  ref_geom_max(ref_geom) = 10;
-
-  ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
-  ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
-  ref_geom->uv_area_sign = NULL;
-  ref_geom->segments_per_radian_of_curvature = 10.0;
-
   for ( geom = 0; geom < ref_geom_max(ref_geom); geom++ )
     {
       ref_geom_type(ref_geom,geom) = REF_EMPTY;
@@ -68,8 +54,35 @@ REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
     }
   ref_geom_id(ref_geom,ref_geom_max(ref_geom)-1) = REF_EMPTY;
   ref_geom_blank(ref_geom) = 0;
+  if ( NULL != (void *)(ref_geom->ref_adj) )
+    RSS( ref_adj_free( ref_geom->ref_adj ), "free to prevent leak" );
+  RSS( ref_adj_create( &( ref_geom->ref_adj ) ),
+       "create ref_adj for ref_geom" );
+
+  return REF_SUCCESS;
+
+}
+
+REF_STATUS ref_geom_create( REF_GEOM *ref_geom_ptr )
+{
+  REF_GEOM ref_geom;
+
+  ( *ref_geom_ptr ) = NULL;
+
+  ref_malloc( *ref_geom_ptr, 1, REF_GEOM_STRUCT );
+
+  ref_geom = ( *ref_geom_ptr );
+
+  ref_geom_max(ref_geom) = 10;
   
-  RSS( ref_adj_create( &( ref_geom->ref_adj ) ), "create ref_adj for ref_geom" );
+  ref_malloc( ref_geom->descr, 3*ref_geom_max(ref_geom), REF_INT);
+  ref_malloc( ref_geom->param, 2*ref_geom_max(ref_geom), REF_DBL);
+  ref_geom->ref_adj = (REF_ADJ)NULL;
+  RSS( ref_geom_initialize( ref_geom ), "init geom list" );
+
+  ref_geom->uv_area_sign = NULL;
+  ref_geom->segments_per_radian_of_curvature = 10.0;
+  
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
@@ -404,6 +417,12 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
   REF_INT *e2f;
 
+  /* to allow recon after meshb load times
+     RSS( ref_geom_initialize( ref_geom ), "clear out previous assoc" );
+     RSS( ref_cell_free( ref_grid_edg(ref_grid) ), "clear out edge" );
+     RSS( ref_cell_create( &ref_grid_edg(ref_grid), 2, REF_TRUE ), "edg" );
+  */
+  
   RSS( ref_geom_edge_faces( ref_grid, &e2f ), "compute edge faces");
   
   ref_malloc(node_list,max_node,REF_INT);
