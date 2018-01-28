@@ -352,7 +352,14 @@ REF_STATUS ref_geom_face_surface( REF_GEOM ref_geom, REF_INT faceid,
     case EXTRUSION:
       *surface = REF_GEOM_EXTRUSION;
       break;
+    case 6:
+      *surface = REF_GEOM_UNKNOWN;
+      break;
+    case 8:
+      *surface = REF_GEOM_UNKNOWN;
+      break;
     default:
+      printf("mtype %d\n",mtype);
       RSS(REF_IMPLEMENT, "unknown surface type" );
     }
   return REF_SUCCESS;
