@@ -24,7 +24,16 @@
 BEGIN_C_DECLORATION
 typedef struct REF_GEOM_STRUCT REF_GEOM_STRUCT;
 typedef REF_GEOM_STRUCT * REF_GEOM;
-  END_C_DECLORATION
+typedef enum REF_GEOM_SURFACES {
+  /* 0 */ REF_GEOM_PLANE,
+  /* 1 */ REF_GEOM_SPHERICAL,
+  /* 2 */ REF_GEOM_CYLINDRICAL,
+  /* 3 */ REF_GEOM_REVOLUTION,
+  /* 4 */ REF_GEOM_TOROIDAL,
+  /* 5 */ REF_GEOM_CONICAL,
+  /* 6 */ REF_GEOM_EXTRUSION,
+  /* 7 */ REF_GEOM_SURFACE_LAST } REF_GEOM_SURFACE;
+END_C_DECLORATION
 
 #include "ref_grid.h"
 #include "ref_adj.h"
@@ -124,6 +133,8 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
 REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_faces );
+REF_STATUS ref_geom_face_surface( REF_GEOM ref_geom, REF_INT faceid,
+                                  REF_GEOM_SURFACE *surface );
 REF_STATUS ref_geom_recon( REF_GRID ref_grid );
 REF_STATUS ref_geom_infer_nedge_nface( REF_GRID ref_grid );
 

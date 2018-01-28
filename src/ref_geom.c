@@ -308,6 +308,64 @@ REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_face_arg )
 #endif
 }
 
+REF_STATUS ref_geom_face_surface( REF_GEOM ref_geom, REF_INT faceid,
+                                  REF_GEOM_SURFACE *surface )
+{
+#ifdef HAVE_EGADS
+  ego esurf, *eloops, eref;
+  int oclass, mtype, nloop,*senses,*pinfo;
+  double data[18], *preal;
+
+  RNS(ref_geom->faces,"faces not loaded");
+  if ( faceid < 1 || faceid > ref_geom->nface )
+    return REF_INVALID;
+
+  REIS( EGADS_SUCCESS,
+        EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1],
+                       &esurf, &oclass, &mtype,
+                       data, &nloop, &eloops, &senses), "topo" );
+  REIS( EGADS_SUCCESS,
+        EG_getGeometry(esurf, &oclass, &mtype,
+                       &eref, &pinfo, &preal),"geom");
+  EG_free(pinfo);
+  EG_free(preal);
+  switch(mtype)
+    {
+    case PLANE:
+      *surface = REF_GEOM_PLANE;
+      break;
+    case SPHERICAL:
+      *surface = REF_GEOM_SPHERICAL;
+      break;
+    case CYLINDRICAL:
+      *surface = REF_GEOM_CYLINDRICAL;
+      break;
+    case REVOLUTION:
+      *surface = REF_GEOM_REVOLUTION;
+      break;
+    case TOROIDAL:
+      *surface = REF_GEOM_TOROIDAL;
+      break;
+    case CONICAL:
+      *surface = REF_GEOM_CONICAL;
+      break;
+    case EXTRUSION:
+      *surface = REF_GEOM_EXTRUSION;
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown surface type" );
+    }
+  return REF_SUCCESS;
+#else
+  if (REF_EMPTY == ref_geom->nnode)
+    printf("No EGADS loaded face %d\n",faceid);
+  *surface = REF_GEOM_SURFACE_LAST;
+  printf("No EGADS linked for %s\n", __func__);
+  return REF_IMPLEMENT;
+#endif
+}
+
+
 REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 {
 #ifdef HAVE_EGADS
