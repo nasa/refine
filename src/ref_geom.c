@@ -651,7 +651,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[1]);
                   RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
-                                              param, closest), "inv eval" );
+                                              closest, param), "inv eval" );
                 }
               else
                 {
@@ -676,7 +676,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[2]);
                   RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
-                                              param, closest), "inv eval" );
+                                              closest, param), "inv eval" );
                 }
               else
                 {
@@ -701,7 +701,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[0]);
                   RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_FACE, faceid,
-                                              param, closest), "inv eval" );
+                                              closest, param ), "inv eval" );
                 }
               else
                 {
