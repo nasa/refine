@@ -2075,42 +2075,44 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
 
   context = (ego)(ref_geom->context);
 
-  REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
+#ifdef HAVE_EGADS_LITE
+  {
+    /* entry point NOT in egads.h */
+    extern int EG_importModel(egObject *context, const size_t nbytes,
+                          const char stream[], egObject **model);
+    if ( ref_grid_once(ref_grid) )
+      printf("linked to EGADSlite, using ref_geom_cad_data, not %s\n",filename);
 
-  /*
-
-#ifndef HAVE_EGADS_LITE
-
+    RAS( 0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data" );
+    RNS( ref_geom_cad_data(ref_geom), "cad_data NULL" );
+    REIS( EGADS_SUCCESS,
+          EG_importModel( context, 
+                          (size_t)ref_geom_cad_data_size(ref_geom),
+                          (char *)ref_geom_cad_data(ref_geom),
+                          &model ), "EG load");
+  }
+#else
   REIS( EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
   {
-    long cad_data_size;
+    /* entry point NOT in egads.h */
+    extern int EG_exportModel(ego mobject, size_t *nbytes, char *stream[]);
+
+    size_t cad_data_size;
     REF_BYTE *cad_data;
-    int EG_exportModel(ego model, long *cad_data_size, char **cad_data);
+
     REIS( EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data), 
 	  "EG stream");
     ref_geom_cad_data_size(ref_geom) = cad_data_size;
+    /* safe non-NULL free, if already allocated, to prevent memory leaks */
+    ref_free( ref_geom->cad_data );
     ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
 	       REF_BYTE );
     memcpy( ref_geom_cad_data(ref_geom), cad_data, 
 	    ref_geom_cad_data_size(ref_geom) );
-    free( cad_data );
+    EG_free( cad_data );
   }
-
-
-#else
-  if ( ref_grid_once(ref_grid) )
-    printf("EGADS lite, using meshb data ignore %s\n",filename);
-
-  RAS( 0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data" );
-  RNS( ref_geom_cad_data(ref_geom), "cad_data NULL" );
-  REIS( EGADS_SUCCESS, EG_importModel(context, 
-				      (long)ref_geom_cad_data_size(ref_geom),
-				      ref_geom_cad_data(ref_geom),
-				      &model ), "EG load");
 #endif
-
-  */
  
   REIS( EGADS_SUCCESS,
 	EG_getTopology(model, &geom, &oclass, &mtype, NULL,
