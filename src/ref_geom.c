@@ -693,6 +693,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
     {
       REF_INT geom0,geom1,geom2;
       REF_INT faceid;
+      REF_GEOM_SURFACE surface_type;
       double closest[3];
       REF_BOOL inv_eval_wrapper = REF_TRUE;
       updates = 0;
@@ -700,6 +701,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       each_ref_cell_valid_cell_with_nodes( ref_grid_tri(ref_grid), cell, nodes)
 	{
 	  faceid = nodes[3];
+          RSS( ref_geom_face_surface( ref_geom, faceid, &surface_type), "styp");
 	  RXS( ref_geom_find( ref_geom, nodes[0], REF_GEOM_FACE, faceid,
 			      &geom0), REF_NOT_FOUND, "find0" );
 	  RXS( ref_geom_find( ref_geom, nodes[1], REF_GEOM_FACE, faceid,
@@ -711,7 +713,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[0],
 				 REF_GEOM_FACE, faceid, param ), "geom0");
-              if ( inv_eval_wrapper )
+              if ( inv_eval_wrapper && surface_type == REF_GEOM_PLANE )
                 {
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[1]);
@@ -733,7 +735,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[1],
 				 REF_GEOM_FACE, faceid, param ), "geom1");
-              if ( inv_eval_wrapper )
+              if ( inv_eval_wrapper && surface_type == REF_GEOM_PLANE )
                 {
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[2]);
@@ -755,7 +757,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      updates++;
 	      RSS( ref_geom_tuv( ref_geom, nodes[2],
 				 REF_GEOM_FACE, faceid, param ), "geom2");
-              if ( inv_eval_wrapper )
+              if ( inv_eval_wrapper && surface_type == REF_GEOM_PLANE )
                 {
                   for (i=0;i<3;i++)
                     closest[i] = ref_node_xyz(ref_node,i,nodes[0]);
