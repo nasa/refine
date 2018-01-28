@@ -1436,6 +1436,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   int egads_status;
   REF_BOOL allow_recovery = REF_TRUE;
   object = (ego)NULL;
+  REF_BOOL report = REF_FALSE;
 
   switch (type)
     {
@@ -1480,9 +1481,10 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
           printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, param, param_xyz ), "EG eval");
-          printf(" guess %f %f %f (%F %f)\n",
+          printf(" guess  %f %f %f (%F %f)\n",
                  param_xyz[0],param_xyz[1],param_xyz[2],
                  param[0],param[1]);
+          report = REF_TRUE;
         }
     }
   
@@ -1495,7 +1497,22 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   egads_status = EG_invEvaluateGuess(object, xyz,
 				     param, closest);
   if ( EGADS_SUCCESS == egads_status )
-    return REF_SUCCESS;
+    {
+      if ( report )
+        {
+          REF_DBL dist;
+          dist = sqrt(pow(closest[0]-xyz[0],2)+
+                      pow(closest[1]-xyz[1],2)+
+                      pow(closest[2]-xyz[2],2));
+          printf(" g-work %f %f %f (%f %f) %f \n",
+                 closest[0],closest[1],closest[2],
+                 param[0],param[1],
+                 dist);
+          if ( dist > 1.0e-6 )
+            printf("MOVED\n");
+        }
+      return REF_SUCCESS;
+    }
   if ( EGADS_EMPTY != egads_status )
     {
       REIS( EGADS_SUCCESS, egads_status, "EG inv eval (guess)" );
@@ -1503,6 +1520,19 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REIS( EGADS_SUCCESS,
 	EG_invEvaluate(object, xyz,
 		       param, closest), "EG inv eval");
+      if ( report )
+        {
+          REF_DBL dist;
+          dist = sqrt(pow(closest[0]-xyz[0],2)+
+                      pow(closest[1]-xyz[1],2)+
+                      pow(closest[2]-xyz[2],2));
+          printf(" guess failed %f %f %f (%f %f) %f \n",
+                 closest[0],closest[1],closest[2],
+                 param[0],param[1],
+                 dist);
+          if ( dist > 1.0e-6 )
+            printf("MOVED\n");
+        }
 
   return REF_SUCCESS;
 #else
