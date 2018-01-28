@@ -629,7 +629,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
       REF_INT geom0,geom1,geom2;
       REF_INT faceid;
       double closest[3];
-      REF_BOOL inv_eval_wrapper = REF_FALSE;
+      REF_BOOL inv_eval_wrapper = REF_TRUE;
       updates = 0;
       pass++;
       each_ref_cell_valid_cell_with_nodes( ref_grid_tri(ref_grid), cell, nodes)
@@ -1468,6 +1468,33 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
 
+  if ( REF_FALSE && REF_GEOM_FACE )
+    { /* projection debug code */
+      ego esurf, *eloops, eref;
+      int oclass, mtype, nloop,*senses,*pinfo;
+      double data[18], *preal;
+      REF_DBL param_xyz[3];
+      REIS( EGADS_SUCCESS,
+	    EG_getTopology(object,
+			   &esurf, &oclass, &mtype,
+			   data, &nloop, &eloops, &senses), "topo" );
+      REIS( EGADS_SUCCESS,
+	    EG_getGeometry(esurf, &oclass, &mtype,
+			   &eref, &pinfo, &preal),"geom");
+      EG_free(pinfo);
+      EG_free(preal);
+      if (mtype == PLANE)
+        {
+          printf("face %d is PLANE\n",id);
+          printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
+	  REIS( EGADS_SUCCESS,
+		EG_evaluate(object, param, param_xyz ), "EG eval");
+          printf(" guess %f %f %f (%F %f)\n",
+                 param_xyz[0],param_xyz[1],param_xyz[2],
+                 param[0],param[1]);
+        }
+    }
+  
   if (!allow_recovery)
     REIS( EGADS_SUCCESS,
 	  EG_invEvaluateGuess(object, xyz,
