@@ -600,7 +600,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  RSS( ref_cell_nodes( ref_grid_tri(ref_grid),
 			       tri_list[i], tri_nodes ), "nodes");
 	  faceid = tri_nodes[3];
-	  sense = 0;
+	  sense = 0; /* when edge is used twice in loop, this is its index */
 	  RSS( ref_geom_tuv( ref_geom, edge_nodes[0],
 			     REF_GEOM_EDGE, edgeid, &t ), "edge t0");
 	  REIS( EGADS_SUCCESS,
