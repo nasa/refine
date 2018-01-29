@@ -37,6 +37,7 @@ static int print_usage(const char *name)
   printf("     [--shift dx dy dz]\n");
   printf("     [--scale s]\n");
   printf("     [--rotate degrees]\n");
+  printf("     [--egads cache-geometry-for-lite.egads]\n");
   printf("     [--drop-face faceid]\n");
   printf("     [--compact-faceids]\n");
   return 0;
@@ -114,6 +115,14 @@ int main( int argc, char *argv[] )
 	  ref_node_xyz(ref_node,0,node) = x*cos(rotate_rad) - z*sin(rotate_rad);
 	  ref_node_xyz(ref_node,2,node) = x*sin(rotate_rad) + z*cos(rotate_rad);
 	}
+    }
+    if( strcmp(argv[pos],"--egads") == 0 ) {
+      printf("%d: --egads\n",pos);
+      if ( pos+2 > argc )
+	return(print_usage(argv[0]));
+      pos++;
+      printf("%d: %s\n",pos,argv[pos]);
+      RSS( ref_geom_egads_load( ref_grid_geom(ref_grid), argv[pos] ), "ld e" );
     }
     if( strcmp(argv[pos],"--drop-face") == 0 ) {
       printf("%d: --drop-face\n",pos);
