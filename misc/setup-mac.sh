@@ -37,6 +37,7 @@ mkdir -p zoltan
     --prefix=`pwd` \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
+    --enable-lite \
     CC=mpicc \
     FC=mpif90 \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
