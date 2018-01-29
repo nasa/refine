@@ -417,11 +417,10 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
   REF_INT *e2f;
 
-  /* to allow recon after meshb load times
-     RSS( ref_geom_initialize( ref_geom ), "clear out previous assoc" );
-     RSS( ref_cell_free( ref_grid_edg(ref_grid) ), "clear out edge" );
-     RSS( ref_cell_create( &ref_grid_edg(ref_grid), 2, REF_TRUE ), "edg" );
-  */
+  /* to allow recon after meshb load times */
+  RSS( ref_geom_initialize( ref_geom ), "clear out previous assoc" );
+  RSS( ref_cell_free( ref_grid_edg(ref_grid) ), "clear out edge" );
+  RSS( ref_cell_create( &ref_grid_edg(ref_grid), 2, REF_TRUE ), "edg" );
   
   RSS( ref_geom_edge_faces( ref_grid, &e2f ), "compute edge faces");
   
