@@ -1,11 +1,4 @@
 
-+ uncomment egads lite methods
-+ prevent leaks of cad data
-+ add cad model data to testing meshb files (with recon that drops old data)
-meshb geom assoc only read (write full for now)
-+ meshb cad model only read (write full for now)
-+ swap para builds to egads lite
-
 add chunk size to minloc
 
 unify clump plotting diagnostics in parallel
@@ -100,8 +93,6 @@ kill tabs
 provide dense api (or pack)
  maybe just a copy
  reference to pointers with a free other
- nodes an cell
- cell needs native number and owership
  node
   xyz
   native id
@@ -135,6 +126,13 @@ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
 merge ref_collapse_face_local_*
 
 +++++++++++++++++
+
++ uncomment egads lite methods
++ prevent leaks of cad data
++ add cad model data to testing meshb files (with recon that drops old data)
++ meshb geom assoc only read (write full for now)
++ meshb cad model only read (write full for now)
++ swap para builds to egads lite
 
 + fix uninit memory in ref_adapt cmplexity
 
