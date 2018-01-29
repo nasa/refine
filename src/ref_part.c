@@ -665,6 +665,12 @@ REF_STATUS ref_part_cad_data( REF_GRID ref_grid,
   REF_DICT ref_dict;
   REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if( strcmp(&filename[end_of_string-6],".meshb") != 0 )
+    RSS( REF_INVALID, "expected .meshb extension" );
 
   file = NULL;
   if ( ref_mpi_once(ref_mpi) )
