@@ -34,9 +34,10 @@ mkdir -p parmetis
     --prefix=`pwd` \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
+    --enable-lite \
     CC=mpicc \
     FC=mpif90 \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572 -ftrapuv' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -ftrapuv' \
     ) \
     || exit
 
@@ -46,9 +47,10 @@ mkdir -p zoltan
     --prefix=`pwd` \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
+    --enable-lite \
     CC=mpicc \
     FC=mpif90 \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,47 -ftrapuv' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
     ) \
     || exit
 
