@@ -1275,7 +1275,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	}
     }
 
-  cad_data_keyword = 11;
+  cad_data_keyword = 126; /* GmfByteFlow */
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      cad_data_keyword,
 			      &available, &next_position ), "jump" );
@@ -1285,6 +1285,8 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 		    4, 1, file), "cad data size");
       if (verbose) printf("cad_data %d bytes\n",
 			  ref_geom_cad_data_size(ref_geom));
+      /* safe non-NULL free, if already allocated, to prevent memory leaks */
+      ref_free( ref_geom_cad_data(ref_geom) );
       ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
 		 REF_BYTE );
       REIS(ref_geom_cad_data_size(ref_geom), 

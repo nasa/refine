@@ -602,7 +602,7 @@ static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
 
   if ( ref_grid_once(ref_grid) )
     {
-      cad_data_keyword = 11;
+      cad_data_keyword = 126; /* GmfByteFlow */
       RSS( ref_import_meshb_jump( file, version, ref_dict,
 				  cad_data_keyword,
 				  &available, &next_position ), "jump" );
@@ -612,6 +612,8 @@ static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
 			4, 1, file), "cad_data_size");
 	  if (verbose) printf("cad_data_size %d\n",
 			      ref_geom_cad_data_size(ref_geom));
+          /* safe non-NULL free, if already allocated, to prevent mem leaks */
+          ref_free( ref_geom_cad_data(ref_geom) );
 	  ref_malloc(ref_geom_cad_data(ref_geom),
 		     ref_geom_cad_data_size(ref_geom),
 		     REF_BYTE );

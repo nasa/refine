@@ -1983,7 +1983,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
   
   if ( 0 < ref_geom_cad_data_size(ref_geom) )
     {
-      keyword_code = 11; /* Reserved3 */
+      keyword_code = 126; /* GmfByteFlow 173-47 */
       next_position = 4+4+4+ref_geom_cad_data_size(ref_geom)+ ftell(file);
       REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"keyword");
       REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next");
@@ -1995,7 +1995,7 @@ REF_STATUS ref_export_meshb( REF_GRID ref_grid, const char *filename )
     }
 
   /* End */
-  keyword_code = 54;
+  keyword_code = 54; /* GmfEnd 101-47 */
   REIS(1, fwrite(&keyword_code,sizeof(int),1,file),"vertex version code");
   next_position = 0;
   REIS(1, fwrite(&next_position,sizeof(next_position),1,file),"next pos");
