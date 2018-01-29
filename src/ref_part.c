@@ -653,6 +653,92 @@ static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_part_cad_data( REF_GRID ref_grid, 
+                              const char *filename )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  FILE *file;
+  REF_INT version, dim;
+  REF_BOOL available;
+  REF_INT next_position;
+  REF_DICT ref_dict;
+  REF_INT cad_data_keyword;
+  REF_BOOL verbose = REF_FALSE;
+
+  file = NULL;
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      RSS( ref_dict_create( &ref_dict ), "create dict" );
+      RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
+      if (verbose) printf("meshb version %d\n",version);
+      if (verbose) ref_dict_inspect(ref_dict);
+      if (verbose) printf("open %s\n",filename);
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  3, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing dimension" );
+      REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+      if (verbose) printf("meshb dim %d\n",dim);
+      REIS( 3, dim, "only 3D supported" );
+    }
+
+  if ( ref_grid_once(ref_grid) )
+    {
+      cad_data_keyword = 126; /* GmfByteFlow */
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  cad_data_keyword,
+				  &available, &next_position ), "jump" );
+      if ( available )
+	{
+	  REIS(1, fread((unsigned char *)&ref_geom_cad_data_size(ref_geom),
+			4, 1, file), "cad_data_size");
+	  if (verbose) printf("cad_data_size %d\n",
+			      ref_geom_cad_data_size(ref_geom));
+          /* safe non-NULL free, if already allocated, to prevent mem leaks */
+          ref_free( ref_geom_cad_data(ref_geom) );
+	  ref_malloc(ref_geom_cad_data(ref_geom),
+		     ref_geom_cad_data_size(ref_geom),
+		     REF_BYTE );
+	  REIS(ref_geom_cad_data_size(ref_geom), 
+	       fread(ref_geom_cad_data(ref_geom), 
+		     sizeof(REF_BYTE),
+		     ref_geom_cad_data_size(ref_geom),
+		     file),"cad_data");
+	  REIS( next_position, ftell(file), "end location" );
+	}
+    }
+  RSS( ref_mpi_bcast( ref_mpi, &available, 1, REF_INT_TYPE ), "bcast" );
+
+  RAS( available, "GmfByteFlow keyword for cad data missing");
+
+  if ( available )
+    {
+      RSS( ref_mpi_bcast( ref_mpi,
+			  &ref_geom_cad_data_size(ref_geom),
+			  1, REF_INT_TYPE ), "bcast" );
+      if ( !ref_grid_once(ref_grid) )
+	ref_malloc(ref_geom_cad_data(ref_geom),
+		   ref_geom_cad_data_size(ref_geom),
+		   REF_BYTE );
+      RSS( ref_mpi_bcast( ref_mpi,
+			  ref_geom_cad_data(ref_geom),
+			  ref_geom_cad_data_size(ref_geom), 
+			  REF_BYTE_TYPE ), "bcast" ); 
+    }
+
+  if ( ref_grid_once(ref_grid) )
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" );
+      fclose( file );
+    }
+
+  return REF_SUCCESS;
+}
+
+
 static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 					  REF_NODE ref_node, REF_INT nnode,
 					  FILE *file, 
