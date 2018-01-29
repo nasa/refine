@@ -2096,10 +2096,10 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
 #ifdef HAVE_EGADS_LITE
   {
     /* entry point NOT in egads.h */
-    extern int EG_importModel(egObject *context, const size_t nbytes,
-                          const char stream[], egObject **model);
-    if ( ref_grid_once(ref_grid) )
-      printf("linked to EGADSlite, using ref_geom_cad_data, not %s\n",filename);
+    int EG_importModel(egObject *context, const size_t nbytes,
+                       const char stream[], egObject **model);
+
+    SUPRESS_UNUSED_COMPILER_WARNING(filename);
 
     RAS( 0 < ref_geom_cad_data_size(ref_geom), "zero size cad_data" );
     RNS( ref_geom_cad_data(ref_geom), "cad_data NULL" );
@@ -2114,7 +2114,7 @@ REF_STATUS ref_geom_egads_load( REF_GEOM ref_geom, const char *filename )
 
   {
     /* entry point NOT in egads.h */
-    extern int EG_exportModel(ego mobject, size_t *nbytes, char *stream[]);
+    int EG_exportModel(ego mobject, size_t *nbytes, char *stream[]);
 
     size_t cad_data_size;
     REF_BYTE *cad_data;
