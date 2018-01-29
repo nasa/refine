@@ -43,7 +43,7 @@
 #include "ref_math.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_geom_initialize( REF_GEOM ref_geom )
+REF_STATUS ref_geom_initialize( REF_GEOM ref_geom )
 {
   REF_INT geom;
   ref_geom_n(ref_geom) = 0;

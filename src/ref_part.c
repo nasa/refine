@@ -296,6 +296,80 @@ static REF_STATUS ref_part_meshb_geom( REF_GEOM ref_geom,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_meshb_geom_bcast( REF_GEOM ref_geom,
+                                             REF_INT ngeom, REF_INT type,
+                                             REF_NODE ref_node,
+                                             FILE *file )
+{
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_INT *read_node;
+  REF_INT *read_id;
+  REF_DBL *read_param;
+  REF_DBL filler;
+
+  REF_INT ngeom_read;
+  REF_INT section_size; 
+
+  REF_INT geom;
+  REF_INT i, local;
+
+  chunk = MAX(1000000, ngeom/ref_mpi_m(ref_mpi));
+  chunk = MIN( chunk, ngeom );
+  
+  ref_malloc( read_node, chunk, REF_INT );
+  ref_malloc( read_id, chunk, REF_INT );
+  ref_malloc( read_param, 2*chunk, REF_DBL );
+
+  ngeom_read = 0;
+  while ( ngeom_read < ngeom )
+    {
+      section_size = MIN(chunk,ngeom-ngeom_read);
+      if ( ref_mpi_once(ref_mpi) )
+	{
+	  for (geom=0;geom<section_size;geom++)
+	    {
+	      REIS(1, fread(&(read_node[geom]),sizeof(REF_INT), 1, file ), "n");
+	      REIS(1, fread(&(read_id[geom]),sizeof(REF_INT), 1, file ), "n");
+	      for ( i = 0; i < 2 ; i++ )
+		read_param[i+2*geom] = 0.0; /* ensure init */
+	      for ( i = 0; i < type ; i++ )
+		REIS( 1, fread(&(read_param[i+2*geom]),
+			       sizeof(double), 1, file ), "param" );
+	      if ( 0 < type )
+		REIS(1, fread(&(filler), sizeof(double),1,file),"filler");
+	    }
+	  for (geom=0;geom<section_size;geom++)
+	    read_node[geom]--;
+        }
+      RSS( ref_mpi_bcast( ref_mpi,
+                          read_node, section_size, REF_INT_TYPE ), "nd" );
+      RSS( ref_mpi_bcast( ref_mpi,
+                          read_id, section_size, REF_INT_TYPE ), "id" );
+      RSS( ref_mpi_bcast( ref_mpi,
+                          read_param, 2*section_size, REF_DBL_TYPE ), "pm");
+      for (geom=0;geom<section_size;geom++)
+        {
+	  RXS( ref_node_local( ref_node, read_node[geom], &local ), 
+	       REF_NOT_FOUND, "local" );
+	  if ( REF_EMPTY != local )
+            {
+	      RSS( ref_geom_add( ref_geom,
+				 local, type, read_id[geom],
+				 &(read_param[2*geom]) ), "add geom");
+              
+            }
+        }
+      ngeom_read += section_size;
+    }
+
+  ref_free(read_param);
+  ref_free(read_id);
+  ref_free(read_node);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_meshb_cell( REF_CELL ref_cell, REF_INT ncell,
 				       REF_NODE ref_node, REF_INT nnode,
 				       FILE *file )
@@ -744,6 +818,84 @@ REF_STATUS ref_part_cad_data( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_part_cad_association( REF_GRID ref_grid, 
+                                     const char *filename )
+{
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT version, dim;
+  REF_BOOL available;
+  REF_INT next_position;
+  REF_DICT ref_dict;
+  REF_INT type, geom_keyword;
+  REF_INT ngeom;
+  REF_BOOL verbose = REF_FALSE;
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if( strcmp(&filename[end_of_string-6],".meshb") != 0 )
+    RSS( REF_INVALID, "expected .meshb extension" );
+
+  file = NULL;
+  if ( ref_mpi_once(ref_mpi) )
+    {
+      RSS( ref_dict_create( &ref_dict ), "create dict" );
+      RSS( ref_import_meshb_header( filename, &version, ref_dict), "header");
+      if (verbose) printf("meshb version %d\n",version);
+      if (verbose) ref_dict_inspect(ref_dict);
+      if (verbose) printf("open %s\n",filename);
+      file = fopen(filename,"r");
+      if (NULL == (void *)file) printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file" );
+      RSS( ref_import_meshb_jump( file, version, ref_dict,
+				  3, &available, &next_position ), "jump" );
+      RAS( available, "meshb missing dimension" );
+      REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+      if (verbose) printf("meshb dim %d\n",dim);
+      REIS( 3, dim, "only 3D supported" );
+    }
+
+  RSS( ref_geom_initialize( ref_geom ), "clear out previous assoc" );
+
+  each_ref_type( ref_geom, type )
+    {
+      if ( ref_grid_once(ref_grid) )
+	{
+	  geom_keyword = 40+type;
+	  RSS( ref_import_meshb_jump( file, version, ref_dict,
+				      geom_keyword,
+				      &available, &next_position ), "jump" );
+	  if ( available )
+	    {
+	      REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
+	      if (verbose) printf("type %d ngeom %d\n",type, ngeom);
+	    }
+	}
+      RSS( ref_mpi_bcast( ref_mpi, &available, 1, REF_INT_TYPE ), "bcast" );
+      if ( available )
+	{
+	  RSS( ref_mpi_bcast( ref_mpi, &ngeom, 1, REF_INT_TYPE ), "bcast" ); 
+	  RSS( ref_part_meshb_geom_bcast( ref_geom, ngeom, type,
+                                          ref_node, 
+                                          file ), "part geom bcast" );
+	  if ( ref_grid_once(ref_grid) )
+	    REIS( next_position, ftell(file), "end location" );
+	}
+    }
+
+  RSS( ref_geom_ghost( ref_geom, ref_node ), "fill geom ghosts");
+
+  if ( ref_grid_once(ref_grid) )
+    {
+      RSS( ref_dict_free( ref_dict ), "free dict" );
+      fclose( file );
+    }
+
+  return REF_SUCCESS;
+}
 
 static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 					  REF_NODE ref_node, REF_INT nnode,

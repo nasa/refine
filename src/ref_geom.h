@@ -130,6 +130,7 @@ BEGIN_C_DECLORATION
   each_ref_adj_node_item_with_ref( ( ref_geom )->ref_adj, node, item, geom)
 
 REF_STATUS ref_geom_create( REF_GEOM *ref_geom );
+REF_STATUS ref_geom_initialize( REF_GEOM ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
