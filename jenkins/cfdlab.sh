@@ -72,7 +72,7 @@ cd ${egads_dir}
 LOG=${root_dir}/log.egads-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
-    --prefix=${build_dir} \
+    --prefix=${egads_dir} \
     --with-EGADS=${egads_path} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
@@ -97,7 +97,7 @@ cd ${zoltan_dir}
 LOG=${root_dir}/log.zoltan-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
-    --prefix=${build_dir} \
+    --prefix=${zoltan_dir} \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
