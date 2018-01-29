@@ -28,8 +28,10 @@ egads_path=/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/112/EngSket
 
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
-build_dir=${root_dir}/_refine
-strict_dir=${root_dir}/_strict
+
+zoltan_dir=${root_dir}/_refine-zoltan-egadslite
+egads_dir=${root_dir}/_refine-egads-full
+strict_dir=${root_dir}/_refine-strict
 
 cd ${source_dir}
 LOG=${root_dir}/log.bootstrap
@@ -50,13 +52,13 @@ ${source_dir}/configure \
     FC=gfortran  > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.make-valgrind
+LOG=${root_dir}/log.strict-make-check-valgrind
 trap "cat $LOG" EXIT
 make -j 8 > $LOG 2>&1
 make check TESTS_ENVIRONMENT='valgrind --quiet  --error-exitcode=1 --leak-check=full' >> $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.make-distcheck
+LOG=${root_dir}/log.strict-make-distcheck
 trap "cat $LOG" EXIT
 make distcheck > $LOG 2>&1
 cp refine-*.tar.gz ${root_dir}
@@ -64,35 +66,61 @@ trap - EXIT
 
 date
 
-mkdir -p ${build_dir}
-cd ${build_dir}
+mkdir -p ${egads_dir}
+cd ${egads_dir}
 
-LOG=${root_dir}/log.configure
+LOG=${root_dir}/log.egads-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${build_dir} \
-    --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.make
+LOG=${root_dir}/log.egads-make
 trap "cat $LOG" EXIT
 env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.make-install
+LOG=${root_dir}/log.egads-make-install
 trap "cat $LOG" EXIT
 make install > $LOG 2>&1
 trap - EXIT
 
 date
 
-LOG=${root_dir}/log.unit-para
+mkdir -p ${zoltan_dir}
+cd ${zoltan_dir}
+
+LOG=${root_dir}/log.zoltan-configure
 trap "cat $LOG" EXIT
-cd ${build_dir}/src
+${source_dir}/configure \
+    --prefix=${build_dir} \
+    --with-zoltan=${zoltan_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
+    CC=mpicc \
+    FC=mpif90  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.zoltan-make
+trap "cat $LOG" EXIT
+env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.zoltan-make-install
+trap "cat $LOG" EXIT
+make install > $LOG 2>&1
+trap - EXIT
+
+date
+
+LOG=${root_dir}/log.zoltan-unit
+trap "cat $LOG" EXIT
+cd ${zoltan_dir}/src
 echo para-unit > $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
@@ -119,7 +147,7 @@ date
 LOG=${root_dir}/log.accept-2d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/linear/two
-./accept-2d-two.sh ${build_dir} > $LOG 2>&1
+./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -127,7 +155,7 @@ date
 LOG=${root_dir}/log.accept-2d-polar-2-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/polar-2/two
-./accept-2d-two.sh ${build_dir} > $LOG 2>&1
+./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -135,7 +163,7 @@ date
 LOG=${root_dir}/log.accept-2d-mixed
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/mixed
-./accept-2d-mixed.sh ${build_dir} > $LOG 2>&1
+./accept-2d-mixed.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -143,7 +171,7 @@ date
 LOG=${root_dir}/log.accept-3d-linear-one
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/one
-./accept-3d-one.sh ${build_dir} > $LOG 2>&1
+./accept-3d-one.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -151,7 +179,7 @@ date
 LOG=${root_dir}/log.accept-3d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
-./accept-3d-two.sh ${build_dir} > $LOG 2>&1
+./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -159,7 +187,7 @@ date
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
-./accept-3d-two-para.sh ${build_dir} > $LOG 2>&1
+./accept-3d-two-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -167,7 +195,7 @@ date
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-./accept-cube-cylinder-uniform-two.sh ${build_dir} > $LOG 2>&1
+./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -175,7 +203,7 @@ date
 LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/linear010/two
-./accept-cube-cylinder-linear010-two.sh ${build_dir} > $LOG 2>&1
+./accept-cube-cylinder-linear010-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -183,7 +211,7 @@ date
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-./accept-cube-cylinder-polar-2-two.sh ${build_dir} > $LOG 2>&1
+./accept-cube-cylinder-polar-2-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -191,7 +219,7 @@ date
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-./accept-cube-cylinder-polar-2-para.sh ${build_dir} > $LOG 2>&1
+./accept-cube-cylinder-polar-2-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -199,7 +227,7 @@ date
 LOG=${root_dir}/log.accept-3d-polar-1-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/polar-1/two
-./accept-3d-two.sh ${build_dir} > $LOG 2>&1
+./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -207,7 +235,7 @@ date
 LOG=${root_dir}/log.accept-cube-sphere-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/uniform/two
-./accept-cube-sphere-uniform-two.sh ${build_dir} > $LOG 2>&1
+./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -215,7 +243,7 @@ date
 LOG=${root_dir}/log.accept-cube-sphere-ring-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/ring/two
-./accept-cube-sphere-ring-two.sh ${build_dir} > $LOG 2>&1
+./accept-cube-sphere-ring-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -223,7 +251,7 @@ date
 LOG=${root_dir}/log.accept-annulus-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/annulus/uniform/two
-./accept-annulus-uniform-two.sh ${build_dir} > $LOG 2>&1
+./accept-annulus-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -231,7 +259,7 @@ date
 LOG=${root_dir}/log.accept-cone-cone-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cone-cone/uniform/two
-./accept-cone-cone-uniform-two.sh ${build_dir} > $LOG 2>&1
+./accept-cone-cone-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -239,7 +267,7 @@ date
 LOG=${root_dir}/log.accept-cone-cone-recon
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cone-cone/recon
-./accept-cone-cone-recon.sh ${build_dir} > $LOG 2>&1
+./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -247,7 +275,7 @@ date
 LOG=${root_dir}/log.accept-om6-recon
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/om6/recon
-./accept-om6-recon.sh ${build_dir} > $LOG 2>&1
+./accept-om6-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -255,7 +283,7 @@ date
 LOG=${root_dir}/log.accept-hemisphere-uniform
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
-./accept-hemisphere-uniform.sh ${build_dir} > $LOG 2>&1
+./accept-hemisphere-uniform.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
@@ -263,7 +291,7 @@ date
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
-./accept-hemisphere-uniform-para.sh ${build_dir} > $LOG 2>&1
+./accept-hemisphere-uniform-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 date
