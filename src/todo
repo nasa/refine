@@ -1,9 +1,9 @@
 
 + uncomment egads lite methods
 + prevent leaks of cad data
-add cad model data to testing meshb files (with recon that drops old data)
++ add cad model data to testing meshb files (with recon that drops old data)
 meshb geom assoc and cad model only read (write full for now)
-swap para builds to egads lite
++ swap para builds to egads lite
 
 add chunk size to minloc
 
