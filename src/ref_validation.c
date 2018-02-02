@@ -242,6 +242,26 @@ REF_STATUS ref_validation_cell_node( REF_GRID ref_grid )
 	  }
       }
 
+  ref_cell = ref_grid_edg(ref_grid);
+    each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
+      {
+	has_local = REF_FALSE;
+	for ( node=0; node<ref_cell_node_per(ref_cell); node++ )
+	  {
+	    if ( ! ref_node_valid(ref_grid_node(ref_grid),nodes[node]))
+	      {
+		RSS( REF_FAILURE, "cell with invalid node" );
+	      }
+	    has_local = has_local || 
+	      ( ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+		ref_node_part(ref_node,nodes[node]) );
+	  }
+	if ( !has_local )
+	  {
+	    RSS( REF_FAILURE, "cell with all ghost nodes" );
+	  }
+      }
+
   ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes )
       {
