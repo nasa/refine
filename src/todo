@@ -1,4 +1,6 @@
 
+ref_validation_cell_node when edg, but ref_geom ngeom=0
+
 add chunk size to minloc
 
 unify clump plotting diagnostics in parallel
