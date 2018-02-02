@@ -1523,10 +1523,9 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
 {
 #ifdef HAVE_EGADS
   REF_DBL closest[3];
-  ego object;
+  ego object = (ego)NULL;
   int egads_status;
   REF_BOOL allow_recovery = REF_TRUE;
-  object = (ego)NULL;
   REF_BOOL debug_inv_eval = REF_FALSE;
 
   switch (type)
@@ -1558,7 +1557,7 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
       printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
       REIS( EGADS_SUCCESS,
             EG_evaluate(object, param, param_xyz ), "EG eval");
-      printf(" guess  %f %f %f (%F %f)\n",
+      printf(" guess  %f %f %f (%f %f)\n",
              param_xyz[0],param_xyz[1],param_xyz[2],
              param[0],param[1]);
     }
