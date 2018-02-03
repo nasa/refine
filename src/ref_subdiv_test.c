@@ -466,6 +466,7 @@ int main( int argc, char *argv[] )
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"two tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"still one edg");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
@@ -482,6 +483,7 @@ int main( int argc, char *argv[] )
 
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)),"two tet");
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)),"still one tri");
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"still one edg");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
@@ -499,6 +501,7 @@ int main( int argc, char *argv[] )
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"four tri");
+    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)),"two edg");
 
     RSS( tear_down( ref_subdiv ), "tear down");
   }
@@ -516,7 +519,8 @@ int main( int argc, char *argv[] )
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-
+    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)),"two edg");
+        
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
@@ -533,7 +537,8 @@ int main( int argc, char *argv[] )
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"still one edg");
+    
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
@@ -550,7 +555,8 @@ int main( int argc, char *argv[] )
 
     REIS(4, ref_cell_n(ref_grid_tet(ref_grid)),"four tet");
     REIS(2, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-
+    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)),"still one edg");
+    
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 
@@ -567,7 +573,8 @@ int main( int argc, char *argv[] )
 
     REIS(8, ref_cell_n(ref_grid_tet(ref_grid)),"eight tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)),"tri");
-
+    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)),"two edg");
+    
     RSS( tear_down( ref_subdiv ), "tear down");
   }
 

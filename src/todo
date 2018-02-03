@@ -1,8 +1,5 @@
 
-ref_validation_cell_node when edg, but ref_geom ngeom=0
- meshb with edge and call ref_geom_init
-
-add om6 metric case to acceptance
+add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 add chunk size to minloc
 
@@ -131,6 +128,10 @@ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
 merge ref_collapse_face_local_*
 
 +++++++++++++++++
+
++ ref_validation_cell_node when edg, but ref_geom ngeom=0
+  + meshb with edge and call ref_geom_init
+  + ref_subdiv_split_edg
 
 + uncomment egads lite methods
 + prevent leaks of cad data

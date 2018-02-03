@@ -1036,6 +1036,61 @@ static REF_STATUS ref_subdiv_split_tri( REF_SUBDIV ref_subdiv )
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_subdiv_split_edg( REF_SUBDIV ref_subdiv )
+{
+  REF_INT cell;
+  REF_CELL edg;
+  REF_CELL edg_split;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_cell;
+  REF_INT *marked_for_removal;
+
+  REF_INT edge01;
+
+  edg = ref_grid_edg(ref_subdiv_grid(ref_subdiv));
+
+  ref_malloc_init( marked_for_removal, ref_cell_max(edg), REF_INT, 0);
+
+  RSS( ref_cell_create( &edg_split, 
+			ref_cell_node_per(edg), 
+			ref_cell_last_node_is_an_id(edg)), 
+       "temp edg");
+
+  each_ref_cell_valid_cell( edg, cell )
+    {
+      RSS( ref_cell_nodes( edg, cell, nodes ), "nodes");
+      RSS( ref_edge_with( ref_subdiv_edge( ref_subdiv ),
+			  nodes[0], nodes[1], &edge01 ), "e01" );
+	  
+      if( ref_subdiv_mark( ref_subdiv, edge01 ) )
+	{
+	  marked_for_removal[cell]=1;
+	  RSS( ref_cell_nodes( edg, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[0])), "mis");
+	  RSS(ref_cell_add(edg_split,new_nodes,&new_cell),"add");
+	  RSS( ref_cell_nodes( edg, cell, new_nodes ), "nodes");
+	  RSS( ref_subdiv_node_between(ref_subdiv,nodes[0],nodes[1], 
+				       &(new_nodes[1])), "mis");
+	  RSS(ref_cell_add(edg_split,new_nodes,&new_cell),"add");
+	}
+    }
+
+  for(cell=0;cell<ref_cell_max(edg);cell++)
+    if ( 1 == marked_for_removal[cell] )
+      RSS(ref_cell_remove(edg,cell),"remove");
+      
+  each_ref_cell_valid_cell_with_nodes( edg_split, cell, nodes)
+    RSS(ref_subdiv_add_local_cell(ref_subdiv, edg, nodes),"add local");
+      
+  RSS( ref_cell_free( edg_split ), "temp edg free");
+
+  free(marked_for_removal);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_subdiv_split_pri( REF_SUBDIV ref_subdiv )
 {
   REF_INT cell;
@@ -1699,6 +1754,8 @@ REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv )
   RSS( ref_subdiv_split_qua( ref_subdiv ), "split qua" );
   /* tri comes last, it can make qua elements too */
   RSS( ref_subdiv_split_tri( ref_subdiv ), "split tri" );
+
+  RSS( ref_subdiv_split_edg( ref_subdiv ), "split edg" );
 
   /* remove unused nodes on partition boundaries */
   each_ref_node_valid_node( ref_node, node )
