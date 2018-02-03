@@ -1,5 +1,8 @@
 
 ref_validation_cell_node when edg, but ref_geom ngeom=0
+ meshb with edge and call ref_geom_init
+
+add om6 metric case to acceptance
 
 add chunk size to minloc
 
