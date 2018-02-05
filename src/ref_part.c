@@ -897,11 +897,12 @@ REF_STATUS ref_part_cad_association( REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
-					  REF_NODE ref_node, REF_INT nnode,
-					  FILE *file, 
-					  long conn_offset, 
-					  long faceid_offset )
+static REF_STATUS ref_part_bin_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
+                                           REF_NODE ref_node, REF_INT nnode,
+                                           FILE *file, 
+                                           long conn_offset, 
+                                           long faceid_offset,
+                                           REF_BOOL swap_endian )
 {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT ncell_read;
@@ -952,7 +953,8 @@ static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 	      fread( c2n,
 		     sizeof(REF_INT), section_size*node_per, file ), "cn" );
 	  for (cell=0;cell<section_size*node_per;cell++)
-	    SWAP_INT(c2n[cell]);
+            if (swap_endian)
+              SWAP_INT(c2n[cell]);
 	  for (cell=0;cell<section_size*node_per;cell++)
 	    c2n[cell]--;
 	  if ( ref_cell_last_node_is_an_id(ref_cell) )
@@ -963,7 +965,8 @@ static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
 		  fread( tag,
 			 sizeof(REF_INT), section_size, file ), "tag" );
 	      for (cell=0;cell<section_size;cell++)
-		SWAP_INT(tag[cell]);
+                if (swap_endian)
+                  SWAP_INT(tag[cell]);
 
 	      /* sort into right locations */
 	      for (cell=0;cell<section_size;cell++)
@@ -1087,8 +1090,8 @@ static REF_STATUS ref_part_b8_ugrid_cell( REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-			      const char *filename )
+REF_STATUS ref_part_bin_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+			      const char *filename, REF_BOOL swap_endian )
 {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
@@ -1098,7 +1101,6 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
-  REF_BOOL swap_endian = REF_TRUE;
   REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
 
@@ -1125,13 +1127,17 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       RES( 1, fread( &npri, sizeof(REF_INT), 1, file ), "npri" );
       RES( 1, fread( &nhex, sizeof(REF_INT), 1, file ), "nhex" );
 
-      if (swap_endian) SWAP_INT(nnode);
-      if (swap_endian) SWAP_INT(ntri);
-      if (swap_endian) SWAP_INT(nqua);
-      if (swap_endian) SWAP_INT(ntet);
-      if (swap_endian) SWAP_INT(npyr);
-      if (swap_endian) SWAP_INT(npri);
-      if (swap_endian) SWAP_INT(nhex);
+      
+      if (swap_endian)
+        {
+          SWAP_INT(nnode);
+          SWAP_INT(ntri);
+          SWAP_INT(nqua);
+          SWAP_INT(ntet);
+          SWAP_INT(npyr);
+          SWAP_INT(npri);
+          SWAP_INT(nhex);
+        }
     }
 
   RSS( ref_mpi_bcast( ref_grid_mpi(ref_grid),
@@ -1166,9 +1172,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)8*(long)3*(long)nnode
 	+ (long)4*(long)3*(long)ntri
 	+ (long)4*(long)4*(long)nqua;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tri" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_tri(ref_grid), ntri, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "tri" );
     }
 
   if ( 0 < nqua )
@@ -1180,9 +1187,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)8*(long)3*(long)nnode
 	+ (long)4*(long)4*(long)ntri
 	+ (long)4*(long)4*(long)nqua;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "qua" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_qua(ref_grid), nqua, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "qua" );
     }
 
   if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "bound");
@@ -1194,9 +1202,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)4*(long)4*(long)ntri
 	+ (long)4*(long)5*(long)nqua;
       faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "tet" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_tet(ref_grid), ntet, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "tet" );
     }
 
   if ( 0 < npyr )
@@ -1207,9 +1216,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)4*(long)5*(long)nqua
 	+ (long)4*(long)4*(long)ntet;
       faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "pyr" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_pyr(ref_grid), npyr, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "pyr" );
     }
 
   if ( 0 < npri )
@@ -1221,9 +1231,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)4*(long)4*(long)ntet
 	+ (long)4*(long)5*(long)npyr;
       faceid_offset = (long)REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_pri(ref_grid), npri, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "pri" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_pri(ref_grid), npri, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "pri" );
     }
 
   if ( 0 < nhex )
@@ -1236,9 +1247,10 @@ REF_STATUS ref_part_b8_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	+ (long)4*(long)5*(long)npyr
 	+ (long)4*(long)6*(long)npri;
       faceid_offset = REF_EMPTY;
-      RSS( ref_part_b8_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
-				   ref_node, nnode, 
-				   file, conn_offset, faceid_offset ), "hex" );
+      RSS( ref_part_bin_ugrid_cell( ref_grid_hex(ref_grid), nhex, 
+                                    ref_node, nnode, 
+                                    file, conn_offset, faceid_offset,
+                                    swap_endian ), "hex" );
     }
 
   if ( ref_grid_once(ref_grid) )
@@ -1661,10 +1673,16 @@ REF_STATUS ref_part_by_extension( REF_GRID *ref_grid_ptr,
 
   end_of_string = strlen(filename);
 
+  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
+    {
+      RSS( ref_part_bin_ugrid( ref_grid_ptr, ref_mpi,
+                               filename, REF_FALSE ), "lb8_ugrid failed");
+      return REF_SUCCESS;
+    }
   if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
     {
-      RSS( ref_part_b8_ugrid( ref_grid_ptr, ref_mpi,
-			      filename ), "b8_ugrid failed");
+      RSS( ref_part_bin_ugrid( ref_grid_ptr, ref_mpi,
+                               filename, REF_TRUE ), "b8_ugrid failed");
       return REF_SUCCESS;
     }
   if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
