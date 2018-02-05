@@ -718,6 +718,9 @@ static REF_STATUS ref_part_meshb( REF_GRID *ref_grid_ptr,
   RSS( ref_geom_ghost( ref_geom, ref_node ), "fill geom ghosts");
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
+  RSS( ref_grid_inward_boundary_orientation( ref_grid ),
+       "inward boundary orientation" );
+
   if ( ref_grid_once(ref_grid) )
     {
       RSS( ref_dict_free( ref_dict ), "free dict" );
@@ -1260,6 +1263,9 @@ REF_STATUS ref_part_bin_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
+  RSS( ref_grid_inward_boundary_orientation( ref_grid ),
+       "inward boundary orientation" );
+  
   if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
 
   return REF_SUCCESS;
