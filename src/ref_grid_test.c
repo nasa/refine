@@ -152,6 +152,50 @@ int main( void )
     RSS(ref_grid_free(ref_grid),"cleanup");
   }
 
+  { /* orient outward */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add inward tri");
+
+    RSS( ref_grid_outward_boundary_orientation( ref_grid ), "get out" );
+
+    RSS(ref_cell_nodes(ref_grid_tri(ref_grid),cell,nodes),"add tet");
+    REIS( 1, nodes[0], "n0" );
+    REIS( 0, nodes[1], "n1" );
+    REIS( 2, nodes[2], "n2" );
+    REIS(10, nodes[3], "id" );
+    
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
+  
+  { /* orient inward */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
+
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 2; nodes[3] = 3;
+    RSS(ref_cell_add(ref_grid_tet(ref_grid),nodes,&cell),"add tet");
+
+    nodes[0] = 1; nodes[1] = 0; nodes[2] = 2; nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid),nodes,&cell),"add inward tri");
+
+    RSS( ref_grid_inward_boundary_orientation( ref_grid ), "get out" );
+
+    RSS(ref_cell_nodes(ref_grid_tri(ref_grid),cell,nodes),"add tet");
+    REIS( 0, nodes[0], "n0" );
+    REIS( 1, nodes[1], "n1" );
+    REIS( 2, nodes[2], "n2" );
+    REIS(10, nodes[3], "id" );
+    
+    RSS(ref_grid_free(ref_grid),"cleanup");
+  }
+  
   { /* single tri enclosing */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];

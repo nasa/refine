@@ -111,6 +111,9 @@ REF_STATUS ref_grid_edge_nodes( REF_GRID ref_grid,
 				REF_INT *nnode, REF_INT *nedge, 
 				REF_INT **g2l, REF_INT **l2g );
 
+REF_STATUS ref_grid_outward_boundary_orientation( REF_GRID ref_grid );
+REF_STATUS ref_grid_inward_boundary_orientation( REF_GRID ref_grid );
+
 REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
