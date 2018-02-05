@@ -57,6 +57,20 @@ int main( int argc, char *argv[] )
 
       RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "set up tet" );
 
+      RSS( ref_gather_by_extension( ref_grid, "ref_gather_test.lb8.ugrid" ), 
+	   "gather");
+
+      RSS( ref_grid_free( ref_grid ), "free");
+      if ( ref_mpi_once(ref_mpi) ) 
+	REIS(0, remove( "ref_gather_test.lb8.ugrid" ), "test clean up");
+    }
+  
+  if ( 1 == argc )
+    {
+      REF_GRID ref_grid;
+
+      RSS( ref_fixture_pri_stack_grid( &ref_grid, ref_mpi ), "set up tet" );
+
       RSS( ref_gather_by_extension( ref_grid, "ref_gather_test.b8.ugrid" ), 
 	   "gather");
 

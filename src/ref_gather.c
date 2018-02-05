@@ -1168,8 +1168,9 @@ static REF_STATUS ref_gather_meshb( REF_GRID ref_grid, const char *filename  )
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid,
-				       const char *filename  )
+static REF_STATUS ref_gather_bin_ugrid( REF_GRID ref_grid,
+                                        const char *filename,
+                                        REF_BOOL swap_endian )
 {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1177,7 +1178,6 @@ static REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT faceid, min_faceid, max_faceid;
-  REF_BOOL swap_endian = REF_TRUE;
   REF_BOOL always_id = REF_FALSE;
   REF_BOOL faceid_insted_of_c2n, select_faceid;
 
@@ -1200,13 +1200,16 @@ static REF_STATUS ref_gather_b8_ugrid( REF_GRID ref_grid,
       if (NULL == (void *)file) printf("unable to open %s\n",filename);
       RNS(file, "unable to open file" );
 
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
+      if ( swap_endian )
+        {
+          SWAP_INT(nnode);
+          SWAP_INT(ntri);
+          SWAP_INT(nqua);
+          SWAP_INT(ntet);
+          SWAP_INT(npyr);
+          SWAP_INT(npri);
+          SWAP_INT(nhex);
+        }
 
       REIS(1, fwrite(&nnode,sizeof(REF_INT),1,file),"nnode");
 
@@ -1269,9 +1272,16 @@ REF_STATUS ref_gather_by_extension( REF_GRID ref_grid,
 
   end_of_string = strlen(filename);
 
+  if( strcmp(&filename[end_of_string-10],".lb8.ugrid") == 0 ) 
+    {
+      RSS( ref_gather_bin_ugrid( ref_grid, filename,
+                                 REF_FALSE ), "lb8_ugrid failed");
+      return REF_SUCCESS;
+    }
   if( strcmp(&filename[end_of_string-9],".b8.ugrid") == 0 ) 
     {
-      RSS( ref_gather_b8_ugrid( ref_grid, filename ), "b8_ugrid failed");
+      RSS( ref_gather_bin_ugrid( ref_grid, filename,
+                                 REF_TRUE ), "b8_ugrid failed");
       return REF_SUCCESS;
     }
   if( strcmp(&filename[end_of_string-6],".meshb") == 0 ) 
