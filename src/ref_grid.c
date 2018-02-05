@@ -364,6 +364,9 @@ REF_STATUS ref_grid_outward_boundary_orientation( REF_GRID ref_grid )
   REF_BOOL flip;
   REF_INT face, temp;
 
+  if ( ref_grid_twod( ref_grid) )
+    RSS( REF_IMPLEMENT, "not implemented for 2D yet" );
+  
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes )
     {
       for(node=0;node<3;node++)
@@ -413,6 +416,9 @@ REF_STATUS ref_grid_inward_boundary_orientation( REF_GRID ref_grid )
   REF_BOOL flip;
   REF_INT face, temp;
 
+  if ( ref_grid_twod( ref_grid) )
+    RSS( REF_IMPLEMENT, "not implemented for 2D yet" );
+  
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes )
     {
       for(node=0;node<3;node++)
