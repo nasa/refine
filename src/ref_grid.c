@@ -353,58 +353,6 @@ static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_grid_outward_boundary_orientation( REF_GRID ref_grid )
-{
-  REF_CELL tri = ref_grid_tri( ref_grid );
-  REF_CELL tet = ref_grid_tet( ref_grid );
-  REF_INT cell, cell0, cell1;
-  REF_INT node;
-  REF_INT face_nodes[4];
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_BOOL flip;
-  REF_INT face, temp;
-
-  if ( ref_grid_twod( ref_grid) )
-    RSS( REF_IMPLEMENT, "not implemented for 2D yet" );
-  
-  each_ref_cell_valid_cell_with_nodes( tri, cell, nodes )
-    {
-      for(node=0;node<3;node++)
-	face_nodes[node]=nodes[node];
-      face_nodes[3]=face_nodes[0];
-      RSS( ref_cell_with_face( tet, face_nodes, &cell0, &cell1 ), "with face"); 
-      RUS( REF_EMPTY, cell0, "boundary triangle does not have a tet" );
-      REIS( REF_EMPTY, cell1, "boundary triangle with two tets" );
-      flip = REF_FALSE;
-      for ( face = 0; face <4 ; face++ )
-        {
-          if ( ( nodes[0] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[1] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[2] == ref_cell_f2n(tet,2,face,cell0) ) ||
-               ( nodes[1] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[2] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[0] == ref_cell_f2n(tet,2,face,cell0) ) ||
-               ( nodes[2] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[0] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[1] == ref_cell_f2n(tet,2,face,cell0) ) )
-            {
-              flip = REF_TRUE;
-              break;
-            }
-        }
-      if ( flip )
-        {
-          temp = nodes[0];
-          nodes[0] = nodes[1];
-          nodes[1] = temp;
-          RSS( ref_cell_replace_whole( tri, cell, nodes ),
-               "replace with flip" );
-        }
-    }
- 
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_grid_inward_boundary_orientation( REF_GRID ref_grid )
 {
   REF_CELL tri = ref_grid_tri( ref_grid );
