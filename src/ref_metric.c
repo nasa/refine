@@ -1297,7 +1297,7 @@ REF_STATUS ref_metric_complexity( REF_DBL *metric, REF_GRID ref_grid,
 	}
     }
   RSS( ref_mpi_allsum( ref_grid_mpi(ref_grid), 
-		       &complexity, 1, REF_DBL_TYPE ),"dbl sum");
+		       complexity, 1, REF_DBL_TYPE ),"dbl sum");
   
   return REF_SUCCESS;
 }
