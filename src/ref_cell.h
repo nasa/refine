@@ -199,6 +199,7 @@ END_C_DECLORATION
 
 /* http://www.simcenter.msstate.edu/docs/solidmesh/ugridconnectivity.html
 in c numbering
+boundary elements right hand normal point into element, see f2n
 
                               inode3------5------inode2
                                  / \              . /

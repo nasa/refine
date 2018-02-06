@@ -356,48 +356,104 @@ static REF_STATUS ref_update_tri_guess( REF_CELL ref_cell,
 REF_STATUS ref_grid_inward_boundary_orientation( REF_GRID ref_grid )
 {
   REF_CELL tri = ref_grid_tri( ref_grid );
-  REF_CELL tet = ref_grid_tet( ref_grid );
+  REF_CELL qua = ref_grid_qua( ref_grid );
+  REF_CELL ref_cell;
   REF_INT cell, cell0, cell1;
   REF_INT node;
   REF_INT face_nodes[4];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL flip;
-  REF_INT face, temp;
+  REF_INT face, group;
 
-  if ( ref_grid_twod( ref_grid) )
-    RSS( REF_IMPLEMENT, "not implemented for 2D yet" );
-  
   each_ref_cell_valid_cell_with_nodes( tri, cell, nodes )
     {
       for(node=0;node<3;node++)
 	face_nodes[node]=nodes[node];
       face_nodes[3]=face_nodes[0];
-      RSS( ref_cell_with_face( tet, face_nodes, &cell0, &cell1 ), "with face"); 
-      RUS( REF_EMPTY, cell0, "boundary triangle does not have a tet" );
-      REIS( REF_EMPTY, cell1, "boundary triangle with two tets" );
       flip = REF_FALSE;
-      for ( face = 0; face <4 ; face++ )
+      each_ref_grid_ref_cell( ref_grid, group, ref_cell )
         {
-          if ( ( nodes[0] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[1] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[2] == ref_cell_f2n(tet,2,face,cell0) ) ||
-               ( nodes[1] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[2] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[0] == ref_cell_f2n(tet,2,face,cell0) ) ||
-               ( nodes[2] == ref_cell_f2n(tet,1,face,cell0) &&
-                 nodes[0] == ref_cell_f2n(tet,0,face,cell0) &&
-                 nodes[1] == ref_cell_f2n(tet,2,face,cell0) ) )
+          RSS( ref_cell_with_face( ref_cell, face_nodes,
+                                   &cell0, &cell1 ), "with face"); 
+          if ( REF_EMPTY == cell0 )
+            continue; /* this cell does not have the face */
+          REIS( REF_EMPTY, cell1, "boundary triangle with two cells" );
+          each_ref_cell_cell_face( ref_cell, face )
             {
-              flip = REF_TRUE;
-              break;
+              if ( ref_cell_f2n(ref_cell,0,face,cell0) !=
+                   ref_cell_f2n(ref_cell,3,face,cell0) )
+                continue; /* skip quad faces */
+              if ( ( nodes[0] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,2,face,cell0) ) ||
+                   ( nodes[1] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[0] == ref_cell_f2n(ref_cell,2,face,cell0) ) ||
+                   ( nodes[2] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[0] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,2,face,cell0) ) )
+                {
+                  RAS( !flip, "error, flip set twice" );
+                  flip = REF_TRUE;
+                }
             }
         }
       if ( flip )
         {
-          temp = nodes[0];
-          nodes[0] = nodes[1];
-          nodes[1] = temp;
+          nodes[0] = face_nodes[2];
+          nodes[1] = face_nodes[1];
+          nodes[2] = face_nodes[0];
           RSS( ref_cell_replace_whole( tri, cell, nodes ),
+               "replace with flip" );
+        }
+    }
+ 
+  each_ref_cell_valid_cell_with_nodes( qua, cell, nodes )
+    {
+      for(node=0;node<4;node++)
+	face_nodes[node]=nodes[node];
+      flip = REF_FALSE;
+      each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+        {
+          RSS( ref_cell_with_face( ref_cell, face_nodes,
+                                   &cell0, &cell1 ), "wf"); 
+          if ( REF_EMPTY == cell0 )
+            continue; /* this cell does not have the face */
+          REIS( REF_EMPTY, cell1, "boundary quad with two cells" );
+          each_ref_cell_cell_face( ref_cell, face )
+            {
+              if ( ref_cell_f2n(ref_cell,0,face,cell0) ==
+                   ref_cell_f2n(ref_cell,3,face,cell0) )
+                continue; /* skip tri faces */
+              if ( ( nodes[0] == ref_cell_f2n(ref_cell,3,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,2,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[3] == ref_cell_f2n(ref_cell,0,face,cell0) ) ||
+                   ( nodes[0] == ref_cell_f2n(ref_cell,2,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[3] == ref_cell_f2n(ref_cell,3,face,cell0) ) ||
+                   ( nodes[0] == ref_cell_f2n(ref_cell,1,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,3,face,cell0) &&
+                     nodes[3] == ref_cell_f2n(ref_cell,2,face,cell0) ) ||
+                   ( nodes[0] == ref_cell_f2n(ref_cell,0,face,cell0) &&
+                     nodes[1] == ref_cell_f2n(ref_cell,3,face,cell0) &&
+                     nodes[2] == ref_cell_f2n(ref_cell,2,face,cell0) &&
+                     nodes[3] == ref_cell_f2n(ref_cell,1,face,cell0) ) )
+                {
+                  RAS( !flip, "error, flip set twice" );
+                  flip = REF_TRUE;
+                }
+            }
+        }
+      if ( flip )
+        {
+          nodes[0] = face_nodes[3];
+          nodes[1] = face_nodes[2];
+          nodes[2] = face_nodes[1];
+          nodes[3] = face_nodes[0];
+          RSS( ref_cell_replace_whole( qua, cell, nodes ),
                "replace with flip" );
         }
     }

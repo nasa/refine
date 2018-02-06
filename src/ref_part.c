@@ -1263,9 +1263,8 @@ REF_STATUS ref_part_bin_ugrid( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   RSS( ref_node_ghost_real( ref_node ), "ghost real");
 
-  if ( !ref_grid_twod( ref_grid) )
-    RSS( ref_grid_inward_boundary_orientation( ref_grid ),
-         "inward boundary orientation" );
+  RSS( ref_grid_inward_boundary_orientation( ref_grid ),
+       "inward boundary orientation" );
   
   if (instrument) ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "volume");
 

@@ -1356,9 +1356,8 @@ REF_STATUS ref_import_by_extension( REF_GRID *ref_grid_ptr,
   
   ref_grid_guess_twod_status( *ref_grid_ptr );
 
-  if ( !ref_grid_twod(*ref_grid_ptr) )
-    RSS( ref_grid_inward_boundary_orientation( *ref_grid_ptr ),
-         "inward boundary orientation" );
+  RSS( ref_grid_inward_boundary_orientation( *ref_grid_ptr ),
+       "inward boundary orientation" );
 
   return REF_SUCCESS;
 }
