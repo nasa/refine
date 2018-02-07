@@ -403,7 +403,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
   int oclass, mtype, nchild, *psens;
   double xyz[9], trange[2];
   REF_INT node, id, best_node;
-  REF_DBL best_dist, dist;
+  REF_DBL best_dist, dist, best_param;
   REF_INT *tessnodes;
   REF_INT degree, max_node = 50, *node_list;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -553,10 +553,12 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  {
 	    best_node = node0;
 	    param[0] = trange[0];
-	    REIS( EGADS_SUCCESS,
-		  EG_invEvaluate(object,
-				 ref_node_xyz_ptr(ref_node,best_node),
-				 param, closest), "EG eval");
+            RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_EDGE, id,
+                                        ref_node_xyz_ptr(ref_node,
+                                                         best_node),
+                                        param), "inv wrapper" );
+            REIS( EGADS_SUCCESS,
+                  EG_evaluate(object, &(param[0]), closest ), "EG eval");
 	    dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,best_node),2) +
 			 pow(closest[1]-ref_node_xyz(ref_node,1,best_node),2) +
 			 pow(closest[2]-ref_node_xyz(ref_node,2,best_node),2) );
@@ -590,6 +592,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		  "next node" );
 	      best_node = REF_EMPTY;
 	      best_dist = 1.0e20;
+	      best_param = 1.0e20;
 	      for (i=0;i<degree;i++)
 		{
 		  REF_INT fid;
@@ -616,29 +619,27 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 		  if ( !have_faceid0 || !have_faceid1 )
 		    continue; /* must have expected faceids */
 		  param[0] = t;
-		  REIS( EGADS_SUCCESS,
-			EG_invEvaluate(object,
-				       ref_node_xyz_ptr(ref_node,
-							next_node),
-				       param, closest), "EG eval");
+                  RSS( ref_geom_inverse_eval( ref_geom, REF_GEOM_EDGE, id,
+                                              ref_node_xyz_ptr(ref_node,
+                                                               next_node),
+                                              param), "inv wrapper" );
+                  REIS( EGADS_SUCCESS,
+                        EG_evaluate(object, &(param[0]), closest ), "EG eval");
 		  dist = sqrt( pow(closest[0]-ref_node_xyz(ref_node,0,next_node),2) +
 			       pow(closest[1]-ref_node_xyz(ref_node,1,next_node),2) +
 			       pow(closest[2]-ref_node_xyz(ref_node,2,next_node),2) );
 		  if ( dist < best_dist )
 		    {
 		      best_node = next_node;
-		      best_dist = dist; 
+		      best_dist = dist;
+                      best_param = param[0];
 		    }
 		}
 	      if ( REF_EMPTY == best_node )
 		{
 		  RSS(REF_FAILURE,"count not find next node");
 		}
-	      param[0] = t;
-	      REIS( EGADS_SUCCESS,
-		    EG_invEvaluate(object,
-				   ref_node_xyz_ptr(ref_node,best_node),
-				   param, closest), "EG eval");
+	      param[0] = best_param;
 	      printf("   best_node %5d t %f best_dist %e fid",
 		     best_node,param[0],best_dist);
 	      RXS( ref_cell_id_list_around( ref_grid_tri( ref_grid ),
