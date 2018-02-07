@@ -1530,12 +1530,20 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
 				  REF_DBL *xyz, REF_DBL *param )
 {
 #ifdef HAVE_EGADS
-  REF_DBL closest[3];
   ego object = (ego)NULL;
-  int egads_status;
-  REF_BOOL allow_recovery = REF_TRUE;
-  REF_BOOL debug_inv_eval = REF_FALSE;
+  int i, guess_status, noguess_status;
+  REF_DBL guess_param[2], noguess_param[2];
+  REF_DBL guess_closest[3], noguess_closest[3];
+  REF_DBL guess_dist, noguess_dist;
 
+  ego ref, *pchldrn;
+  int oclass, mtype, nchild, *psens;
+  double range[4];
+
+  REF_BOOL guess_in_range, noguess_in_range;
+
+  REF_BOOL verbose = REF_FALSE;
+  
   switch (type)
     {
     case (REF_GEOM_NODE) :
@@ -1558,65 +1566,91 @@ REF_STATUS ref_geom_inverse_eval( REF_GEOM ref_geom, REF_INT type, REF_INT id,
       RSS(REF_IMPLEMENT, "unknown geom" );
     }
 
-  if ( debug_inv_eval && REF_GEOM_FACE == type )
-    { /* projection debug code */
-      REF_DBL param_xyz[3];
-      printf("face %d\n",id);
-      printf(" target %f %f %f\n",xyz[0],xyz[1],xyz[2]);
-      REIS( EGADS_SUCCESS,
-            EG_evaluate(object, param, param_xyz ), "EG eval");
-      printf(" guess  %f %f %f (%f %f)\n",
-             param_xyz[0],param_xyz[1],param_xyz[2],
-             param[0],param[1]);
-    }
+  REIS( EGADS_SUCCESS,
+        EG_getTopology(object, &ref, &oclass, &mtype, range,
+                       &nchild, &pchldrn, &psens), "EG topo node");
   
-  if (!allow_recovery)
-    REIS( EGADS_SUCCESS,
-	  EG_invEvaluateGuess(object, xyz,
-			      param, closest), "EG inv eval (guess)");
-  /* without above function, try and recover */
-
-  egads_status = EG_invEvaluateGuess(object, xyz,
-				     param, closest);
-  if ( EGADS_SUCCESS == egads_status )
+  for (i=0; i <type; i++)
+    guess_param[i] = param[i];
+  guess_status = EG_invEvaluateGuess(object, xyz,
+                                     guess_param, guess_closest);
+  noguess_status = EG_invEvaluate(object, xyz,
+                                  noguess_param, noguess_closest);
+  if (verbose)
+    printf("guess %d noguess %d\n",guess_status,noguess_status);
+  if ( EGADS_SUCCESS != guess_status &&
+       EGADS_SUCCESS != noguess_status )
+    return REF_FAILURE;
+  
+  if ( EGADS_SUCCESS == guess_status &&
+       EGADS_SUCCESS != noguess_status )
     {
-      if ( debug_inv_eval && REF_GEOM_FACE == type )
-        {
-          REF_DBL dist;
-          dist = sqrt(pow(closest[0]-xyz[0],2)+
-                      pow(closest[1]-xyz[1],2)+
-                      pow(closest[2]-xyz[2],2));
-          printf(" g-work %f %f %f (%f %f) %f \n",
-                 closest[0],closest[1],closest[2],
-                 param[0],param[1],
-                 dist);
-          if ( dist > 1.0e-6 )
-            printf("MOVED\n");
-        }
+      for (i=0; i <type; i++)
+        param[i] = guess_param[i];
       return REF_SUCCESS;
     }
-  if ( EGADS_EMPTY != egads_status )
-    {
-      REIS( EGADS_SUCCESS, egads_status, "EG inv eval (guess)" );
-    }
-  REIS( EGADS_SUCCESS,
-	EG_invEvaluate(object, xyz,
-		       param, closest), "EG inv eval");
-      if ( debug_inv_eval && REF_GEOM_FACE == type )
-        {
-          REF_DBL dist;
-          dist = sqrt(pow(closest[0]-xyz[0],2)+
-                      pow(closest[1]-xyz[1],2)+
-                      pow(closest[2]-xyz[2],2));
-          printf(" guess failed %f %f %f (%f %f) %f \n",
-                 closest[0],closest[1],closest[2],
-                 param[0],param[1],
-                 dist);
-          if ( dist > 1.0e-6 )
-            printf("MOVED\n");
-        }
 
+  if ( EGADS_SUCCESS != guess_status &&
+       EGADS_SUCCESS == noguess_status )
+    {
+      for (i=0; i <type; i++)
+        param[i] = noguess_param[i];
+      return REF_SUCCESS;
+    }
+  
+  guess_dist = sqrt(pow(guess_closest[0]-xyz[0],2)+
+                    pow(guess_closest[1]-xyz[1],2)+
+                    pow(guess_closest[2]-xyz[2],2));
+  noguess_dist = sqrt(pow(noguess_closest[0]-xyz[0],2)+
+                      pow(noguess_closest[1]-xyz[1],2)+
+                      pow(noguess_closest[2]-xyz[2],2));
+
+  guess_in_range = REF_TRUE;
+  for (i=0; i <type; i++)
+    if ( guess_param[i] < range[0+2*i] || range[1+2*i] < guess_param[i] )
+      guess_in_range = REF_FALSE;
+
+  noguess_in_range = REF_TRUE;
+  for (i=0; i <type; i++)
+    if ( noguess_param[i] < range[0+2*i] || range[1+2*i] < noguess_param[i] )
+      noguess_in_range = REF_FALSE;
+
+  if (verbose)
+    {
+      printf("guess %e noguess %e\n",guess_dist,noguess_dist);
+      for (i=0; i <type; i++)
+        printf("%d:guess %f noguess %f\n",i,guess_param[i],noguess_param[i]);
+      printf("guess %d noguess %d\n",guess_in_range,noguess_in_range);
+    }
+
+  if ( guess_in_range &&
+       !noguess_in_range )
+    {
+      for (i=0; i <type; i++)
+        param[i] = guess_param[i];
+      return REF_SUCCESS;
+    }
+
+  if ( !guess_in_range &&
+       noguess_in_range )
+    {
+      for (i=0; i <type; i++)
+        param[i] = noguess_param[i];
+      return REF_SUCCESS;
+    }
+
+  if ( guess_dist < noguess_dist )
+    {
+      for (i=0; i <type; i++)
+        param[i] = guess_param[i];
+    }
+  else
+    {
+      for (i=0; i <type; i++)
+        param[i] = noguess_param[i];
+    }
   return REF_SUCCESS;
+
 #else
   printf("no-op, No EGADS linked for %s type %d id %d x %f p %f n %d\n",
 	 __func__, type, id, xyz[0], param[0], ref_geom_n(ref_geom) );
