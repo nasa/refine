@@ -92,6 +92,14 @@ int main( void )
 
   printf("edgeid %d t %f pcurve eval on faceid %d is (%f,%f)\n",
          edgeid,t,faceid,param[0],param[1]);
+
+  is_equal( EGADS_SUCCESS,
+	    EG_getTopology(edges[edgeid-1],
+			   &esurf, &oclass, &mtype,
+			   data, &nloop, &eloops, &senses), "topo" );
+  printf("edgeid %d t box [%f,%f]\n",
+         edgeid,data[0],data[1]);
+
   
   return 0;
 }
