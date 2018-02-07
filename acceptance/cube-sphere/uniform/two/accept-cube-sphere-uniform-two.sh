@@ -26,7 +26,7 @@ ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-sphere-uniform-two-02.status
 
 cat accept-cube-sphere-uniform-two-02.status
-../../../check.rb accept-cube-sphere-uniform-two-02.status 0.10 1.75
+../../../check.rb accept-cube-sphere-uniform-two-02.status 0.075 1.75
 
 
 
