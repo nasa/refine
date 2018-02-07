@@ -492,7 +492,7 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  REF_INT next_node, current_node;
 	  REF_INT geom;
 	  REIS( TWONODE, mtype, "ONENODE edge not implemented");
-	  REIS( 2, nchild, "expect to topo node for edge");
+	  REIS( 2, nchild, "expect two topo node for edge");
 	  toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
 	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
 	  node0 = tessnodes[toponode0-1];
