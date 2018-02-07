@@ -497,8 +497,9 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	  toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
 	  node0 = tessnodes[toponode0-1];
 	  node1 = tessnodes[toponode1-1];
-	  printf(" topo edge id %3d fid %d %d\n",
-		 id, e2f[0+2*(id-1)], e2f[1+2*(id-1)]);
+	  printf(" topo edge id %3d fid %d %d trange [%f,%f]\n",
+		 id, e2f[0+2*(id-1)], e2f[1+2*(id-1)],
+                 trange[0], trange[1]);
 	  REIS( EGADS_SUCCESS,
 		EG_evaluate(object, &(trange[0]), xyz ), "EG eval");
 	  node=node0;
@@ -569,6 +570,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	    for (i=0;i<nfaceid;i++)
 	      printf(" %d", faceids[i]);
 	    printf("\n");
+            if ( param[0] < trange[0] || trange[1] < param[0] )
+              THROW("edge t out of range");
 	    if ( show_xyz )
 	      {
 		printf(" d %23.15e %23.15e %23.15e\n",
@@ -646,6 +649,8 @@ REF_STATUS ref_geom_recon( REF_GRID ref_grid )
 	      for (i=0;i<nfaceid;i++)
 		printf(" %d", faceids[i]);
 	      printf("\n");
+              if ( param[0] < trange[0] || trange[1] < param[0] )
+                THROW("edge t out of range");
 	      if ( show_xyz )
 		{
 		  printf(" d %23.15e %23.15e %23.15e\n",
