@@ -279,6 +279,8 @@ REF_STATUS ref_geom_edge_faces( REF_GRID ref_grid, REF_INT **edge_face_arg )
 	    EG_getTopology(((ego *)(ref_geom->faces))[face],
 			   &esurf, &oclass, &mtype,
 			   data, &nloop, &eloops, &senses), "topo" );
+      printf("faceid %d uv ([%f,%f],[%f,%f])\n",
+             face+1,data[0],data[1],data[2],data[3]);
       REIS( EGADS_SUCCESS,
 	    EG_getGeometry(esurf, &oclass, &mtype,
 			   &eref, &pinfo, &preal),"geom");
