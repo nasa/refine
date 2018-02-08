@@ -227,47 +227,6 @@ int main( int argc, char *argv[] )
     RSS(ref_node_free(ref_node),"free");
   }
 
-  {  /* in bounding box */
-    REF_INT node;
-    REF_NODE ref_node;
-    REF_INT n, *o2n, *n2o;
-    REF_DBL bounding_box[6];
-    RSS(ref_node_create(&ref_node,ref_mpi),"create");
-
-    RSS(ref_node_add(ref_node,1,&node),"add");
-    ref_node_xyz(ref_node,0,node) = 0.0;
-    ref_node_xyz(ref_node,1,node) = 0.0;
-    ref_node_xyz(ref_node,2,node) = 0.0;
-    RSS(ref_node_add(ref_node,2,&node),"add");
-    ref_node_xyz(ref_node,0,node) = 0.0;
-    ref_node_xyz(ref_node,1,node) = 1.0;
-    ref_node_xyz(ref_node,2,node) = 0.0;
-    RSS(ref_node_add(ref_node,3,&node),"add");
-    ref_node_xyz(ref_node,0,node) = 0.0;
-    ref_node_xyz(ref_node,1,node) = 0.0;
-    ref_node_xyz(ref_node,2,node) = 1.0;
-
-    bounding_box[0] = -0.5; bounding_box[1] =  0.5; 
-    bounding_box[2] = -0.0; bounding_box[3] =  0.5; 
-    bounding_box[4] = -0.5; bounding_box[5] =  1.5; 
-
-    RSS(ref_node_in_bounding_box(ref_node,bounding_box,&n,&o2n,&n2o),"bbox");
- 
-    REIS(2,n,"o2n");
-
-    REIS(0,o2n[0],"o2n");
-    REIS(REF_EMPTY,o2n[1],"o2n");
-    REIS(1,o2n[2],"o2n");
-
-    REIS(0,n2o[0],"n2o");
-    REIS(2,n2o[1],"n2o");
-
-    ref_free(n2o);
-    ref_free(o2n);
-    
-    RSS(ref_node_free(ref_node),"free");
-  }
-
   {  /* valid */
     REF_INT node;
     REF_NODE ref_node;

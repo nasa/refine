@@ -632,42 +632,6 @@ REF_STATUS ref_node_compact( REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_in_bounding_box( REF_NODE ref_node, REF_DBL *bounding_box,
-				     REF_INT *n,
-				     REF_INT **o2n_ptr, REF_INT **n2o_ptr )
-{
-  REF_INT node;
-  REF_INT nnode;
-  REF_INT *o2n, *n2o;
-  
-  ref_malloc_init( *o2n_ptr, ref_node_max(ref_node), REF_INT, REF_EMPTY );
-  o2n = *o2n_ptr;
-  ref_malloc( *n2o_ptr, ref_node_n(ref_node), REF_INT );
-  n2o = *n2o_ptr;
-
-  nnode = 0;    
-  
-  each_ref_node_valid_node( ref_node, node )
-    if ( bounding_box[0] <= ref_node_xyz(ref_node,0,node) &&
-	 bounding_box[1] >= ref_node_xyz(ref_node,0,node) &&
-	 bounding_box[2] <= ref_node_xyz(ref_node,1,node) &&
-	 bounding_box[3] >= ref_node_xyz(ref_node,1,node) &&
-	 bounding_box[4] <= ref_node_xyz(ref_node,2,node) &&
-	 bounding_box[5] >= ref_node_xyz(ref_node,2,node) )
-      {
-	o2n[node] = nnode;
-	nnode++;
-      }
-
-  *n = nnode;
-
-  each_ref_node_valid_node( ref_node, node )
-    if ( REF_EMPTY != o2n[node] )
-      n2o[o2n[node]] = node;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_node_ghost_real( REF_NODE ref_node )
 {
   RSS( ref_node_ghost_dbl( ref_node,
