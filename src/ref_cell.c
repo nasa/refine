@@ -386,6 +386,52 @@ REF_STATUS ref_cell_deep_copy( REF_CELL *ref_cell_ptr, REF_CELL original )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_pack( REF_CELL ref_cell, REF_INT *o2n )
+{
+  REF_INT node, cell, new;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  
+  ref_free( ref_cell->c2e );
+
+  new = 0;
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+      for ( node = 0; node<ref_cell_node_per(ref_cell); node++ )
+        ref_cell_c2n(ref_cell,node,new) = o2n[nodes[node]];
+      if ( ref_cell_last_node_is_an_id(ref_cell) )
+        ref_cell_c2n(ref_cell,ref_cell_node_per(ref_cell),new) =
+          nodes[ref_cell_node_per(ref_cell)];
+      new++;
+    }
+  REIS( new, ref_cell_n(ref_cell), "count is off" );
+  
+  if ( ref_cell_n(ref_cell) < ref_cell_max(ref_cell) )
+    {
+      for ( cell = ref_cell_n(ref_cell); cell < ref_cell_max(ref_cell); cell++ )
+        {
+          ref_cell_c2n(ref_cell,0,cell) = REF_EMPTY;
+          ref_cell_c2n(ref_cell,1,cell) = cell+1;
+        }
+      ref_cell_c2n(ref_cell,1,ref_cell_max(ref_cell)-1) = REF_EMPTY;
+      ref_cell_blank(ref_cell) = ref_cell_n(ref_cell);
+    }
+  else
+    {
+      ref_cell_blank(ref_cell) = REF_EMPTY;
+    }
+
+  RSS( ref_adj_free( ref_cell_adj(ref_cell) ), "free adj" );
+  RSS( ref_adj_create( &( ref_cell->ref_adj ) ), "fresh ref_adj for ref_cell" );
+  
+  for ( cell = 0; cell < ref_cell_n(ref_cell); cell++ )
+    for ( node = 0; node<ref_cell_node_per(ref_cell); node++ )
+      RSS( ref_adj_add(ref_cell_adj(ref_cell),
+                       ref_cell_c2n(ref_cell,node,cell), cell),
+           "register cell" );
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_inspect( REF_CELL ref_cell )
 {
   REF_INT cell, node;
