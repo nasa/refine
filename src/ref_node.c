@@ -114,7 +114,10 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
 
   ref_malloc( ref_node->sorted_global, max, REF_INT );
   ref_malloc( ref_node->sorted_local, max, REF_INT );
-  RSS( ref_node_rebuild_sorted_global( ref_node ), "rebuild sorted globals");
+  for (node=0;node<max;node++)
+    ref_node->sorted_global[node] = original->sorted_global[node];
+  for (node=0;node<max;node++)
+    ref_node->sorted_local[node] = original->sorted_local[node];
     
   ref_malloc( ref_node->part, max, REF_INT );
   for (node=0;node<max;node++)
