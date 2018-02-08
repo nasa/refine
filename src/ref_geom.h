@@ -134,6 +134,7 @@ REF_STATUS ref_geom_initialize( REF_GEOM ref_geom );
 REF_STATUS ref_geom_free( REF_GEOM ref_geom );
 
 REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom, REF_GEOM original );
+REF_STATUS ref_geom_pack( REF_GEOM ref_geom, REF_INT *o2n );
 
 REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename );
 REF_STATUS ref_geom_load( REF_GRID ref_grid, const char *filename );

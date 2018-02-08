@@ -176,6 +176,47 @@ REF_STATUS ref_geom_deep_copy( REF_GEOM *ref_geom_ptr, REF_GEOM original )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_pack( REF_GEOM ref_geom, REF_INT *o2n )
+{
+  REF_INT geom, new, i;
+  new = 0;
+  each_ref_geom( ref_geom, geom )
+    {
+      for ( i = 0; i < 2; i++ )
+        ref_geom_descr(ref_geom,i,new) = ref_geom_descr(ref_geom,i,geom);
+      ref_geom_descr(ref_geom,2,new) = o2n[ref_geom_descr(ref_geom,2,geom)];
+      for ( i = 0; i < 2; i++ )
+        ref_geom_param(ref_geom,i,new) = ref_geom_param(ref_geom,i,geom);
+      new++;
+    }
+  REIS( new, ref_geom_n(ref_geom), "count mismatch" );
+  if ( ref_geom_n(ref_geom) < ref_geom_max(ref_geom) )
+    {
+      for( geom = ref_geom_n(ref_geom); geom <ref_geom_max(ref_geom); geom++ )
+        {
+          ref_geom_type(ref_geom,geom) = REF_EMPTY;
+          ref_geom_id(ref_geom,geom) = geom+1;
+        }
+      ref_geom_id(ref_geom,ref_geom_max(ref_geom)-1) = REF_EMPTY;
+      ref_geom_blank(ref_geom) = ref_geom_n(ref_geom);
+    }
+  else
+    {
+      ref_geom_blank(ref_geom) = REF_EMPTY;
+    }
+  RSS( ref_adj_free( ref_geom->ref_adj ), "free to prevent leak" );
+  RSS( ref_adj_create( &( ref_geom->ref_adj ) ),
+       "create ref_adj for ref_geom" );
+  
+  each_ref_geom( ref_geom, geom )
+    {
+      RSS( ref_adj_add( ref_geom->ref_adj,
+                        ref_geom_node(ref_geom,geom), geom),"register geom" );
+    }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_save( REF_GRID ref_grid, const char *filename )
 {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
