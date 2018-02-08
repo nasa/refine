@@ -56,6 +56,7 @@ REF_STATUS ref_grid_create( REF_GRID *ref_grid, REF_MPI ref_mpi );
 REF_STATUS ref_grid_free( REF_GRID ref_grid );
 
 REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid, REF_GRID original );
+REF_STATUS ref_grid_pack( REF_GRID ref_grid );
 
 #define ref_grid_mpi(ref_grid) ((ref_grid)->mpi)
 #define ref_grid_once(ref_grid) ref_mpi_once(ref_grid_mpi(ref_grid))

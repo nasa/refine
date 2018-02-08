@@ -99,6 +99,32 @@ REF_STATUS ref_grid_deep_copy( REF_GRID *ref_grid_ptr, REF_GRID original )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_pack( REF_GRID ref_grid )
+{
+  REF_INT group;
+  REF_INT *o2n, *n2o;
+  REF_CELL ref_cell;
+  
+  RSS(ref_node_compact(ref_grid_node(ref_grid),&o2n,&n2o),"compact");
+
+  RSS( ref_node_pack( ref_grid_node(ref_grid), o2n, n2o ), "pack node" );
+  each_ref_grid_ref_cell( ref_grid, group, ref_cell )
+    {
+      RSS( ref_cell_pack( ref_cell, o2n ), "pack cell" );
+    }
+  RSS( ref_cell_pack( ref_grid_edg(ref_grid), o2n ), "pack edg" );
+  RSS( ref_cell_pack( ref_grid_tri(ref_grid), o2n ), "pack tri" );
+  RSS( ref_cell_pack( ref_grid_qua(ref_grid), o2n ), "pack qua" );
+
+  RSS( ref_geom_pack( ref_grid_geom(ref_grid), o2n ), "pack geom" );
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_free( REF_GRID ref_grid )
 {
   if ( NULL == (void *)ref_grid ) return REF_NULL;
