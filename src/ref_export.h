@@ -42,9 +42,6 @@ REF_STATUS ref_export_metric_xyzdirlen( REF_GRID ref_grid, const char *filename 
 REF_STATUS ref_export_tec_metric_axis( REF_GRID ref_grid, const char *root_filename );
 REF_STATUS ref_export_tec_metric_ellipse( REF_GRID ref_grid, 
 					  const char *root_filename );
-REF_STATUS ref_export_tec_metric_box( REF_GRID ref_grid, 
-				      const char *root_filename,
-				      REF_DBL *bounding_box );
 REF_STATUS ref_export_tec_ratio( REF_GRID ref_grid, const char *root_filename );
 
 REF_STATUS ref_export_smesh( REF_GRID ref_grid, const char *filename );
