@@ -612,7 +612,6 @@ se.^-0.5
 
       RSS( ref_fixture_twod_brick_grid( &parent_grid, ref_mpi ), "brick");
       RSS( ref_fixture_twod_brick_grid( &ref_grid, ref_mpi ), "brick");
-      RSS( ref_grid_identity_interp_guess( ref_grid ), "stitch" );
  
       RSS( ref_metric_olympic_node( ref_grid_node(parent_grid), 0.001 ),
 	   "oly" );

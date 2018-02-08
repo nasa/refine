@@ -461,34 +461,6 @@ REF_STATUS ref_grid_inward_boundary_orientation( REF_GRID ref_grid )
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_identity_interp_guess( REF_GRID ref_grid )
-{
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
-  REF_ADJ ref_adj;
-  REF_INT node;
-  
-  RSS( ref_node_allocate_guess( ref_node ), "alloc");
-
-  if (ref_grid_twod(ref_grid))
-    {
-      ref_cell = ref_grid_tri(ref_grid);
-    }
-  else
-    {
-      ref_cell = ref_grid_tet(ref_grid);
-    }
-  ref_adj = ref_cell_adj(ref_cell);
-  
-  each_ref_node_valid_node( ref_node, node )
-    {
-      ref_node_raw_guess(ref_node,node) =
-	ref_adj_item_ref(ref_adj,ref_adj_first(ref_adj,node));
-    }
-  
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_grid_exhaustive_enclosing_tri( REF_GRID ref_grid, REF_DBL *xyz,
 					      REF_INT *tri, REF_DBL *bary )
 {

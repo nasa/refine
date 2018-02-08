@@ -39,7 +39,6 @@ struct REF_NODE_STRUCT {
   REF_INT *sorted_local;
   REF_INT *part;
   REF_INT *age;
-  REF_INT *guess;
   REF_DBL *real;
   REF_INT naux;
   REF_DBL *aux;
@@ -96,13 +95,6 @@ struct REF_NODE_STRUCT {
 #define ref_node_part(ref_node,node) ((ref_node)->part[(node)])
 #define ref_node_age(ref_node,node) ((ref_node)->age[(node)])
 
-#define ref_node_raw_guess(ref_node,node) ((ref_node)->guess[(node)])
-#define ref_node_guess(ref_node,node)					\
-  ( NULL==(( ref_node )->guess) ?					\
-    REF_EMPTY :	ref_node_raw_guess(ref_node,node) )
-#define ref_node_guess_allocated(ref_node) \
-  ( NULL != (( ref_node )->guess) )
-
 #define ref_node_naux(ref_node) ((ref_node)->naux)
 #define ref_node_aux(ref_node,iaux,node)		\
   ((ref_node)->aux[(iaux)+ref_node_naux(ref_node)*(node)])
@@ -114,8 +106,6 @@ struct REF_NODE_STRUCT {
 
 REF_STATUS ref_node_create( REF_NODE *ref_node, REF_MPI ref_mpi );
 REF_STATUS ref_node_free( REF_NODE ref_node );
-
-REF_STATUS ref_node_allocate_guess( REF_NODE ref_node );
 
 REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original );
 
