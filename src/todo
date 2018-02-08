@@ -1,8 +1,6 @@
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
-add chunk size to minloc
-
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -37,6 +35,8 @@ egads recon
    revert on failure (wrap?)
 
 always store metric in log form
+
+revisit edges, replace ref_cell_c2e with ref_edge implementation
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
@@ -126,6 +126,7 @@ merge ref_split_edge_local_tets ref_split_edge_local_prism
 merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   to ref_smooth_local_cell_about
 merge ref_collapse_face_local_*
+add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
 
