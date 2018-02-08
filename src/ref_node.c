@@ -161,8 +161,9 @@ REF_STATUS ref_node_deep_copy( REF_NODE *ref_node_ptr, REF_NODE original )
 
 REF_STATUS ref_node_pack( REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o )
 {
+  REF_INT i, node;
   REF_NODE copy;
-  RSS( ref_node_deep_copy( REF_NODE *copy, ref_node ), "make a copy first" );
+  RSS( ref_node_deep_copy( &copy, ref_node ), "make a copy first" );
   
   for (node=0;node<ref_node_n(ref_node);node++)
     ref_node->global[node] = copy->global[n2o[node]];
@@ -187,11 +188,11 @@ REF_STATUS ref_node_pack( REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o )
   for (node=0;node<ref_node_n(ref_node);node++)
     ref_node->age[node] = copy->age[n2o[node]];
 
-  for (node=0;node<max;node++)
+  for (node=0;node<ref_node_n(ref_node);node++)
     for ( i=0; i < REF_NODE_REAL_PER ; i++ )
       ref_node_real(ref_node,i,node) = ref_node_real(copy,i,n2o[node]);
   
-  if ( ref_node_naux(original)>0 )
+  if ( ref_node_naux(ref_node)>0 )
     {
       for (node=0;node<ref_node_n(ref_node);node++)
 	for ( i=0; i < ref_node_naux(ref_node) ; i++ )
@@ -199,6 +200,8 @@ REF_STATUS ref_node_pack( REF_NODE ref_node, REF_INT *o2n, REF_INT *n2o )
     }
 
   RSS( ref_node_free( copy ), "release copy" );
+
+  return REF_SUCCESS;  
 }
 
 REF_STATUS ref_node_inspect( REF_NODE ref_node )
