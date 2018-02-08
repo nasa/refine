@@ -392,6 +392,7 @@ REF_STATUS ref_cell_pack( REF_CELL ref_cell, REF_INT *o2n )
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   
   ref_free( ref_cell->c2e );
+  ref_cell->c2e = NULL;
 
   new = 0;
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
