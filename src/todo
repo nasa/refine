@@ -91,19 +91,8 @@ viz
  ellipsoid metric or something cheaper
 
 Marshall
-kill tabs
-provide dense api (or pack)
- maybe just a copy
- reference to pointers with a free other
- node
-  xyz
-  native id
-  part
- cell
-  nodes in local index that allow to get xyz....
-  native id
-  part
-provide 2D api
+ kill tabs
+ provide 2D api
 
 make sure all triangles have one tet and tet has one neighbor by
 turning on validation.
@@ -129,6 +118,9 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ ref_grid_pack, ref_node_pack, ref_cell_pack, ref_geom_pack
++ ref_cell_part
 
 + ref_validation_cell_node when edg, but ref_geom ngeom=0
   + meshb with edge and call ref_geom_init
