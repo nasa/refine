@@ -176,7 +176,7 @@ int main( int argc, char *argv[] )
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
         }
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "post");
+      ref_mpi_stopwatch_stop( ref_mpi, "post");
     }
 
   if ( 2 == argc )
@@ -251,7 +251,7 @@ int main( int argc, char *argv[] )
           RSS(ref_export_tec_surf( ref_grid, "ref_adapt_test.tec" ),"ex" );
           RSS( ref_grid_free( ref_grid ), "free");
         }
-      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "post");
+      ref_mpi_stopwatch_stop( ref_mpi, "post");
     }
 
   if ( 1 == argc )
