@@ -691,6 +691,40 @@ REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_part( REF_CELL ref_cell, REF_NODE ref_node,
+                          REF_INT cell, REF_INT *output_part )
+{
+  REF_INT global, part;
+  REF_INT smallest_global, smallest_global_part;
+  REF_INT node;
+  *output_part = REF_EMPTY;
+  if ( cell < 0 || cell > ref_cell_max(ref_cell) )
+    return REF_INVALID;
+  if ( REF_EMPTY == ref_cell_c2n(ref_cell,0,cell) )
+    return REF_INVALID;
+  /* set first node as samllest */
+  node = 0;
+  global = ref_node_global( ref_node, ref_cell_c2n(ref_cell,node,cell) );
+  part = ref_node_part( ref_node, ref_cell_c2n(ref_cell,node,cell) );
+  smallest_global = global;
+  smallest_global_part = part;
+  /* serach other nodes for smaller global */
+  for ( node = 1; node<ref_cell_node_per(ref_cell); node++ )
+    {
+      global = ref_node_global( ref_node, ref_cell_c2n(ref_cell,node,cell) );
+      part = ref_node_part( ref_node, ref_cell_c2n(ref_cell,node,cell) );
+      if ( global < smallest_global )
+        {
+          smallest_global = global;
+          smallest_global_part = part;
+        }
+    }
+  RUS( REF_EMPTY, smallest_global_part, "part is empty?" );
+  *output_part = smallest_global_part;
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_cell_orient_node0( REF_INT nnode, REF_INT node0,
 				  REF_INT *nodes )
 {

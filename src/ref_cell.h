@@ -149,6 +149,8 @@ REF_STATUS ref_cell_compact( REF_CELL ref_cell,
                              REF_INT **o2n, REF_INT **n2o );
 
 REF_STATUS ref_cell_nodes( REF_CELL ref_cell, REF_INT cell, REF_INT *nodes );
+REF_STATUS ref_cell_part( REF_CELL ref_cell, REF_NODE ref_node,
+                          REF_INT cell, REF_INT *part );
 
 REF_STATUS ref_cell_orient_node0( REF_INT nnode, REF_INT node0,
 				  REF_INT *nodes );

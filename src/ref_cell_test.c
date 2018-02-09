@@ -917,5 +917,56 @@ int main( void )
     RSS(ref_cell_free(ref_cell),"cleanup");
   }
 
+  { /* cell part */
+    REF_CELL ref_cell;
+    REF_NODE ref_node;
+    REF_MPI ref_mpi;
+    REF_INT cell, nodes[3];
+    REF_INT global, node;
+    REF_INT part;
+
+    RSS(ref_mpi_create(&ref_mpi),"create mpi");
+
+    RSS(ref_node_create(&ref_node, ref_mpi),"create node");
+    global = 0;
+    RSS(ref_node_add(ref_node,global,&node),"first add");
+    global = 1;
+    RSS(ref_node_add(ref_node,global,&node),"first add");
+
+    RSS(ref_edg(&ref_cell),"create");
+    nodes[0] = 0; nodes[1] = 1; nodes[2] = 10;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    ref_node_part(ref_node,0) = 0;
+    ref_node_part(ref_node,1) = 1;
+    RSS( ref_cell_part( ref_cell, ref_node, cell, &part ), "get part" );
+    REIS( 0, part, "wrong part" );
+
+    ref_node_part(ref_node,0) = 3;
+    ref_node_part(ref_node,1) = 2;
+    RSS( ref_cell_part( ref_cell, ref_node, cell, &part ), "get part" );
+    REIS( 3, part, "wrong part" );
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+    
+    RSS(ref_edg(&ref_cell),"create");
+    nodes[0] = 1; nodes[1] = 0; nodes[2] = 20;
+    RSS(ref_cell_add(ref_cell,nodes,&cell),"add cell");
+
+    ref_node_part(ref_node,0) = 1;
+    ref_node_part(ref_node,1) = 0;
+    RSS( ref_cell_part( ref_cell, ref_node, cell, &part ), "get part" );
+    REIS( 1, part, "wrong part" );
+
+    ref_node_part(ref_node,0) = 2;
+    ref_node_part(ref_node,1) = 3;
+    RSS( ref_cell_part( ref_cell, ref_node, cell, &part ), "get part" );
+    REIS( 2, part, "wrong part" );
+
+    RSS(ref_cell_free(ref_cell),"cleanup");
+    RSS(ref_node_free(ref_node),"cleanup");
+    RSS(ref_mpi_free(ref_mpi),"cleanup");
+  }
+  
   return 0;
 }
