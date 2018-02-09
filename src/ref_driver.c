@@ -265,6 +265,8 @@ int main( int argc, char *argv[] )
       RSS( ref_histogram_ratio( ref_grid ), "gram");
       RSS(ref_migrate_to_balance(ref_grid),"balance");
       ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "balance");
+      RSS( ref_grid_pack(ref_grid), "pack" );
+      ref_mpi_stopwatch_stop( ref_grid_mpi(ref_grid), "pack");
     }
 
   RSS( ref_geom_verify_param( ref_grid ), "final params" );
