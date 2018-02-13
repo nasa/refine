@@ -91,6 +91,8 @@ viz
  ellipsoid metric or something cheaper
 
 Marshall
+ global cell id
+ part_cad_edges
  kill tabs
  provide 2D api
 
