@@ -1090,52 +1090,54 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      6, &available, &next_position ), "jump" );
-  RAS( available, "meshb missing triangle" );
-  REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "ntri");
-  if (verbose) printf("ntri %d\n",ntri);
-
-  for (tri=0;tri<ntri;tri++)
+  if ( available )
     {
-      REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
-      REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
-      REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "n2" );
-      REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
-      n0--; n1--; n2--;
-      if ( 2 == dim )
-	{
-	  nodes[0]=n0+nnode;
-	  nodes[1]=n1+nnode;
-	  nodes[2]=n2+nnode;
-	  nodes[3]=1;
-	  RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
-	       "tri face for tri");
-	  nodes[0]=n0;
-	  nodes[1]=n2;
-	  nodes[2]=n1;
-	  nodes[3]=2;
-	  RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
-	       "tri face for tri");
-	  nodes[0]=n0+nnode;
-	  nodes[1]=n1+nnode;
-	  nodes[2]=n2+nnode;
-	  nodes[3]=n0;
-	  nodes[4]=n1;
-	  nodes[5]=n2;
-	  RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
-	       "prism for tri");
-	}
-      else
-	{
-	  nodes[0]=n0;
-	  nodes[1]=n1;
-	  nodes[2]=n2;
-	  nodes[3]=id;
-	  RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
-	       "tri face for tri");
-	}
-    }
-  REIS( next_position, ftell(file), "end location" );
+      REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "ntri");
+      if (verbose) printf("ntri %d\n",ntri);
 
+      for (tri=0;tri<ntri;tri++)
+        {
+          REIS( 1, fread(&(n0),sizeof(n0), 1, file ), "n0" );
+          REIS( 1, fread(&(n1),sizeof(n1), 1, file ), "n1" );
+          REIS( 1, fread(&(n2),sizeof(n2), 1, file ), "n2" );
+          REIS( 1, fread(&(id),sizeof(id), 1, file ), "id" );
+          n0--; n1--; n2--;
+          if ( 2 == dim )
+            {
+              nodes[0]=n0+nnode;
+              nodes[1]=n1+nnode;
+              nodes[2]=n2+nnode;
+              nodes[3]=1;
+              RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+                   "tri face for tri");
+              nodes[0]=n0;
+              nodes[1]=n2;
+              nodes[2]=n1;
+              nodes[3]=2;
+              RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+                   "tri face for tri");
+              nodes[0]=n0+nnode;
+              nodes[1]=n1+nnode;
+              nodes[2]=n2+nnode;
+              nodes[3]=n0;
+              nodes[4]=n1;
+              nodes[5]=n2;
+              RSS( ref_cell_add( ref_grid_pri(ref_grid), nodes, &new_cell ), 
+                   "prism for tri");
+            }
+          else
+            {
+              nodes[0]=n0;
+              nodes[1]=n1;
+              nodes[2]=n2;
+              nodes[3]=id;
+              RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
+                   "tri face for tri");
+            }
+        }
+      REIS( next_position, ftell(file), "end location" );
+    }
+  
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      7, &available, &next_position ), "jump" );
   if ( 3==dim && available )
