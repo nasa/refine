@@ -139,7 +139,7 @@ int main( int argc, char *argv[] )
       REF_GRID import_grid;
 
       if ( ref_mpi_once(ref_mpi) ) 
-	printf("%d procs, read %s\n",ref_mpi_rank(ref_mpi),argv[1]);
+	printf("%d procs, read %s\n",ref_mpi_m(ref_mpi),argv[1]);
 
       ref_mpi_stopwatch_start(ref_mpi);
       RSS(ref_part_by_extension( &import_grid, ref_mpi, argv[1] ), "import" );
