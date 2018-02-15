@@ -591,8 +591,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp )
 
   ref_malloc( local_node, ref_list_n(to_geom_list), REF_INT );
   ref_malloc( local_xyz, 3*ref_list_n(to_geom_list), REF_DBL );
-  each_ref_list_item_value( to_geom_list, to_item, to_geom_node )
+  each_ref_list_item( to_geom_list, to_item )
     {
+      to_geom_node = ref_list_value( to_geom_list, to_item );
       local_node[to_item] = to_geom_node;
       local_xyz[0+3*to_item] = ref_node_xyz(to_node,0,to_geom_node);
       local_xyz[1+3*to_item] = ref_node_xyz(to_node,1,to_geom_node);
@@ -616,8 +617,9 @@ REF_STATUS ref_interp_geom_nodes( REF_INTERP ref_interp )
       xyz = &(global_xyz[3*to_item]);
       best_dist[to_item] = 1.0e20;
       best_node[to_item] = REF_EMPTY;
-      each_ref_list_item_value( from_geom_list, from_item, from_geom_node )
-	{
+      each_ref_list_item( from_geom_list, from_item )
+        {
+          from_geom_node = ref_list_value( from_geom_list, from_item );
 	  dist =
 	    pow(xyz[0]-ref_node_xyz(from_node,0,from_geom_node),2) +
 	    pow(xyz[1]-ref_node_xyz(from_node,1,from_geom_node),2) +

@@ -49,13 +49,6 @@ REF_STATUS ref_list_inspect( REF_LIST ref_list );
 #define each_ref_list_item( ref_list, item )		\
   for ( ( item ) = 0; ( item ) < ref_list_n( ref_list ); ( item )++ )
 
-#define each_ref_list_item_value( ref_list, item, value)	    \
-  for ( ( item ) = 0,						    \
-	  ( value ) = ref_list_value( ref_list, item );		    \
-	( item ) < ref_list_n( ref_list );			    \
-        ( item )++,						    \
-	  ( value ) = ref_list_value( ref_list, item ) )
-
 REF_STATUS ref_list_push( REF_LIST ref_list, REF_INT last );
 REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *last );
 REF_STATUS ref_list_shift( REF_LIST ref_list, REF_INT *first );

@@ -212,8 +212,9 @@ REF_STATUS ref_split_pass( REF_GRID ref_grid )
     {
       RSS(ref_subdiv_create(&ref_subdiv,ref_grid),"create");
       ref_subdiv->instrument = REF_TRUE;
-      each_ref_list_item_value( para_no_geom, i, edge)
-	{
+      each_ref_list_item( para_no_geom, i )
+        {
+          edge = ref_list_value( para_no_geom, i );
 	  RSS( ref_cell_has_side( ref_grid_tet(ref_grid),
 				  ref_edge_e2n( ref_edge, 0, edge ),
 				  ref_edge_e2n( ref_edge, 1, edge ),
