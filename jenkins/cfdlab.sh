@@ -198,13 +198,13 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform/two
 ./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
-date
+# date
 
-LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
-trap - EXIT
+# LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
+# trap "cat $LOG" EXIT
+# cd ${source_dir}/acceptance/cube-cylinder/uniform/two
+# ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
+# trap - EXIT
 
 date
 
