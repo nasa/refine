@@ -72,4 +72,6 @@ REF_STATUS ref_interp_stats( REF_INTERP ref_interp );
 
 REF_STATUS ref_interp_tec( REF_INTERP ref_interp, const char *filename );
 
+END_C_DECLORATION
+
 #endif /* REF_INTERP_H */
