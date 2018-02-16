@@ -126,3 +126,9 @@
    fun:malloc
    fun:__intel_sse2_strdup
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strrchr
+   ...
+}

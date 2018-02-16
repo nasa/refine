@@ -188,3 +188,27 @@
    ...
    fun:clone
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:component_set_addr
+   fun:orte_oob_base_set_addr
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:opal_dss_unpack_value
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:opal_dss_copy_value
+   ...
+}
+
