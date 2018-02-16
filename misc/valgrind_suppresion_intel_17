@@ -1,0 +1,128 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:for__get_s
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strlen
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strchr
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strcpy
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strcpy
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strncmp
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strlen
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strdup
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:__intel_sse2_strdup
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr16
+   fun:__intel_sse2_strrchr
+   ...
+}
+{
+ <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:_intel_fast_memcpy
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:_intel_fast_memcpy
+   fun:__intel_sse2_strdup
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__intel_sse2_strrchr
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__intel_sse2_strdup
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__intel_sse2_strncmp
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr8
+   fun:__intel_sse2_strlen
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:for__compute_filename
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:for__open_proc
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:for__get_vm
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:for__add_to_lf_table
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:__intel_sse2_strdup
+}
