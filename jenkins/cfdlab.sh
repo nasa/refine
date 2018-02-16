@@ -76,7 +76,7 @@ trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${egads_dir} \
     --with-EGADS=${egads_path} \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
+    CFLAGS='-g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
 trap - EXIT
