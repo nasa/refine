@@ -210,6 +210,14 @@ trap - EXIT
 
 date
 
+LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind-mpi
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/uniform/two
+./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1
+trap - EXIT
+
+date
+
 LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/linear010/two
