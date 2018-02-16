@@ -22,8 +22,8 @@ ${two}/ref_acceptance ega.meshb ega.metric 0.1
 
 mpiexec -np ${nproc} \
 valgrind --quiet  --error-exitcode=1 --leak-check=full \
---suppressions=../../../../misc/valgrind_suppresion_occ \
---suppressions=../../../../misc/valgrind_suppresion_intel_17 \
---suppressions=../../../../misc/valgrind_suppresion_openmpi \
---suppressions=../../../../misc/valgrind_suppresion_zoltan \
+--suppressions=../../../../misc/valgrind_suppressions_occ \
+--suppressions=../../../../misc/valgrind_suppressions_intel_17 \
+--suppressions=../../../../misc/valgrind_suppressions_openmpi \
+--suppressions=../../../../misc/valgrind_suppressions_zoltan \
          ${two}/ref_driver -i ega.meshb -g ${geomfile} -m ega.metric -o ref_driver1 -s 2

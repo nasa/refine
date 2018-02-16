@@ -19,9 +19,9 @@ geomfile=ega.egads
 
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
 valgrind --quiet  --error-exitcode=1 --leak-check=full \
---suppressions=../../../../misc/valgrind_suppresion_occ \
---suppressions=../../../../misc/valgrind_suppresion_intel_17 \
---suppressions=../../../../misc/valgrind_suppresion_openmpi \
+--suppressions=../../../../misc/valgrind_suppressions_occ \
+--suppressions=../../../../misc/valgrind_suppressions_intel_17 \
+--suppressions=../../../../misc/valgrind_suppressions_openmpi \
          ${two}/ref_driver -i ega.meshb -g ${geomfile} -m ega.metric -o ref_driver1 -s 2
 
 
