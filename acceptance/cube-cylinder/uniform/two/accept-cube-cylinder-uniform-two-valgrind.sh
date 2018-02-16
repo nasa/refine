@@ -19,6 +19,7 @@ geomfile=ega.egads
 
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
 valgrind --quiet  --error-exitcode=1 --leak-check=full \
-         ${two}/ref_driver -i ega.meshb -g ${geomfile} -m ega.metric -o ref_driver1 -s 4
+--suppressions=../../../../misc/valgrind_suppresion_occ \
+         ${two}/ref_driver -i ega.meshb -g ${geomfile} -m ega.metric -o ref_driver1 -s 2
 
 

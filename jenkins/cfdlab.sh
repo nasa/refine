@@ -17,6 +17,8 @@ module load git # for git describe
 module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
 module load ESP/112
 
+module load valgrind_3.13.0
+
 module list
 set -x # echo commands
 
@@ -198,13 +200,13 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform/two
 ./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
-# date
+date
 
-# LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
-# trap "cat $LOG" EXIT
-# cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-# ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
-# trap - EXIT
+LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/uniform/two
+./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
+trap - EXIT
 
 date
 
