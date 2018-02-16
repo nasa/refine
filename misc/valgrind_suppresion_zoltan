@@ -1,0 +1,57 @@
+{
+   <insert a suppression name here>
+   Memcheck:Addr8
+   fun:Zoltan_Check_Param
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:Zoltan_Clean_String
+}
+{
+   <insert a suppression name here>
+   Memcheck:Cond
+   fun:Zoltan_Malloc
+   fun:Zoltan_Clean_String
+}
+{
+   <insert a suppression name here>
+   Memcheck:Value8
+   fun:Zoltan_Clean_String
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:Zoltan_Malloc
+   fun:Zoltan_Special_Malloc
+   fun:Zoltan_LB
+   fun:Zoltan_LB_Partition
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:Zoltan_Malloc
+   fun:Zoltan_Special_Malloc
+   fun:Zoltan_Get_Obj_List_Special_Malloc
+   fun:Zoltan_LB
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   fun:malloc
+   fun:Zoltan_Malloc
+   fun:Zoltan_Special_Malloc
+   fun:Zoltan_PHG
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:Zoltan_Malloc
+   fun:Zoltan_Special_Malloc
+   fun:Zoltan_LB_Partition
+   ...
+}
