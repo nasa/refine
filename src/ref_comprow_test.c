@@ -91,7 +91,12 @@ int main( int argc, char *argv[] )
       RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
 
       REIS( 23, ref_comprow_nnz(ref_comprow), "nnz" );
-      
+      REIS( 0, ref_comprow->col[3],  "diag 0" );
+      REIS( 1, ref_comprow->col[8],  "diag 1" );
+      REIS( 2, ref_comprow->col[13], "diag 2" );
+      REIS( 3, ref_comprow->col[18], "diag 3" );
+      REIS( 4, ref_comprow->col[22], "diag 4" );
+
       RSS(ref_comprow_free(ref_comprow),"comprow");
       RSS(ref_grid_free(ref_grid),"free");
     }

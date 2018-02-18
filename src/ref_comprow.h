@@ -31,7 +31,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_COMPROW_STRUCT {
-  REF_INT nnz;
+  REF_INT max, nnz;
   REF_INT *first;
   REF_INT *col;
 };
@@ -39,6 +39,9 @@ struct REF_COMPROW_STRUCT {
 REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow, REF_GRID ref_grid );
 REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow );
 
+REF_STATUS ref_comprow_inspect( REF_COMPROW ref_comprow );
+
+#define ref_comprow_max(ref_comprow) ((ref_comprow)->max)
 #define ref_comprow_nnz(ref_comprow) ((ref_comprow)->nnz)
 
 END_C_DECLORATION

@@ -40,6 +40,7 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
 
   ref_comprow = *ref_comprow_ptr;
 
+  ref_comprow_max(ref_comprow) = ref_node_max(ref_node);
   ref_comprow_nnz(ref_comprow) = 0;
   ref_malloc_init( ref_comprow->first, 1+ref_node_max(ref_node), REF_INT, 0 );
   /* count nodes that the edges touch */
@@ -103,5 +104,24 @@ REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow )
 
   ref_free( ref_comprow );
   
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_comprow_inspect( REF_COMPROW ref_comprow )
+{
+  REF_INT node, entry;
+  for( node = 0 ; node < ref_comprow_max(ref_comprow) ; node++ )
+    if ( ref_comprow->first[node+1] > ref_comprow->first[node] )
+    {
+      printf(" row %d (%d) :",node,
+             ref_comprow->first[node+1]- ref_comprow->first[node]);
+      for ( entry = ref_comprow->first[node];
+            entry < ref_comprow->first[node+1];
+            entry++ )
+        {
+          printf(" %d",ref_comprow->col[entry]);
+        }
+      printf("\n");
+    }
   return REF_SUCCESS;
 }
