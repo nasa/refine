@@ -22,6 +22,7 @@
 #include "ref_comprow.h"
 #include "ref_grid.h"
 #include "ref_node.h"
+#include "ref_edge.h"
 
 #include "ref_malloc.h"
 
@@ -29,14 +30,27 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
 {
   REF_COMPROW ref_comprow;
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_INT edge;
+  
+  RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges");
+  
   ref_malloc( *ref_comprow_ptr, 1, REF_COMPROW_STRUCT );
 
   ref_comprow = *ref_comprow_ptr;
 
   ref_comprow_nnz(ref_comprow) = 0;
-  ref_malloc( ref_comprow->first, 1+ref_node_max(ref_node), REF_INT );
+  ref_malloc_init( ref_comprow->first, 1+ref_node_max(ref_node), REF_INT, 0 );
+  each_ref_edge( ref_edge, edge )
+    {
+      (ref_comprow->first)[ref_edge_e2n( ref_edge, 0, edge)]++; 
+      (ref_comprow->first)[ref_edge_e2n( ref_edge, 1, edge)]++; 
+    }
+
   ref_comprow->col = NULL;
 
+  RSS( ref_edge_free( ref_edge ), "free");
+  
   return REF_SUCCESS;
 }
 
