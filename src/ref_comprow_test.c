@@ -82,6 +82,20 @@ int main( int argc, char *argv[] )
       RSS(ref_grid_free(ref_grid),"free");
     }
 
+  if (!ref_mpi_para(ref_mpi) )
+    {  /* 2 tet */
+      REF_GRID ref_grid;
+      REF_COMPROW ref_comprow;
+      
+      RSS(ref_fixture_tet2_grid(&ref_grid,ref_mpi),"create");
+      RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
+
+      REIS( 23, ref_comprow_nnz(ref_comprow), "nnz" );
+      
+      RSS(ref_comprow_free(ref_comprow),"comprow");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
+
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
