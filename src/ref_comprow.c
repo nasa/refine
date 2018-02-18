@@ -20,19 +20,21 @@
 #include <stdio.h>
 
 #include "ref_comprow.h"
+#include "ref_grid.h"
+#include "ref_node.h"
 
 #include "ref_malloc.h"
 
-REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr )
+REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
 {
   REF_COMPROW ref_comprow;
-
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   ref_malloc( *ref_comprow_ptr, 1, REF_COMPROW_STRUCT );
 
   ref_comprow = *ref_comprow_ptr;
 
   ref_comprow_nnz(ref_comprow) = 0;
-  ref_comprow->first = NULL;
+  ref_malloc( ref_comprow->first, 1+ref_node_max(ref_node), REF_INT );
   ref_comprow->col = NULL;
 
   return REF_SUCCESS;
@@ -45,5 +47,7 @@ REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow )
   ref_free( ref_comprow->col );
   ref_free( ref_comprow->first );
 
+  ref_free( ref_comprow );
+  
   return REF_SUCCESS;
 }

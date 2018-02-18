@@ -23,6 +23,27 @@
 
 #include "ref_comprow.h"
 #include "ref_mpi.h"
+#include "ref_grid.h"
+#include "ref_cell.h"
+#include "ref_node.h"
+#include "ref_sort.h"
+#include "ref_matrix.h"
+#include "ref_list.h"
+#include "ref_math.h"
+#include "ref_geom.h"
+#include "ref_dict.h"
+#include "ref_gather.h"
+#include "ref_export.h"
+#include "ref_adj.h"
+#include "ref_adapt.h"
+#include "ref_edge.h"
+#include "ref_split.h"
+#include "ref_collapse.h"
+#include "ref_smooth.h"
+#include "ref_cavity.h"
+#include "ref_subdiv.h"
+#include "ref_twod.h"
+#include "ref_clump.h"
 
 int main( int argc, char *argv[] )
 {
@@ -31,11 +52,14 @@ int main( int argc, char *argv[] )
   RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
  
   {  /* init */
+    REF_GRID ref_grid;
     REF_COMPROW ref_comprow;
-
-    RSS(ref_comprow_create(&ref_comprow),"create");
+    
+    RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
+    RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
 
     RSS(ref_comprow_free(ref_comprow),"comprow");
+    RSS(ref_grid_free(ref_grid),"free");
   }
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );

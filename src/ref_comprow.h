@@ -26,6 +26,8 @@ typedef struct REF_COMPROW_STRUCT REF_COMPROW_STRUCT;
 typedef REF_COMPROW_STRUCT * REF_COMPROW;
 END_C_DECLORATION
 
+#include "ref_grid.h"
+
 BEGIN_C_DECLORATION
 
 struct REF_COMPROW_STRUCT {
@@ -34,7 +36,7 @@ struct REF_COMPROW_STRUCT {
   REF_INT *col;
 };
 
-REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow );
+REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow, REF_GRID ref_grid );
 REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow );
 
 #define ref_comprow_nnz(ref_comprow) ((ref_comprow)->nnz)
