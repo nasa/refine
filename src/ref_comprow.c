@@ -31,7 +31,7 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
   REF_COMPROW ref_comprow;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
-  REF_INT edge;
+  REF_INT edge, node;
   
   RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges");
   
@@ -41,13 +41,25 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
 
   ref_comprow_nnz(ref_comprow) = 0;
   ref_malloc_init( ref_comprow->first, 1+ref_node_max(ref_node), REF_INT, 0 );
+  /* count nodes that the edges touch */
   each_ref_edge( ref_edge, edge )
     {
-      (ref_comprow->first)[ref_edge_e2n( ref_edge, 0, edge)]++; 
-      (ref_comprow->first)[ref_edge_e2n( ref_edge, 1, edge)]++; 
+      ref_comprow->first[ref_edge_e2n( ref_edge, 0, edge)]++; 
+      ref_comprow->first[ref_edge_e2n( ref_edge, 1, edge)]++; 
     }
+  /* add the diagonal */
+  for( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    if ( ref_comprow->first[node] > 0 )
+      ref_comprow->first[node]++;
+  
+  /* cumulative sum to set first to be the last entry on row */
+  for( node = 0 ; node < ref_node_max(ref_node) ; node++ )
+    ref_comprow->first[node+1] = ref_comprow->first[node];
 
-  ref_comprow->col = NULL;
+  ref_comprow_nnz(ref_comprow) = ref_comprow->first[ref_node_max(ref_node)];
+
+  ref_malloc_init( ref_comprow->col, ref_comprow_nnz(ref_comprow),
+                   REF_INT, REF_EMPTY );
 
   RSS( ref_edge_free( ref_edge ), "free");
   
