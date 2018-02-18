@@ -45,6 +45,8 @@
 #include "ref_twod.h"
 #include "ref_clump.h"
 
+#include "ref_fixture.h"
+
 int main( int argc, char *argv[] )
 {
   REF_MPI ref_mpi;
@@ -61,6 +63,24 @@ int main( int argc, char *argv[] )
     RSS(ref_comprow_free(ref_comprow),"comprow");
     RSS(ref_grid_free(ref_grid),"free");
   }
+
+  if (!ref_mpi_para(ref_mpi) )
+    {  /* tet */
+      REF_GRID ref_grid;
+      REF_COMPROW ref_comprow;
+      
+      RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"create");
+      RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
+
+      REIS( 16, ref_comprow_nnz(ref_comprow), "nnz" );
+      REIS( 0, ref_comprow->col[3],  "diag 0" );
+      REIS( 1, ref_comprow->col[7],  "diag 1" );
+      REIS( 2, ref_comprow->col[11], "diag 2" );
+      REIS( 3, ref_comprow->col[15], "diag 3" );
+      
+      RSS(ref_comprow_free(ref_comprow),"comprow");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );

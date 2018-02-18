@@ -35,7 +35,7 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
   REF_INT n0, n1;
   
   RSS( ref_edge_create( &ref_edge, ref_grid ), "make edges");
-  
+
   ref_malloc( *ref_comprow_ptr, 1, REF_COMPROW_STRUCT );
 
   ref_comprow = *ref_comprow_ptr;
@@ -51,11 +51,12 @@ REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid )
   /* add the diagonal */
   for( node = 0 ; node < ref_node_max(ref_node) ; node++ )
     if ( ref_comprow->first[node] > 0 )
-      ref_comprow->first[node]++;
-  
+      {
+        ref_comprow->first[node]++;
+      }
   /* cumulative sum to set first to be the last entry on row */
   for( node = 0 ; node < ref_node_max(ref_node) ; node++ )
-    ref_comprow->first[node+1] = ref_comprow->first[node];
+    ref_comprow->first[node+1] += ref_comprow->first[node];
 
   ref_comprow_nnz(ref_comprow) = ref_comprow->first[ref_node_max(ref_node)];
 
