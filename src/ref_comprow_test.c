@@ -83,6 +83,14 @@ int main( int argc, char *argv[] )
       RSS( ref_comprow_entry(ref_comprow,row,col,&entry),"ent");
       REIS( 3, entry,  "entry 0,0" );
       
+      row = 0; col = 3;
+      RSS( ref_comprow_entry(ref_comprow,row,col,&entry),"ent");
+      REIS( 0, entry,  "entry 0,0" );
+
+      row = 0; col = 2;
+      RSS( ref_comprow_entry(ref_comprow,row,col,&entry),"ent");
+      REIS( 1, entry,  "entry 0,0" );
+
       RSS(ref_comprow_free(ref_comprow),"comprow");
       RSS(ref_grid_free(ref_grid),"free");
     }
