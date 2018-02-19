@@ -35,6 +35,8 @@ struct REF_ELAST_STRUCT {
   REF_GRID ref_grid;
   REF_COMPROW ref_comprow;
   REF_DBL *a;
+  REF_DBL *displacement;
+  REF_INT *bc;
 };
 
 #define ref_elast_grid(ref_elast) ((ref_elast)->ref_grid)
@@ -45,6 +47,8 @@ REF_STATUS ref_elast_free( REF_ELAST ref_elast );
 
 REF_STATUS ref_elast_inspect( REF_ELAST ref_elast );
 
+REF_STATUS ref_elast_displace( REF_ELAST ref_elast,
+                               REF_INT node, REF_DBL *dxyz );
 REF_STATUS ref_elast_assemble( REF_ELAST ref_elast );
 
 END_C_DECLORATION

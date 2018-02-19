@@ -44,7 +44,14 @@ REF_STATUS ref_elast_create( REF_ELAST *ref_elast_ptr, REF_GRID ref_grid )
   ref_malloc_init( ref_elast->a,
                    3*3*ref_comprow_nnz(ref_elast_comprow(ref_elast)),
                    REF_DBL, 0.0 );
-  
+
+  ref_malloc_init( ref_elast->displacement,
+                   3*ref_comprow_max(ref_elast_comprow(ref_elast)),
+                   REF_DBL, 0.0 );
+  ref_malloc_init( ref_elast->bc,
+                   ref_comprow_max(ref_elast_comprow(ref_elast)),
+                   REF_INT, 1 );
+
   return REF_SUCCESS;
 }
 
@@ -52,6 +59,8 @@ REF_STATUS ref_elast_free( REF_ELAST ref_elast )
 {
   if ( NULL == (void *)ref_elast ) return REF_NULL;
 
+  ref_free( ref_elast->bc );
+  ref_free( ref_elast->displacement );
   ref_free( ref_elast->a );
   ref_comprow_free( ref_elast->ref_comprow );
   
@@ -87,6 +96,16 @@ REF_STATUS ref_elast_inspect( REF_ELAST ref_elast )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_elast_displace( REF_ELAST ref_elast,
+                               REF_INT node, REF_DBL *dxyz )
+{
+  REF_INT i;
+  for (i=0;i<3;i++)
+    ref_elast->displacement[i+3*node] = dxyz[i];
+  ref_elast->bc[node] = 1;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
 {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
@@ -95,6 +114,7 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node, entry;
 
   double x1, y1, z1;
   double x2, y2, z2;
@@ -463,6 +483,22 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
       ref_elast->a[8+ioff43] += (muterm + zlambda*c3z + zmu*c3z);
 
     }
-  
+
+  each_ref_node_valid_node(ref_node,node)
+    {
+      if ( !ref_node_owned(ref_node,node) ||
+           1 == ref_elast->bc[node] )
+        {
+          each_ref_comprow_row_entry( ref_comprow, node, entry )
+            {
+              for(i=0;i<9;i++) ref_elast->a[i+9*entry] = 0.0;
+            }
+          RSS( ref_comprow_entry(ref_comprow,node,node, &entry ), "e");
+          ref_elast->a[0+9*entry] = 1.0;
+          ref_elast->a[4+9*entry] = 1.0;
+          ref_elast->a[8+9*entry] = 1.0;
+        }
+    }
+      
   return REF_SUCCESS;
 }
