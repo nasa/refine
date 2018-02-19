@@ -43,6 +43,8 @@ struct REF_ELAST_STRUCT {
 REF_STATUS ref_elast_create( REF_ELAST *ref_elast, REF_GRID ref_grid );
 REF_STATUS ref_elast_free( REF_ELAST ref_elast );
 
+REF_STATUS ref_elast_inspect( REF_ELAST ref_elast );
+
 REF_STATUS ref_elast_assemble( REF_ELAST ref_elast );
 
 END_C_DECLORATION

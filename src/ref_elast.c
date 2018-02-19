@@ -60,6 +60,33 @@ REF_STATUS ref_elast_free( REF_ELAST ref_elast )
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_elast_inspect( REF_ELAST ref_elast )
+{
+  REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
+  REF_INT row, col, entry, i, j;
+  for( row = 0 ; row < ref_comprow_max(ref_comprow) ; row++ )
+    if ( ref_comprow->first[row+1] > ref_comprow->first[row] )
+      {
+        for ( entry = ref_comprow->first[row];
+              entry < ref_comprow->first[row+1];
+              entry++ )
+          {
+            col = ref_comprow->col[entry];
+            printf("row %d col %d\n",row,col);
+            for( i = 0 ; i < 3 ; i++ )
+              {
+                for( j = 0 ; j < 3 ; j++ )
+                  {
+                    printf(" %10.5f",ref_elast->a[i+3*j+3*entry]);
+                  }
+                printf("\n");
+              }
+          }
+      }
+   
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
 {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
