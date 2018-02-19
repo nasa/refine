@@ -51,6 +51,8 @@ REF_STATUS ref_elast_displace( REF_ELAST ref_elast,
                                REF_INT node, REF_DBL *dxyz );
 REF_STATUS ref_elast_assemble( REF_ELAST ref_elast );
 
+REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm );
+
 END_C_DECLORATION
 
 #endif /* REF_ELAST_H */

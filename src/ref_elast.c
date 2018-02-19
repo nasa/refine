@@ -26,6 +26,7 @@
 #include "ref_edge.h"
 
 #include "ref_cell.h"
+#include "ref_matrix.h"
 
 #include "ref_malloc.h"
 
@@ -500,5 +501,54 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
         }
     }
       
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
+{
+  REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
+  REF_GRID ref_grid = ref_elast_grid(ref_elast);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  double ab[12];
+  int entry, row, col, i,j;
+  
+  *l2norm = 0.0;
+  each_ref_node_valid_node(ref_node,row)
+    {
+      if ( !ref_node_owned(ref_node,row) ||
+           0 == ref_elast->bc[row] )
+        {
+          ab[9] = ab[10] = ab[11] = 0.0;
+          each_ref_comprow_row_entry( ref_comprow, row, entry )
+            {
+              col = ref_comprow->col[entry];
+              if (row != col)
+                {
+                  for(i=0;i<3;i++)
+                    {
+                      ab[9+i] -= 
+                        (   ref_elast->a[i+0*3+9*entry]
+                            * ref_elast->displacement[0+3*col]
+                            + ref_elast->a[i+1*3+9*entry]
+                            * ref_elast->displacement[1+3*col]
+                            + ref_elast->a[i+2*3+9*entry]
+                            * ref_elast->displacement[2+3*col] ) ;
+                    }
+                }
+            }
+          RSS( ref_comprow_entry(ref_comprow,row,row,&entry), "diag");
+          for(i=0;i<3;i++)
+            for(j=0;j<3;j++)
+              ab[i+4*j] = ref_elast->a[i+j*3+9*entry];
+          RSS( ref_matrix_solve_ab( 3, 4, ab ), "solve" );
+          for(i=0;i<3;i++)
+            *l2norm += pow(ref_elast->displacement[i+3*row]-ab[9+i],2);
+          for(i=0;i<3;i++)
+            ref_elast->displacement[i+3*row] = ab[9+i];
+        }
+    }
+  *l2norm /= (REF_DBL)ref_node_n(ref_node);
+  *l2norm = sqrt(*l2norm);
+  
   return REF_SUCCESS;
 }
