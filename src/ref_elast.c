@@ -34,7 +34,9 @@ REF_STATUS ref_elast_create( REF_ELAST *ref_elast_ptr, REF_GRID ref_grid )
   
   ref_elast = *ref_elast_ptr;
 
-  RSS( ref_comprow_create( &(ref_elast->ref_comprow), ref_grid ), "comprow" );
+  ref_elast_grid(ref_elast) = ref_grid;
+  RSS( ref_comprow_create( &(ref_elast->ref_comprow),
+                           ref_elast_grid(ref_elast) ), "comprow" );
 
   ref_malloc_init( ref_elast->a,
                    3*3*ref_comprow_nnz(ref_elast_comprow(ref_elast)),

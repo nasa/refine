@@ -32,10 +32,12 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_ELAST_STRUCT {
+  REF_GRID ref_grid;
   REF_COMPROW ref_comprow;
   REF_DBL *a;
 };
 
+#define ref_elast_grid(ref_elast) ((ref_elast)->ref_grid)
 #define ref_elast_comprow(ref_elast) ((ref_elast)->ref_comprow)
 
 REF_STATUS ref_elast_create( REF_ELAST *ref_elast, REF_GRID ref_grid );
