@@ -36,13 +36,18 @@ REF_STATUS ref_elast_create( REF_ELAST *ref_elast_ptr, REF_GRID ref_grid )
 
   RSS( ref_comprow_create( &(ref_elast->ref_comprow), ref_grid ), "comprow" );
 
-return REF_SUCCESS;
+  ref_malloc_init( ref_elast->a,
+                   3*3*ref_comprow_nnz(ref_elast_comprow(ref_elast)),
+                   REF_DBL, 0.0 );
+  
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_elast_free( REF_ELAST ref_elast )
 {
   if ( NULL == (void *)ref_elast ) return REF_NULL;
-  
+
+  ref_free( ref_elast->a );
   ref_comprow_free( ref_elast->ref_comprow );
   
   ref_free( ref_elast );

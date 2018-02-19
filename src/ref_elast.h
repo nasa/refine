@@ -33,6 +33,7 @@ BEGIN_C_DECLORATION
 
 struct REF_ELAST_STRUCT {
   REF_COMPROW ref_comprow;
+  REF_DBL *a;
 };
 
 #define ref_elast_comprow(ref_elast) ((ref_elast)->ref_comprow)
