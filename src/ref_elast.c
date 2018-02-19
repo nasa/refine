@@ -24,6 +24,8 @@
 #include "ref_node.h"
 #include "ref_edge.h"
 
+#include "ref_cell.h"
+
 #include "ref_malloc.h"
 
 REF_STATUS ref_elast_create( REF_ELAST *ref_elast_ptr, REF_GRID ref_grid )
@@ -53,6 +55,24 @@ REF_STATUS ref_elast_free( REF_ELAST ref_elast )
   ref_comprow_free( ref_elast->ref_comprow );
   
   ref_free( ref_elast );
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
+{
+  REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
+  REF_GRID ref_grid = ref_elast_grid(ref_elast);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT i;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  for(i=0;i<9*ref_comprow_nnz(ref_comprow);i++)
+    ref_elast->a[i]=0.0;
+
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
+    {
+    }
   
   return REF_SUCCESS;
 }

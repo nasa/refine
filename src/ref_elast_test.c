@@ -64,7 +64,21 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
+  if (!ref_mpi_para(ref_mpi) )
+    {  /* tet */
+      REF_GRID ref_grid;
+      REF_ELAST ref_elast;
+      
+      RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"create");
+      RSS(ref_elast_create(&ref_elast,ref_grid),"create");
+
+      RSS(ref_elast_assemble(ref_elast),"assemble");
+
+      RSS(ref_elast_free(ref_elast),"free");
+      RSS(ref_grid_free(ref_grid),"free");
+    }
+
+ RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
   return 0;
