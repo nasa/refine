@@ -58,6 +58,8 @@ int main( int argc, char *argv[] )
     REF_ELAST ref_elast;
     REF_INT node;
     REF_DBL dxyz[3];
+    REF_DBL l2norm;
+    REF_INT sweep;
     
     RSS(ref_grid_create(&ref_grid,ref_mpi),"create");
     RSS(ref_elast_create(&ref_elast,ref_grid),"create");
@@ -70,7 +72,11 @@ int main( int argc, char *argv[] )
     RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
     
     RSS(ref_elast_assemble(ref_elast),"elast");
-
+    for (sweep=0;sweep<0;sweep++)
+      {
+        RSS(ref_elast_relax(ref_elast,&l2norm),"elast");
+        printf("res %e\n",l2norm);
+      }
     RSS(ref_elast_free(ref_elast),"elast");
     RSS(ref_grid_free(ref_grid),"free");
   }
