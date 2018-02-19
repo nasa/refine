@@ -18,6 +18,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "ref_elast.h"
 #include "ref_grid.h"
@@ -63,15 +64,194 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
 {
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
   REF_GRID ref_grid = ref_elast_grid(ref_elast);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
+  double x1, y1, z1;
+  double x2, y2, z2;
+  double x3, y3, z3;
+  double x4, y4, z4;
+  double nx1, ny1, nz1;
+  double nx2, ny2, nz2;
+  double nx3, ny3, nz3;
+  double nx4, ny4, nz4;
+  double vol;
+
+  int idiag1, idiag2, idiag3, idiag4;
+  int ioff12, ioff13, ioff14;
+  int ioff21, ioff23, ioff24;
+  int ioff31, ioff32, ioff34;
+  int ioff41, ioff42, ioff43;
+
+  double c;
+  double c1x, c1y, c1z;
+  double c2x, c2y, c2z;
+  double c3x, c3y, c3z;
+  double c4x, c4y, c4z;
+
+  double xn, yn, zn;
+
+  double aspect_ratio;
+  double modulus_of_elasticity, poisson, mu, lambda;
+
+  double xlambda, ylambda, zlambda;
+  double xmu, ymu, zmu;
+  double muterm;
+  
   for(i=0;i<9*ref_comprow_nnz(ref_comprow);i++)
     ref_elast->a[i]=0.0;
 
   each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes)
     {
+      x1 = ref_node_xyz(ref_node,0,nodes[0]);
+      y1 = ref_node_xyz(ref_node,1,nodes[0]);
+      z1 = ref_node_xyz(ref_node,2,nodes[0]);
+      x2 = ref_node_xyz(ref_node,0,nodes[1]);
+      y2 = ref_node_xyz(ref_node,1,nodes[1]);
+      z2 = ref_node_xyz(ref_node,2,nodes[1]);
+      x3 = ref_node_xyz(ref_node,0,nodes[2]);
+      y3 = ref_node_xyz(ref_node,1,nodes[2]);
+      z3 = ref_node_xyz(ref_node,2,nodes[2]);
+      x4 = ref_node_xyz(ref_node,0,nodes[3]);
+      y4 = ref_node_xyz(ref_node,1,nodes[3]);
+      z4 = ref_node_xyz(ref_node,2,nodes[3]);
+
+      nx1 = 0.5*((y2 - y4)*(z3 - z4) - (y3 - y4)*(z2 - z4));
+      ny1 = 0.5*((z2 - z4)*(x3 - x4) - (z3 - z4)*(x2 - x4));
+      nz1 = 0.5*((x2 - x4)*(y3 - y4) - (x3 - x4)*(y2 - y4));
+
+      nx2 = 0.5*((y3 - y4)*(z1 - z4) - (y1 - y4)*(z3 - z4));
+      ny2 = 0.5*((z3 - z4)*(x1 - x4) - (z1 - z4)*(x3 - x4));
+      nz2 = 0.5*((x3 - x4)*(y1 - y4) - (x1 - x4)*(y3 - y4));
+
+      nx3 = 0.5*((y1 - y4)*(z2 - z4) - (y2 - y4)*(z1 - z4));
+      ny3 = 0.5*((z1 - z4)*(x2 - x4) - (z2 - z4)*(x1 - x4));
+      nz3 = 0.5*((x1 - x4)*(y2 - y4) - (x2 - x4)*(y1 - y4));
+
+      nx4 = -nx1 -nx2 -nx3;
+      ny4 = -ny1 -ny2 -ny3;
+      nz4 = -nz1 -nz2 -nz3;
+
+      vol = ( ((y2-y1)*(z3-z1) - (y3-y1)*(z2-z1))*(x4-x1) -
+	      ((x2-x1)*(z3-z1) - (x3-x1)*(z2-z1))*(y4-y1) +
+	      ((x2-x1)*(y3-y1) - (x3-x1)*(y2-y1))*(z4-z1) ) / 6.0;
+
+      if(vol <= 0.0)
+        {
+          printf("negative vol %f %f %f %e\n",
+                 x1,y1,z1, vol);
+          RSS( REF_FAILURE, "neg vol" );
+        }
+
+      RSS( ref_comprow_entry(ref_comprow,nodes[0],nodes[0], &idiag1 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[0],nodes[1], &ioff12 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[0],nodes[2], &ioff13 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[0],nodes[3], &ioff14 ), "e");
+      
+      RSS( ref_comprow_entry(ref_comprow,nodes[1],nodes[0], &ioff21 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[1],nodes[1], &idiag2 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[1],nodes[2], &ioff23 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[1],nodes[3], &ioff24 ), "e");
+      
+      RSS( ref_comprow_entry(ref_comprow,nodes[2],nodes[0], &ioff31 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[2],nodes[1], &ioff32 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[2],nodes[2], &idiag3 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[2],nodes[3], &ioff34 ), "e");
+      
+      RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[0], &ioff41 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[1], &ioff42 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[2], &ioff43 ), "e");
+      RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[3], &idiag4 ), "e");
+
+      c = 1.0/(3.0*vol);
+      c1x = c*(nx2 + nx3 + nx4);
+      c2x = c*(nx3 + nx4 + nx1);
+      c3x = c*(nx4 + nx1 + nx2);
+      c4x = c*(nx1 + nx2 + nx3);
+
+      c1y = c*(ny2 + ny3 + ny4);
+      c2y = c*(ny3 + ny4 + ny1);
+      c3y = c*(ny4 + ny1 + ny2);
+      c4y = c*(ny1 + ny2 + ny3);
+
+      c1z = c*(nz2 + nz3 + nz4);
+      c2z = c*(nz3 + nz4 + nz1);
+      c3z = c*(nz4 + nz1 + nz2);
+      c4z = c*(nz1 + nz2 + nz3);
+
+      aspect_ratio = 1.0;
+      modulus_of_elasticity = 1.0 / aspect_ratio;
+      modulus_of_elasticity = pow(modulus_of_elasticity, 0.2);
+
+      poisson = 0.0;
+
+      mu     = modulus_of_elasticity / 2.0 / (1.0 + poisson);
+      lambda = 
+	poisson * modulus_of_elasticity / (1.0 + poisson) / (1.0 - 2.0*poisson);
+
+      /* node1 */
+      xn = nx1/3.0;
+      yn = ny1/3.0;
+      zn = nz1/3.0;
+
+      xlambda = xn*lambda;
+      ylambda = yn*lambda;
+      zlambda = zn*lambda;
+
+      xmu = xn*mu;
+      ymu = yn*mu;
+      zmu = zn*mu;
+      
+      muterm = mu*(xn*c1x + yn*c1y + zn*c1z);
+
+      ref_elast->a[0+idiag1] += (muterm + xlambda*c1x + xmu*c1x);
+      ref_elast->a[1+idiag1]          += (xlambda*c1y + ymu*c1x);
+      ref_elast->a[2+idiag1]          += (xlambda*c1z + zmu*c1x);
+      ref_elast->a[3+idiag1]          += (ylambda*c1x + xmu*c1y);
+      ref_elast->a[4+idiag1] += (muterm + ylambda*c1y + ymu*c1y);
+      ref_elast->a[5+idiag1]          += (ylambda*c1z + zmu*c1y);
+      ref_elast->a[6+idiag1]          += (zlambda*c1x + xmu*c1z);
+      ref_elast->a[7+idiag1]          += (zlambda*c1y + ymu*c1z);
+      ref_elast->a[8+idiag1] += (muterm + zlambda*c1z + zmu*c1z);
+
+      muterm = mu*(xn*c2x + yn*c2y + zn*c2z);
+
+      ref_elast->a[0+ioff12] += (muterm + xlambda*c2x + xmu*c2x);
+      ref_elast->a[1+ioff12]          += (xlambda*c2y + ymu*c2x);
+      ref_elast->a[2+ioff12]          += (xlambda*c2z + zmu*c2x);
+      ref_elast->a[3+ioff12]          += (ylambda*c2x + xmu*c2y);
+      ref_elast->a[4+ioff12] += (muterm + ylambda*c2y + ymu*c2y);
+      ref_elast->a[5+ioff12]          += (ylambda*c2z + zmu*c2y);
+      ref_elast->a[6+ioff12]          += (zlambda*c2x + xmu*c2z);
+      ref_elast->a[7+ioff12]          += (zlambda*c2y + ymu*c2z);
+      ref_elast->a[8+ioff12] += (muterm + zlambda*c2z + zmu*c2z);
+
+      muterm = mu*(xn*c3x + yn*c3y + zn*c3z);
+
+      ref_elast->a[0+ioff13] += (muterm + xlambda*c3x + xmu*c3x);
+      ref_elast->a[1+ioff13]          += (xlambda*c3y + ymu*c3x);
+      ref_elast->a[2+ioff13]          += (xlambda*c3z + zmu*c3x);
+      ref_elast->a[3+ioff13]          += (ylambda*c3x + xmu*c3y);
+      ref_elast->a[4+ioff13] += (muterm + ylambda*c3y + ymu*c3y);
+      ref_elast->a[5+ioff13]          += (ylambda*c3z + zmu*c3y);
+      ref_elast->a[6+ioff13]          += (zlambda*c3x + xmu*c3z);
+      ref_elast->a[7+ioff13]          += (zlambda*c3y + ymu*c3z);
+      ref_elast->a[8+ioff13] += (muterm + zlambda*c3z + zmu*c3z);
+
+      muterm = mu*(xn*c4x + yn*c4y + zn*c4z);
+
+      ref_elast->a[0+ioff14] += (muterm + xlambda*c4x + xmu*c4x);
+      ref_elast->a[1+ioff14]          += (xlambda*c4y + ymu*c4x);
+      ref_elast->a[2+ioff14]          += (xlambda*c4z + zmu*c4x);
+      ref_elast->a[3+ioff14]          += (ylambda*c4x + xmu*c4y);
+      ref_elast->a[4+ioff14] += (muterm + ylambda*c4y + ymu*c4y);
+      ref_elast->a[5+ioff14]          += (ylambda*c4z + zmu*c4y);
+      ref_elast->a[6+ioff14]          += (zlambda*c4x + xmu*c4z);
+      ref_elast->a[7+ioff14]          += (zlambda*c4y + ymu*c4z);
+      ref_elast->a[8+ioff14] += (muterm + zlambda*c4z + zmu*c4z);
+
     }
   
   return REF_SUCCESS;
