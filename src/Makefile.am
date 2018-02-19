@@ -16,6 +16,7 @@ libref2_a_SOURCES = \
 	ref_comprow.c \
 	ref_dict.c \
 	ref_edge.c \
+	ref_elast.c \
 	ref_endian.h \
 	ref_export.c \
 	ref_face.c \
@@ -50,7 +51,7 @@ libref2_a_SOURCES = \
 
 include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h ref_comprow.h \
-	ref_dict.h ref_defs.h ref_edge.h ref_export.h \
+	ref_dict.h ref_defs.h ref_edge.h ref_elast.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h \
@@ -165,6 +166,11 @@ TESTS += ref_edge_test
 noinst_PROGRAMS += ref_edge_test
 ref_edge_test_SOURCES = ref_edge_test.c
 ref_edge_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_elast_test
+noinst_PROGRAMS += ref_elast_test
+ref_elast_test_SOURCES = ref_elast_test.c
+ref_elast_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_export_test
 noinst_PROGRAMS += ref_export_test
