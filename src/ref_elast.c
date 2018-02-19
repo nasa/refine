@@ -252,6 +252,67 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
       ref_elast->a[7+ioff14]          += (zlambda*c4y + ymu*c4z);
       ref_elast->a[8+ioff14] += (muterm + zlambda*c4z + zmu*c4z);
 
+      /* node2 */
+      xn = nx2/3.0;
+      yn = ny2/3.0;
+      zn = nz2/3.0;
+
+      xlambda = xn*lambda;
+      ylambda = yn*lambda;
+      zlambda = zn*lambda;
+
+      xmu = xn*mu;
+      ymu = yn*mu;
+      zmu = zn*mu;
+      
+      muterm = mu*(xn*c2x + yn*c2y + zn*c2z);
+
+      ref_elast->a[0+idiag2] += (muterm + xlambda*c2x + xmu*c2x);
+      ref_elast->a[1+idiag2]          += (xlambda*c2y + ymu*c2x);
+      ref_elast->a[2+idiag2]          += (xlambda*c2z + zmu*c2x);
+      ref_elast->a[3+idiag2]          += (ylambda*c2x + xmu*c2y);
+      ref_elast->a[4+idiag2] += (muterm + ylambda*c2y + ymu*c2y);
+      ref_elast->a[5+idiag2]          += (ylambda*c2z + zmu*c2y);
+      ref_elast->a[6+idiag2]          += (zlambda*c2x + xmu*c2z);
+      ref_elast->a[7+idiag2]          += (zlambda*c2y + ymu*c2z);
+      ref_elast->a[8+idiag2] += (muterm + zlambda*c2z + zmu*c2z);
+
+      muterm = mu*(xn*c3x + yn*c3y + zn*c3z);
+
+      ref_elast->a[0+ioff23] += (muterm + xlambda*c3x + xmu*c3x);
+      ref_elast->a[1+ioff23]          += (xlambda*c3y + ymu*c3x);
+      ref_elast->a[2+ioff23]          += (xlambda*c3z + zmu*c3x);
+      ref_elast->a[3+ioff23]          += (ylambda*c3x + xmu*c3y);
+      ref_elast->a[4+ioff23] += (muterm + ylambda*c3y + ymu*c3y);
+      ref_elast->a[5+ioff23]          += (ylambda*c3z + zmu*c3y);
+      ref_elast->a[6+ioff23]          += (zlambda*c3x + xmu*c3z);
+      ref_elast->a[7+ioff23]          += (zlambda*c3y + ymu*c3z);
+      ref_elast->a[8+ioff23] += (muterm + zlambda*c3z + zmu*c3z);
+
+      muterm = mu*(xn*c4x + yn*c4y + zn*c4z);
+
+      ref_elast->a[0+ioff24] += (muterm + xlambda*c4x + xmu*c4x);
+      ref_elast->a[1+ioff24]          += (xlambda*c4y + ymu*c4x);
+      ref_elast->a[2+ioff24]          += (xlambda*c4z + zmu*c4x);
+      ref_elast->a[3+ioff24]          += (ylambda*c4x + xmu*c4y);
+      ref_elast->a[4+ioff24] += (muterm + ylambda*c4y + ymu*c4y);
+      ref_elast->a[5+ioff24]          += (ylambda*c4z + zmu*c4y);
+      ref_elast->a[6+ioff24]          += (zlambda*c4x + xmu*c4z);
+      ref_elast->a[7+ioff24]          += (zlambda*c4y + ymu*c4z);
+      ref_elast->a[8+ioff24] += (muterm + zlambda*c4z + zmu*c4z);
+
+      muterm = mu*(xn*c1x + yn*c1y + zn*c1z);
+
+      ref_elast->a[0+ioff21] += (muterm + xlambda*c1x + xmu*c1x);
+      ref_elast->a[1+ioff21]          += (xlambda*c1y + ymu*c1x);
+      ref_elast->a[2+ioff21]          += (xlambda*c1z + zmu*c1x);
+      ref_elast->a[3+ioff21]          += (ylambda*c1x + xmu*c1y);
+      ref_elast->a[4+ioff21] += (muterm + ylambda*c1y + ymu*c1y);
+      ref_elast->a[5+ioff21]          += (ylambda*c1z + zmu*c1y);
+      ref_elast->a[6+ioff21]          += (zlambda*c1x + xmu*c1z);
+      ref_elast->a[7+ioff21]          += (zlambda*c1y + ymu*c1z);
+      ref_elast->a[8+ioff21] += (muterm + zlambda*c1z + zmu*c1z);
+
     }
   
   return REF_SUCCESS;
