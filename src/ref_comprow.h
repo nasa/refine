@@ -36,13 +36,16 @@ struct REF_COMPROW_STRUCT {
   REF_INT *col;
 };
 
+#define ref_comprow_max(ref_comprow) ((ref_comprow)->max)
+#define ref_comprow_nnz(ref_comprow) ((ref_comprow)->nnz)
+
 REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow, REF_GRID ref_grid );
 REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow );
 
 REF_STATUS ref_comprow_inspect( REF_COMPROW ref_comprow );
 
-#define ref_comprow_max(ref_comprow) ((ref_comprow)->max)
-#define ref_comprow_nnz(ref_comprow) ((ref_comprow)->nnz)
+REF_STATUS ref_comprow_entry( REF_COMPROW ref_comprow,
+                              REF_INT row, REF_INT col, REF_INT *entry );
 
 END_C_DECLORATION
 

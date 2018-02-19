@@ -125,3 +125,23 @@ REF_STATUS ref_comprow_inspect( REF_COMPROW ref_comprow )
     }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_comprow_entry( REF_COMPROW ref_comprow,
+                              REF_INT row, REF_INT col, REF_INT *entry )
+{
+  (*entry) = REF_EMPTY;
+  if ( row < 0 || ref_comprow_max(ref_comprow) <= row ||
+       col < 0 || ref_comprow_max(ref_comprow) <= col )
+    return REF_INVALID;
+  if ( ref_comprow->first[row+1] == ref_comprow->first[row] )
+    return REF_NOT_FOUND;
+  for ( (*entry) = ref_comprow->first[row];
+        (*entry) < ref_comprow->first[row+1];
+        (*entry)++ )
+    {
+      if ( col == ref_comprow->col[*entry] )
+        return REF_SUCCESS;
+    }
+  (*entry) = REF_EMPTY;
+  return REF_NOT_FOUND;
+}

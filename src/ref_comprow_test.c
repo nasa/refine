@@ -68,6 +68,7 @@ int main( int argc, char *argv[] )
     {  /* tet */
       REF_GRID ref_grid;
       REF_COMPROW ref_comprow;
+      REF_INT row, col, entry;
       
       RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"create");
       RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
@@ -77,6 +78,10 @@ int main( int argc, char *argv[] )
       REIS( 1, ref_comprow->col[7],  "diag 1" );
       REIS( 2, ref_comprow->col[11], "diag 2" );
       REIS( 3, ref_comprow->col[15], "diag 3" );
+
+      row = 0; col = 0;
+      RSS( ref_comprow_entry(ref_comprow,row,col,&entry),"ent");
+      REIS( 3, entry,  "entry 0,0" );
       
       RSS(ref_comprow_free(ref_comprow),"comprow");
       RSS(ref_grid_free(ref_grid),"free");
@@ -86,7 +91,8 @@ int main( int argc, char *argv[] )
     {  /* 2 tet */
       REF_GRID ref_grid;
       REF_COMPROW ref_comprow;
-      
+      REF_INT row, col, entry;
+            
       RSS(ref_fixture_tet2_grid(&ref_grid,ref_mpi),"create");
       RSS(ref_comprow_create(&ref_comprow,ref_grid),"create");
 
@@ -97,6 +103,11 @@ int main( int argc, char *argv[] )
       REIS( 3, ref_comprow->col[18], "diag 3" );
       REIS( 4, ref_comprow->col[22], "diag 4" );
 
+      row = 0; col = 4; /* does not exist */
+      REIS( REF_NOT_FOUND,
+            ref_comprow_entry(ref_comprow,row,col,&entry),  "entry 0,4" );
+      REIS( REF_EMPTY, entry, "entry 0,4" );
+      
       RSS(ref_comprow_free(ref_comprow),"comprow");
       RSS(ref_grid_free(ref_grid),"free");
     }
