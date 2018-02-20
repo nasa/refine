@@ -170,7 +170,7 @@ ref_edge_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
 TESTS += ref_elast_test
 noinst_PROGRAMS += ref_elast_test
 ref_elast_test_SOURCES = ref_elast_test.c
-ref_elast_test_LDADD = libref2.a @egads_ldadd@ @mpi_ldadd@ -lm
+ref_elast_test_LDADD = libref2.a @egads_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_export_test
 noinst_PROGRAMS += ref_export_test

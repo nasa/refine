@@ -46,6 +46,7 @@
 #include "ref_clump.h"
 
 #include "ref_fixture.h"
+#include "ref_part.h"
 
 int main( int argc, char *argv[] )
 {
@@ -113,6 +114,55 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
+  { /* bricks */
+    REF_GRID ref_grid;
+    REF_ELAST ref_elast;
+    REF_INT node;
+    REF_DBL dxyz[3];
+    REF_DBL l2norm;
+    REF_INT sweep;
+    char file[] = "ref_interp_test.meshb";
+
+    if ( ref_mpi_once(ref_mpi) )
+      {
+	RSS( ref_fixture_tet_brick_grid( &ref_grid, ref_mpi ), "brick" );
+	RSS(ref_export_by_extension( ref_grid, file ),"export" );
+	RSS( ref_grid_free(ref_grid),"free");
+      }
+    RSS(ref_part_by_extension( &ref_grid, ref_mpi, file ), "import" );
+    if ( ref_mpi_once(ref_mpi) )
+      REIS(0, remove( file ), "test clean up");
+
+    RSS(ref_elast_create(&ref_elast,ref_grid),"create");
+
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      if ( ( -0.01 < ref_node_xyz(ref_grid_node(ref_grid),2,node) &&
+              0.01 > ref_node_xyz(ref_grid_node(ref_grid),2,node) ) )
+	{
+          dxyz[0] = 0.0; dxyz[1] = 0.0; dxyz[2] = 1.0;
+          RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
+	}
+
+    RSS(ref_elast_assemble(ref_elast),"elast");
+    for (sweep=0;sweep<1000;sweep++)
+      {
+        RSS(ref_elast_relax(ref_elast,&l2norm),"elast");
+      }
+    RWDS(0.0,l2norm,-1.0,"not coverged on to steps");
+    each_ref_node_valid_node( ref_grid_node(ref_grid), node )
+      if ( ( 0.99 < ref_node_xyz(ref_grid_node(ref_grid),2,node) &&
+             1.01 > ref_node_xyz(ref_grid_node(ref_grid),2,node) ) )
+	{
+          RWDS(0.0,ref_elast->displacement[0+3*node],-1.0,"x");
+          RWDS(0.0,ref_elast->displacement[1+3*node],-1.0,"y");
+          RWDS(1.0,ref_elast->displacement[2+3*node],-1.0,"z");
+	}
+
+    RSS(ref_elast_free(ref_elast),"elast");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
+
+  
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
 
