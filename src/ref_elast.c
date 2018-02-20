@@ -540,7 +540,9 @@ REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
           for(i=0;i<3;i++)
             for(j=0;j<3;j++)
               ab[i+4*j] = ref_elast->a[i+j*3+9*entry];
+          ref_matrix_show_ab( 3, 4, ab );
           RSS( ref_matrix_solve_ab( 3, 4, ab ), "solve" );
+          ref_matrix_show_ab( 3, 4, ab );
           for(i=0;i<3;i++)
             *l2norm += pow(ref_elast->displacement[i+3*row]-ab[9+i],2);
           for(i=0;i<3;i++)
