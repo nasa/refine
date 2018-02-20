@@ -51,7 +51,7 @@ REF_STATUS ref_elast_create( REF_ELAST *ref_elast_ptr, REF_GRID ref_grid )
                    REF_DBL, 0.0 );
   ref_malloc_init( ref_elast->bc,
                    ref_comprow_max(ref_elast_comprow(ref_elast)),
-                   REF_INT, 1 );
+                   REF_INT, 0 );
 
   return REF_SUCCESS;
 }
@@ -87,7 +87,7 @@ REF_STATUS ref_elast_inspect( REF_ELAST ref_elast )
               {
                 for( j = 0 ; j < 3 ; j++ )
                   {
-                    printf(" %10.5f",ref_elast->a[i+3*j+3*entry]);
+                    printf(" %10.5f",ref_elast->a[i+3*j+9*entry]);
                   }
                 printf("\n");
               }
