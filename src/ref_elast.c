@@ -511,11 +511,11 @@ REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
   REF_NODE ref_node = ref_grid_node(ref_grid);
   double ab[12];
   int entry, row, col, i,j;
-  
+
   *l2norm = 0.0;
   each_ref_node_valid_node(ref_node,row)
     {
-      if ( !ref_node_owned(ref_node,row) ||
+      if ( ref_node_owned(ref_node,row) &&
            0 == ref_elast->bc[row] )
         {
           ab[9] = ab[10] = ab[11] = 0.0;
