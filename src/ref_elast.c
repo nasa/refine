@@ -213,6 +213,11 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
       RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[2], &ioff43 ), "e");
       RSS( ref_comprow_entry(ref_comprow,nodes[3],nodes[3], &idiag4 ), "e");
 
+      idiag1 *= 9; ioff12 *= 9; ioff13 *= 9; ioff14 *= 9;
+      ioff21 *= 9; idiag2 *= 9; ioff23 *= 9; ioff24 *= 9;
+      ioff31 *= 9; ioff32 *= 9; idiag3 *= 9; ioff34 *= 9;
+      ioff41 *= 9; ioff42 *= 9; ioff43 *= 9; idiag4 *= 9;
+      
       c = 1.0/(3.0*vol);
       c1x = c*(nx2 + nx3 + nx4);
       c2x = c*(nx3 + nx4 + nx1);
@@ -539,10 +544,8 @@ REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
           RSS( ref_comprow_entry(ref_comprow,row,row,&entry), "diag");
           for(i=0;i<3;i++)
             for(j=0;j<3;j++)
-              ab[i+4*j] = ref_elast->a[i+j*3+9*entry];
-          ref_matrix_show_ab( 3, 4, ab );
+              ab[i+3*j] = ref_elast->a[i+j*3+9*entry];
           RSS( ref_matrix_solve_ab( 3, 4, ab ), "solve" );
-          ref_matrix_show_ab( 3, 4, ab );
           for(i=0;i<3;i++)
             *l2norm += pow(ref_elast->displacement[i+3*row]-ab[9+i],2);
           for(i=0;i<3;i++)

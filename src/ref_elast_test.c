@@ -86,11 +86,16 @@ int main( int argc, char *argv[] )
       RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
     
       RSS(ref_elast_assemble(ref_elast),"elast");
-      for (sweep=0;sweep<1;sweep++)
+      for (sweep=0;sweep<2;sweep++)
         {
           RSS(ref_elast_relax(ref_elast,&l2norm),"elast");
-          printf("res %e\n",l2norm);
         }
+      RWDS(l2norm,0.0,-1.0,"not coverged on to steps");
+      RWDS(ref_elast->displacement[0+3*3],0.0,-1.0,"x");
+      RWDS(ref_elast->displacement[1+3*3],0.0,-1.0,"y");
+      RWDS(ref_elast->displacement[2+3*3],1.0,-1.0,"z");
+      
+
       RSS(ref_elast_free(ref_elast),"elast");
       RSS(ref_grid_free(ref_grid),"free");
     }
