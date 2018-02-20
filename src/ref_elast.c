@@ -100,7 +100,11 @@ REF_STATUS ref_elast_inspect( REF_ELAST ref_elast )
 REF_STATUS ref_elast_displace( REF_ELAST ref_elast,
                                REF_INT node, REF_DBL *dxyz )
 {
+  REF_GRID ref_grid = ref_elast_grid(ref_elast);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i;
+  if (!ref_node_valid(ref_node,node) )
+    RSS( REF_INVALID, "invalid node index" );
   for (i=0;i<3;i++)
     ref_elast->displacement[i+3*node] = dxyz[i];
   ref_elast->bc[node] = 1;
@@ -505,7 +509,11 @@ REF_STATUS ref_elast_assemble( REF_ELAST ref_elast )
           ref_elast->a[8+9*entry] = 1.0;
         }
     }
-      
+
+  /* to set ghost node bc's */
+  RSS( ref_node_ghost_int(ref_node,ref_elast->bc), "ghost bcs");
+  RSS( ref_node_ghost_dbl(ref_node,ref_elast->displacement, 3), "ghost disp");
+  
   return REF_SUCCESS;
 }
 
@@ -514,6 +522,7 @@ REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
   REF_COMPROW ref_comprow = ref_elast_comprow(ref_elast);
   REF_GRID ref_grid = ref_elast_grid(ref_elast);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   double ab[12];
   int entry, row, col, i,j;
 
@@ -552,7 +561,10 @@ REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm )
             ref_elast->displacement[i+3*row] = ab[9+i];
         }
     }
-  *l2norm /= (REF_DBL)ref_node_n(ref_node);
+  RSS( ref_node_ghost_dbl(ref_node,ref_elast->displacement, 3), "ghost disp");
+  RSS( ref_mpi_allsum(ref_mpi,l2norm, 1, REF_DBL_TYPE),
+       "sum l2 norm over parts");
+  *l2norm /= (REF_DBL)ref_node_n_global(ref_node);
   *l2norm = sqrt(*l2norm);
   
   return REF_SUCCESS;

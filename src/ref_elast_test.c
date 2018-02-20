@@ -66,39 +66,52 @@ int main( int argc, char *argv[] )
     RSS(ref_grid_free(ref_grid),"free");
   }
 
-  if (!ref_mpi_para(ref_mpi) )
-    {  /* tet */
-      REF_GRID ref_grid;
-      REF_ELAST ref_elast;
-      REF_INT node;
-      REF_DBL dxyz[3];
-      REF_DBL l2norm;
-      REF_INT sweep;
+  {  /* tet */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_ELAST ref_elast;
+    REF_INT node;
+    REF_DBL dxyz[3];
+    REF_DBL l2norm;
+    REF_INT sweep;
 
-      RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"create");
-      RSS(ref_elast_create(&ref_elast,ref_grid),"create");
+    RSS(ref_fixture_tet_grid(&ref_grid,ref_mpi),"create");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_elast_create(&ref_elast,ref_grid),"create");
 
-      node=0; dxyz[0] = 0.0; dxyz[1] = 0.0; dxyz[2] = 1.0;
-      RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
-      node=1; dxyz[0] = 0.0; dxyz[1] = 0.0; dxyz[2] = 1.0;
-      RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
-      node=2; dxyz[0] = 0.0; dxyz[1] = 0.0; dxyz[2] = 1.0;
-      RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
+    dxyz[0] = 0.0; dxyz[1] = 0.0; dxyz[2] = 1.0;
+    if ( REF_SUCCESS == ref_node_local(ref_node,0,&node) )
+      {
+        if (ref_node_owned( ref_node, node ) )
+          RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
+      }
+    if ( REF_SUCCESS == ref_node_local(ref_node,1,&node) )
+      {
+        if (ref_node_owned( ref_node, node ) )
+          RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
+      }
+    if ( REF_SUCCESS == ref_node_local(ref_node,2,&node) )
+      {
+        if (ref_node_owned( ref_node, node ) )
+          RSS(ref_elast_displace(ref_elast,node,dxyz),"create");
+      }
     
-      RSS(ref_elast_assemble(ref_elast),"elast");
-      for (sweep=0;sweep<2;sweep++)
-        {
-          RSS(ref_elast_relax(ref_elast,&l2norm),"elast");
-        }
-      RWDS(l2norm,0.0,-1.0,"not coverged on to steps");
-      RWDS(ref_elast->displacement[0+3*3],0.0,-1.0,"x");
-      RWDS(ref_elast->displacement[1+3*3],0.0,-1.0,"y");
-      RWDS(ref_elast->displacement[2+3*3],1.0,-1.0,"z");
-      
+    RSS(ref_elast_assemble(ref_elast),"elast");
+    for (sweep=0;sweep<2;sweep++)
+      {
+        RSS(ref_elast_relax(ref_elast,&l2norm),"elast");
+      }
+    RWDS(0.0,l2norm,-1.0,"not coverged on to steps");
+    if ( REF_SUCCESS == ref_node_local(ref_node,3,&node) )
+      {
+        RWDS(ref_elast->displacement[0+3*node],0.0,-1.0,"x");
+        RWDS(ref_elast->displacement[1+3*node],0.0,-1.0,"y");
+        RWDS(ref_elast->displacement[2+3*node],1.0,-1.0,"z");
+      }
 
-      RSS(ref_elast_free(ref_elast),"elast");
-      RSS(ref_grid_free(ref_grid),"free");
-    }
+    RSS(ref_elast_free(ref_elast),"elast");
+    RSS(ref_grid_free(ref_grid),"free");
+  }
 
   RSS( ref_mpi_free( ref_mpi ), "mpi free" );
   RSS( ref_mpi_stop( ), "stop" );
