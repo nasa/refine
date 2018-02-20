@@ -121,7 +121,7 @@ int main( int argc, char *argv[] )
     REF_DBL dxyz[3];
     REF_DBL l2norm;
     REF_INT sweep;
-    char file[] = "ref_interp_test.meshb";
+    char file[] = "ref_elast_test.meshb";
 
     if ( ref_mpi_once(ref_mpi) )
       {
