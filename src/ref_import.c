@@ -676,6 +676,9 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
   REF_INT elem, nelem, type, flag, three, zero;
+  REF_INT faceid1 = 1;
+  REF_INT faceid2 = 2;
+  REF_INT cell, candidate;
 
   RSS( ref_grid_create( ref_grid_ptr, ref_mpi ), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -729,10 +732,41 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	      RSS( ref_cell_add( ref_grid_qua(ref_grid), nodes, &new_cell ), 
 		   "quad face for an edge");
 	    }
-	}
+
+          faceid1 = REF_EMPTY;
+          faceid2 = REF_EMPTY;
+          candidate = 1;
+          while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2 )
+            {
+              REF_BOOL not_used = REF_TRUE;
+              each_ref_cell_valid_cell_with_nodes( ref_grid_qua(ref_grid), 
+                                                   cell, nodes)
+                {
+                  if ( candidate == nodes[3] )
+                    {
+                      not_used = REF_FALSE;
+                      break;
+                    }
+                }
+              if ( not_used )
+                {
+                  if ( REF_EMPTY == faceid1 )
+                    {
+                      faceid1 = candidate;
+                    }
+                  else
+                    {
+                      faceid2 = candidate;
+                    }
+                }
+              candidate++;
+            }
+        }
 
       if ( 0 == strcmp("Triangles",line))
 	{
+          printf("y=1 symmetry faceid is %d, y=0 symmetry faceid is %d\n",
+                 faceid1,faceid2);
 	  REIS( 1, fscanf(file, "%d", &ntri), "read ntri" );
 	  for (tri=0;tri<ntri;tri++)
 	    {
@@ -742,13 +776,13 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 	      nodes[0]=n0+nnode;
 	      nodes[1]=n1+nnode;
 	      nodes[2]=n2+nnode;
-	      nodes[3]=1;
+	      nodes[3]=faceid1;
 	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 		   "tri face for tri");
 	      nodes[0]=n0;
 	      nodes[1]=n2;
 	      nodes[2]=n1;
-	      nodes[3]=2;
+	      nodes[3]=faceid2;
 	      RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
 		   "tri face for tri");
 	      nodes[0]=n0+nnode;
@@ -982,6 +1016,9 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_DBL param[2];
   REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
+  REF_INT faceid1 = 1;
+  REF_INT faceid2 = 2;
+  REF_INT candidate;
   
   if (verbose) printf("header %s\n",filename);
   RSS( ref_dict_create( &ref_dict ), "create dict" );
@@ -1088,12 +1125,47 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       REIS( next_position, ftell(file), "end location" );
     }
 
+  if ( 2 == dim )
+    {
+      faceid1 = REF_EMPTY;
+      faceid2 = REF_EMPTY;
+      candidate = 1;
+      while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2 )
+        {
+          REF_BOOL not_used = REF_TRUE;
+          each_ref_cell_valid_cell_with_nodes( ref_grid_qua(ref_grid), 
+                                               cell, nodes)
+            {
+              if ( candidate == nodes[3] )
+                {
+                  not_used = REF_FALSE;
+                  break;
+                }
+            }
+          if ( not_used )
+            {
+              if ( REF_EMPTY == faceid1 )
+                {
+                  faceid1 = candidate;
+                }
+              else
+                {
+                  faceid2 = candidate;
+                }
+            }
+          candidate++;
+        }
+    }
+
   RSS( ref_import_meshb_jump( file, version, ref_dict,
 			      6, &available, &next_position ), "jump" );
   if ( available )
     {
       REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "ntri");
       if (verbose) printf("ntri %d\n",ntri);
+      if ( 2 == dim )
+        printf("y=1 symmetry faceid is %d, y=0 symmetry faceid is %d\n",
+               faceid1,faceid2);
 
       for (tri=0;tri<ntri;tri++)
         {
@@ -1107,13 +1179,13 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
               nodes[0]=n0+nnode;
               nodes[1]=n1+nnode;
               nodes[2]=n2+nnode;
-              nodes[3]=1;
+              nodes[3]=faceid1;
               RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
                    "tri face for tri");
               nodes[0]=n0;
               nodes[1]=n2;
               nodes[2]=n1;
-              nodes[3]=2;
+              nodes[3]=faceid2;
               RSS( ref_cell_add( ref_grid_tri(ref_grid), nodes, &new_cell ), 
                    "tri face for tri");
               nodes[0]=n0+nnode;
