@@ -742,7 +742,7 @@ REF_STATUS ref_import_msh( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
               each_ref_cell_valid_cell_with_nodes( ref_grid_qua(ref_grid), 
                                                    cell, nodes)
                 {
-                  if ( candidate == nodes[3] )
+                  if ( candidate == nodes[4] )
                     {
                       not_used = REF_FALSE;
                       break;
@@ -1136,7 +1136,7 @@ REF_STATUS ref_import_meshb( REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
           each_ref_cell_valid_cell_with_nodes( ref_grid_qua(ref_grid), 
                                                cell, nodes)
             {
-              if ( candidate == nodes[3] )
+              if ( candidate == nodes[4] )
                 {
                   not_used = REF_FALSE;
                   break;
