@@ -1112,6 +1112,7 @@ REF_STATUS ref_interp_max_error( REF_INTERP ref_interp,
  
   error = *max_error;
   RSS( ref_mpi_max( ref_mpi, &error, max_error, REF_DBL_TYPE ), "max");
+  RSS( ref_mpi_bcast( ref_mpi, &max_error, 1, REF_DBL_TYPE ), "max");
 
   return REF_SUCCESS;
 }
