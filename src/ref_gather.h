@@ -29,6 +29,7 @@ END_C_DECLORATION
 #include "ref_grid.h"
 #include "ref_cell.h"
 #include "ref_node.h"
+#include "ref_geom.h"
 
 #include "ref_mpi.h"
 
