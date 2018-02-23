@@ -26,53 +26,50 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_metric_show( REF_DBL *metric );
-REF_STATUS ref_metric_inspect( REF_NODE ref_node );
+REF_STATUS ref_metric_show(REF_DBL *metric);
+REF_STATUS ref_metric_inspect(REF_NODE ref_node);
 
-REF_STATUS ref_metric_from_node( REF_DBL *metric, REF_NODE ref_node );
-REF_STATUS ref_metric_to_node( REF_DBL *metric, REF_NODE ref_node );
+REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node);
+REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node);
 
-REF_STATUS ref_metric_unit_node( REF_NODE ref_node );
-REF_STATUS ref_metric_olympic_node( REF_NODE ref_node, REF_DBL h );
-REF_STATUS ref_metric_ring_node( REF_NODE ref_node );
-REF_STATUS ref_metric_polar2d_node( REF_NODE ref_node );
-REF_STATUS ref_metric_ugawg_node( REF_NODE ref_node, REF_INT version );
-REF_STATUS ref_metric_masabl_node( REF_NODE ref_node );
-REF_STATUS ref_metric_twod_node( REF_NODE ref_node );
+REF_STATUS ref_metric_unit_node(REF_NODE ref_node);
+REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h);
+REF_STATUS ref_metric_ring_node(REF_NODE ref_node);
+REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node);
+REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version);
+REF_STATUS ref_metric_masabl_node(REF_NODE ref_node);
+REF_STATUS ref_metric_twod_node(REF_NODE ref_node);
 
-REF_STATUS ref_metric_interpolate( REF_GRID ref_grid, REF_GRID parent  );
+REF_STATUS ref_metric_interpolate(REF_GRID ref_grid, REF_GRID parent);
 
-REF_STATUS ref_metric_gradation( REF_DBL *metric,
-				 REF_GRID ref_grid, REF_DBL r );
-REF_STATUS ref_metric_surface_gradation( REF_DBL *metric,
-					 REF_GRID ref_grid, REF_DBL r );
+REF_STATUS ref_metric_gradation(REF_DBL *metric, REF_GRID ref_grid, REF_DBL r);
+REF_STATUS ref_metric_surface_gradation(REF_DBL *metric, REF_GRID ref_grid,
+                                        REF_DBL r);
 
-REF_STATUS ref_metric_sanitize( REF_GRID ref_grid );
-REF_STATUS ref_metric_sanitize_threed( REF_GRID ref_grid );
-REF_STATUS ref_metric_sanitize_twod( REF_GRID ref_grid );
+REF_STATUS ref_metric_sanitize(REF_GRID ref_grid);
+REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid);
+REF_STATUS ref_metric_sanitize_twod(REF_GRID ref_grid);
 
-REF_STATUS ref_metric_interpolated_curvature( REF_GRID ref_grid );
-REF_STATUS ref_metric_constrain_curvature( REF_GRID ref_grid );
-REF_STATUS ref_metric_from_curvature( REF_DBL *metric, REF_GRID ref_grid );
+REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid);
+REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid);
+REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid);
 
-REF_STATUS ref_metric_imply_from( REF_DBL *metric, REF_GRID ref_grid );
-REF_STATUS ref_metric_imply_non_tet( REF_DBL *metric, REF_GRID ref_grid );
+REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid);
+REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid);
 
-REF_STATUS ref_metric_smr( REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric, 
-			   REF_GRID ref_grid );
-REF_STATUS ref_metric_l2_projection_grad( REF_GRID ref_grid, REF_DBL *scalar,
-					  REF_DBL *grad );
-REF_STATUS ref_metric_l2_projection_hessian( REF_GRID ref_grid, REF_DBL *scalar,
-					     REF_DBL *hessian );
-REF_STATUS ref_metric_extrapolate_boundary( REF_DBL *metric, 
-					    REF_GRID ref_grid );
-REF_STATUS ref_metric_extrapolate_boundary_multipass( REF_DBL *metric, 
-						      REF_GRID ref_grid );
-REF_STATUS ref_metric_complexity( REF_DBL *metric, REF_GRID ref_grid,
-				  REF_DBL *complexity);
-REF_STATUS ref_metric_lp( REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
-			  REF_INT p_norm, REF_DBL gradation, 
-			  REF_DBL complexity );
+REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
+                          REF_GRID ref_grid);
+REF_STATUS ref_metric_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
+                                         REF_DBL *grad);
+REF_STATUS ref_metric_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                            REF_DBL *hessian);
+REF_STATUS ref_metric_extrapolate_boundary(REF_DBL *metric, REF_GRID ref_grid);
+REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
+                                                     REF_GRID ref_grid);
+REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                 REF_DBL *complexity);
+REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+                         REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
 
 END_C_DECLORATION
 

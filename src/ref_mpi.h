@@ -24,7 +24,7 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_MPI_STRUCT REF_MPI_STRUCT;
-typedef REF_MPI_STRUCT * REF_MPI;
+typedef REF_MPI_STRUCT *REF_MPI;
 END_C_DECLORATION
 
 BEGIN_C_DECLORATION
@@ -37,88 +37,78 @@ struct REF_MPI_STRUCT {
   REF_BOOL debug;
 };
 
-#define ref_mpi_m(ref_mpi) ( (ref_mpi)->n )
-#define ref_mpi_rank(ref_mpi) ( (ref_mpi)->id )
-#define ref_mpi_para(ref_mpi) ( (ref_mpi)->n > 1 )
-#define ref_mpi_once(ref_mpi) ( 0 == (ref_mpi)->id )
+#define ref_mpi_m(ref_mpi) ((ref_mpi)->n)
+#define ref_mpi_rank(ref_mpi) ((ref_mpi)->id)
+#define ref_mpi_para(ref_mpi) ((ref_mpi)->n > 1)
+#define ref_mpi_once(ref_mpi) (0 == (ref_mpi)->id)
 
-#define each_ref_mpi_part( ref_mpi, part )     \
-  for ( ( part ) = 0;			       \
-        ( part ) < ref_mpi_m(ref_mpi);	       \
-        ( part )++ )
+#define each_ref_mpi_part(ref_mpi, part) \
+  for ((part) = 0; (part) < ref_mpi_m(ref_mpi); (part)++)
 
-#define each_ref_mpi_worker( ref_mpi, part )   \
-  for ( ( part ) = 1;			       \
-        ( part ) < ref_mpi_m(ref_mpi);	       \
-        ( part )++ )
+#define each_ref_mpi_worker(ref_mpi, part) \
+  for ((part) = 1; (part) < ref_mpi_m(ref_mpi); (part)++)
 
 /* pass void pointer to MPI_Comm */
-REF_STATUS ref_mpi_create_from_comm( REF_MPI *ref_mpi, void *comm );
+REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi, void *comm);
 
 /* assumes MPI_COMM_WORLD */
-REF_STATUS ref_mpi_create( REF_MPI *ref_mpi );
+REF_STATUS ref_mpi_create(REF_MPI *ref_mpi);
 
-REF_STATUS ref_mpi_free( REF_MPI ref_mpi );
-REF_STATUS ref_mpi_deep_copy( REF_MPI *ref_mpi, REF_MPI original );
+REF_STATUS ref_mpi_free(REF_MPI ref_mpi);
+REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi, REF_MPI original);
 
-REF_STATUS ref_mpi_start( int argc, char *argv[] );
-REF_STATUS ref_mpi_stop( );
+REF_STATUS ref_mpi_start(int argc, char *argv[]);
+REF_STATUS ref_mpi_stop();
 
-REF_STATUS ref_mpi_stopwatch_start( REF_MPI ref_mpi );
-REF_STATUS ref_mpi_stopwatch_stop( REF_MPI ref_mpi, const char *message );
+REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
+REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message);
 
 typedef int REF_TYPE;
 #define REF_INT_TYPE (1)
 #define REF_DBL_TYPE (2)
 #define REF_BYTE_TYPE (3)
 
-REF_STATUS ref_mpi_bcast( REF_MPI ref_mpi,
-			  void *data, REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type);
 
-REF_STATUS ref_mpi_send( REF_MPI ref_mpi,
-			 void *data, REF_INT n, REF_TYPE type, REF_INT dest );
-REF_STATUS ref_mpi_recv( REF_MPI ref_mpi,
-			 void *data, REF_INT n, REF_TYPE type, REF_INT source );
+REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
+                        REF_INT dest);
+REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
+                        REF_INT source);
 
-REF_STATUS ref_mpi_alltoall( REF_MPI ref_mpi,
-			     void *send, void *recv, REF_TYPE type );
-REF_STATUS ref_mpi_alltoallv( REF_MPI ref_mpi,
-			      void *send, REF_INT *send_size, 
-			      void *recv, REF_INT *recv_size, 
-			      REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
+                            REF_TYPE type);
+REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
+                             void *recv, REF_INT *recv_size, REF_INT n,
+                             REF_TYPE type);
 
-REF_STATUS ref_mpi_all_or( REF_MPI ref_mpi, REF_BOOL *boolean );
-REF_STATUS ref_mpi_min( REF_MPI ref_mpi,
-			void *input, void *output, REF_TYPE type );
-REF_STATUS ref_mpi_max( REF_MPI ref_mpi,
-			void *input, void *output, REF_TYPE type );
-REF_STATUS ref_mpi_sum( REF_MPI ref_mpi,
-			void *input, void *output, REF_INT n, REF_TYPE type );
-REF_STATUS ref_mpi_allsum( REF_MPI ref_mpi,
-			   void *value, REF_INT n, REF_TYPE type );
+REF_STATUS ref_mpi_all_or(REF_MPI ref_mpi, REF_BOOL *boolean);
+REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
+                       REF_TYPE type);
+REF_STATUS ref_mpi_max(REF_MPI ref_mpi, void *input, void *output,
+                       REF_TYPE type);
+REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
+                       REF_TYPE type);
+REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
+                          REF_TYPE type);
 
-REF_STATUS ref_mpi_allgather( REF_MPI ref_mpi,
-			      void *scalar, void *array, REF_TYPE type );
+REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
+                             REF_TYPE type);
 
-REF_STATUS ref_mpi_allgatherv( REF_MPI ref_mpi,
-			       void *local_array, REF_INT *counts, 
-			       void *concatenated_array, REF_TYPE type );
+REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
+                              REF_INT *counts, void *concatenated_array,
+                              REF_TYPE type);
 
-REF_STATUS ref_mpi_allconcat( REF_MPI ref_mpi,
-			      REF_INT ldim, REF_INT my_size, void *my_array,
-			      REF_INT *total_size,  REF_INT **source,
-			      void **concatenated,
-			      REF_TYPE type );
+REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim, REF_INT my_size,
+                             void *my_array, REF_INT *total_size,
+                             REF_INT **source, void **concatenated,
+                             REF_TYPE type);
 
-REF_STATUS ref_mpi_allminwho( REF_MPI ref_mpi,
-			      REF_DBL *val, REF_INT *who,
-			      REF_INT n );
+REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val, REF_INT *who,
+                             REF_INT n);
 
-REF_STATUS ref_mpi_blindsend( REF_MPI ref_mpi,
-			      REF_INT *proc, void *send,
-			      REF_INT ldim, REF_INT nsend,
-			      void **recv, REF_INT *nrecv,
-			      REF_TYPE type );
+REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
+                             REF_INT ldim, REF_INT nsend, void **recv,
+                             REF_INT *nrecv, REF_TYPE type);
 
 END_C_DECLORATION
 

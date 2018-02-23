@@ -23,7 +23,7 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_LIST_STRUCT REF_LIST_STRUCT;
-typedef REF_LIST_STRUCT * REF_LIST;
+typedef REF_LIST_STRUCT *REF_LIST;
 END_C_DECLORATION
 
 #include "ref_mpi.h"
@@ -35,36 +35,36 @@ struct REF_LIST_STRUCT {
   REF_INT *value;
 };
 
-REF_STATUS ref_list_create( REF_LIST *ref_list );
-REF_STATUS ref_list_free( REF_LIST ref_list );
+REF_STATUS ref_list_create(REF_LIST *ref_list);
+REF_STATUS ref_list_free(REF_LIST ref_list);
 
-REF_STATUS ref_list_deep_copy( REF_LIST *ref_list, REF_LIST original );
+REF_STATUS ref_list_deep_copy(REF_LIST *ref_list, REF_LIST original);
 
-REF_STATUS ref_list_inspect( REF_LIST ref_list );
+REF_STATUS ref_list_inspect(REF_LIST ref_list);
 
-#define ref_list_n( ref_list ) ((ref_list)->n)
-#define ref_list_max( ref_list ) ((ref_list)->max)
-#define ref_list_value( ref_list, i ) ((ref_list)->value[(i)])
+#define ref_list_n(ref_list) ((ref_list)->n)
+#define ref_list_max(ref_list) ((ref_list)->max)
+#define ref_list_value(ref_list, i) ((ref_list)->value[(i)])
 
-#define each_ref_list_item( ref_list, item )		\
-  for ( ( item ) = 0; ( item ) < ref_list_n( ref_list ); ( item )++ )
+#define each_ref_list_item(ref_list, item) \
+  for ((item) = 0; (item) < ref_list_n(ref_list); (item)++)
 
-REF_STATUS ref_list_push( REF_LIST ref_list, REF_INT last );
-REF_STATUS ref_list_pop( REF_LIST ref_list, REF_INT *last );
-REF_STATUS ref_list_shift( REF_LIST ref_list, REF_INT *first );
-REF_STATUS ref_list_delete( REF_LIST ref_list, REF_INT value );
+REF_STATUS ref_list_push(REF_LIST ref_list, REF_INT last);
+REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last);
+REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first);
+REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT value);
 
-REF_STATUS ref_list_apply_offset( REF_LIST ref_list, 
-				  REF_INT equal_and_above, REF_INT offset );
+REF_STATUS ref_list_apply_offset(REF_LIST ref_list, REF_INT equal_and_above,
+                                 REF_INT offset);
 
-REF_STATUS ref_list_sort( REF_LIST ref_list );
+REF_STATUS ref_list_sort(REF_LIST ref_list);
 
-REF_STATUS ref_list_erase( REF_LIST ref_list );
+REF_STATUS ref_list_erase(REF_LIST ref_list);
 
-REF_STATUS ref_list_allgather( REF_LIST ref_list, REF_MPI ref_mpi );
+REF_STATUS ref_list_allgather(REF_LIST ref_list, REF_MPI ref_mpi);
 
-REF_STATUS ref_list_contains( REF_LIST ref_list, REF_INT item, 
-			      REF_BOOL *contains );
+REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
+                             REF_BOOL *contains);
 
 END_C_DECLORATION
 

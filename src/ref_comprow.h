@@ -23,7 +23,7 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_COMPROW_STRUCT REF_COMPROW_STRUCT;
-typedef REF_COMPROW_STRUCT * REF_COMPROW;
+typedef REF_COMPROW_STRUCT *REF_COMPROW;
 END_C_DECLORATION
 
 #include "ref_grid.h"
@@ -39,19 +39,17 @@ struct REF_COMPROW_STRUCT {
 #define ref_comprow_max(ref_comprow) ((ref_comprow)->max)
 #define ref_comprow_nnz(ref_comprow) ((ref_comprow)->nnz)
 
-#define each_ref_comprow_row_entry( ref_comprow, row, entry )           \
-  for ( (entry) = ref_comprow->first[(row)];                            \
-        (entry) < ref_comprow->first[(row)+1];                          \
-        (entry)++ )                                                     \
+#define each_ref_comprow_row_entry(ref_comprow, row, entry) \
+  for ((entry) = ref_comprow->first[(row)];                 \
+       (entry) < ref_comprow->first[(row) + 1]; (entry)++)
 
+REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow, REF_GRID ref_grid);
+REF_STATUS ref_comprow_free(REF_COMPROW ref_comprow);
 
-REF_STATUS ref_comprow_create( REF_COMPROW *ref_comprow, REF_GRID ref_grid );
-REF_STATUS ref_comprow_free( REF_COMPROW ref_comprow );
+REF_STATUS ref_comprow_inspect(REF_COMPROW ref_comprow);
 
-REF_STATUS ref_comprow_inspect( REF_COMPROW ref_comprow );
-
-REF_STATUS ref_comprow_entry( REF_COMPROW ref_comprow,
-                              REF_INT row, REF_INT col, REF_INT *entry );
+REF_STATUS ref_comprow_entry(REF_COMPROW ref_comprow, REF_INT row, REF_INT col,
+                             REF_INT *entry);
 
 END_C_DECLORATION
 

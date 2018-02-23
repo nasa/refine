@@ -16,38 +16,36 @@
  * permissions and limitations under the License.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "ref_mpi.h"
 
 #include "ref_malloc.h"
 
-int main( int argc, char *argv[] )
-{
+int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  RSS( ref_mpi_start( argc, argv ), "start" );
-  RSS( ref_mpi_create( &ref_mpi ), "make mpi" );
+  RSS(ref_mpi_start(argc, argv), "start");
+  RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  if ( ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi) )
-    printf("%s number of processors %d \n",argv[0],ref_mpi_m(ref_mpi));
-  
-  if ( !ref_mpi_para(ref_mpi) )
-    { /* no mpi or mpi with one proc */
-      REIS( 1, ref_mpi_m(ref_mpi), "n" );
-      REIS( 0, ref_mpi_rank(ref_mpi), "rank" );
-      RAS( ref_mpi_once(ref_mpi), "master" );
-    }
+  if (ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi))
+    printf("%s number of processors %d \n", argv[0], ref_mpi_m(ref_mpi));
+
+  if (!ref_mpi_para(ref_mpi)) { /* no mpi or mpi with one proc */
+    REIS(1, ref_mpi_m(ref_mpi), "n");
+    REIS(0, ref_mpi_rank(ref_mpi), "rank");
+    RAS(ref_mpi_once(ref_mpi), "master");
+  }
 
   /* bcast */
   {
     REF_INT bc;
 
     bc = REF_EMPTY;
-    if ( ref_mpi_once(ref_mpi) ) bc = 5;
-    RSS( ref_mpi_bcast( ref_mpi, &bc, 1, REF_INT_TYPE ), "bcast" );
-    REIS( 5, bc, "bc wrong" );
+    if (ref_mpi_once(ref_mpi)) bc = 5;
+    RSS(ref_mpi_bcast(ref_mpi, &bc, 1, REF_INT_TYPE), "bcast");
+    REIS(5, bc, "bc wrong");
   }
 
   /* alltoall */
@@ -55,22 +53,20 @@ int main( int argc, char *argv[] )
     REF_INT part;
     REF_INT *a_size, *b_size;
 
-    ref_malloc_init( a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
-    ref_malloc_init( b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY );
-      
-    each_ref_mpi_part(ref_mpi, part)
-      a_size[part] = part;
+    ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY);
+    ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY);
 
-    RSS( ref_mpi_alltoall( ref_mpi,
-			   a_size, b_size, REF_INT_TYPE ), "alltoall sizes");
+    each_ref_mpi_part(ref_mpi, part) a_size[part] = part;
 
-    each_ref_mpi_part(ref_mpi, part)
-      REIS(part, a_size[part], "a_size changed" );
-    each_ref_mpi_part(ref_mpi, part)
-      REIS(ref_mpi_rank(ref_mpi), b_size[part], "b_size wrong" );
+    RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+        "alltoall sizes");
 
-    ref_free( b_size );
-    ref_free( a_size );
+    each_ref_mpi_part(ref_mpi, part) REIS(part, a_size[part], "a_size changed");
+    each_ref_mpi_part(ref_mpi, part)
+        REIS(ref_mpi_rank(ref_mpi), b_size[part], "b_size wrong");
+
+    ref_free(b_size);
+    ref_free(a_size);
   }
 
   /* allconcat */
@@ -79,33 +75,31 @@ int main( int argc, char *argv[] )
     REF_INT total, part;
     REF_INT *separate, *together, *source;
 
-    ref_malloc( separate, ldim*2, REF_INT );
-      
-    separate[0+2*0] = ref_mpi_rank(ref_mpi);
-    separate[1+2*0] = ref_mpi_rank(ref_mpi);
-    separate[0+2*1] = REF_EMPTY;
-    separate[1+2*1] = REF_EMPTY;
+    ref_malloc(separate, ldim * 2, REF_INT);
 
-    RSS( ref_mpi_allconcat( ref_mpi,
-			    ldim, 2, (void *)separate,
-			    &total, &source, (void **)&together,
-			    REF_INT_TYPE ), "allconcat");
+    separate[0 + 2 * 0] = ref_mpi_rank(ref_mpi);
+    separate[1 + 2 * 0] = ref_mpi_rank(ref_mpi);
+    separate[0 + 2 * 1] = REF_EMPTY;
+    separate[1 + 2 * 1] = REF_EMPTY;
 
-    REIS( 2*ref_mpi_m(ref_mpi), total, "expected size" );
-    each_ref_mpi_part( ref_mpi, part )
-      {
-	REIS( part, source[0+2*part], "const" );
-	REIS( part, source[1+2*part], "const" );
+    RSS(ref_mpi_allconcat(ref_mpi, ldim, 2, (void *)separate, &total, &source,
+                          (void **)&together, REF_INT_TYPE),
+        "allconcat");
 
-	REIS( part, together[0+ldim*2*part], "const" );
-	REIS( part, together[1+ldim*2*part], "const" );
-	REIS( REF_EMPTY, together[2+ldim*2*part], "const" );
-	REIS( REF_EMPTY, together[3+ldim*2*part], "const" );
-      }
+    REIS(2 * ref_mpi_m(ref_mpi), total, "expected size");
+    each_ref_mpi_part(ref_mpi, part) {
+      REIS(part, source[0 + 2 * part], "const");
+      REIS(part, source[1 + 2 * part], "const");
 
-    ref_free( together );
-    ref_free( source );
-    ref_free( separate );
+      REIS(part, together[0 + ldim * 2 * part], "const");
+      REIS(part, together[1 + ldim * 2 * part], "const");
+      REIS(REF_EMPTY, together[2 + ldim * 2 * part], "const");
+      REIS(REF_EMPTY, together[3 + ldim * 2 * part], "const");
+    }
+
+    ref_free(together);
+    ref_free(source);
+    ref_free(separate);
   }
 
   /* allminwho, one per rank */
@@ -114,23 +108,21 @@ int main( int argc, char *argv[] )
     REF_DBL *val;
     REF_INT *who;
 
-    ref_malloc( val, ref_mpi_m(ref_mpi), REF_DBL );
-    ref_malloc( who, ref_mpi_m(ref_mpi), REF_INT );
-      
-    each_ref_mpi_part( ref_mpi, part )
-      val[part] = 1.0;
+    ref_malloc(val, ref_mpi_m(ref_mpi), REF_DBL);
+    ref_malloc(who, ref_mpi_m(ref_mpi), REF_INT);
+
+    each_ref_mpi_part(ref_mpi, part) val[part] = 1.0;
     val[ref_mpi_rank(ref_mpi)] = 0.0;
 
-    RSS( ref_mpi_allminwho( ref_mpi, val, who, ref_mpi_m(ref_mpi) ), "minloc");
+    RSS(ref_mpi_allminwho(ref_mpi, val, who, ref_mpi_m(ref_mpi)), "minloc");
 
-    each_ref_mpi_part( ref_mpi, part )
-      {
-	REIS( part, who[part], "who" );
-	RWDS( 0.0, val[part], -1.0, "min" );
-      }
+    each_ref_mpi_part(ref_mpi, part) {
+      REIS(part, who[part], "who");
+      RWDS(0.0, val[part], -1.0, "min");
+    }
 
-    ref_free( who );
-    ref_free( val );
+    ref_free(who);
+    ref_free(val);
   }
 
   /* allminwho, 1403 */
@@ -139,22 +131,20 @@ int main( int argc, char *argv[] )
     REF_DBL *val;
     REF_INT *who;
 
-    ref_malloc( val, n, REF_DBL );
-    ref_malloc( who, n, REF_INT );
-      
-    for (i=0;i<n;i++)
-      val[i] = (REF_DBL)ref_mpi_rank(ref_mpi);
+    ref_malloc(val, n, REF_DBL);
+    ref_malloc(who, n, REF_INT);
 
-    RSS( ref_mpi_allminwho( ref_mpi, val, who, n ), "minloc");
+    for (i = 0; i < n; i++) val[i] = (REF_DBL)ref_mpi_rank(ref_mpi);
 
-    for (i=0;i<n;i++)
-      {
-	REIS( 0, who[i], "who" );
-	RWDS( 0.0, val[i], -1.0, "min" );
-      }
+    RSS(ref_mpi_allminwho(ref_mpi, val, who, n), "minloc");
 
-    ref_free( who );
-    ref_free( val );
+    for (i = 0; i < n; i++) {
+      REIS(0, who[i], "who");
+      RWDS(0.0, val[i], -1.0, "min");
+    }
+
+    ref_free(who);
+    ref_free(val);
   }
 
   /* blindsend int with 0,0 */
@@ -166,41 +156,36 @@ int main( int argc, char *argv[] )
     REF_INT *recv;
 
     size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      size += MIN(part,3);
+    each_ref_mpi_part(ref_mpi, part) size += MIN(part, 3);
 
-    ref_malloc( proc, size, REF_INT );
-    ref_malloc( send, ldim*size, REF_INT );
-    
-    size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MIN(part,3);i++ )
-	{
-	  proc[size] = part;
-	  for ( l=0;l<ldim;l++ )
-	    {
-	      send[l+ldim*size] = ref_mpi_rank(ref_mpi);
-	    }
-	  size++;
-	}
-
-    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, ldim, size,
-			    (void **)&recv, &n, REF_INT_TYPE ),
-	 "blindsend");
+    ref_malloc(proc, size, REF_INT);
+    ref_malloc(send, ldim * size, REF_INT);
 
     size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MIN(ref_mpi_rank(ref_mpi),3);i++ )
-	{
-	  for ( l=0;l<ldim;l++ )
-	    REIS(part,recv[l+ldim*size],"recv mismatch");
-	  size++;
-	}
-    REIS( size, n, "size mismatch" );
-    
-    ref_free( recv );
-    ref_free( send );
-    ref_free( proc );
+    each_ref_mpi_part(ref_mpi, part) for (i = 0; i < MIN(part, 3); i++) {
+      proc[size] = part;
+      for (l = 0; l < ldim; l++) {
+        send[l + ldim * size] = ref_mpi_rank(ref_mpi);
+      }
+      size++;
+    }
+
+    RSS(ref_mpi_blindsend(ref_mpi, proc, (void *)send, ldim, size,
+                          (void **)&recv, &n, REF_INT_TYPE),
+        "blindsend");
+
+    size = 0;
+    each_ref_mpi_part(
+        ref_mpi, part) for (i = 0; i < MIN(ref_mpi_rank(ref_mpi), 3); i++) {
+      for (l = 0; l < ldim; l++)
+        REIS(part, recv[l + ldim * size], "recv mismatch");
+      size++;
+    }
+    REIS(size, n, "size mismatch");
+
+    ref_free(recv);
+    ref_free(send);
+    ref_free(proc);
   }
 
   /* blindsend dbl with 0,1 */
@@ -212,41 +197,39 @@ int main( int argc, char *argv[] )
     REF_DBL *recv;
 
     size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      size += MAX(1,MIN(part,3));
+    each_ref_mpi_part(ref_mpi, part) size += MAX(1, MIN(part, 3));
 
-    ref_malloc( proc, size, REF_INT );
-    ref_malloc( send, size, REF_DBL );
-    
-    size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MAX(1,MIN(part,3));i++ )
-	{
-	  proc[size] = part;
-	  send[size] = (REF_DBL)ref_mpi_rank(ref_mpi);
-	  size++;
-	}
-
-    RSS( ref_mpi_blindsend( ref_mpi, proc, (void*)send, ldim, size,
-			    (void **)&recv, &n, REF_DBL_TYPE ),
-	 "blindsend");
+    ref_malloc(proc, size, REF_INT);
+    ref_malloc(send, size, REF_DBL);
 
     size = 0;
-    each_ref_mpi_part( ref_mpi, part )
-      for ( i=0;i<MAX(1,MIN(ref_mpi_rank(ref_mpi),3));i++ )
-	{
-	  RWDS((REF_DBL)part,recv[size],-1,"recv mismatch");
-	  size++;
-	}
-    REIS( size, n, "size mismatch" );
-    
-    ref_free( recv );
-    ref_free( send );
-    ref_free( proc );
+    each_ref_mpi_part(ref_mpi, part) for (i = 0; i < MAX(1, MIN(part, 3));
+                                          i++) {
+      proc[size] = part;
+      send[size] = (REF_DBL)ref_mpi_rank(ref_mpi);
+      size++;
+    }
+
+    RSS(ref_mpi_blindsend(ref_mpi, proc, (void *)send, ldim, size,
+                          (void **)&recv, &n, REF_DBL_TYPE),
+        "blindsend");
+
+    size = 0;
+    each_ref_mpi_part(
+        ref_mpi, part) for (i = 0; i < MAX(1, MIN(ref_mpi_rank(ref_mpi), 3));
+                            i++) {
+      RWDS((REF_DBL)part, recv[size], -1, "recv mismatch");
+      size++;
+    }
+    REIS(size, n, "size mismatch");
+
+    ref_free(recv);
+    ref_free(send);
+    ref_free(proc);
   }
 
-  RSS( ref_mpi_free( ref_mpi ), "mpi free" );
-  RSS( ref_mpi_stop( ), "stop" );
+  RSS(ref_mpi_free(ref_mpi), "mpi free");
+  RSS(ref_mpi_stop(), "stop");
 
   return 0;
 }

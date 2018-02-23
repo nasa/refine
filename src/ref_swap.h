@@ -25,9 +25,9 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_swap_remove_two_face_cell( REF_GRID ref_grid, REF_INT cell );
-REF_STATUS ref_swap_remove_three_face_cell( REF_GRID ref_grid, REF_INT cell );
-REF_STATUS ref_swap_pass( REF_GRID ref_grid );
+REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell);
+REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid, REF_INT cell);
+REF_STATUS ref_swap_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

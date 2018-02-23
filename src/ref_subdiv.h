@@ -23,11 +23,11 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_SUBDIV_STRUCT REF_SUBDIV_STRUCT;
-typedef REF_SUBDIV_STRUCT * REF_SUBDIV;
+typedef REF_SUBDIV_STRUCT *REF_SUBDIV;
 END_C_DECLORATION
 
-#include "ref_grid.h"
 #include "ref_edge.h"
+#include "ref_grid.h"
 
 BEGIN_C_DECLORATION
 
@@ -39,42 +39,39 @@ struct REF_SUBDIV_STRUCT {
   REF_INT instrument;
 };
 
-#define ref_subdiv_grid( ref_subdiv ) ((ref_subdiv)->grid)
-#define ref_subdiv_edge( ref_subdiv ) ((ref_subdiv)->edge)
-#define ref_subdiv_mpi( ref_subdiv )		\
-  ref_grid_mpi(ref_subdiv_grid(ref_subdiv))
+#define ref_subdiv_grid(ref_subdiv) ((ref_subdiv)->grid)
+#define ref_subdiv_edge(ref_subdiv) ((ref_subdiv)->edge)
+#define ref_subdiv_mpi(ref_subdiv) ref_grid_mpi(ref_subdiv_grid(ref_subdiv))
 
-REF_STATUS ref_subdiv_create( REF_SUBDIV *ref_subdiv, REF_GRID ref_grid );
-REF_STATUS ref_subdiv_free( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv, REF_GRID ref_grid);
+REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
 
-#define ref_subdiv_mark( ref_subdiv, edge )	\
-  ((ref_subdiv)->mark[edge])
+#define ref_subdiv_mark(ref_subdiv, edge) ((ref_subdiv)->mark[edge])
 
-#define ref_subdiv_node( ref_subdiv, edge )	\
-  ((ref_subdiv)->node[edge])
+#define ref_subdiv_node(ref_subdiv, edge) ((ref_subdiv)->node[edge])
 
-REF_STATUS ref_subdiv_inspect( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_n( REF_SUBDIV ref_subdiv, REF_INT *n );
+REF_STATUS ref_subdiv_mark_n(REF_SUBDIV ref_subdiv, REF_INT *n);
 
-REF_STATUS ref_subdiv_mark_to_split( REF_SUBDIV ref_subdiv, 
-				     REF_INT node0, REF_INT node1 );
+REF_STATUS ref_subdiv_mark_to_split(REF_SUBDIV ref_subdiv, REF_INT node0,
+                                    REF_INT node1);
 
-REF_STATUS ref_subdiv_mark_all( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_mark_all(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_prism_by_metric( REF_SUBDIV ref_subdiv );
-REF_STATUS ref_subdiv_mark_prism_by_ratio( REF_SUBDIV ref_subdiv, 
-					   REF_DBL *node_ratio );
-REF_STATUS ref_subdiv_mark_prism_sides( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_mark_prism_by_metric(REF_SUBDIV ref_subdiv);
+REF_STATUS ref_subdiv_mark_prism_by_ratio(REF_SUBDIV ref_subdiv,
+                                          REF_DBL *node_ratio);
+REF_STATUS ref_subdiv_mark_prism_sides(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_relax( REF_SUBDIV ref_subdiv );
-REF_STATUS ref_subdiv_unmark_relax( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv);
+REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_split( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_mark_verify( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_mark_verify(REF_SUBDIV ref_subdiv);
 
-REF_STATUS ref_subdiv_test_impossible_marks( REF_SUBDIV ref_subdiv );
+REF_STATUS ref_subdiv_test_impossible_marks(REF_SUBDIV ref_subdiv);
 
 END_C_DECLORATION
 

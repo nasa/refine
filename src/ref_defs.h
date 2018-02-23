@@ -20,11 +20,11 @@
 #define REF_DEFS_H
 
 #ifdef __cplusplus
-#  define BEGIN_C_DECLORATION extern "C" {
-#  define END_C_DECLORATION }
+#define BEGIN_C_DECLORATION extern "C" {
+#define END_C_DECLORATION }
 #else
-#  define BEGIN_C_DECLORATION
-#  define END_C_DECLORATION
+#define BEGIN_C_DECLORATION
+#define END_C_DECLORATION
 #endif
 
 #include <limits.h>
@@ -32,26 +32,26 @@
 BEGIN_C_DECLORATION
 
 typedef int REF_BOOL;
-#define REF_TRUE ( 1 )
-#define REF_FALSE ( 0 )
+#define REF_TRUE (1)
+#define REF_FALSE (0)
 
-#define REF_EMPTY ( -1 )
+#define REF_EMPTY (-1)
 
-#if !defined( ABS )
-#define ABS(a)   (( a )>0 ? ( a ) : -( a ))
+#if !defined(ABS)
+#define ABS(a) ((a) > 0 ? (a) : -(a))
 #endif
 
-#if !defined( MIN )
-#define MIN(a,b) (( a )<( b ) ? ( a ) : ( b ))
+#if !defined(MIN)
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-#if !defined( MAX )
-#define MAX(a,b) (( a )>( b ) ? ( a ) : ( b ))
+#if !defined(MAX)
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 typedef int REF_INT;
-#define REF_INT_MAX ( INT_MAX )
-#define REF_INT_MIN ( INT_MIN )
+#define REF_INT_MAX (INT_MAX)
+#define REF_INT_MIN (INT_MIN)
 
 typedef double REF_DBL;
 
@@ -59,144 +59,146 @@ typedef char REF_BYTE;
 
 typedef int REF_STATUS;
 
-#define REF_SUCCESS        ( 0 )
-#define REF_FAILURE        ( 1 )
-#define REF_NULL           ( 2 )
-#define REF_INVALID        ( 3 )
-#define REF_DIV_ZERO       ( 4 )
-#define REF_NOT_FOUND      ( 5 )
-#define REF_IMPLEMENT      ( 6 )
-#define REF_INCREASE_LIMIT ( 7 )
+#define REF_SUCCESS (0)
+#define REF_FAILURE (1)
+#define REF_NULL (2)
+#define REF_INVALID (3)
+#define REF_DIV_ZERO (4)
+#define REF_NOT_FOUND (5)
+#define REF_IMPLEMENT (6)
+#define REF_INCREASE_LIMIT (7)
 
-#define RSS(fcn,msg)                                             \
-  {                                                              \
-    REF_STATUS ref_private_macro_code;                           \
-    ref_private_macro_code = ( fcn );                            \
-    if (REF_SUCCESS != ref_private_macro_code) {                 \
-        printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__, \
-               ref_private_macro_code,( msg ));                  \
-        return ref_private_macro_code;                           \
-      }                                                          \
+#define RSS(fcn, msg)                                             \
+  {                                                               \
+    REF_STATUS ref_private_macro_code;                            \
+    ref_private_macro_code = (fcn);                               \
+    if (REF_SUCCESS != ref_private_macro_code) {                  \
+      printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
+             ref_private_macro_code, (msg));                      \
+      return ref_private_macro_code;                              \
+    }                                                             \
   }
 
-#define RSB(fcn,msg,block)                                       \
-  {                                                              \
-    REF_STATUS ref_private_macro_code;                           \
-    ref_private_macro_code = ( fcn );                            \
-    if (REF_SUCCESS != ref_private_macro_code) {                 \
-        printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__, \
-               ref_private_macro_code,( msg ));                  \
-        block;                                                   \
-        return ref_private_macro_code;                           \
-      }                                                          \
+#define RSB(fcn, msg, block)                                      \
+  {                                                               \
+    REF_STATUS ref_private_macro_code;                            \
+    ref_private_macro_code = (fcn);                               \
+    if (REF_SUCCESS != ref_private_macro_code) {                  \
+      printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
+             ref_private_macro_code, (msg));                      \
+      block;                                                      \
+      return ref_private_macro_code;                              \
+    }                                                             \
   }
 
-#define RXS(fcn,allowed_exception,msg)                           \
-  {                                                              \
-    REF_STATUS ref_private_macro_code;                           \
-    ref_private_macro_code = ( fcn );                            \
-    if (!( REF_SUCCESS == ref_private_macro_code ||              \
-           ( allowed_exception ) == ref_private_macro_code )) {  \
-        printf("%s: %d: %s: %d %s\n",__FILE__,__LINE__,__func__, \
-               ref_private_macro_code,( msg ));                  \
-        return ref_private_macro_code;                           \
-      }                                                          \
+#define RXS(fcn, allowed_exception, msg)                          \
+  {                                                               \
+    REF_STATUS ref_private_macro_code;                            \
+    ref_private_macro_code = (fcn);                               \
+    if (!(REF_SUCCESS == ref_private_macro_code ||                \
+          (allowed_exception) == ref_private_macro_code)) {       \
+      printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
+             ref_private_macro_code, (msg));                      \
+      return ref_private_macro_code;                              \
+    }                                                             \
   }
 
-#define RNS(ptr,msg)                                                   \
+#define RNS(ptr, msg)                                                  \
   {                                                                    \
-    if (NULL == (void *)( ptr )) {                                     \
-        printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-        return REF_NULL;                                               \
-      }                                                                \
+    if (NULL == (void *)(ptr)) {                                       \
+      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      return REF_NULL;                                                 \
+    }                                                                  \
   }
 
-#define RNB(ptr,msg,block)                                             \
+#define RNB(ptr, msg, block)                                           \
   {                                                                    \
-    if (NULL == (void *)( ptr )) {                                     \
-        printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-        block;                                                         \
-        return REF_NULL;                                               \
-      }                                                                \
+    if (NULL == (void *)(ptr)) {                                       \
+      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      block;                                                           \
+      return REF_NULL;                                                 \
+    }                                                                  \
   }
 
-#define REIS(a,b,msg)                                        \
-  {                                                          \
-    REF_INT ref_private_status_ai,ref_private_status_bi;     \
-    ref_private_status_ai = ( a );                           \
-    ref_private_status_bi = ( b );                           \
-    if (ref_private_status_ai!=ref_private_status_bi) {      \
-        printf("%s: %d: %s: %s\nexpected %d was %d\n",       \
-               __FILE__,__LINE__,__func__,( msg ),           \
-               ref_private_status_ai,ref_private_status_bi); \
-        return REF_FAILURE;                                  \
-      }                                                      \
+#define REIS(a, b, msg)                                                      \
+  {                                                                          \
+    REF_INT ref_private_status_ai, ref_private_status_bi;                    \
+    ref_private_status_ai = (a);                                             \
+    ref_private_status_bi = (b);                                             \
+    if (ref_private_status_ai != ref_private_status_bi) {                    \
+      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__,     \
+             __func__, (msg), ref_private_status_ai, ref_private_status_bi); \
+      return REF_FAILURE;                                                    \
+    }                                                                        \
   }
 
-#define RWDS(a,b,tol,msg)                                                       \
-  {                                                                             \
-    REF_DBL ref_private_status_ad,ref_private_status_bd;                        \
-    REF_DBL ref_private_status_del,ref_private_status_allowed;                  \
-    ref_private_status_ad = ( a );                                              \
-    ref_private_status_bd = ( b );                                              \
-    ref_private_status_del =                                                    \
-      ABS(ref_private_status_ad-ref_private_status_bd);                         \
-    ref_private_status_allowed = ( tol );                                       \
-    if ( tol < 0.0 ) ref_private_status_allowed =                               \
-        MAX( 1.0E-12, 1.0E-12*ABS(ref_private_status_ad) );                     \
-    if (ref_private_status_del>ref_private_status_allowed) {                    \
-        printf("%s: %d: %s: %s\nexpected %.15e, was %.15e, %e outside of %e\n", \
-               __FILE__,__LINE__,__func__,( msg ),                              \
-               ref_private_status_ad,ref_private_status_bd,                     \
-               ref_private_status_del,ref_private_status_allowed);              \
-        return REF_FAILURE;                                                     \
-      }                                                                         \
+#define RWDS(a, b, tol, msg)                                                  \
+  {                                                                           \
+    REF_DBL ref_private_status_ad, ref_private_status_bd;                     \
+    REF_DBL ref_private_status_del, ref_private_status_allowed;               \
+    ref_private_status_ad = (a);                                              \
+    ref_private_status_bd = (b);                                              \
+    ref_private_status_del =                                                  \
+        ABS(ref_private_status_ad - ref_private_status_bd);                   \
+    ref_private_status_allowed = (tol);                                       \
+    if (tol < 0.0)                                                            \
+      ref_private_status_allowed =                                            \
+          MAX(1.0E-12, 1.0E-12 * ABS(ref_private_status_ad));                 \
+    if (ref_private_status_del > ref_private_status_allowed) {                \
+      printf("%s: %d: %s: %s\nexpected %.15e, was %.15e, %e outside of %e\n", \
+             __FILE__, __LINE__, __func__, (msg), ref_private_status_ad,      \
+             ref_private_status_bd, ref_private_status_del,                   \
+             ref_private_status_allowed);                                     \
+      return REF_FAILURE;                                                     \
+    }                                                                         \
   }
 
-#define RES(a,b,msg)                                                   \
+#define RES(a, b, msg)                                                 \
   {                                                                    \
-    if (( a )!=( b )) {                                                \
-        printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-        return REF_FAILURE;                                            \
-      }                                                                \
+    if ((a) != (b)) {                                                  \
+      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      return REF_FAILURE;                                              \
+    }                                                                  \
   }
 
-#define RUS(a,b,msg)                                                   \
+#define RUS(a, b, msg)                                                 \
   {                                                                    \
-    if (( a )==( b )) {                                                \
-        printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-        return REF_FAILURE;                                            \
-      }                                                                \
+    if ((a) == (b)) {                                                  \
+      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      return REF_FAILURE;                                              \
+    }                                                                  \
   }
 
-#define RAS(a,msg)                                                     \
+#define RAS(a, msg)                                                    \
   {                                                                    \
-    if (!( a )) {                                                      \
-        printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-        return REF_FAILURE;                                            \
-      }                                                                \
+    if (!(a)) {                                                        \
+      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      return REF_FAILURE;                                              \
+    }                                                                  \
   }
 
-#define THROW(msg)                                                 \
-  { printf("%s: %d: %s: %s\n",__FILE__,__LINE__,__func__,( msg )); \
-    return REF_FAILURE; }
+#define THROW(msg)                                                   \
+  {                                                                  \
+    printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+    return REF_FAILURE;                                              \
+  }
 
 #define RAISE(fcn)                               \
   {                                              \
     REF_STATUS ref_private_macro_code;           \
-    ref_private_macro_code = ( fcn );            \
+    ref_private_macro_code = (fcn);              \
     if (REF_SUCCESS != ref_private_macro_code) { \
-        return ref_private_macro_code;           \
-      }                                          \
+      return ref_private_macro_code;             \
+    }                                            \
   }
 
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr) \
-  if (NULL == (void *)( &( ptr )+1 )) printf("unused macro failed\n");
+  if (NULL == (void *)(&(ptr) + 1)) printf("unused macro failed\n");
 
-#define SKIP_BLOCK(why) \
-  printf(" *** %s *** at %s:%d\n",( why ),__FILE__,__LINE__); if (REF_FALSE)
+#define SKIP_BLOCK(why)                                        \
+  printf(" *** %s *** at %s:%d\n", (why), __FILE__, __LINE__); \
+  if (REF_FALSE)
 
 END_C_DECLORATION
 
 #endif /* REF_DEFS_H */
-

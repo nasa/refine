@@ -23,11 +23,11 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_ELAST_STRUCT REF_ELAST_STRUCT;
-typedef REF_ELAST_STRUCT * REF_ELAST;
+typedef REF_ELAST_STRUCT *REF_ELAST;
 END_C_DECLORATION
 
-#include "ref_grid.h"
 #include "ref_comprow.h"
+#include "ref_grid.h"
 
 BEGIN_C_DECLORATION
 
@@ -42,16 +42,15 @@ struct REF_ELAST_STRUCT {
 #define ref_elast_grid(ref_elast) ((ref_elast)->ref_grid)
 #define ref_elast_comprow(ref_elast) ((ref_elast)->ref_comprow)
 
-REF_STATUS ref_elast_create( REF_ELAST *ref_elast, REF_GRID ref_grid );
-REF_STATUS ref_elast_free( REF_ELAST ref_elast );
+REF_STATUS ref_elast_create(REF_ELAST *ref_elast, REF_GRID ref_grid);
+REF_STATUS ref_elast_free(REF_ELAST ref_elast);
 
-REF_STATUS ref_elast_inspect( REF_ELAST ref_elast );
+REF_STATUS ref_elast_inspect(REF_ELAST ref_elast);
 
-REF_STATUS ref_elast_displace( REF_ELAST ref_elast,
-                               REF_INT node, REF_DBL *dxyz );
-REF_STATUS ref_elast_assemble( REF_ELAST ref_elast );
+REF_STATUS ref_elast_displace(REF_ELAST ref_elast, REF_INT node, REF_DBL *dxyz);
+REF_STATUS ref_elast_assemble(REF_ELAST ref_elast);
 
-REF_STATUS ref_elast_relax( REF_ELAST ref_elast, REF_DBL *l2norm );
+REF_STATUS ref_elast_relax(REF_ELAST ref_elast, REF_DBL *l2norm);
 
 END_C_DECLORATION
 

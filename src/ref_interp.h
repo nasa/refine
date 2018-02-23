@@ -24,13 +24,13 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_INTERP_STRUCT REF_INTERP_STRUCT;
-typedef REF_INTERP_STRUCT * REF_INTERP;
+typedef REF_INTERP_STRUCT *REF_INTERP;
 END_C_DECLORATION
 
-#include "ref_mpi.h"
-#include "ref_grid.h"
 #include "ref_agents.h"
+#include "ref_grid.h"
 #include "ref_list.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
@@ -55,22 +55,23 @@ struct REF_INTERP_STRUCT {
   REF_LIST visualize;
 };
 
-#define ref_interp_from_grid(ref_interp) ( (ref_interp)->from_grid )
-#define ref_interp_to_grid(ref_interp) ( (ref_interp)->to_grid )
-#define ref_interp_bary(ref_interp,j,node) ( (ref_interp)->bary[(j)+4*(node)] )
+#define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
+#define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
+#define ref_interp_bary(ref_interp, j, node) \
+  ((ref_interp)->bary[(j) + 4 * (node)])
 
-REF_STATUS ref_interp_create( REF_INTERP *ref_interp, 
-			      REF_GRID from_grid, REF_GRID to_grid );
+REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
+                             REF_GRID to_grid);
 
-REF_STATUS ref_interp_free( REF_INTERP ref_interp );
+REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
-REF_STATUS ref_interp_locate( REF_INTERP ref_interp);
+REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
 
-REF_STATUS ref_interp_min_bary( REF_INTERP ref_interp, REF_DBL *min_bary );
-REF_STATUS ref_interp_max_error( REF_INTERP ref_interp, REF_DBL *max_error );
-REF_STATUS ref_interp_stats( REF_INTERP ref_interp );
+REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp, REF_DBL *min_bary);
+REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error);
+REF_STATUS ref_interp_stats(REF_INTERP ref_interp);
 
-REF_STATUS ref_interp_tec( REF_INTERP ref_interp, const char *filename );
+REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename);
 
 END_C_DECLORATION
 

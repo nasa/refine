@@ -23,13 +23,13 @@
 
 BEGIN_C_DECLORATION
 typedef struct REF_GATHER_STRUCT REF_GATHER_STRUCT;
-typedef REF_GATHER_STRUCT * REF_GATHER;
+typedef REF_GATHER_STRUCT *REF_GATHER;
 END_C_DECLORATION
 
-#include "ref_grid.h"
 #include "ref_cell.h"
-#include "ref_node.h"
 #include "ref_geom.h"
+#include "ref_grid.h"
+#include "ref_node.h"
 
 #include "ref_mpi.h"
 
@@ -40,27 +40,27 @@ struct REF_GATHER_STRUCT {
   REF_DBL time;
 };
 
-REF_STATUS ref_gather_create( REF_GATHER *ref_gather );
-REF_STATUS ref_gather_free( REF_GATHER ref_gather );
+REF_STATUS ref_gather_create(REF_GATHER *ref_gather);
+REF_STATUS ref_gather_free(REF_GATHER ref_gather);
 
-#define ref_gather_blocking_frame( ref_grid, zone_title )		\
-  RSS( ref_gather_tec_movie_frame( ref_grid, zone_title ), "movie frame" )
+#define ref_gather_blocking_frame(ref_grid, zone_title) \
+  RSS(ref_gather_tec_movie_frame(ref_grid, zone_title), "movie frame")
 
-REF_STATUS ref_gather_tec_movie_record_button( REF_GATHER ref_gather,
-					       REF_BOOL on_or_off );
-REF_STATUS ref_gather_tec_movie_frame( REF_GRID ref_grid,
-				       const char *zone_title );
+REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
+                                              REF_BOOL on_or_off);
+REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
+                                      const char *zone_title);
 
-REF_STATUS ref_gather_tec_part( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_gather_by_extension( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_gather_metric( REF_GRID ref_grid, const char *filename );
+REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_gather_ncell( REF_NODE ref_node, REF_CELL ref_cell, 
-			     REF_INT *ncell );
-REF_STATUS ref_gather_ngeom( REF_NODE ref_node, REF_GEOM ref_geom, 
-			     REF_INT type, REF_INT *ngeom );
+REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
+                            REF_INT *ncell);
+REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
+                            REF_INT *ngeom);
 
 END_C_DECLORATION
 
