@@ -96,7 +96,6 @@ viz
 Marshall
  global cell id
  part_cad_edges
- kill tabs
  provide 2D api
 
 make sure all triangles have one tet and tet has one neighbor by
