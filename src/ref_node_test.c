@@ -442,7 +442,7 @@ int main(int argc, char *argv[]) {
     data[local] = ref_mpi_rank(ref_mpi);
 
     global = ref_mpi_rank(ref_mpi) + 1;
-    if (global >= ref_mpi_m(ref_mpi)) global = 0;
+    if (global >= ref_mpi_n(ref_mpi)) global = 0;
     if (ref_mpi_para(ref_mpi)) {
       RSS(ref_node_add(ref_node, global, &ghost), "add");
       ref_node_part(ref_node, ghost) = global;
@@ -455,7 +455,7 @@ int main(int argc, char *argv[]) {
     REIS(global, data[local], "local changed");
     if (ref_mpi_para(ref_mpi)) {
       global = ref_mpi_rank(ref_mpi) + 1;
-      if (global >= ref_mpi_m(ref_mpi)) global = 0;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
       REIS(global, data[ghost], "local changed");
     }
     RSS(ref_node_free(ref_node), "free");
@@ -476,7 +476,7 @@ int main(int argc, char *argv[]) {
     data[1 + ldim * local] = 10.0 * (REF_DBL)ref_mpi_rank(ref_mpi);
 
     global = ref_mpi_rank(ref_mpi) + 1;
-    if (global >= ref_mpi_m(ref_mpi)) global = 0;
+    if (global >= ref_mpi_n(ref_mpi)) global = 0;
     if (ref_mpi_para(ref_mpi)) {
       RSS(ref_node_add(ref_node, global, &ghost), "add");
       ref_node_part(ref_node, ghost) = global;
@@ -491,7 +491,7 @@ int main(int argc, char *argv[]) {
     RWDS(10.0 * (REF_DBL)global, data[1 + ldim * local], -1.0, "local changed");
     if (ref_mpi_para(ref_mpi)) {
       global = ref_mpi_rank(ref_mpi) + 1;
-      if (global >= ref_mpi_m(ref_mpi)) global = 0;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
       RWDS((REF_DBL)global, data[0 + ldim * ghost], -1.0, "local changed");
       RWDS(10.0 * (REF_DBL)global, data[1 + ldim * ghost], -1.0,
            "local changed");

@@ -2484,12 +2484,12 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_next, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_next, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(a_nnode, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_nnode, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(a_ngeom, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_ngeom, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_next, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_next, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_ngeom, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_ngeom, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
                                                ref_node_part(ref_node, node))

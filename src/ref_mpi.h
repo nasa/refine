@@ -37,16 +37,16 @@ struct REF_MPI_STRUCT {
   REF_BOOL debug;
 };
 
-#define ref_mpi_m(ref_mpi) ((ref_mpi)->n)
+#define ref_mpi_n(ref_mpi) ((ref_mpi)->n)
 #define ref_mpi_rank(ref_mpi) ((ref_mpi)->id)
 #define ref_mpi_para(ref_mpi) ((ref_mpi)->n > 1)
 #define ref_mpi_once(ref_mpi) (0 == (ref_mpi)->id)
 
 #define each_ref_mpi_part(ref_mpi, part) \
-  for ((part) = 0; (part) < ref_mpi_m(ref_mpi); (part)++)
+  for ((part) = 0; (part) < ref_mpi_n(ref_mpi); (part)++)
 
 #define each_ref_mpi_worker(ref_mpi, part) \
-  for ((part) = 1; (part) < ref_mpi_m(ref_mpi); (part)++)
+  for ((part) = 1; (part) < ref_mpi_n(ref_mpi); (part)++)
 
 /* pass void pointer to MPI_Comm */
 REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi, void *comm);

@@ -177,7 +177,7 @@ REF_STATUS ref_list_allgather(REF_LIST ref_list, REF_MPI ref_mpi) {
   REF_INT *counts;
   REF_INT total_count;
 
-  ref_malloc(counts, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
 
   RSS(ref_mpi_allgather(ref_mpi, &(ref_list_n(ref_list)), counts, REF_INT_TYPE),
       "gather size");

@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
 
     sprintf(viz_file, "ref_part_test_n%d_p%d.tec",
-            ref_mpi_m(ref_grid_mpi(import_grid)),
+            ref_mpi_n(ref_grid_mpi(import_grid)),
             ref_mpi_rank(ref_grid_mpi(import_grid)));
     RSS(ref_export_by_extension(import_grid, viz_file), "export");
     ref_mpi_stopwatch_stop(ref_mpi, "export");

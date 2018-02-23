@@ -477,8 +477,8 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     for (node = 0; node < export_n; node++)
       migrate_part[export_local[node]] = export_part[node];
 
-    ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-    ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+    ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+    ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
     each_ref_migrate_node(ref_migrate, node) each_ref_adj_node_item_with_ref(
         ref_migrate_parent_global(ref_migrate), node, item, global) {
@@ -502,7 +502,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
     ref_malloc(b_parts, 2 * b_total, REF_INT);
 
-    ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+    ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
     a_next[0] = 0;
     each_ref_mpi_worker(ref_mpi, part) a_next[part] =
         a_next[part - 1] + a_size[part - 1];
@@ -579,7 +579,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     REF_INT item, ref;
     REF_INT *node_part;
 
-    nparts[0] = ref_mpi_m(ref_mpi);
+    nparts[0] = ref_mpi_n(ref_mpi);
 
     RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
@@ -592,11 +592,11 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     n = 0;
     each_ref_migrate_node(ref_migrate, node) n++;
 
-    ref_malloc(partition_size, ref_mpi_m(ref_mpi), REF_INT);
+    ref_malloc(partition_size, ref_mpi_n(ref_mpi), REF_INT);
     RSS(ref_mpi_allgather(ref_mpi, &n, partition_size, REF_INT_TYPE),
         "gather size of each part");
 
-    ref_malloc(vtxdist, ref_mpi_m(ref_mpi) + 1, PARM_INT);
+    ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
     ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
     ref_malloc(xadj, n + 1, PARM_INT);
 
@@ -628,9 +628,9 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
       n++;
     }
 
-    ref_malloc_init(tpwgts, ref_mpi_m(ref_mpi), PARM_REAL,
-                    1.0 / (REF_DBL)ref_mpi_m(ref_mpi));
-    ref_malloc_init(ubvec, ref_mpi_m(ref_mpi), PARM_REAL, 1.01);
+    ref_malloc_init(tpwgts, ref_mpi_n(ref_mpi), PARM_REAL,
+                    1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
+    ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
     ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
 #if PARMETIS_MAJOR_VERSION == 3
@@ -693,13 +693,13 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   REF_INT local;
   REF_INT i;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
                                                ref_node_part(ref_node, node)) {
     if (ref_node_part(ref_node, node) < 0 ||
-        ref_node_part(ref_node, node) >= ref_mpi_m(ref_mpi)) {
+        ref_node_part(ref_node, node) >= ref_mpi_n(ref_mpi)) {
       printf("id %d node %d global %d part %d", ref_mpi_rank(ref_mpi), node,
              ref_node_global(ref_node, node), ref_node_part(ref_node, node));
       THROW("part out of range");
@@ -726,7 +726,7 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   if (ref_node_naux(ref_node) > 0)
     ref_malloc(b_aux, ref_node_naux(ref_node) * b_total, REF_DBL);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
@@ -798,8 +798,8 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
@@ -826,7 +826,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   ref_malloc(b_c2n, ref_cell_size_per(ref_cell) * b_total, REF_INT);
   ref_malloc(b_parts, ref_cell_size_per(ref_cell) * b_total, REF_INT);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
@@ -905,8 +905,8 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
                                                ref_node_part(ref_node, node)) {
@@ -927,7 +927,7 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   ref_malloc(b_int, 3 * b_total, REF_INT);
   ref_malloc(b_real, 2 * b_total, REF_DBL);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];

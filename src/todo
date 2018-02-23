@@ -23,8 +23,6 @@ initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
-rename ref_mpi_m to ref_mpi_n
-
 ref_geom_add_between should update adjacent face UV with edge T
 (constrain does clean up already)
 

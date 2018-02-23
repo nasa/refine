@@ -569,7 +569,7 @@ REF_STATUS ref_export_tec_part(REF_GRID ref_grid, const char *root_filename) {
   char viz_file[256];
 
   sprintf(viz_file, "%s_n%d_p%d.tec", root_filename,
-          ref_mpi_m(ref_grid_mpi(ref_grid)),
+          ref_mpi_n(ref_grid_mpi(ref_grid)),
           ref_mpi_rank(ref_grid_mpi(ref_grid)));
 
   RSS(ref_export_tec_int(ref_grid, ref_node->part, viz_file),
@@ -632,7 +632,7 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
 
   for (e = 0; e < 3; e++) {
     sprintf(viz_file, "%s_n%d_p%d_ax%d.tec", root_filename,
-            ref_mpi_m(ref_grid_mpi(ref_grid)),
+            ref_mpi_n(ref_grid_mpi(ref_grid)),
             ref_mpi_rank(ref_grid_mpi(ref_grid)), e);
 
     file = fopen(viz_file, "w");
@@ -719,7 +719,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
   sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", root_filename,
-          ref_mpi_m(ref_grid_mpi(ref_grid)),
+          ref_mpi_n(ref_grid_mpi(ref_grid)),
           ref_mpi_rank(ref_grid_mpi(ref_grid)));
 
   file = fopen(viz_file, "w");
@@ -794,7 +794,7 @@ REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename) {
   char viz_file[256];
 
   sprintf(viz_file, "%s_n%d_p%d.tec", root_filename,
-          ref_mpi_m(ref_grid_mpi(ref_grid)),
+          ref_mpi_n(ref_grid_mpi(ref_grid)),
           ref_mpi_rank(ref_grid_mpi(ref_grid)));
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edge");

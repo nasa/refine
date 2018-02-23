@@ -143,8 +143,8 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
@@ -165,7 +165,7 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   ref_malloc(b_nodes, 2 * b_total, REF_INT);
   ref_malloc(b_data, b_total, REF_INT);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
@@ -234,8 +234,8 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
@@ -256,7 +256,7 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
   ref_malloc(b_nodes, 2 * b_total, REF_INT);
   ref_malloc(b_data, dim * b_total, REF_DBL);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];

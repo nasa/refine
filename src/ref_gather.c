@@ -86,7 +86,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, FILE *file) {
   REF_STATUS status;
   REF_INT dim = 6;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_m(ref_mpi) + 1;
+  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
   ref_malloc(xyzm, dim * chunk, REF_DBL);
@@ -416,7 +416,7 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_INT id = 0;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_m(ref_mpi) + 1;
+  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
 
   ref_malloc(local_xyzm, 4 * chunk, REF_DBL);
   ref_malloc(xyzm, 4 * chunk, REF_DBL);
@@ -482,7 +482,7 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   REF_INT global, local;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_m(ref_mpi) + 1;
+  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -566,7 +566,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "metric solution");
   }
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_m(ref_mpi) + 1;
+  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);

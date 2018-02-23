@@ -30,10 +30,10 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
   if (ref_mpi_para(ref_mpi) && ref_mpi_once(ref_mpi))
-    printf("%s number of processors %d \n", argv[0], ref_mpi_m(ref_mpi));
+    printf("%s number of processors %d \n", argv[0], ref_mpi_n(ref_mpi));
 
   if (!ref_mpi_para(ref_mpi)) { /* no mpi or mpi with one proc */
-    REIS(1, ref_mpi_m(ref_mpi), "n");
+    REIS(1, ref_mpi_n(ref_mpi), "n");
     REIS(0, ref_mpi_rank(ref_mpi), "rank");
     RAS(ref_mpi_once(ref_mpi), "master");
   }
@@ -53,8 +53,8 @@ int main(int argc, char *argv[]) {
     REF_INT part;
     REF_INT *a_size, *b_size;
 
-    ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY);
-    ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, REF_EMPTY);
+    ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
+    ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
 
     each_ref_mpi_part(ref_mpi, part) a_size[part] = part;
 
@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
                           (void **)&together, REF_INT_TYPE),
         "allconcat");
 
-    REIS(2 * ref_mpi_m(ref_mpi), total, "expected size");
+    REIS(2 * ref_mpi_n(ref_mpi), total, "expected size");
     each_ref_mpi_part(ref_mpi, part) {
       REIS(part, source[0 + 2 * part], "const");
       REIS(part, source[1 + 2 * part], "const");
@@ -108,13 +108,13 @@ int main(int argc, char *argv[]) {
     REF_DBL *val;
     REF_INT *who;
 
-    ref_malloc(val, ref_mpi_m(ref_mpi), REF_DBL);
-    ref_malloc(who, ref_mpi_m(ref_mpi), REF_INT);
+    ref_malloc(val, ref_mpi_n(ref_mpi), REF_DBL);
+    ref_malloc(who, ref_mpi_n(ref_mpi), REF_INT);
 
     each_ref_mpi_part(ref_mpi, part) val[part] = 1.0;
     val[ref_mpi_rank(ref_mpi)] = 0.0;
 
-    RSS(ref_mpi_allminwho(ref_mpi, val, who, ref_mpi_m(ref_mpi)), "minloc");
+    RSS(ref_mpi_allminwho(ref_mpi, val, who, ref_mpi_n(ref_mpi)), "minloc");
 
     each_ref_mpi_part(ref_mpi, part) {
       REIS(part, who[part], "who");

@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_list_allgather(ref_list, ref_mpi), "gather");
 
-    REIS(ref_mpi_m(ref_mpi), ref_list_n(ref_list), "one from each");
+    REIS(ref_mpi_n(ref_mpi), ref_list_n(ref_list), "one from each");
 
     RSS(ref_list_free(ref_list), "free");
   }

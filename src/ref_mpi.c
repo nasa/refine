@@ -220,7 +220,7 @@ REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
 
   ref_type_mpi_type(type, datatype);
 
-  tag = ref_mpi_m(ref_mpi) * dest + ref_mpi_rank(ref_mpi);
+  tag = ref_mpi_n(ref_mpi) * dest + ref_mpi_rank(ref_mpi);
 
   MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
 #else
@@ -244,7 +244,7 @@ REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
 
   ref_type_mpi_type(type, datatype);
 
-  tag = ref_mpi_m(ref_mpi) * ref_mpi_rank(ref_mpi) + source;
+  tag = ref_mpi_n(ref_mpi) * ref_mpi_rank(ref_mpi) + source;
 
   MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
 #else
@@ -299,21 +299,21 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
 
   ref_type_mpi_type(type, datatype);
 
-  send_size_n = (REF_INT *)malloc(ref_mpi_m(ref_mpi) * sizeof(REF_INT));
+  send_size_n = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
   RNS(send_size_n, "malloc failed");
   each_ref_mpi_part(ref_mpi, part) send_size_n[part] = n * send_size[part];
 
-  recv_size_n = (REF_INT *)malloc(ref_mpi_m(ref_mpi) * sizeof(REF_INT));
+  recv_size_n = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
   RNS(recv_size_n, "malloc failed");
   each_ref_mpi_part(ref_mpi, part) recv_size_n[part] = n * recv_size[part];
 
-  send_disp = (REF_INT *)malloc(ref_mpi_m(ref_mpi) * sizeof(REF_INT));
+  send_disp = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
   RNS(send_disp, "malloc failed");
   send_disp[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) send_disp[part] =
       send_disp[part - 1] + send_size_n[part - 1];
 
-  recv_disp = (REF_INT *)malloc(ref_mpi_m(ref_mpi) * sizeof(REF_INT));
+  recv_disp = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
   RNS(recv_disp, "malloc failed");
   recv_disp[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) recv_disp[part] =
@@ -570,7 +570,7 @@ REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
     return REF_SUCCESS;
   }
 
-  ref_malloc(displs, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(displs, ref_mpi_n(ref_mpi), REF_INT);
 
   displs[0] = 0;
   each_ref_mpi_worker(ref_mpi, proc) displs[proc] =
@@ -610,7 +610,7 @@ REF_STATUS ref_mpi_allconcat(REF_MPI ref_mpi, REF_INT ldim, REF_INT my_size,
   REF_INT proc, i, tot;
   REF_INT *counts;
 
-  ref_malloc(counts, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, (void *)(&my_size), (void *)counts,
                         REF_INT_TYPE),
       "gather size");
@@ -722,8 +722,8 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
     return REF_SUCCESS;
   }
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   for (i = 0; i < nsend; i++) a_size[proc[i]]++;
 
@@ -736,7 +736,7 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];

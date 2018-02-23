@@ -520,7 +520,7 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
   REF_INT *everyones_new_nodes;
   REF_INT offset, proc, total_new_nodes, node;
 
-  ref_malloc(everyones_new_nodes, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(everyones_new_nodes, ref_mpi_n(ref_mpi), REF_INT);
 
   new_nodes = ref_node->new_n_global - ref_node->old_n_global;
 
@@ -654,8 +654,8 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
                                                ref_node_part(ref_node, node))
@@ -674,7 +674,7 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   ref_malloc(b_global, b_total, REF_INT);
   ref_malloc(b_scalar, b_total, REF_INT);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
@@ -728,8 +728,8 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  ref_malloc_init(a_size, ref_mpi_m(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_size, ref_mpi_m(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
                                                ref_node_part(ref_node, node))
@@ -748,7 +748,7 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   ref_malloc(b_global, b_total, REF_INT);
   ref_malloc(b_vector, ldim * b_total, REF_DBL);
 
-  ref_malloc(a_next, ref_mpi_m(ref_mpi), REF_INT);
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
