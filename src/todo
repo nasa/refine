@@ -1,6 +1,8 @@
 
 ref_part_meshb
  only load available keywords without assert
+ part_cad_edges (use bcast)
+ part_cad assocation use bcast
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
@@ -93,8 +95,6 @@ viz
 
 Marshall
  global cell id
- part_cad_edges (use bcast)
- part_cad assocation use bcast
  provide 2D api
 
 make sure all triangles have one tet and tet has one neighbor by
