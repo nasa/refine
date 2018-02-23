@@ -93,7 +93,8 @@ viz
 
 Marshall
  global cell id
- part_cad_edges
+ part_cad_edges (use bcast)
+ part_cad assocation use bcast
  provide 2D api
 
 make sure all triangles have one tet and tet has one neighbor by
