@@ -33,8 +33,6 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
-
-
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, 2, REF_TRUE);
 }
@@ -58,8 +56,9 @@ static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, 8, REF_FALSE);
 }
 
-int main(void) {
+int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create mpi");
 
   REIS(REF_NULL, ref_cell_free(NULL), "dont free NULL");
@@ -1155,5 +1154,6 @@ int main(void) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "cleanup");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }
