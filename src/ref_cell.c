@@ -1040,3 +1040,99 @@ REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
 
   return REF_SUCCESS;
 }
+
+
+REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
+                              REF_INT *data) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT cell;
+  REF_INT part;
+  REF_INT *a_next, *a_cell;
+  REF_INT *a_nodes, *b_nodes;
+  REF_INT *a_data, *b_data;
+
+  REF_INT cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT local, global;
+  REF_INT request;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "cell part");
+    if (part != ref_mpi_rank(ref_mpi)) a_size[part]++;
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+      "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
+  ref_malloc(a_nodes, ref_cell_node_per(ref_cell) * a_total, REF_INT);
+  ref_malloc(a_data, a_total, REF_INT);
+  ref_malloc(a_cell, a_total, REF_INT);
+
+  b_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
+  ref_malloc(b_nodes, ref_cell_node_per(ref_cell) * b_total, REF_INT);
+  ref_malloc(b_data, b_total, REF_INT);
+
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) a_next[part] =
+      a_next[part - 1] + a_size[part - 1];
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "cell part");
+    if (part != ref_mpi_rank(ref_mpi)) {
+      a_cell[a_next[part]] = cell;
+      for (cell_node=0;cell_node<ref_cell_node_per(ref_cell);cell_node++) {
+        a_nodes[cell_node + ref_cell_node_per(ref_cell) * a_next[part]] =
+          ref_node_global(ref_node, nodes[cell_node]);
+      }
+      (a_next[part])++;
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_nodes, a_size, b_nodes, b_size, 
+                        ref_cell_node_per(ref_cell),
+                        REF_INT_TYPE),
+      "alltoallv requested nodes");
+
+  for (request = 0; request < b_total; request++) {
+    for (cell_node=0;cell_node<ref_cell_node_per(ref_cell);cell_node++) {
+      global = b_nodes[cell_node + ref_cell_node_per(ref_cell) * request];
+      RSS(ref_node_local(ref_node, global, &(local)), "local");
+      nodes[cell_node] = local;
+    }
+    RSS(ref_cell_with(ref_cell, nodes, &cell), "find cell");
+    b_data[request] = data[cell];
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, b_data, b_size, a_data, a_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv return data");
+
+  for (request = 0; request < a_total; request++) {
+    data[a_cell[request]] = a_data[request];
+  }
+
+  ref_free(a_next);
+
+  ref_free(b_data);
+  ref_free(b_nodes);
+
+  ref_free(a_cell);
+
+  ref_free(a_data);
+  ref_free(a_nodes);
+
+  ref_free(b_size);
+  ref_free(a_size);
+
+  return REF_SUCCESS;
+}

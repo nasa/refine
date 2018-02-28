@@ -180,6 +180,10 @@ REF_STATUS ref_cell_set_edge(REF_CELL ref_cell, REF_INT n0, REF_INT n1,
 REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
                                   REF_INT *face0, REF_INT *face1);
 
+REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
+                              REF_INT *data);
+
+
 END_C_DECLORATION
 
 #endif /* REF_CELL_H */
