@@ -33,6 +33,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+
+
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, 2, REF_TRUE);
 }
@@ -57,6 +59,9 @@ static REF_STATUS ref_hex(REF_CELL *ref_cell_ptr) {
 }
 
 int main(void) {
+  REF_MPI ref_mpi;
+  RSS(ref_mpi_create(&ref_mpi), "create mpi");
+
   REIS(REF_NULL, ref_cell_free(NULL), "dont free NULL");
 
   { /* deep copy empty */
@@ -99,12 +104,10 @@ int main(void) {
   { /* add many global */
     REF_CELL ref_cell;
     REF_NODE ref_node;
-    REF_MPI ref_mpi;
     REF_INT nodes[4];
     REF_INT parts[4];
     REF_INT retrieved[4];
 
-    RSS(ref_mpi_create(&ref_mpi), "create mpi");
     RSS(ref_node_create(&ref_node, ref_mpi), "create node");
 
     RSS(ref_tet(&ref_cell), "create");
@@ -133,7 +136,6 @@ int main(void) {
 
     RSS(ref_cell_free(ref_cell), "cleanup");
     RSS(ref_node_free(ref_node), "cleanup");
-    RSS(ref_mpi_free(ref_mpi), "cleanup");
   }
 
   { /* remove */
@@ -1069,12 +1071,9 @@ int main(void) {
   { /* cell part */
     REF_CELL ref_cell;
     REF_NODE ref_node;
-    REF_MPI ref_mpi;
     REF_INT cell, nodes[3];
     REF_INT global, node;
     REF_INT part;
-
-    RSS(ref_mpi_create(&ref_mpi), "create mpi");
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create node");
     global = 0;
@@ -1118,8 +1117,43 @@ int main(void) {
 
     RSS(ref_cell_free(ref_cell), "cleanup");
     RSS(ref_node_free(ref_node), "cleanup");
-    RSS(ref_mpi_free(ref_mpi), "cleanup");
   }
 
+  if (4 <= ref_mpi_n(ref_mpi) ) { /* cell ghost */
+    REF_CELL ref_cell;
+    REF_NODE ref_node;
+    REF_INT global, nodes[4], cell;
+    REF_INT *data;
+
+    RSS(ref_tet(&ref_cell), "create");
+    RSS(ref_node_create(&ref_node, ref_mpi), "create node");
+
+    if ( 0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) <= 3 ) {
+      global = 0; RSS(ref_node_add(ref_node, global, &(nodes[0])), "node");
+      ref_node_part(ref_node, nodes[0]) = 0;
+      global = 1; RSS(ref_node_add(ref_node, global, &(nodes[1])), "node");
+      ref_node_part(ref_node, nodes[1]) = 1;
+      global = 2; RSS(ref_node_add(ref_node, global, &(nodes[2])), "node");
+      ref_node_part(ref_node, nodes[2]) = 2;
+      global = 3; RSS(ref_node_add(ref_node, global, &(nodes[3])), "node");
+      ref_node_part(ref_node, nodes[3]) = 3;
+      RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
+    }
+
+    ref_malloc(data, 1, REF_INT);
+    data[0] = REF_EMPTY;
+    if ( ref_mpi_rank(ref_mpi) == 0 ) {
+      data[0] = 10;
+    }
+    RSS(ref_cell_ghost_int(ref_cell, ref_node, data), "ghost");
+    if ( ref_cell_n(ref_cell) == 1 ) {
+      REIS( 10, data[0], "set ghost" );
+    }
+    ref_free(data);
+    ref_node_free(ref_node);
+    ref_cell_free(ref_cell);
+  }
+
+  RSS(ref_mpi_free(ref_mpi), "cleanup");
   return 0;
 }
