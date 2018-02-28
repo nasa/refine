@@ -1158,10 +1158,11 @@ REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT ncell_local;
 
   ncell_local = 0;
-  each_ref_cell_valid_cell_with_nodes(
-      ref_cell, cell,
-      nodes) if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]))
+  each_ref_cell_valid_cell_with_nodes( ref_cell, cell, nodes) {
+    if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
       ncell_local++;
+    }
+  }
 
   RSS(ref_mpi_sum(ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE), "sum");
   RSS(ref_mpi_bcast(ref_mpi, ncell, 1, REF_INT_TYPE), "bcast");
