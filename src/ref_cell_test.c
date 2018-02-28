@@ -1118,7 +1118,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "cleanup");
   }
 
-  if (4 <= ref_mpi_n(ref_mpi) ) { /* cell ghost */
+  if (4 <= ref_mpi_n(ref_mpi)) { /* cell ghost */
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT global, nodes[4], cell;
@@ -1127,26 +1127,30 @@ int main(int argc, char *argv[]) {
     RSS(ref_tet(&ref_cell), "create");
     RSS(ref_node_create(&ref_node, ref_mpi), "create node");
 
-    if ( 0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) <= 3 ) {
-      global = 0; RSS(ref_node_add(ref_node, global, &(nodes[0])), "node");
+    if (0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) <= 3) {
+      global = 0;
+      RSS(ref_node_add(ref_node, global, &(nodes[0])), "node");
       ref_node_part(ref_node, nodes[0]) = 0;
-      global = 1; RSS(ref_node_add(ref_node, global, &(nodes[1])), "node");
+      global = 1;
+      RSS(ref_node_add(ref_node, global, &(nodes[1])), "node");
       ref_node_part(ref_node, nodes[1]) = 1;
-      global = 2; RSS(ref_node_add(ref_node, global, &(nodes[2])), "node");
+      global = 2;
+      RSS(ref_node_add(ref_node, global, &(nodes[2])), "node");
       ref_node_part(ref_node, nodes[2]) = 2;
-      global = 3; RSS(ref_node_add(ref_node, global, &(nodes[3])), "node");
+      global = 3;
+      RSS(ref_node_add(ref_node, global, &(nodes[3])), "node");
       ref_node_part(ref_node, nodes[3]) = 3;
       RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
     }
 
     ref_malloc(data, 1, REF_INT);
     data[0] = REF_EMPTY;
-    if ( ref_mpi_rank(ref_mpi) == 0 ) {
+    if (ref_mpi_rank(ref_mpi) == 0) {
       data[0] = 10;
     }
     RSS(ref_cell_ghost_int(ref_cell, ref_node, data), "ghost");
-    if ( ref_cell_n(ref_cell) == 1 ) {
-      REIS( 10, data[0], "set ghost" );
+    if (ref_cell_n(ref_cell) == 1) {
+      REIS(10, data[0], "set ghost");
     }
     ref_free(data);
     ref_node_free(ref_node);

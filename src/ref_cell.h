@@ -183,9 +183,8 @@ REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
 REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
                               REF_INT *data);
 
-REF_STATUS ref_cell_global( REF_CELL ref_cell, REF_NODE ref_node,
-                            REF_INT **global );
-
+REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
+                           REF_INT **global);
 
 END_C_DECLORATION
 
