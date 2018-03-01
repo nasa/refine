@@ -466,8 +466,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
 }
 
 static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
-                                            REF_NODE ref_node,
-                                            FILE *file) {
+                                            REF_NODE ref_node, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT ncell_read;
   REF_INT chunk;
@@ -497,26 +496,23 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
             "cn");
         for (cell = 0; cell < section_size; cell++)
           for (node = 0; node < node_per; node++)
-            c2n[node + size_per * cell] =
-              c2t[node + (node_per + 1) * cell];
-        ref_free( c2t );
+            c2n[node + size_per * cell] = c2t[node + (node_per + 1) * cell];
+        ref_free(c2t);
       } else {
         RES((size_t)(section_size * size_per),
-            fread(c2n, sizeof(REF_INT), section_size * size_per, file),
-            "cn");
+            fread(c2n, sizeof(REF_INT), section_size * size_per, file), "cn");
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
     }
-    RSS(ref_mpi_bcast(ref_mpi, c2n, size_per * section_size, REF_INT_TYPE ),
-        "broadcast read c2n" );
-    
+    RSS(ref_mpi_bcast(ref_mpi, c2n, size_per * section_size, REF_INT_TYPE),
+        "broadcast read c2n");
+
     /* convert to local nodes and add if local */
     for (cell = 0; cell < section_size; cell++) {
       have_all_nodes = REF_TRUE;
       for (node = 0; node < node_per; node++) {
-        RXS(ref_node_local(ref_node,
-                           c2n[node+size_per*cell], &local),
+        RXS(ref_node_local(ref_node, c2n[node + size_per * cell], &local),
             REF_NOT_FOUND, "local");
         if (REF_EMPTY != local) {
           nodes[node] = local;
@@ -525,22 +521,22 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
           break;
         }
       }
-      if ( have_all_nodes ) {
-        if ( node_per != size_per )
-          nodes[node_per] = c2n[node_per+size_per*cell];
+      if (have_all_nodes) {
+        if (node_per != size_per)
+          nodes[node_per] = c2n[node_per + size_per * cell];
         one_node_local = REF_FALSE;
         for (node = 0; node < node_per; node++) {
-          one_node_local = (one_node_local || 
-                            ref_node_owned(ref_node, nodes[node]) );
+          one_node_local =
+              (one_node_local || ref_node_owned(ref_node, nodes[node]));
         }
         if (one_node_local)
-          RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add" );
+          RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add");
       }
     }
 
     ncell_read += section_size;
   }
-    
+
   free(c2n);
 
   return REF_SUCCESS;
@@ -917,7 +913,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   }
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
 
-  RAS( available, "no edge available in meshb" );
+  RAS(available, "no edge available in meshb");
 
   RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
 
