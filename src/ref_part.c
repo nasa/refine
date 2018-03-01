@@ -607,9 +607,11 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node, nnode, file),
+    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node, nnode,
+                            file),
         "part cell");
-    if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+    if (ref_grid_once(ref_grid))
+      REIS(next_position, ftell(file), "end location");
   }
 
   if (ref_grid_once(ref_grid)) {
@@ -624,9 +626,11 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node, nnode, file),
-      "part cell");
-    if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node, nnode,
+                            file),
+        "part cell");
+    if (ref_grid_once(ref_grid))
+      REIS(next_position, ftell(file), "end location");
   }
 
   if (ref_grid_once(ref_grid)) {
