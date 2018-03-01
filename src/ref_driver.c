@@ -103,11 +103,6 @@ int main(int argc, char *argv[]) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
           RSS(ref_part_by_extension(&ref_grid, ref_mpi, optarg), "part");
-
-          /* debug edge reader */
-          if (REF_FALSE)
-            RSS(ref_part_cad_discrete_edge(ref_grid, optarg), "part");
-          
         } else {
           RSS(ref_import_by_extension(&ref_grid, ref_mpi, optarg), "import");
         }
