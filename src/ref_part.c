@@ -476,7 +476,7 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
   REF_INT *c2t;
   REF_INT node_per, size_per;
   REF_INT cell, node, local, new_cell;
-  REF_BOOL keep_cell;
+  REF_BOOL have_all_nodes, one_node_local;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   chunk = MAX(1000000, ncell / ref_mpi_n(ref_mpi));
@@ -513,7 +513,7 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
     
     /* convert to local nodes and add if local */
     for (cell = 0; cell < section_size; cell++) {
-      keep_cell = REF_TRUE;
+      have_all_nodes = REF_TRUE;
       for (node = 0; node < node_per; node++) {
         RXS(ref_node_local(ref_node,
                            c2n[node+size_per*cell], &local),
@@ -521,14 +521,20 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
         if (REF_EMPTY != local) {
           nodes[node] = local;
         } else {
-          keep_cell = REF_FALSE;
+          have_all_nodes = REF_FALSE;
           break;
         }
       }
-      if ( keep_cell ) {
+      if ( have_all_nodes ) {
         if ( node_per != size_per )
-          nodes[node_per] = c2n[node_per+size_per*cell]; 
-        RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add" );
+          nodes[node_per] = c2n[node_per+size_per*cell];
+        one_node_local = REF_FALSE;
+        for (node = 0; node < node_per; node++) {
+          one_node_local = (one_node_local || 
+                            ref_node_owned(ref_node, nodes[node]) );
+        }
+        if (one_node_local)
+          RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add" );
       }
     }
 
