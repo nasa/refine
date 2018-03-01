@@ -778,8 +778,6 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
     }
   }
 
-  RSS(ref_geom_ghost(ref_geom, ref_node), "fill geom ghosts");
-
   if (ref_grid_once(ref_grid)) {
     RSS(ref_dict_free(ref_dict), "free dict");
     fclose(file);
