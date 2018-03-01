@@ -861,7 +861,7 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_cad_descrete_edge(REF_GRID ref_grid, const char *filename) {
+REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
