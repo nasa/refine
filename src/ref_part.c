@@ -599,27 +599,35 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_import_meshb_jump(file, version, ref_dict, 8, &available,
                               &next_position),
         "jump");
-    RAS(available, "meshb missing tet");
-    REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntet");
-    if (verbose) printf("ntet %d\n", ncell);
+    if (available) {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntet");
+      if (verbose) printf("ntet %d\n", ncell);
+    }
   }
-  RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node, nnode, file),
-      "part cell");
-  if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
+  if (available) {
+    RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node, nnode, file),
+        "part cell");
+    if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+  }
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_import_meshb_jump(file, version, ref_dict, 6, &available,
                               &next_position),
         "jump");
-    RAS(available, "meshb missing tri");
-    REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntri");
-    if (verbose) printf("ntri %d\n", ncell);
+    if (available) {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntri");
+      if (verbose) printf("ntri %d\n", ncell);
+    }
   }
-  RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node, nnode, file),
+  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
+  if (available) {
+    RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node, nnode, file),
       "part cell");
-  if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+    if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+  }
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_import_meshb_jump(file, version, ref_dict, 5, &available,

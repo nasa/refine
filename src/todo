@@ -1,7 +1,4 @@
 
-ref_part_meshb
- only load available keywords without assert
-
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 unify clump plotting diagnostics in parallel
@@ -118,6 +115,11 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ ref_part_meshb
+  + only load available keywords without assert
++ ref_part_cad_discrete_edges (use bcast)
++ ref_part_cad association use bcast
 
 + ref_grid_pack, ref_node_pack, ref_cell_pack, ref_geom_pack
 + ref_cell_part
