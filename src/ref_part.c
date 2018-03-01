@@ -465,6 +465,81 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
+                                            REF_NODE ref_node,
+                                            FILE *file) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT ncell_read;
+  REF_INT chunk;
+  REF_INT section_size;
+  REF_INT *c2n;
+  REF_INT *c2t;
+  REF_INT node_per, size_per;
+  REF_INT cell, node, local, new_cell;
+  REF_BOOL keep_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  chunk = MAX(1000000, ncell / ref_mpi_n(ref_mpi));
+
+  size_per = ref_cell_size_per(ref_cell);
+  node_per = ref_cell_node_per(ref_cell);
+
+  ref_malloc(c2n, size_per * chunk, REF_INT);
+
+  ncell_read = 0;
+  while (ncell_read < ncell) {
+    section_size = MIN(chunk, ncell - ncell_read);
+    if (ref_mpi_once(ref_mpi)) {
+      if (node_per == size_per) {
+        ref_malloc(c2t, (node_per + 1) * section_size, REF_INT);
+        RES((size_t)(section_size * (node_per + 1)),
+            fread(c2t, sizeof(REF_INT), section_size * (node_per + 1), file),
+            "cn");
+        for (cell = 0; cell < section_size; cell++)
+          for (node = 0; node < node_per; node++)
+            c2n[node + size_per * cell] =
+              c2t[node + (node_per + 1) * cell];
+        ref_free( c2t );
+      } else {
+        RES((size_t)(section_size * size_per),
+            fread(c2n, sizeof(REF_INT), section_size * size_per, file),
+            "cn");
+      }
+      for (cell = 0; cell < section_size; cell++)
+        for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
+    }
+    RSS(ref_mpi_bcast(ref_mpi, c2n, size_per * section_size, REF_INT_TYPE ),
+        "broadcast read c2n" );
+    
+    /* convert to local nodes and add if local */
+    for (cell = 0; cell < section_size; cell++) {
+      keep_cell = REF_TRUE;
+      for (node = 0; node < node_per; node++) {
+        RXS(ref_node_local(ref_node,
+                           c2n[node+size_per*cell], &local),
+            REF_NOT_FOUND, "local");
+        if (REF_EMPTY != local) {
+          nodes[node] = local;
+        } else {
+          keep_cell = REF_FALSE;
+          break;
+        }
+      }
+      if ( keep_cell ) {
+        if ( node_per != size_per )
+          nodes[node_per] = c2n[node_per+size_per*cell]; 
+        RSS( ref_cell_add( ref_cell, nodes, &new_cell ), "add" );
+      }
+    }
+
+    ncell_read += section_size;
+  }
+    
+  free(c2n);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
   REF_BOOL verbose = REF_FALSE;
@@ -779,6 +854,72 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   }
 
   if (ref_grid_once(ref_grid)) {
+    RSS(ref_dict_free(ref_dict), "free dict");
+    fclose(file);
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_cad_descrete_edge(REF_GRID ref_grid, const char *filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT version, dim;
+  REF_BOOL available;
+  REF_INT next_position;
+  REF_DICT ref_dict;
+  REF_INT ncell;
+  REF_BOOL verbose = REF_FALSE;
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if (strcmp(&filename[end_of_string - 6], ".meshb") != 0)
+    RSS(REF_INVALID, "expected .meshb extension");
+
+  file = NULL;
+  if (ref_mpi_once(ref_mpi)) {
+    RSS(ref_dict_create(&ref_dict), "create dict");
+    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    if (verbose) printf("meshb version %d\n", version);
+    if (verbose) ref_dict_inspect(ref_dict);
+    if (verbose) printf("open %s\n", filename);
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+                              &next_position),
+        "jump");
+    RAS(available, "meshb missing dimension");
+    REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
+    if (verbose) printf("meshb dim %d\n", dim);
+    REIS(3, dim, "only 3D supported");
+  }
+
+  RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
+  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
+
+  if (ref_grid_once(ref_grid)) {
+    RSS(ref_import_meshb_jump(file, version, ref_dict, 5, &available,
+                              &next_position),
+        "jump");
+    if (available) {
+      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nedge");
+      if (verbose) printf("nedge %d\n", ncell);
+    }
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
+
+  RAS( available, "no edge available in meshb" );
+
+  RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+
+  RSS(ref_part_meshb_cell_bcast(ref_grid_edg(ref_grid), ncell, ref_node, file),
+      "part cell");
+
+  if (ref_grid_once(ref_grid)) {
+    REIS(next_position, ftell(file), "end location");
     RSS(ref_dict_free(ref_dict), "free dict");
     fclose(file);
   }

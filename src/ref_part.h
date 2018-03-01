@@ -38,6 +38,7 @@ REF_STATUS ref_part_by_extension(REF_GRID *ref_grid, REF_MPI ref_mpi,
 
 REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename);
+REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename);
