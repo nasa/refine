@@ -107,6 +107,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT cell_node;
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
+  REF_INT degree, max_degree;
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -155,20 +156,34 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   RSS(ref_mpi_max(ref_mpi, &volume, &max_volume, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_volume, 1, REF_DBL_TYPE), "min");
 
+  RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
+
   nnode = 0;
-  each_ref_node_valid_node(ref_node, node) if (ref_node_owned(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
       nnode++;
+    }
+  }
   RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
   if (ref_grid_twod(ref_grid)) nnode = nnode / 2;
 
-  RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
-
   nodes_per_complexity = (REF_DBL)nnode / complexity;
+
+  max_degree = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "cell degree");
+    max_degree = MAX(max_degree, degree);
+  }
+  degree = max_degree;
+  RSS(ref_mpi_max(ref_mpi, &degree, &max_degree, REF_INT_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_degree, 1, REF_INT_TYPE), "min");
+
+  RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
 
   target = MAX(MIN(0.1, min_quality), 1.0e-3);
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f\n", target);
+    printf("quality floor %6.4f max cell degree %d\n", target, max_degree);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
   }
