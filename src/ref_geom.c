@@ -1082,109 +1082,7 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_INT new_node) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT item0, item1;
-  REF_INT geom0, geom1;
-  REF_INT type, id;
-  REF_DBL param[2], param0[2], param1[2];
-  REF_BOOL has_id;
-  REF_BOOL has_edge_support;
-
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0)
-      each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
-                                      geom1) {
-    type = REF_GEOM_EDGE;
-    if (ref_geom_type(ref_geom, geom0) == type &&
-        ref_geom_type(ref_geom, geom1) == type &&
-        ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
-      id = ref_geom_id(ref_geom, geom0);
-      RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid), node0, node1, id,
-                               &has_id),
-          "has edge id");
-      if (has_id) {
-        RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
-        RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
-        param[0] = 0.5 * (param0[0] + param1[0]);
-        if (ref_geom_model_loaded(ref_geom))
-          RSB(ref_geom_inverse_eval(ref_geom, type, id,
-                                    ref_node_xyz_ptr(ref_node, new_node),
-                                    param),
-              "inv eval edge",
-              ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-        RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
-      }
-    }
-  }
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0)
-      each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
-                                      geom1) {
-    type = REF_GEOM_FACE;
-    if (ref_geom_type(ref_geom, geom0) == type &&
-        ref_geom_type(ref_geom, geom1) == type &&
-        ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
-      id = ref_geom_id(ref_geom, geom0);
-      RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid), node0, node1, id,
-                               &has_id),
-          "has edge id");
-      if (has_id) {
-        RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
-        RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
-        param[0] = 0.5 * (param0[0] + param1[0]);
-        param[1] = 0.5 * (param0[1] + param1[1]);
-        RSS(ref_geom_is_a(ref_geom, new_node, REF_GEOM_EDGE, &has_edge_support),
-            "look for edge");
-        if (ref_geom_model_loaded(ref_geom) &&
-            !has_edge_support) /* constrain will clean up or add edgeUV*/
-        {
-          RSB(ref_geom_inverse_eval(ref_geom, type, id,
-                                    ref_node_xyz_ptr(ref_node, new_node),
-                                    param),
-              "inv eval face",
-              ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-        }
-        RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
-      }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
-                                    REF_INT node1, REF_BOOL *needs_support) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT item0, item1;
-  REF_INT geom0, geom1;
-  REF_INT type, id;
-  REF_BOOL has_id;
-
-  *needs_support = REF_FALSE;
-  /* assume face check is sufficient */
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0)
-      each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
-                                      geom1) {
-    type = REF_GEOM_FACE;
-    if (ref_geom_type(ref_geom, geom0) == type &&
-        ref_geom_type(ref_geom, geom1) == type &&
-        ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
-      id = ref_geom_id(ref_geom, geom0);
-      RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid), node0, node1, id,
-                               &has_id),
-          "has edge id");
-      if (has_id) {
-        *needs_support = REF_TRUE;
-        return REF_SUCCESS;
-      }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom, REF_INT edge_geom) {
+static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom, REF_INT edge_geom) {
 #ifdef HAVE_EGADS
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT node, item, face_geom;
@@ -1220,6 +1118,126 @@ REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom, REF_INT edge_geom) {
   if (edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom) return REF_INVALID;
   return REF_IMPLEMENT;
 #endif
+}
+
+REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                                REF_INT new_node) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item0, item1;
+  REF_INT geom0, geom1;
+  REF_INT type, id;
+  REF_DBL param[2], param0[2], param1[2];
+  REF_BOOL has_id;
+  REF_BOOL has_edge_support;
+  REF_INT edge_geom;
+
+  /* insert edge between */
+  has_edge_support = REF_FALSE;
+  edge_geom = REF_EMPTY;
+  type = REF_GEOM_EDGE;
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
+    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
+                                    geom1) {
+      if (ref_geom_type(ref_geom, geom0) == type &&
+          ref_geom_type(ref_geom, geom1) == type &&
+          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
+        id = ref_geom_id(ref_geom, geom0);
+        RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid), node0, node1, id,
+                                 &has_id),
+            "has edge id");
+        if (has_id) {
+          REIS( REF_EMPTY, edge_geom, "found a second edge spanning nodes" ); 
+          RAS( !has_edge_support, "already has support? second edge?" ); 
+          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
+          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
+          param[0] = 0.5 * (param0[0] + param1[0]);
+          if (ref_geom_model_loaded(ref_geom))
+            RSB(ref_geom_inverse_eval(ref_geom, type, id,
+                                      ref_node_xyz_ptr(ref_node, new_node),
+                                      param),
+                "inv eval edge",
+                ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
+          RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+          has_edge_support = REF_TRUE;
+          RSS( ref_geom_find(ref_geom, new_node, type, id, &edge_geom),
+               "find the new edge for later face uv evaluation" );
+        }
+      }
+    }
+  }
+  
+  /* insert face between */
+  type = REF_GEOM_FACE;
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
+    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
+                                    geom1) {
+      if (ref_geom_type(ref_geom, geom0) == type &&
+          ref_geom_type(ref_geom, geom1) == type &&
+          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
+        id = ref_geom_id(ref_geom, geom0);
+        RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid), node0, node1, id,
+                                 &has_id),
+            "has edge id");
+        if (has_id) {
+          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
+          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
+          param[0] = 0.5 * (param0[0] + param1[0]);
+          param[1] = 0.5 * (param0[1] + param1[1]);
+          RSS(ref_geom_is_a(ref_geom, new_node, REF_GEOM_EDGE, &has_edge_support),
+              "look for edge");
+          if (ref_geom_model_loaded(ref_geom) &&
+              !has_edge_support) {
+            RSB(ref_geom_inverse_eval(ref_geom, type, id,
+                                      ref_node_xyz_ptr(ref_node, new_node),
+                                      param),
+                "inv eval face",
+                ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
+          }
+          RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+        }
+      }
+    }
+  }
+
+  /* if there is an edge between, set the face uv based on edge t */ 
+  if ( ref_geom_model_loaded(ref_geom) && has_edge_support ) {
+    RSS( ref_geom_eval_edge_face_uv( ref_geom, edge_geom ),
+         "set face uv under edge");
+  }
+  
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
+                                    REF_INT node1, REF_BOOL *needs_support) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT item0, item1;
+  REF_INT geom0, geom1;
+  REF_INT type, id;
+  REF_BOOL has_id;
+
+  *needs_support = REF_FALSE;
+  /* assume face check is sufficient */
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0)
+      each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
+                                      geom1) {
+    type = REF_GEOM_FACE;
+    if (ref_geom_type(ref_geom, geom0) == type &&
+        ref_geom_type(ref_geom, geom1) == type &&
+        ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
+      id = ref_geom_id(ref_geom, geom0);
+      RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid), node0, node1, id,
+                               &has_id),
+          "has edge id");
+      if (has_id) {
+        *needs_support = REF_TRUE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
