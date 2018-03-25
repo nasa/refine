@@ -1,6 +1,14 @@
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
+partition artifacts
+  ref_subdiv only turn off marks with neg vol
+    ref geom add between xyz location
+    ref subdiv text test xyz
+    ref node vol xyz pointers
+    interate on unmark
+  ref_partition diffusion
+
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
  edge > 3
@@ -19,9 +27,6 @@ get rid of aux and interp instead
 initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
-
-ref_geom_add_between should update adjacent face UV with edge T
-(constrain does clean up already)
 
 refactor ref_geom to remove methods and tests, how is it used, what is needed?
 egads recon
@@ -115,6 +120,9 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ ref_geom_add_between should update adjacent face UV with edge T
+  (constrain does clean up already)
 
 + ref_part_meshb
   + only load available keywords without assert
