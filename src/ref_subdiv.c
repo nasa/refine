@@ -82,6 +82,7 @@ REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid) {
                   REF_INT, REF_EMPTY);
 
   ref_subdiv->instrument = REF_FALSE;
+  ref_subdiv->debug = REF_FALSE;
 
   return REF_SUCCESS;
 }
@@ -374,6 +375,10 @@ REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
     }
   }
 
+  if (ref_subdiv->debug)
+    printf("unmark one of two proc %d edges %d %d\n",
+           ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)), e0, e1);
+
   return REF_SUCCESS;
 }
 
@@ -412,6 +417,9 @@ REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
   e1 = ref_cell_c2e(ref_cell, s1, cell);
   if (ref_subdiv_mark(ref_subdiv, e0) && ref_subdiv_mark(ref_subdiv, e1)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e0, e1);
+    if (ref_subdiv->debug)
+      printf("unmark tet opp proc %d cell %d sides %d %d edges %d %d\n",
+             ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)), cell, s0, s1, e0, e1);
     *again = REF_TRUE;
   }
 
@@ -477,7 +485,14 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
       }
     }
 
-    RUS(50, nsweeps, "too many sweeps, stop inf loop");
+    if (nsweeps > 50) {
+      RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+      if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+        printf(" %d edges marked after %d unmark relaxations\n", nmark,
+               nsweeps);
+    }
+
+    RUS(100, nsweeps, "too many sweeps, stop inf loop");
 
     RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
   }
