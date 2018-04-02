@@ -1092,6 +1092,9 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom,
   int sense = 0;
   ego *edges, *faces;
   ego edge, face;
+  int status;
+  REF_INT faceid;
+  REF_DBL xyz[3];
 
   if (edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom) return REF_INVALID;
   if (REF_GEOM_EDGE != ref_geom_type(ref_geom, edge_geom)) return REF_INVALID;
@@ -1106,11 +1109,22 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom,
   faces = (ego *)(ref_geom->faces);
   each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
     if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
-      face = faces[ref_geom_id(ref_geom, face_geom) - 1];
-      REIS(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, uv),
-           "eval edge face uv");
-      ref_geom_param(ref_geom, 0, face_geom) = uv[0];
-      ref_geom_param(ref_geom, 1, face_geom) = uv[1];
+      faceid = ref_geom_id(ref_geom, face_geom);
+      face = faces[faceid - 1];
+      status = EG_getEdgeUV(face, edge, sense, t, uv);
+      if ( EGADS_TOPOERR == status ) {
+        RSS(ref_geom_eval(ref_geom, edge_geom, xyz, NULL), "eval edge");
+        uv[0]=0.0;
+        uv[1]=0.0;
+        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz, uv),
+            "inv eval");
+        ref_geom_param(ref_geom, 0, face_geom) = uv[0];
+        ref_geom_param(ref_geom, 1, face_geom) = uv[1];
+      }else{
+        REIS( EGADS_SUCCESS, status, "eval edge face uv");
+        ref_geom_param(ref_geom, 0, face_geom) = uv[0];
+        ref_geom_param(ref_geom, 1, face_geom) = uv[1];
+      }
     }
   }
 
