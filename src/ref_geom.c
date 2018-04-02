@@ -1836,6 +1836,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   int system_status;
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
   sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
+  printf("%s\n",command);
   system_status = system(command);
   if (0 != system_status) {
     printf("tec360 ref_geom_test_debug_geom.tec\n");
