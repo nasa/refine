@@ -795,7 +795,11 @@ REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign) {
       face = nodes[3];
       if (face < 1 || ref_geom->nface < face) continue;
       RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-      ((ref_geom)->uv_area_sign)[face - 1] += uv_area;
+      if (uv_area < 0.0) {
+        ((ref_geom)->uv_area_sign)[face - 1] -= 1.0;
+      }else{
+        ((ref_geom)->uv_area_sign)[face - 1] += 1.0;
+      }
     }
     for (face = 0; face < ref_geom->nface; face++) {
       if (((ref_geom)->uv_area_sign)[face] < 0.0) {
