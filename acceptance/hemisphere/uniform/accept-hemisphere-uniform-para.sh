@@ -24,7 +24,7 @@ ${two}/ref_acceptance hemicurve1.meshb hemicurve1.metric 0.1
 ${two}/ref_metric_test hemicurve1.meshb hemicurve1.metric > accept-hemisphere-uniform-para-01.status
 
 cat accept-hemisphere-uniform-para-01.status
-../../check.rb accept-hemisphere-uniform-para-01.status 0.10 1.8
+../../check.rb accept-hemisphere-uniform-para-01.status 0.2 2.0
 
 mpiexec -np 8 ${two}/ref_interp_test hemicurve.meshb hemicurve1.meshb
 mpiexec -np 8 ${two}/ref_interp_test hemicurve1.meshb hemicurve.meshb
