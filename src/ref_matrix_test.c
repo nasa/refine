@@ -1181,5 +1181,19 @@ m12 = m1half'*m12bar*m1half
     RWDS(1.0, m12[5], tol, "m12[5]");
   }
 
+  { /* intersect zero eye */
+    REF_DBL m1[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    REF_DBL m2[6] = {1.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m12[6];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_intersect(m1, m2, m12), "int");
+    RWDS(1.0, m12[0], tol, "m12[0]");
+    RWDS(0.0, m12[1], tol, "m12[1]");
+    RWDS(0.0, m12[2], tol, "m12[2]");
+    RWDS(1.0, m12[3], tol, "m12[3]");
+    RWDS(0.0, m12[4], tol, "m12[4]");
+    RWDS(1.0, m12[5], tol, "m12[5]");
+  }
+
   return 0;
 }
