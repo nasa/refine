@@ -1061,7 +1061,6 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
   REF_INT max_node = 400, nnode;
   REF_INT node_list[400];
   REF_INT i, neighbor, nint;
-  REF_DBL log_m[6];
   REF_BOOL *needs_donor;
   REF_INT pass, remain;
 
@@ -1090,12 +1089,10 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
         for (i = 0; i < 6; i++) metric[i + 6 * node] = 0.0;
         for (neighbor = 0; neighbor < nnode; neighbor++)
           if (!needs_donor[node_list[neighbor]]) {
-            RSS(ref_matrix_log_m(&(metric[6 * node_list[neighbor]]), log_m),
-                "log");
-            for (i = 0; i < 6; i++) metric[i + 6 * node] += log_m[i];
+            for (i = 0; i < 6; i++)
+              metric[i + 6 * node] += metric[i + 6 * node_list[neighbor]];
           }
-        for (i = 0; i < 6; i++) log_m[i] = metric[i + 6 * node] / (REF_DBL)nint;
-        RSS(ref_matrix_exp_m(log_m, &(metric[6 * node])), "exp");
+        for (i = 0; i < 6; i++) metric[i + 6 * node] /= (REF_DBL)nint;
         needs_donor[node] = REF_FALSE;
       }
     }
@@ -1104,10 +1101,11 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
     RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
 
     remain = 0;
-    each_ref_node_valid_node(
-        ref_node, node) if (ref_node_owned(ref_node, node) && needs_donor[node])
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node) && needs_donor[node]) {
         remain++;
-
+      }
+    }
     RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), &remain, 1, REF_INT_TYPE),
         "sum updates");
 
