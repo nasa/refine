@@ -376,6 +376,15 @@ m1=j0*j0'
     RWDS(-10.0, j[8], -1, "dcdz");
   }
 
+  { /* det zero */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6] = {0.0, 0.0, 0.0, .0, 0.0, .0};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m(m, &det), "comp det");
+    RWDS(0.0, det, tol, "check det");
+  }
+
   { /* det */
     REF_DBL tol = -1.0;
     REF_DBL m[6] = {10.0, 0.0, 0.0, 2.0, 0.0, 5.0};

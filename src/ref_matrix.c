@@ -921,8 +921,10 @@ REF_STATUS ref_matrix_det_gen(REF_INT n, REF_DBL *orig, REF_DBL *det) {
     /* eliminate lower triangle */
     for (i = j + 1; i < n; i++) {
       if (!ref_math_divisible(a[i + j * n], a[j + j * n])) {
+        /* zero pivot */
         ref_free(a);
-        return REF_DIV_ZERO;
+        *det = 0.0;
+        return REF_SUCCESS;
       }
       scale = a[i + j * n] / a[j + j * n];
       for (k = 0; k < n; k++) a[i + k * n] -= scale * a[j + k * n];
