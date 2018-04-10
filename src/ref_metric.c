@@ -1171,12 +1171,18 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   /* global scaling and gradation limiting */
   for (relaxations = 0; relaxations < 10; relaxations++) {
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
     each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++)
         metric[i + 6 * node] *=
         pow(target_complexity / current_complexity, 2.0 / 3.0);
     RSS(ref_metric_gradation(metric, ref_grid, gradation), "gradation");
   }
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (!ref_math_divisible(target_complexity, current_complexity)) {
+    return REF_DIV_ZERO;
+  }
   each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++)
       metric[i + 6 * node] *=
       pow(target_complexity / current_complexity, 2.0 / 3.0);
