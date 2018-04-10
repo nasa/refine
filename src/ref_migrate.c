@@ -429,7 +429,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
       REIS(ZOLTAN_OK, Zoltan_Initialize(0, empty_argument, &ver),
            "Zoltan is angry");
     }
-    zz = Zoltan_Create(MPI_COMM_WORLD);
+    zz = Zoltan_Create((*((MPI_Comm *)(ref_mpi->comm))));
 
     /* General parameters */
 
@@ -573,7 +573,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     PARM_INT edgecut[1];
     PARM_INT options[] = {1, 0, 42};
     PARM_INT *part;
-    MPI_Comm comm = MPI_COMM_WORLD;
+    MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
 
     REF_INT node, n, proc, *partition_size, *implied, shift, degree;
     REF_INT item, ref;
