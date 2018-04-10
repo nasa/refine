@@ -228,6 +228,16 @@ int main(int argc, char *argv[]) {
     ref_free(proc);
   }
 
+  /* split */
+  {
+    REF_MPI new_mpi;
+    RSS(ref_mpi_half_comm(ref_mpi, &new_mpi), "split");
+    if (ref_mpi_para(new_mpi) && ref_mpi_once(new_mpi))
+      printf("split number of processors %d lead by world rank %d\n", 
+             ref_mpi_n(new_mpi), ref_mpi_rank(ref_mpi));
+    RSS(ref_mpi_join_comm(new_mpi), "join");
+    RSS(ref_mpi_free(new_mpi), "new free");
+  }
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
