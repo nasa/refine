@@ -1164,7 +1164,9 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     ref_matrix_det_m(&(metric[6 * node]), &det);
-    for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
+    if (ABS(det) > 1.0e-15) {
+      for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
+    }
   }
   /* global scaling and gradation limiting */
   for (relaxations = 0; relaxations < 10; relaxations++) {
