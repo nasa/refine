@@ -120,7 +120,7 @@ REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   RSS(ref_mpi_create_from_comm(split_mpi_ptr, NULL), "create from NULL comm");
 #endif
-  
+
   return REF_SUCCESS;
 }
 

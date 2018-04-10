@@ -822,7 +822,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if ( ref_mpi_once(ref_mpi) ) { /* lp for small variation */
+  if (ref_mpi_once(ref_mpi)) { /* lp for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
@@ -833,19 +833,18 @@ int main(int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      scalar[node] = 0.5 + 0.01*pow(ref_node_xyz(ref_node,0,node),2) + 
-        0.02*pow(ref_node_xyz(ref_node,1,node),2) + 
-        0.03*pow(ref_node_xyz(ref_node,2,node),2);
+      scalar[node] = 0.5 + 0.01 * pow(ref_node_xyz(ref_node, 0, node), 2) +
+                     0.02 * pow(ref_node_xyz(ref_node, 1, node), 2) +
+                     0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
     }
-    RSS(ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0),
-        "lp norm");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0), "lp norm");
     ref_free(metric);
     ref_free(scalar);
 
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if ( ref_mpi_once(ref_mpi) ) { /* lp for no variation */
+  if (ref_mpi_once(ref_mpi)) { /* lp for no variation */
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL *scalar, *metric;
@@ -856,8 +855,8 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       scalar[node] = 0.5;
     }
-    REIS(REF_DIV_ZERO,ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0),
-        "lp norm expected div zero");
+    REIS(REF_DIV_ZERO, ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0),
+         "lp norm expected div zero");
     ref_free(metric);
     ref_free(scalar);
 
