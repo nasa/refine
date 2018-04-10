@@ -378,7 +378,7 @@ m1=j0*j0'
 
   { /* det zero */
     REF_DBL tol = -1.0;
-    REF_DBL m[6] = {0.0, 0.0, 0.0, .0, 0.0, .0};
+    REF_DBL m[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     REF_DBL det;
 
     RSS(ref_matrix_det_m(m, &det), "comp det");
