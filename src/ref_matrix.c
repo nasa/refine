@@ -497,12 +497,12 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   REF_DBL m12bar_system[12];
   REF_STATUS sqrt_m1_status;
   sqrt_m1_status = ref_matrix_sqrt_m(m1, m1half, m1neghalf);
-  if ( REF_DIV_ZERO == sqrt_m1_status ) {
+  if (REF_DIV_ZERO == sqrt_m1_status) {
     REF_INT i;
-    for (i=0;i<6;i++) m12[i] = m2[i];
+    for (i = 0; i < 6; i++) m12[i] = m2[i];
     return REF_SUCCESS;
   }
-  RSS(sqrt_m1_status,"sqrt_m m1");
+  RSS(sqrt_m1_status, "sqrt_m m1");
   RSS(ref_matrix_mult_m0m1m0(m1neghalf, m2, m2bar), "m2bar=m1half*m2*m1half");
   RSS(ref_matrix_diag_m(m2bar, m12bar_system), "diag m12bar");
   ref_matrix_eig(m12bar_system, 0) = MAX(1.0, ref_matrix_eig(m12bar_system, 0));
