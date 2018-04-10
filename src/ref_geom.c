@@ -797,7 +797,7 @@ REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign) {
       RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
       if (uv_area < 0.0) {
         ((ref_geom)->uv_area_sign)[face - 1] -= 1.0;
-      }else{
+      } else {
         ((ref_geom)->uv_area_sign)[face - 1] += 1.0;
       }
     }
@@ -1116,16 +1116,16 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom,
       faceid = ref_geom_id(ref_geom, face_geom);
       face = faces[faceid - 1];
       status = EG_getEdgeUV(face, edge, sense, t, uv);
-      if ( EGADS_TOPOERR == status ) {
+      if (EGADS_TOPOERR == status) {
         RSS(ref_geom_eval(ref_geom, edge_geom, xyz, NULL), "eval edge");
-        uv[0]=0.0;
-        uv[1]=0.0;
+        uv[0] = 0.0;
+        uv[1] = 0.0;
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, xyz, uv),
             "inv eval");
         ref_geom_param(ref_geom, 0, face_geom) = uv[0];
         ref_geom_param(ref_geom, 1, face_geom) = uv[1];
-      }else{
-        REIS( EGADS_SUCCESS, status, "eval edge face uv");
+      } else {
+        REIS(EGADS_SUCCESS, status, "eval edge face uv");
         ref_geom_param(ref_geom, 0, face_geom) = uv[0];
         ref_geom_param(ref_geom, 1, face_geom) = uv[1];
       }
@@ -1836,7 +1836,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   int system_status;
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
   sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
-  printf("%s\n",command);
+  printf("%s\n", command);
   system_status = system(command);
   if (0 != system_status) {
     printf("tec360 ref_geom_test_debug_geom.tec\n");

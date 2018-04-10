@@ -370,31 +370,31 @@ REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
       RSS(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1),
           "with face");
       if (REF_EMPTY == cell0) continue; /* this cell does not have the face */
-      if ( REF_EMPTY != cell1 ) {
-        printf("group %d cell0 %d cell1 %d\n", group, cell0, cell1 );
+      if (REF_EMPTY != cell1) {
+        printf("group %d cell0 %d cell1 %d\n", group, cell0, cell1);
         for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
           printf("cell0 node %d xyz %f %f %f\n", node,
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              0,ref_cell_c2n(ref_cell,node,cell0)),
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              1,ref_cell_c2n(ref_cell,node,cell0)),
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              2,ref_cell_c2n(ref_cell,node,cell0)));
+                 ref_node_xyz(ref_grid_node(ref_grid), 0,
+                              ref_cell_c2n(ref_cell, node, cell0)),
+                 ref_node_xyz(ref_grid_node(ref_grid), 1,
+                              ref_cell_c2n(ref_cell, node, cell0)),
+                 ref_node_xyz(ref_grid_node(ref_grid), 2,
+                              ref_cell_c2n(ref_cell, node, cell0)));
         }
         for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
           printf("cell1 node %d xyz %f %f %f\n", node,
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              0,ref_cell_c2n(ref_cell,node,cell1)),
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              1,ref_cell_c2n(ref_cell,node,cell1)),
-                 ref_node_xyz(ref_grid_node(ref_grid),
-                              2,ref_cell_c2n(ref_cell,node,cell1)));
+                 ref_node_xyz(ref_grid_node(ref_grid), 0,
+                              ref_cell_c2n(ref_cell, node, cell1)),
+                 ref_node_xyz(ref_grid_node(ref_grid), 1,
+                              ref_cell_c2n(ref_cell, node, cell1)),
+                 ref_node_xyz(ref_grid_node(ref_grid), 2,
+                              ref_cell_c2n(ref_cell, node, cell1)));
         }
         for (node = 0; node < 3; node++) {
           printf("face node %d xyz %f %f %f\n", node,
-                 ref_node_xyz(ref_grid_node(ref_grid),0,face_nodes[node]),
-                 ref_node_xyz(ref_grid_node(ref_grid),1,face_nodes[node]),
-                 ref_node_xyz(ref_grid_node(ref_grid),2,face_nodes[node]));
+                 ref_node_xyz(ref_grid_node(ref_grid), 0, face_nodes[node]),
+                 ref_node_xyz(ref_grid_node(ref_grid), 1, face_nodes[node]),
+                 ref_node_xyz(ref_grid_node(ref_grid), 2, face_nodes[node]));
         }
         /* RSS( ref_export_by_extension( ref_grid,
            "bc-flip-debug.tec" ), "ex tec"); */
