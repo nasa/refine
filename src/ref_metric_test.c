@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *metric;
     REF_INT p;
-    REF_DBL gradation, complexity;
+    REF_DBL gradation, complexity, current_complexity;
     REIS(1, lp_pos,
          "required args: --lp grid.meshb scalar-mach.solb p gradation "
          "complexity output-metric.solb");
@@ -151,6 +151,9 @@ int main(int argc, char *argv[]) {
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, p, gradation, complexity),
         "lp norm");
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
     ref_free(scalar);
@@ -815,6 +818,29 @@ int main(int argc, char *argv[]) {
     RWDS(2.821716527185583, metric[5 + 6 * node], tol, "m[5]");
 
     ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if ( ref_mpi_once(ref_mpi) ) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar, *metric;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = 0.5 + 0.01*pow(ref_node_xyz(ref_node,0,node),2) + 
+        0.02*pow(ref_node_xyz(ref_node,1,node),2) + 
+        0.03*pow(ref_node_xyz(ref_node,2,node),2);
+    }
+    RSS(ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0),
+        "lp norm");
+    ref_free(metric);
+    ref_free(scalar);
 
     RSS(ref_grid_free(ref_grid), "free");
   }
