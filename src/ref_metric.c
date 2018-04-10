@@ -1171,8 +1171,6 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   /* global scaling and gradation limiting */
   for (relaxations = 0; relaxations < 10; relaxations++) {
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
-    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
-      printf("complexity %e\n", current_complexity);
     each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++)
         metric[i + 6 * node] *=
         pow(target_complexity / current_complexity, 2.0 / 3.0);
@@ -1182,7 +1180,5 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++)
       metric[i + 6 * node] *=
       pow(target_complexity / current_complexity, 2.0 / 3.0);
-  if (ref_mpi_once(ref_grid_mpi(ref_grid)))
-    printf("complexity %e\n", target_complexity);
   return REF_SUCCESS;
 }
