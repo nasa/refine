@@ -634,9 +634,10 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
 #if PARMETIS_MAJOR_VERSION == 3
-    ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
-                         (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
-                         tpwgts, ubvec, options, edgecut, part, &comm);
+    REIS(METIS_OK,
+         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
+                              (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
+                              tpwgts, ubvec, options, edgecut, part, &comm);
 #else
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
