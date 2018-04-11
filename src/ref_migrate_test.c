@@ -165,7 +165,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  if (1 < argc) {
+  if (1 < argc) { /* part and migrate argument, world comm */
     REF_GRID import_grid;
 
     if (ref_mpi_once(ref_mpi))
@@ -181,9 +181,45 @@ int main(int argc, char *argv[]) {
     RSS(ref_migrate_shufflin(import_grid), "shufflin");
     ref_mpi_stopwatch_stop(ref_mpi, "shufflin");
 
-    RSS(ref_gather_tec_part(import_grid, "ref_migrate_test.tec"), "part_viz");
+    RSS(ref_gather_tec_part(import_grid, "ref_migrate_test_world.tec"), 
+        "part_viz");
 
     RSS(ref_grid_free(import_grid), "free");
+  }
+
+  if (1 < argc) { /* part and migrate argument, split comm */
+    REF_MPI split_mpi;
+    REF_GRID import_grid;
+    char tec_file[1024];
+
+    RSS(ref_mpi_half_comm(ref_mpi, &split_mpi), "split");
+    if (ref_mpi_once(split_mpi))
+      printf("%d procs, read %s\n", ref_mpi_n(split_mpi), argv[1]);
+
+    ref_mpi_stopwatch_start(split_mpi);
+    RSS(ref_part_by_extension(&import_grid, split_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(split_mpi, "read");
+
+    if ( ref_mpi_para(split_mpi) ) {
+      snprintf(tec_file, 1024, "ref_migrate_test_%d.tec",
+               ref_mpi_rank(ref_mpi));
+      RSS(ref_gather_tec_part(import_grid, tec_file), "tec part" );
+      ref_mpi_stopwatch_stop(split_mpi, "tec");
+    }
+    
+    RSS(ref_migrate_to_balance(import_grid), "migrate");
+    ref_mpi_stopwatch_stop(split_mpi, "migrate");
+
+    if ( ref_mpi_para(split_mpi) ) {
+      snprintf(tec_file, 1024, "ref_migrate_test_bal_%d.tec",
+               ref_mpi_rank(ref_mpi));
+      RSS(ref_gather_tec_part(import_grid, tec_file), "tec part" );
+      ref_mpi_stopwatch_stop(split_mpi, "tec");
+    }
+
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_mpi_join_comm(split_mpi), "join");
+    RSS(ref_mpi_free(split_mpi), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
