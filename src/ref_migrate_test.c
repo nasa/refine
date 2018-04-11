@@ -129,6 +129,27 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
+  { /* part and migrate tet lb8.ugrid, split comm */
+    REF_MPI split_mpi;
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_migrate_test.lb8.ugrid";
+
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_export_lb8_ugrid(export_grid, grid_file), "export");
+    }
+    RSS(ref_grid_free(export_grid), "free");
+
+    RSS(ref_mpi_half_comm(ref_mpi, &split_mpi), "split");
+    RSS(ref_part_by_extension(&import_grid, split_mpi, grid_file), "import");
+    RSS(ref_migrate_to_balance(import_grid), "migrate");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_mpi_join_comm(split_mpi), "join");
+    RSS(ref_mpi_free(split_mpi), "free");
+
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
   if (1 < argc) {
     REF_GRID import_grid;
 

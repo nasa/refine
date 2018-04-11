@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part lb8.ugrid, world comm */
+  { /* part prism lb8.ugrid, world comm */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.lb8.ugrid";
 
@@ -167,12 +167,12 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part lb8.ugrid, split comm */
+  { /* part tet lb8.ugrid, split comm */
     REF_MPI split_mpi;
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.lb8.ugrid";
 
-    RSS(ref_fixture_pri_stack_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_export_lb8_ugrid(export_grid, grid_file), "export");
     }
