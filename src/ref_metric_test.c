@@ -822,7 +822,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (ref_mpi_once(ref_mpi)) { /* lp for small variation */
+  if (!ref_mpi_para(ref_mpi)) { /* lp for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
@@ -844,7 +844,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (ref_mpi_once(ref_mpi)) { /* lp for no variation */
+  if (!ref_mpi_para(ref_mpi)) { /* lp for no variation */
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL *scalar, *metric;
