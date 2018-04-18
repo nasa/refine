@@ -1045,9 +1045,9 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
         RSS( ref_dict_store( ref_dict, node2, REF_EMPTY ), "store node2" );
       }
     }
-    RSS( ref_dict_free( ref_dict ), "free ref_dict" );
     for (i=0;i<90;i++) ab[i] = 0.0;
     each_ref_dict_key(ref_dict, i2, node2) {
+      if ( node0 == node2 ) continue; 
       dx = ref_node_xyz(ref_node,0,node2) - ref_node_xyz(ref_node,0,node0);
       dy = ref_node_xyz(ref_node,1,node2) - ref_node_xyz(ref_node,1,node0);
       dz = ref_node_xyz(ref_node,2,node2) - ref_node_xyz(ref_node,2,node0);
@@ -1061,6 +1061,7 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       geom[6] = dx;
       geom[7] = dy;
       geom[8] = dz;
+      printf("d %f %f %f\n",dx,dy,dz);
       for (i=0;i<9;i++) {
         for (j=0;j<9;j++) {
           ab[i+9*j] += geom[i]*geom[j];
@@ -1071,8 +1072,10 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
         ab[i+9*j] += geom[i]*dq;
       }
     }
+    RSS( ref_dict_free( ref_dict ), "free ref_dict" );
     ref_matrix_show_ab(9,10,ab);
-    RSS(ref_matrix_solve_ab(9, 10, ab), "solve");
+    RSB(ref_matrix_solve_ab(9, 10, ab), "solve",
+        {ref_matrix_show_ab(9,10,ab);return REF_FAILURE;});
     j=9;
     for(im=0;im<6;im++) {
       hessian[im+6*node0] = ab[im+9*j];
