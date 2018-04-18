@@ -863,6 +863,28 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  if (!ref_mpi_para(ref_mpi)) { /* k-exact for small variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar, *hessian;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = 0.5 + 0.01 * pow(ref_node_xyz(ref_node, 0, node), 2) +
+                     0.02 * pow(ref_node_xyz(ref_node, 1, node), 2) +
+                     0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
+    }
+    RSS(ref_metric_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
+    ref_free(hessian);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

@@ -33,6 +33,8 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 
+#include "ref_dict.h"
+
 REF_STATUS ref_metric_show(REF_DBL *m) {
   printf(" %18.10e %18.10e %18.10e\n", m[0], m[1], m[2]);
   printf(" %18.10e %18.10e %18.10e\n", m[1], m[3], m[4]);
@@ -1013,6 +1015,52 @@ REF_STATUS ref_metric_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   ref_free(dsdx);
   ref_free(grad);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                     REF_DBL *hessian) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT node0, node1, node2, i1, i2, im;
+  REF_INT nnode1, nnode2;
+  REF_INT node_list1[200], node_list2[200], max_node = 200;
+  REF_DICT ref_dict;
+
+  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
+  
+  each_ref_node_valid_node(ref_node, node0) {
+    RSS( ref_dict_create( &ref_dict ), "create ref_dict" );
+    RSS( ref_cell_node_list_around( ref_cell, node0, max_node,
+                                    &nnode1, node_list1),
+         "first halo of nodes" );
+    for (i1=0;i1<nnode1;i1++){
+      node1=node_list1[i1];
+      RSS( ref_dict_store( ref_dict, node1, REF_EMPTY ), "store node1" );
+      RSS( ref_cell_node_list_around( ref_cell, node1, max_node,
+                                      &nnode2, node_list2),
+           "halo of halo of nodes" );
+      for (i2=0;i2<nnode2;i2++){
+        node2=node_list2[i2];
+        RSS( ref_dict_store( ref_dict, node2, REF_EMPTY ), "store node2" );
+      }
+    }
+    RSS( ref_dict_free( ref_dict ), "free ref_dict" );
+    for(im=0;im<6;im++) hessian[im+6*node0] = 0;
+  }
+
+  if (REF_FALSE) {
+    /* positive eignevalues to make symmetric positive definite */
+    each_ref_node_valid_node(ref_node, node0) {
+      REF_DBL diag_system[12];
+      RSS(ref_matrix_diag_m(&(hessian[6 * node0]), diag_system), "eigen decomp");
+      ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
+      ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
+      ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
+      RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node0])), "re-form hess");
+    }
+  }
+  
   return REF_SUCCESS;
 }
 
