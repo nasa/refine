@@ -160,7 +160,7 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 3");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, p,
+    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p,
                       gradation, complexity),
         "lp norm");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
