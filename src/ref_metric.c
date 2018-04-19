@@ -1028,7 +1028,8 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_DICT ref_dict;
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
-
+  REF_DBL *a, *q, *r;
+  REF_INT m, n;
   each_ref_node_valid_node(ref_node, node0) {
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
     RSS(ref_cell_node_list_around(ref_cell, node0, max_node, &nnode1,
@@ -1071,8 +1072,7 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
         ab[i + 9 * j] += geom[i] * dq;
       }
     }
-    RSS(ref_dict_free(ref_dict), "free ref_dict");
-    RSB(ref_matrix_solve_ab(9, 10, ab), "solve", {
+    RSB(ref_matrix_solve_ab(9, 10, ab), "solve AtAx = Ab", {
       ref_matrix_show_ab(9, 10, ab);
       return REF_FAILURE;
     });
@@ -1080,6 +1080,57 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     for (im = 0; im < 6; im++) {
       hessian[im + 6 * node0] = ab[im + 9 * j];
     }
+    m = ref_dict_n(ref_dict);
+    n = 9;
+    ref_malloc(a,m*n,REF_DBL);
+    ref_malloc(q,m*n,REF_DBL);
+    ref_malloc(r,n*n,REF_DBL);
+    i=0;
+    each_ref_dict_key(ref_dict, i2, node2) {
+      dx = ref_node_xyz(ref_node, 0, node2) - ref_node_xyz(ref_node, 0, node0);
+      dy = ref_node_xyz(ref_node, 1, node2) - ref_node_xyz(ref_node, 1, node0);
+      dz = ref_node_xyz(ref_node, 2, node2) - ref_node_xyz(ref_node, 2, node0);
+      geom[0] = 0.5 * dx * dx;
+      geom[1] = dx * dy;
+      geom[2] = dx * dz;
+      geom[3] = 0.5 * dy * dy;
+      geom[4] = dy * dz;
+      geom[5] = 0.5 * dz * dz;
+      geom[6] = dx;
+      geom[7] = dy;
+      geom[8] = dz;
+      for (j = 0; j < n; j++) {
+        a[i+m*j] = geom[j];
+      }
+      i++;
+    }
+    RSS( ref_matrix_qr(m,n,a,q,r),"kexact lsq hess qr");
+    for (i = 0; i < 90; i++) ab[i] = 0.0;
+    for (i = 0; i < 9; i++) {
+      for (j = 0; j < 9; j++) {
+        ab[i + 9 * j] += r[i + 9 * j];
+      }
+    }
+    i=0;
+    each_ref_dict_key(ref_dict, i2, node2) {
+      dq = scalar[node2] - scalar[node0];
+      for (j = 0; j < 9; j++) {
+        ab[j + 9 * 9] += q[i+m*j]*dq;
+      }
+      i++;
+    }
+    RSB(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb", {
+      ref_matrix_show_ab(9, 10, ab);
+      return REF_FAILURE;
+    });
+    j = 9;
+    for (im = 0; im < 6; im++) {
+      hessian[im + 6 * node0] = ab[im + 9 * j];
+    }
+    ref_free(r);
+    ref_free(q);
+    ref_free(a);
+    RSS(ref_dict_free(ref_dict), "free ref_dict");
   }
 
   /* positive eignevalues to make symmetric positive definite */
