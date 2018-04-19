@@ -1052,12 +1052,12 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       dy = ref_node_xyz(ref_node, 1, node2) - ref_node_xyz(ref_node, 1, node0);
       dz = ref_node_xyz(ref_node, 2, node2) - ref_node_xyz(ref_node, 2, node0);
       dq = scalar[node2] - scalar[node0];
-      geom[0] = dx * dx;
+      geom[0] = 0.5 * dx * dx;
       geom[1] = dx * dy;
       geom[2] = dx * dz;
-      geom[3] = dy * dy;
+      geom[3] = 0.5 * dy * dy;
       geom[4] = dy * dz;
-      geom[5] = dz * dz;
+      geom[5] = 0.5 * dz * dz;
       geom[6] = dx;
       geom[7] = dy;
       geom[8] = dz;
