@@ -21,6 +21,13 @@
 
 #include "ref_defs.h"
 
+BEGIN_C_DECLORATION
+typedef enum REF_METRIC_RECONSTRUCTIONS { /* 0 */ REF_METRIC_L2PROJECTION,
+                                          /* 1 */ REF_METRIC_KEXACT,
+                                          /* 2 */ REF_METRIC_LAST
+} REF_METRIC_RECONSTRUCTION;
+END_C_DECLORATION
+
 #include "ref_grid.h"
 #include "ref_node.h"
 
@@ -71,6 +78,7 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
 REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *complexity);
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+                         REF_METRIC_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
 
 END_C_DECLORATION

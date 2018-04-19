@@ -1227,6 +1227,7 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+                         REF_METRIC_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation,
                          REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1236,9 +1237,18 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   REF_DBL det, exponent;
   REF_DBL current_complexity;
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
-  RSS(ref_metric_l2_projection_hessian(ref_grid, scalar, metric), "l2");
-  RSS(ref_metric_extrapolate_boundary_multipass(metric, ref_grid),
-      "bound extrap");
+  switch (reconstruction) {
+    case REF_METRIC_L2PROJECTION:
+      RSS(ref_metric_l2_projection_hessian(ref_grid, scalar, metric), "l2");
+      RSS(ref_metric_extrapolate_boundary_multipass(metric, ref_grid),
+          "bound extrap");
+      break;
+    case REF_METRIC_KEXACT:
+      RSS(ref_metric_kexact_hessian(ref_grid, scalar, metric), "k-exact");
+      break;
+    default:
+      THROW("reconstruction not available");
+  }
   /* local scaling */
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {

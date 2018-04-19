@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
+  REF_INT kexact_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -87,6 +88,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
+      "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -125,19 +128,27 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity;
+    REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
     REIS(1, lp_pos,
          "required args: --lp grid.meshb scalar-mach.solb p gradation "
          "complexity output-metric.solb");
-    REIS(8, argc,
-         "required args: --lp grid.meshb scalar-mach.solb p gradation "
-         "complexity output-metric.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --lp grid.meshb scalar-mach.solb p gradation "
+          "complexity output-metric.solb\n");
+      return REF_FAILURE;
+    }
 
     p = atoi(argv[4]);
     gradation = atof(argv[5]);
     complexity = atof(argv[6]);
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_METRIC_KEXACT;
+    }
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("complexity %f\n", complexity);
+    printf("reconstruction %d\n", reconstruction);
 
     printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
@@ -149,7 +160,8 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 3");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, p, gradation, complexity),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, p,
+                      gradation, complexity),
         "lp norm");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
@@ -837,7 +849,9 @@ int main(int argc, char *argv[]) {
                      0.02 * pow(ref_node_xyz(ref_node, 1, node), 2) +
                      0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
     }
-    RSS(ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0), "lp norm");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, 2, 1.5,
+                      1000.0),
+        "lp norm");
     ref_free(metric);
     ref_free(scalar);
 
@@ -855,7 +869,9 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       scalar[node] = 0.5;
     }
-    REIS(REF_DIV_ZERO, ref_metric_lp(metric, ref_grid, scalar, 2, 1.5, 1000.0),
+    REIS(REF_DIV_ZERO,
+         ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, 2,
+                       1.5, 1000.0),
          "lp norm expected div zero");
     ref_free(metric);
     ref_free(scalar);
