@@ -1042,12 +1042,12 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
           "halo of halo of nodes");
       for (i2 = 0; i2 < nnode2; i2++) {
         node2 = node_list2[i2];
+        if (node0 == node2) continue; /* skip self */
         RSS(ref_dict_store(ref_dict, node2, REF_EMPTY), "store node2");
       }
     }
     for (i = 0; i < 90; i++) ab[i] = 0.0;
     each_ref_dict_key(ref_dict, i2, node2) {
-      if (node0 == node2) continue;
       dx = ref_node_xyz(ref_node, 0, node2) - ref_node_xyz(ref_node, 0, node0);
       dy = ref_node_xyz(ref_node, 1, node2) - ref_node_xyz(ref_node, 1, node0);
       dz = ref_node_xyz(ref_node, 2, node2) - ref_node_xyz(ref_node, 2, node0);
