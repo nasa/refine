@@ -661,7 +661,8 @@ REF_STATUS ref_matrix_show_aqr(REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
+REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
+                         REF_DBL *r) {
   REF_INT i, j, k;
 
   for (j = 0; j < n; j++)
