@@ -863,7 +863,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (!ref_mpi_para(ref_mpi) && REF_FALSE) { /* k-exact for small variation */
+  if (!ref_mpi_para(ref_mpi) ) { /* k-exact for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
