@@ -836,6 +836,12 @@ R=-R
     REF_DBL a[6] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0 };
     REF_DBL q[6], r[4];
 
+    /*
+A=[1 0;
+   0 1;
+   0 0], [Q, R] = qr(A)
+     */
+
     RSS(ref_matrix_qr(m, n, a, q, r), "qr");
 
     RWDS(1.0, q[0], tol, "q[0]");
