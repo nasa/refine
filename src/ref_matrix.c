@@ -661,25 +661,25 @@ REF_STATUS ref_matrix_show_aqr(REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_qr(REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
+REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
   REF_INT i, j, k;
 
   for (j = 0; j < n; j++)
-    for (i = 0; i < n; i++) q[i + n * j] = a[i + n * j];
+    for (i = 0; i < m; i++) q[i + m * j] = a[i + m * j];
 
   for (j = 0; j < n; j++)
     for (i = 0; i < n; i++) r[i + n * j] = 0.0;
 
   for (k = 0; k < n; k++) {
-    for (i = 0; i < n; i++) r[k + n * k] += q[i + n * k] * q[i + n * k];
+    for (i = 0; i < m; i++) r[k + n * k] += q[i + m * k] * q[i + m * k];
     r[k + n * k] = sqrt(r[k + n * k]);
     for (i = 0; i < n; i++) {
-      if (!ref_math_divisible(q[i + n * k], r[k + n * k])) return REF_DIV_ZERO;
-      q[i + n * k] /= r[k + n * k];
+      if (!ref_math_divisible(q[i + m * k], r[k + n * k])) return REF_DIV_ZERO;
+      q[i + m * k] /= r[k + n * k];
     }
     for (j = k + 1; j < n; j++) {
-      for (i = 0; i < n; i++) r[k + n * j] += a[i + n * j] * q[i + n * k];
-      for (i = 0; i < n; i++) q[i + n * j] -= r[k + n * j] * q[i + n * k];
+      for (i = 0; i < m; i++) r[k + n * j] += a[i + m * j] * q[i + m * k];
+      for (i = 0; i < m; i++) q[i + m * j] -= r[k + n * j] * q[i + m * k];
     }
   }
 
@@ -735,7 +735,7 @@ REF_STATUS ref_matrix_diag_gen(REF_INT n, REF_DBL *a, REF_DBL *values,
   while (conv > 1.0e-13) {
     iter++;
 
-    RSS(ref_matrix_qr(n, rq, q, r), "qr");
+    RSS(ref_matrix_qr(n, n, rq, q, r), "qr");
     ref_matrix_mult_gen(n, r, q, rq);
 
     for (j = 0; j < n; j++)

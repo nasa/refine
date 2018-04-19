@@ -788,7 +788,7 @@ R=-R
  -58.0/175.0, 6.0/175.0, -33/35.0]'-Q
      */
 
-    RSS(ref_matrix_qr(n, a, q, r), "qr");
+    RSS(ref_matrix_qr(n, n, a, q, r), "qr");
 
     RWDS(6.0 / 7.0, q[0 + 0 * 3], tol, "q[0,0]");
     RWDS(3.0 / 7.0, q[1 + 0 * 3], tol, "q[1,0]");
@@ -817,12 +817,33 @@ R=-R
     REF_DBL a[4] = {1.0, 0.0, 0.0, 1.0};
     REF_DBL q[4], r[4];
 
-    RSS(ref_matrix_qr(n, a, q, r), "qr");
+    RSS(ref_matrix_qr(n, n, a, q, r), "qr");
 
     RWDS(1.0, q[0], tol, "q[0]");
     RWDS(0.0, q[1], tol, "q[1]");
     RWDS(0.0, q[2], tol, "q[2]");
     RWDS(1.0, q[3], tol, "q[3]");
+
+    RWDS(1.0, r[0], tol, "r[0]");
+    RWDS(0.0, r[1], tol, "r[1]");
+    RWDS(0.0, r[2], tol, "r[2]");
+    RWDS(1.0, r[3], tol, "r[3]");
+  }
+
+  { /* qr I2 */
+    REF_DBL tol = -1.0;
+    REF_INT m = 3, n = 2;
+    REF_DBL a[6] = {1.0, 0.0, 0.0, 0.0, 1.0, 0.0 };
+    REF_DBL q[6], r[4];
+
+    RSS(ref_matrix_qr(m, n, a, q, r), "qr");
+
+    RWDS(1.0, q[0], tol, "q[0]");
+    RWDS(0.0, q[1], tol, "q[1]");
+    RWDS(0.0, q[2], tol, "q[2]");
+    RWDS(0.0, q[3], tol, "q[3]");
+    RWDS(1.0, q[4], tol, "q[4]");
+    RWDS(0.0, q[5], tol, "q[5]");
 
     RWDS(1.0, r[0], tol, "r[0]");
     RWDS(0.0, r[1], tol, "r[1]");
