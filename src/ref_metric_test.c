@@ -160,8 +160,8 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 3");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p,
-                      gradation, complexity),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
+                      complexity),
         "lp norm");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
@@ -894,24 +894,16 @@ int main(int argc, char *argv[]) {
       REF_DBL x = ref_node_xyz(ref_node, 0, node);
       REF_DBL y = ref_node_xyz(ref_node, 1, node);
       REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      scalar[node] = 0.5 + 0.01 * x*x + 0.02 * x*y + 0.03 * x*z +
-        0.04 * y*y + 0.05 * y*z + 0.06 * z*z;
-      scalar[node] = 0.5 + 0.01 * 0.5* x*x + 0.04 * 0.5* y*y + 0.06 * 0.5* z*z;
+      scalar[node] = 0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * y +
+                     0.04 * (0.5 * y * y) + 0.06 * (0.5 * z * z);
     }
     RSS(ref_metric_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.01, hessian[0 + 6 * node], tol, "m[0]");
-      RWDS(0.00, hessian[1 + 6 * node], tol, "m[1]");
+      RWDS(0.02, hessian[1 + 6 * node], tol, "m[1]");
       RWDS(0.00, hessian[2 + 6 * node], tol, "m[2]");
       RWDS(0.04, hessian[3 + 6 * node], tol, "m[3]");
       RWDS(0.00, hessian[4 + 6 * node], tol, "m[4]");
-      RWDS(0.06, hessian[5 + 6 * node], tol, "m[5]");
-      continue;
-      RWDS(0.01, hessian[0 + 6 * node], tol, "m[0]");
-      RWDS(0.02, hessian[1 + 6 * node], tol, "m[1]");
-      RWDS(0.03, hessian[2 + 6 * node], tol, "m[2]");
-      RWDS(0.04, hessian[3 + 6 * node], tol, "m[3]");
-      RWDS(0.05, hessian[4 + 6 * node], tol, "m[4]");
       RWDS(0.06, hessian[5 + 6 * node], tol, "m[5]");
     }
 
