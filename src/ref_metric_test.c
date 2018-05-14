@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("complexity %f\n", complexity);
-    printf("reconstruction %d\n", reconstruction);
+    printf("reconstruction %d\n", (int)reconstruction);
 
     printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
