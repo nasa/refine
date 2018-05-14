@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
+  REF_INT complexity_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -89,6 +90,8 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--complexity", &complexity_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -198,6 +201,59 @@ int main(int argc, char *argv[]) {
         "export curve metric");
 
     RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_metric_test_curve"), "al");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (complexity_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL target_complexity, current_complexity;
+    REF_DBL *metric;
+    REF_INT i, node;
+
+    REIS(1, complexity_pos,
+         "required args: --complexity grid.ext input-metric.solb complexity output-metric.solb");
+    REIS(6, argc, 
+         "required args: --complexity grid.ext input-metric.solb complexity output-metric.solb");
+    if (ref_mpi_once(ref_mpi))
+      printf("reading grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load grid in position 2");
+    if (ref_mpi_once(ref_mpi))
+      printf("reading metric %s\n", argv[3]);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
+        "unable to load metric in position 3");
+    target_complexity = atof(argv[4]);
+    if (ref_mpi_once(ref_mpi))
+      printf("desired complexity %e\n", target_complexity);
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_mpi))
+      printf("actual complexity %e\n", current_complexity);
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      ref_free(metric);
+      RSS(ref_grid_free(ref_grid), "free");
+      RSS(ref_mpi_free(ref_mpi), "free");
+      RSS(ref_mpi_stop(), "stop");
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *=
+          pow(target_complexity / current_complexity, 2.0 / 3.0);
+      }
+    }
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("writing metric %s\n", argv[5]);
+    RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
