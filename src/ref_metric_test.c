@@ -250,6 +250,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "qual");
     RSS(ref_histogram_ratio(ref_grid), "rat");
 
+    RSS(ref_gather_metric(ref_grid_node(parent_grid), "ref_metric_interp.solb"),
+        "unable to gather metric");
+
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_grid_free(parent_grid), "free");
 
