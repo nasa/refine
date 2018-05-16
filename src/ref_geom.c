@@ -1139,6 +1139,78 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom,
 #endif
 }
 
+REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                                REF_DBL *xyz) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item0, item1;
+  REF_INT geom0, geom1;
+  REF_INT type, id;
+  REF_DBL param[2], param0[2], param1[2];
+  REF_BOOL has_id;
+  REF_INT i;
+
+  for (i = 0; i < 3; i++)
+    xyz[i] = 0.5 * (ref_node_xyz(ref_node, i, node0) +
+                    ref_node_xyz(ref_node, i, node1));
+
+  /* edge between */
+  type = REF_GEOM_EDGE;
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
+    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
+                                    geom1) {
+      if (ref_geom_type(ref_geom, geom0) == type &&
+          ref_geom_type(ref_geom, geom1) == type &&
+          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
+        id = ref_geom_id(ref_geom, geom0);
+        RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid), node0, node1, id,
+                                 &has_id),
+            "has edge id");
+        if (has_id) {
+          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
+          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
+          param[0] = 0.5 * (param0[0] + param1[0]);
+          if (ref_geom_model_loaded(ref_geom))
+            RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param),
+                "inv eval edge",
+                ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
+          return REF_SUCCESS;
+        }
+      }
+    }
+  }
+
+  /* insert face between */
+  type = REF_GEOM_FACE;
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
+    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
+                                    geom1) {
+      if (ref_geom_type(ref_geom, geom0) == type &&
+          ref_geom_type(ref_geom, geom1) == type &&
+          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
+        id = ref_geom_id(ref_geom, geom0);
+        RSS(ref_cell_side_has_id(ref_grid_tri(ref_grid), node0, node1, id,
+                                 &has_id),
+            "has edge id");
+        if (has_id) {
+          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
+          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
+          param[0] = 0.5 * (param0[0] + param1[0]);
+          param[1] = 0.5 * (param0[1] + param1[1]);
+          if (ref_geom_model_loaded(ref_geom)) {
+            RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param),
+                "inv eval face",
+                ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
+          }
+          return REF_SUCCESS;
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
