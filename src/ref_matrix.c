@@ -690,19 +690,23 @@ REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
 REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,
                                REF_DBL *vectors) {
   REF_INT row, col;
-  char format[] = "%12.4e";
+  char short_format[] = "%15.7e";
+  char full_format[] = "%23.15e";
 
-  for (row = 0; row < n; row++) {
-    for (col = 0; col < n; col++)
-      if (NULL != a) {
-        printf(format, a[row + n * col]);
+  if (NULL != a) {
+    for (row = 0; row < n; row++) {
+      for (col = 0; col < n; col++) {
         printf(" ");
-        if (col == n - 1) printf(" |");
+        printf(short_format, a[row + n * col]);
       }
-    printf(format, values[row]);
+      printf("\n");
+    }
+  }
+  for (row = 0; row < n; row++) {
+    printf(full_format, values[row]);
     printf(" |");
     for (col = 0; col < n; col++) {
-      printf(format, vectors[row + n * col]);
+      printf(short_format, vectors[row + n * col]);
       if (col < n - 1) printf(" ");
     }
     printf("\n");
