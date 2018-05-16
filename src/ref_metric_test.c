@@ -281,31 +281,6 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (argc == 2) {
-    REF_GRID ref_grid;
-    REF_DBL *metric;
-
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
-
-    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_imply_from(metric, ref_grid), "imply");
-    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
-    ref_free(metric);
-
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "qual");
-    RSS(ref_histogram_ratio(ref_grid), "rat");
-
-    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_metric_test_implied_met"),
-        "al");
-
-    RSS(ref_grid_free(ref_grid), "free");
-
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
   if (argc == 3) {
     REF_GRID ref_grid;
 
