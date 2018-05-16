@@ -1,6 +1,4 @@
 
-remove old unused methods in ref_metric_test
-
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 partition artifacts
