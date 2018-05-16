@@ -18,9 +18,6 @@ ref_metric_test --lp should optionally provide intermediate steps
 
 measure gradation and see if there is a connection to histogram convergence
 
-ref_matrix fix diag gen repeat roots 1 2 turned off with REF_FALSE
-gen eigen solver slow for repeated roots, 2x6.2500e-02
-
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 interp for mixed element donor
