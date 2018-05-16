@@ -69,7 +69,6 @@
 
 int main(int argc, char *argv[]) {
   REF_INT curve_limit_pos = REF_EMPTY;
-  REF_INT curvature_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
@@ -82,8 +81,6 @@ int main(int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--curve-limit", &curve_limit_pos),
       REF_NOT_FOUND, "arg search");
-  RXS(ref_args_find(argc, argv, "--curvature", &curvature_pos), REF_NOT_FOUND,
-      "arg search");
   RXS(ref_args_find(argc, argv, "--parent", &parent_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
@@ -175,32 +172,6 @@ int main(int argc, char *argv[]) {
 
     printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
-
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
-  if (curvature_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-
-    REIS(1, curvature_pos,
-         "required args: --curvature grid.ext geom.egads assoc.gas");
-    REIS(5, argc, "required args: --curvature grid.ext geom.egads assoc.gas");
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load target grid in position 1");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]),
-        "unable to load egads in position 2");
-    RSS(ref_geom_load(ref_grid, argv[4]),
-        "unable to load geom assoc in position 3");
-
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-
-    RSS(ref_gather_metric(ref_grid, "ref_metric_test_curve.metric"),
-        "export curve metric");
-
-    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_metric_test_curve"), "al");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
