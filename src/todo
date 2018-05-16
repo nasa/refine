@@ -76,7 +76,6 @@ robustness and metric conformity
 
 performance
  node and cell reordering for cache
- time adapt pass elements
  profile
  make faster, more efficient
  don't balloon up in size
