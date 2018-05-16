@@ -17,7 +17,6 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 ref_metric_test --lp should optionally provide intermediate steps
-remove normal equation version of k-exact
 
 measure gradation and see if there is a connection to histogram convergence
 
