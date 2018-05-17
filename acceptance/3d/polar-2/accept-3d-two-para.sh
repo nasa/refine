@@ -38,11 +38,7 @@ adapt_cycle accept-3d-two-00
 adapt_cycle accept-3d-two-01
 adapt_cycle accept-3d-two-02
 adapt_cycle accept-3d-two-03
-adapt_cycle accept-3d-two-04
-adapt_cycle accept-3d-two-05
 
-cat accept-3d-two-05.status
-../../../check.rb accept-3d-two-05.status 0.05 3.0
-
-
+cat accept-3d-two-03.status
+../../check.rb accept-3d-two-03.status 0.1 2.2
 
