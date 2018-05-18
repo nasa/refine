@@ -7,7 +7,9 @@ implement grid CM
 cell pack: insert in first node index order
 
 revisit edge builder, replace ref_cell_c2e with pure ref_edge implementation
-  replace c2e in subdiv with function
+  remove old usage of c2e 
+    replace c2e in subdiv with function
+    subdiv mark based on cell and local edge number
   extract builder from create
   make a new builder without c2e
   ab test
