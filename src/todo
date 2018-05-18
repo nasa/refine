@@ -7,7 +7,7 @@ implement grid CM
 cell pack: insert in first node index order
 
 revisit edge builder, replace ref_cell_c2e with pure ref_edge implementation
-  see if c2e used? elast?
+  replace c2e in subdiv with function
   extract builder from create
   make a new builder without c2e
   ab test
