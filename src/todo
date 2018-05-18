@@ -1,6 +1,17 @@
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
+implement grid CM
+  unit test the CM case in their paper for tri
+
+cell pack: insert in first node index order
+
+revisit edge builder, replace ref_cell_c2e with pure ref_edge implementation
+  see if c2e used? elast?
+  extract builder from create
+  make a new builder without c2e
+  ab test
+
 parallel kexact
 
 partition artifacts
@@ -40,8 +51,6 @@ egads recon
 create native inv eval guess
 
 always store metric in log form
-
-revisit edges, replace ref_cell_c2e with ref_edge implementation
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
