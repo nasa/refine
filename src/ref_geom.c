@@ -1895,6 +1895,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
+  char *ugrid_name = "ref_geom_test.ugrid";
   char *smesh_name = "ref_geom_test.smesh";
   char *node_name = "ref_geom_test.1.node";
   char *ele_name = "ref_geom_test.1.ele";
@@ -1906,6 +1907,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
+  RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
   sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
   printf("%s\n", command);
