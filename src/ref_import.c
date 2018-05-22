@@ -281,6 +281,78 @@ static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   return REF_SUCCESS;
 }
+static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                  const char *filename) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  FILE *file;
+  REF_INT nnode, ntri, nqua;
+  REF_INT node, new_node;
+  REF_DBL xyz[3];
+  REF_INT tri, new_tri;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua, new_qua;
+  REF_INT dummy;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  RES(1, fscanf(file, "%d", &ntri), "ntri");
+  RES(1, fscanf(file, "%d", &nqua), "nqua");
+  RES(1, fscanf(file, "%d", &nnode), "nnode");
+
+  for (node = 0; node < nnode; node++) {
+    RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+    RES(node, new_node, "node index");
+    RES(1, fscanf(file, "%lf", &(xyz[0])), "x");
+    RES(1, fscanf(file, "%lf", &(xyz[1])), "y");
+    RES(1, fscanf(file, "%lf", &(xyz[2])), "z");
+    ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+    ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+    ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  nodes[3] = REF_EMPTY;
+  for (tri = 0; tri < ntri; tri++) {
+    for (node = 0; node < 4; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+    for (node = 0; node < 2; node++)
+      RES(1, fscanf(file, "%d", &(dummy)), "extra 0 1");
+    nodes[0]--;
+    nodes[1]--;
+    nodes[2]--;
+    RSS(ref_cell_add(ref_cell, nodes, &new_tri), "new tri");
+    RES(tri, new_tri, "tri index");
+  }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  nodes[4] = REF_EMPTY;
+  for (qua = 0; qua < nqua; qua++) {
+    for (node = 0; node < 5; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "qua");
+    for (node = 0; node < 2; node++)
+      RES(1, fscanf(file, "%d", &(dummy)), "extra 0 1");
+    nodes[0]--;
+    nodes[1]--;
+    nodes[2]--;
+    nodes[3]--;
+    RSS(ref_cell_add(ref_cell, nodes, &new_qua), "new qua");
+    RES(qua, new_qua, "qua index");
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
 
 static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
                                            FILE *file, REF_BOOL swap) {
@@ -1297,6 +1369,8 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         "r8_ugrid failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_import_ugrid(ref_grid_ptr, ref_mpi, filename), "ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".surf") == 0) {
+    RSS(ref_import_surf(ref_grid_ptr, ref_mpi, filename), "surf failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
     RSS(ref_import_fgrid(ref_grid_ptr, ref_mpi, filename), "fgrid failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
