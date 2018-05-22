@@ -62,8 +62,8 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                            const char *filename) {
+static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                   const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -136,8 +136,8 @@ REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                            const char *filename) {
+static REF_STATUS ref_import_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                   const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -424,22 +424,22 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_lb8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                const char *filename) {
+static REF_STATUS ref_import_lb8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                       const char *filename) {
   RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE),
       "import bin ugrid unswapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_b8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                               const char *filename) {
+static REF_STATUS ref_import_b8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                      const char *filename) {
   RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE),
       "import bin ugrid swapped");
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                               const char *filename) {
+static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                      const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -622,8 +622,8 @@ REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
  */
 
-REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                          const char *filename) {
+static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                 const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -918,8 +918,8 @@ REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version, REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                            const char *filename) {
+static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                   const char *filename) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_GEOM ref_geom;
