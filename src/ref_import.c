@@ -916,7 +916,7 @@ static REF_STATUS meshb_real(FILE *file, REF_INT version, REF_DBL *real) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS meshb_pos(FILE *file, REF_INT version, REF_INT *pos) {
+static REF_STATUS meshb_pos(FILE *file, REF_INT version, REF_FILEPOS *pos) {
   int temp_int;
   long temp_long;
 
@@ -931,11 +931,16 @@ static REF_STATUS meshb_pos(FILE *file, REF_INT version, REF_INT *pos) {
   return REF_SUCCESS;
 }
 REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
-                                   REF_DICT ref_dict) {
+                                   REF_FILEPOS *key_pos) {
   FILE *file;
   int int_code, int_version;
-  REF_INT keyword_code, position, next_position, end_position;
+  REF_INT keyword_code;
+  REF_FILEPOS position, next_position, end_position;
   REF_BOOL verbose = REF_FALSE;
+
+  for (keyword_code=0;keyword_code<REF_IMPORT_MESHB_LAST_KEYWORD;keyword_code++)
+    key_pos[keyword_code] = REF_EMPTY;
+
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -949,41 +954,51 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
   }
   *version = (REF_INT)int_version;
 
-  next_position = ftell(file);
-  fseek(file, 0, SEEK_END);
-  end_position = ftell(file);
-  if (verbose) printf("%d end\n", end_position);
-  if (verbose) printf("%d next_position\n", next_position);
+  next_position = ftello(file);
+  REIS(0, fseeko(file, 0, SEEK_END), "fseeko END failed");
+  end_position = ftello(file);
+  if (verbose) printf("%ld end\n", end_position);
+  if (verbose) printf("%ld next_position\n", next_position);
   while (next_position <= end_position && 0 != next_position) {
     position = next_position;
-    fseek(file, position, SEEK_SET);
+    REIS(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed");
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-    if (verbose) printf("%d position %d kw\n", position, keyword_code);
-    RSS(ref_dict_store(ref_dict, keyword_code, position), "store pos");
+    if (verbose) printf("%ld position %d kw\n", position, keyword_code);
+    if ( 0 <= keyword_code && keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD) {
+      key_pos[keyword_code] = position;
+    }else{
+      printf("ignoring keyword %d\n", keyword_code);
+    }
     RSS(meshb_pos(file, *version, &next_position), "pos");
-    if (verbose) printf("%d next_position\n", next_position);
+    if (verbose) printf("%ld next_position\n", next_position);
   }
 
   fclose(file);
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version, REF_DICT ref_dict,
+REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
+                                 REF_FILEPOS *key_pos,
                                  REF_INT keyword, REF_BOOL *available,
-                                 REF_INT *next_position) {
-  REF_INT keyword_code, position;
-  REF_INT status;
-  status = ref_dict_value(ref_dict, keyword, &position);
-  RXS(status, REF_NOT_FOUND, "kw pos");
-  if (REF_SUCCESS == status) {
+                                 REF_FILEPOS *next_position) {
+  REF_INT keyword_code;
+  REF_FILEPOS position;
+
+  if ( keyword < 0 && REF_IMPORT_MESHB_LAST_KEYWORD <= keyword) {
+    *available = REF_FALSE;
+    *next_position = 0;
+    return REF_INVALID;
+  }
+  position = key_pos[keyword];
+
+  if ((REF_FILEPOS)REF_EMPTY != position) {
     *available = REF_TRUE;
   } else {
     *available = REF_FALSE;
     *next_position = 0;
     return REF_SUCCESS;
   }
-  RSS(ref_dict_value(ref_dict, keyword, &position), "kw pos");
-  fseek(file, (long)position, SEEK_SET);
+  REIS(0, fseeko(file, position, SEEK_SET), "fseeko keyword failed");
   REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
   REIS(keyword, keyword_code, "keyword code");
   RSS(meshb_pos(file, version, next_position), "pos");
@@ -998,8 +1013,8 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_INT next_position;
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge, ncell, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
@@ -1013,10 +1028,8 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT candidate;
 
   if (verbose) printf("header %s\n", filename);
-  RSS(ref_dict_create(&ref_dict), "create dict");
-  RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+  RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
   if (verbose) printf("meshb version %d\n", version);
-  if (verbose) ref_dict_inspect(ref_dict);
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -1028,7 +1041,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                             &next_position),
       "jump");
   RAS(available, "meshb missing dimension");
@@ -1039,7 +1052,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     THROW("dim");
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 4, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 4, &available,
                             &next_position),
       "jump");
   RAS(available, "meshb missing vertex");
@@ -1065,7 +1078,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(1, fread(&(id), sizeof(id), 1, file), "id");
     /* ref_node_location(ref_node, node ); */
   }
-  REIS(next_position, ftell(file), "end location");
+  REIS(next_position, ftello(file), "end location");
   if (2 == dim)
     for (node = 0; node < nnode; node++) {
       RSS(ref_node_add(ref_node, nnode + node, &new_node), "add node");
@@ -1076,7 +1089,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 5, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
                             &next_position),
       "jump");
   if (available) {
@@ -1105,7 +1118,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             "edg for edge");
       }
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
   if (2 == dim) {
@@ -1131,7 +1144,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     }
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 6, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 6, &available,
                             &next_position),
       "jump");
   if (available) {
@@ -1179,10 +1192,10 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             "tri face for tri");
       }
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 7, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 7, &available,
                             &next_position),
       "jump");
   if (3 == dim && available) {
@@ -1206,10 +1219,10 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       nodes[4] = id;
       RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "qua");
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 8, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 8, &available,
                             &next_position),
       "jump");
   if (3 == dim && available) {
@@ -1232,10 +1245,10 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       nodes[3] = n3;
       RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 49, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 49, &available,
                             &next_position),
       "jump");
   if (3 == dim && available) {
@@ -1263,10 +1276,10 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       nodes[2] = n4;
       RSS(ref_cell_add(ref_grid_pyr(ref_grid), nodes, &new_cell), "pyr");
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
-  RSS(ref_import_meshb_jump(file, version, ref_dict, 9, &available,
+  RSS(ref_import_meshb_jump(file, version, key_pos, 9, &available,
                             &next_position),
       "jump");
   if (3 == dim && available) {
@@ -1297,12 +1310,12 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       nodes[5] = n5;
       RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "pri");
     }
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
 
   each_ref_type(ref_geom, type) {
     geom_keyword = 40 + type;
-    RSS(ref_import_meshb_jump(file, version, ref_dict, geom_keyword, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, geom_keyword, &available,
                               &next_position),
         "jump");
     if (available) {
@@ -1320,12 +1333,12 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         node--;
         RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom");
       }
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
     }
   }
 
   cad_data_keyword = 126; /* GmfByteFlow */
-  RSS(ref_import_meshb_jump(file, version, ref_dict, cad_data_keyword,
+  RSS(ref_import_meshb_jump(file, version, key_pos, cad_data_keyword,
                             &available, &next_position),
       "jump");
   if (available) {
@@ -1342,10 +1355,8 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
          fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                ref_geom_cad_data_size(ref_geom), file),
          "cad_data");
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
   }
-
-  ref_dict_free(ref_dict);
 
   fclose(file);
 

@@ -547,8 +547,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_INT next_position;
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_GEOM ref_geom;
@@ -561,15 +561,13 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_dict_create(&ref_dict), "create dict");
-    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     if (verbose) printf("meshb version %d\n", version);
-    if (verbose) ref_dict_inspect(ref_dict);
     if (verbose) printf("open %s\n", filename);
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing dimension");
@@ -584,7 +582,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_grid_twod(ref_grid) = REF_FALSE;
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 4, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 4, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing vertex");
@@ -593,10 +591,10 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   }
   RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_INT_TYPE), "bcast");
   RSS(ref_part_node(file, swap_endian, has_id, ref_node, nnode), "part node");
-  if (ref_grid_once(ref_grid)) REIS(next_position, ftell(file), "end location");
+  if (ref_grid_once(ref_grid)) REIS(next_position, ftello(file), "end location");
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 8, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 8, &available,
                               &next_position),
         "jump");
     if (available) {
@@ -611,11 +609,11 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                             file),
         "part cell");
     if (ref_grid_once(ref_grid))
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
   }
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 6, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 6, &available,
                               &next_position),
         "jump");
     if (available) {
@@ -630,11 +628,11 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                             file),
         "part cell");
     if (ref_grid_once(ref_grid))
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
   }
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 5, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
                               &next_position),
         "jump");
     if (available) {
@@ -649,13 +647,13 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                             file),
         "part cell");
     if (ref_grid_once(ref_grid))
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
   }
 
   each_ref_type(ref_geom, type) {
     if (ref_grid_once(ref_grid)) {
       geom_keyword = 40 + type;
-      RSS(ref_import_meshb_jump(file, version, ref_dict, geom_keyword,
+      RSS(ref_import_meshb_jump(file, version, key_pos, geom_keyword,
                                 &available, &next_position),
           "jump");
       if (available) {
@@ -669,13 +667,13 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       RSS(ref_part_meshb_geom(ref_geom, ngeom, type, ref_node, nnode, file),
           "part geom");
       if (ref_grid_once(ref_grid))
-        REIS(next_position, ftell(file), "end location");
+        REIS(next_position, ftello(file), "end location");
     }
   }
 
   if (ref_grid_once(ref_grid)) {
     cad_data_keyword = 126; /* GmfByteFlow */
-    RSS(ref_import_meshb_jump(file, version, ref_dict, cad_data_keyword,
+    RSS(ref_import_meshb_jump(file, version, key_pos, cad_data_keyword,
                               &available, &next_position),
         "jump");
     if (available) {
@@ -693,7 +691,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                  ref_geom_cad_data_size(ref_geom), file),
            "cad_data");
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
     }
   }
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
@@ -716,7 +714,6 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       "inward boundary orientation");
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_dict_free(ref_dict), "free dict");
     fclose(file);
   }
 
@@ -729,7 +726,8 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_INT next_position;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_DICT ref_dict;
   REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
@@ -743,14 +741,13 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
     RSS(ref_dict_create(&ref_dict), "create dict");
-    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     if (verbose) printf("meshb version %d\n", version);
-    if (verbose) ref_dict_inspect(ref_dict);
     if (verbose) printf("open %s\n", filename);
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing dimension");
@@ -761,7 +758,7 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
 
   if (ref_grid_once(ref_grid)) {
     cad_data_keyword = 126; /* GmfByteFlow */
-    RSS(ref_import_meshb_jump(file, version, ref_dict, cad_data_keyword,
+    RSS(ref_import_meshb_jump(file, version, key_pos, cad_data_keyword,
                               &available, &next_position),
         "jump");
     if (available) {
@@ -779,7 +776,7 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                  ref_geom_cad_data_size(ref_geom), file),
            "cad_data");
-      REIS(next_position, ftell(file), "end location");
+      REIS(next_position, ftello(file), "end location");
     }
   }
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
@@ -799,7 +796,6 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   }
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_dict_free(ref_dict), "free dict");
     fclose(file);
   }
 
@@ -813,8 +809,8 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_INT next_position;
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_INT type, geom_keyword;
   REF_INT ngeom;
   REF_BOOL verbose = REF_FALSE;
@@ -827,15 +823,13 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_dict_create(&ref_dict), "create dict");
-    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     if (verbose) printf("meshb version %d\n", version);
-    if (verbose) ref_dict_inspect(ref_dict);
     if (verbose) printf("open %s\n", filename);
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing dimension");
@@ -849,7 +843,7 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   each_ref_type(ref_geom, type) {
     if (ref_grid_once(ref_grid)) {
       geom_keyword = 40 + type;
-      RSS(ref_import_meshb_jump(file, version, ref_dict, geom_keyword,
+      RSS(ref_import_meshb_jump(file, version, key_pos, geom_keyword,
                                 &available, &next_position),
           "jump");
       if (available) {
@@ -863,12 +857,11 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
       RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, file),
           "part geom bcast");
       if (ref_grid_once(ref_grid))
-        REIS(next_position, ftell(file), "end location");
+        REIS(next_position, ftello(file), "end location");
     }
   }
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_dict_free(ref_dict), "free dict");
     fclose(file);
   }
 
@@ -881,8 +874,8 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_INT next_position;
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_INT ncell;
   REF_BOOL verbose = REF_FALSE;
   size_t end_of_string;
@@ -894,15 +887,13 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_dict_create(&ref_dict), "create dict");
-    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     if (verbose) printf("meshb version %d\n", version);
-    if (verbose) ref_dict_inspect(ref_dict);
     if (verbose) printf("open %s\n", filename);
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing dimension");
@@ -915,7 +906,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 5, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
                               &next_position),
         "jump");
     if (available) {
@@ -933,8 +924,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
       "part cell");
 
   if (ref_grid_once(ref_grid)) {
-    REIS(next_position, ftell(file), "end location");
-    RSS(ref_dict_free(ref_dict), "free dict");
+    REIS(next_position, ftello(file), "end location");
     fclose(file);
   }
 
@@ -1255,30 +1245,30 @@ REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
 REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
   REF_INT chunk;
   REF_DBL *metric;
   REF_INT nnode_read, section_size;
   REF_INT node, local, global, im;
   REF_BOOL available;
-  REF_INT version, dim, nnode, ntype, type, next_position;
+  REF_INT version, dim, nnode, ntype, type;
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_dict_create(&ref_dict), "create dict");
-    RSS(ref_import_meshb_header(filename, &version, ref_dict), "header");
+    RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                               &next_position),
         "jump");
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     REIS(3, dim, "only 3D supported");
 
-    RSS(ref_import_meshb_jump(file, version, ref_dict, 62, &available,
+    RSS(ref_import_meshb_jump(file, version, key_pos, 62, &available,
                               &next_position),
         "jump");
     RAS(available, "SolAtVertices missing");
@@ -1335,9 +1325,8 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
 
   ref_free(metric);
   if (ref_mpi_once(ref_mpi)) {
-    REIS(next_position, ftell(file), "end location");
+    REIS(next_position, ftello(file), "end location");
     REIS(0, fclose(file), "close file");
-    RSS(ref_dict_free(ref_dict), "free dict");
   }
 
   return REF_SUCCESS;
@@ -1526,7 +1515,8 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
 
 REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
                            const char *filename) {
-  REF_DICT ref_dict;
+  REF_FILEPOS next_position;
+  REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
   REF_INT chunk;
   REF_DBL *data;
@@ -1535,7 +1525,7 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
   REF_BOOL solb_format = REF_FALSE;
   size_t end_of_string;
   REF_BOOL available;
-  REF_INT version, dim, nnode, ntype, type, next_position;
+  REF_INT version, dim, nnode, ntype, type;
 
   file = NULL;
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
@@ -1547,16 +1537,15 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
     if (strcmp(&filename[end_of_string - 5], ".solb") == 0)
       solb_format = REF_TRUE;
     if (solb_format) {
-      RSS(ref_dict_create(&ref_dict), "create dict");
-      RSS(ref_import_meshb_header(filename, &version, ref_dict), "head");
-      RSS(ref_import_meshb_jump(file, version, ref_dict, 3, &available,
+      RSS(ref_import_meshb_header(filename, &version, key_pos), "head");
+      RSS(ref_import_meshb_jump(file, version, key_pos, 3, &available,
                                 &next_position),
           "jump");
       RAS(available, "meshb missing dimension");
       REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
       REIS(3, dim, "only 3D supported");
 
-      RSS(ref_import_meshb_jump(file, version, ref_dict, 62, &available,
+      RSS(ref_import_meshb_jump(file, version, key_pos, 62, &available,
                                 &next_position),
           "jmp");
       RAS(available, "SolAtVertices missing");
@@ -1603,9 +1592,8 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
   ref_free(data);
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
-    if (solb_format) REIS(next_position, ftell(file), "end location");
+    if (solb_format) REIS(next_position, ftello(file), "end location");
     REIS(0, fclose(file), "close file");
-    if (solb_format) RSS(ref_dict_free(ref_dict), "free dict");
   }
   return REF_SUCCESS;
 }
