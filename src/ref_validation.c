@@ -275,7 +275,6 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_validation_all(REF_GRID ref_grid) {
-
   RSS(ref_validation_unused_node(ref_grid), "unused node");
   RSS(ref_validation_boundary_face(ref_grid), "boundary face");
   RSS(ref_validation_cell_face(ref_grid), "cell face");
@@ -284,4 +283,3 @@ REF_STATUS ref_validation_all(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-

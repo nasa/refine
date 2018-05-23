@@ -35,9 +35,9 @@ typedef off_t REF_FILEPOS;
 #define REF_IMPORT_MESHB_LAST_KEYWORD (156) /* 203-47 */
 REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
                                    REF_FILEPOS *key_pos);
-REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version, 
-                                 REF_FILEPOS *key_pos,
-                                 REF_INT keyword, REF_BOOL *available,
+REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
+                                 REF_FILEPOS *key_pos, REF_INT keyword,
+                                 REF_BOOL *available,
                                  REF_FILEPOS *next_position);
 
 END_C_DECLORATION

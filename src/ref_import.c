@@ -937,7 +937,8 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
   REF_INT keyword_code;
   REF_FILEPOS position, next_position, end_position;
 
-  for (keyword_code=0;keyword_code<REF_IMPORT_MESHB_LAST_KEYWORD;keyword_code++)
+  for (keyword_code = 0; keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD;
+       keyword_code++)
     key_pos[keyword_code] = REF_EMPTY;
 
   file = fopen(filename, "r");
@@ -960,9 +961,9 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
     position = next_position;
     REIS(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed");
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-    if ( 0 <= keyword_code && keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD) {
+    if (0 <= keyword_code && keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD) {
       key_pos[keyword_code] = position;
-    }else{
+    } else {
       printf("ignoring keyword %d\n", keyword_code);
     }
     RSS(meshb_pos(file, *version, &next_position), "pos");
@@ -973,13 +974,13 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
 }
 
 REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
-                                 REF_FILEPOS *key_pos,
-                                 REF_INT keyword, REF_BOOL *available,
+                                 REF_FILEPOS *key_pos, REF_INT keyword,
+                                 REF_BOOL *available,
                                  REF_FILEPOS *next_position) {
   REF_INT keyword_code;
   REF_FILEPOS position;
 
-  if ( keyword < 0 && REF_IMPORT_MESHB_LAST_KEYWORD <= keyword) {
+  if (keyword < 0 && REF_IMPORT_MESHB_LAST_KEYWORD <= keyword) {
     *available = REF_FALSE;
     *next_position = 0;
     return REF_INVALID;
