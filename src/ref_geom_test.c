@@ -88,13 +88,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_topo(ref_grid), "geom topo conflict");
     RSS(ref_geom_verify_param(ref_grid), "test constrained params");
     RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit metric");
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    printf("validate\n");
+    RSS(ref_validation_all(ref_grid), "validate");
     printf("constrain\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_geom_orig.tec"), "tec");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node)
         RSS(ref_geom_constrain(ref_grid, node), "original params");
     RSS(ref_geom_tec(ref_grid, "ref_geom_recon.tec"), "geom export");
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    printf("validate\n");
+    RSS(ref_validation_all(ref_grid), "validate");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_recon.meshb"), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -141,7 +143,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_tec(ref_grid, "ref_geom_test.tec"), "geom export");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "original validation");
-    RSS(ref_validation_cell_volume(ref_grid), "original volume");
     printf("verify\n");
     RSS(ref_geom_verify_param(ref_grid), "original params");
     printf("constrain\n");
@@ -152,7 +153,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "constrained params");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "constrained validation");
-    RSS(ref_validation_cell_volume(ref_grid), "constrained volume");
     RSS(ref_grid_free(ref_grid), "free");
   }
 

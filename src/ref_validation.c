@@ -26,14 +26,6 @@
 #include "ref_face.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_validation_all(REF_GRID ref_grid) {
-  RSS(ref_validation_cell_face(ref_grid), "cell face");
-  RSS(ref_validation_cell_node(ref_grid), "cell node valid");
-  RSS(ref_validation_unused_node(ref_grid), "unused node");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   REF_INT node;
   REF_BOOL problem;
@@ -281,3 +273,15 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_validation_all(REF_GRID ref_grid) {
+
+  RSS(ref_validation_unused_node(ref_grid), "unused node");
+  RSS(ref_validation_boundary_face(ref_grid), "boundary face");
+  RSS(ref_validation_cell_face(ref_grid), "cell face");
+  RSS(ref_validation_cell_node(ref_grid), "cell node");
+  RSS(ref_validation_cell_volume(ref_grid), "cell volume");
+
+  return REF_SUCCESS;
+}
+
