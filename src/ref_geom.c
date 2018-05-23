@@ -2114,14 +2114,14 @@ REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL max_length) {
+REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 #ifdef HAVE_EGADS
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, new_cell;
   REF_DBL param[2];
-  double params[3], size;
+  double size;
   ego geom;
   ego solid, tess;
   int tess_status, nvert;
@@ -2134,24 +2134,20 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL max_length) {
   solid = (ego)(ref_geom->solid);
 
   RSS(ref_geom_egads_diagonal(ref_geom, &size), "bbox diag");
+  printf("suggested params %f %f %f, size %e\n",
+         0.25*size, 0.001*size, 15.0, size);
+  printf("   actual params %f %f %f\n",
+         params[0],params[1],params[2]);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
-  if (max_length > 0.0) {
-    params[0] = max_length;
-  } else {
-    params[0] = ABS(max_length) * size;
-  }
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
-  params[1] = 0.001 * size;
   /* maximum interior dihedral angle (in degrees) */
-  params[2] = 15.0;
-  /* printf("params = %f,%f,%f\n",params[0],params[1],params[2]); */
 
-  if (REF_FALSE) { /* unlimited override to make coarse init grids */
-    params[0] = 1.0;
-    params[1] = 1.0;
-    params[2] = 180.0;
-  }
+  /* unlimited override to make coarse init grids
+     params[0] = 1.0;
+     params[1] = 1.0;
+     params[2] = 180.0;
+  */
 
   REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
@@ -2242,7 +2238,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL max_length) {
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-  SUPRESS_UNUSED_COMPILER_WARNING(max_length);
+  SUPRESS_UNUSED_COMPILER_WARNING(params);
 #endif
 
   return REF_SUCCESS;

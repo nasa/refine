@@ -121,19 +121,21 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_INT node;
     REF_INT nedge;
+    REF_DBL params[3];
 
     REIS(1, tess_pos,
-         "required args: --tess input.egads output.meshb [max_edge]");
-    RAS((4 == argc || 5 == argc),
-         "required args: --tess input.egads output.meshb [max_edge]");
+         "required args: --tess input.egads output.meshb edge chord angle");
+    REIS(7, argc,
+         "required args: --tess input.egads output.meshb edge chord angle");
 
-    REF_DBL max_edge = -0.25;
-    if (5 == argc) max_edge = atof(argv[4]);
+    params[0] = atof(argv[4]);
+    params[1] = atof(argv[5]);
+    params[2] = atof(argv[6]);
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
-    RSS(ref_geom_egads_tess(ref_grid, max_edge), "tess egads");
+    RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
     RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
