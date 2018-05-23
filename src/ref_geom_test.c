@@ -120,7 +120,6 @@ int main(int argc, char *argv[]) {
   if (tess_pos != REF_EMPTY) { /* egads to grid */
     REF_GRID ref_grid;
     REF_INT node;
-    REF_INT nedge;
     REF_DBL params[3];
 
     REIS(1, tess_pos,
@@ -140,32 +139,21 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test.tec"), "geom export");
+    printf("validate\n");
+    RSS(ref_validation_all(ref_grid), "original validation");
+    RSS(ref_validation_cell_volume(ref_grid), "original volume");
+    printf("verify\n");
     RSS(ref_geom_verify_param(ref_grid), "original params");
     printf("constrain\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node)
-        RSS(ref_geom_constrain(ref_grid, node), "original params");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_geom_constrain(ref_grid, node), "original params");
+    }
     printf("verify\n");
     RSS(ref_geom_verify_param(ref_grid), "constrained params");
-    nedge = ref_cell_n(ref_grid_edg(ref_grid));
-    printf("save %d edge\n", nedge);
-    RSS(ref_geom_save(ref_grid, "ref_geom_test.gas"), "save");
-    printf("clear\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node)
-        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "erasure");
-    RSS(ref_cell_free(ref_grid_edg(ref_grid)), "free edge");
-    RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "new edg");
-    printf("load\n");
-    RSS(ref_geom_load(ref_grid, "ref_geom_test.gas"), "load");
-    REIS(nedge, ref_cell_n(ref_grid_edg(ref_grid)), "nedge");
-    printf("verify\n");
-    RSS(ref_geom_verify_param(ref_grid), "loaded params");
-    printf("constrain\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node)
-        RSS(ref_geom_constrain(ref_grid, node), "original params");
-    printf("verify\n");
-    RSS(ref_geom_verify_param(ref_grid), "constrained params");
+    printf("validate\n");
+    RSS(ref_validation_all(ref_grid), "constrained validation");
+    RSS(ref_validation_cell_volume(ref_grid), "constrained volume");
     RSS(ref_grid_free(ref_grid), "free");
-    /* REIS(0, remove( "ref_geom_test.gas" ), "test clean up"); */
   }
 
   REIS(REF_NULL, ref_geom_free(NULL), "dont free NULL");

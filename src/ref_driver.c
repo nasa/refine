@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:p:o:s:cltd")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:cltd")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -115,10 +115,6 @@ int main(int argc, char *argv[]) {
         RNS(ref_grid, "input grid must be loaded before geom");
         ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) =
             atof(optarg);
-        break;
-      case 'p':
-        if (ref_mpi_para(ref_mpi)) RSS(REF_IMPLEMENT, "-p not parallel");
-        RSS(ref_geom_load(ref_grid, optarg), "load geom");
         break;
       case 'm':
         RSS(ref_part_metric(ref_grid_node(ref_grid), optarg), "part m");
@@ -150,7 +146,6 @@ int main(int argc, char *argv[]) {
         printf("       [-i input_grid.ext]\n");
         printf("       [-g geometry.egads]\n");
         printf("       [-r segments_per_curvature_radian]\n");
-        printf("       [-p parameterization-restart.gas]\n");
         printf(
             "       [-m input_project.{solb,sol,metric}] (curvature metric "
             "when missing)\n");
@@ -266,8 +261,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_tec_surf(ref_grid, output_filename), "surf tec");
     snprintf(output_filename, 1024, "%s_geom.tec", output_project);
     RSS(ref_geom_tec(ref_grid, output_filename), "geom tec");
-    snprintf(output_filename, 1024, "%s.gas", output_project);
-    RSS(ref_geom_save(ref_grid, output_filename), "geom tec");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tec");
   }
   if (debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi)) {
