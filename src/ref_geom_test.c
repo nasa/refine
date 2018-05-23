@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
   REF_INT assoc_pos = REF_EMPTY;
   REF_INT recon_pos = REF_EMPTY;
   REF_INT viz_pos = REF_EMPTY;
+  REF_INT tess_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -56,6 +57,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--recon", &recon_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--viz", &viz_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--tess", &tess_pos), REF_NOT_FOUND,
       "arg search");
 
   if (viz_pos != REF_EMPTY) {
@@ -102,8 +105,6 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REIS(5, argc,
          "required args: --assoc grid.ext input.gas grid_geom_assoc.meshb");
-    REIS(1, assoc_pos,
-         "required args: --assoc grid.ext input.gas grid_geom_assoc.meshb");
     printf("merge geometry association into meshb\n");
     printf("grid source %s\n", argv[2]);
     printf("geometry association source %s\n", argv[3]);
@@ -116,21 +117,26 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (3 == argc || 4 == argc) { /* egads to grid */
+  if (tess_pos != REF_EMPTY) { /* egads to grid */
     REF_GRID ref_grid;
     REF_INT node;
     REF_INT nedge;
 
+    REIS(1, tess_pos,
+         "required args: --tess input.egads output.meshb [max_edge]");
+    RAS((4 == argc || 5 == argc),
+         "required args: --tess input.egads output.meshb [max_edge]");
+
     REF_DBL max_edge = -0.25;
-    if (4 == argc) max_edge = atof(argv[3]);
+    if (5 == argc) max_edge = atof(argv[4]);
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
 
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[1]), "ld egads");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, max_edge), "tess egads");
     RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
 
-    RSS(ref_export_by_extension(ref_grid, argv[2]), "argv export");
+    RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test.tec"), "geom export");
     RSS(ref_geom_verify_param(ref_grid), "original params");
     printf("constrain\n");
