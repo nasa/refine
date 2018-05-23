@@ -1088,10 +1088,7 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       }
       i++;
     }
-    RSB(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb", {
-      ref_matrix_show_ab(9, 10, ab);
-      return REF_FAILURE;
-    });
+    RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
     j = 9;
     for (im = 0; im < 6; im++) {
       hessian[im + 6 * node0] = ab[im + 9 * j];
