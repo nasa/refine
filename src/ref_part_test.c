@@ -43,12 +43,12 @@
 #include "ref_sort.h"
 
 #include "ref_adapt.h"
-#include  "ref_smooth.h"
-#include   "ref_clump.h"
-#include   "ref_subdiv.h"
-#include   "ref_cavity.h"
-#include  "ref_split.h"
-#include  "ref_collapse.h"
+#include "ref_cavity.h"
+#include "ref_clump.h"
+#include "ref_collapse.h"
+#include "ref_smooth.h"
+#include "ref_split.h"
+#include "ref_subdiv.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     REIS(3, ref_part_large_part_size(10, 4), "large");
     REIS(2, ref_part_small_part_size(10, 4), "large");
     REIS(2, ref_part_n_large_part(10, 4), "large");
-    
+
     REIS(0, ref_part_first(10, 4, 0), "first");
     REIS(3, ref_part_first(10, 4, 1), "first");
     REIS(6, ref_part_first(10, 4, 2), "first");
@@ -184,13 +184,13 @@ int main(int argc, char *argv[]) {
 
     REIS(3, ref_part_implicit(10, 4, 8), "part");
     REIS(3, ref_part_implicit(10, 4, 9), "part");
-}
+  }
 
   { /* four parts: one with 3, three with 2 */
     REIS(3, ref_part_large_part_size(9, 4), "large");
     REIS(2, ref_part_small_part_size(9, 4), "large");
     REIS(1, ref_part_n_large_part(9, 4), "large");
-    
+
     REIS(0, ref_part_first(9, 4, 0), "first");
     REIS(3, ref_part_first(9, 4, 1), "first");
     REIS(5, ref_part_first(9, 4, 2), "first");
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
 
     REIS(2, ref_part_implicit(9, 4, 5), "part");
     REIS(2, ref_part_implicit(9, 4, 6), "part");
-    
+
     REIS(3, ref_part_implicit(9, 4, 7), "part");
     REIS(3, ref_part_implicit(9, 4, 8), "part");
   }
@@ -217,7 +217,7 @@ int main(int argc, char *argv[]) {
 
     REIS(63, ref_part_implicit(800, 64, 799), "part");
   }
-  
+
   { /* part b8.ugrid */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.b8.ugrid";
