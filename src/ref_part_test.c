@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one thing per part, equal things and parts */
-    REIS(1, ref_part_whole_part_size(4, 4), "first");
+    REIS(1, ref_part_whole_part_size(4, 4), "whole");
 
     REIS(0, ref_part_first(4, 4, 0), "first");
     REIS(1, ref_part_first(4, 4, 1), "first");
@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one thing per part, less things than parts */
-    REIS(1, ref_part_whole_part_size(2, 4), "first");
+    REIS(1, ref_part_whole_part_size(2, 4), "whole");
 
     REIS(0, ref_part_first(2, 4, 0), "first");
     REIS(1, ref_part_first(2, 4, 1), "first");
@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* two things per part, equal things and parts */
-    REIS(2, ref_part_whole_part_size(4, 2), "first");
+    REIS(2, ref_part_whole_part_size(4, 2), "whole");
 
     REIS(0, ref_part_first(4, 2, 0), "first");
     REIS(2, ref_part_first(4, 2, 1), "first");
@@ -121,7 +121,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* two things per part, less things than parts */
-    REIS(2, ref_part_whole_part_size(7, 4), "first");
+    REIS(2, ref_part_whole_part_size(7, 4), "whole");
 
     REIS(0, ref_part_first(7, 4, 0), "first");
     REIS(2, ref_part_first(7, 4, 1), "first");
@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one part */
-    REIS(4, ref_part_whole_part_size(4, 1), "first");
+    REIS(4, ref_part_whole_part_size(4, 1), "whole");
 
     REIS(0, ref_part_first(4, 1, 0), "first");
     REIS(4, ref_part_first(4, 1, 1), "first");
