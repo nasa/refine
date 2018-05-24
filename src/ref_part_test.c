@@ -80,7 +80,9 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one thing per part, equal things and parts */
-    REIS(1, ref_part_whole_part_size(4, 4), "whole");
+    REIS(1, ref_part_large_part_size(4, 4), "large");
+    REIS(0, ref_part_small_part_size(4, 4), "large");
+    REIS(4, ref_part_n_large_part(4, 4), "large");
 
     REIS(0, ref_part_first(4, 4, 0), "first");
     REIS(1, ref_part_first(4, 4, 1), "first");
@@ -95,7 +97,9 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one thing per part, less things than parts */
-    REIS(1, ref_part_whole_part_size(2, 4), "whole");
+    REIS(1, ref_part_large_part_size(2, 4), "large");
+    REIS(0, ref_part_small_part_size(2, 4), "large");
+    REIS(2, ref_part_n_large_part(2, 4), "large");
 
     REIS(0, ref_part_first(2, 4, 0), "first");
     REIS(1, ref_part_first(2, 4, 1), "first");
@@ -108,7 +112,9 @@ int main(int argc, char *argv[]) {
   }
 
   { /* two things per part, equal things and parts */
-    REIS(2, ref_part_whole_part_size(4, 2), "whole");
+    REIS(2, ref_part_large_part_size(4, 2), "large");
+    REIS(1, ref_part_small_part_size(4, 2), "large");
+    REIS(2, ref_part_n_large_part(4, 2), "large");
 
     REIS(0, ref_part_first(4, 2, 0), "first");
     REIS(2, ref_part_first(4, 2, 1), "first");
@@ -121,7 +127,9 @@ int main(int argc, char *argv[]) {
   }
 
   { /* two things per part, less things than parts */
-    REIS(2, ref_part_whole_part_size(7, 4), "whole");
+    REIS(2, ref_part_large_part_size(7, 4), "large");
+    REIS(1, ref_part_small_part_size(7, 4), "large");
+    REIS(3, ref_part_n_large_part(7, 4), "large");
 
     REIS(0, ref_part_first(7, 4, 0), "first");
     REIS(2, ref_part_first(7, 4, 1), "first");
@@ -139,7 +147,9 @@ int main(int argc, char *argv[]) {
   }
 
   { /* one part */
-    REIS(4, ref_part_whole_part_size(4, 1), "whole");
+    REIS(4, ref_part_large_part_size(4, 1), "large");
+    REIS(3, ref_part_small_part_size(4, 1), "large");
+    REIS(1, ref_part_n_large_part(4, 1), "large");
 
     REIS(0, ref_part_first(4, 1, 0), "first");
     REIS(4, ref_part_first(4, 1, 1), "first");
@@ -150,6 +160,64 @@ int main(int argc, char *argv[]) {
     REIS(0, ref_part_implicit(4, 1, 3), "part");
   }
 
+  { /* four parts: two with 3, two with 2 */
+    REIS(3, ref_part_large_part_size(10, 4), "large");
+    REIS(2, ref_part_small_part_size(10, 4), "large");
+    REIS(2, ref_part_n_large_part(10, 4), "large");
+    
+    REIS(0, ref_part_first(10, 4, 0), "first");
+    REIS(3, ref_part_first(10, 4, 1), "first");
+    REIS(6, ref_part_first(10, 4, 2), "first");
+    REIS(8, ref_part_first(10, 4, 3), "first");
+    REIS(10, ref_part_first(10, 4, 4), "first");
+
+    REIS(0, ref_part_implicit(10, 4, 0), "part");
+    REIS(0, ref_part_implicit(10, 4, 1), "part");
+    REIS(0, ref_part_implicit(10, 4, 2), "part");
+
+    REIS(1, ref_part_implicit(10, 4, 3), "part");
+    REIS(1, ref_part_implicit(10, 4, 4), "part");
+    REIS(1, ref_part_implicit(10, 4, 5), "part");
+
+    REIS(2, ref_part_implicit(10, 4, 6), "part");
+    REIS(2, ref_part_implicit(10, 4, 7), "part");
+
+    REIS(3, ref_part_implicit(10, 4, 8), "part");
+    REIS(3, ref_part_implicit(10, 4, 9), "part");
+}
+
+  { /* four parts: one with 3, three with 2 */
+    REIS(3, ref_part_large_part_size(9, 4), "large");
+    REIS(2, ref_part_small_part_size(9, 4), "large");
+    REIS(1, ref_part_n_large_part(9, 4), "large");
+    
+    REIS(0, ref_part_first(9, 4, 0), "first");
+    REIS(3, ref_part_first(9, 4, 1), "first");
+    REIS(5, ref_part_first(9, 4, 2), "first");
+    REIS(7, ref_part_first(9, 4, 3), "first");
+    REIS(9, ref_part_first(9, 4, 4), "first");
+
+    REIS(0, ref_part_implicit(9, 4, 0), "part");
+    REIS(0, ref_part_implicit(9, 4, 1), "part");
+    REIS(0, ref_part_implicit(9, 4, 2), "part");
+
+    REIS(1, ref_part_implicit(9, 4, 3), "part");
+    REIS(1, ref_part_implicit(9, 4, 4), "part");
+
+    REIS(2, ref_part_implicit(9, 4, 5), "part");
+    REIS(2, ref_part_implicit(9, 4, 6), "part");
+    
+    REIS(3, ref_part_implicit(9, 4, 7), "part");
+    REIS(3, ref_part_implicit(9, 4, 8), "part");
+  }
+  { /* 800 things on 64 parts */
+    REIS(13, ref_part_large_part_size(800, 64), "large");
+    REIS(12, ref_part_small_part_size(800, 64), "large");
+    REIS(32, ref_part_n_large_part(800, 64), "large");
+
+    REIS(63, ref_part_implicit(800, 64, 799), "part");
+  }
+  
   { /* part b8.ugrid */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.b8.ugrid";

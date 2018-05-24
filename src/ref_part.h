@@ -27,18 +27,45 @@
 
 BEGIN_C_DECLORATION
 
-/* find the size of whole parts: integer divide, round up */
-#define ref_part_whole_part_size(total_things, total_parts)     \
+/* find the size of large parts: integer divide, round up */
+#define ref_part_large_part_size(total_things, total_parts)     \
   ( ((total_things)+(total_parts)-1) / (total_parts) )
+
+/* find the size of small parts: integer divide, round off */
+#define ref_part_small_part_size(total_things, total_parts)     \
+  ( ((total_things)-1) / (total_parts) )
+
+/* find the number of large parts: remainder after filling small parts */
+#define ref_part_n_large_part(total_things, total_parts)                \
+  ((total_things) - (total_parts)*ref_part_small_part_size(total_things, total_parts))
 
 /* first thing index on a part, valid for 0 to nparts (returns total_things) */
 #define ref_part_first(total_things, total_parts, part)               \
-  (MIN( ref_part_whole_part_size(total_things, total_parts) * (part), \
-        (total_things)))
+  ((part) < ref_part_n_large_part(total_things, total_parts) ? \
+   (part) * ref_part_large_part_size(total_things, total_parts) : \
+   ((part) - ref_part_n_large_part(total_things, total_parts)) *\
+   ref_part_small_part_size(total_things, total_parts) + \
+   ( ref_part_n_large_part(total_things, total_parts) * \
+     ref_part_large_part_size(total_things, total_parts) ) )
+
+#define ref_part_large_implicit(total_things, total_parts, thing)       \
+  ((thing) / ref_part_large_part_size(total_things, total_parts))
+
+#define ref_part_total_large(total_things, total_parts)       \
+  ( ref_part_n_large_part(total_things, total_parts) *        \
+    ref_part_large_part_size(total_things, total_parts) )
+
+#define ref_part_small_implicit(total_things, total_parts, thing)       \
+  (((thing)-ref_part_total_large(total_things, total_parts)) /          \
+   ref_part_small_part_size(total_things, total_parts) +                \
+   ref_part_n_large_part(total_things, total_parts))
 
 /* part id for a thing */
-#define ref_part_implicit(total_things, total_parts, thing)     \
-  ((thing) / ref_part_whole_part_size(total_things, total_parts))
+#define ref_part_implicit(total_things, total_parts, thing)         \
+  ( (thing) / ref_part_large_part_size(total_things, total_parts) < \
+    ref_part_n_large_part(total_things, total_parts) ?              \
+    ref_part_large_implicit(total_things, total_parts, thing)  :    \
+    ref_part_small_implicit(total_things, total_parts, thing) )
 
 REF_STATUS ref_part_by_extension(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                  const char *filename);
