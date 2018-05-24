@@ -42,6 +42,14 @@
 #include "ref_migrate.h"
 #include "ref_sort.h"
 
+#include "ref_adapt.h"
+#include  "ref_smooth.h"
+#include   "ref_clump.h"
+#include   "ref_subdiv.h"
+#include   "ref_cavity.h"
+#include  "ref_split.h"
+#include  "ref_collapse.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
