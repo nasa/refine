@@ -79,56 +79,56 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  { /* one even */
+  { /* one thing per part, equal things and parts */
+    REIS(1, ref_part_whole_part_size(4, 4), "first");
+
     REIS(0, ref_part_first(4, 4, 0), "first");
     REIS(1, ref_part_first(4, 4, 1), "first");
     REIS(2, ref_part_first(4, 4, 2), "first");
     REIS(3, ref_part_first(4, 4, 3), "first");
     REIS(4, ref_part_first(4, 4, 4), "first");
-  }
 
-  { /* one run out */
-    REIS(0, ref_part_first(2, 4, 0), "first");
-    REIS(1, ref_part_first(2, 4, 1), "first");
-    REIS(2, ref_part_first(2, 4, 2), "first");
-    REIS(2, ref_part_first(2, 4, 3), "first");
-    REIS(2, ref_part_first(2, 4, 4), "first");
-  }
-
-  { /* two run out */
-    REIS(0, ref_part_first(7, 4, 0), "first");
-    REIS(2, ref_part_first(7, 4, 1), "first");
-    REIS(4, ref_part_first(7, 4, 2), "first");
-    REIS(6, ref_part_first(7, 4, 3), "first");
-    REIS(7, ref_part_first(7, 4, 4), "first");
-  }
-
-  { /* two even */
-    REIS(0, ref_part_first(4, 2, 0), "first");
-    REIS(2, ref_part_first(4, 2, 1), "first");
-    REIS(4, ref_part_first(4, 2, 2), "first");
-  }
-
-  { /* single */
-    REIS(0, ref_part_implicit(4, 1, 0), "part");
-    REIS(0, ref_part_implicit(4, 1, 1), "part");
-    REIS(0, ref_part_implicit(4, 1, 2), "part");
-    REIS(0, ref_part_implicit(4, 1, 3), "part");
-  }
-
-  { /* one even */
     REIS(0, ref_part_implicit(4, 4, 0), "part");
     REIS(1, ref_part_implicit(4, 4, 1), "part");
     REIS(2, ref_part_implicit(4, 4, 2), "part");
     REIS(3, ref_part_implicit(4, 4, 3), "part");
   }
 
-  { /* one run out */
+  { /* one thing per part, less things than parts */
+    REIS(1, ref_part_whole_part_size(2, 4), "first");
+
+    REIS(0, ref_part_first(2, 4, 0), "first");
+    REIS(1, ref_part_first(2, 4, 1), "first");
+    REIS(2, ref_part_first(2, 4, 2), "first");
+    REIS(2, ref_part_first(2, 4, 3), "first");
+    REIS(2, ref_part_first(2, 4, 4), "first");
+
     REIS(0, ref_part_implicit(2, 4, 0), "part");
     REIS(1, ref_part_implicit(2, 4, 1), "part");
   }
 
-  { /* two run out */
+  { /* two things per part, equal things and parts */
+    REIS(2, ref_part_whole_part_size(4, 2), "first");
+
+    REIS(0, ref_part_first(4, 2, 0), "first");
+    REIS(2, ref_part_first(4, 2, 1), "first");
+    REIS(4, ref_part_first(4, 2, 2), "first");
+
+    REIS(0, ref_part_implicit(4, 2, 0), "part");
+    REIS(0, ref_part_implicit(4, 2, 1), "part");
+    REIS(1, ref_part_implicit(4, 2, 2), "part");
+    REIS(1, ref_part_implicit(4, 2, 3), "part");
+  }
+
+  { /* two things per part, less things than parts */
+    REIS(2, ref_part_whole_part_size(7, 4), "first");
+
+    REIS(0, ref_part_first(7, 4, 0), "first");
+    REIS(2, ref_part_first(7, 4, 1), "first");
+    REIS(4, ref_part_first(7, 4, 2), "first");
+    REIS(6, ref_part_first(7, 4, 3), "first");
+    REIS(7, ref_part_first(7, 4, 4), "first");
+
     REIS(0, ref_part_implicit(7, 4, 0), "part");
     REIS(0, ref_part_implicit(7, 4, 1), "part");
     REIS(1, ref_part_implicit(7, 4, 2), "part");
@@ -138,11 +138,16 @@ int main(int argc, char *argv[]) {
     REIS(3, ref_part_implicit(7, 4, 6), "part");
   }
 
-  { /* two even */
-    REIS(0, ref_part_implicit(4, 2, 0), "part");
-    REIS(0, ref_part_implicit(4, 2, 1), "part");
-    REIS(1, ref_part_implicit(4, 2, 2), "part");
-    REIS(1, ref_part_implicit(4, 2, 3), "part");
+  { /* one part */
+    REIS(4, ref_part_whole_part_size(4, 1), "first");
+
+    REIS(0, ref_part_first(4, 1, 0), "first");
+    REIS(4, ref_part_first(4, 1, 1), "first");
+
+    REIS(0, ref_part_implicit(4, 1, 0), "part");
+    REIS(0, ref_part_implicit(4, 1, 1), "part");
+    REIS(0, ref_part_implicit(4, 1, 2), "part");
+    REIS(0, ref_part_implicit(4, 1, 3), "part");
   }
 
   { /* part b8.ugrid */

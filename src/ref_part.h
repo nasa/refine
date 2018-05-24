@@ -27,11 +27,18 @@
 
 BEGIN_C_DECLORATION
 
-#define ref_part_first(total_things, total_parts, part) \
-  (MIN(((((total_things)-1) / (total_parts)) + 1) * (part), (total_things)))
+/* find the size of whole parts: integer divide, round up */
+#define ref_part_whole_part_size(total_things, total_parts)     \
+  ( ((total_things)+(total_parts)-1) / (total_parts) )
 
-#define ref_part_implicit(total_things, total_parts, thing) \
-  ((thing) / ((((total_things)-1) / (total_parts)) + 1))
+/* first thing index on a part, valid for 0 to nparts (returns total_things) */
+#define ref_part_first(total_things, total_parts, part)               \
+  (MIN( ref_part_whole_part_size(total_things, total_parts) * (part), \
+        (total_things)))
+
+/* part id for a thing */
+#define ref_part_implicit(total_things, total_parts, thing)     \
+  ((thing) / ref_part_whole_part_size(total_things, total_parts))
 
 REF_STATUS ref_part_by_extension(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                  const char *filename);
