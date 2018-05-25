@@ -7,6 +7,7 @@ set -x
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-7.2.0/zoltan-3.83-xxyq2a3qxwtcrdt3otmiflhgqaz7gial"
 egads_path="/Users/mpark/esp/EngSketchPad"
 gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
+parmetis_path="/Users/mpark/local/pkgs/parmetis-fake"
 
 # set DYLD_LIBRARY_PATH for libzoltan.dylib
 
@@ -36,6 +37,19 @@ mkdir -p zoltan
     ../configure \
     --prefix=`pwd` \
     --with-zoltan=${zoltan_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CC=mpicc \
+    FC=mpif90 \
+    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    ) \
+    || exit
+
+mkdir -p parmetis
+( cd parmetis && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
