@@ -41,6 +41,8 @@
 #include "ref_mpi.h"
 #include "ref_part.h"
 
+#include "ref_malloc.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -155,6 +157,16 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_para(split_mpi)) {
       snprintf(tec_file, 1024, "ref_migrate_bal_%d.tec", ref_mpi_rank(ref_mpi));
       RSS(ref_gather_tec_part(import_grid, tec_file), "tec part");
+    }
+
+    {
+      REF_INT *global, group;
+      REF_CELL ref_cell;
+      each_ref_grid_ref_cell(import_grid, group, ref_cell) {
+        RSS(ref_cell_global(ref_cell, ref_grid_node(import_grid), &global),
+            "cell global");
+        ref_free(global);
+      }
     }
 
     RSS(ref_grid_free(import_grid), "free");
