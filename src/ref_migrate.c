@@ -633,36 +633,35 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
     ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
-    if (REF_FALSE)
-      {
-        FILE *f;
-        char name[1024];
-        REF_INT i;
-        sprintf(name, "par-%d-%d.adj",
-                ref_mpi_n(ref_mpi),
-                ref_mpi_rank(ref_mpi));
-        f = fopen(name, "w");
-        if (NULL == (void *)f) printf("unable to open %s\n", name);
-        RNS(name, "unable to open file");
+    if (REF_FALSE) {
+      FILE *f;
+      char name[1024];
+      REF_INT i;
+      sprintf(name, "par-%d-%d.adj", ref_mpi_n(ref_mpi), ref_mpi_rank(ref_mpi));
+      f = fopen(name, "w");
+      if (NULL == (void *)f) printf("unable to open %s\n", name);
+      RNS(name, "unable to open file");
 
-        for(i=0;i<ref_mpi_n(ref_mpi)+1;i++) {
-          fprintf(f,"%d: vtxdist[%d] = %d\n",ref_mpi_rank(ref_mpi),i,vtxdist[i]);
-        }
-        for(i=0;i<n+1;i++) {
-          fprintf(f,"%d: xadj[%d] = %d\n",ref_mpi_rank(ref_mpi),i,xadj[i]);
-        }
-        for(i=0;i<xadj[n];i++) {
-          fprintf(f,"%d: xadjncy[%d] = %d\n",
-                  ref_mpi_rank(ref_mpi),i,xadjncy[i]);
-        }
-        for(i=0;i<ref_mpi_n(ref_mpi);i++) {
-          fprintf(f,"%d: tpwgts[%d] = %f\n",ref_mpi_rank(ref_mpi),i,tpwgts[i]);
-        }
-        for(i=0;i<ref_mpi_n(ref_mpi);i++) {
-          fprintf(f,"%d: ubvec[%d] = %f\n",ref_mpi_rank(ref_mpi),i,ubvec[i]);
-        }
-        fclose(f);
+      for (i = 0; i < ref_mpi_n(ref_mpi) + 1; i++) {
+        fprintf(f, "%d: vtxdist[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
+                vtxdist[i]);
       }
+      for (i = 0; i < n + 1; i++) {
+        fprintf(f, "%d: xadj[%d] = %d\n", ref_mpi_rank(ref_mpi), i, xadj[i]);
+      }
+      for (i = 0; i < xadj[n]; i++) {
+        fprintf(f, "%d: xadjncy[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
+                xadjncy[i]);
+      }
+      for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+        fprintf(f, "%d: tpwgts[%d] = %f\n", ref_mpi_rank(ref_mpi), i,
+                tpwgts[i]);
+      }
+      for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+        fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
+      }
+      fclose(f);
+    }
 
 #if PARMETIS_MAJOR_VERSION == 3
     REIS(METIS_OK,
