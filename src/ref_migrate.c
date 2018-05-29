@@ -668,13 +668,14 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
                               (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
-                              tpwgts, ubvec, options, edgecut, part, &comm);
+                              tpwgts, ubvec, options, edgecut, part, &comm),
+         "ParMETIS 3 is not o.k.";
 #else
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
                               (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
                               tpwgts, ubvec, options, edgecut, part, &comm),
-         "ParMETIS is not o.k.");
+         "ParMETIS 4 is not o.k.");
 #endif
 
     /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
