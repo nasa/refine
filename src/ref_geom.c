@@ -1907,6 +1907,10 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_DBL xyz[3], dist;
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
+
+  printf("%d surface nodes %d triangles\n",
+         ref_node_n(ref_node), ref_cell_n(ref_grid_tri(ref_grid)));
+
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
   sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
