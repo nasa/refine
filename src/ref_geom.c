@@ -1425,6 +1425,7 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   REF_INT i;
   ego *nodes, *edges, *faces;
   ego object;
+  int status;
   if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   params[0] = 0.0;
   params[1] = 0.0;
@@ -1470,7 +1471,14 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
       RSS(REF_IMPLEMENT, "unknown geom");
   }
 
-  REIS(EGADS_SUCCESS, EG_evaluate(object, params, eval), "eval");
+  status = EG_evaluate(object, params, eval);
+  if (EGADS_SUCCESS != status) {
+    printf("geom %d type %d id %d\n",
+           geom,ref_geom_type(ref_geom, geom),ref_geom_id(ref_geom, geom));
+    if (ref_geom_type(ref_geom, geom) > 0) printf("param[0] = %f\n",params[0]);
+    if (ref_geom_type(ref_geom, geom) > 1) printf("param[1] = %f\n",params[1]);
+    REIS(EGADS_SUCCESS, status, "eval");
+  }
   xyz[0] = eval[0];
   xyz[1] = eval[1];
   xyz[2] = eval[2];
