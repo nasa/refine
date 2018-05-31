@@ -1,4 +1,8 @@
 
+driver code to eval c25d geom
+
+debug info on egads eval fail
+
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 implement grid CM
