@@ -1473,10 +1473,18 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
 
   status = EG_evaluate(object, params, eval);
   if (EGADS_SUCCESS != status) {
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double trange[2];
     printf("geom %d type %d id %d\n",
            geom,ref_geom_type(ref_geom, geom),ref_geom_id(ref_geom, geom));
     if (ref_geom_type(ref_geom, geom) > 0) printf("param[0] = %f\n",params[0]);
     if (ref_geom_type(ref_geom, geom) > 1) printf("param[1] = %f\n",params[1]);
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                        &pchldrn, &psens),
+         "EG topo node");
+    printf("trange %f %f\n",trange[0],trange[1]);
     REIS(EGADS_SUCCESS, status, "eval");
   }
   xyz[0] = eval[0];
