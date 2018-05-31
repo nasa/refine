@@ -15,7 +15,7 @@ module load intel.2017.2.174
 module load git # for git describe
 
 module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
-module load ESP/112
+module load ESP/113
 
 module load valgrind_3.13.0
 
@@ -26,7 +26,7 @@ module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 
-egads_path=/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/112/EngSketchPad
+egads_path=/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/113/EngSketchPad
 
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
