@@ -22,7 +22,7 @@ In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
 an implementation of the Lp-norm metric is provided.
 ```
-./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb
+./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb [--kexact]
 ```
 Where,
  - `project.meshb` is the grid in libMeshb format
@@ -31,6 +31,8 @@ Where,
  - `1.5` is the gradation limit
  - `3.e4` is the complexity
  - `project-metric.solb` is the output metric in libMeshb format
+ - use (sequential only) k-exact Hessian reconstruction with --kexact,
+   otherwise default to L2-projection Hessian reconstruction
 
 See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
 for details on the libMeshb format.
@@ -52,3 +54,14 @@ for details on the libMeshb format.
 Histograms are written as `ref_histogram_quality.tec` and
 `ref_histogram_ratio.tec`, where each of the two the columns are
 mean ratio/edge length and normalized count.  
+
+# Grid Adaptation
+```
+./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -o output-project
+```
+Where,
+ - `-i project.meshb` is the grid in libMeshb format
+ - `-m project-metric.solb` is the metric in libMeshb format
+ - `-g project.egads` is optional geometry (when compiled with EGADS)
+ - `-o output-project` is the output mesh, i.e., output-project.meshb
+
