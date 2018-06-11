@@ -29,7 +29,7 @@ Where,
  - `project-mach.solb` is a scalar field (Mach number) in libMeshb format
  - `2` is the norm order
  - `1.5` is the gradation limit
- - `3.e4` is the complexity
+ - `3.e4` is the complexity (C), where the new mesh will have approximately 2C vertices and 12C tetrahedra
  - `project-metric.solb` is the output metric in libMeshb format
  - use (sequential only) k-exact Hessian reconstruction with --kexact,
    otherwise default to L2-projection Hessian reconstruction
