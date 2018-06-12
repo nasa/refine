@@ -14,7 +14,7 @@ module load openmpi_1.10.2_intel_2017
 module load intel.2017.2.174
 module load git # for git describe
 
-# now uses rpath
+# should not be necessary with rpath (rpath works with gcc, not intel)
 # module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
 # module load ESP/113
 
@@ -79,9 +79,8 @@ ${source_dir}/configure \
     --prefix=${egads_dir} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS='-g -O2 -traceback -Wall -ftrapuv' \
-    CC=mpicc \
-    FC=mpif90  > $LOG 2>&1
+    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    FC=gfortran  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.egads-make
