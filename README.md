@@ -15,7 +15,20 @@ If you checked out the repository with git,
  make
  make install
 ```
-See the INSTALL file for further build instructions.
+See the INSTALL file for further build instructions. Here are some examples:
+to include MPI,
+```
+../configure --with-zoltan=/zoltan/path CC=mpicc FC=mpif90 CFLAGS='-DHAVE_MPI'
+```
+to include EGADS,
+```
+../configure --with-EGADS=/egads/path --with-OpenCASCADE=/opencascade/path
+```
+to include EGADSlite,
+```
+../configure --with-EGADS=/egads/path --enable-lite
+```
+These can be combined, e.g., MPI+EGADSlite
 
 # Metric for Control of Interpolation Error in Lp-norm
 In conjunction with the
