@@ -9,7 +9,7 @@ set +x # echo commands
 
 date
 
-module load gcc_4.9.1_64
+module load gcc_6.2.0
 module load openmpi_1.10.2_intel_2017
 module load intel.2017.2.174
 module load git # for git describe
