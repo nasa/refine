@@ -323,7 +323,7 @@ then
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.a],
                 [opencascade_a_path=$with_OpenCASCADE/lib],[opencascade_a_path='no'])
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.so],
-                [opencascade_so_path=$with_opencascade/lib],[opencascade_so_path='no'])
+                [opencascade_so_path=$with_OpenCASCADE/lib],[opencascade_so_path='no'])
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.dylib],
                 [opencascade_dylib_path=$with_OpenCASCADE/lib],[opencascade_dylib_path='no'])
 
