@@ -8,6 +8,7 @@ module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 egads_path="${module_path}/ESP/113/EngSketchPad"
+opencascade_path="${module_path}/ESP/113/OpenCASCADE-6.8.1/Linux"
 
 mkdir -p strict
 ( cd strict && \
@@ -23,6 +24,7 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
+    --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
     FC=gfortran \
     ) \

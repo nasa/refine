@@ -143,11 +143,11 @@ then
   zoltan_ldadd=""
   if test "$zoltan_a_path" != 'no'
   then
-      zoltan_ldadd="-L$zoltan_a_path -lzoltan"
+      zoltan_ldadd="-L${zoltan_a_path} -lzoltan"
   fi
   if test "$zoltan_so_path" != 'no'
   then
-      zoltan_ldadd="-L$zoltan_so_path -lzoltan"
+      zoltan_ldadd="-Wl,-rpath,${zoltan_so_path} -L${zoltan_so_path} -lzoltan"
   fi
   if test "$zoltan_dylib_path" != 'no'
   then
@@ -230,11 +230,11 @@ then
   parmetis_ldadd=""
     if test "$parmetis_a_path" != 'no'
   then
-      parmetis_ldadd="-L$parmetis_a_path -lparmetis ${metis_ldadd}"
+      parmetis_ldadd="-L${parmetis_a_path} -lparmetis ${metis_ldadd}"
   fi
   if test "$parmetis_so_path" != 'no'
   then
-      parmetis_ldadd="-L$parmetis_so_path -lparmetis ${metis_ldadd}"
+      parmetis_ldadd="-Wl,-rpath,${parmetis_so_path} -L${parmetis_so_path} -lparmetis ${metis_ldadd}"
   fi
   if test "$parmetis_dylib_path" != 'no'
   then
@@ -254,7 +254,7 @@ else
 fi
 
 AC_ARG_ENABLE(lite,
-        [[  --enable-lite build with EGADS lite [no]]],
+        [[  --enable-lite build with EGADSlite [no]]],
         [egadslite=$enableval],[egadslite="no"])
 
 AC_ARG_WITH(EGADS,
@@ -263,28 +263,53 @@ AC_ARG_WITH(EGADS,
 
 if test "$with_egads" != 'no'
 then
+  if test "$egadslite" != 'no'
+  then
+    egads_lib_root="egadslite"
+  else
+    egads_lib_root="egads"
+  fi
+
   AC_CHECK_FILE([$with_egads/include/egads.h],
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
 
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.a],
+                [egads_a_path=$with_egads/lib],[egads_a_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.so],
+                [egads_so_path=$with_egads/lib],[egads_so_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
+                [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
+
   if test "$egads_h_path" != 'no'
-  then	  
+  then
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
-    egads_lib="-legads"
     if test "$egadslite" != 'no'
     then
-    AC_DEFINE([HAVE_EGADS_LITE],[1],[EGADS is available in lite form])
-      egads_lib="-legadslite"
+      AC_DEFINE([HAVE_EGADS_LITE],[1],[EGADS is available in lite form])
     fi
     egads_include="-I${egads_h_path}"
-    egads_lib_path="${with_egads}/lib"
-    egads_ldadd="-L${egads_lib_path} ${egads_lib}"
-    if (uname -s | grep Darwin) > /dev/null 2>&1
-    then
-      egads_ldadd="-Wl,-rpath,${egads_lib_path} ${egads_ldadd}"
-    fi
   else
-    AC_MSG_ERROR([egads.h not found in $with_egads/include])
+    AC_MSG_ERROR([egads.h not found in ${with_egads}/include])
   fi
+
+  egads_ldadd=""
+  if test "$egads_a_path" != 'no'
+  then
+      egads_ldadd="-L${egads_a_path} -l${egads_lib_root}"
+  fi
+  if test "$egads_so_path" != 'no'
+  then
+      egads_ldadd="-Wl,-rpath,${egads_so_path} -L${egads_so_path} -l${egads_lib_root}"
+  fi
+  if test "$egads_dylib_path" != 'no'
+  then
+      egads_ldadd="-Wl,-rpath,${egads_dylib_path} -L${egads_dylib_path} -l${egads_lib_root}"
+  fi
+  if test "empty$egads_ldadd" == 'empty'
+  then
+    AC_MSG_ERROR([lib${egads_lib_root}.{a,so,dylib} not found in $with_egads/lib])
+  fi
+
   AC_SUBST([egads_include])
   AC_SUBST([egads_ldadd])
 fi
