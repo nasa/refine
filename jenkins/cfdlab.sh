@@ -14,8 +14,9 @@ module load openmpi_1.10.2_intel_2017
 module load intel.2017.2.174
 module load git # for git describe
 
-module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
-module load ESP/113
+# now uses rpath
+# module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
+# module load ESP/113
 
 module load valgrind_3.13.0
 
@@ -26,7 +27,8 @@ module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 
-egads_path=/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/113/EngSketchPad
+egads_path="${module_path}/ESP/113/EngSketchPad"
+opencascade_path="${module_path}/ESP/113/OpenCASCADE-6.8.1/Linux"
 
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
@@ -76,6 +78,7 @@ trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${egads_dir} \
     --with-EGADS=${egads_path} \
+    --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -traceback -Wall -ftrapuv' \
     CC=mpicc \
     FC=mpif90  > $LOG 2>&1
