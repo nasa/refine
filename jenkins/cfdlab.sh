@@ -28,7 +28,7 @@ parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 
 egads_path="${module_path}/ESP/113/EngSketchPad"
-opencascade_path="${module_path}/ESP/113/OpenCASCADE-6.8.1/Linux"
+opencascade_path="${module_path}/ESP/113/OpenCASCADE-6.8.1/lin64/gcc"
 
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
