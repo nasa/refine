@@ -330,11 +330,11 @@ then
   opencascade_ldadd=""
   if test "$opencascade_a_path" != 'no'
   then
-      opencascade_ldadd="-L$opencascade_a_path"
+      opencascade_ldadd="-L${opencascade_a_path}"
   fi
   if test "$opencascade_so_path" != 'no'
   then
-      opencascade_ldadd="-L$opencascade_so_path"
+      opencascade_ldadd="-Wl,-rpath,${opencascade_so_path} -L${opencascade_so_path}"
   fi
   if test "$opencascade_dylib_path" != 'no'
   then
