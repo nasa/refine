@@ -163,7 +163,7 @@ then
 fi
 
 AC_ARG_WITH(parmetis,
-	[  --with-parmetis[=ARG]       use ParMETIS partitioner [ARG=no]],
+	[  --with-parmetis[=ARG]     use ParMETIS partitioner [ARG=no]],
 	[with_parmetis=$withval],        [with_parmetis="no"])
 
 if test "$with_parmetis" != 'no'
@@ -258,7 +258,7 @@ AC_ARG_ENABLE(lite,
         [egadslite=$enableval],[egadslite="no"])
 
 AC_ARG_WITH(EGADS,
-	[  --with-EGADS[=ARG]      use EGADS package [ARG=no]],
+	[  --with-EGADS[=ARG]        use EGADS package [ARG=no]],
 	[with_egads=$withval],     [with_egads="no"])
 
 if test "$with_egads" != 'no'
@@ -315,7 +315,7 @@ then
 fi
 
 AC_ARG_WITH(OpenCASCADE,
-	[  --with-OpenCASCADE[=ARG]         use OpenCASCADE CAD Kernel [ARG=no]],
+	[  --with-OpenCASCADE[=ARG]  use OpenCASCADE CAD Kernel [ARG=no]],
 	[with_OpenCASCADE=$withval],        [with_OpenCASCADE="no"])
 
 if test "$with_OpenCASCADE" != 'no'
