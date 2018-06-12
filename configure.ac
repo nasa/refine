@@ -320,7 +320,6 @@ then
     AC_MSG_ERROR([libTKernel.{a,so,dylib} for OpenCASCADE not found in $with_OpenCASCADE/lib])
   fi
 
-  AC_SUBST([opencascade_include])
   AC_SUBST([opencascade_ldadd])
 fi
 
