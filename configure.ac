@@ -289,6 +289,41 @@ then
   AC_SUBST([egads_ldadd])
 fi
 
+AC_ARG_WITH(OpenCASCADE,
+	[  --with-OpenCASCADE[=ARG]         use OpenCASCADE CAD Kernel [ARG=no]],
+	[with_OpenCASCADE=$withval],        [with_OpenCASCADE="no"])
+
+if test "$with_OpenCASCADE" != 'no'
+then
+  AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.a],
+                [opencascade_a_path=$with_OpenCASCADE/lib],[opencascade_a_path='no'])
+  AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.so],
+                [OpenCASCADE_so_path=$with_opencascade/lib],[OpenCASCADE_so_path='no'])
+  AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.dylib],
+                [opencascade_dylib_path=$with_OpenCASCADE/lib],[opencascade_dylib_path='no'])
+
+  opencascade_ldadd=""
+  if test "$opencascade_a_path" != 'no'
+  then
+      opencascade_ldadd="-L$opencascade_a_path"
+  fi
+  if test "$opencascade_so_path" != 'no'
+  then
+      opencascade_ldadd="-L$opencascade_so_path"
+  fi
+  if test "$opencascade_dylib_path" != 'no'
+  then
+      opencascade_ldadd="-Wl,-rpath,${opencascade_dylib_path} -L${opencascade_dylib_path}"
+  fi
+  if test "empty$opencascade_ldadd" == 'empty'
+  then
+    AC_MSG_ERROR([libTKernel.{a,so,dylib} for OpenCASCADE not found in $with_OpenCASCADE/lib])
+  fi
+
+  AC_SUBST([opencascade_include])
+  AC_SUBST([opencascade_ldadd])
+fi
+
 AC_CONFIG_FILES( \
 	   Makefile \
 	   src/Makefile \
