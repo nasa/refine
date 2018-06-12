@@ -76,5 +76,5 @@ Where,
  - `-i project.meshb` is the grid in libMeshb format
  - `-m project-metric.solb` is the metric in libMeshb format
  - `-g project.egads` is optional geometry (when compiled with EGADS)
- - `-o output-project` is the output mesh, i.e., output-project.meshb
+ - `-o output-project` is the output project name, i.e., output-project.meshb
 
