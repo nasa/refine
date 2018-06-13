@@ -1,4 +1,9 @@
 
+ref_geom
+ extract grid associtaion (gas)
+ extract/refactor recon
+ extract init tess
+
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 implement grid CM
