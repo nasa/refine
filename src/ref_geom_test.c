@@ -123,6 +123,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL params[3];
+    REF_BOOL aflr_over_tetgen = REF_TRUE;
 
     REIS(1, tess_pos,
          "required args: --tess input.egads output.meshb edge chord angle");
@@ -137,7 +138,12 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
-    RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+
+    if( aflr_over_tetgen) {
+      RSS(ref_geom_aflr_volume(ref_grid), "surface to volume ");
+    } else {
+      RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+    }
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test.tec"), "geom export");
