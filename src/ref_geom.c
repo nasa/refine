@@ -2014,6 +2014,108 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
+                                        const char *filename) {
+  REF_CELL ref_cell;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  FILE *file;
+  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_DBL xyz[3];
+  REF_INT new_node, orig_nnode, node, tri;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT qua;
+  REF_INT face_id;
+  REF_INT cell, new_cell;
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  RES(1, fscanf(file, "%d", &nnode), "nnode");
+  RES(1, fscanf(file, "%d", &ntri), "ntri");
+  RES(1, fscanf(file, "%d", &nqua), "nqua");
+  RES(1, fscanf(file, "%d", &ntet), "ntet");
+  RES(1, fscanf(file, "%d", &npyr), "npyr");
+  RES(1, fscanf(file, "%d", &npri), "npri");
+  RES(1, fscanf(file, "%d", &nhex), "nhex");
+
+  orig_nnode = ref_node_n(ref_node);
+
+  for (node = 0; node < nnode; node++) {
+    REIS(1, fscanf(file, "%lf", &(xyz[0])), "x");
+    REIS(1, fscanf(file, "%lf", &(xyz[1])), "y");
+    REIS(1, fscanf(file, "%lf", &(xyz[2])), "z");
+    if (node>=orig_nnode) {
+      RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+      REIS(node, new_node, "node index");
+      ref_node_xyz(ref_node, 0, new_node) = xyz[0];
+      ref_node_xyz(ref_node, 1, new_node) = xyz[1];
+      ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+    }
+  }
+
+  for (tri = 0; tri < ntri; tri++) {
+    for (node = 0; node < 3; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tri");
+  }
+  for (qua = 0; qua < nqua; qua++) {
+    for (node = 0; node < 4; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "qua");
+  }
+
+  for (tri = 0; tri < ntri; tri++) {
+    RES(1, fscanf(file, "%d", &face_id), "tri id");
+  }
+
+  for (qua = 0; qua < nqua; qua++) {
+    RES(1, fscanf(file, "%d", &face_id), "qua id");
+  }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  for (cell = 0; cell < ntet; cell++) {
+    for (node = 0; node < 4; node++)
+      RES(1, fscanf(file, "%d", &(nodes[node])), "tet");
+    nodes[0]--;
+    nodes[1]--;
+    nodes[2]--;
+    nodes[3]--;
+    RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new tet");
+    RES(cell, new_cell, "tet index");
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
+
+REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  char *surface_ugrid_name = "ref_geom_test_surface.ugrid";
+  char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
+  char command[1024];
+  int system_status;
+
+  printf("%d surface nodes %d triangles\n",
+         ref_node_n(ref_node), ref_cell_n(ref_grid_tri(ref_grid)));
+
+  printf("tec360 ref_geom_test_aflr_geom.tec\n");
+  RSS(ref_geom_tec(ref_grid, "ref_geom_test_aflr_geom.tec"), "dbg geom");
+  printf("tec360 ref_geom_test_aflr_surf.tec\n");
+  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"),
+      "dbg surf");
+  RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
+  sprintf(command, "aflr3.orig -igrid %s -ogrid %s -mrecrbf=0 > %s.out", 
+          surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
+  printf("%s\n", command);
+  system_status = system(command);
+  REIS(0, system_status, "aflr failed");
+
+  RSS( ref_import_ugrid_tets( ref_grid, volume_ugrid_name ), "tets only" );
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
 #ifdef HAVE_EGADS
   ego context;
