@@ -1,5 +1,7 @@
 
-ref_geom recover make sure that t values are monotonic
+ref_geom recover
+ make sure that t values are monotonic
+ take the smallest increment in t, right direction
 
 ref_geom
  extract grid associtaion (gas)
