@@ -23,8 +23,12 @@
 #include "config.h"
 #endif
 
-#ifdef HAVE_ZOLTAN
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+#undef HAVE_MPI /* sometines defined by zoltan.h */
 #include "zoltan.h"
+#ifndef HAVE_MPI
+#define HAVE_MPI
+#endif
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
@@ -186,7 +190,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   return REF_SUCCESS;
 }
 
-#ifdef HAVE_ZOLTAN
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 
 static int ref_migrate_local_n(void *void_ref_migrate, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
@@ -381,7 +385,7 @@ REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
-#ifdef HAVE_ZOLTAN
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
