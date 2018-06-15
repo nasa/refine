@@ -103,10 +103,13 @@ typedef int REF_STATUS;
     }                                                             \
   }
 
+#define REF_WHERE(msg)                                           \
+  printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg));
+
 #define RNS(ptr, msg)                                                  \
   {                                                                    \
     if (NULL == (void *)(ptr)) {                                       \
-      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      REF_WHERE(msg);                                                  \
       return REF_NULL;                                                 \
     }                                                                  \
   }
@@ -114,7 +117,7 @@ typedef int REF_STATUS;
 #define RNB(ptr, msg, block)                                           \
   {                                                                    \
     if (NULL == (void *)(ptr)) {                                       \
-      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      REF_WHERE(msg);                                                  \
       block;                                                           \
       return REF_NULL;                                                 \
     }                                                                  \
@@ -156,7 +159,7 @@ typedef int REF_STATUS;
 #define RES(a, b, msg)                                                 \
   {                                                                    \
     if ((a) != (b)) {                                                  \
-      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      REF_WHERE(msg);                                                  \
       return REF_FAILURE;                                              \
     }                                                                  \
   }
@@ -164,7 +167,7 @@ typedef int REF_STATUS;
 #define RUS(a, b, msg)                                                 \
   {                                                                    \
     if ((a) == (b)) {                                                  \
-      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      REF_WHERE(msg);                                                  \
       return REF_FAILURE;                                              \
     }                                                                  \
   }
@@ -172,15 +175,23 @@ typedef int REF_STATUS;
 #define RAS(a, msg)                                                    \
   {                                                                    \
     if (!(a)) {                                                        \
-      printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
+      REF_WHERE(msg);                                                  \
       return REF_FAILURE;                                              \
     }                                                                  \
   }
 
-#define THROW(msg)                                                   \
-  {                                                                  \
-    printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg)); \
-    return REF_FAILURE;                                              \
+#define RAE(a, msg)                                                    \
+  {                                                                    \
+    if (!(a)) {                                                        \
+      REF_WHERE(msg);                                                  \
+      return REF_EMPTY;                                                \
+    }                                                                  \
+  }
+
+#define THROW(msg)                                                     \
+  {                                                                    \
+    REF_WHERE(msg);                                                    \
+      return REF_FAILURE;                                              \
   }
 
 #define RAISE(fcn)                               \
