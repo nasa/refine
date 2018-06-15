@@ -114,24 +114,24 @@ typedef int REF_STATUS;
     }                                                             \
   }
 
-#define REF_WHERE(msg)                                           \
+#define REF_WHERE(msg) \
   printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg));
 
-#define RNS(ptr, msg)                                                  \
-  {                                                                    \
-    if (NULL == (void *)(ptr)) {                                       \
-      REF_WHERE(msg);                                                  \
-      return REF_NULL;                                                 \
-    }                                                                  \
+#define RNS(ptr, msg)            \
+  {                              \
+    if (NULL == (void *)(ptr)) { \
+      REF_WHERE(msg);            \
+      return REF_NULL;           \
+    }                            \
   }
 
-#define RNB(ptr, msg, block)                                           \
-  {                                                                    \
-    if (NULL == (void *)(ptr)) {                                       \
-      REF_WHERE(msg);                                                  \
-      block;                                                           \
-      return REF_NULL;                                                 \
-    }                                                                  \
+#define RNB(ptr, msg, block)     \
+  {                              \
+    if (NULL == (void *)(ptr)) { \
+      REF_WHERE(msg);            \
+      block;                     \
+      return REF_NULL;           \
+    }                            \
   }
 
 #define REIS(a, b, msg)                                                      \
@@ -167,42 +167,42 @@ typedef int REF_STATUS;
     }                                                                         \
   }
 
-#define RES(a, b, msg)                                                 \
-  {                                                                    \
-    if ((a) != (b)) {                                                  \
-      REF_WHERE(msg);                                                  \
-      return REF_FAILURE;                                              \
-    }                                                                  \
+#define RES(a, b, msg)    \
+  {                       \
+    if ((a) != (b)) {     \
+      REF_WHERE(msg);     \
+      return REF_FAILURE; \
+    }                     \
   }
 
-#define RUS(a, b, msg)                                                 \
-  {                                                                    \
-    if ((a) == (b)) {                                                  \
-      REF_WHERE(msg);                                                  \
-      return REF_FAILURE;                                              \
-    }                                                                  \
+#define RUS(a, b, msg)    \
+  {                       \
+    if ((a) == (b)) {     \
+      REF_WHERE(msg);     \
+      return REF_FAILURE; \
+    }                     \
   }
 
-#define RAS(a, msg)                                                    \
-  {                                                                    \
-    if (!(a)) {                                                        \
-      REF_WHERE(msg);                                                  \
-      return REF_FAILURE;                                              \
-    }                                                                  \
+#define RAS(a, msg)       \
+  {                       \
+    if (!(a)) {           \
+      REF_WHERE(msg);     \
+      return REF_FAILURE; \
+    }                     \
   }
 
-#define RAE(a, msg)                                                    \
-  {                                                                    \
-    if (!(a)) {                                                        \
-      REF_WHERE(msg);                                                  \
-      return REF_EMPTY;                                                \
-    }                                                                  \
+#define RAE(a, msg)     \
+  {                     \
+    if (!(a)) {         \
+      REF_WHERE(msg);   \
+      return REF_EMPTY; \
+    }                   \
   }
 
-#define THROW(msg)                                                     \
-  {                                                                    \
-    REF_WHERE(msg);                                                    \
-      return REF_FAILURE;                                              \
+#define THROW(msg)      \
+  {                     \
+    REF_WHERE(msg);     \
+    return REF_FAILURE; \
   }
 
 #define RAISE(fcn)                               \

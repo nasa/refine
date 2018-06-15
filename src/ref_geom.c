@@ -1476,15 +1476,15 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
     double trange[2];
-    printf("geom %d type %d id %d\n",
-           geom,ref_geom_type(ref_geom, geom),ref_geom_id(ref_geom, geom));
-    if (ref_geom_type(ref_geom, geom) > 0) printf("param[0] = %f\n",params[0]);
-    if (ref_geom_type(ref_geom, geom) > 1) printf("param[1] = %f\n",params[1]);
+    printf("geom %d type %d id %d\n", geom, ref_geom_type(ref_geom, geom),
+           ref_geom_id(ref_geom, geom));
+    if (ref_geom_type(ref_geom, geom) > 0) printf("param[0] = %f\n", params[0]);
+    if (ref_geom_type(ref_geom, geom) > 1) printf("param[1] = %f\n", params[1]);
     REIS(EGADS_SUCCESS,
          EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
                         &pchldrn, &psens),
          "EG topo node");
-    printf("trange %f %f\n",trange[0],trange[1]);
+    printf("trange %f %f\n", trange[0], trange[1]);
     REIS(EGADS_SUCCESS, status, "eval");
   }
   xyz[0] = eval[0];
@@ -1924,8 +1924,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_INT cell, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
   int system_status;
 
-  printf("%d surface nodes %d triangles\n",
-         ref_node_n(ref_node), ref_cell_n(ref_grid_tri(ref_grid)));
+  printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
+         ref_cell_n(ref_grid_tri(ref_grid)));
 
   printf("tec360 ref_geom_test_tetgen_geom.tec\n");
   RSS(ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec"), "dbg geom");
@@ -2045,7 +2045,7 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
     REIS(1, fscanf(file, "%lf", &(xyz[0])), "x");
     REIS(1, fscanf(file, "%lf", &(xyz[1])), "y");
     REIS(1, fscanf(file, "%lf", &(xyz[2])), "z");
-    if (node>=orig_nnode) {
+    if (node >= orig_nnode) {
       RSS(ref_node_add(ref_node, node, &new_node), "new_node");
       REIS(node, new_node, "node index");
       ref_node_xyz(ref_node, 0, new_node) = xyz[0];
@@ -2088,7 +2088,6 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-
 REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   char *surface_ugrid_name = "ref_geom_test_surface.ugrid";
@@ -2096,22 +2095,21 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   char command[1024];
   int system_status;
 
-  printf("%d surface nodes %d triangles\n",
-         ref_node_n(ref_node), ref_cell_n(ref_grid_tri(ref_grid)));
+  printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
+         ref_cell_n(ref_grid_tri(ref_grid)));
 
   printf("tec360 ref_geom_test_aflr_geom.tec\n");
   RSS(ref_geom_tec(ref_grid, "ref_geom_test_aflr_geom.tec"), "dbg geom");
   printf("tec360 ref_geom_test_aflr_surf.tec\n");
-  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"),
-      "dbg surf");
+  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"), "dbg surf");
   RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
-  sprintf(command, "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=180 > %s.out", 
+  sprintf(command, "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=180 > %s.out",
           surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
   printf("%s\n", command);
   system_status = system(command);
   REIS(0, system_status, "aflr failed");
 
-  RSS( ref_import_ugrid_tets( ref_grid, volume_ugrid_name ), "tets only" );
+  RSS(ref_import_ugrid_tets(ref_grid, volume_ugrid_name), "tets only");
 
   return REF_SUCCESS;
 }

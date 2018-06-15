@@ -139,7 +139,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
 
-    if( aflr_over_tetgen) {
+    if (aflr_over_tetgen) {
       RSS(ref_geom_aflr_volume(ref_grid), "surface to volume ");
     } else {
       RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
