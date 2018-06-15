@@ -28,6 +28,23 @@
 
 #include "ref_part.h"
 
+static REF_INT ref_subdiv_c2e(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
+                              REF_INT cell_edge, REF_INT cell) {
+  REF_INT node0, node1, edge;
+
+  RAE(ref_cell_valid(ref_cell, cell), "invalid cell index");
+  RAE(cell_edge < ref_cell_edge_per(ref_cell), "invalid edge index");
+  
+  node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+  node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+  
+  RSE( ref_edge_with( ref_subdiv_edge(ref_subdiv), node0, node1, &edge),
+       "look up edge" );
+
+  return edge;
+}
+
+
 static REF_INT ref_subdiv_map(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
                               REF_INT cell) {
   REF_INT edge, map, bit;
@@ -36,11 +53,12 @@ static REF_INT ref_subdiv_map(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
   bit = 1;
   for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
     map +=
-        bit * ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, edge, cell));
+      bit * ref_subdiv_mark(ref_subdiv, 
+                            ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell));
     bit *= 2;
     /*
     printf("edge %d bit %d mark %d map %d\n",edge,bit,
-           ref_subdiv_mark(ref_subdiv,ref_cell_c2e(ref_cell, edge, cell)),
+           ref_subdiv_mark(ref_subdiv,ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)),
            map);
     */
   }
@@ -108,7 +126,7 @@ REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv) {
     map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
     printf(" group %d cell %d map %d\n", group, cell, map);
     each_ref_cell_cell_edge(ref_cell, cell_edge) {
-      edge = ref_cell_c2e(ref_cell, cell_edge, cell);
+      edge = ref_subdiv_c2e(ref_subdiv, ref_cell, cell_edge, cell);
       printf("  edge %d nodes %d %d mark %d\n", edge,
              ref_cell_e2n(ref_cell, 0, cell_edge, cell),
              ref_cell_e2n(ref_cell, 1, cell_edge, cell),
@@ -241,8 +259,8 @@ static REF_STATUS ref_subdiv_node_between(REF_SUBDIV ref_subdiv, REF_INT node0,
 #define edge_or(ce0, ce1)                    \
   {                                          \
     REF_INT ge0, ge1;                        \
-    ge0 = ref_cell_c2e(ref_cell, ce0, cell); \
-    ge1 = ref_cell_c2e(ref_cell, ce1, cell); \
+    ge0 = ref_subdiv_c2e(ref_subdiv, ref_cell, ce0, cell); \
+    ge1 = ref_subdiv_c2e(ref_subdiv, ref_cell, ce1, cell); \
     if (ref_subdiv_mark(ref_subdiv, ge0) !=  \
         ref_subdiv_mark(ref_subdiv, ge1)) {  \
       again = REF_TRUE;                      \
@@ -254,9 +272,9 @@ static REF_STATUS ref_subdiv_node_between(REF_SUBDIV ref_subdiv, REF_INT node0,
 #define promote_2_3(ce0, ce1, ce2)                                             \
   {                                                                            \
     REF_INT ge0, ge1, ge2, sum;                                                \
-    ge0 = ref_cell_c2e(ref_cell, ce0, cell);                                   \
-    ge1 = ref_cell_c2e(ref_cell, ce1, cell);                                   \
-    ge2 = ref_cell_c2e(ref_cell, ce2, cell);                                   \
+    ge0 = ref_subdiv_c2e(ref_subdiv, ref_cell, ce0, cell);                                   \
+    ge1 = ref_subdiv_c2e(ref_subdiv, ref_cell, ce1, cell);                                   \
+    ge2 = ref_subdiv_c2e(ref_subdiv, ref_cell, ce2, cell);                                   \
     sum = ref_subdiv_mark(ref_subdiv, ge0) +                                   \
           ref_subdiv_mark(ref_subdiv, ge1) + ref_subdiv_mark(ref_subdiv, ge2); \
     if (2 == sum) {                                                            \
@@ -270,12 +288,12 @@ static REF_STATUS ref_subdiv_node_between(REF_SUBDIV ref_subdiv, REF_INT node0,
 #define promote_2_all()                                                       \
   {                                                                           \
     REF_INT ge0, ge1, ge2, ge3, ge4, ge5, sum;                                \
-    ge0 = ref_cell_c2e(ref_cell, 0, cell);                                    \
-    ge1 = ref_cell_c2e(ref_cell, 1, cell);                                    \
-    ge2 = ref_cell_c2e(ref_cell, 2, cell);                                    \
-    ge3 = ref_cell_c2e(ref_cell, 3, cell);                                    \
-    ge4 = ref_cell_c2e(ref_cell, 4, cell);                                    \
-    ge5 = ref_cell_c2e(ref_cell, 5, cell);                                    \
+    ge0 = ref_subdiv_c2e(ref_subdiv, ref_cell, 0, cell);                                    \
+    ge1 = ref_subdiv_c2e(ref_subdiv, ref_cell, 1, cell);                                    \
+    ge2 = ref_subdiv_c2e(ref_subdiv, ref_cell, 2, cell);                                    \
+    ge3 = ref_subdiv_c2e(ref_subdiv, ref_cell, 3, cell);                                    \
+    ge4 = ref_subdiv_c2e(ref_subdiv, ref_cell, 4, cell);                                    \
+    ge5 = ref_subdiv_c2e(ref_subdiv, ref_cell, 5, cell);                                    \
     sum =                                                                     \
         ref_subdiv_mark(ref_subdiv, ge0) + ref_subdiv_mark(ref_subdiv, ge1) + \
         ref_subdiv_mark(ref_subdiv, ge2) + ref_subdiv_mark(ref_subdiv, ge3) + \
@@ -284,12 +302,12 @@ static REF_STATUS ref_subdiv_node_between(REF_SUBDIV ref_subdiv, REF_INT node0,
       if ((ge0 > 0 && ge5 > 0) || (ge1 > 0 && ge4 > 0) ||                     \
           (ge2 > 0 && ge1 > 3)) {                                             \
         again = REF_TRUE;                                                     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 0, cell)) = 1;     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 1, cell)) = 1;     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 2, cell)) = 1;     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 3, cell)) = 1;     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 4, cell)) = 1;     \
-        ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 5, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 0, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 1, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 2, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 3, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 4, cell)) = 1;     \
+        ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 5, cell)) = 1;     \
       }                                                                       \
   }
 
@@ -386,9 +404,9 @@ REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
                                       REF_INT cell, REF_BOOL *again, REF_INT s0,
                                       REF_INT s1, REF_INT s2) {
   REF_INT e0, e1, e2;
-  e0 = ref_cell_c2e(ref_cell, s0, cell);
-  e1 = ref_cell_c2e(ref_cell, s1, cell);
-  e2 = ref_cell_c2e(ref_cell, s2, cell);
+  e0 = ref_subdiv_c2e(ref_subdiv, ref_cell, s0, cell);
+  e1 = ref_subdiv_c2e(ref_subdiv, ref_cell, s1, cell);
+  e2 = ref_subdiv_c2e(ref_subdiv, ref_cell, s2, cell);
   if (ref_subdiv_mark(ref_subdiv, e0) && ref_subdiv_mark(ref_subdiv, e1) &&
       !ref_subdiv_mark(ref_subdiv, e2)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e0, e1);
@@ -413,8 +431,8 @@ REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
                                           REF_BOOL *again, REF_INT s0,
                                           REF_INT s1) {
   REF_INT e0, e1;
-  e0 = ref_cell_c2e(ref_cell, s0, cell);
-  e1 = ref_cell_c2e(ref_cell, s1, cell);
+  e0 = ref_subdiv_c2e(ref_subdiv, ref_cell, s0, cell);
+  e1 = ref_subdiv_c2e(ref_subdiv, ref_cell, s1, cell);
   if (ref_subdiv_mark(ref_subdiv, e0) && ref_subdiv_mark(ref_subdiv, e1)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e0, e1);
     if (ref_subdiv->debug)
@@ -459,12 +477,12 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
                                          1, 3),
               "face 3");
 
-          sum = ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 0, cell)) +
-                ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 1, cell)) +
-                ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 2, cell)) +
-                ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 3, cell)) +
-                ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 4, cell)) +
-                ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, 5, cell));
+          sum = ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 0, cell)) +
+                ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 1, cell)) +
+                ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 2, cell)) +
+                ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 3, cell)) +
+                ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 4, cell)) +
+                ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, 5, cell));
 
           if (2 == sum) {
             RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell,
@@ -1279,10 +1297,10 @@ static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
       case 32:
         split_edge = REF_EMPTY;
         for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++)
-          if (ref_subdiv_mark(ref_subdiv, ref_cell_c2e(ref_cell, edge, cell)))
+          if (ref_subdiv_mark(ref_subdiv, ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)))
             split_edge = edge;
         RAS(REF_EMPTY != split_edge, "edge not found");
-        global_edge = ref_cell_c2e(ref_cell, split_edge, cell);
+        global_edge = ref_subdiv_c2e(ref_subdiv, ref_cell, split_edge, cell);
 
         marked_for_removal[cell] = 1;
 
@@ -1825,7 +1843,7 @@ static REF_STATUS ref_subdiv_tec_zone(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
           "felineseg");
 
   for (cell_edge = 0; cell_edge < ref_cell_edge_per(ref_cell); cell_edge++) {
-    edge = ref_cell_c2e(ref_cell, cell_edge, cell);
+    edge = ref_subdiv_c2e(ref_subdiv, ref_cell, cell_edge, cell);
     node = ref_edge_e2n(ref_edge, 0, edge);
     fprintf(file, " %.16e %.16e %.16e %d\n", ref_node_xyz(ref_node, 0, node),
             ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node),
