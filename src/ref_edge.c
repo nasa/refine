@@ -49,8 +49,9 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
       }
     }
   }
-  ref_malloc(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT);
 
+  ref_edge_max(ref_edge) = ref_edge_n(ref_edge);
+  ref_malloc(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT);
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
@@ -93,6 +94,8 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   ref_edge = *ref_edge_ptr;
 
   ref_edge_n(ref_edge) = 0;
+  ref_edge_max(ref_edge) = 0;
+  ref_edge->e2n = (REF_INT *)NULL;
 
   RSS( ref_edge_builder_c2e( ref_edge, ref_grid ), "build edges" );
 
