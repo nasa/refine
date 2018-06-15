@@ -70,8 +70,6 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
     }
   }
 
-  RSS(ref_adj_create(&(ref_edge_adj(ref_edge))), "create adj");
-
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RUS(REF_EMPTY, ref_edge_e2n(ref_edge, 0, edge), "edge n0 empty");
     RUS(REF_EMPTY, ref_edge_e2n(ref_edge, 1, edge), "edge n1 empty");
@@ -97,9 +95,11 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   ref_edge_max(ref_edge) = 0;
   ref_edge->e2n = (REF_INT *)NULL;
 
-  RSS( ref_edge_builder_c2e( ref_edge, ref_grid ), "build edges" );
+  RSS(ref_adj_create(&(ref_edge_adj(ref_edge))), "create adj");
 
   ref_edge_node(ref_edge) = ref_grid_node(ref_grid);
+
+  RSS( ref_edge_builder_c2e( ref_edge, ref_grid ), "build edges" );
 
   return REF_SUCCESS;
 }
