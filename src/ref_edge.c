@@ -36,13 +36,13 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
-      each_ref_cell_cell_edge( ref_cell, cell_edge) {
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
         if (REF_EMPTY == ref_cell_c2e(ref_cell, cell_edge, cell)) {
           n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
           n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
           each_ref_grid_ref_cell(ref_grid, group2, ref_cell2) {
-            RSS( ref_cell_set_edge(ref_cell2, n0, n1, ref_edge_n(ref_edge)), 
-                 "set edge");
+            RSS(ref_cell_set_edge(ref_cell2, n0, n1, ref_edge_n(ref_edge)),
+                "set edge");
           }
           ref_edge_n(ref_edge)++;
         }
@@ -63,9 +63,9 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
       each_ref_cell_cell_edge(ref_cell, cell_edge) {
         edge = ref_cell_c2e(ref_cell, cell_edge, cell);
         ref_edge_e2n(ref_edge, 0, edge) =
-          ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+            ref_cell_e2n(ref_cell, 0, cell_edge, cell);
         ref_edge_e2n(ref_edge, 1, edge) =
-          ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+            ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       }
     }
   }
@@ -99,7 +99,7 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
 
   ref_edge_node(ref_edge) = ref_grid_node(ref_grid);
 
-  RSS( ref_edge_builder_c2e( ref_edge, ref_grid ), "build edges" );
+  RSS(ref_edge_builder_c2e(ref_edge, ref_grid), "build edges");
 
   return REF_SUCCESS;
 }
