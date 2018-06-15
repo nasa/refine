@@ -24,21 +24,15 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
-  REF_EDGE ref_edge;
+static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
   REF_INT edge;
   REF_INT group, group2, cell, cell_edge;
   REF_INT n0, n1;
   REF_CELL ref_cell, ref_cell2;
 
-  ref_malloc(*ref_edge_ptr, 1, REF_EDGE_STRUCT);
-
-  ref_edge = *ref_edge_ptr;
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      ref_cell_empty_edges(ref_cell);
-
-  ref_edge_n(ref_edge) = 0;
+  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    ref_cell_empty_edges(ref_cell);
+  }
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
@@ -56,6 +50,7 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
     }
   }
   ref_malloc(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT);
+
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
@@ -86,6 +81,20 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
                     edge),
         "adj n1");
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
+  REF_EDGE ref_edge;
+
+  ref_malloc(*ref_edge_ptr, 1, REF_EDGE_STRUCT);
+
+  ref_edge = *ref_edge_ptr;
+
+  ref_edge_n(ref_edge) = 0;
+
+  RSS( ref_edge_builder_c2e( ref_edge, ref_grid ), "build edges" );
 
   ref_edge_node(ref_edge) = ref_grid_node(ref_grid);
 
