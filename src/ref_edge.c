@@ -38,7 +38,7 @@ static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
     REF_INT edge_per_node_estimate = 8; /* 7 is the tet estimate */
     REIS(0, ref_edge_max(ref_edge), "should be zero size");
     ref_edge_max(ref_edge) =
-        edge_per_node_estimate * ref_node_n(ref_grid_node(ref_grid));
+      MAX( 100, edge_per_node_estimate * ref_node_n(ref_grid_node(ref_grid)));
     ref_malloc_init(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT,
                     REF_EMPTY);
   }
