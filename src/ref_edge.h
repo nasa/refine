@@ -42,7 +42,7 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge, REF_GRID ref_grid);
 REF_STATUS ref_edge_free(REF_EDGE ref_edge);
 
 #define ref_edge_n(ref_edge) ((ref_edge)->n)
-#define ref_edge_max(ref_edge) ((ref_edge)->n)
+#define ref_edge_max(ref_edge) ((ref_edge)->max)
 
 #define ref_edge_e2n(ref_edge, node, edge) ((ref_edge)->e2n[node + 2 * edge])
 
