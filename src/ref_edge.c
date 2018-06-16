@@ -150,7 +150,7 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
 
 REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   REF_EDGE ref_edge;
-  REF_BOOL c2e_based = REF_TRUE;
+  REF_BOOL c2e_based = REF_FALSE;
 
   ref_malloc(*ref_edge_ptr, 1, REF_EDGE_STRUCT);
 
