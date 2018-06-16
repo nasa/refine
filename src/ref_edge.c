@@ -31,7 +31,7 @@ static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
   /* do nothing if we already have it */
   RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
       "find existing");
-  if (REF_EMPTY == edge) return REF_SUCCESS;
+  if (REF_EMPTY != edge) return REF_SUCCESS;
 
   /* first allocation to a guessed size */
   if (NULL == (void *)ref_edge->e2n) {
@@ -39,7 +39,7 @@ static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
     REIS(0, ref_edge_max(ref_edge), "should be zero size");
     ref_edge_max(ref_edge) =
         edge_per_node_estimate * ref_node_n(ref_grid_node(ref_grid));
-    ref_malloc_init(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT,
+    ref_malloc_init(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT,
                     REF_EMPTY);
   }
 
@@ -62,6 +62,13 @@ static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
   ref_edge_n(ref_edge)++;
   ref_edge_e2n(ref_edge, 0, edge) = node0;
   ref_edge_e2n(ref_edge, 1, edge) = node1;
+
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
+                  edge),
+      "adj n0");
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
+                  edge),
+      "adj n1");
 
   return REF_SUCCESS;
 }
