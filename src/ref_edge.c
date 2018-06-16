@@ -51,12 +51,7 @@ static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
   }
 
   ref_edge_max(ref_edge) = ref_edge_n(ref_edge);
-  ref_malloc(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT);
-
-  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
-    ref_edge_e2n(ref_edge, 1, edge) = REF_EMPTY;
-  }
+  ref_malloc_init(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
