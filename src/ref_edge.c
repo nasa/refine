@@ -24,7 +24,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
+static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge,
                                 REF_INT node0, REF_INT node1) {
   REF_INT edge;
 
@@ -32,16 +32,6 @@ static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_GRID ref_grid,
   RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
       "find existing");
   if (REF_EMPTY != edge) return REF_SUCCESS;
-
-  /* first allocation to a guessed size */
-  if (NULL == (void *)ref_edge->e2n) {
-    REF_INT edge_per_node_estimate = 8; /* 7 is the tet estimate */
-    REIS(0, ref_edge_max(ref_edge), "should be zero size");
-    ref_edge_max(ref_edge) =
-      MAX( 100, edge_per_node_estimate * ref_node_n(ref_grid_node(ref_grid)));
-    ref_malloc_init(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT,
-                    REF_EMPTY);
-  }
 
   /* incemental reallocation */
   if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
@@ -78,13 +68,23 @@ static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
   REF_INT node0, node1;
   REF_CELL ref_cell;
 
+  /* first allocation to an estimated size */
+  if (NULL == (void *)ref_edge->e2n) {
+    REF_INT edge_per_node_estimate = 8; /* 7 is the tet estimate */
+    REIS(0, ref_edge_max(ref_edge), "should be zero size");
+    ref_edge_max(ref_edge) =
+      MAX( 100, edge_per_node_estimate * ref_node_n(ref_grid_node(ref_grid)));
+    ref_malloc_init(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT,
+                    REF_EMPTY);
+  }
+
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
       each_ref_cell_cell_edge(ref_cell, cell_edge) {
         if (REF_EMPTY == ref_cell_c2e(ref_cell, cell_edge, cell)) {
           node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
           node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-          RSS(ref_edge_uniq(ref_edge, ref_grid, node0, node1), "add uniq");
+          RSS(ref_edge_uniq(ref_edge, node0, node1), "add uniq");
         }
       }
     }
