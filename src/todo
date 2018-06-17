@@ -9,6 +9,8 @@
   - a/b test
   - delete old one
 
+handle edge reuse for periodic facesx
+
 ref_geom recover
  make sure that t values are monotonic
  take the smallest increment in t, right direction
