@@ -9,7 +9,9 @@
   - a/b test
   - delete old one
 
-handle edge reuse for periodic facesx
+handle edge reuse for periodic faces
+  use e2f to see if edge is reused
+  add some logic to figure out the right sens for a triangle in edgeuv
 
 ref_geom recover
  make sure that t values are monotonic
