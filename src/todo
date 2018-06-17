@@ -1,11 +1,13 @@
 
-revisit edge builder, replace ref_cell_c2e with pure ref_edge implementation
-  remove old usage of c2e 
-    replace c2e in subdiv with function
-    subdiv mark based on cell and local edge number
-  extract builder from create
-  make a new builder without c2e
-  ab test
+- revisit edge builder
+  + replace ref_cell_c2e with pure ref_edge implementation
+  + remove old usage of c2e 
+    + replace c2e in subdiv with function
+    + subdiv mark based on cell and local edge number
+  + extract builder from create
+  + make a new builder without c2e
+  - a/b test
+  - delete old one
 
 ref_geom recover
  make sure that t values are monotonic
