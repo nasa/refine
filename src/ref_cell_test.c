@@ -570,44 +570,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_free(ref_cell), "cleanup");
   }
 
-  { /* empty edges */
-    REF_CELL ref_cell;
-
-    RSS(ref_tet(&ref_cell), "create");
-    RSS(ref_cell_empty_edges(ref_cell), "empty edges");
-    RES(REF_EMPTY, ref_cell_c2e(ref_cell, 0, 0), "edge");
-    RSS(ref_cell_free(ref_cell), "cleanup");
-  }
-
-  { /* set tet edges */
-    REF_CELL ref_cell;
-    REF_INT cell, nodes[4];
-
-    RSS(ref_tet(&ref_cell), "create");
-    nodes[0] = 0;
-    nodes[1] = 1;
-    nodes[2] = 2;
-    nodes[3] = 3;
-    RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
-    RSS(ref_cell_empty_edges(ref_cell), "empty edges");
-
-    RSS(ref_cell_set_edge(ref_cell, 0, 1, 0), "set edge");
-    RSS(ref_cell_set_edge(ref_cell, 0, 2, 1), "set edge");
-    RSS(ref_cell_set_edge(ref_cell, 0, 3, 2), "set edge");
-    RSS(ref_cell_set_edge(ref_cell, 1, 2, 3), "set edge");
-    RSS(ref_cell_set_edge(ref_cell, 1, 3, 4), "set edge");
-    RSS(ref_cell_set_edge(ref_cell, 2, 3, 5), "set edge");
-
-    RES(0, ref_cell_c2e(ref_cell, 0, 0), "edge");
-    RES(1, ref_cell_c2e(ref_cell, 1, 0), "edge");
-    RES(2, ref_cell_c2e(ref_cell, 2, 0), "edge");
-    RES(3, ref_cell_c2e(ref_cell, 3, 0), "edge");
-    RES(4, ref_cell_c2e(ref_cell, 4, 0), "edge");
-    RES(5, ref_cell_c2e(ref_cell, 5, 0), "edge");
-
-    RSS(ref_cell_free(ref_cell), "cleanup");
-  }
-
   { /* face_per */
     REF_CELL ref_cell;
 

@@ -91,64 +91,8 @@ static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_builder_c2e(REF_EDGE ref_edge, REF_GRID ref_grid) {
-  REF_INT edge;
-  REF_INT group, group2, cell, cell_edge;
-  REF_INT n0, n1;
-  REF_CELL ref_cell, ref_cell2;
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
-    ref_cell_empty_edges(ref_cell);
-  }
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
-    each_ref_cell_valid_cell(ref_cell, cell) {
-      each_ref_cell_cell_edge(ref_cell, cell_edge) {
-        if (REF_EMPTY == ref_cell_c2e(ref_cell, cell_edge, cell)) {
-          n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
-          n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-          each_ref_grid_ref_cell(ref_grid, group2, ref_cell2) {
-            RSS(ref_cell_set_edge(ref_cell2, n0, n1, ref_edge_n(ref_edge)),
-                "set edge");
-          }
-          ref_edge_n(ref_edge)++;
-        }
-      }
-    }
-  }
-
-  ref_edge_max(ref_edge) = ref_edge_n(ref_edge);
-  ref_malloc_init(ref_edge->e2n, 2 * ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
-    each_ref_cell_valid_cell(ref_cell, cell) {
-      each_ref_cell_cell_edge(ref_cell, cell_edge) {
-        edge = ref_cell_c2e(ref_cell, cell_edge, cell);
-        ref_edge_e2n(ref_edge, 0, edge) =
-            ref_cell_e2n(ref_cell, 0, cell_edge, cell);
-        ref_edge_e2n(ref_edge, 1, edge) =
-            ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-      }
-    }
-  }
-
-  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    RUS(REF_EMPTY, ref_edge_e2n(ref_edge, 0, edge), "edge n0 empty");
-    RUS(REF_EMPTY, ref_edge_e2n(ref_edge, 1, edge), "edge n1 empty");
-    RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
-                    edge),
-        "adj n0");
-    RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
-                    edge),
-        "adj n1");
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
   REF_EDGE ref_edge;
-  REF_BOOL c2e_based = REF_FALSE;
 
   ref_malloc(*ref_edge_ptr, 1, REF_EDGE_STRUCT);
 
@@ -162,11 +106,7 @@ REF_STATUS ref_edge_create(REF_EDGE *ref_edge_ptr, REF_GRID ref_grid) {
 
   ref_edge_node(ref_edge) = ref_grid_node(ref_grid);
 
-  if (c2e_based) {
-    RSS(ref_edge_builder_c2e(ref_edge, ref_grid), "build edges");
-  } else {
-    RSS(ref_edge_builder_uniq(ref_edge, ref_grid), "build edges");
-  }
+  RSS(ref_edge_builder_uniq(ref_edge, ref_grid), "build edges");
 
   return REF_SUCCESS;
 }

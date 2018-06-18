@@ -42,7 +42,6 @@ struct REF_CELL_STRUCT {
   REF_INT n, max;
   REF_INT blank;
   REF_INT *c2n;
-  REF_INT *c2e;
   REF_ADJ ref_adj;
 };
 
@@ -64,14 +63,6 @@ struct REF_CELL_STRUCT {
 
 #define ref_cell_c2n(ref_cell, node, cell) \
   ((ref_cell)->c2n[(node) + ref_cell_size_per(ref_cell) * (cell)])
-
-#define ref_cell_c2e(ref_cell, cell_edge, cell) \
-  (NULL == ((ref_cell)->c2e)                    \
-       ? REF_EMPTY                              \
-       : (ref_cell)->c2e[(cell_edge) + ref_cell_edge_per(ref_cell) * (cell)])
-
-#define ref_cell_c2e_set(ref_cell, cell_edge, cell) \
-  ((ref_cell)->c2e[(cell_edge) + ref_cell_edge_per(ref_cell) * (cell)])
 
 #define ref_cell_e2n_gen(ref_cell, node, edge) \
   ((ref_cell)->e2n[(node) + 2 * (edge)])
@@ -171,11 +162,6 @@ REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
 REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
                                    REF_INT max_faceid, REF_INT *nfaceid,
                                    REF_INT *faceids);
-
-/* edge routines */
-REF_STATUS ref_cell_empty_edges(REF_CELL ref_cell);
-REF_STATUS ref_cell_set_edge(REF_CELL ref_cell, REF_INT n0, REF_INT n1,
-                             REF_INT edge);
 
 REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
                                   REF_INT *face0, REF_INT *face1);
