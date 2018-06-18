@@ -1,4 +1,8 @@
 
+ref_gather_tec_movie_frame performance
+ only surface nodes and tri
+ bin .plt format
+
 add until to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
 
