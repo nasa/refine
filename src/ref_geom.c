@@ -1238,6 +1238,13 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                  &has_id),
             "has edge id");
         if (has_id) {
+          if (REF_EMPTY != edge_geom) { /* should only be one */
+            printf("previous edge geom %d id %d\n",
+                   edge_geom,ref_geom_id(ref_geom, edge_geom));
+            printf("this edge geom %d %d id %d\n",
+                   geom0,geom1,ref_geom_id(ref_geom, geom0));
+            RSS(ref_geom_tec(ref_grid, "ref_geom_edge_edge.tec"), "tec");
+          }
           REIS(REF_EMPTY, edge_geom, "found a second edge spanning nodes");
           RAS(!has_edge_support, "already has support? second edge?");
           RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
