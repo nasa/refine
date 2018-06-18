@@ -1,14 +1,4 @@
 
-- revisit edge builder
-  + replace ref_cell_c2e with pure ref_edge implementation
-  + remove old usage of c2e 
-    + replace c2e in subdiv with function
-    + subdiv mark based on cell and local edge number
-  + extract builder from create
-  + make a new builder without c2e
-  - a/b test
-  - delete old one
-
 handle edge reuse for periodic faces
   use e2f to see if edge is reused
   add some logic to figure out the right sens for a triangle in edgeuv
@@ -151,6 +141,16 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ revisit edge builder
+  + replace ref_cell_c2e with pure ref_edge implementation
+  + remove old usage of c2e 
+    + replace c2e in subdiv with function
+    + subdiv mark based on cell and local edge number
+  + extract builder from create
+  + make a new builder without c2e
+  + a/b test
+  + delete old one
 
 + ref_geom_add_between should update adjacent face UV with edge T
   (constrain does clean up already)
