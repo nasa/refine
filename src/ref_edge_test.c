@@ -34,10 +34,26 @@
 #include "ref_fixture.h"
 #include "ref_mpi.h"
 
+#include "ref_import.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  if (2 == argc) {
+    REF_GRID ref_grid;
+    REF_EDGE ref_edge;
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    ref_mpi_stopwatch_stop(ref_mpi, "create");
+    RSS(ref_edge_free(ref_edge), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    return 0;
+  }
 
   { /* make edges shared by two elements */
     REF_EDGE ref_edge;
