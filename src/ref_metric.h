@@ -80,6 +80,8 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_METRIC_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
+REF_STATUS ref_metric_set_zero_det(REF_DBL *metric_with_zeros,
+                                   REF_DBL *metric_donor, REF_GRID ref_grid);
 
 END_C_DECLORATION
 
