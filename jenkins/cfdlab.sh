@@ -272,10 +272,10 @@ trap - EXIT
 
 date
 
-LOG=${root_dir}/log.accept-annulus-uniform-two
+LOG=${root_dir}/log.accept-annulus-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/annulus/uniform/two
-./accept-annulus-uniform-two.sh ${egads_dir} > $LOG 2>&1
+cd ${source_dir}/acceptance/annulus/uniform
+./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date

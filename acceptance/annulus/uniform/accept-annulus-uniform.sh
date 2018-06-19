@@ -20,15 +20,15 @@ ${two}/ref_acceptance annulus.meshb annulus.metric 0.1
 ${two}/ref_driver -i annulus.meshb -g ${geomfile} -m annulus.metric -o ref_driver1 -t
 mv ref_gather_movie.tec ref_driver1_movie.tec
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric 0.1
-${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-annulus-uniform-two-01.status
+${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-annulus-uniform-01.status
 
 ${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1.metric -o ref_driver2 -t
 mv ref_gather_movie.tec ref_driver2_movie.tec
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
-${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-annulus-uniform-two-02.status
+${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-annulus-uniform-02.status
 
-cat accept-annulus-uniform-two-02.status
-../../../check.rb accept-annulus-uniform-two-02.status 0.03 2.1
+cat accept-annulus-uniform-02.status
+../../check.rb accept-annulus-uniform-02.status 0.03 2.1
 
 
 
