@@ -1394,7 +1394,7 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
           REIS(2, fscanf(file, "%d %d", &ntype, &type), "read header");
           REIS(1, ntype, "expected one type in .sol");
           REIS(3, type, "expected type GmfSymMat in .sol");
-          fscanf(file, "%*[^1234567890-+.]"); /* remove blank line */
+          RAS(0 <= fscanf(file, "%*[^1234567890-+.]"), "skip blank line");
           found_keyword = REF_TRUE;
           break;
         }
