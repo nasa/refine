@@ -1269,8 +1269,8 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
       THROW("reconstruction not available");
   }
 
-  RSS( ref_metric_roundoff_limit(metric, ref_grid),
-       "floor metric eignvalues based on grid size and solution jitter" );
+  RSS(ref_metric_roundoff_limit(metric, ref_grid),
+      "floor metric eignvalues based on grid size and solution jitter");
 
   /* local scaling */
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
