@@ -599,7 +599,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_gather_cell_tec(ref_node, ref_grid_tri(ref_grid), ref_gather->file),
       "t");
 
-  {
+  if (REF_FALSE) {
     REF_INT ntet;
     REF_DBL min_quality = 0.10;
     RSS(ref_gather_ncell_below_quality(ref_node, ref_grid_tet(ref_grid),
