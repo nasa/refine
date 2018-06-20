@@ -343,8 +343,10 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   REF_INT cell, node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
+  REF_INT proc, offset, *counts;
 
   ref_node = ref_grid_node(ref_grid);
+  ref_mpi = ref_node_mpi(ref_node);
 
   ref_malloc_init(*g2l, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
@@ -366,6 +368,21 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
       }
     }
   }
+
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+
+  RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
+
+  offset = 0;
+  for (proc = 0; proc < ref_mpi_rank(ref_mpi); proc++) {
+    offset += counts[proc];
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (REF_EMPTY != (*g2l)[node]) (*g2l)[node] += offset;
+  }
+
+  ref_free(counts);
 
   return REF_SUCCESS;
 }
