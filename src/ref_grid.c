@@ -238,9 +238,9 @@ REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_boundary_nodes(REF_GRID ref_grid, REF_INT boundary_tag,
-                                   REF_INT *nnode, REF_INT *nface,
-                                   REF_INT **g2l, REF_INT **l2g) {
+REF_STATUS ref_grid_boundary_tag_nodes(REF_GRID ref_grid, REF_INT boundary_tag,
+                                       REF_INT *nnode, REF_INT *nface,
+                                       REF_INT **g2l, REF_INT **l2g) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT cell, node;

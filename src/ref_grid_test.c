@@ -112,7 +112,7 @@ int main(void) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
 
-    RSS(ref_grid_boundary_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
+    RSS(ref_grid_boundary_tag_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
         "no list");
     REIS(1, nface, "mis count");
     REIS(3, nnode, "mis count");
@@ -146,7 +146,7 @@ int main(void) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
 
-    RSS(ref_grid_boundary_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
+    RSS(ref_grid_boundary_tag_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
         "no list");
     REIS(2, nface, "mis count");
     REIS(4, nnode, "mis count");
