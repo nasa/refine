@@ -329,6 +329,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
 
   REF_INT i, length, ixyz, node;
   REF_DBL *nodal;
+  float nodal_float;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -431,10 +432,12 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
     RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
     RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
     var_limit = reduction;
+if (ref_grid_once(ref_grid))
     REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
     RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
     RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
     var_limit = reduction;
+if (ref_grid_once(ref_grid))
     REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
   }
 
@@ -449,11 +452,11 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
   RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
   var_limit = reduction;
-  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
   RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
   RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
   var_limit = reduction;
-  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
 
   mindata = 1.0e100;
   maxdata = -1.0e100;
@@ -466,11 +469,11 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
   RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
   var_limit = reduction;
-  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
   RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
   RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
   var_limit = reduction;
-  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
 
   ref_malloc_init( nodal, nnode*6, REF_DBL, 0.0);
   each_ref_node_valid_node(ref_node, node) {
@@ -487,6 +490,15 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   for (node=0;node<nnode;node++) {
     RWDS( 1.0, nodal[5+6*node], -1.0, "node contribution" );
   }
+  if (ref_grid_once(ref_grid)) {
+    for (i=0;i<5;i++) {
+      for (node=0;node<nnode;node++) {
+        nodal_float = (float)nodal[i+6*node];
+        REIS(1, fwrite(&nodal_float, sizeof(float), 1, ref_gather->file), "nodal");
+      }
+    }
+  }
+  ref_free(nodal);
 
   ref_free(g2l);
 
