@@ -319,7 +319,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   int celldim = 0;
   int aux = 0;
   float eohmarker = 357.0;
-  int dataformat = 1;
+  int dataformat = 1; /* 1=Float,2=Double,3=LongInt,4=ShortInt,5=Byte,6=Bit */
   int passive = 0;
   int varsharing = 0;
   int connsharing = -1;
@@ -328,6 +328,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   double var_limit;
 
   REF_INT i, length, ixyz, node;
+  REF_DBL *nodal;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -470,6 +471,22 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
   var_limit = reduction;
   REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+
+  ref_malloc_init( nodal, nnode*6, REF_DBL, 0.0);
+  each_ref_node_valid_node(ref_node, node) {
+    if ( REF_EMPTY != g2l[node] && ref_node_owned(ref_node,node)) {
+      nodal[0+6*g2l[node]] = ref_node_xyz(ref_node, 0, node);
+      nodal[1+6*g2l[node]] = ref_node_xyz(ref_node, 1, node);
+      nodal[2+6*g2l[node]] = ref_node_xyz(ref_node, 2, node);
+      nodal[3+6*g2l[node]] = (REF_DBL)ref_node_part(ref_node, node);
+      nodal[4+6*g2l[node]] = (REF_DBL)ref_node_age(ref_node, node);
+      nodal[5+6*g2l[node]] = 1.0; 
+    }
+  }
+  RSS( ref_mpi_allsum( ref_mpi, nodal, nnode*6, REF_DBL_TYPE ), "allsum");
+  for (node=0;node<nnode;node++) {
+    RWDS( 1.0, nodal[5+6*node], -1.0, "node contribution" );
+  }
 
   ref_free(g2l);
 
