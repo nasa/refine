@@ -293,9 +293,9 @@ REF_STATUS ref_grid_boundary_tag_nodes(REF_GRID ref_grid, REF_INT boundary_tag,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_edge_nodes(REF_GRID ref_grid, REF_INT edge_tag,
-                               REF_INT *nnode, REF_INT *nedge, REF_INT **g2l,
-                               REF_INT **l2g) {
+REF_STATUS ref_grid_edge_tag_nodes(REF_GRID ref_grid, REF_INT edge_tag,
+                                   REF_INT *nnode, REF_INT *nedge,
+                                   REF_INT **g2l, REF_INT **l2g) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT cell, node;
