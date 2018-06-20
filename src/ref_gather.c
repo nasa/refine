@@ -296,12 +296,38 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   REF_GATHER ref_gather = ref_grid_gather(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT nnode, ncell, *g2l;
 
   int one = 1;
-  int filetype = 0;
-  int ascii[8];
+  int filetype = 0; /* 0 = FULL,1 = GRID,2 = SOLUTION */
+  int ascii[1024];
   int numvar = 5;
+
+  float zonemarker = 299.0;
+  int parentzone = -1;
+  int strandid = -1;
+  double solutiontime = (double)(ref_gather->time);
+  int notused = -1;
+  int zonetype = 2; /* 0=ORDERED,1=FELINESEG,2=FETRIANGLE, 3=FEQUADRILATERAL,
+                     * 4=FETETRAHEDRON, 5=FEBRICK, 6=FEPOLYGON,7=FEPOLYHEDRON */
+  int datapacking = 0; /*0=Block, point does not work.*/
+  int varloc = 0;      /*0 = Don't specify, all data is located at nodes*/
+  int faceneighbors = 0;
+  int numpts;
+  int numelements;
+  int celldim = 0;
+  int aux = 0;
+  float eohmarker = 357.0;
+  int dataformat = 1;
+  int passive = 0;
+  int varsharing = 0;
+  int connsharing = -1;
+
+  REF_DBL mindata, maxdata, reduction;
+  double var_limit;
+
+  REF_INT i, length, ixyz, node;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -342,18 +368,108 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
       ascii[1] = 0;
       REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
     }
+
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file), "zonemarker");
+
     if (NULL == zone_title) {
-      fprintf(ref_gather->file,
-              "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, "
-              "zonetype=%s, solutiontime=%f\n",
-              nnode, ncell, "point", "fetriangle", ref_gather->time);
-    } else {
-      fprintf(ref_gather->file,
-              "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, "
-              "zonetype=%s, solutiontime=%f\n",
-              zone_title, nnode, ncell, "point", "fetriangle", ref_gather->time);
+      ascii[0] = (int)'p';
+      ascii[1] = (int)'a';
+      ascii[2] = (int)'r';
+      ascii[3] = (int)'t';
+      ascii[4] = 0;
+      length = 5;
+    }else{
+      length = strlen(zone_title);
+      RAS(length<1023,"title too long");
+      for (i=0;i<length;i++) {
+        ascii[i] = (int)zone_title[i];
+      }
+      ascii[length] = 0;
+      length++;
+    }
+    REIS(length, fwrite(&ascii, sizeof(int), length, ref_gather->file), "title");
+
+    REIS(1, fwrite(&parentzone, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&strandid, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&solutiontime, sizeof(double), 1, ref_gather->file), "double");
+    REIS(1, fwrite(&notused, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&zonetype, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&datapacking, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&varloc, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&faceneighbors, sizeof(int), 1, ref_gather->file), "int");
+    numpts = nnode;
+    REIS(1, fwrite(&numpts, sizeof(int), 1, ref_gather->file), "int");
+    numelements = ncell;
+    REIS(1, fwrite(&numelements, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&celldim, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&aux, sizeof(int), 1, ref_gather->file), "int");
+
+    REIS(1, fwrite(&eohmarker, sizeof(float), 1, ref_gather->file), "eohmarker");
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file), "zonemarker");
+
+    REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
+
+    REIS(1, fwrite(&passive, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&varsharing, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&connsharing, sizeof(int), 1, ref_gather->file), "int");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    mindata = 1.0e100;
+    maxdata = -1.0e100;
+    each_ref_node_valid_node(ref_node, node) {
+      if ( REF_EMPTY != g2l[node] ) {
+        mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
+        maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
+      }
+    }
+    RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
+    RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+    var_limit = reduction;
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+    RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
+    RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+    var_limit = reduction;
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  }
+
+  mindata = 1.0e100;
+  maxdata = -1.0e100;
+  each_ref_node_valid_node(ref_node, node) {
+    if ( REF_EMPTY != g2l[node] ) {
+      mindata = MIN(mindata, (REF_DBL)ref_node_part(ref_node, node));
+      maxdata = MAX(maxdata, (REF_DBL)ref_node_part(ref_node, node));
     }
   }
+  RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
+  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  var_limit = reduction;
+  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
+  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  var_limit = reduction;
+  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+
+  mindata = 1.0e100;
+  maxdata = -1.0e100;
+  each_ref_node_valid_node(ref_node, node) {
+    if ( REF_EMPTY != g2l[node] ) {
+      mindata = MIN(mindata, (REF_DBL)ref_node_age(ref_node, node));
+      maxdata = MAX(maxdata, (REF_DBL)ref_node_age(ref_node, node));
+    }
+  }
+  RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
+  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  var_limit = reduction;
+  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
+  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  var_limit = reduction;
+  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
 
   ref_free(g2l);
 
