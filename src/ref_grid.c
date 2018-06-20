@@ -370,19 +370,21 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   }
 
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
-
   RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
-
   offset = 0;
   for (proc = 0; proc < ref_mpi_rank(ref_mpi); proc++) {
     offset += counts[proc];
   }
+  each_ref_mpi_part(ref_mpi, proc) { (*nnode_global) += counts[proc]; }
+  ref_free(counts);
 
   each_ref_node_valid_node(ref_node, node) {
-    if (REF_EMPTY != (*g2l)[node]) (*g2l)[node] += offset;
+    if (REF_EMPTY != (*g2l)[node]) {
+      (*g2l)[node] += offset;
+    }
   }
 
-  ref_free(counts);
+  RSS(ref_node_ghost_int(ref_node, (*g2l)), "xfer");
 
   return REF_SUCCESS;
 }
