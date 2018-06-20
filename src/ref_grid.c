@@ -335,6 +335,41 @@ REF_STATUS ref_grid_edge_tag_nodes(REF_GRID ref_grid, REF_INT edge_tag,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                               REF_INT *nnode_global, REF_INT *ncell_global,
+                               REF_INT **g2l) {
+  REF_NODE ref_node;
+  REF_MPI ref_mpi;
+  REF_INT cell, node, part;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnode, ncell;
+
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_malloc_init(*g2l, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  (*nnode_global) = 0;
+  (*ncell_global) = 0;
+  nnode = 0;
+  ncell = 0;
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      ncell++;
+    }
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (ref_node_owned(ref_node, nodes[node]) &&
+          (REF_EMPTY == (*g2l)[nodes[node]])) {
+        (*g2l)[nodes[node]] = nnode;
+        nnode++;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_update_tri_guess(REF_CELL ref_cell, REF_INT node0,
                                        REF_INT node1, REF_INT *guess) {
   REF_INT ncell, max_cell = 2, cell_list[2];
