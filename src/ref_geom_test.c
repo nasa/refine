@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
   REF_INT recon_pos = REF_EMPTY;
   REF_INT viz_pos = REF_EMPTY;
   REF_INT tess_pos = REF_EMPTY;
+  REF_INT tetgen_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -59,6 +60,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--viz", &viz_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--tess", &tess_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--tetgen", &tetgen_pos), REF_NOT_FOUND,
       "arg search");
 
   if (viz_pos != REF_EMPTY) {
@@ -119,16 +122,27 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (tess_pos != REF_EMPTY) { /* egads to grid */
+  if (tess_pos != REF_EMPTY || tetgen_pos != REF_EMPTY) { /* egads to grid */
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL params[3];
     REF_BOOL aflr_over_tetgen = REF_TRUE;
 
-    REIS(1, tess_pos,
-         "required args: --tess input.egads output.meshb edge chord angle");
-    REIS(7, argc,
-         "required args: --tess input.egads output.meshb edge chord angle");
+    if (tess_pos != REF_EMPTY) {
+      REIS(1, tess_pos,
+           "required args: --tess input.egads output.meshb edge chord angle");
+      REIS(7, argc,
+           "required args: --tess input.egads output.meshb edge chord angle");
+      aflr_over_tetgen = REF_TRUE;
+    }
+
+    if (tetgen_pos != REF_EMPTY) {
+      REIS(1, tetgen_pos,
+           "required args: --tetgen input.egads output.meshb edge chord angle");
+      REIS(7, argc,
+           "required args: --tetgen input.egads output.meshb edge chord angle");
+      aflr_over_tetgen = REF_FALSE;
+    }
 
     params[0] = atof(argv[4]);
     params[1] = atof(argv[5]);
