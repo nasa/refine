@@ -909,8 +909,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
 
-    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), 
-                    REF_DBL, 0.0);
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
 
     RSS(ref_metric_roundoff_limit(metric, ref_grid), "imply");
 
@@ -924,8 +924,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_grid_free(ref_grid), "free");
   }
-
-
 
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");

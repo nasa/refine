@@ -1326,30 +1326,32 @@ REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL diag_system[12];
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
-                                  node_list),
+    RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode, node_list),
         "first halo of nodes");
     radius = 0.0;
     for (i = 0; i < nnode; i++) {
-      dist = sqrt( pow(ref_node_xyz(ref_node,0,node_list[i]) - 
-                       ref_node_xyz(ref_node,0,node),2) + 
-                   pow(ref_node_xyz(ref_node,1,node_list[i]) - 
-                       ref_node_xyz(ref_node,1,node),2) +
-                   pow(ref_node_xyz(ref_node,2,node_list[i]) -
-                       ref_node_xyz(ref_node,2,node),2) );
-      if ( i == 0 ) radius = dist;
-      radius = MIN( radius, dist );
+      dist = sqrt(pow(ref_node_xyz(ref_node, 0, node_list[i]) -
+                          ref_node_xyz(ref_node, 0, node),
+                      2) +
+                  pow(ref_node_xyz(ref_node, 1, node_list[i]) -
+                          ref_node_xyz(ref_node, 1, node),
+                      2) +
+                  pow(ref_node_xyz(ref_node, 2, node_list[i]) -
+                          ref_node_xyz(ref_node, 2, node),
+                      2));
+      if (i == 0) radius = dist;
+      radius = MIN(radius, dist);
     }
     /* 2nd order central finite difference */
-    eig_floor = 4*round_off_jitter/radius/radius;
+    eig_floor = 4 * round_off_jitter / radius / radius;
 
     RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
-    ref_matrix_eig(diag_system, 0) = 
-      MAX( ref_matrix_eig(diag_system, 0), eig_floor );
-    ref_matrix_eig(diag_system, 1) = 
-      MAX( ref_matrix_eig(diag_system, 1), eig_floor );
-    ref_matrix_eig(diag_system, 2) = 
-      MAX( ref_matrix_eig(diag_system, 2), eig_floor );
+    ref_matrix_eig(diag_system, 0) =
+        MAX(ref_matrix_eig(diag_system, 0), eig_floor);
+    ref_matrix_eig(diag_system, 1) =
+        MAX(ref_matrix_eig(diag_system, 1), eig_floor);
+    ref_matrix_eig(diag_system, 2) =
+        MAX(ref_matrix_eig(diag_system, 2), eig_floor);
     RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "re-form hess");
   }
 
