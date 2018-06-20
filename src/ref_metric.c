@@ -1315,3 +1315,43 @@ REF_STATUS ref_metric_set_zero_det(REF_DBL *metric_with_zeros,
 
   return REF_SUCCESS;
 }
+REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_DBL radius, dist;
+  REF_DBL round_off_jitter = 1.0e-12;
+  REF_DBL eig_floor;
+  REF_INT nnode, node_list[200], max_node = 200;
+  REF_DBL diag_system[12];
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
+                                  node_list),
+        "first halo of nodes");
+    radius = 0.0;
+    for (i = 0; i < nnode; i++) {
+      dist = sqrt( pow(ref_node_xyz(ref_node,0,node_list[i]) - 
+                       ref_node_xyz(ref_node,0,node),2) + 
+                   pow(ref_node_xyz(ref_node,1,node_list[i]) - 
+                       ref_node_xyz(ref_node,1,node),2) +
+                   pow(ref_node_xyz(ref_node,2,node_list[i]) -
+                       ref_node_xyz(ref_node,2,node),2) );
+      if ( i == 0 ) radius = dist;
+      radius = MIN( radius, dist );
+    }
+    /* 2nd order central finite difference */
+    eig_floor = 4*round_off_jitter/radius/radius;
+
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
+    ref_matrix_eig(diag_system, 0) = 
+      MAX( ref_matrix_eig(diag_system, 0), eig_floor );
+    ref_matrix_eig(diag_system, 1) = 
+      MAX( ref_matrix_eig(diag_system, 1), eig_floor );
+    ref_matrix_eig(diag_system, 2) = 
+      MAX( ref_matrix_eig(diag_system, 2), eig_floor );
+    RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "re-form hess");
+  }
+
+  return REF_SUCCESS;
+}

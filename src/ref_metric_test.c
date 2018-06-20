@@ -901,6 +901,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* imply metric right tet */
+    REF_DBL tol = 1.0e-12;
+    REF_GRID ref_grid;
+    REF_DBL *metric;
+    REF_INT node;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), 
+                    REF_DBL, 0.0);
+
+    RSS(ref_metric_roundoff_limit(metric, ref_grid), "imply");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RAS(tol < metric[0 + 6 * node], "m[0]");
+      RAS(tol < metric[3 + 6 * node], "m[3]");
+      RAS(tol < metric[5 + 6 * node], "m[5]");
+    }
+
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
