@@ -291,6 +291,75 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
+                                      const char *zone_title) {
+  REF_GATHER ref_gather = ref_grid_gather(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, ncell, *g2l;
+
+  int one = 1;
+  int filetype = 0;
+  int ascii[8];
+  int numvar = 5;
+
+  if (!(ref_gather->recording)) return REF_SUCCESS;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell,
+                          &nnode, &ncell, &g2l), "compact");
+  if (ref_grid_once(ref_grid)) {
+    if (NULL == (void *)(ref_gather->file)) {
+      ref_gather->file = fopen("ref_gather_movie.plt", "w");
+      if (NULL == (void *)(ref_gather->file))
+        printf("unable to open ref_gather_movie.plt\n");
+      RNS(ref_gather->file, "unable to open file");
+
+      REIS(8, fwrite(&"#!TDV112", sizeof(char), 8, ref_gather->file), "header");
+      REIS(1, fwrite(&one, sizeof(int), 1, ref_gather->file), "magic");
+      REIS(1, fwrite(&filetype, sizeof(int), 1, ref_gather->file), "filetype");
+
+      ascii[0] = (int)'f';
+      ascii[1] = (int)'t';
+      ascii[2] = 0;
+      REIS(3, fwrite(&ascii, sizeof(int), 3, ref_gather->file), "title");
+
+      REIS(1, fwrite(&numvar, sizeof(int), 1, ref_gather->file), "numvar");
+      ascii[0] = (int)'x';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
+      ascii[0] = (int)'y';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
+      ascii[0] = (int)'z';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
+      ascii[0] = (int)'p';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
+      ascii[0] = (int)'a';
+      ascii[1] = 0;
+      REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
+    }
+    if (NULL == zone_title) {
+      fprintf(ref_gather->file,
+              "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, "
+              "zonetype=%s, solutiontime=%f\n",
+              nnode, ncell, "point", "fetriangle", ref_gather->time);
+    } else {
+      fprintf(ref_gather->file,
+              "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, "
+              "zonetype=%s, solutiontime=%f\n",
+              zone_title, nnode, ncell, "point", "fetriangle", ref_gather->time);
+    }
+  }
+
+  ref_free(g2l);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                                       const char *zone_title) {
   REF_GATHER ref_gather = ref_grid_gather(ref_grid);
