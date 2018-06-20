@@ -417,6 +417,8 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
     REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
+    REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
 
     REIS(1, fwrite(&passive, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&varsharing, sizeof(int), 1, ref_gather->file), "int");
