@@ -1355,5 +1355,7 @@ REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
     RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "re-form hess");
   }
 
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
+
   return REF_SUCCESS;
 }
