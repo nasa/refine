@@ -330,6 +330,9 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   REF_INT i, length, ixyz, node;
   REF_DBL *nodal;
   float nodal_float;
+  int c2n;
+  REF_INT cell, part, incoming, *conn;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -499,7 +502,55 @@ if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_
     }
   }
   ref_free(nodal);
-
+  if (ref_grid_once(ref_grid)) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+          c2n = g2l[nodes[node]];
+          REIS(1, fwrite(&c2n, sizeof(int), 1, ref_gather->file), "nodal");
+        }
+      }
+    }
+    each_ref_mpi_worker(ref_mpi, part){
+      RSS( ref_mpi_recv( ref_mpi, &incoming, 1, REF_INT_TYPE, part ), "in"); 
+      if ( incoming > 0 ) {
+        ref_malloc(conn,ref_cell_node_per(ref_cell)*incoming,REF_INT);
+        RSS( ref_mpi_recv( ref_mpi, &conn, 
+                           ref_cell_node_per(ref_cell)*incoming, 
+                           REF_INT_TYPE, part ), "conn"); 
+        for (node = 0; node < ref_cell_node_per(ref_cell)*incoming; node++) {
+          c2n = conn[node];
+          REIS(1, fwrite(&c2n, sizeof(int), 1, ref_gather->file), "nodal");
+        }
+        ref_free(conn);
+      }
+    }
+  }else{
+    incoming = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        incoming++;
+      }
+    }
+    RSS( ref_mpi_send( ref_mpi, &incoming, 1, REF_INT_TYPE, 0 ), "in"); 
+    if ( incoming > 0 ) {
+      ref_malloc(conn,ref_cell_node_per(ref_cell)*incoming,REF_INT);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part) {
+          for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+            conn[node+ref_cell_node_per(ref_cell)*incoming] = g2l[nodes[node]];
+          }
+        }
+        RSS( ref_mpi_send( ref_mpi, &conn, 
+                           ref_cell_node_per(ref_cell)*incoming, 
+                           REF_INT_TYPE, 0 ), "conn"); 
+        ref_free(conn);
+      }
+    }
+  }
   ref_free(g2l);
 
   return REF_SUCCESS;
