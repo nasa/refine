@@ -76,6 +76,37 @@ int main(void) {
     REIS(3, unique[2], "unique[2]");
   }
 
+  { /* sparse global to local */
+    REF_INT n = 7, i, global[7], sorted_index[7], sorted_global[7];
+    REF_INT pack[7], position, total;
+    global[0] = 10;
+    global[1] = REF_EMPTY;
+    global[2] = 30;
+    global[3] = REF_EMPTY;
+    global[4] = REF_EMPTY;
+    global[5] = 20;
+    global[6] = REF_EMPTY;
+    total = 0;
+    for (i = 0; i < n; i++) {
+      if (REF_EMPTY != global[i]) {
+        sorted_global[total] = global[i];
+        pack[total] = i;
+        total++;
+      }
+    }
+    RSS(ref_sort_heap_int(total, sorted_global, sorted_index), "sort");
+    for (i = 0; i < total; i++) {
+      sorted_index[i] = pack[sorted_index[i]];
+      sorted_global[i] = global[sorted_index[i]];
+    }
+    RSS(ref_sort_search(total, sorted_global, global[0], &position), "search");
+    REIS(0, sorted_index[position], "0");
+    RSS(ref_sort_search(total, sorted_global, global[2], &position), "search");
+    REIS(2, sorted_index[position], "2");
+    RSS(ref_sort_search(total, sorted_global, global[5], &position), "search");
+    REIS(5, sorted_index[position], "5");
+  }
+
   { /* global to local */
     REF_INT n = 4, i, global[4], sorted_index[4], sorted_global[4], position;
     global[0] = 40;
