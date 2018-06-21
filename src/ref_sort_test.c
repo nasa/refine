@@ -86,6 +86,8 @@ int main(void) {
     for (i = 0; i < n; i++) {
       sorted_global[i] = global[sorted_index[i]];
     }
+    RSS(ref_sort_search(n, sorted_global, global[0], &position), "search");
+    REIS(0, sorted_index[position], "0");
     RSS(ref_sort_search(n, sorted_global, global[1], &position), "search");
     REIS(1, sorted_index[position], "1");
     RSS(ref_sort_search(n, sorted_global, global[2], &position), "search");
