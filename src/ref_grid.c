@@ -337,7 +337,7 @@ REF_STATUS ref_grid_edge_tag_nodes(REF_GRID ref_grid, REF_INT edge_tag,
 
 REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                REF_INT *nnode_global, REF_INT *ncell_global,
-                               REF_INT **g2l) {
+                               REF_INT **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
   REF_INT cell, node, part;
@@ -348,7 +348,7 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   ref_node = ref_grid_node(ref_grid);
   ref_mpi = ref_node_mpi(ref_node);
 
-  ref_malloc_init(*g2l, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   (*nnode_global) = 0;
   (*ncell_global) = 0;
@@ -362,8 +362,8 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (ref_node_owned(ref_node, nodes[node]) &&
-          (REF_EMPTY == (*g2l)[nodes[node]])) {
-        (*g2l)[nodes[node]] = nnode;
+          (REF_EMPTY == (*l2c)[nodes[node]])) {
+        (*l2c)[nodes[node]] = nnode;
         nnode++;
       }
     }
@@ -381,12 +381,12 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   ref_free(counts);
 
   each_ref_node_valid_node(ref_node, node) {
-    if (REF_EMPTY != (*g2l)[node]) {
-      (*g2l)[node] += offset;
+    if (REF_EMPTY != (*l2c)[node]) {
+      (*l2c)[node] += offset;
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*g2l)), "xfer");
+  RSS(ref_node_ghost_int(ref_node, (*l2c)), "xfer");
 
   return REF_SUCCESS;
 }

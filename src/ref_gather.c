@@ -294,7 +294,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_INT nnode, ncell, *g2l;
+  REF_INT nnode, ncell, *l2c;
 
   int one = 1;
   int filetype = 0; /* 0 = FULL,1 = GRID,2 = SOLUTION */
@@ -335,7 +335,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &g2l), "compact");
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "compact");
   if (ref_grid_once(ref_grid)) {
     if (NULL == (void *)(ref_gather->file)) {
       ref_gather->file = fopen("ref_gather_movie.plt", "w");
@@ -430,7 +430,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
     mindata = 1.0e100;
     maxdata = -1.0e100;
     each_ref_node_valid_node(ref_node, node) {
-      if (REF_EMPTY != g2l[node]) {
+      if (REF_EMPTY != l2c[node]) {
         mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
         maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
       }
@@ -450,7 +450,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   mindata = 1.0e100;
   maxdata = -1.0e100;
   each_ref_node_valid_node(ref_node, node) {
-    if (REF_EMPTY != g2l[node]) {
+    if (REF_EMPTY != l2c[node]) {
       mindata = MIN(mindata, (REF_DBL)ref_node_part(ref_node, node));
       maxdata = MAX(maxdata, (REF_DBL)ref_node_part(ref_node, node));
     }
@@ -469,7 +469,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   mindata = 1.0e100;
   maxdata = -1.0e100;
   each_ref_node_valid_node(ref_node, node) {
-    if (REF_EMPTY != g2l[node]) {
+    if (REF_EMPTY != l2c[node]) {
       mindata = MIN(mindata, (REF_DBL)ref_node_age(ref_node, node));
       maxdata = MAX(maxdata, (REF_DBL)ref_node_age(ref_node, node));
     }
@@ -487,13 +487,13 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
 
   ref_malloc_init(nodal, nnode * 6, REF_DBL, 0.0);
   each_ref_node_valid_node(ref_node, node) {
-    if (REF_EMPTY != g2l[node] && ref_node_owned(ref_node, node)) {
-      nodal[0 + 6 * g2l[node]] = ref_node_xyz(ref_node, 0, node);
-      nodal[1 + 6 * g2l[node]] = ref_node_xyz(ref_node, 1, node);
-      nodal[2 + 6 * g2l[node]] = ref_node_xyz(ref_node, 2, node);
-      nodal[3 + 6 * g2l[node]] = (REF_DBL)ref_node_part(ref_node, node);
-      nodal[4 + 6 * g2l[node]] = (REF_DBL)ref_node_age(ref_node, node);
-      nodal[5 + 6 * g2l[node]] = 1.0;
+    if (REF_EMPTY != l2c[node] && ref_node_owned(ref_node, node)) {
+      nodal[0 + 6 * l2c[node]] = ref_node_xyz(ref_node, 0, node);
+      nodal[1 + 6 * l2c[node]] = ref_node_xyz(ref_node, 1, node);
+      nodal[2 + 6 * l2c[node]] = ref_node_xyz(ref_node, 2, node);
+      nodal[3 + 6 * l2c[node]] = (REF_DBL)ref_node_part(ref_node, node);
+      nodal[4 + 6 * l2c[node]] = (REF_DBL)ref_node_age(ref_node, node);
+      nodal[5 + 6 * l2c[node]] = 1.0;
     }
   }
   RSS(ref_mpi_allsum(ref_mpi, nodal, nnode * 6, REF_DBL_TYPE), "allsum");
@@ -515,7 +515,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-          c2n = g2l[nodes[node]];
+          c2n = l2c[nodes[node]];
           REIS(1, fwrite(&c2n, sizeof(int), 1, ref_gather->file), "nodal");
         }
       }
@@ -550,7 +550,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
         if (ref_mpi_rank(ref_mpi) == part) {
           for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
             conn[node + ref_cell_node_per(ref_cell) * incoming] =
-                g2l[nodes[node]];
+                l2c[nodes[node]];
           }
         }
         RSS(ref_mpi_send(ref_mpi, &conn, ref_cell_node_per(ref_cell) * incoming,
@@ -560,7 +560,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
       }
     }
   }
-  ref_free(g2l);
+  ref_free(l2c);
 
   return REF_SUCCESS;
 }
