@@ -154,19 +154,18 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT size_per = ref_cell_size_per(ref_cell);
   REF_INT ncell;
   REF_INT *c2n;
   REF_INT proc;
 
   if (ref_mpi_once(ref_mpi)) {
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell,
-        nodes) if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
-      for (node = 0; node < node_per; node++) {
-        nodes[node] = ref_node_global(ref_node, nodes[node]);
-        nodes[node]++;
-        fprintf(file, " %d", nodes[node]);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
+        for (node = 0; node < node_per; node++) {
+          nodes[node] = ref_node_global(ref_node, nodes[node]);
+          nodes[node]++;
+          fprintf(file, " %d", nodes[node]);
+        }
       }
       fprintf(file, "\n");
     }
@@ -175,13 +174,13 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
-      ref_malloc(c2n, ncell * size_per, REF_INT);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, proc),
+      ref_malloc(c2n, ncell * node_per, REF_INT);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
-          c2n[node + size_per * cell]++;
-          fprintf(file, " %d", c2n[node + size_per * cell]);
+          c2n[node + node_per * cell]++;
+          fprintf(file, " %d", c2n[node + node_per * cell]);
         }
         fprintf(file, "\n");
       }
@@ -189,22 +188,20 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
     }
   } else {
     ncell = 0;
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell, nodes) if (ref_mpi_rank(ref_mpi) ==
-                                   ref_node_part(ref_node, nodes[0])) ncell++;
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    ref_malloc(c2n, ncell * size_per, REF_INT);
-    ncell = 0;
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell,
-        nodes) if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
-      for (node = 0; node < node_per; node++)
-        c2n[node + size_per * ncell] = ref_node_global(ref_node, nodes[node]);
-      for (node = node_per; node < size_per; node++)
-        c2n[node + size_per * ncell] = nodes[node];
-      ncell++;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) ncell++;
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
+    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ncell = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
+        for (node = 0; node < node_per; node++)
+          c2n[node + node_per * ncell] = ref_node_global(ref_node, nodes[node]);
+        ncell++;
+      }
+    }
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
         "send c2n");
 
     ref_free(c2n);
@@ -309,8 +306,8 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
   int strandid = -1;
   double solutiontime = (double)(ref_gather->time);
   int notused = -1;
-  int zonetype = 2; /* 0=ORDERED,1=FELINESEG,2=FETRIANGLE, 3=FEQUADRILATERAL,
-                     * 4=FETETRAHEDRON, 5=FEBRICK, 6=FEPOLYGON,7=FEPOLYHEDRON */
+  int zonetype = 2;    /* 0=ORDERED,1=FELINESEG,2=FETRIANGLE, 3=FEQUADRILATERAL,
+                        * 4=FETETRAHEDRON, 5=FEBRICK, 6=FEPOLYGON,7=FEPOLYHEDRON */
   int datapacking = 0; /*0=Block, point does not work.*/
   int varloc = 0;      /*0 = Don't specify, all data is located at nodes*/
   int faceneighbors = 0;
@@ -338,8 +335,7 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell,
-                          &nnode, &ncell, &g2l), "compact");
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &g2l), "compact");
   if (ref_grid_once(ref_grid)) {
     if (NULL == (void *)(ref_gather->file)) {
       ref_gather->file = fopen("ref_gather_movie.plt", "w");
@@ -374,7 +370,8 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
       REIS(2, fwrite(&ascii, sizeof(int), 2, ref_gather->file), "var");
     }
 
-    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file), "zonemarker");
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file),
+         "zonemarker");
 
     if (NULL == zone_title) {
       ascii[0] = (int)'p';
@@ -383,20 +380,22 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
       ascii[3] = (int)'t';
       ascii[4] = 0;
       length = 5;
-    }else{
+    } else {
       length = strlen(zone_title);
-      RAS(length<1023,"title too long");
-      for (i=0;i<length;i++) {
+      RAS(length < 1023, "title too long");
+      for (i = 0; i < length; i++) {
         ascii[i] = (int)zone_title[i];
       }
       ascii[length] = 0;
       length++;
     }
-    REIS(length, fwrite(&ascii, sizeof(int), length, ref_gather->file), "title");
+    REIS(length, fwrite(&ascii, sizeof(int), length, ref_gather->file),
+         "title");
 
     REIS(1, fwrite(&parentzone, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&strandid, sizeof(int), 1, ref_gather->file), "int");
-    REIS(1, fwrite(&solutiontime, sizeof(double), 1, ref_gather->file), "double");
+    REIS(1, fwrite(&solutiontime, sizeof(double), 1, ref_gather->file),
+         "double");
     REIS(1, fwrite(&notused, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&zonetype, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&datapacking, sizeof(int), 1, ref_gather->file), "int");
@@ -411,8 +410,10 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
     REIS(1, fwrite(&celldim, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&aux, sizeof(int), 1, ref_gather->file), "int");
 
-    REIS(1, fwrite(&eohmarker, sizeof(float), 1, ref_gather->file), "eohmarker");
-    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file), "zonemarker");
+    REIS(1, fwrite(&eohmarker, sizeof(float), 1, ref_gather->file),
+         "eohmarker");
+    REIS(1, fwrite(&zonemarker, sizeof(float), 1, ref_gather->file),
+         "zonemarker");
 
     REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
     REIS(1, fwrite(&dataformat, sizeof(int), 1, ref_gather->file), "int");
@@ -429,77 +430,82 @@ REF_STATUS ref_gather_plt_movie_frame(REF_GRID ref_grid,
     mindata = 1.0e100;
     maxdata = -1.0e100;
     each_ref_node_valid_node(ref_node, node) {
-      if ( REF_EMPTY != g2l[node] ) {
+      if (REF_EMPTY != g2l[node]) {
         mindata = MIN(mindata, ref_node_xyz(ref_node, ixyz, node));
         maxdata = MAX(maxdata, ref_node_xyz(ref_node, ixyz, node));
       }
     }
-    RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
-    RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+    RSS(ref_mpi_min(ref_mpi, &mindata, &reduction, REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
     var_limit = reduction;
-if (ref_grid_once(ref_grid))
-    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
-    RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
-    RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+    if (ref_grid_once(ref_grid))
+      REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+    RSS(ref_mpi_max(ref_mpi, &maxdata, &reduction, REF_DBL_TYPE), "max");
+    RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
     var_limit = reduction;
-if (ref_grid_once(ref_grid))
-    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+    if (ref_grid_once(ref_grid))
+      REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
   }
 
   mindata = 1.0e100;
   maxdata = -1.0e100;
   each_ref_node_valid_node(ref_node, node) {
-    if ( REF_EMPTY != g2l[node] ) {
+    if (REF_EMPTY != g2l[node]) {
       mindata = MIN(mindata, (REF_DBL)ref_node_part(ref_node, node));
       maxdata = MAX(maxdata, (REF_DBL)ref_node_part(ref_node, node));
     }
   }
-  RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
-  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  RSS(ref_mpi_min(ref_mpi, &mindata, &reduction, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
   var_limit = reduction;
-if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
-  RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
-  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  if (ref_grid_once(ref_grid))
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  RSS(ref_mpi_max(ref_mpi, &maxdata, &reduction, REF_DBL_TYPE), "max");
+  RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
   var_limit = reduction;
-if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  if (ref_grid_once(ref_grid))
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
 
   mindata = 1.0e100;
   maxdata = -1.0e100;
   each_ref_node_valid_node(ref_node, node) {
-    if ( REF_EMPTY != g2l[node] ) {
+    if (REF_EMPTY != g2l[node]) {
       mindata = MIN(mindata, (REF_DBL)ref_node_age(ref_node, node));
       maxdata = MAX(maxdata, (REF_DBL)ref_node_age(ref_node, node));
     }
   }
-  RSS( ref_mpi_min( ref_mpi, &mindata, &reduction, REF_DBL_TYPE ), "min");
-  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  RSS(ref_mpi_min(ref_mpi, &mindata, &reduction, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
   var_limit = reduction;
-if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
-  RSS( ref_mpi_max( ref_mpi, &maxdata, &reduction, REF_DBL_TYPE ), "max");
-  RSS( ref_mpi_bcast( ref_mpi, &reduction, 1, REF_DBL_TYPE ), "bcast");
+  if (ref_grid_once(ref_grid))
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  RSS(ref_mpi_max(ref_mpi, &maxdata, &reduction, REF_DBL_TYPE), "max");
+  RSS(ref_mpi_bcast(ref_mpi, &reduction, 1, REF_DBL_TYPE), "bcast");
   var_limit = reduction;
-  if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
+  if (ref_grid_once(ref_grid))
+    REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_gather->file), "write");
 
-  ref_malloc_init( nodal, nnode*6, REF_DBL, 0.0);
+  ref_malloc_init(nodal, nnode * 6, REF_DBL, 0.0);
   each_ref_node_valid_node(ref_node, node) {
-    if ( REF_EMPTY != g2l[node] && ref_node_owned(ref_node,node)) {
-      nodal[0+6*g2l[node]] = ref_node_xyz(ref_node, 0, node);
-      nodal[1+6*g2l[node]] = ref_node_xyz(ref_node, 1, node);
-      nodal[2+6*g2l[node]] = ref_node_xyz(ref_node, 2, node);
-      nodal[3+6*g2l[node]] = (REF_DBL)ref_node_part(ref_node, node);
-      nodal[4+6*g2l[node]] = (REF_DBL)ref_node_age(ref_node, node);
-      nodal[5+6*g2l[node]] = 1.0; 
+    if (REF_EMPTY != g2l[node] && ref_node_owned(ref_node, node)) {
+      nodal[0 + 6 * g2l[node]] = ref_node_xyz(ref_node, 0, node);
+      nodal[1 + 6 * g2l[node]] = ref_node_xyz(ref_node, 1, node);
+      nodal[2 + 6 * g2l[node]] = ref_node_xyz(ref_node, 2, node);
+      nodal[3 + 6 * g2l[node]] = (REF_DBL)ref_node_part(ref_node, node);
+      nodal[4 + 6 * g2l[node]] = (REF_DBL)ref_node_age(ref_node, node);
+      nodal[5 + 6 * g2l[node]] = 1.0;
     }
   }
-  RSS( ref_mpi_allsum( ref_mpi, nodal, nnode*6, REF_DBL_TYPE ), "allsum");
-  for (node=0;node<nnode;node++) {
-    RWDS( 1.0, nodal[5+6*node], -1.0, "node contribution" );
+  RSS(ref_mpi_allsum(ref_mpi, nodal, nnode * 6, REF_DBL_TYPE), "allsum");
+  for (node = 0; node < nnode; node++) {
+    RWDS(1.0, nodal[5 + 6 * node], -1.0, "node contribution");
   }
   if (ref_grid_once(ref_grid)) {
-    for (i=0;i<5;i++) {
-      for (node=0;node<nnode;node++) {
-        nodal_float = (float)nodal[i+6*node];
-        REIS(1, fwrite(&nodal_float, sizeof(float), 1, ref_gather->file), "nodal");
+    for (i = 0; i < 5; i++) {
+      for (node = 0; node < nnode; node++) {
+        nodal_float = (float)nodal[i + 6 * node];
+        REIS(1, fwrite(&nodal_float, sizeof(float), 1, ref_gather->file),
+             "nodal");
       }
     }
   }
@@ -514,21 +520,21 @@ if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_
         }
       }
     }
-    each_ref_mpi_worker(ref_mpi, part){
-      RSS( ref_mpi_recv( ref_mpi, &incoming, 1, REF_INT_TYPE, part ), "in"); 
-      if ( incoming > 0 ) {
-        ref_malloc(conn,ref_cell_node_per(ref_cell)*incoming,REF_INT);
-        RSS( ref_mpi_recv( ref_mpi, &conn, 
-                           ref_cell_node_per(ref_cell)*incoming, 
-                           REF_INT_TYPE, part ), "conn"); 
-        for (node = 0; node < ref_cell_node_per(ref_cell)*incoming; node++) {
+    each_ref_mpi_worker(ref_mpi, part) {
+      RSS(ref_mpi_recv(ref_mpi, &incoming, 1, REF_INT_TYPE, part), "in");
+      if (incoming > 0) {
+        ref_malloc(conn, ref_cell_node_per(ref_cell) * incoming, REF_INT);
+        RSS(ref_mpi_recv(ref_mpi, &conn, ref_cell_node_per(ref_cell) * incoming,
+                         REF_INT_TYPE, part),
+            "conn");
+        for (node = 0; node < ref_cell_node_per(ref_cell) * incoming; node++) {
           c2n = conn[node];
           REIS(1, fwrite(&c2n, sizeof(int), 1, ref_gather->file), "nodal");
         }
         ref_free(conn);
       }
     }
-  }else{
+  } else {
     incoming = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -536,19 +542,20 @@ if (ref_grid_once(ref_grid))  REIS(1, fwrite(&var_limit, sizeof(double), 1, ref_
         incoming++;
       }
     }
-    RSS( ref_mpi_send( ref_mpi, &incoming, 1, REF_INT_TYPE, 0 ), "in"); 
-    if ( incoming > 0 ) {
-      ref_malloc(conn,ref_cell_node_per(ref_cell)*incoming,REF_INT);
+    RSS(ref_mpi_send(ref_mpi, &incoming, 1, REF_INT_TYPE, 0), "in");
+    if (incoming > 0) {
+      ref_malloc(conn, ref_cell_node_per(ref_cell) * incoming, REF_INT);
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
         if (ref_mpi_rank(ref_mpi) == part) {
           for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-            conn[node+ref_cell_node_per(ref_cell)*incoming] = g2l[nodes[node]];
+            conn[node + ref_cell_node_per(ref_cell) * incoming] =
+                g2l[nodes[node]];
           }
         }
-        RSS( ref_mpi_send( ref_mpi, &conn, 
-                           ref_cell_node_per(ref_cell)*incoming, 
-                           REF_INT_TYPE, 0 ), "conn"); 
+        RSS(ref_mpi_send(ref_mpi, &conn, ref_cell_node_per(ref_cell) * incoming,
+                         REF_INT_TYPE, 0),
+            "conn");
         ref_free(conn);
       }
     }
