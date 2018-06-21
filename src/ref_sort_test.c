@@ -76,6 +76,24 @@ int main(void) {
     REIS(3, unique[2], "unique[2]");
   }
 
+  { /* global to local */
+    REF_INT n = 4, i, global[4], sorted_index[4], sorted_global[4], position;
+    global[0] = 40;
+    global[1] = 10;
+    global[2] = 30;
+    global[3] = 20;
+    RSS(ref_sort_heap_int(n, global, sorted_index), "sort");
+    for (i = 0; i < n; i++) {
+      sorted_global[i] = global[sorted_index[i]];
+    }
+    RSS(ref_sort_search(n, sorted_global, global[1], &position), "search");
+    REIS(1, sorted_index[position], "1");
+    RSS(ref_sort_search(n, sorted_global, global[2], &position), "search");
+    REIS(2, sorted_index[position], "2");
+    RSS(ref_sort_search(n, sorted_global, global[3], &position), "search");
+    REIS(3, sorted_index[position], "3");
+  }
+
   { /* search */
     REF_INT n = 4, ascending_list[4], position;
     ascending_list[0] = 10;
