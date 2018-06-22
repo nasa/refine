@@ -154,7 +154,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++)
       if ((ABS(local_xyzm[5 + dim * i] - 1.0) > 0.1) &&
           (ABS(local_xyzm[5 + dim * i] - 0.0) > 0.1)) {
-        printf("%s: %d: %s: error gather node before sum %d %f\n", __FILE__,
+        printf("%s: %d: %s: before sum %d %f\n", __FILE__,
                __LINE__, __func__, first + i, local_xyzm[5 + dim * i]);
       }
 
@@ -163,7 +163,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[5 + dim * i] - 1.0) > 0.1) {
-          printf("%s: %d: %s: error gather node %d %f\n", __FILE__, __LINE__,
+          printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__,
                  __func__, first + i, xyzm[5 + dim * i]);
         }
         fprintf(file, "%.15e %.15e %.15e %.0f %.0f\n", xyzm[0 + dim * i],
