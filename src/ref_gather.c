@@ -26,6 +26,7 @@
 #include "ref_endian.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
   REF_GATHER ref_gather;
@@ -77,7 +78,8 @@ static REF_STATUS ref_gather_ncell_below_quality(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, FILE *file) {
+static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
+                                           REF_INT *l2c, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -85,16 +87,44 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, FILE *file) {
   REF_INT global, local;
   REF_STATUS status;
   REF_INT dim = 6;
+  REF_INT *sorted_local, *sorted_cellnode, *pack, total_cellnode;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  total_cellnode = 0;
+  for (i = 0; i < ref_node_max(ref_node); i++) {
+    if (REF_EMPTY != l2c[i]) {
+      total_cellnode++;
+    }
+  }
+
+  ref_malloc(sorted_local, total_cellnode, REF_INT);
+  ref_malloc(sorted_cellnode, total_cellnode, REF_INT);
+  ref_malloc(pack, total_cellnode, REF_INT);
+
+  total_cellnode = 0;
+  for (i = 0; i < ref_node_max(ref_node); i++) {
+    if (REF_EMPTY != l2c[i]) {
+      sorted_cellnode[total_cellnode] = l2c[i];
+      pack[total_cellnode] = i;
+      total_cellnode++;
+    }
+  }
+  RSS(ref_sort_heap_int(total_cellnode, sorted_cellnode, sorted_local), "sort");
+  for (i = 0; i < total_cellnode; i++) {
+    sorted_local[i] = pack[sorted_local[i]];
+    sorted_cellnode[i] = l2c[sorted_local[i]];
+  }
+  ref_free(pack);
+
+  chunk = nnode / ref_mpi_n(ref_mpi) + 1;
+  chunk = MAX(chunk, 100000);
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
   ref_malloc(xyzm, dim * chunk, REF_DBL);
 
   nnode_written = 0;
-  while (nnode_written < ref_node_n_global(ref_node)) {
+  while (nnode_written < nnode) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = MIN(chunk, nnode - nnode_written);
 
     nnode_written += n;
 
@@ -102,7 +132,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, FILE *file) {
 
     for (i = 0; i < n; i++) {
       global = first + i;
-      status = ref_node_local(ref_node, global, &local);
+      status = ref_sort_search(total_cellnode, sorted_cellnode, global, &local);
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status &&
           ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
@@ -144,25 +174,26 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, FILE *file) {
 
   ref_free(xyzm);
   ref_free(local_xyzm);
+  ref_free(sorted_cellnode);
+  ref_free(sorted_local);
 
   return REF_SUCCESS;
 }
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
-                                      FILE *file) {
+                                      REF_INT *l2c, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT ncell;
-  REF_INT *c2n;
+  REF_INT *c2n, ncell;
   REF_INT proc;
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
         for (node = 0; node < node_per; node++) {
-          nodes[node] = ref_node_global(ref_node, nodes[node]);
+          nodes[node] = l2c[nodes[node]];
           nodes[node]++;
           fprintf(file, " %d", nodes[node]);
         }
@@ -197,7 +228,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
         for (node = 0; node < node_per; node++)
-          c2n[node + node_per * ncell] = ref_node_global(ref_node, nodes[node]);
+          c2n[node + node_per * ncell] = l2c[nodes[node]];
         ncell++;
       }
     }
@@ -569,15 +600,14 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                                       const char *zone_title) {
   REF_GATHER ref_gather = ref_grid_gather(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nnode, ntri;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, ncell, *l2c;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  nnode = ref_node_n_global(ref_node);
-
-  RSS(ref_gather_ncell(ref_node, ref_grid_tri(ref_grid), &ntri), "ntri");
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
 
   if (ref_grid_once(ref_grid)) {
     if (NULL == (void *)(ref_gather->file)) {
@@ -593,18 +623,19 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       fprintf(ref_gather->file,
               "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
-              nnode, ntri, "point", "fetriangle", ref_gather->time);
+              nnode, ncell, "point", "fetriangle", ref_gather->time);
     } else {
       fprintf(ref_gather->file,
               "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
-              zone_title, nnode, ntri, "point", "fetriangle", ref_gather->time);
+              zone_title, nnode, ncell, "point", "fetriangle",
+              ref_gather->time);
     }
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, ref_gather->file), "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_grid_tri(ref_grid), ref_gather->file),
-      "t");
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ref_gather->file),
+      "nodes");
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, l2c, ref_gather->file), "t");
 
   if (REF_FALSE) {
     REF_INT ntet;
@@ -628,7 +659,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                 ref_gather->time);
       }
     }
-    RSS(ref_gather_node_tec_part(ref_node, ref_gather->file), "nodes");
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ref_gather->file),
+        "nodes");
     if (0 == ntet) {
       if (ref_grid_once(ref_grid)) fprintf(ref_gather->file, " 1 1 1 1\n");
     } else {
@@ -643,19 +675,20 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     (ref_gather->time) += 1.0;
   }
 
+  ref_free(l2c);
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nnode, ntri;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, ncell, *l2c;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  nnode = ref_node_n_global(ref_node);
-
-  RSS(ref_gather_ncell(ref_node, ref_grid_tri(ref_grid), &ntri), "ntri");
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -668,13 +701,15 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
     fprintf(
         file,
         "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        nnode, ntri, "point", "fetriangle");
+        nnode, ncell, "point", "fetriangle");
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, file), "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_grid_tri(ref_grid), file), "nodes");
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, file), "nodes");
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, l2c, file), "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
+
+  ref_free(l2c);
 
   return REF_SUCCESS;
 }
