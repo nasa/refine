@@ -369,7 +369,7 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
   (*ncell_global) = ncell;
-  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_DBL_TYPE), "allsum");
+  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_INT_TYPE), "allsum");
 
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
