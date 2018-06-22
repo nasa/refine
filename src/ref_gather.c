@@ -87,7 +87,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
   REF_INT global, local;
   REF_STATUS status;
   REF_INT dim = 6;
-  REF_INT *sorted_local, *sorted_cellnode, *pack, total_cellnode;
+  REF_INT *sorted_local, *sorted_cellnode, *pack, total_cellnode, position;
 
   total_cellnode = 0;
   for (i = 0; i < ref_node_max(ref_node); i++) {
@@ -132,9 +132,11 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 
     for (i = 0; i < n; i++) {
       global = first + i;
-      status = ref_sort_search(total_cellnode, sorted_cellnode, global, &local);
+      status = ref_sort_search(total_cellnode, sorted_cellnode, global,
+                               &position);
       RXS(status, REF_NOT_FOUND, "node local failed");
-      if (REF_SUCCESS == status && ref_node_owned(ref_node, local)) {
+      if (REF_SUCCESS == status) {
+        local = sorted_local[position];
         local_xyzm[0 + dim * i] = ref_node_xyz(ref_node, 0, local);
         local_xyzm[1 + dim * i] = ref_node_xyz(ref_node, 1, local);
         local_xyzm[2 + dim * i] = ref_node_xyz(ref_node, 2, local);
