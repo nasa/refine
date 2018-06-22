@@ -91,7 +91,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 
   total_cellnode = 0;
   for (i = 0; i < ref_node_max(ref_node); i++) {
-    if (REF_EMPTY != l2c[i]) {
+    if (REF_EMPTY != l2c[i] && ref_node_owned(ref_node, i)) {
       total_cellnode++;
     }
   }
@@ -102,7 +102,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 
   total_cellnode = 0;
   for (i = 0; i < ref_node_max(ref_node); i++) {
-    if (REF_EMPTY != l2c[i]) {
+    if (REF_EMPTY != l2c[i] && ref_node_owned(ref_node, i)) {
       sorted_cellnode[total_cellnode] = l2c[i];
       pack[total_cellnode] = i;
       total_cellnode++;
@@ -134,8 +134,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
       global = first + i;
       status = ref_sort_search(total_cellnode, sorted_cellnode, global, &local);
       RXS(status, REF_NOT_FOUND, "node local failed");
-      if (REF_SUCCESS == status &&
-          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+      if (REF_SUCCESS == status && ref_node_owned(ref_node, local)) {
         local_xyzm[0 + dim * i] = ref_node_xyz(ref_node, 0, local);
         local_xyzm[1 + dim * i] = ref_node_xyz(ref_node, 1, local);
         local_xyzm[2 + dim * i] = ref_node_xyz(ref_node, 2, local);
@@ -155,8 +154,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++)
       if ((ABS(local_xyzm[5 + dim * i] - 1.0) > 0.1) &&
           (ABS(local_xyzm[5 + dim * i] - 0.0) > 0.1)) {
-        printf("error gather node before sum %d %f\n", first + i,
-               local_xyzm[5 + dim * i]);
+        printf("%s: %d: %s: error gather node before sum %d %f\n", __FILE__,
+               __LINE__, __func__, first + i, local_xyzm[5 + dim * i]);
       }
 
     RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, dim * n, REF_DBL_TYPE), "sum");
@@ -164,7 +163,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[5 + dim * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[5 + dim * i]);
+          printf("%s: %d: %s: error gather node %d %f\n", __FILE__, __LINE__,
+                 __func__, first + i, xyzm[5 + dim * i]);
         }
         fprintf(file, "%.15e %.15e %.15e %.0f %.0f\n", xyzm[0 + dim * i],
                 xyzm[1 + dim * i], xyzm[2 + dim * i], xyzm[3 + dim * i],
