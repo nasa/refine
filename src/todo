@@ -1,10 +1,15 @@
 
 ref_gather_tec_movie_frame performance
  only surface nodes and tri
- bin .plt format
 
-add until to ref_interp to compute
+match discrete faces to cad faces with bounding box
+
+split edges on initial faces with zero triangles to introduce triangle
+
+add utility to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
+
+try https://doi.org/10.2514/6.2007-4186 analyitc test cases
 
 handle edge reuse for periodic faces
   use e2f to see if edge is reused
@@ -148,6 +153,8 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ bin .plt format for gather (appending not working)
 
 + revisit edge builder
   + replace ref_cell_c2e with pure ref_edge implementation
