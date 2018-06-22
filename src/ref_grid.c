@@ -380,7 +380,7 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   each_ref_mpi_part(ref_mpi, proc) { (*nnode_global) += counts[proc]; }
   ref_free(counts);
 
-  each_ref_node_valid_node(ref_node, node) {
+  for (node = 0; node < ref_node_max(ref_node); node++) {
     if (REF_EMPTY != (*l2c)[node]) {
       (*l2c)[node] += offset;
     }
