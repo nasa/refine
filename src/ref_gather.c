@@ -204,9 +204,9 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           nodes[node]++;
           fprintf(file, " %d", nodes[node]);
         }
+        ncell_actual++;
+        fprintf(file, "\n");
       }
-      ncell_actual++;
-      fprintf(file, "\n");
     }
   }
 
