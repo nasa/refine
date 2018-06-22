@@ -9,7 +9,7 @@ split edges on initial faces with zero triangles to introduce triangle
 add utility to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
 
-try https://doi.org/10.2514/6.2007-4186 analyitc test cases
+try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 handle edge reuse for periodic faces
   use e2f to see if edge is reused
