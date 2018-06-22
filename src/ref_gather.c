@@ -154,8 +154,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++)
       if ((ABS(local_xyzm[5 + dim * i] - 1.0) > 0.1) &&
           (ABS(local_xyzm[5 + dim * i] - 0.0) > 0.1)) {
-        printf("%s: %d: %s: before sum %d %f\n", __FILE__,
-               __LINE__, __func__, first + i, local_xyzm[5 + dim * i]);
+        printf("%s: %d: %s: before sum %d %f\n", __FILE__, __LINE__, __func__,
+               first + i, local_xyzm[5 + dim * i]);
       }
 
     RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, dim * n, REF_DBL_TYPE), "sum");
@@ -163,8 +163,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[5 + dim * i] - 1.0) > 0.1) {
-          printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__,
-                 __func__, first + i, xyzm[5 + dim * i]);
+          printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__, __func__,
+                 first + i, xyzm[5 + dim * i]);
         }
         fprintf(file, "%.15e %.15e %.15e %.0f %.0f\n", xyzm[0 + dim * i],
                 xyzm[1 + dim * i], xyzm[2 + dim * i], xyzm[3 + dim * i],
@@ -181,23 +181,29 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 }
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
-                                      REF_INT *l2c, FILE *file) {
+                                      REF_INT ncell_expected, REF_INT *l2c,
+                                      FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT *c2n, ncell;
-  REF_INT proc;
+  REF_INT proc, part;
+  REF_INT ncell_actual;
+
+  ncell_actual = 0;
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = l2c[nodes[node]];
           nodes[node]++;
           fprintf(file, " %d", nodes[node]);
         }
       }
+      ncell_actual++;
       fprintf(file, "\n");
     }
   }
@@ -213,6 +219,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
           c2n[node + node_per * cell]++;
           fprintf(file, " %d", c2n[node + node_per * cell]);
         }
+        ncell_actual++;
         fprintf(file, "\n");
       }
       ref_free(c2n);
@@ -220,13 +227,15 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   } else {
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) ncell++;
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) ncell++;
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
     ref_malloc(c2n, ncell * node_per, REF_INT);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < node_per; node++)
           c2n[node + node_per * ncell] = l2c[nodes[node]];
         ncell++;
@@ -236,6 +245,10 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
         "send c2n");
 
     ref_free(c2n);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(ncell_expected, ncell_actual, "cell count mismatch");
   }
 
   return REF_SUCCESS;
@@ -635,7 +648,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ref_gather->file),
       "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, l2c, ref_gather->file), "t");
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->file),
+      "t");
 
   if (REF_FALSE) {
     REF_INT ntet;
@@ -705,7 +719,7 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, file), "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, l2c, file), "nodes");
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
 
