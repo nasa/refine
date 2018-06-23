@@ -62,13 +62,13 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
+  ref_node = ref_grid_node(ref_grid);
 
   pos = 3;
   while (pos < argc) {
     if (strcmp(argv[pos], "--shift") == 0) {
       printf("%d: --shift\n", pos);
       if (pos + 4 > argc) return (print_usage(argv[0]));
-      ref_node = ref_grid_node(ref_grid);
       pos++;
       dx = strtod(argv[pos], &endptr);
       RAS(argv[pos] != endptr, "parse dx");
@@ -88,7 +88,6 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[pos], "--scale") == 0) {
       printf("%d: --scale\n", pos);
       if (pos + 2 > argc) return (print_usage(argv[0]));
-      ref_node = ref_grid_node(ref_grid);
       pos++;
       ds = strtod(argv[pos], &endptr);
       RAS(argv[pos] != endptr, "parse ds");
@@ -102,7 +101,6 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[pos], "--rotate") == 0) {
       printf("%d: --rotate\n", pos);
       if (pos + 2 > argc) return (print_usage(argv[0]));
-      ref_node = ref_grid_node(ref_grid);
       pos++;
       rotate_deg = strtod(argv[pos], &endptr);
       rotate_rad = ref_math_in_radians(rotate_deg);
@@ -127,7 +125,6 @@ int main(int argc, char *argv[]) {
     if (strcmp(argv[pos], "--drop-face") == 0) {
       printf("%d: --drop-face\n", pos);
       if (pos + 2 > argc) return (print_usage(argv[0]));
-      ref_node = ref_grid_node(ref_grid);
       pos++;
       faceid = strtol(argv[pos], &endptr, 10);
       RAS(argv[pos] != endptr, "parse faceid to drop");
