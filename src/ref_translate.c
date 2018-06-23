@@ -39,6 +39,7 @@ static int print_usage(const char *name) {
   printf("     [--egads cache-geometry-for-lite.egads]\n");
   printf("     [--drop-face faceid]\n");
   printf("     [--compact-faceids]\n");
+  printf("     [--drop-volume]\n");
   return 0;
 }
 
@@ -147,6 +148,24 @@ int main(int argc, char *argv[]) {
         }
       }
       printf("dropped %d quadrilaterals from face %d\n", ndrop, faceid);
+    }
+    if (strcmp(argv[pos], "--drop-volume") == 0) {
+      printf("%d: --drop-volume\n", pos);
+      RSS(ref_cell_free(ref_grid_hex(ref_grid)), "hex free");
+      RSS(ref_cell_free(ref_grid_pri(ref_grid)), "pri free");
+      RSS(ref_cell_free(ref_grid_pyr(ref_grid)), "pyr free");
+      RSS(ref_cell_free(ref_grid_tet(ref_grid)), "tet free");
+      RSS(ref_cell_create(&ref_grid_tet(ref_grid), 4, REF_FALSE), "tet create");
+      RSS(ref_cell_create(&ref_grid_pyr(ref_grid), 5, REF_FALSE), "pyr create");
+      RSS(ref_cell_create(&ref_grid_pri(ref_grid), 6, REF_FALSE), "pri create");
+      RSS(ref_cell_create(&ref_grid_hex(ref_grid), 8, REF_FALSE), "hex create");
+      each_ref_node_valid_node(ref_node, node) {
+        if ( ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
+             ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
+             ref_cell_node_empty(ref_grid_edg(ref_grid), node) ) {
+          RSS(ref_node_remove( ref_node, node), "rm node");
+        }
+      }    
     }
     if (strcmp(argv[pos], "--compact-faceids") == 0) {
       printf("%d: --compact-faceids\n", pos);
