@@ -94,7 +94,9 @@ REF_STATUS ref_adj_inspect(REF_ADJ ref_adj) {
 REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node) {
   REF_INT item, ref;
   printf(" %d :", node);
-  each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) printf(" %d", ref);
+  each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
+    printf(" %d", ref);
+  }
   printf("\n");
 
   return REF_SUCCESS;
@@ -190,8 +192,12 @@ REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node, REF_INT reference) {
 REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
                                 REF_INT reference) {
   REF_INT item, ref;
-  each_ref_adj_node_item_with_ref(ref_adj, node, item,
-                                  ref) if (ref == reference) return REF_SUCCESS;
+
+  each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
+    if (ref == reference) {
+      return REF_SUCCESS;
+    }
+  }
 
   return ref_adj_add(ref_adj, node, reference);
 }
