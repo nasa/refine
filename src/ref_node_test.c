@@ -842,10 +842,10 @@ int main(int argc, char *argv[]) {
 
   /* FIXME, break this test up into pieces */
 
-  { /* right tri normal, area */
+  { /* right tri normal, area, centroid */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
-    REF_DBL norm[3];
+    REF_DBL norm[3], centroid[3];
     REF_DBL area;
     REF_BOOL valid;
 
@@ -892,6 +892,11 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, norm[0], -1.0, "nx");
     RWDS(-1.0, norm[1], -1.0, "ny");
     RWDS(0.0, norm[2], -1.0, "nz");
+
+    RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "norm");
+    RWDS(1.0/3.0, centroid[0], -1.0, "cx");
+    RWDS(0, centroid[1], -1.0, "cy");
+    RWDS(1.0/3.0, centroid[2], -1.0, "cz");
 
     global = nodes[2];
     nodes[2] = nodes[1];

@@ -149,6 +149,8 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
 
 REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
                                REF_DBL *normal);
+REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,
+                                 REF_DBL *centroid);
 
 REF_STATUS ref_node_tri_y_projection(REF_NODE ref_node, REF_INT *nodes,
                                      REF_DBL *y_projection);
