@@ -273,6 +273,51 @@ REF_STATUS ref_geom_load(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj_arg) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_ADJ ref_adj;
+  REF_INT *e2f, id, toponode0, toponode1;
+  ego ref, *pchldrn, object;
+  int oclass, mtype, nchild, *psens;
+  double trange[2];
+  RSS(ref_adj_create(ref_adj_arg), "create ref_adj");
+  ref_adj = *ref_adj_arg;
+  RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
+  for (id = 1; id <= ref_geom->nedge; id++) {
+    object = ((ego *)(ref_geom->edges))[id - 1];
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                        &pchldrn, &psens),
+         "EG topo node");
+    REIS(2, nchild, "edge does not have 2 childern nodes");
+    toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+    toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+    if (0 < e2f[0 + 2 * (id - 1)]) {
+      RSS(ref_adj_add_uniquely(ref_adj, toponode0, e2f[0 + 2 * (id - 1)]),
+          "add");
+      RSS(ref_adj_add_uniquely(ref_adj, toponode1, e2f[0 + 2 * (id - 1)]),
+          "add");
+    }
+    if (0 < e2f[1 + 2 * (id - 1)]) {
+      RSS(ref_adj_add_uniquely(ref_adj, toponode0, e2f[1 + 2 * (id - 1)]),
+          "add");
+      RSS(ref_adj_add_uniquely(ref_adj, toponode1, e2f[1 + 2 * (id - 1)]),
+          "add");
+    }
+  }
+  ref_free(e2f);
+  return REF_SUCCESS;
+#else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  if (REF_EMPTY == ref_geom->nnode) printf("No EGADS loaded\n");
+  *ref_adj_arg = (REF_ADJ)NULL;
+  printf("No EGADS linked for %s\n", __func__);
+
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_arg) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
