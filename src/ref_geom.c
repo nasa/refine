@@ -2911,6 +2911,8 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   double *cad_box;
   double *face_box;
+  double *cad_cga;
+  double massprop[14];
   ego face_ego;
   REF_INT face, faceid, min_faceid, max_faceid, nfaceid;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2918,11 +2920,19 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   REF_DBL *face_norm;
   REF_DBL norm;
   REF_INT *candidates;
+
   ref_malloc(cad_box, 6 * ref_geom->nface, double);
+  ref_malloc(cad_cga, 4 * ref_geom->nface, double);
   for (face = 0; face < (ref_geom->nface); face++) {
     face_ego = ((ego *)(ref_geom->faces))[face];
     REIS(EGADS_SUCCESS, EG_getBoundingBox(face_ego, &(cad_box[6 * face])),
          "EG bounding box");
+    REIS(EGADS_SUCCESS, EG_getMassProperties(face_ego, massprop),
+         "EG mass properties");
+    cad_cga[0+4*face] = massprop[2];
+    cad_cga[1+4*face] = massprop[3];
+    cad_cga[2+4*face] = massprop[4];
+    cad_cga[3+4*face] = massprop[1];
   }
 
   RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "id range");
