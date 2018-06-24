@@ -2999,6 +2999,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   ref_malloc(face_norm, nfaceid, REF_DBL);
   ref_malloc(candidates, nfaceid, REF_INT);
   for (i = 0; i < (ref_geom->nface); i++) {
+    /* bbox */
     for (face = 0; face < nfaceid; face++) {
       norm = 0.0;
       for (j = 0; j < 6; j++) {
@@ -3008,7 +3009,33 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
       face_norm[face] = norm;
     }
     RSS(ref_sort_heap_dbl(nfaceid, face_norm, candidates), "sort");
-    printf("%4d candidates %4.2f", i + 1,
+    printf("%4d bbox %4.2f", i + 1,
+           face_norm[candidates[0]] / face_norm[candidates[1]]);
+    if (0.5 < face_norm[candidates[0]] / face_norm[candidates[1]]) {
+      printf(" *");
+    } else {
+      if (candidates[0] + min_faceid == i + 1) {
+        printf(" m");
+      } else {
+        printf("  ");
+      }
+    }
+    for (j = 0; j < 3; j++) {
+      printf(" %4d %10.3e", min_faceid + candidates[j],
+             face_norm[candidates[j]]);
+    }
+    printf("\n");
+    /* centroid */
+    for (face = 0; face < nfaceid; face++) {
+      norm = 0.0;
+      for (j = 0; j < 3; j++) {
+        norm += pow(face_cga[j + 4 * face] - cad_cga[j + 4 * i], 2);
+      }
+      norm = sqrt(norm);
+      face_norm[face] = norm;
+    }
+    RSS(ref_sort_heap_dbl(nfaceid, face_norm, candidates), "sort");
+    printf("%4d cent %4.2f", i + 1,
            face_norm[candidates[0]] / face_norm[candidates[1]]);
     if (0.5 < face_norm[candidates[0]] / face_norm[candidates[1]]) {
       printf(" *");
