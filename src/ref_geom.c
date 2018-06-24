@@ -2922,6 +2922,8 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   REF_DBL *face_norm;
   REF_DBL norm;
   REF_INT *candidates;
+  REF_DICT ref_dict;
+  REF_INT old_faceid, new_faceid;
 
   ref_malloc(cad_box, 6 * ref_geom->nface, double);
   ref_malloc(cad_cga, 4 * ref_geom->nface, double);
@@ -2998,6 +3000,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
 
   ref_malloc(face_norm, nfaceid, REF_DBL);
   ref_malloc(candidates, nfaceid, REF_INT);
+  RSS(ref_dict_create(&ref_dict), "create dict");
   for (i = 0; i < (ref_geom->nface); i++) {
     /* bbox */
     for (face = 0; face < nfaceid; face++) {
@@ -3051,8 +3054,21 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
              face_norm[candidates[j]]);
     }
     printf("\n");
+
+    /* last best canidate */
+    RSS(ref_dict_store(ref_dict, candidates[0] + min_faceid, i + 1),
+        "best guess at new number");
   }
 
+  printf("replacing %d faces\n", ref_dict_n(ref_dict));
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    old_faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
+    RSS(ref_dict_value(ref_dict, old_faceid, &new_faceid),
+        "map old to new facid");
+    ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = new_faceid;
+  }
+
+  ref_dict_free(ref_dict);
   ref_free(candidates);
   ref_free(face_norm);
   ref_free(face_cga);
