@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     RSS(ref_geom_face_match(ref_grid), "geom recon");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_face.meshb"), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
