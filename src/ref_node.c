@@ -1555,21 +1555,23 @@ REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
 
 REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,
                                  REF_DBL *centroid) {
-
   if (!ref_node_valid(ref_node, nodes[0]) ||
       !ref_node_valid(ref_node, nodes[1]) ||
       !ref_node_valid(ref_node, nodes[2]))
     RSS(REF_INVALID, "node invalid");
 
-  centroid[0] = (ref_node_xyz(ref_node,0,nodes[0])+
-                 ref_node_xyz(ref_node,0,nodes[1])+
-                 ref_node_xyz(ref_node,0,nodes[2]))/3.0;
-  centroid[1] = (ref_node_xyz(ref_node,1,nodes[0])+
-                 ref_node_xyz(ref_node,1,nodes[1])+
-                 ref_node_xyz(ref_node,1,nodes[2]))/3.0;
-  centroid[2] = (ref_node_xyz(ref_node,2,nodes[0])+
-                 ref_node_xyz(ref_node,2,nodes[1])+
-                 ref_node_xyz(ref_node,2,nodes[2]))/3.0;
+  centroid[0] = (ref_node_xyz(ref_node, 0, nodes[0]) +
+                 ref_node_xyz(ref_node, 0, nodes[1]) +
+                 ref_node_xyz(ref_node, 0, nodes[2])) /
+                3.0;
+  centroid[1] = (ref_node_xyz(ref_node, 1, nodes[0]) +
+                 ref_node_xyz(ref_node, 1, nodes[1]) +
+                 ref_node_xyz(ref_node, 1, nodes[2])) /
+                3.0;
+  centroid[2] = (ref_node_xyz(ref_node, 2, nodes[0]) +
+                 ref_node_xyz(ref_node, 2, nodes[1]) +
+                 ref_node_xyz(ref_node, 2, nodes[2])) /
+                3.0;
 
   return REF_SUCCESS;
 }

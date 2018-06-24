@@ -2929,10 +2929,10 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
          "EG bounding box");
     REIS(EGADS_SUCCESS, EG_getMassProperties(face_ego, massprop),
          "EG mass properties");
-    cad_cga[0+4*face] = massprop[2];
-    cad_cga[1+4*face] = massprop[3];
-    cad_cga[2+4*face] = massprop[4];
-    cad_cga[3+4*face] = massprop[1];
+    cad_cga[0 + 4 * face] = massprop[2];
+    cad_cga[1 + 4 * face] = massprop[3];
+    cad_cga[2 + 4 * face] = massprop[4];
+    cad_cga[3 + 4 * face] = massprop[1];
   }
 
   RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "id range");
@@ -3008,6 +3008,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   ref_free(candidates);
   ref_free(face_norm);
   ref_free(face_box);
+  ref_free(cad_cga);
   ref_free(cad_box);
 
 #else

@@ -894,9 +894,9 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, norm[2], -1.0, "nz");
 
     RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "norm");
-    RWDS(1.0/3.0, centroid[0], -1.0, "cx");
+    RWDS(1.0 / 3.0, centroid[0], -1.0, "cx");
     RWDS(0, centroid[1], -1.0, "cy");
-    RWDS(1.0/3.0, centroid[2], -1.0, "cz");
+    RWDS(1.0 / 3.0, centroid[2], -1.0, "cz");
 
     global = nodes[2];
     nodes[2] = nodes[1];
