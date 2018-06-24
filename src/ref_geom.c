@@ -277,7 +277,7 @@ REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj_arg) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj;
-  REF_INT *e2f, id, toponode0, toponode1;
+  REF_INT *e2f, id, toponode;
   ego ref, *pchldrn, object;
   int oclass, mtype, nchild, *psens;
   double trange[2];
@@ -290,20 +290,29 @@ REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj_arg) {
          EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
                         &pchldrn, &psens),
          "EG topo node");
-    REIS(2, nchild, "edge does not have 2 childern nodes");
-    toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
-    toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
-    if (0 < e2f[0 + 2 * (id - 1)]) {
-      RSS(ref_adj_add_uniquely(ref_adj, toponode0, e2f[0 + 2 * (id - 1)]),
-          "add");
-      RSS(ref_adj_add_uniquely(ref_adj, toponode1, e2f[0 + 2 * (id - 1)]),
-          "add");
+
+    if (0 < nchild) {
+      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+      if (0 < e2f[0 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
+            "add");
+      }
+      if (0 < e2f[1 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
+            "add");
+      }
     }
-    if (0 < e2f[1 + 2 * (id - 1)]) {
-      RSS(ref_adj_add_uniquely(ref_adj, toponode0, e2f[1 + 2 * (id - 1)]),
-          "add");
-      RSS(ref_adj_add_uniquely(ref_adj, toponode1, e2f[1 + 2 * (id - 1)]),
-          "add");
+
+    if (1 < nchild) {
+      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+      if (0 < e2f[0 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
+            "add");
+      }
+      if (0 < e2f[1 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
+            "add");
+      }
     }
   }
   ref_free(e2f);
@@ -464,7 +473,8 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
   REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
   REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
   REF_INT *e2f;
-
+  REF_ADJ n2f;
+  REF_INT item, faceid;
   /* to allow recon after meshb load times */
   RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
@@ -472,6 +482,7 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
 
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "compute edge faces");
 
+  RSS(ref_geom_node_faces(ref_grid, &n2f), "build n2f");
   ref_malloc(node_list, max_node, REF_INT);
   printf("searching for %d topo nodes\n", ref_geom->nnode);
   ref_malloc(tessnodes, ref_geom->nnode, REF_INT);
@@ -501,6 +512,10 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
                                 REF_GEOM_MAX_FACEIDS, &nfaceid, faceids),
         REF_INCREASE_LIMIT, "count faceids");
     for (i = 0; i < nfaceid; i++) printf(" %d", faceids[i]);
+    printf(" expects");
+    each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
+      printf(" %d", faceid);
+    }
     printf("\n");
     if (show_xyz) {
       printf(" d %23.15e %23.15e %23.15e\n",
@@ -512,6 +527,8 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
     tessnodes[id - 1] = best_node;
     RSS(ref_geom_add(ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
   }
+  ref_adj_free(n2f);
+
   for (id = 1; id <= ref_geom->nedge; id++) {
     object = ((ego *)(ref_geom->edges))[id - 1];
     REIS(EGADS_SUCCESS,
