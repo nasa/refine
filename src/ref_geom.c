@@ -2959,6 +2959,26 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
            face_box[4 + 6 * face], face_box[5 + 6 * face]);
   }
 
+  for (i = 0; i < (ref_geom->nface); i++) {
+    REF_INT best_faceid;
+    REF_DBL best_norm, norm;
+    best_norm = 1e200;
+    best_faceid = REF_EMPTY;
+    for (face = 0; face < (max_faceid - min_faceid + 1); face++) {
+      faceid = face + min_faceid;
+      norm = 0.0;
+      for (j = 0; j < 6; j++) {
+        norm += pow(face_box[j + 6 * face] - face_box[j + 6 * i], 2);
+      }
+      norm = sqrt(norm);
+      if (norm < best_norm) {
+        best_norm = norm;
+        best_faceid = faceid;
+      }
+    }
+    printf("%4d face %4d faceid %e norm\n", i + 1, best_faceid, best_norm);
+  }
+
   ref_free(face_box);
   ref_free(cad_box);
 
