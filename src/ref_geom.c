@@ -2912,7 +2912,9 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   double *cad_box;
   double *face_box;
   double *cad_cga;
+  double *face_cga;
   double massprop[14];
+  REF_DBL area, centroid[3];
   ego face_ego;
   REF_INT face, faceid, min_faceid, max_faceid, nfaceid;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2938,11 +2940,15 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "id range");
   nfaceid = max_faceid - min_faceid + 1;
   ref_malloc(face_box, 6 * nfaceid, double);
+  ref_malloc(face_cga, 4 * nfaceid, double);
   for (face = 0; face < nfaceid; face++) {
     faceid = face + min_faceid;
     for (j = 0; j < 3; j++) {
       face_box[j + 0 * 3 + 6 * face] = 1.0e200;
       face_box[j + 1 * 3 + 6 * face] = -1.0e200;
+    }
+    for (j = 0; j < 4; j++) {
+      face_cga[j + 4 * face] = 0.0;
     }
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
@@ -2956,15 +2962,27 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
                     ref_node_xyz(ref_node, j, nodes[i]));
           }
         }
+        RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+        RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "cent");
+        for (j = 0; j < 3; j++) {
+          face_cga[j + 4 * face] += centroid[j] * area;
+        }
+        face_cga[3 + 4 * face] += area;
       }
+    }
+    for (j = 0; j < 3; j++) {
+      face_cga[j + 4 * face] /= face_cga[3 + 4 * face];
     }
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
-    printf("%4d cmin %10.6f %10.6f %10.6f\n", face + 1, face_box[0 + 6 * face],
-           face_box[1 + 6 * face], face_box[2 + 6 * face]);
-    printf("%4d cmax %10.6f %10.6f %10.6f\n", face + 1, face_box[3 + 6 * face],
-           face_box[4 + 6 * face], face_box[5 + 6 * face]);
+    printf("%4d cmin %10.6f %10.6f %10.6f\n", face + 1, cad_box[0 + 6 * face],
+           cad_box[1 + 6 * face], cad_box[2 + 6 * face]);
+    printf("%4d cmax %10.6f %10.6f %10.6f\n", face + 1, cad_box[3 + 6 * face],
+           cad_box[4 + 6 * face], cad_box[5 + 6 * face]);
+    printf("%4d cmpp %10.6f %10.6f %10.6f %10.6f\n", face + 1,
+           cad_cga[0 + 4 * face], cad_cga[1 + 4 * face], cad_cga[2 + 4 * face],
+           cad_cga[3 + 4 * face]);
   }
 
   for (face = 0; face < nfaceid; face++) {
@@ -2973,6 +2991,9 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
            face_box[1 + 6 * face], face_box[2 + 6 * face]);
     printf("%4d fmax %10.6f %10.6f %10.6f\n", faceid, face_box[3 + 6 * face],
            face_box[4 + 6 * face], face_box[5 + 6 * face]);
+    printf("%4d fmpp %10.6f %10.6f %10.6f %10.6f\n", face + 1,
+           face_cga[0 + 4 * face], face_cga[1 + 4 * face],
+           face_cga[2 + 4 * face], face_cga[3 + 4 * face]);
   }
 
   ref_malloc(face_norm, nfaceid, REF_DBL);
@@ -3007,6 +3028,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
 
   ref_free(candidates);
   ref_free(face_norm);
+  ref_free(face_cga);
   ref_free(face_box);
   ref_free(cad_cga);
   ref_free(cad_box);
