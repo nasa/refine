@@ -2902,3 +2902,47 @@ REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  double *cad_box;
+  double *face_box;
+  ego face_ego;
+  REF_INT face, min_faceid, max_faceid;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i,j;
+  ref_malloc(cad_box, 6*ref_geom->nface, double);
+  for (face = 0; face < (ref_geom->nface); face++) {
+    face_ego = ((ego *)(ref_geom->faces))[face];
+    REIS(EGADS_SUCCESS, EG_getBoundingBox(face_ego,
+                                          &(cad_box[6*face])),
+         "EG bounding box");
+  }
+  RSS( ref_export_faceid_range(ref_grid, &min_faceid,
+                               &max_faceid), "id range");
+  ref_malloc(face_box, 6*(max_faceid-min_faceid+1), double);
+  for (face = min_faceid; face <= max_faceid; face++) {
+    for(j=0;j<3;j++) {
+      face_box[j+0*3+6*face] = 1.0e200;
+      face_box[j+1*3+6*face] = -1.0e200;
+    }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (face == nodes[ref_cell_node_per(ref_cell)]) {
+        for (i=0;i<ref_cell_node_per(ref_cell);i++) {
+          for(j=0;j<3;j++) {
+            face_box[j+0*3+6*face] = MIN(face_box[j+0*3+6*face],
+                                           ref_node_xyz(ref_node,j,nodes[i]));
+            face_box[j+1*3+6*face] = MAX(face_box[j+1*3+6*face],
+                                           ref_node_xyz(ref_node,j,nodes[i]));
+          }
+        }
+      }
+    }
+  }
+  ref_free(face_box);
+  ref_free(cad_box);
+    
+  return REF_SUCCESS;
+}

@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
   REF_INT viz_pos = REF_EMPTY;
   REF_INT tess_pos = REF_EMPTY;
   REF_INT tetgen_pos = REF_EMPTY;
+  REF_INT face_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -63,6 +64,21 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--tetgen", &tetgen_pos), REF_NOT_FOUND,
       "arg search");
+  RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
+      "arg search");
+
+  if (face_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REIS(4, argc, "required args: --face grid.ext geom.egads");
+    REIS(1, viz_pos, "required args: --face grid.ext geom.egads");
+    printf("match face id geometry bounding boxes\n");
+    printf("grid source %s\n", argv[2]);
+    printf("geometry source %s\n", argv[3]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    RSS(ref_geom_face_match(ref_grid), "geom recon");
+    return 0;
+  }
 
   if (viz_pos != REF_EMPTY) {
     REF_GRID ref_grid;
