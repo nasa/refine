@@ -2912,38 +2912,55 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   ego face_ego;
   REF_INT face, faceid, min_faceid, max_faceid;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT i,j;
-  ref_malloc(cad_box, 6*ref_geom->nface, double);
+  REF_INT i, j;
+  ref_malloc(cad_box, 6 * ref_geom->nface, double);
   for (face = 0; face < (ref_geom->nface); face++) {
     face_ego = ((ego *)(ref_geom->faces))[face];
-    REIS(EGADS_SUCCESS, EG_getBoundingBox(face_ego,
-                                          &(cad_box[6*face])),
+    REIS(EGADS_SUCCESS, EG_getBoundingBox(face_ego, &(cad_box[6 * face])),
          "EG bounding box");
   }
-  RSS( ref_export_faceid_range(ref_grid, &min_faceid,
-                               &max_faceid), "id range");
-  ref_malloc(face_box, 6*(max_faceid-min_faceid+1), double);
-  for (face = 0; face < (max_faceid-min_faceid+1); face++) {
-    faceid=face+min_faceid;
-    for(j=0;j<3;j++) {
-      face_box[j+0*3+6*face] = 1.0e200;
-      face_box[j+1*3+6*face] = -1.0e200;
+
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "id range");
+  ref_malloc(face_box, 6 * (max_faceid - min_faceid + 1), double);
+  for (face = 0; face < (max_faceid - min_faceid + 1); face++) {
+    faceid = face + min_faceid;
+    for (j = 0; j < 3; j++) {
+      face_box[j + 0 * 3 + 6 * face] = 1.0e200;
+      face_box[j + 1 * 3 + 6 * face] = -1.0e200;
     }
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
-        for (i=0;i<ref_cell_node_per(ref_cell);i++) {
-          for(j=0;j<3;j++) {
-            face_box[j+0*3+6*face] = MIN(face_box[j+0*3+6*face],
-                                           ref_node_xyz(ref_node,j,nodes[i]));
-            face_box[j+1*3+6*face] = MAX(face_box[j+1*3+6*face],
-                                           ref_node_xyz(ref_node,j,nodes[i]));
+        for (i = 0; i < ref_cell_node_per(ref_cell); i++) {
+          for (j = 0; j < 3; j++) {
+            face_box[j + 0 * 3 + 6 * face] =
+                MIN(face_box[j + 0 * 3 + 6 * face],
+                    ref_node_xyz(ref_node, j, nodes[i]));
+            face_box[j + 1 * 3 + 6 * face] =
+                MAX(face_box[j + 1 * 3 + 6 * face],
+                    ref_node_xyz(ref_node, j, nodes[i]));
           }
         }
       }
     }
   }
+
+  for (face = 0; face < (ref_geom->nface); face++) {
+    printf("%4d min %10.6f %10.6f %10.6f\n", face + 1, face_box[0 + 6 * face],
+           face_box[1 + 6 * face], face_box[2 + 6 * face]);
+    printf("%4d max %10.6f %10.6f %10.6f\n", face + 1, face_box[3 + 6 * face],
+           face_box[4 + 6 * face], face_box[5 + 6 * face]);
+  }
+
+  for (face = 0; face < (max_faceid - min_faceid + 1); face++) {
+    faceid = face + min_faceid;
+    printf("%4d min %10.6f %10.6f %10.6f\n", faceid, face_box[0 + 6 * face],
+           face_box[1 + 6 * face], face_box[2 + 6 * face]);
+    printf("%4d max %10.6f %10.6f %10.6f\n", faceid, face_box[3 + 6 * face],
+           face_box[4 + 6 * face], face_box[5 + 6 * face]);
+  }
+
   ref_free(face_box);
   ref_free(cad_box);
-    
+
   return REF_SUCCESS;
 }

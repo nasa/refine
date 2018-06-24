@@ -160,12 +160,12 @@ int main(int argc, char *argv[]) {
       RSS(ref_cell_create(&ref_grid_pri(ref_grid), 6, REF_FALSE), "pri create");
       RSS(ref_cell_create(&ref_grid_hex(ref_grid), 8, REF_FALSE), "hex create");
       each_ref_node_valid_node(ref_node, node) {
-        if ( ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
-             ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
-             ref_cell_node_empty(ref_grid_edg(ref_grid), node) ) {
-          RSS(ref_node_remove( ref_node, node), "rm node");
+        if (ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
+            ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
+            ref_cell_node_empty(ref_grid_edg(ref_grid), node)) {
+          RSS(ref_node_remove(ref_node, node), "rm node");
         }
-      }    
+      }
     }
     if (strcmp(argv[pos], "--compact-faceids") == 0) {
       printf("%d: --compact-faceids\n", pos);
