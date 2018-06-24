@@ -2904,6 +2904,7 @@ REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
 }
 
 REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -2982,5 +2983,9 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   ref_free(face_box);
   ref_free(cad_box);
 
+#else
+  printf("unable to %s, No EGADS linked.\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
   return REF_SUCCESS;
 }
