@@ -2951,17 +2951,17 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
-    printf("%4d min %10.6f %10.6f %10.6f\n", face + 1, face_box[0 + 6 * face],
+    printf("%4d cmin %10.6f %10.6f %10.6f\n", face + 1, face_box[0 + 6 * face],
            face_box[1 + 6 * face], face_box[2 + 6 * face]);
-    printf("%4d max %10.6f %10.6f %10.6f\n", face + 1, face_box[3 + 6 * face],
+    printf("%4d cmax %10.6f %10.6f %10.6f\n", face + 1, face_box[3 + 6 * face],
            face_box[4 + 6 * face], face_box[5 + 6 * face]);
   }
 
   for (face = 0; face < nfaceid; face++) {
     faceid = face + min_faceid;
-    printf("%4d min %10.6f %10.6f %10.6f\n", faceid, face_box[0 + 6 * face],
+    printf("%4d fmin %10.6f %10.6f %10.6f\n", faceid, face_box[0 + 6 * face],
            face_box[1 + 6 * face], face_box[2 + 6 * face]);
-    printf("%4d max %10.6f %10.6f %10.6f\n", faceid, face_box[3 + 6 * face],
+    printf("%4d fmax %10.6f %10.6f %10.6f\n", faceid, face_box[3 + 6 * face],
            face_box[4 + 6 * face], face_box[5 + 6 * face]);
   }
 
