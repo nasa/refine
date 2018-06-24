@@ -2968,7 +2968,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
       faceid = face + min_faceid;
       norm = 0.0;
       for (j = 0; j < 6; j++) {
-        norm += pow(face_box[j + 6 * face] - face_box[j + 6 * i], 2);
+        norm += pow(face_box[j + 6 * face] - cad_box[j + 6 * i], 2);
       }
       norm = sqrt(norm);
       if (norm < best_norm) {
