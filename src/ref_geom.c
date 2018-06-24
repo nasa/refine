@@ -2910,7 +2910,7 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   double *cad_box;
   double *face_box;
   ego face_ego;
-  REF_INT face, min_faceid, max_faceid;
+  REF_INT face, faceid, min_faceid, max_faceid;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT i,j;
   ref_malloc(cad_box, 6*ref_geom->nface, double);
@@ -2923,13 +2923,14 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   RSS( ref_export_faceid_range(ref_grid, &min_faceid,
                                &max_faceid), "id range");
   ref_malloc(face_box, 6*(max_faceid-min_faceid+1), double);
-  for (face = min_faceid; face <= max_faceid; face++) {
+  for (face = 0; face < (max_faceid-min_faceid+1); face++) {
+    faceid=face+min_faceid;
     for(j=0;j<3;j++) {
       face_box[j+0*3+6*face] = 1.0e200;
       face_box[j+1*3+6*face] = -1.0e200;
     }
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (face == nodes[ref_cell_node_per(ref_cell)]) {
+      if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
         for (i=0;i<ref_cell_node_per(ref_cell);i++) {
           for(j=0;j<3;j++) {
             face_box[j+0*3+6*face] = MIN(face_box[j+0*3+6*face],

@@ -70,13 +70,15 @@ int main(int argc, char *argv[]) {
   if (face_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REIS(4, argc, "required args: --face grid.ext geom.egads");
-    REIS(1, viz_pos, "required args: --face grid.ext geom.egads");
+    REIS(1, face_pos, "required args: --face grid.ext geom.egads");
     printf("match face id geometry bounding boxes\n");
     printf("grid source %s\n", argv[2]);
     printf("geometry source %s\n", argv[3]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     RSS(ref_geom_face_match(ref_grid), "geom recon");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
   }
 
