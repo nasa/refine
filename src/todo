@@ -1,9 +1,4 @@
 
-ref_gather_tec_movie_frame performance
- only surface nodes and tri
-
-match discrete faces to cad faces with bounding box
-
 split edges on initial faces with zero triangles to introduce triangle
 
 add utility to ref_interp to compute
@@ -18,6 +13,7 @@ handle edge reuse for periodic faces
 adapt and recon revolve cylinder (ONENODE) and pencil (periodic + degen)
 
 ref_geom recover
+ use topology when finding CAD nodes
  make sure that t values are monotonic
  take the smallest increment in t, right direction
 
@@ -154,7 +150,12 @@ add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
 
++ match discrete faces to cad faces with centroid with bounding box backup
+
 + bin .plt format for gather (appending not working)
++ ref_gather_tec_movie_frame performance
+  + only surface nodes and tri
+
 
 + revisit edge builder
   + replace ref_cell_c2e with pure ref_edge implementation
