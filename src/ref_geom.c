@@ -3060,11 +3060,12 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
         "best guess at new number");
   }
 
+  RSS(ref_dict_inspect(ref_dict), "list map");
   printf("replacing %d faces\n", ref_dict_n(ref_dict));
   each_ref_cell_valid_cell(ref_cell, cell) {
     old_faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
     RSS(ref_dict_value(ref_dict, old_faceid, &new_faceid),
-        "map old to new facid");
+        "map old to new faceid");
     ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = new_faceid;
   }
 
