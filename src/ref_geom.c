@@ -2977,9 +2977,18 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
       face_norm[face] = norm;
     }
     RSS(ref_sort_heap_dbl(nfaceid, face_norm, candidates), "sort");
-    printf("%4d candidates",i+1);
+    printf("%4d candidates %4.2f",i+1,face_norm[candidates[0]]/face_norm[candidates[1]]);
+    if ( 0.5 < face_norm[candidates[0]]/face_norm[candidates[1]]) {
+      printf(" *");
+    }else{
+      if ( candidates[0]+min_faceid == i+1 ) {
+        printf(" m");
+      }else{
+        printf("  ");
+      }
+    }
     for (j = 0; j < 3; j++) {
-      printf(" %d %e",
+      printf(" %4d %10.3e",
              min_faceid+candidates[j],
              face_norm[candidates[j]] );
     }
