@@ -1368,6 +1368,10 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                       param),
                 "inv eval edge",
                 ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
+          /* enforce bounding box and try midpoint */
+          if ( param[0] < MIN(param0[0],param1[0]) ||
+               MAX(param0[0],param1[0]) < param[0] )
+            param[0] = 0.5 * (param0[0] + param1[0]);
           RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
           has_edge_support = REF_TRUE;
           RSS(ref_geom_find(ref_geom, new_node, type, id, &edge_geom),
