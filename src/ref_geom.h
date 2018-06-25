@@ -168,6 +168,9 @@ REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
 
 REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *uv_min, REF_DBL *uv_max);
+REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0, 
+                                         REF_INT node1, REF_INT id,
+                                         REF_DBL *uv_min, REF_DBL *uv_max);
 
 REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node);
 
