@@ -506,8 +506,15 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
         best_dist = dist;
       }
     }
-    RSS(REF_EMPTY == best_node,
-        "unable to find a grid vertex that matches cad topo");
+    if (REF_EMPTY == best_node) {
+      printf("cad node %d expects faces",id);
+      each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
+        printf(" %d", faceid);
+      }
+      printf("\n");
+      printf(" c %23.15e %23.15e %23.15e\n", xyz[0], xyz[1], xyz[2]);
+      THROW("unable to find a grid vertex that matches cad topo");
+    }
     printf(" topo node id %3d node %6d dist %.4e fid", id, best_node,
            best_dist);
     RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
