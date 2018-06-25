@@ -450,42 +450,23 @@ REF_STATUS ref_geom_face_surface(REF_GEOM ref_geom, REF_INT faceid,
 #endif
 }
 
-REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
+static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_ADJ n2f;
+  REF_INT i, id, item, best_node, node, faceid;
+  REF_DBL best_dist, dist;
+  REF_INT max_faceids = 50, *faceids, nfaceids;
   ego ref, *pchldrn, object;
   int oclass, mtype, nchild, *psens;
-  double xyz[9], trange[2];
-  REF_INT node, id, best_node;
-  REF_DBL best_dist, dist, best_param;
-  REF_INT *tessnodes;
-  REF_INT degree, max_node = 50, *node_list;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  double t;
-  double param[2];
-  REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT pass, updates;
+  double xyz[3];
   REF_BOOL show_xyz = REF_FALSE;
-  REF_BOOL debug = REF_FALSE;
-#define REF_GEOM_MAX_FACEIDS (50)
-  REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
-  REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
-  REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
-  REF_INT *e2f;
-  REF_ADJ n2f;
-  REF_INT item, faceid;
-  /* to allow recon after meshb load times */
-  RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
-  RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
-  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
-
-  RSS(ref_geom_edge_faces(ref_grid, &e2f), "compute edge faces");
 
   RSS(ref_geom_node_faces(ref_grid, &n2f), "build n2f");
-  ref_malloc(node_list, max_node, REF_INT);
+  ref_malloc(faceids, max_faceids, REF_INT);
   printf("searching for %d topo nodes\n", ref_geom->nnode);
-  ref_malloc(tessnodes, ref_geom->nnode, REF_INT);
+  ref_malloc(*cad_nodes, ref_geom->nnode, REF_INT);
   for (id = 1; id <= ref_geom->nnode; id++) {
     object = ((ego *)(ref_geom->nodes))[id - 1];
     REIS(EGADS_SUCCESS,
@@ -495,9 +476,6 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
     best_node = REF_EMPTY;
     best_dist = 1.0e20;
     each_ref_node_valid_node(ref_node, node) {
-      RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node,
-                                  REF_GEOM_MAX_FACEIDS, &nfaceid, faceids),
-          REF_INCREASE_LIMIT, "count faceids");
       dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                   pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                   pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
@@ -508,10 +486,10 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
     }
     printf(" topo node id %3d node %6d dist %.4e fid", id, best_node,
            best_dist);
-    RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
-                                REF_GEOM_MAX_FACEIDS, &nfaceid, faceids),
-        REF_INCREASE_LIMIT, "count faceids");
-    for (i = 0; i < nfaceid; i++) printf(" %d", faceids[i]);
+    RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
+                                max_faceids, &nfaceids, faceids),
+        "count faceids");
+    for (i = 0; i < nfaceids; i++) printf(" %d", faceids[i]);
     printf(" expects");
     each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
       printf(" %d", faceid);
@@ -524,10 +502,49 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
              ref_node_xyz(ref_node, 2, best_node));
       printf(" c %23.15e %23.15e %23.15e\n", xyz[0], xyz[1], xyz[2]);
     }
-    tessnodes[id - 1] = best_node;
+    (*cad_nodes)[id - 1] = best_node;
     RSS(ref_geom_add(ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
   }
+  ref_free(faceids);
   ref_adj_free(n2f);
+  return REF_SUCCESS;
+}
+#endif
+
+REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  ego ref, *pchldrn, object;
+  int oclass, mtype, nchild, *psens;
+  double xyz[9], trange[2];
+  REF_INT node, id, best_node;
+  REF_DBL best_dist, dist, best_param;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *cad_nodes;
+  double t;
+  double param[2];
+  REF_INT i, cell, edge_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT pass, updates;
+  REF_BOOL show_xyz = REF_FALSE;
+  REF_BOOL debug = REF_FALSE;
+#define REF_GEOM_MAX_FACEIDS (50)
+  REF_INT nfaceid, faceids[REF_GEOM_MAX_FACEIDS];
+  REF_INT nfaceid0, faceids0[REF_GEOM_MAX_FACEIDS];
+  REF_INT nfaceid1, faceids1[REF_GEOM_MAX_FACEIDS];
+  REF_INT *e2f;
+  REF_INT degree, max_node = 50, *node_list;
+
+  /* to allow recon after meshb load times */
+  RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
+  RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
+  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
+
+  RSS(ref_geom_recon_nodes(ref_grid, &cad_nodes), "recover nodes");
+
+  RSS(ref_geom_edge_faces(ref_grid, &e2f), "compute edge faces");
+
+  ref_malloc(node_list, max_node, REF_INT);
 
   for (id = 1; id <= ref_geom->nedge; id++) {
     object = ((ego *)(ref_geom->edges))[id - 1];
@@ -547,8 +564,8 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
       REIS(2, nchild, "expect two topo node for edge");
       toponode0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
       toponode1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
-      node0 = tessnodes[toponode0 - 1];
-      node1 = tessnodes[toponode1 - 1];
+      node0 = cad_nodes[toponode0 - 1];
+      node1 = cad_nodes[toponode1 - 1];
       printf(" topo edge id %3d fid %d %d trange [%f,%f]\n", id,
              e2f[0 + 2 * (id - 1)], e2f[1 + 2 * (id - 1)], trange[0],
              trange[1]);
@@ -698,7 +715,7 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
     }
     if (debug) ref_geom_tec(ref_grid, "ref_geom_each_edge.tec");
   }
-  ref_free(tessnodes);
+  ref_free(cad_nodes);
   ref_free(node_list);
   ref_free(e2f);
 
