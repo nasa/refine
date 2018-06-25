@@ -455,17 +455,20 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADJ n2f;
-  REF_INT i, id, item, best_node, node, faceid;
+  REF_INT id, item, best_node, node, faceid;
   REF_DBL best_dist, dist;
   REF_INT max_faceids = 50;
   REF_INT *grid_faceids, grid_nfaceids;
-    ego ref, *pchldrn, object;
+  REF_INT *cad_faceids, cad_nfaceids;
+  ego ref, *pchldrn, object;
   int oclass, mtype, nchild, *psens;
   double xyz[3];
   REF_BOOL show_xyz = REF_FALSE;
-
+  REF_INT i,j;
+  REF_BOOL found, all_found;
   RSS(ref_geom_node_faces(ref_grid, &n2f), "build n2f");
   ref_malloc(grid_faceids, max_faceids, REF_INT);
+  ref_malloc(cad_faceids, max_faceids, REF_INT);
   printf("searching for %d topo nodes\n", ref_geom->nnode);
   ref_malloc(*cad_nodes, ref_geom->nnode, REF_INT);
   for (id = 1; id <= ref_geom->nnode; id++) {
@@ -474,9 +477,27 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
          EG_getTopology(object, &ref, &oclass, &mtype, xyz, &nchild, &pchldrn,
                         &psens),
          "EG topo node");
+    cad_nfaceids = 0;
+    each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
+      cad_faceids[cad_nfaceids] = faceid;
+      cad_nfaceids++;
+    }
     best_node = REF_EMPTY;
     best_dist = 1.0e20;
     each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node,
+                                  max_faceids, &grid_nfaceids, grid_faceids),
+          "count faceids");
+      if ( grid_nfaceids != cad_nfaceids ) continue;
+      all_found = REF_TRUE;
+      for (i=0;i<cad_nfaceids;i++) {
+        found = REF_FALSE;
+        for (j=0;j<grid_nfaceids;j++) {
+          found = found || ( cad_faceids[i] == grid_faceids[j] );
+        }
+        all_found = all_found && found;
+      }
+      if (!all_found) continue;
       dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                   pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                   pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
@@ -485,6 +506,8 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
         best_dist = dist;
       }
     }
+    RSS(REF_EMPTY == best_node,
+        "unable to find a grid vertex that matches cad topo");
     printf(" topo node id %3d node %6d dist %.4e fid", id, best_node,
            best_dist);
     RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
@@ -506,6 +529,7 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
     (*cad_nodes)[id - 1] = best_node;
     RSS(ref_geom_add(ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
   }
+  ref_free(cad_faceids);
   ref_free(grid_faceids);
   ref_adj_free(n2f);
   return REF_SUCCESS;
