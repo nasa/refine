@@ -36,9 +36,6 @@ REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
                                 REF_DBL *ideal_location);
 
-REF_STATUS ref_smooth_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
-                                          REF_DBL *uv_min, REF_DBL *uv_max);
-
 REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
                                    REF_DBL *ideal_uv);
 
