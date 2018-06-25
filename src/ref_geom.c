@@ -457,14 +457,15 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
   REF_ADJ n2f;
   REF_INT i, id, item, best_node, node, faceid;
   REF_DBL best_dist, dist;
-  REF_INT max_faceids = 50, *faceids, nfaceids;
-  ego ref, *pchldrn, object;
+  REF_INT max_faceids = 50;
+  REF_INT *grid_faceids, grid_nfaceids;
+    ego ref, *pchldrn, object;
   int oclass, mtype, nchild, *psens;
   double xyz[3];
   REF_BOOL show_xyz = REF_FALSE;
 
   RSS(ref_geom_node_faces(ref_grid, &n2f), "build n2f");
-  ref_malloc(faceids, max_faceids, REF_INT);
+  ref_malloc(grid_faceids, max_faceids, REF_INT);
   printf("searching for %d topo nodes\n", ref_geom->nnode);
   ref_malloc(*cad_nodes, ref_geom->nnode, REF_INT);
   for (id = 1; id <= ref_geom->nnode; id++) {
@@ -487,9 +488,9 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
     printf(" topo node id %3d node %6d dist %.4e fid", id, best_node,
            best_dist);
     RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
-                                max_faceids, &nfaceids, faceids),
+                                max_faceids, &grid_nfaceids, grid_faceids),
         "count faceids");
-    for (i = 0; i < nfaceids; i++) printf(" %d", faceids[i]);
+    for (i = 0; i < grid_nfaceids; i++) printf(" %d", grid_faceids[i]);
     printf(" expects");
     each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
       printf(" %d", faceid);
@@ -505,7 +506,7 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
     (*cad_nodes)[id - 1] = best_node;
     RSS(ref_geom_add(ref_geom, best_node, REF_GEOM_NODE, id, NULL), "node");
   }
-  ref_free(faceids);
+  ref_free(grid_faceids);
   ref_adj_free(n2f);
   return REF_SUCCESS;
 }
