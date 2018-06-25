@@ -92,6 +92,11 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "has side");
     if (!allowed) continue;
 
+    /* skip if neither node is owned */
+    if (!ref_node_owned(ref_node, ref_edge_e2n(ref_edge, 0, edge)) &&
+        !ref_node_owned(ref_node, ref_edge_e2n(ref_edge, 1, edge)))
+      continue;
+
     RSS(ref_split_edge_mixed(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                              ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "mixed");
