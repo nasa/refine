@@ -903,7 +903,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_smooth_tri_weighted_ideal_uv(ref_grid, node, uv_ideal), "ideal");
 
-  RSS(ref_adapt_tri_uv_bounding_box(ref_grid, node, uv_min, uv_max), "bb");
+  RSS(ref_geom_tri_uv_bounding_box(ref_grid, node, uv_min, uv_max), "bb");
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {

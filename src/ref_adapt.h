@@ -55,10 +55,6 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid);
 REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid);
 REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid);
 
-REF_STATUS ref_adapt_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
-                                         REF_DBL *uv_min, REF_DBL *uv_max);
-
-
 END_C_DECLORATION
 
 #endif /* REF_ADAPT_H */
