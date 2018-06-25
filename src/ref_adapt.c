@@ -247,4 +247,3 @@ REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-

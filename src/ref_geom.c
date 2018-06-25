@@ -464,7 +464,7 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
   int oclass, mtype, nchild, *psens;
   double xyz[3];
   REF_BOOL show_xyz = REF_FALSE;
-  REF_INT i,j;
+  REF_INT i, j;
   REF_BOOL found, all_found;
   RSS(ref_geom_node_faces(ref_grid, &n2f), "build n2f");
   ref_malloc(grid_faceids, max_faceids, REF_INT);
@@ -485,15 +485,15 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
     best_node = REF_EMPTY;
     best_dist = 1.0e20;
     each_ref_node_valid_node(ref_node, node) {
-      RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node,
-                                  max_faceids, &grid_nfaceids, grid_faceids),
+      RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, max_faceids,
+                                  &grid_nfaceids, grid_faceids),
           "count faceids");
-      if ( grid_nfaceids != cad_nfaceids ) continue;
+      if (grid_nfaceids != cad_nfaceids) continue;
       all_found = REF_TRUE;
-      for (i=0;i<cad_nfaceids;i++) {
+      for (i = 0; i < cad_nfaceids; i++) {
         found = REF_FALSE;
-        for (j=0;j<grid_nfaceids;j++) {
-          found = found || ( cad_faceids[i] == grid_faceids[j] );
+        for (j = 0; j < grid_nfaceids; j++) {
+          found = found || (cad_faceids[i] == grid_faceids[j]);
         }
         all_found = all_found && found;
       }
@@ -507,7 +507,7 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
       }
     }
     if (REF_EMPTY == best_node) {
-      printf("cad node %d expects faces",id);
+      printf("cad node %d expects faces", id);
       each_ref_adj_node_item_with_ref(n2f, id, item, faceid) {
         printf(" %d", faceid);
       }
@@ -517,8 +517,8 @@ static REF_STATUS ref_geom_recon_nodes(REF_GRID ref_grid, REF_INT **cad_nodes) {
     }
     printf(" topo node id %3d node %6d dist %.4e fid", id, best_node,
            best_dist);
-    RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node,
-                                max_faceids, &grid_nfaceids, grid_faceids),
+    RSS(ref_cell_id_list_around(ref_grid_tri(ref_grid), best_node, max_faceids,
+                                &grid_nfaceids, grid_faceids),
         "count faceids");
     for (i = 0; i < grid_nfaceids; i++) printf(" %d", grid_faceids[i]);
     printf(" expects");
@@ -1370,8 +1370,8 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                 "inv eval edge",
                 ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
           /* enforce bounding box and use midpoint as full-back */
-          if ( param[0] < MIN(param0[0],param1[0]) ||
-               MAX(param0[0],param1[0]) < param[0] )
+          if (param[0] < MIN(param0[0], param1[0]) ||
+              MAX(param0[0], param1[0]) < param[0])
             param[0] = 0.5 * (param0[0] + param1[0]);
           RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
           has_edge_support = REF_TRUE;
@@ -1410,9 +1410,10 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                 ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
             /* enforce bounding box of node0 and try midpoint */
             RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, id,
-                                              uv_min, uv_max), "bb");
-            if ( param[0] < uv_min[0] || uv_max[0] < param[0] || 
-                 param[1] < uv_min[1] || uv_max[1] < param[1] ) {
+                                              uv_min, uv_max),
+                "bb");
+            if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
+                param[1] < uv_min[1] || uv_max[1] < param[1]) {
               param[0] = 0.5 * (param0[0] + param1[0]);
               param[1] = 0.5 * (param0[1] + param1[1]);
             }
@@ -1501,11 +1502,10 @@ REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
   RSS(ref_geom_tuv(ref_geom, node0, REF_GEOM_FACE, id, uv_min), "uv_min");
   RSS(ref_geom_tuv(ref_geom, node0, REF_GEOM_FACE, id, uv_max), "uv_max");
 
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell,
-                          cells),
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
       "get list");
 
-  for (i=0;i<ncell;i++) {
+  for (i = 0; i < ncell; i++) {
     cell = cells[i];
     each_ref_cell_cell_node(ref_cell, cell_node) {
       RSS(ref_geom_tuv(ref_geom, ref_cell_c2n(ref_cell, cell_node, cell),
