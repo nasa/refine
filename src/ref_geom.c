@@ -1331,6 +1331,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT geom0, geom1;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
+  REF_DBL uv_min[2], uv_max[2];
   REF_BOOL has_id;
   REF_BOOL has_edge_support;
   REF_INT edge_geom;
@@ -1368,7 +1369,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                       param),
                 "inv eval edge",
                 ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-          /* enforce bounding box and try midpoint */
+          /* enforce bounding box and use midpoint as full-back */
           if ( param[0] < MIN(param0[0],param1[0]) ||
                MAX(param0[0],param1[0]) < param[0] )
             param[0] = 0.5 * (param0[0] + param1[0]);
@@ -1407,6 +1408,14 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                       param),
                 "inv eval face",
                 ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
+            /* enforce bounding box of node0 and try midpoint */
+            RSS(ref_geom_tri_uv_bounding_box(ref_grid, node0, uv_min, uv_max), 
+                "bb");
+            if ( param[0] < uv_min[0] || uv_max[0] < param[0] || 
+                 param[1] < uv_min[1] || uv_max[1] < param[1] ) {
+              param[0] = 0.5 * (param0[0] + param1[0]);
+              param[1] = 0.5 * (param0[1] + param1[1]);
+            }
           }
           RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
         }
