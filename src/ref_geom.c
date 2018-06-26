@@ -2015,8 +2015,11 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node;
+  REF_INT item, geom;
   REF_BOOL geom_node, geom_edge, geom_face;
   REF_BOOL no_face, no_edge;
+  REF_BOOL found_one;
+  REF_BOOL found_too_many;
 
   for (node = 0; node < ref_node_max(ref_node); node++) {
     if (ref_node_valid(ref_node, node)) {
@@ -2066,10 +2069,25 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           THROW("geom face missing tri or qua");
         }
       }
+      if (geom_edge && !geom_node) {
+        found_one = REF_FALSE;
+        found_too_many = REF_FALSE;
+        each_ref_geom_having_node(ref_geom, node, item, geom) {
+          if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+            if (found_one) found_too_many = REF_TRUE;
+            found_one = REF_TRUE;
+          }
+        }
+        if (!found_one || found_too_many) {
+          if (!found_one) printf("none found\n");
+          if (found_too_many) printf("found too many\n");
+          RSS(ref_node_location(ref_node, node), "loc");
+          RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          THROW("multiple geom edge away from geom node");
+        }
+      }
       if (geom_face && !geom_edge) {
-        REF_INT item, geom;
-        REF_BOOL found_one;
-        REF_BOOL found_too_many;
         found_one = REF_FALSE;
         found_too_many = REF_FALSE;
         each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item,
@@ -2085,7 +2103,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
           RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
-          THROW("geom face missing tri or qua");
+          THROW("multiple geom face away from geom edge");
         }
       }
     } else {
