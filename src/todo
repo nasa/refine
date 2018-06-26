@@ -1,6 +1,4 @@
 
-create a uv bounding box from two triangles that span two nodes
-
 split edges on initial faces with zero triangles to introduce triangle
 
 add utility to ref_interp to compute
@@ -15,8 +13,9 @@ handle edge reuse for periodic faces
 adapt and recon revolve cylinder (ONENODE) and pencil (periodic + degen)
 
 ref_geom recover
- make sure that t values are monotonic
+ make sure that edge t values are monotonic
  take the smallest increment in t, right direction
+ handle ONENODE edges
 
 ref_geom
  extract grid associtaion (gas)
@@ -150,6 +149,8 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 
 +++++++++++++++++
+
++ create a uv bounding box from two triangles that span two nodes
 
 + ref_geom recover use topology when finding CAD nodes
 
