@@ -2120,6 +2120,22 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
                             ref_cell_c2n(ref_cell, 1, cell), 2,
                             &ncell, cell_list),
         "edge list for edge");
+    if (2 == ncell) {
+      printf("error: two edg found with same nodes\n");
+      printf("edg %d n %d %d id %d\n",cell_list[0], 
+             ref_cell_c2n(ref_cell, 0, cell_list[0]),
+             ref_cell_c2n(ref_cell, 1, cell_list[0]),
+             ref_cell_c2n(ref_cell, 2, cell_list[0]));
+      printf("edg %d n %d %d id %d\n",cell_list[1], 
+             ref_cell_c2n(ref_cell, 0, cell_list[1]),
+             ref_cell_c2n(ref_cell, 1, cell_list[1]),
+             ref_cell_c2n(ref_cell, 2, cell_list[1]));
+      RSS(ref_node_location(ref_node, ref_cell_c2n(ref_cell, 0, cell)), "loc");
+      RSS(ref_node_location(ref_node, ref_cell_c2n(ref_cell, 1, cell)), "loc");
+      RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 0, cell)), "tatt");
+      RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 1, cell)), "tatt");
+      RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+    }
     REIS(1, ncell, "expect only one edge cell for two nodes");
   }
 
