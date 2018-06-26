@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     RSS(ref_geom_recon(ref_grid), "geom recon");
-    printf("verify topo\n");
+    printf("verify topo and params\n");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo conflict");
     RSS(ref_geom_verify_param(ref_grid), "test constrained params");
     RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit metric");
@@ -114,8 +114,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_validation_all(ref_grid), "validate");
     printf("constrain\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_geom_orig.tec"), "tec");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node)
-        RSS(ref_geom_constrain(ref_grid, node), "original params");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_geom_constrain(ref_grid, node), "original params");
+    }
     RSS(ref_geom_tec(ref_grid, "ref_geom_recon.tec"), "geom export");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "validate");
@@ -171,7 +172,20 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess_geom.tec"), "geom export");
 
+    printf("verify topo\n");
+    RSS(ref_geom_verify_topo(ref_grid), "original params");
+    printf("verify param\n");
+    RSS(ref_geom_verify_param(ref_grid), "original params");
+    printf("constrain\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_geom_constrain(ref_grid, node), "original params");
+    }
+    printf("verify param\n");
+    RSS(ref_geom_verify_param(ref_grid), "original params");
+
+    printf("generate volume\n");
     if (aflr_over_tetgen) {
       RSS(ref_geom_aflr_volume(ref_grid), "surface to volume ");
     } else {
@@ -179,16 +193,16 @@ int main(int argc, char *argv[]) {
     }
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
-    RSS(ref_geom_tec(ref_grid, "ref_geom_test.tec"), "geom export");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_vol_geom.tec"), "geom export");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "original validation");
-    printf("verify\n");
-    RSS(ref_geom_verify_param(ref_grid), "original params");
     printf("constrain\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_geom_constrain(ref_grid, node), "original params");
     }
-    printf("verify\n");
+    printf("verify topo\n");
+    RSS(ref_geom_verify_topo(ref_grid), "original params");
+    printf("verify param\n");
     RSS(ref_geom_verify_param(ref_grid), "constrained params");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "constrained validation");
