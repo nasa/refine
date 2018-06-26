@@ -2117,7 +2117,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   ref_cell = ref_grid_edg(ref_grid);
   each_ref_cell_valid_cell(ref_cell, cell) {
     RSS(ref_cell_list_with2(ref_cell, ref_cell_c2n(ref_cell, 0, cell),
-                            ref_cell_c2n(ref_cell, 0, cell), 2,
+                            ref_cell_c2n(ref_cell, 1, cell), 2,
                             &ncell, cell_list),
         "edge list for edge");
     REIS(1, ncell, "expect only one edge cell for two nodes");
