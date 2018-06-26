@@ -2014,12 +2014,14 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell;
   REF_INT node;
   REF_INT item, geom;
   REF_BOOL geom_node, geom_edge, geom_face;
   REF_BOOL no_face, no_edge;
   REF_BOOL found_one;
   REF_BOOL found_too_many;
+  REF_INT cell, ncell, cell_list[2];
 
   for (node = 0; node < ref_node_max(ref_node); node++) {
     if (ref_node_valid(ref_node, node)) {
@@ -2111,6 +2113,16 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         THROW("invalid node has geom");
     }
   }
+
+  ref_cell = ref_grid_edg(ref_grid);
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_list_with2(ref_cell, ref_cell_c2n(ref_cell, 0, cell),
+                            ref_cell_c2n(ref_cell, 0, cell), 2,
+                            &ncell, cell_list),
+        "edge list for edge");
+    REIS(1, ncell, "expect only one edge cell for two nodes");
+  }
+
   return REF_SUCCESS;
 }
 
