@@ -2669,6 +2669,16 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_tess_repair_topo(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#else
+  printf("unable to %s, No EGADS linked.\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);

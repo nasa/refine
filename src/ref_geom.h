@@ -197,6 +197,8 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params);
 
 REF_STATUS ref_geom_degen_param(REF_GRID ref_grid);
 
+REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid);
+
 REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid);
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid);
 
