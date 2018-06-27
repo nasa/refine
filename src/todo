@@ -8,14 +8,20 @@ parmetis edge weights
 extract BC tags from egads
 
 revolve cylinder (ONENODE) and pencil (periodic + degen)
- database learns jump
- topo checks learn jump
+ + database learns jump
+ extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
+ create ref_geom_add_jump
+ insert jumps at ONENODE and mulitple edge uses
+ create method that returns tuv based on a non jump geom
+ plot jumps
+ add jumps to tattle and inspect
  meshb IO puts jump in extra float
- get/set fails at jump
- tess store jump
- plotting
+ ref_find, topo checks, get, set, eval, ignore jump != 0
+ topo checks learn jump
  edge uv learns jump
- add between learns jump
+ add between and xyz between learns jump
+ boundaring box and box2 learn jump
+ curvature?
  recon later?
 
 recon
