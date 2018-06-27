@@ -15,7 +15,7 @@ revolve cylinder (ONENODE) and pencil (periodic + degen)
  create method that returns tuv based on a non jump geom
  plot jumps?
  add jumps to tattle and inspect
- ref_migrate? ref_part? ref_export? ref_gather? ref_import? DESCR_SIZE
+ ref_migrate? ref_part? ref_export? ref_gather? ref_import? jump=0, DESCR_SIZE
  get uv, set uv, throw jump != 0
  edge uv learns jump
  add between and xyz between learns jump
