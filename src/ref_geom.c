@@ -2563,7 +2563,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT edge;
+  REF_INT edge, node;
   ego eref;
   int oclass, mtype, *senses;
   double trange[2];
@@ -2577,7 +2577,9 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
                         &mtype, trange, &nchild, &echilds, &senses),
          "edge topo");
     if (mtype == ONENODE) {
-      printf("edge id %d is ONENODE\n", edge + 1);
+      REIS(1, nchild, "ONENODE should have one node");
+      node = EG_indexBodyTopo(ref_geom->solid, echilds[0]);
+      printf("edge id %d is ONENODE at geom node %d\n", edge + 1, node);
     }
   }
 
