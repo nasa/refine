@@ -283,38 +283,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
-  { /* add and remove */
-    REF_GEOM ref_geom;
-    REF_INT node, type, id;
-    REF_DBL params[2];
-    RSS(ref_geom_create(&ref_geom), "create");
-    node = 2;
-    type = REF_GEOM_FACE;
-    id = 5;
-    params[0] = 11.0;
-    params[1] = 21.0;
-    REIS(0, ref_geom_add(ref_geom, node, type, id, params), "add face");
-    node = 4;
-    type = REF_GEOM_NODE;
-    id = 2;
-    REIS(0, ref_geom_add(ref_geom, node, type, id, params), "add node");
-    REIS(2, ref_geom_n(ref_geom), "items");
-    node = 4;
-    type = REF_GEOM_EDGE;
-    id = 2;
-    REIS(REF_NOT_FOUND, ref_geom_remove(ref_geom, node, type, id),
-         "should not remove missing edge");
-    REIS(2, ref_geom_n(ref_geom), "items");
-    node = 4;
-    type = REF_GEOM_NODE;
-    id = 2;
-    REIS(0, ref_geom_remove(ref_geom, node, type, id), "remove node");
-    REIS(1, ref_geom_n(ref_geom), "items");
-    REIS(REF_NOT_FOUND, ref_geom_remove(ref_geom, node, type, id),
-         "not really gone");
-    RSS(ref_geom_free(ref_geom), "free");
-  }
-
   { /* add and remove all */
     REF_GEOM ref_geom;
     REF_INT node, type, id;
@@ -353,13 +321,13 @@ int main(int argc, char *argv[]) {
     max = ref_geom_max(ref_geom);
 
     for (geom = 0; geom < max + 10; geom++) {
-      node = 2;
+      node = 10000+geom;
       type = REF_GEOM_FACE;
       id = 5;
       params[0] = 1.0;
       params[1] = 2.0;
       REIS(0, ref_geom_add(ref_geom, node, type, id, params), "add face");
-      REIS(0, ref_geom_remove(ref_geom, node, type, id), "rm");
+      REIS(0, ref_geom_remove_all(ref_geom, node), "rm all");
     }
     REIS(max, ref_geom_max(ref_geom), "items");
     RSS(ref_geom_free(ref_geom), "free");

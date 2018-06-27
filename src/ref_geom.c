@@ -1027,28 +1027,6 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_remove(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                           REF_INT id) {
-  REF_INT geom;
-  REF_STATUS status;
-
-  status = ref_geom_find(ref_geom, node, type, id, &geom);
-  RXS(status, REF_NOT_FOUND, "find failed");
-
-  if (REF_SUCCESS == status) {
-    RSS(ref_adj_remove(ref_geom_adj(ref_geom), ref_geom_node(ref_geom, geom),
-                       geom),
-        "unregister geom");
-
-    ref_geom_type(ref_geom, geom) = REF_EMPTY;
-    ref_geom_id(ref_geom, geom) = ref_geom_blank(ref_geom);
-    ref_geom_blank(ref_geom) = geom;
-    ref_geom_n(ref_geom)--;
-  }
-
-  return status;
-}
-
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT item, geom;
