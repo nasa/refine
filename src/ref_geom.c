@@ -282,7 +282,7 @@ REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_arg) {
            "topo");
       for (iedge = 0; iedge < nedge; iedge++) {
         edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]) - 1;
-        RAS( 2 > nface[edge], "edge has more than 2 faces" );
+        RAS(2 > nface[edge], "edge has more than 2 faces");
         e2f[nface[edge] + 2 * edge] = face + 1;
         nface[edge]++;
       }
@@ -2508,14 +2508,15 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
                         &mtype, trange, &nchild, &echilds, &senses),
          "edge topo");
     if (mtype == ONENODE) {
-      printf("edge id %d is ONENODE\n",edge+1);
+      printf("edge id %d is ONENODE\n", edge + 1);
     }
   }
 
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
-    if ( e2f[0+2*edge] == e2f[1+2*edge] ) {
-      printf("edge id %d is used twice by face id %d\n",edge+1,e2f[0+2*edge]);
+    if (e2f[0 + 2 * edge] == e2f[1 + 2 * edge]) {
+      printf("edge id %d is used twice by face id %d\n", edge + 1,
+             e2f[0 + 2 * edge]);
     }
   }
 

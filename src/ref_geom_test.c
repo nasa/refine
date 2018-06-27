@@ -321,7 +321,7 @@ int main(int argc, char *argv[]) {
     max = ref_geom_max(ref_geom);
 
     for (geom = 0; geom < max + 10; geom++) {
-      node = 10000+geom;
+      node = 10000 + geom;
       type = REF_GEOM_FACE;
       id = 5;
       params[0] = 1.0;
