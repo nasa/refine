@@ -956,11 +956,43 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                        REF_INT id, REF_DBL *param) {
+static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   REF_INT geom;
   REF_INT orig, chunk;
   REF_INT max_limit = REF_INT_MAX / 3;
+
+  if (REF_EMPTY != ref_geom_blank(ref_geom)) {
+    return REF_SUCCESS;
+  }
+
+  RAS(ref_geom_max(ref_geom) != max_limit,
+      "the number of geoms is too large for integers, cannot grow");
+  orig = ref_geom_max(ref_geom);
+  /* geometric growth for efficiency */
+  chunk = MAX(1000, (REF_INT)(1.5 * (REF_DBL)orig));
+
+  /* try to keep under 32-bit limit */
+  RAS(max_limit - orig > 0, "chunk limit at max");
+  chunk = MIN(chunk, max_limit - orig);
+
+  ref_geom_max(ref_geom) = orig + chunk;
+
+  ref_realloc(ref_geom->descr, 4 * ref_geom_max(ref_geom), REF_INT);
+  ref_realloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
+
+  for (geom = orig; geom < ref_geom_max(ref_geom); geom++) {
+    ref_geom_type(ref_geom, geom) = REF_EMPTY;
+    ref_geom_id(ref_geom, geom) = geom + 1;
+  }
+  ref_geom_id(ref_geom, ref_geom_max(ref_geom) - 1) = REF_EMPTY;
+  ref_geom_blank(ref_geom) = orig;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                        REF_INT id, REF_DBL *param) {
+  REF_INT geom;
   REF_STATUS status;
 
   if (type < 0 || 2 < type) return REF_INVALID;
@@ -975,27 +1007,7 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   }
 
   if (REF_EMPTY == ref_geom_blank(ref_geom)) {
-    RAS(ref_geom_max(ref_geom) != max_limit,
-        "the number of geoms is too large for integers, cannot grow");
-    orig = ref_geom_max(ref_geom);
-    /* geometric growth for efficiency */
-    chunk = MAX(1000, (REF_INT)(1.5 * (REF_DBL)orig));
-
-    /* try to keep under 32-bit limit */
-    RAS(max_limit - orig > 0, "chunk limit at max");
-    chunk = MIN(chunk, max_limit - orig);
-
-    ref_geom_max(ref_geom) = orig + chunk;
-
-    ref_realloc(ref_geom->descr, 4 * ref_geom_max(ref_geom), REF_INT);
-    ref_realloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
-
-    for (geom = orig; geom < ref_geom_max(ref_geom); geom++) {
-      ref_geom_type(ref_geom, geom) = REF_EMPTY;
-      ref_geom_id(ref_geom, geom) = geom + 1;
-    }
-    ref_geom_id(ref_geom, ref_geom_max(ref_geom) - 1) = REF_EMPTY;
-    ref_geom_blank(ref_geom) = orig;
+    RSS(ref_geom_grow(ref_geom), "grow add");
   }
 
   geom = ref_geom_blank(ref_geom);
