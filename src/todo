@@ -7,7 +7,18 @@ parmetis edge weights
 
 extract BC tags from egads
 
-adapt (and then recon)
+revolve cylinder (ONENODE) and pencil (periodic + degen)
+ database learns jump
+ topo checks learn jump
+ meshb IO puts jump in extra float
+ get/set fails at jump
+ tess store jump
+ plotting
+ edge uv learns jump
+ add between learns jump
+ recon later?
+
+recon
  revolve cylinder (ONENODE)
  pencil (periodic + degen)
  toward full "dragon"
