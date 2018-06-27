@@ -262,7 +262,6 @@ REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_arg) {
   ref_malloc_init(*edge_face_arg, 2 * (ref_geom->nedge), REF_INT, REF_EMPTY);
   e2f = *edge_face_arg;
   ref_malloc_init(nface, (ref_geom->nedge), REF_INT, 0);
-  printf("nedge %d nface %d\n", ref_geom->nedge, ref_geom->nface);
   for (face = 0; face < (ref_geom->nface); face++) {
     ego esurf, *eloops, eref;
     int oclass, mtype, nloop, *senses, *pinfo;
