@@ -1,6 +1,11 @@
 
 split edges on initial faces with zero triangles to introduce triangle
 
+adapt (and then recon)
+ revolve cylinder (ONENODE)
+ pencil (periodic + degen)
+ toward full "dragon"
+
 add utility to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
 
@@ -9,8 +14,6 @@ try https://doi.org/10.2514/6.2007-4186 analytic test cases
 handle edge reuse for periodic faces
   use e2f to see if edge is reused
   add some logic to figure out the right sens for a triangle in edgeuv
-
-adapt and recon revolve cylinder (ONENODE) and pencil (periodic + degen)
 
 ref_geom recover
  make sure that edge t values are monotonic
