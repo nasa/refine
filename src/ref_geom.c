@@ -2502,6 +2502,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT edge;
   REF_INT face;
   ego esurf, *eloops, eref;
   int oclass, mtype, nloop, *senses, *pinfo;
@@ -2512,6 +2513,16 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
   REF_DBL param[2];
   double uvmin[6], uvmax[6];
   REF_INT geom;
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->edges))[edge], &eref, &oclass,
+                        &mtype, trange, &nchild, &echilds, &senses),
+         "edge topo");
+    if (mtype == ONENODE) {
+      printf("edge id %d is ONENODE\n",edge+1);
+    }
+  }
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
