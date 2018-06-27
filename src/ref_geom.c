@@ -2480,6 +2480,8 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
       }
   }
 
+  RSS(ref_geom_jump_param(ref_grid), "T and UV jumps");
+
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -2489,20 +2491,16 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
+REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT edge;
-  REF_INT face;
-  ego esurf, *eloops, eref;
-  int oclass, mtype, nloop, *senses, *pinfo;
-  double trange[4], data[18], *preal;
-  ego ecurve, *eedges, *echilds;
-  int iloop, iedge, nedge, nchild, inode;
-  REF_INT node;
-  REF_DBL param[2];
-  double uvmin[6], uvmax[6];
-  REF_INT geom;
+  ego eref;
+  int oclass, mtype, *senses;
+  double trange[2];
+  ego *echilds;
+  int nchild;
+  int *e2f;
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     REIS(EGADS_SUCCESS,
@@ -2513,6 +2511,35 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
       printf("edge id %d is ONENODE\n",edge+1);
     }
   }
+
+  RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    if ( e2f[0+2*edge] == e2f[1+2*edge] ) {
+      printf("edge id %d is used twice by face id %d\n",edge+1,e2f[0+2*edge]);
+    }
+  }
+
+  ref_free(e2f);
+#else
+  printf("unable to %s, No EGADS linked.\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT face;
+  ego esurf, *eloops, eref;
+  int oclass, mtype, nloop, *senses, *pinfo;
+  double trange[4], data[18], *preal;
+  ego ecurve, *eedges, *echilds;
+  int iloop, iedge, nedge, nchild, inode;
+  REF_INT node;
+  REF_DBL param[2];
+  double uvmin[6], uvmax[6];
+  REF_INT geom;
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
