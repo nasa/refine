@@ -45,7 +45,6 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_INT assoc_pos = REF_EMPTY;
   REF_INT recon_pos = REF_EMPTY;
   REF_INT viz_pos = REF_EMPTY;
   REF_INT tess_pos = REF_EMPTY;
@@ -54,8 +53,6 @@ int main(int argc, char *argv[]) {
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--assoc", &assoc_pos), REF_NOT_FOUND,
-      "arg search");
   RXS(ref_args_find(argc, argv, "--recon", &recon_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--viz", &viz_pos), REF_NOT_FOUND,
@@ -121,22 +118,6 @@ int main(int argc, char *argv[]) {
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "validate");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_recon.meshb"), "export");
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    return 0;
-  }
-
-  if (assoc_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    REIS(5, argc,
-         "required args: --assoc grid.ext input.gas grid_geom_assoc.meshb");
-    printf("merge geometry association into meshb\n");
-    printf("grid source %s\n", argv[2]);
-    printf("geometry association source %s\n", argv[3]);
-    printf("output %s\n", argv[4]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
-    RSS(ref_geom_load(ref_grid, argv[3]), "geom gas import");
-    RSS(ref_export_by_extension(ref_grid, argv[4]), "argv export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;

@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
     REIS(1, curve_limit_pos,
          "required args: --curve-limit grid.ext input.metric geom.egads "
          "[assoc.gas]");
-    RAS(argc == 5 || argc == 6,
+    REIS(5, argc,
         "required args: --curve-limit grid.ext input.metric geom.egads "
         "[assoc.gas]");
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
@@ -106,9 +106,6 @@ int main(int argc, char *argv[]) {
         "unable to load parent metric in position 2");
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[4]),
         "unable to load egads in position 3");
-    if (argc == 6)
-      RSS(ref_geom_load(ref_grid, argv[5]),
-          "unable to load geom assoc in position 4");
 
     RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
     RSS(ref_gather_metric(ref_grid, "ref_metric_test_curve_limit.metric"),
