@@ -142,8 +142,6 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
 
 REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
-REF_STATUS ref_geom_add_jump(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                             REF_INT id, REF_DBL *param);
 
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node);
 
@@ -154,8 +152,6 @@ REF_STATUS ref_geom_unique_id(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
 REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                          REF_INT id, REF_INT *geom);
-REF_STATUS ref_geom_find_jump(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                              REF_INT id, REF_INT *geom);
 
 REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);

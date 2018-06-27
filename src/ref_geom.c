@@ -1030,46 +1030,6 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_add_jump(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                             REF_INT id, REF_DBL *param) {
-  REF_INT geom;
-  REF_STATUS status;
-
-  if (type < 0 || 2 < type) return REF_INVALID;
-
-  status = ref_geom_find_jump(ref_geom, node, type, id, &geom);
-  RXS(status, REF_NOT_FOUND, "find failed");
-
-  if (REF_SUCCESS == status) {
-    if (type > 0) ref_geom_param(ref_geom, 0, geom) = param[0];
-    if (type > 1) ref_geom_param(ref_geom, 1, geom) = param[1];
-    return REF_SUCCESS;
-  }
-
-  if (REF_EMPTY == ref_geom_blank(ref_geom)) {
-    RSS(ref_geom_grow(ref_geom), "grow add");
-  }
-
-  geom = ref_geom_blank(ref_geom);
-  ref_geom_blank(ref_geom) = ref_geom_id(ref_geom, geom);
-
-  ref_geom_type(ref_geom, geom) = type;
-  ref_geom_id(ref_geom, geom) = id;
-  ref_geom_jump(ref_geom, geom) = 1;
-  ref_geom_node(ref_geom, geom) = node;
-
-  ref_geom_param(ref_geom, 0, geom) = 0.0;
-  ref_geom_param(ref_geom, 1, geom) = 0.0;
-  if (type > 0) ref_geom_param(ref_geom, 0, geom) = param[0];
-  if (type > 1) ref_geom_param(ref_geom, 1, geom) = param[1];
-
-  RSS(ref_adj_add(ref_geom->ref_adj, node, geom), "register geom");
-
-  ref_geom_n(ref_geom)++;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node) {
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
   REF_INT item, geom;
@@ -1125,23 +1085,7 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   *found = REF_EMPTY;
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
     if (type == ref_geom_type(ref_geom, geom) &&
-        id == ref_geom_id(ref_geom, geom) &&
-        0 == ref_geom_jump(ref_geom, geom)) {
-      *found = geom;
-      return REF_SUCCESS;
-    }
-  }
-  return REF_NOT_FOUND;
-}
-
-REF_STATUS ref_geom_find_jump(REF_GEOM ref_geom, REF_INT node, REF_INT type,
-                              REF_INT id, REF_INT *found) {
-  REF_INT item, geom;
-  *found = REF_EMPTY;
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
-    if (type == ref_geom_type(ref_geom, geom) &&
-        id == ref_geom_id(ref_geom, geom) &&
-        1 == ref_geom_jump(ref_geom, geom)) {
+        id == ref_geom_id(ref_geom, geom) ) {
       *found = geom;
       return REF_SUCCESS;
     }
