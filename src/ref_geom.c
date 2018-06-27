@@ -2503,11 +2503,17 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT face;
+  ego esurf, *eloops, eref;
+  int oclass, mtype, nloop, *senses, *pinfo;
+  double trange[4], data[18], *preal;
+  ego ecurve, *eedges, *echilds;
+  int iloop, iedge, nedge, nchild, inode;
+  REF_INT node;
+  REF_DBL param[2];
+  double uvmin[6], uvmax[6];
+  REF_INT geom;
 
   for (face = 0; face < (ref_geom->nface); face++) {
-    ego esurf, *eloops, eref;
-    int oclass, mtype, nloop, *senses, *pinfo;
-    double trange[4], data[18], *preal;
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
                         &mtype, data, &nloop, &eloops, &senses),
@@ -2517,10 +2523,6 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
     EG_free(pinfo);
     EG_free(preal);
     if (mtype != PLANE) {
-      ego ecurve, *eedges, *echilds;
-      int iloop, iedge, nedge, nchild, inode;
-      REF_INT node;
-      REF_DBL param[2];
       /* loop through all Loops associated with this Face */
       for (iloop = 0; iloop < nloop; iloop++) {
         /* loop through all Edges associated with this Loop */
@@ -2534,8 +2536,6 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
                               &nchild, &echilds, &senses),
                "tp");
           if (mtype == DEGENERATE) {
-            double uvmin[6], uvmax[6];
-            REF_INT geom;
             printf("face id %d has degen\n", face + 1);
             /* find index of bounding Node */
             inode = EG_indexBodyTopo((ego)(ref_geom->solid), echilds[0]);
