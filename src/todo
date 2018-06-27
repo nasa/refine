@@ -10,7 +10,7 @@ extract BC tags from egads
 revolve cylinder (ONENODE) and pencil (periodic + degen)
  + database learns jump
  + extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
- create ref_geom_add_jump, add sets jump 0
+ + create ref_geom_add_jump, add sets jump 0
  insert jumps at ONENODE and mulitple edge uses
  create method that returns tuv based on a non jump geom
  plot jumps
