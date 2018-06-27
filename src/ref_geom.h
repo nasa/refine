@@ -77,11 +77,12 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 
 #define ref_geom_descr(ref_geom, attribute, geom) \
-  ((ref_geom)->descr[(attribute) + 3 * (geom)])
+  ((ref_geom)->descr[(attribute) + 4 * (geom)])
 
 #define ref_geom_type(ref_geom, geom) (ref_geom_descr((ref_geom), 0, (geom)))
 #define ref_geom_id(ref_geom, geom) (ref_geom_descr((ref_geom), 1, (geom)))
-#define ref_geom_node(ref_geom, geom) (ref_geom_descr((ref_geom), 2, (geom)))
+#define ref_geom_jump(ref_geom, geom) (ref_geom_descr((ref_geom), 2, (geom)))
+#define ref_geom_node(ref_geom, geom) (ref_geom_descr((ref_geom), 3, (geom)))
 
 #define ref_geom_param(ref_geom, dimension, geom) \
   ((ref_geom)->param[(dimension) + 2 * (geom)])
