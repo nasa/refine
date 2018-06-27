@@ -98,8 +98,8 @@ int main(int argc, char *argv[]) {
          "required args: --curve-limit grid.ext input.metric geom.egads "
          "[assoc.gas]");
     REIS(5, argc,
-        "required args: --curve-limit grid.ext input.metric geom.egads "
-        "[assoc.gas]");
+         "required args: --curve-limit grid.ext input.metric geom.egads "
+         "[assoc.gas]");
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 1");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),

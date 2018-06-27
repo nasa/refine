@@ -2605,14 +2605,15 @@ REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
   REF_INT *e2f;
 
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
-  
+
   each_ref_cell_valid_cell(ref_edg, edg) {
     node0 = ref_cell_c2n(ref_edg, 0, edg);
     node1 = ref_cell_c2n(ref_edg, 1, edg);
     RSS(ref_cell_list_with2(ref_edg, node0, node1, 2, &nedg, edg_list),
         "edge list for nodes");
     if (2 == nedg) {
-      printf("two edg found with same nodes %d %d from %d\n",node0,node1,edg);
+      printf("two edg found with same nodes %d %d from %d\n", node0, node1,
+             edg);
       printf("edg %d n %d %d id %d\n", edg_list[0],
              ref_cell_c2n(ref_edg, 0, edg_list[0]),
              ref_cell_c2n(ref_edg, 1, edg_list[0]),
@@ -2621,14 +2622,13 @@ REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
              ref_cell_c2n(ref_edg, 0, edg_list[1]),
              ref_cell_c2n(ref_edg, 1, edg_list[1]),
              ref_cell_c2n(ref_edg, 2, edg_list[1]));
-      RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri,
-                              tri_list),
+      RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri, tri_list),
           "tri list for nodes");
     }
   }
 
   ref_free(e2f);
-  
+
 #else
   printf("unable to %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -2647,17 +2647,23 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
-  each_ref_geom_edge(ref_geom, geom) if (id == ref_geom_id(ref_geom, geom))
+  each_ref_geom_edge(ref_geom, geom) {
+    if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
+    }
+  }
   nnode = ref_dict_n(ref_dict);
 
   nedg = 0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) if (id == nodes[2])
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
       nedg++;
+    }
+  }
 
-  if (0 == nnode || 0 == nedg) /* skip degenerate */
-  {
+  /* skip degenerate */
+  if (0 == nnode || 0 == nedg) {
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -2699,17 +2705,23 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
-  each_ref_geom_face(ref_geom, geom) if (id == ref_geom_id(ref_geom, geom))
+  each_ref_geom_face(ref_geom, geom) {
+    if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
+    }
+  }
   nnode = ref_dict_n(ref_dict);
 
   ntri = 0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) if (id == nodes[3])
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
       ntri++;
+    }
+  }
 
-  if (0 == nnode || 0 == ntri) /* skip degenerate */
-  {
+  /* skip degenerate */
+  if (0 == nnode || 0 == ntri) {
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -2726,13 +2738,14 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             ref_geom_param(ref_geom, 1, geom), 0.0);
   }
 
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                      nodes) if (id == nodes[3]) {
-    for (node = 0; node < 3; node++) {
-      RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
-      fprintf(file, " %d", local + 1);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
+      for (node = 0; node < 3; node++) {
+        RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+        fprintf(file, " %d", local + 1);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   RSS(ref_dict_free(ref_dict), "free dict");
@@ -2753,17 +2766,23 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
-  each_ref_geom_face(ref_geom, geom) if (id == ref_geom_id(ref_geom, geom))
+  each_ref_geom_face(ref_geom, geom) {
+    if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
+    }
+  }
   nnode = ref_dict_n(ref_dict);
 
   ntri = 0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) if (id == nodes[3])
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
       ntri++;
+    }
+  }
 
-  if (0 == nnode || 0 == ntri) /* skip degenerate */
-  {
+  /* skip degenerate */
+  if (0 == nnode || 0 == ntri) {
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -2783,13 +2802,14 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             -area_sign * n[1], -area_sign * n[2]);
   }
 
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                      nodes) if (id == nodes[3]) {
-    for (node = 0; node < 3; node++) {
-      RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
-      fprintf(file, " %d", local + 1);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
+      for (node = 0; node < 3; node++) {
+        RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+        fprintf(file, " %d", local + 1);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   RSS(ref_dict_free(ref_dict), "free dict");
@@ -2809,17 +2829,23 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
-  each_ref_geom_face(ref_geom, geom) if (id == ref_geom_id(ref_geom, geom))
+  each_ref_geom_face(ref_geom, geom) {
+    if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
+    }
+  }
   nnode = ref_dict_n(ref_dict);
 
   ntri = 0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) if (id == nodes[3])
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
       ntri++;
+    }
+  }
 
-  if (0 == nnode || 0 == ntri) /* skip degenerate */
-  {
+  /* skip degenerate */
+  if (0 == nnode || 0 == ntri) {
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -2837,13 +2863,14 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             ref_node_xyz(ref_node, 2, node), ABS(kr), ABS(ks), 0.0);
   }
 
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                      nodes) if (id == nodes[3]) {
-    for (node = 0; node < 3; node++) {
-      RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
-      fprintf(file, " %d", local + 1);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
+      for (node = 0; node < 3; node++) {
+        RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+        fprintf(file, " %d", local + 1);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   RSS(ref_dict_free(ref_dict), "free dict");
@@ -2917,9 +2944,11 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   ref_malloc_init(a_ngeom, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_ngeom, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       a_nnode[ref_node_part(ref_node, node)]++;
+    }
+  }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_nnode, b_nnode, REF_INT_TYPE),
       "alltoall nnodes");
@@ -2935,15 +2964,17 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   ref_malloc(b_part, b_nnode_total, REF_INT);
 
   a_next[0] = 0;
-  each_ref_mpi_worker(ref_mpi, part) a_next[part] =
-      a_next[part - 1] + a_nnode[part - 1];
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_nnode[part - 1];
+  }
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    part = ref_node_part(ref_node, node);
-    a_global[a_next[part]] = ref_node_global(ref_node, node);
-    a_part[a_next[part]] = ref_mpi_rank(ref_mpi);
-    a_next[ref_node_part(ref_node, node)]++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_part[a_next[part]] = ref_mpi_rank(ref_mpi);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_nnode, b_global, b_nnode, 1,
@@ -2976,8 +3007,9 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   ref_malloc(b_param, 2 * b_ngeom_total, REF_DBL);
 
   b_next[0] = 0;
-  each_ref_mpi_worker(ref_mpi, part) b_next[part] =
-      b_next[part - 1] + b_ngeom[part - 1];
+  each_ref_mpi_worker(ref_mpi, part) {
+    b_next[part] = b_next[part - 1] + b_ngeom[part - 1];
+  }
 
   for (node = 0; node < b_nnode_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
