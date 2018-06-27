@@ -2671,28 +2671,38 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
 
 REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
-  REF_INT cell, ncell, cell_list[2];
-  each_ref_cell_valid_cell(ref_cell, cell) {
-    RSS(ref_cell_list_with2(ref_cell, ref_cell_c2n(ref_cell, 0, cell),
-                            ref_cell_c2n(ref_cell, 1, cell), 2, &ncell,
-                            cell_list),
-        "edge list for edge");
-    if (2 == ncell) {
-      printf("error: two edg found with same nodes\n");
-      printf("edg %d n %d %d id %d\n", cell_list[0],
-             ref_cell_c2n(ref_cell, 0, cell_list[0]),
-             ref_cell_c2n(ref_cell, 1, cell_list[0]),
-             ref_cell_c2n(ref_cell, 2, cell_list[0]));
-      printf("edg %d n %d %d id %d\n", cell_list[1],
-             ref_cell_c2n(ref_cell, 0, cell_list[1]),
-             ref_cell_c2n(ref_cell, 1, cell_list[1]),
-             ref_cell_c2n(ref_cell, 2, cell_list[1]));
+  REF_CELL ref_edg = ref_grid_edg(ref_grid);
+  REF_CELL ref_tri = ref_grid_tri(ref_grid);
+  REF_INT edg, nedg, edg_list[2];
+  REF_INT ntri, tri_list[2];
+  REF_INT node0, node1;
+  REF_INT *e2f;
 
+  RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
+  
+  each_ref_cell_valid_cell(ref_edg, edg) {
+    node0 = ref_cell_c2n(ref_edg, 0, edg);
+    node1 = ref_cell_c2n(ref_edg, 1, edg);
+    RSS(ref_cell_list_with2(ref_edg, node0, node1, 2, &nedg, edg_list),
+        "edge list for nodes");
+    if (2 == nedg) {
+      printf("two edg found with same nodes %d %d from %d\n",node0,node1,edg);
+      printf("edg %d n %d %d id %d\n", edg_list[0],
+             ref_cell_c2n(ref_edg, 0, edg_list[0]),
+             ref_cell_c2n(ref_edg, 1, edg_list[0]),
+             ref_cell_c2n(ref_edg, 2, edg_list[0]));
+      printf("edg %d n %d %d id %d\n", edg_list[1],
+             ref_cell_c2n(ref_edg, 0, edg_list[1]),
+             ref_cell_c2n(ref_edg, 1, edg_list[1]),
+             ref_cell_c2n(ref_edg, 2, edg_list[1]));
+      RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri,
+                              tri_list),
+          "tri list for nodes");
     }
   }
 
-
+  ref_free(e2f);
+  
 #else
   printf("unable to %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
