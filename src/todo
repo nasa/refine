@@ -1,6 +1,12 @@
 
 split edges on initial faces with zero triangles to introduce triangle
 
+convert todo to TODO.md
+
+parmetis edge weights
+
+extract BC tags from egads
+
 adapt (and then recon)
  revolve cylinder (ONENODE)
  pencil (periodic + degen)
