@@ -2669,9 +2669,30 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tess_repair_topo(REF_GRID ref_grid) {
+REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT cell, ncell, cell_list[2];
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_list_with2(ref_cell, ref_cell_c2n(ref_cell, 0, cell),
+                            ref_cell_c2n(ref_cell, 1, cell), 2, &ncell,
+                            cell_list),
+        "edge list for edge");
+    if (2 == ncell) {
+      printf("error: two edg found with same nodes\n");
+      printf("edg %d n %d %d id %d\n", cell_list[0],
+             ref_cell_c2n(ref_cell, 0, cell_list[0]),
+             ref_cell_c2n(ref_cell, 1, cell_list[0]),
+             ref_cell_c2n(ref_cell, 2, cell_list[0]));
+      printf("edg %d n %d %d id %d\n", cell_list[1],
+             ref_cell_c2n(ref_cell, 0, cell_list[1]),
+             ref_cell_c2n(ref_cell, 1, cell_list[1]),
+             ref_cell_c2n(ref_cell, 2, cell_list[1]));
+
+    }
+  }
+
+
 #else
   printf("unable to %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);

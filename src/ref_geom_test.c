@@ -172,7 +172,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
-    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess_geom.tec"), "geom export");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess_orig.tec"), "geom export");
+
+    printf("repair topo\n");
+    RSS(ref_geom_egads_tess_repair_topo(ref_grid), "tess repair");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess_fix.tec"), "geom export");
 
     printf("verify topo\n");
     RSS(ref_geom_verify_topo(ref_grid), "original params");
