@@ -2508,7 +2508,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, geom, edge, cad_node;
-  REF_BOOL found;
+  REF_INT nfound;
   ego eref;
   int oclass, mtype, *senses;
   double trange[2];
@@ -2533,16 +2533,16 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       RAS(node != REF_EMPTY, "unable to find vertex for CAD node");
       printf("edge id %d is ONENODE at geom node %d vertex %d\n", edge + 1,
              cad_node, node);
-      found = REF_FALSE;
+      nfound = 0;
       each_ref_geom_edge(ref_geom, geom) {
         if (node == ref_geom_node(ref_geom, geom) &&
             edge + 1 == ref_geom_id(ref_geom, geom)) {
           ref_geom_jump(ref_geom, geom) = 1;
-          RAS(!found, "edge geom found twice");
-          found = REF_TRUE;
+          REIS(0, nfound, "edge geom already found");
+          nfound++;
         }
       }
-      RAS(found, "edge geom not found");
+      REIS(1, nfound, "edge geom not found once");
     }
   }
 
