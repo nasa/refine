@@ -156,7 +156,7 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
 REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
-                             REF_INT type, REF_INT id, REF_DBL *param, 
+                             REF_INT type, REF_INT id, REF_DBL *param,
                              REF_INT *sens);
 
 REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,

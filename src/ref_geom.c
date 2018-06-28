@@ -1106,7 +1106,7 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 }
 
 REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
-                             REF_INT type, REF_INT id, REF_DBL *param, 
+                             REF_INT type, REF_INT id, REF_DBL *param,
                              REF_INT *sens) {
 #ifdef HAVE_EGADS
   REF_INT geom;
@@ -1117,7 +1117,7 @@ REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
   REF_DBL dist0, dist1;
 
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
-  
+
   if (0 == ref_geom_jump(ref_geom, geom)) {
     if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
     if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
@@ -1126,33 +1126,31 @@ REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
   }
 
   switch (ref_geom_type(ref_geom, geom)) {
-  case REF_GEOM_EDGE:
-    object = ((ego *)(ref_geom->edges))[id - 1];
-    REIS(EGADS_SUCCESS,
-         EG_getRange(object, trange, &periodic),
-         "edge range");
-    RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv" );
-    dist0 = from_param[0]-trange[0];
-    dist1 = trange[1]-from_param[0];
-    if ( dist0 < 0.0 || dist1 < 0.0 ) {
-      printf(" from t = %e %e %e, dist = %e %e\n",
-             trange[0],from_param[0],trange[1],dist0, dist1);
-      THROW("from node not in trange");
-    }
-    if ( dist0 < dist1 ) {
-      *sens = 0;
-      param[0] = trange[0];
-    } else {
-      *sens = 1;
-      param[0] = trange[1];
-    }
-    break;
-  default:
-    RSS(REF_IMPLEMENT, "can't to geom type yet");
+    case REF_GEOM_EDGE:
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      REIS(EGADS_SUCCESS, EG_getRange(object, trange, &periodic), "edge range");
+      RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv");
+      dist0 = from_param[0] - trange[0];
+      dist1 = trange[1] - from_param[0];
+      if (dist0 < 0.0 || dist1 < 0.0) {
+        printf(" from t = %e %e %e, dist = %e %e\n", trange[0], from_param[0],
+               trange[1], dist0, dist1);
+        THROW("from node not in trange");
+      }
+      if (dist0 < dist1) {
+        *sens = 0;
+        param[0] = trange[0];
+      } else {
+        *sens = 1;
+        param[0] = trange[1];
+      }
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "can't to geom type yet");
   }
 
 #else
-  RSS(ref_geom_tuv(ref_geom, node, type, id, param), "tuv" );
+  RSS(ref_geom_tuv(ref_geom, node, type, id, param), "tuv");
   SUPRESS_UNUSED_COMPILER_WARNING(from);
   *sens = 0;
 #endif
@@ -2771,7 +2769,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     }
   }
   nnode = ref_dict_n(ref_dict);
-  if ( REF_EMPTY != jump_geom ) nnode++;
+  if (REF_EMPTY != jump_geom) nnode++;
 
   nedg = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -2796,13 +2794,15 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == nodes[2]) {
       RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
       RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
-                            &tvalue, &sens), "from");
-      if (1 == sens) local = nnode-1;
+                            &tvalue, &sens),
+          "from");
+      if (1 == sens) local = nnode - 1;
       t[local] = tvalue;
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
       RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
-                            &tvalue, &sens), "from");
-      if (1 == sens) local = nnode-1;
+                            &tvalue, &sens),
+          "from");
+      if (1 == sens) local = nnode - 1;
       t[local] = tvalue;
     }
   }
@@ -2810,15 +2810,13 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   each_ref_dict_key_value(ref_dict, item, node, geom) {
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-            ref_node_xyz(ref_node, 2, node), 0.0, 0.0,
-            t[item]);
+            ref_node_xyz(ref_node, 2, node), 0.0, 0.0, t[item]);
   }
-  if ( REF_EMPTY != jump_geom ) {
+  if (REF_EMPTY != jump_geom) {
     node = ref_geom_node(ref_geom, jump_geom);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-            ref_node_xyz(ref_node, 2, node), 0.0, 0.0,
-            t[nnode-1]);
+            ref_node_xyz(ref_node, 2, node), 0.0, 0.0, t[nnode - 1]);
   }
   ref_free(t);
 
@@ -2826,13 +2824,15 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == nodes[2]) {
       RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
       RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
-                            &tvalue, &sens), "from");
-      if (1 == sens) local = nnode-1;
+                            &tvalue, &sens),
+          "from");
+      if (1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
       RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
-                            &tvalue, &sens), "from");
-      if (1 == sens) local = nnode-1;
+                            &tvalue, &sens),
+          "from");
+      if (1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
       fprintf(file, "\n");
     }
