@@ -2508,7 +2508,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, geom, edge, cad_node;
-  REF_INT nfound;
+  REF_INT nfound, edge_geom, face_geom;
   ego eref;
   int oclass, mtype, *senses;
   double trange[2];
@@ -2549,8 +2549,21 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     if (e2f[0 + 2 * edge] == e2f[1 + 2 * edge]) {
-      printf("edge id %d is used twice by face id %d\n", edge + 1,
-             e2f[0 + 2 * edge]);
+      nfound = 0;
+      each_ref_geom_edge(ref_geom, edge_geom) {
+        if (edge + 1 == ref_geom_id(ref_geom, edge_geom)) {
+          each_ref_geom_face(ref_geom, face_geom) {
+            if (e2f[0 + 2 * edge] == ref_geom_id(ref_geom, face_geom) &&
+                ref_geom_node(ref_geom, edge_geom) ==
+                    ref_geom_node(ref_geom, face_geom)) {
+              ref_geom_jump(ref_geom, face_geom) = 1;
+              nfound++;
+            }
+          }
+        }
+      }
+      printf("edge id %d is used twice by face id %d, %d found\n", edge + 1,
+             e2f[0 + 2 * edge], nfound);
     }
   }
 
