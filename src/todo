@@ -7,14 +7,16 @@ parmetis edge weights
 
 extract BC tags from egads
 
-revolve cylinder (ONENODE) and pencil (periodic + degen)
+revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + database learns jump
  + extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
  + delete ref_geom_add_jump, find_jump
  + set jumps at ONENODE
  + set jumps at mulitple edge uses
- create method that returns sens and (tuv) based on a non jump geom
- plot jumps?
+ + create method that returns sens and (t) based on a non jump geom
+ + plot t jumps
+ create method that returns sens and (uv) based on a non jump geom
+ plot uv jumps
  add jumps to tattle and inspect
  ref_migrate? ref_part? ref_export? ref_gather? ref_import? jump=0, DESCR_SIZE
  get uv, set uv, throw jump != 0
