@@ -23,6 +23,8 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  edge uv learns jump
  add between and xyz between learns jump
  boundaring box and box2 learn jump
+ sort out sens meaning
+ report improvement to getEdgeUV docs
  curvature?
  recon later?
 

@@ -1184,12 +1184,11 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
           "from uv");
       RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t),
           "edge t0");
-      printf(" face = %d, edge = %d\n", id, edgeid);
       face_ego = ((ego *)(ref_geom->faces))[id - 1];
       edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
       REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
            "eval edge face uv sens = 0");
-      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv1),
+      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
            "eval edge face uv sens = 1");
       dist0 = sqrt(pow(uv0[0]-uv[0],2)+pow(uv0[1]-uv[1],2));
       dist1 = sqrt(pow(uv1[0]-uv[0],2)+pow(uv1[1]-uv[1],2));
@@ -1202,7 +1201,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
         param[0] = uv1[0];
         param[1] = uv1[1];
       }
-      printf(" sens = %d, dist = %e %e\n", *sens, dist0, dist1);
+      printf(" sens = %d, dist = %f %f\n", *sens, dist0, dist1);
       break;
     default:
       RSS(REF_IMPLEMENT, "can't to geom type yet");
