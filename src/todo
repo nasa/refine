@@ -11,7 +11,8 @@ revolve cylinder (ONENODE) and pencil (periodic + degen)
  + database learns jump
  + extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
  + delete ref_geom_add_jump, find_jump
- set jumps at ONENODE and mulitple edge uses
+ + set jumps at ONENODE
+ set jumps at mulitple edge uses
  create method that returns sens and (tuv) based on a non jump geom
  plot jumps?
  add jumps to tattle and inspect

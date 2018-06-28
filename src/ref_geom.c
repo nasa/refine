@@ -1085,7 +1085,7 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   *found = REF_EMPTY;
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
     if (type == ref_geom_type(ref_geom, geom) &&
-        id == ref_geom_id(ref_geom, geom) ) {
+        id == ref_geom_id(ref_geom, geom)) {
       *found = geom;
       return REF_SUCCESS;
     }
@@ -2507,7 +2507,8 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT edge, node;
+  REF_INT node, geom, edge, cad_node;
+  REF_BOOL found;
   ego eref;
   int oclass, mtype, *senses;
   double trange[2];
@@ -2522,8 +2523,26 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
          "edge topo");
     if (mtype == ONENODE) {
       REIS(1, nchild, "ONENODE should have one node");
-      node = EG_indexBodyTopo(ref_geom->solid, echilds[0]);
-      printf("edge id %d is ONENODE at geom node %d\n", edge + 1, node);
+      cad_node = EG_indexBodyTopo(ref_geom->solid, echilds[0]);
+      node = REF_EMPTY;
+      each_ref_geom_node(ref_geom, geom) {
+        if (cad_node == ref_geom_id(ref_geom, geom)) {
+          node = ref_geom_node(ref_geom, geom);
+        }
+      }
+      RAS(node != REF_EMPTY, "unable to find vertex for CAD node");
+      printf("edge id %d is ONENODE at geom node %d vertex %d\n", edge + 1,
+             cad_node, node);
+      found = REF_FALSE;
+      each_ref_geom_edge(ref_geom, geom) {
+        if (node == ref_geom_node(ref_geom, geom) &&
+            edge + 1 == ref_geom_id(ref_geom, geom)) {
+          ref_geom_jump(ref_geom, geom) = 1;
+          RAS(!found, "edge geom found twice");
+          found = REF_TRUE;
+        }
+      }
+      RAS(found, "edge geom not found");
     }
   }
 
@@ -2589,21 +2608,24 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
             REIS(EGADS_SUCCESS,
                  EG_evaluate(eedges[iedge + nedge], &trange[1], uvmax),
                  "eval max");
-            each_ref_geom_node(ref_geom,
-                               geom) if (inode == ref_geom_id(ref_geom, geom)) {
-              node = ref_geom_node(ref_geom, geom);
-              printf("tess node index %d\n", node);
-              ref_node_location(ref_grid_node(ref_grid), node);
-              RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, face + 1, param),
-                  "face uv");
-              printf("u tess %f tmin %f tmax %f\n", param[0], uvmin[0],
-                     uvmax[0]);
-              printf("v tess %f tmin %f tmax %f\n", param[1], uvmin[1],
-                     uvmax[1]);
-              param[0] = 0.5 * (uvmin[0] + uvmax[0]);
-              param[1] = 0.5 * (uvmin[1] + uvmax[1]);
-              RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, face + 1, param),
-                  "face uv");
+            each_ref_geom_node(ref_geom, geom) {
+              if (inode == ref_geom_id(ref_geom, geom)) {
+                node = ref_geom_node(ref_geom, geom);
+                printf("tess node index %d\n", node);
+                ref_node_location(ref_grid_node(ref_grid), node);
+                RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, face + 1,
+                                 param),
+                    "face uv");
+                printf("u tess %f tmin %f tmax %f\n", param[0], uvmin[0],
+                       uvmax[0]);
+                printf("v tess %f tmin %f tmax %f\n", param[1], uvmin[1],
+                       uvmax[1]);
+                param[0] = 0.5 * (uvmin[0] + uvmax[0]);
+                param[1] = 0.5 * (uvmin[1] + uvmax[1]);
+                RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, face + 1,
+                                 param),
+                    "face uv");
+              }
             }
           }
         }
