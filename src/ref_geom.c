@@ -1105,16 +1105,38 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
-                             REF_INT type, REF_INT id, REF_DBL *param,
-                             REF_INT *sens) {
+REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
+                             REF_INT type, REF_DBL *param, REF_INT *sens) {
 #ifdef HAVE_EGADS
-  REF_INT geom;
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id, geom, from;
+  REF_INT cell_node, node_index;
   ego object;
   double trange[2];
   int periodic;
   REF_DBL from_param[2];
   REF_DBL dist0, dist1;
+
+  ref_cell = (REF_CELL)NULL;
+  switch (type) {
+    case REF_GEOM_EDGE:
+      ref_cell = ref_grid_edg(ref_grid);
+      break;
+    case REF_GEOM_FACE:
+      ref_cell = ref_grid_tri(ref_grid);
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "can't to geom type yet");
+  }
+  RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+  id = nodes[ref_cell_node_per(ref_cell)];
+  node_index = REF_EMPTY;
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    if (node == nodes[cell_node]) node_index = cell_node;
+  }
+  RAS(REF_EMPTY != node_index, "can't find node in cell");
 
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
 
@@ -1125,10 +1147,11 @@ REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
     return REF_SUCCESS;
   }
 
-  switch (ref_geom_type(ref_geom, geom)) {
+  switch (type) {
     case REF_GEOM_EDGE:
       object = ((ego *)(ref_geom->edges))[id - 1];
       REIS(EGADS_SUCCESS, EG_getRange(object, trange, &periodic), "edge range");
+      from = nodes[1 - node_index];
       RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv");
       dist0 = from_param[0] - trange[0];
       dist1 = trange[1] - from_param[0];
@@ -1150,9 +1173,14 @@ REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
   }
 
 #else
-  RSS(ref_geom_tuv(ref_geom, node, type, id, param), "tuv");
-  SUPRESS_UNUSED_COMPILER_WARNING(from);
-  *sens = 0;
+  printf("unable to %s, Need full EGADS linked.\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(node);
+  SUPRESS_UNUSED_COMPILER_WARNING(cell);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(cell);
+  param[0] = 0.0;
+  *sens = REF_EMPTY;
 #endif
   return REF_SUCCESS;
 }
@@ -2793,14 +2821,14 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (id == nodes[2]) {
       RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
-      RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
-                            &tvalue, &sens),
+      RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &tvalue,
+                            &sens),
           "from");
       if (1 == sens) local = nnode - 1;
       t[local] = tvalue;
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
-      RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
-                            &tvalue, &sens),
+      RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &tvalue,
+                            &sens),
           "from");
       if (1 == sens) local = nnode - 1;
       t[local] = tvalue;
@@ -2823,14 +2851,14 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (id == nodes[2]) {
       RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
-      RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
-                            &tvalue, &sens),
+      RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &tvalue,
+                            &sens),
           "from");
       if (1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
-      RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
-                            &tvalue, &sens),
+      RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &tvalue,
+                            &sens),
           "from");
       if (1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
