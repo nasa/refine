@@ -1111,12 +1111,12 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT id, geom, from;
+  REF_INT id, edgeid, geom, from, from_geom;
   REF_INT cell_node, node_index;
-  ego object;
-  double trange[2];
+  ego face_ego, edge_ego;
+  double trange[2], uv[2], uv0[2], uv1[2];
   int periodic;
-  REF_DBL from_param[2];
+  REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
 
   ref_cell = (REF_CELL)NULL;
@@ -1149,8 +1149,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
 
   switch (type) {
     case REF_GEOM_EDGE:
-      object = ((ego *)(ref_geom->edges))[id - 1];
-      REIS(EGADS_SUCCESS, EG_getRange(object, trange, &periodic), "edge range");
+      edge_ego = ((ego *)(ref_geom->edges))[id - 1];
+      REIS(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic), "edge range");
       from = nodes[1 - node_index];
       RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv");
       dist0 = from_param[0] - trange[0];
@@ -1167,6 +1167,42 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
         *sens = 1;
         param[0] = trange[1];
       }
+      break;
+    case REF_GEOM_FACE:
+      from = REF_EMPTY;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_geom_find(ref_geom, nodes[cell_node], type, id, &from_geom), 
+            "not found");
+        if (node_index != nodes[cell_node] && 
+            0 == ref_geom_jump(ref_geom, from_geom)) { 
+          from = nodes[cell_node];
+        }
+      }
+      RAS(REF_EMPTY != from, "can't find from in cell");
+      edgeid = ref_geom_jump(ref_geom, geom);
+      RSS(ref_geom_tuv(ref_geom, from, REF_GEOM_FACE, id, uv),
+          "from uv");
+      RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t),
+          "edge t0");
+      printf(" face = %d, edge = %d\n", id, edgeid);
+      face_ego = ((ego *)(ref_geom->faces))[id - 1];
+      edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
+      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
+           "eval edge face uv sens = 0");
+      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv1),
+           "eval edge face uv sens = 1");
+      dist0 = sqrt(pow(uv0[0]-uv[0],2)+pow(uv0[1]-uv[1],2));
+      dist1 = sqrt(pow(uv1[0]-uv[0],2)+pow(uv1[1]-uv[1],2));
+      if (dist0 < dist1) {
+        *sens = 0;
+        param[0] = uv0[0];
+        param[1] = uv0[1];
+      } else {
+        *sens = 1;
+        param[0] = uv1[0];
+        param[1] = uv1[1];
+      }
+      printf(" sens = %d, dist = %e %e\n", *sens, dist0, dist1);
       break;
     default:
       RSS(REF_IMPLEMENT, "can't to geom type yet");
@@ -2879,6 +2915,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
   REF_INT nnode, ntri;
+  REF_INT sens;
+  REF_DBL uv[2];
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -2896,6 +2934,16 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       ntri++;
     }
   }
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[3]) {
+      each_ref_cell_cell_node(ref_cell, node) {
+        RSS(ref_geom_cell_tuv(ref_grid, nodes[node], cell, REF_GEOM_FACE,
+                              uv, &sens), "cell tuv");
+      }
+    }
+  }
+
 
   /* skip degenerate */
   if (0 == nnode || 0 == ntri) {
