@@ -2617,7 +2617,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       each_ref_geom_edge(ref_geom, geom) {
         if (node == ref_geom_node(ref_geom, geom) &&
             edge + 1 == ref_geom_id(ref_geom, geom)) {
-          ref_geom_jump(ref_geom, geom) = 1;
+          ref_geom_jump(ref_geom, geom) = edge + 1;
           REIS(0, nfound, "edge geom already found");
           nfound++;
         }
@@ -2636,7 +2636,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
             if (e2f[0 + 2 * edge] == ref_geom_id(ref_geom, face_geom) &&
                 ref_geom_node(ref_geom, edge_geom) ==
                     ref_geom_node(ref_geom, face_geom)) {
-              ref_geom_jump(ref_geom, face_geom) = 1;
+              ref_geom_jump(ref_geom, face_geom) = edge +1;
               nfound++;
             }
           }
@@ -2790,7 +2790,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
-      if (1 == ref_geom_jump(ref_geom, geom)) {
+      if (0 != ref_geom_jump(ref_geom, geom)) {
         REIS(REF_EMPTY, jump_geom, "should be only one jump per edge");
         jump_geom = geom;
       }
