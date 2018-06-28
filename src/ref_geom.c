@@ -2754,7 +2754,9 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_DICT ref_dict;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
-  REF_INT nnode, nedg;
+  REF_INT nnode, nedg, sens;
+  REF_INT jump_geom = REF_EMPTY;
+  REF_DBL *t, tvalue;
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -2762,9 +2764,14 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
+      if (1 == ref_geom_jump(ref_geom, geom)) {
+        REIS(REF_EMPTY, jump_geom, "should be only one jump per edge");
+        jump_geom = geom;
+      }
     }
   }
   nnode = ref_dict_n(ref_dict);
+  if ( REF_EMPTY != jump_geom ) nnode++;
 
   nedg = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -2784,20 +2791,51 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       "zone t=\"edge%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
       id, nnode, nedg, "point", "felineseg");
 
+  ref_malloc(t, nnode, REF_DBL);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
+      RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
+      RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
+                            &tvalue, &sens), "from");
+      if (1 == sens) local = nnode-1;
+      t[local] = tvalue;
+      RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
+      RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
+                            &tvalue, &sens), "from");
+      if (1 == sens) local = nnode-1;
+      t[local] = tvalue;
+    }
+  }
+
   each_ref_dict_key_value(ref_dict, item, node, geom) {
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
             ref_node_xyz(ref_node, 2, node), 0.0, 0.0,
-            ref_geom_param(ref_geom, 0, geom));
+            t[item]);
   }
+  if ( REF_EMPTY != jump_geom ) {
+    node = ref_geom_node(ref_geom, jump_geom);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+            ref_node_xyz(ref_node, 2, node), 0.0, 0.0,
+            t[nnode-1]);
+  }
+  ref_free(t);
 
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                      nodes) if (id == nodes[2]) {
-    for (node = 0; node < 2; node++) {
-      RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
+      RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
+      RSS(ref_geom_tuv_from(ref_geom, nodes[0], nodes[1], REF_GEOM_EDGE, id,
+                            &tvalue, &sens), "from");
+      if (1 == sens) local = nnode-1;
       fprintf(file, " %d", local + 1);
+      RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
+      RSS(ref_geom_tuv_from(ref_geom, nodes[1], nodes[0], REF_GEOM_EDGE, id,
+                            &tvalue, &sens), "from");
+      if (1 == sens) local = nnode-1;
+      fprintf(file, " %d", local + 1);
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   RSS(ref_dict_free(ref_dict), "free dict");
