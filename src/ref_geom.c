@@ -1105,6 +1105,59 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
+                             REF_INT type, REF_INT id, REF_DBL *param, 
+                             REF_INT *sens) {
+#ifdef HAVE_EGADS
+  REF_INT geom;
+  ego object;
+  double trange[2];
+  int periodic;
+  REF_DBL from_param[2];
+  REF_DBL dist0, dist1;
+
+  RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
+  
+  if (0 == ref_geom_jump(ref_geom, geom)) {
+    if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
+    if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
+    *sens = 0;
+    return REF_SUCCESS;
+  }
+
+  switch (ref_geom_type(ref_geom, geom)) {
+  case REF_GEOM_EDGE:
+    object = ((ego *)(ref_geom->edges))[id - 1];
+    REIS(EGADS_SUCCESS,
+         EG_getRange(object, trange, &periodic),
+         "edge range");
+    RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv" );
+    dist0 = from_param[0]-trange[0];
+    dist1 = trange[1]-from_param[0];
+    if ( dist0 < 0.0 || dist1 < 0.0 ) {
+      printf(" from t = %e %e %e, dist = %e %e\n",
+             trange[0],from_param[0],trange[1],dist0, dist1);
+      THROW("from node not in trange");
+    }
+    if ( dist0 < dist1 ) {
+      *sens = 0;
+      param[0] = trange[0];
+    } else {
+      *sens = 1;
+      param[0] = trange[0];
+    } 
+  default:
+    RSS(REF_IMPLEMENT, "can't to geom type yet");
+  }
+
+#else
+  RSS(ref_geom_tuv(ref_geom, node, type, id, param), "tuv" );
+  SUPRESS_UNUSED_COMPILER_WARNING(from);
+  *sens = 0;
+#endif
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_geom_eval_edge_face_uv(REF_GEOM ref_geom,
                                              REF_INT edge_geom) {
 #ifdef HAVE_EGADS
