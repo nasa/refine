@@ -1213,7 +1213,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
   SUPRESS_UNUSED_COMPILER_WARNING(cell);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
   SUPRESS_UNUSED_COMPILER_WARNING(cell);
-  param[0] = 0.0;
+  if (type > 0) param[0] = 0.0;
+  if (type > 1) param[1] = 0.0;
   *sens = REF_EMPTY;
 #endif
   return REF_SUCCESS;
