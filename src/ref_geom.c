@@ -1144,8 +1144,9 @@ REF_STATUS ref_geom_tuv_from(REF_GEOM ref_geom, REF_INT node, REF_INT from,
       param[0] = trange[0];
     } else {
       *sens = 1;
-      param[0] = trange[0];
-    } 
+      param[0] = trange[1];
+    }
+    break;
   default:
     RSS(REF_IMPLEMENT, "can't to geom type yet");
   }
