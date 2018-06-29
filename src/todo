@@ -17,8 +17,9 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + plot t jumps
  + create method that returns sens and (uv) based on a non jump geom
  + plot uv jumps
- add jumps to tattle and inspect
- ref_migrate? ref_part? ref_export? ref_gather? ref_import? jump=0, DESCR_SIZE
+ + add jumps to tattle and inspect
+ + REF_GEOM_DESCR_SIZE
+ ref_migrate? ref_part? ref_export? ref_gather? ref_import? jump=0
  get uv, set uv, throw jump != 0
  edge uv learns jump
  add between and xyz between learns jump

@@ -38,16 +38,19 @@ typedef enum REF_GEOM_SURFACES {
   /*10 */ REF_GEOM_EXTRUSION,
   /*11 */ REF_GEOM_SURFACE_LAST
 } REF_GEOM_SURFACE;
+
+#define REF_GEOM_NODE (0)
+#define REF_GEOM_EDGE (1)
+#define REF_GEOM_FACE (2)
+
+#define REF_GEOM_DESCR_SIZE (4)
+
 END_C_DECLORATION
 
 #include "ref_adj.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
-
-#define REF_GEOM_NODE (0)
-#define REF_GEOM_EDGE (1)
-#define REF_GEOM_FACE (2)
 
 struct REF_GEOM_STRUCT {
   REF_INT n, max;
@@ -77,7 +80,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 
 #define ref_geom_descr(ref_geom, attribute, geom) \
-  ((ref_geom)->descr[(attribute) + 4 * (geom)])
+  ((ref_geom)->descr[(attribute) + REF_GEOM_DESCR_SIZE * (geom)])
 
 #define ref_geom_type(ref_geom, geom) (ref_geom_descr((ref_geom), 0, (geom)))
 #define ref_geom_id(ref_geom, geom) (ref_geom_descr((ref_geom), 1, (geom)))

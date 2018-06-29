@@ -71,7 +71,8 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 
   ref_geom_max(ref_geom) = 10;
 
-  ref_malloc(ref_geom->descr, 4 * ref_geom_max(ref_geom), REF_INT);
+  ref_malloc(ref_geom->descr, REF_GEOM_DESCR_SIZE * ref_geom_max(ref_geom),
+             REF_INT);
   ref_malloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
   ref_geom->ref_adj = (REF_ADJ)NULL;
   RSS(ref_geom_initialize(ref_geom), "init geom list");
@@ -134,14 +135,15 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom_n(ref_geom) = ref_geom_n(original);
   ref_geom_max(ref_geom) = ref_geom_max(original);
 
-  ref_malloc(ref_geom->descr, 4 * ref_geom_max(ref_geom), REF_INT);
+  ref_malloc(ref_geom->descr, REF_GEOM_DESCR_SIZE * ref_geom_max(ref_geom),
+             REF_INT);
   ref_malloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
 
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++)
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)
       ref_geom_descr(ref_geom, i, geom) = ref_geom_descr(original, i, geom);
   ref_geom_blank(ref_geom) = ref_geom_blank(original);
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++)
@@ -170,7 +172,7 @@ REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n) {
   REF_INT geom, new, i;
   new = 0;
   each_ref_geom(ref_geom, geom) {
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)
       ref_geom_descr(ref_geom, i, new) = ref_geom_descr(ref_geom, i, geom);
     ref_geom_node(ref_geom, new) = o2n[ref_geom_node(ref_geom, geom)];
     for (i = 0; i < 2; i++)
@@ -981,7 +983,8 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
 
   ref_geom_max(ref_geom) = orig + chunk;
 
-  ref_realloc(ref_geom->descr, 4 * ref_geom_max(ref_geom), REF_INT);
+  ref_realloc(ref_geom->descr, REF_GEOM_DESCR_SIZE * ref_geom_max(ref_geom),
+              REF_INT);
   ref_realloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
 
   for (geom = orig; geom < ref_geom_max(ref_geom); geom++) {
