@@ -903,18 +903,20 @@ REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++) {
     switch (ref_geom_type(ref_geom, geom)) {
       case REF_GEOM_NODE:
-        printf("%d node: %d id, %d global\n", geom, ref_geom_id(ref_geom, geom),
+        printf("%d node: %d id, %d jump, %d global\n", geom,
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
                ref_geom_node(ref_geom, geom));
         break;
       case REF_GEOM_EDGE:
-        printf("%d edge: %d id, %d global, t=%e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
+        printf("%d edge: %d id, %d jump, %d global, t=%e\n", geom,
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_node(ref_geom, geom),
                ref_geom_param(ref_geom, 0, geom));
         break;
       case REF_GEOM_FACE:
-        printf("%d face: %d id, %d global, uv= %e %e\n", geom,
+        printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
-               ref_geom_param(ref_geom, 0, geom),
+               ref_geom_jump(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
@@ -930,18 +932,20 @@ REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
     switch (ref_geom_type(ref_geom, geom)) {
       case REF_GEOM_NODE:
-        printf("%d node: %d id, %d global\n", geom, ref_geom_id(ref_geom, geom),
+        printf("%d node: %d id, %d jump, %d global\n", geom,
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
                ref_geom_node(ref_geom, geom));
         break;
       case REF_GEOM_EDGE:
-        printf("%d edge: %d id, %d global, t=%e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
+        printf("%d edge: %d id, %d jump, %d global, t=%e\n", geom,
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_node(ref_geom, geom),
                ref_geom_param(ref_geom, 0, geom));
         break;
       case REF_GEOM_FACE:
-        printf("%d face: %d id, %d global, uv= %e %e\n", geom,
+        printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
-               ref_geom_param(ref_geom, 0, geom),
+               ref_geom_jump(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
