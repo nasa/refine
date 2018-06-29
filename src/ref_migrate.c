@@ -965,21 +965,24 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
-  each_ref_mpi_worker(ref_mpi, part) a_next[part] =
-      a_next[part - 1] + a_size[part - 1];
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       each_ref_adj_node_item_with_ref(ref_adj, node, item, geom) {
-    part = ref_node_part(ref_node, node);
-    a_int[0 + 3 * a_next[part]] = ref_geom_type(ref_geom, geom);
-    a_int[1 + 3 * a_next[part]] = ref_geom_id(ref_geom, geom);
-    a_int[2 + 3 * a_next[part]] = ref_geom_node(ref_geom, geom);
-    a_int[2 + 3 * a_next[part]] =
-        ref_node_global(ref_node, a_int[2 + 3 * a_next[part]]);
-    a_real[0 + 2 * a_next[part]] = ref_geom_param(ref_geom, 0, geom);
-    a_real[1 + 2 * a_next[part]] = ref_geom_param(ref_geom, 1, geom);
-    a_next[part]++;
+        part = ref_node_part(ref_node, node);
+        a_int[0 + 3 * a_next[part]] = ref_geom_type(ref_geom, geom);
+        a_int[1 + 3 * a_next[part]] = ref_geom_id(ref_geom, geom);
+        a_int[2 + 3 * a_next[part]] = ref_geom_node(ref_geom, geom);
+        a_int[2 + 3 * a_next[part]] =
+            ref_node_global(ref_node, a_int[2 + 3 * a_next[part]]);
+        a_real[0 + 2 * a_next[part]] = ref_geom_param(ref_geom, 0, geom);
+        a_real[1 + 2 * a_next[part]] = ref_geom_param(ref_geom, 1, geom);
+        a_next[part]++;
+      }
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_int, a_size, b_int, b_size, 3, REF_INT_TYPE),
