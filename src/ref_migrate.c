@@ -936,8 +936,7 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   REF_INT *a_next;
   REF_INT *a_int, *b_int;
   REF_DBL *a_real, *b_real;
-  REF_INT id, global, type, degree, item, geom;
-  REF_DBL param[2];
+  REF_INT i, global, degree, item, geom;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -956,12 +955,12 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_int, 3 * a_total, REF_INT);
+  ref_malloc(a_int, REF_GEOM_DESCR_SIZE * a_total, REF_INT);
   ref_malloc(a_real, 2 * a_total, REF_DBL);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_int, 3 * b_total, REF_INT);
+  ref_malloc(b_int, REF_GEOM_DESCR_SIZE * b_total, REF_INT);
   ref_malloc(b_real, 2 * b_total, REF_DBL);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -974,11 +973,12 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       each_ref_adj_node_item_with_ref(ref_adj, node, item, geom) {
         part = ref_node_part(ref_node, node);
-        a_int[0 + 3 * a_next[part]] = ref_geom_type(ref_geom, geom);
-        a_int[1 + 3 * a_next[part]] = ref_geom_id(ref_geom, geom);
-        a_int[2 + 3 * a_next[part]] = ref_geom_node(ref_geom, geom);
-        a_int[2 + 3 * a_next[part]] =
-            ref_node_global(ref_node, a_int[2 + 3 * a_next[part]]);
+        each_ref_descr(ref_geom, i) {
+          a_int[i + REF_GEOM_DESCR_SIZE * a_next[part]] =
+              ref_geom_descr(ref_geom, i, geom);
+        }
+        a_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * a_next[part]] =
+            ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
         a_real[0 + 2 * a_next[part]] = ref_geom_param(ref_geom, 0, geom);
         a_real[1 + 2 * a_next[part]] = ref_geom_param(ref_geom, 1, geom);
         a_next[part]++;
@@ -986,20 +986,20 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
     }
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, a_int, a_size, b_int, b_size, 3, REF_INT_TYPE),
+  RSS(ref_mpi_alltoallv(ref_mpi, a_int, a_size, b_int, b_size,
+                        REF_GEOM_DESCR_SIZE, REF_INT_TYPE),
       "alltoallv geom int");
   RSS(ref_mpi_alltoallv(ref_mpi, a_real, a_size, b_real, b_size, 2,
                         REF_DBL_TYPE),
       "alltoallv geom real");
 
   for (geom = 0; geom < b_total; geom++) {
-    type = b_int[0 + 3 * geom];
-    id = b_int[1 + 3 * geom];
-    global = b_int[2 + 3 * geom];
+    global = b_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
     RSS(ref_node_local(ref_node, global, &node), "g2l");
-    param[0] = b_real[0 + 2 * geom];
-    param[1] = b_real[1 + 2 * geom];
-    RSS(ref_geom_add(ref_geom, node, type, id, param), "geom add");
+    b_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom] = node;
+    RSS(ref_geom_add_with_descr(ref_geom, &(b_int[REF_GEOM_DESCR_SIZE * geom]),
+                                &(b_real[2 * geom])),
+        "geom add");
   }
 
   free(a_next);
