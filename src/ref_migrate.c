@@ -944,10 +944,11 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    RSS(ref_adj_degree(ref_adj, node, &degree), "adj deg");
-    a_size[ref_node_part(ref_node, node)] += degree;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      RSS(ref_adj_degree(ref_adj, node, &degree), "adj deg");
+      a_size[ref_node_part(ref_node, node)] += degree;
+    }
   }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
