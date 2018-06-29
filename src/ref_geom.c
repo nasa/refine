@@ -997,6 +997,18 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
+                                   REF_DBL *param) {
+  REF_INT type, id, jump, node, geom;
+  type = descr[REF_GEOM_DESCR_TYPE];
+  id = descr[REF_GEOM_DESCR_ID];
+  jump = descr[REF_GEOM_DESCR_JUMP];
+  node = descr[REF_GEOM_DESCR_NODE];
+  RSS(ref_geom_add(ref_geom, node, type, id, param), "geom add");
+  RSS(ref_geom_find(ref_geom, node, type, id, &geom), "geom find");
+  ref_geom_jump(ref_geom, geom) = jump;
+  return REF_SUCCESS;
+}
 REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param) {
   REF_INT geom;
@@ -3193,7 +3205,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   REF_INT *a_part, *b_part;
   REF_INT *a_ngeom, *b_ngeom;
   REF_INT a_ngeom_total, b_ngeom_total;
-  REF_INT *a_tgi, *b_tgi;
+  REF_INT *a_descr, *b_descr;
   REF_DBL *a_param, *b_param;
   REF_INT part, node, degree;
   REF_INT *a_next, *b_next;
@@ -3262,12 +3274,12 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
 
   a_ngeom_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_ngeom_total += a_ngeom[part];
-  ref_malloc(a_tgi, 3 * a_ngeom_total, REF_INT);
+  ref_malloc(a_descr, REF_GEOM_DESCR_SIZE * a_ngeom_total, REF_INT);
   ref_malloc(a_param, 2 * a_ngeom_total, REF_DBL);
 
   b_ngeom_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_ngeom_total += b_ngeom[part];
-  ref_malloc(b_tgi, 3 * b_ngeom_total, REF_INT);
+  ref_malloc(b_descr, REF_GEOM_DESCR_SIZE * b_ngeom_total, REF_INT);
   ref_malloc(b_param, 2 * b_ngeom_total, REF_DBL);
 
   b_next[0] = 0;
@@ -3279,34 +3291,39 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     part = b_part[node];
     each_ref_geom_having_node(ref_geom, local, item, geom) {
-      b_tgi[0 + 3 * b_next[part]] = ref_geom_type(ref_geom, geom);
-      b_tgi[1 + 3 * b_next[part]] =
+      each_ref_descr(ref_geom, item) {
+        b_descr[item + REF_GEOM_DESCR_SIZE * b_next[part]] =
+            ref_geom_descr(ref_geom, item, geom);
+      }
+      b_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * b_next[part]] =
           ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
-      b_tgi[2 + 3 * b_next[part]] = ref_geom_id(ref_geom, geom);
       b_param[0 + 2 * b_next[part]] = ref_geom_param(ref_geom, 0, geom);
       b_param[1 + 2 * b_next[part]] = ref_geom_param(ref_geom, 1, geom);
       b_next[part]++;
     }
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, b_tgi, b_ngeom, a_tgi, a_ngeom, 3,
+  RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom, 3,
                         REF_INT_TYPE),
-      "alltoallv tgi");
+      "alltoallv descr");
   RSS(ref_mpi_alltoallv(ref_mpi, b_param, b_ngeom, a_param, a_ngeom, 2,
                         REF_DBL_TYPE),
       "alltoallv param");
 
   for (geom = 0; geom < a_ngeom_total; geom++) {
-    RSS(ref_node_local(ref_node, a_tgi[1 + 3 * geom], &local), "g2l");
-    RSS(ref_geom_add(ref_geom, local, a_tgi[0 + 3 * geom], a_tgi[2 + 3 * geom],
-                     &(a_param[2 * geom])),
+    node = a_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
+    RSS(ref_node_local(ref_node, node, &local), "g2l");
+    a_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom] = local;
+    RSS(ref_geom_add_with_descr(ref_geom,
+                                &(a_descr[REF_GEOM_DESCR_SIZE * geom]),
+                                &(a_param[2 * geom])),
         "add ghost");
   }
 
   free(b_param);
-  free(b_tgi);
+  free(b_descr);
   free(a_param);
-  free(a_tgi);
+  free(a_descr);
   free(b_part);
   free(b_global);
   free(a_part);

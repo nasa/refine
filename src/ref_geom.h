@@ -44,6 +44,10 @@ typedef enum REF_GEOM_SURFACES {
 #define REF_GEOM_FACE (2)
 
 #define REF_GEOM_DESCR_SIZE (4)
+#define REF_GEOM_DESCR_TYPE (0)
+#define REF_GEOM_DESCR_ID (1)
+#define REF_GEOM_DESCR_JUMP (2)
+#define REF_GEOM_DESCR_NODE (3)
 
 END_C_DECLORATION
 
@@ -82,10 +86,14 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_descr(ref_geom, attribute, geom) \
   ((ref_geom)->descr[(attribute) + REF_GEOM_DESCR_SIZE * (geom)])
 
-#define ref_geom_type(ref_geom, geom) (ref_geom_descr((ref_geom), 0, (geom)))
-#define ref_geom_id(ref_geom, geom) (ref_geom_descr((ref_geom), 1, (geom)))
-#define ref_geom_jump(ref_geom, geom) (ref_geom_descr((ref_geom), 2, (geom)))
-#define ref_geom_node(ref_geom, geom) (ref_geom_descr((ref_geom), 3, (geom)))
+#define ref_geom_type(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_TYPE, (geom)))
+#define ref_geom_id(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_ID, (geom)))
+#define ref_geom_jump(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_JUMP, (geom)))
+#define ref_geom_node(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_NODE, (geom)))
 
 #define ref_geom_param(ref_geom, dimension, geom) \
   ((ref_geom)->param[(dimension) + 2 * (geom)])
@@ -94,6 +102,8 @@ struct REF_GEOM_STRUCT {
   ((ref_geom)->segments_per_radian_of_curvature)
 
 #define each_ref_type(ref_geom, type) for ((type) = 0; (type) < 3; (type)++)
+#define each_ref_descr(ref_geom, item) \
+  for ((item) = 0; (item) < REF_GEOM_DESCR_SIZE; (item)++)
 
 #define each_ref_geom(ref_geom, geom)                         \
   for ((geom) = 0; (geom) < ref_geom_max(ref_geom); (geom)++) \
@@ -145,6 +155,8 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
 
 REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
+REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
+                                   REF_DBL *param);
 
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node);
 
