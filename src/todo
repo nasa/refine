@@ -22,7 +22,8 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + ref_geom_ghost
  + ref_migrate
  + ref_part? ref_export? ref_gather? ref_import? not aware of jump
- ref_geom_eval_edge_face_uv learns jump
+ ref_geom_eval_edge_face_uv learns jump by loop over tri, not face geom
+   EGADS_TOPOERR handling?
  add between and xyz between learns jump
  boundaring box and box2 learn jump
  get uv, set uv, throw jump != 0
