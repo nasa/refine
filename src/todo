@@ -21,7 +21,7 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + REF_GEOM_DESCR_SIZE
  + ref_geom_ghost
  + ref_migrate
- + ref_part? ref_export? ref_gather? ref_import? jump=0
+ + ref_part? ref_export? ref_gather? ref_import? not aware of jump
  get uv, set uv, throw jump != 0
  edge uv learns jump
  add between and xyz between learns jump
