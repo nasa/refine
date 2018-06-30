@@ -1466,10 +1466,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   }
 
   /* if there is an edge between, set the face uv based on edge t */
-  if (ref_geom_model_loaded(ref_geom) && has_edge_support) {
-    RSS(ref_geom_eval_edge_face_uv(ref_geom, edge_geom),
-        "set face uv under edge");
-  }
 
   return REF_SUCCESS;
 }

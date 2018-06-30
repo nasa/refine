@@ -25,6 +25,7 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  ref_geom_eval_edge_face_uv eval sens 0, 1 when jump
    remove EGADS_TOPOERR handling, due to Edge in Face twice & sense=0?
    throw on geom node? jump?
+   add between support
 add between and xyz between learns jump
  boundaring box and box2 learn jump
  get uv, set uv, throw jump != 0
