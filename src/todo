@@ -26,7 +26,8 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
    + remove EGADS_TOPOERR handling, due to Edge in Face twice & sense=0?
    + throw on geom node? jump?
  add between support for face uv with and without jump when edge split
- add between and xyz between learns jump
+ add between learns jump
+ + add xyz between does not need to learn jump
  boundaring box and box2 learn jump
  get uv, set uv, throw jump != 0
  sort out sens meaning
