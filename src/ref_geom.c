@@ -1462,8 +1462,8 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                 "inv eval face",
                 ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
             /* enforce bounding box of node0 and try midpoint */
-            RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, id,
-                                              uv_min, uv_max),
+            RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min,
+                                              uv_max),
                 "bb");
             if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
                 param[1] < uv_min[1] || uv_max[1] < param[1]) {
@@ -1519,6 +1519,7 @@ REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_node, id, iuv;
   REF_DBL uv[2];
+  REF_INT sense;
 
   /* get face id and initialize min and max */
   RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "id");
@@ -1527,9 +1528,9 @@ REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
 
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     each_ref_cell_cell_node(ref_cell, cell_node) {
-      RSS(ref_geom_tuv(ref_geom, ref_cell_c2n(ref_cell, cell_node, cell),
-                       REF_GEOM_FACE, id, uv),
-          "uv");
+      RSS(ref_geom_cell_tuv(ref_grid, ref_cell_c2n(ref_cell, cell_node, cell),
+                            cell, REF_GEOM_FACE, uv, &sense),
+          "cell uv");
       for (iuv = 0; iuv < 2; iuv++) uv_min[iuv] = MIN(uv_min[iuv], uv[iuv]);
       for (iuv = 0; iuv < 2; iuv++) uv_max[iuv] = MAX(uv_max[iuv], uv[iuv]);
     }
@@ -1539,27 +1540,25 @@ REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
 }
 
 REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT id,
-                                         REF_DBL *uv_min, REF_DBL *uv_max) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+                                         REF_INT node1, REF_DBL *uv_min,
+                                         REF_DBL *uv_max) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, cell_node, iuv;
   REF_DBL uv[2];
   REF_INT i, ncell, cells[2];
+  REF_INT sense;
 
-  /* get face id and initialize min and max */
-  RSS(ref_geom_tuv(ref_geom, node0, REF_GEOM_FACE, id, uv_min), "uv_min");
-  RSS(ref_geom_tuv(ref_geom, node0, REF_GEOM_FACE, id, uv_max), "uv_max");
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
+  REIS(2, ncell, "expected two tri for box2 nodes");
 
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
-      "get list");
-
+  for (iuv = 0; iuv < 2; iuv++) uv_min[iuv] = 1.0e200;
+  for (iuv = 0; iuv < 2; iuv++) uv_max[iuv] = -1.0e200;
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     each_ref_cell_cell_node(ref_cell, cell_node) {
-      RSS(ref_geom_tuv(ref_geom, ref_cell_c2n(ref_cell, cell_node, cell),
-                       REF_GEOM_FACE, id, uv),
-          "uv");
+      RSS(ref_geom_cell_tuv(ref_grid, ref_cell_c2n(ref_cell, cell_node, cell),
+                            cell, REF_GEOM_FACE, uv, &sense),
+          "cell uv");
       for (iuv = 0; iuv < 2; iuv++) uv_min[iuv] = MIN(uv_min[iuv], uv[iuv]);
       for (iuv = 0; iuv < 2; iuv++) uv_max[iuv] = MAX(uv_max[iuv], uv[iuv]);
     }

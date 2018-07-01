@@ -29,7 +29,7 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  add between support for face uv with and without jump when edge split
  add between learns jump
  + add xyz between does not need to learn jump
- boundaring box and box2 learn jump
+ + boundary box and box2 learn jump
  get uv, set uv, throw jump != 0
  sort out sens meaning 1,-1 or 0,1
  report improvement to getEdgeUV docs
