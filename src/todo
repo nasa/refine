@@ -30,8 +30,9 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + add xyz between does not need to learn jump
  boundaring box and box2 learn jump
  get uv, set uv, throw jump != 0
- sort out sens meaning
+ sort out sens meaning 1,-1 or 0,1
  report improvement to getEdgeUV docs
+ set jump param to sens 1 or -1 consistently
  curvature?
  recon later?
 
