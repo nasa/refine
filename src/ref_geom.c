@@ -2676,8 +2676,9 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
         }
       }
       RAS(node != REF_EMPTY, "unable to find vertex for CAD node");
-      printf("edge id %d is ONENODE at geom node %d vertex %d\n", edge + 1,
-             cad_node, node);
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is ONENODE at geom node %d\n", edge + 1, cad_node);
+      }
       nfound = 0;
       each_ref_geom_edge(ref_geom, geom) {
         if (node == ref_geom_node(ref_geom, geom) &&
@@ -2687,7 +2688,6 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
           nfound++;
         }
       }
-      REIS(1, nfound, "edge geom not found once");
     }
   }
 
@@ -2700,15 +2700,17 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
           each_ref_geom_face(ref_geom, face_geom) {
             if (e2f[0 + 2 * edge] == ref_geom_id(ref_geom, face_geom) &&
                 ref_geom_node(ref_geom, edge_geom) ==
-                    ref_geom_node(ref_geom, face_geom)) {
+                ref_geom_node(ref_geom, face_geom)) {
               ref_geom_jump(ref_geom, face_geom) = edge + 1;
               nfound++;
             }
           }
         }
       }
-      printf("edge id %d is used twice by face id %d, %d found\n", edge + 1,
-             e2f[0 + 2 * edge], nfound);
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is used twice by face id %d\n", edge + 1,
+               e2f[0 + 2 * edge]);
+      }
     }
   }
 
