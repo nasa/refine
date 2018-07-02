@@ -15,5 +15,6 @@ fi
 ${two}/ref_driver \
     -i revolve-cylinder-sphere.meshb \
     -g ../sphere-gen/revolve-cylinder-sphere.egads \
-    -o revolve-cylinder-sphere-curve
+    -o revolve-cylinder-sphere-curve \
+    -t
 
