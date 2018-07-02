@@ -1399,6 +1399,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_STATUS status;
   REF_INT i, ncell, cells[2];
+  REF_INT geom, geom0, geom1;
 
   if (0 == ref_geom_n(ref_geom)) {
     return REF_SUCCESS;
@@ -1436,8 +1437,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
         "find the new edge for later face uv evaluation");
   }
 
-  /* add jump handling */
-
   /* insert face between */
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
@@ -1467,6 +1466,15 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       }
     }
     RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+
+    RSS(ref_geom_find(ref_geom, node0, type, id, &geom0), "face geom");
+    RSS(ref_geom_find(ref_geom, node1, type, id, &geom1), "face geom");
+    if (0 != ref_geom_jump(ref_geom, geom0) &&
+        0 != ref_geom_jump(ref_geom, geom1) &&
+        ref_geom_jump(ref_geom, geom0) == ref_geom_jump(ref_geom, geom1)) {
+      RSS(ref_geom_find(ref_geom, new_node, type, id, &geom), "new face geom");
+      ref_geom_jump(ref_geom, geom) = ref_geom_jump(ref_geom, geom0);
+    }
   }
 
   /* if there is an edge between, set the face uv based on edge t */

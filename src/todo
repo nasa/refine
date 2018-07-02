@@ -27,15 +27,17 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
    + throw on geom node? jump?
  + check cell_tuv args
  + add between switch to element based
- add between support for face uv with and without jump when edge split
- add between learns jump
+ + add between support for face uv with and without jump when edge split
+ + add between learns jump
  switch xyz between to element
  geom_uv_area
  + boundary box and box2 learn jump
  get uv, set uv, throw jump != 0
  sort out sens meaning 1,-1 or 0,1
- report improvement to getEdgeUV docs
+ ref_geom_eval_edge_face_uv set to on sens
  set jump param to sens 1 or -1 consistently
+ add ref_geom_eval_edge_face_uv to end of add between
+ report improvement to getEdgeUV docs
  curvature?
  recon later?
 
