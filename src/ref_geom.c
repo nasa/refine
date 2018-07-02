@@ -2669,15 +2669,14 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
     if (mtype == ONENODE) {
       REIS(1, nchild, "ONENODE should have one node");
       cad_node = EG_indexBodyTopo(ref_geom->solid, echilds[0]);
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is ONENODE at geom node %d\n", edge + 1, cad_node);
+      }
       node = REF_EMPTY;
       each_ref_geom_node(ref_geom, geom) {
         if (cad_node == ref_geom_id(ref_geom, geom)) {
           node = ref_geom_node(ref_geom, geom);
         }
-      }
-      RAS(node != REF_EMPTY, "unable to find vertex for CAD node");
-      if (ref_grid_once(ref_grid)) {
-        printf("edge id %d is ONENODE at geom node %d\n", edge + 1, cad_node);
       }
       nfound = 0;
       each_ref_geom_edge(ref_geom, geom) {
