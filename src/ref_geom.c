@@ -1219,7 +1219,6 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
         param[0] = uv1[0];
         param[1] = uv1[1];
       }
-      printf(" sens = %d, dist = %f %f\n", *sens, dist0, dist1);
       break;
     default:
       RSS(REF_IMPLEMENT, "can't to geom type yet");

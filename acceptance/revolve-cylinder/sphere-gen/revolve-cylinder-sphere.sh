@@ -17,5 +17,5 @@ serveCSM -batch revolve-cylinder-sphere.csm
 ${two}/ref_geom_test --tess \
     revolve-cylinder-sphere.egads \
     revolve-cylinder-sphere.meshb \
-    5 5 90
+    5 5 90 | tee revolve-cylinder-sphere-vol.out
 
