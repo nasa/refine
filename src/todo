@@ -28,7 +28,7 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  add between switch to element based
  add between support for face uv with and without jump when edge split
  add between learns jump
- + add xyz between does not need to learn jump
+ switch xyz between to element
  + boundary box and box2 learn jump
  get uv, set uv, throw jump != 0
  sort out sens meaning 1,-1 or 0,1
