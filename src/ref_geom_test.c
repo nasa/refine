@@ -381,6 +381,27 @@ int main(int argc, char *argv[]) {
     node1 = 1;
     new_node = 10;
 
+    nodes[0] = node0;
+    nodes[1] = node1;
+    nodes[2] = 3;
+    nodes[3] = 20;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    nodes[0] = node1;
+    nodes[1] = node0;
+    nodes[2] = 4;
+    nodes[3] = 20;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    type = REF_GEOM_FACE;
+    id = 20;
+    params[0] = 100.0;
+    params[1] = 200.0;
+    RSS(ref_geom_add(ref_geom, node0, type, id, params), "node0 edge");
+    type = REF_GEOM_FACE;
+    id = 20;
+    params[0] = 101.0;
+    params[1] = 201.0;
+    RSS(ref_geom_add(ref_geom, node1, type, id, params), "node1 edge");
+
     type = REF_GEOM_EDGE;
     id = 5;
     params[0] = 11.0;
@@ -413,6 +434,7 @@ int main(int argc, char *argv[]) {
     REF_INT node0, node1, new_node;
     REF_INT type, id, geom;
     REF_DBL params[2];
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_geom = ref_grid_geom(ref_grid);
@@ -420,6 +442,27 @@ int main(int argc, char *argv[]) {
     node0 = 0;
     node1 = 1;
     new_node = 10;
+
+    nodes[0] = node0;
+    nodes[1] = node1;
+    nodes[2] = 3;
+    nodes[3] = 20;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    nodes[0] = node1;
+    nodes[1] = node0;
+    nodes[2] = 4;
+    nodes[3] = 20;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    type = REF_GEOM_FACE;
+    id = 20;
+    params[0] = 100.0;
+    params[1] = 200.0;
+    RSS(ref_geom_add(ref_geom, node0, type, id, params), "node0 edge");
+    type = REF_GEOM_FACE;
+    id = 20;
+    params[0] = 101.0;
+    params[1] = 201.0;
+    RSS(ref_geom_add(ref_geom, node1, type, id, params), "node1 edge");
 
     type = REF_GEOM_EDGE;
     id = 5;
