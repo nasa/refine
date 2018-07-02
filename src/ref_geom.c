@@ -3221,7 +3221,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   REF_DBL *a_param, *b_param;
   REF_INT part, node, degree;
   REF_INT *a_next, *b_next;
-  REF_INT local, item, geom;
+  REF_INT local, item, geom, i;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -3303,9 +3303,9 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     part = b_part[node];
     each_ref_geom_having_node(ref_geom, local, item, geom) {
-      each_ref_descr(ref_geom, item) {
-        b_descr[item + REF_GEOM_DESCR_SIZE * b_next[part]] =
-            ref_geom_descr(ref_geom, item, geom);
+      each_ref_descr(ref_geom, i) {
+        b_descr[i + REF_GEOM_DESCR_SIZE * b_next[part]] =
+            ref_geom_descr(ref_geom, i, geom);
       }
       b_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * b_next[part]] =
           ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
@@ -3315,8 +3315,8 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
     }
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom, 3,
-                        REF_INT_TYPE),
+  RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom, 
+                        REF_GEOM_DESCR_SIZE, REF_INT_TYPE),
       "alltoallv descr");
   RSS(ref_mpi_alltoallv(ref_mpi, b_param, b_ngeom, a_param, a_ngeom, 2,
                         REF_DBL_TYPE),
