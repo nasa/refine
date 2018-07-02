@@ -1444,7 +1444,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   /* insert face between */
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
-  REIS(2, ncell, "expected two tri for between");
+  REIB(2, ncell, "expected two tri for between", {ref_geom_tattle(ref_geom, node0);ref_geom_tattle(ref_geom, node1);ref_node_location(ref_node, node0);ref_node_location(ref_node, node1);});
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
