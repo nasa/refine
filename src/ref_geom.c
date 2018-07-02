@@ -1274,7 +1274,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
 
   if (have_jump) {
     /* uv update at jump not needed, should always depend on cell_c2n */
-    /* keeping for consistancy with non-jump */    
+    /* keeping for consistancy with non-jump */
     each_ref_cell_having_node(ref_cell, node, cell_item, cell) {
       faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
       RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_FACE, uv, &sense),
@@ -1298,9 +1298,10 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
         faceid = ref_geom_id(ref_geom, face_geom);
         face = faces[faceid - 1];
         sense = 0;
-        REIB(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, uv), "edge uv",
-             {printf("edge %d face %d\n",ref_geom_id(ref_geom, edge_geom),
-                     faceid);ref_geom_tattle(ref_geom, node);});
+        REIB(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, uv), "edge uv", {
+          printf("edge %d face %d\n", ref_geom_id(ref_geom, edge_geom), faceid);
+          ref_geom_tattle(ref_geom, node);
+        });
         ref_geom_param(ref_geom, 0, face_geom) = uv[0];
         ref_geom_param(ref_geom, 1, face_geom) = uv[1];
       }
@@ -1444,7 +1445,12 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   /* insert face between */
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
-  REIB(2, ncell, "expected two tri for between", {ref_geom_tattle(ref_geom, node0);ref_geom_tattle(ref_geom, node1);ref_node_location(ref_node, node0);ref_node_location(ref_node, node1);});
+  REIB(2, ncell, "expected two tri for between", {
+    ref_geom_tattle(ref_geom, node0);
+    ref_geom_tattle(ref_geom, node1);
+    ref_node_location(ref_node, node0);
+    ref_node_location(ref_node, node1);
+  });
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
@@ -2699,7 +2705,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
           each_ref_geom_face(ref_geom, face_geom) {
             if (e2f[0 + 2 * edge] == ref_geom_id(ref_geom, face_geom) &&
                 ref_geom_node(ref_geom, edge_geom) ==
-                ref_geom_node(ref_geom, face_geom)) {
+                    ref_geom_node(ref_geom, face_geom)) {
               ref_geom_jump(ref_geom, face_geom) = edge + 1;
               nfound++;
             }
@@ -3315,7 +3321,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
     }
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom, 
+  RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom,
                         REF_GEOM_DESCR_SIZE, REF_INT_TYPE),
       "alltoallv descr");
   RSS(ref_mpi_alltoallv(ref_mpi, b_param, b_ngeom, a_param, a_ngeom, 2,
