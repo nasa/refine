@@ -1394,51 +1394,38 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_BOOL has_id;
   REF_BOOL has_edge_support;
   REF_INT edge_geom;
+  REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_STATUS status;
 
-  /* insert edge between */
-  has_edge_support = REF_FALSE;
-  edge_geom = REF_EMPTY;
-  type = REF_GEOM_EDGE;
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
-    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
-                                    geom1) {
-      if (ref_geom_type(ref_geom, geom0) == type &&
-          ref_geom_type(ref_geom, geom1) == type &&
-          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
-        id = ref_geom_id(ref_geom, geom0);
-        RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid), node0, node1, id,
-                                 &has_id),
-            "has edge id");
-        if (has_id) {
-          if (REF_EMPTY != edge_geom) { /* should only be one */
-            printf("previous edge geom %d id %d\n", edge_geom,
-                   ref_geom_id(ref_geom, edge_geom));
-            printf("this edge geom %d %d id %d\n", geom0, geom1,
-                   ref_geom_id(ref_geom, geom0));
-            RSS(ref_geom_tec(ref_grid, "ref_geom_edge_edge.tec"), "tec");
-          }
-          REIS(REF_EMPTY, edge_geom, "found a second edge spanning nodes");
-          RAS(!has_edge_support, "already has support? second edge?");
-          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
-          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
-          param[0] = 0.5 * (param0[0] + param1[0]);
-          if (ref_geom_model_loaded(ref_geom))
-            RSB(ref_geom_inverse_eval(ref_geom, type, id,
-                                      ref_node_xyz_ptr(ref_node, new_node),
-                                      param),
-                "inv eval edge",
-                ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-          /* enforce bounding box and use midpoint as full-back */
-          if (param[0] < MIN(param0[0], param1[0]) ||
-              MAX(param0[0], param1[0]) < param[0])
-            param[0] = 0.5 * (param0[0] + param1[0]);
-          RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
-          has_edge_support = REF_TRUE;
-          RSS(ref_geom_find(ref_geom, new_node, type, id, &edge_geom),
-              "find the new edge for later face uv evaluation");
-        }
-      }
-    }
+  /* insert edge geom on edge cell if present */
+  nodes[0] = node0;
+  nodes[1] = node1;
+  status = ref_cell_with(ref_grid_edg(ref_grid), nodes, &cell);
+  if (REF_NOT_FOUND == status) {
+    has_edge_support = REF_FALSE;
+    edge_geom = REF_EMPTY;
+  } else {
+    RSS(status, "search for edg");
+    RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "get id");
+    id = nodes[ref_cell_node_per(ref_grid_edg(ref_grid))];
+    type = REF_GEOM_EDGE;
+    RSS(ref_geom_cell_tuv(ref_grid, node0, cell, type, param0, &sense),
+        "cell uv");
+    RSS(ref_geom_cell_tuv(ref_grid, node1, cell, type, param1, &sense),
+        "cell uv");
+    param[0] = 0.5 * (param0[0] + param1[0]);
+    if (ref_geom_model_loaded(ref_geom))
+      RSB(ref_geom_inverse_eval(ref_geom, type, id,
+                                ref_node_xyz_ptr(ref_node, new_node), param),
+          "inv eval edge", ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
+    /* enforce bounding box and use midpoint as full-back */
+    if (param[0] < MIN(param0[0], param1[0]) ||
+        MAX(param0[0], param1[0]) < param[0])
+      param[0] = 0.5 * (param0[0] + param1[0]);
+    RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+    has_edge_support = REF_TRUE;
+    RSS(ref_geom_find(ref_geom, new_node, type, id, &edge_geom),
+        "find the new edge for later face uv evaluation");
   }
 
   /* insert face between */
