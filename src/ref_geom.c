@@ -1400,8 +1400,11 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_STATUS status;
   REF_INT i, ncell, cells[2];
   REF_INT geom, geom0, geom1;
+  REF_BOOL support0, support1;
 
-  if (0 == ref_geom_n(ref_geom)) {
+  RSS(ref_geom_supported(ref_geom, node0, &support0), "node0 supported");
+  RSS(ref_geom_supported(ref_geom, node1, &support1), "node0 supported");
+  if (!support0 || !support1) {
     return REF_SUCCESS;
   }
 
