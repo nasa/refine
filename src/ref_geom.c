@@ -1250,7 +1250,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj = ref_geom_adj(ref_geom);
-  REF_INT node, item, cell, face_geom;
+  REF_INT node, cell_item, geom_item, cell, face_geom;
   double t;
   double uv[2];
   int sense;
@@ -1266,7 +1266,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   node = ref_geom_node(ref_geom, edge_geom);
 
   have_jump = REF_FALSE;
-  each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
+  each_ref_adj_node_item_with_ref(ref_adj, node, geom_item, face_geom) {
     if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
       have_jump = have_jump || (0 != ref_geom_jump(ref_geom, face_geom));
     }
@@ -1275,12 +1275,12 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   if (have_jump) {
     /* uv update at jump not needed, should always depend on cell_c2n */
     /* keeping for consistancy with non-jump */    
-    each_ref_cell_having_node(ref_cell, node, item, cell) {
+    each_ref_cell_having_node(ref_cell, node, cell_item, cell) {
       faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
       RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_FACE, uv, &sense),
           "cell uv");
       if (0 == sense) { /* sense to use is arbitrary */
-        each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
+        each_ref_adj_node_item_with_ref(ref_adj, node, geom_item, face_geom) {
           if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
               faceid == ref_geom_id(ref_geom, face_geom)) {
             ref_geom_param(ref_geom, 0, face_geom) = uv[0];
@@ -1293,7 +1293,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
     edges = (ego *)(ref_geom->edges);
     edge = edges[ref_geom_id(ref_geom, edge_geom) - 1];
     faces = (ego *)(ref_geom->faces);
-    each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
+    each_ref_adj_node_item_with_ref(ref_adj, node, geom_item, face_geom) {
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
         faceid = ref_geom_id(ref_geom, face_geom);
         face = faces[faceid - 1];
