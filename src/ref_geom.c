@@ -1274,15 +1274,19 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   }
 
   if (have_jump) {
+    /* uv update at jump not needed, should always depend on cell_c2n */
+    /* keeping for consistancy with non-jump */    
     each_ref_cell_having_node(ref_cell, node, item, cell) {
       faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
-      RSS(ref_geom_cell_tuv(ref_grid, node, REF_GEOM_FACE, faceid, uv, &sense),
+      RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_FACE, uv, &sense),
           "cell uv");
-      each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
-        if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
-            faceid == ref_geom_id(ref_geom, face_geom)) {
-          ref_geom_param(ref_geom, 0, face_geom) = uv[0];
-          ref_geom_param(ref_geom, 1, face_geom) = uv[1];
+      if (0 == sense) { /* sense to use is arbitrary */
+        each_ref_adj_node_item_with_ref(ref_adj, node, item, face_geom) {
+          if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
+              faceid == ref_geom_id(ref_geom, face_geom)) {
+            ref_geom_param(ref_geom, 0, face_geom) = uv[0];
+            ref_geom_param(ref_geom, 1, face_geom) = uv[1];
+          }
         }
       }
     }
