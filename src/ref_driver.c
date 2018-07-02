@@ -180,6 +180,7 @@ int main(int argc, char *argv[]) {
       "count ngeom");
   if (ngeom > 0) {
     curvature_constraint = REF_TRUE;
+    RSS(ref_geom_jump_param(ref_grid), "T and UV jumps");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
   }
