@@ -26,7 +26,7 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
    + remove EGADS_TOPOERR handling, due to Edge in Face twice & sense=0?
    + throw on geom node? jump?
  check cell_tuv args
- add between switch to element based
+ + add between switch to element based
  add between support for face uv with and without jump when edge split
  add between learns jump
  switch xyz between to element
@@ -61,6 +61,8 @@ ref_geom
  extract grid associtaion (gas)
  extract/refactor recon
  extract init tess
+ revisit tests after jump
+ add geom fixture to tests
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
