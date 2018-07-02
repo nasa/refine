@@ -1226,15 +1226,21 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
   }
 
 #else
-  printf("unable to %s, Need full EGADS linked.\n", __func__);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell;
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  ref_cell = ref_grid_edg(ref_grid);
+  if (type == REF_GEOM_FACE) ref_cell = ref_grid_tri(ref_grid);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   SUPRESS_UNUSED_COMPILER_WARNING(node);
   SUPRESS_UNUSED_COMPILER_WARNING(cell);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
-  SUPRESS_UNUSED_COMPILER_WARNING(cell);
-  if (type > 0) param[0] = 0.0;
-  if (type > 1) param[1] = 0.0;
   *sens = REF_EMPTY;
+  RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+  RSS(ref_geom_tuv(ref_geom, node, type,
+                   ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell),
+                   param),
+      "tuv");
 #endif
   return REF_SUCCESS;
 }
