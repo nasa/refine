@@ -917,8 +917,8 @@ REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
         break;
       case REF_GEOM_FACE:
         printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
-               ref_geom_jump(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_node(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
@@ -946,8 +946,8 @@ REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
         break;
       case REF_GEOM_FACE:
         printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_node(ref_geom, geom),
-               ref_geom_jump(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
+               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_node(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
