@@ -804,6 +804,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_DBL t, st, sr, q, backoff, t_target;
   REF_INT tries;
   REF_BOOL verbose = REF_FALSE;
+  REF_INT edge_nodes[REF_CELL_MAX_SIZE_PER], cell, sense;
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -827,9 +828,19 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     return REF_DIV_ZERO;
   }
 
-  RSS(ref_geom_tuv(ref_geom, nodes[0], REF_GEOM_EDGE, id, &t0), "get t0");
-  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "get t_orig");
-  RSS(ref_geom_tuv(ref_geom, nodes[1], REF_GEOM_EDGE, id, &t1), "get t1");
+  edge_nodes[0] = nodes[0];
+  edge_nodes[1] = node;
+  RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
+  RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &t0, &sense),
+      "get t0");
+  RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_EDGE, &t_orig,
+                        &sense), "get t_orig");
+  edge_nodes[0] = nodes[1];
+  edge_nodes[1] = node;
+  RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
+  RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &t1, &sense),
+      "get t1");
+
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
 
   if (verbose)
