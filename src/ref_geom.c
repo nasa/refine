@@ -821,20 +821,19 @@ static REF_STATUS ref_geom_nodes_uv(REF_GEOM ref_geom, REF_INT *nodes,
   }
 
   from = REF_EMPTY;
-  for (cell_node=0;cell_node<3;cell_node++) {
+  for (cell_node = 0; cell_node < 3; cell_node++) {
     RSS(ref_geom_find(ref_geom, nodes[cell_node], type, faceid, &from_geom),
         "not found");
-    if (node_index != cell_node &&
-        0 == ref_geom_jump(ref_geom, from_geom)) {
+    if (node_index != cell_node && 0 == ref_geom_jump(ref_geom, from_geom)) {
       from = nodes[cell_node];
     }
   }
   RAB(REF_EMPTY != from, "can't find from in nodes", {
-      ref_geom_tattle(ref_geom, nodes[0]);
-      ref_geom_tattle(ref_geom, nodes[1]);
-      ref_geom_tattle(ref_geom, nodes[2]);
-      printf("faceid %d node %d node_index %d\n", faceid, node, node_index);
-    });
+    ref_geom_tattle(ref_geom, nodes[0]);
+    ref_geom_tattle(ref_geom, nodes[1]);
+    ref_geom_tattle(ref_geom, nodes[2]);
+    printf("faceid %d node %d node_index %d\n", faceid, node, node_index);
+  });
   edgeid = ref_geom_jump(ref_geom, geom);
   RSS(ref_geom_tuv(ref_geom, from, REF_GEOM_FACE, faceid, uv), "from uv");
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t), "edge t0");
@@ -2159,13 +2158,13 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       no_face = ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
                 ref_cell_node_empty(ref_grid_qua(ref_grid), node);
       no_edge = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-      if ( geom_node && no_tet) {
+      if (geom_node && no_tet) {
         THROW("geom node missing tet");
       }
-      if ( geom_edge && no_tet) {
+      if (geom_edge && no_tet) {
         THROW("geom edge missing tet");
       }
-      if ( geom_face && no_tet) {
+      if (geom_face && no_tet) {
         THROW("geom face missing tet");
       }
       if (geom_node) {
