@@ -1178,6 +1178,8 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
 
+  REIS(0, ref_geom_jump(ref_geom, geom), "use cell_tuv for jumps");
+
   if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
   if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
 
