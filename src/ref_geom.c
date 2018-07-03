@@ -798,14 +798,75 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
   return REF_IMPLEMENT;
 #endif
 }
+static REF_STATUS ref_geom_nodes_uv(REF_GEOM ref_geom, REF_INT *nodes,
+                                    REF_INT node_index, REF_DBL *param) {
+#ifdef HAVE_EGADS
+  REF_INT node, type, faceid, edgeid, geom, from, from_geom;
+  REF_INT cell_node;
+  ego face_ego, edge_ego;
+  double uv[2], uv0[2], uv1[2];
+  REF_DBL t;
+  REF_DBL dist0, dist1;
+
+  type = REF_GEOM_FACE;
+  faceid = nodes[3];
+  node = nodes[node_index];
+
+  RSS(ref_geom_find(ref_geom, node, type, faceid, &geom), "not found");
+
+  if (0 == ref_geom_jump(ref_geom, geom)) {
+    if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
+    if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
+    return REF_SUCCESS;
+  }
+
+  from = REF_EMPTY;
+  for (cell_node=0;cell_node<3;cell_node++) {
+    RSS(ref_geom_find(ref_geom, nodes[cell_node], type, faceid, &from_geom),
+        "not found");
+    if (node_index != cell_node &&
+        0 == ref_geom_jump(ref_geom, from_geom)) {
+      from = nodes[cell_node];
+    }
+  }
+  RAB(REF_EMPTY != from, "can't find from in nodes", {
+      ref_geom_tattle(ref_geom, nodes[0]);
+      ref_geom_tattle(ref_geom, nodes[1]);
+      ref_geom_tattle(ref_geom, nodes[2]);
+      printf("faceid %d node %d node_index %d\n", faceid, node, node_index);
+    });
+  edgeid = ref_geom_jump(ref_geom, geom);
+  RSS(ref_geom_tuv(ref_geom, from, REF_GEOM_FACE, faceid, uv), "from uv");
+  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t), "edge t0");
+  face_ego = ((ego *)(ref_geom->faces))[faceid - 1];
+  edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
+  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
+       "eval edge face uv sens = 0");
+  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
+       "eval edge face uv sens = 1");
+  dist0 = sqrt(pow(uv0[0] - uv[0], 2) + pow(uv0[1] - uv[1], 2));
+  dist1 = sqrt(pow(uv1[0] - uv[0], 2) + pow(uv1[1] - uv[1], 2));
+  if (dist0 < dist1) {
+    param[0] = uv0[0];
+    param[1] = uv0[1];
+  } else {
+    param[0] = uv1[0];
+    param[1] = uv1[1];
+  }
+
+#else
+  RSS(ref_geom_tuv(ref_geom, nodes[node_index], REF_GEOM_FACE, nodes[3], param),
+      "tuv");
+#endif
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
                             REF_DBL *uv_area) {
-  REF_INT id = nodes[3];
   REF_DBL uv0[2], uv1[2], uv2[2];
-  RSS(ref_geom_tuv(ref_geom, nodes[0], REF_GEOM_FACE, id, uv0), "uv0");
-  RSS(ref_geom_tuv(ref_geom, nodes[1], REF_GEOM_FACE, id, uv1), "uv1");
-  RSS(ref_geom_tuv(ref_geom, nodes[2], REF_GEOM_FACE, id, uv2), "uv2");
+  RSS(ref_geom_nodes_uv(ref_geom, nodes, 0, uv0), "uv0");
+  RSS(ref_geom_nodes_uv(ref_geom, nodes, 1, uv1), "uv1");
+  RSS(ref_geom_nodes_uv(ref_geom, nodes, 2, uv2), "uv2");
   *uv_area = 0.5 * (-uv1[0] * uv0[1] + uv2[0] * uv0[1] + uv0[0] * uv1[1] -
                     uv2[0] * uv1[1] - uv0[0] * uv2[1] + uv1[0] * uv2[1]);
   return REF_SUCCESS;
