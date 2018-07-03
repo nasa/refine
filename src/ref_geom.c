@@ -2144,7 +2144,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   REF_INT node;
   REF_INT item, geom;
   REF_BOOL geom_node, geom_edge, geom_face;
-  REF_BOOL no_face, no_edge, no_tet;
+  REF_BOOL no_face, no_edge;
   REF_BOOL found_one;
   REF_BOOL found_too_many;
   REF_INT cell, ncell, cell_list[2];
@@ -2154,19 +2154,9 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node");
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge");
       RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face");
-      no_tet = ref_cell_node_empty(ref_grid_tet(ref_grid), node);
       no_face = ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
                 ref_cell_node_empty(ref_grid_qua(ref_grid), node);
       no_edge = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-      if (geom_node && no_tet) {
-        THROW("geom node missing tet");
-      }
-      if (geom_edge && no_tet) {
-        THROW("geom edge missing tet");
-      }
-      if (geom_face && no_tet) {
-        THROW("geom face missing tet");
-      }
       if (geom_node) {
         if (no_edge && ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, node)) {
           THROW("geom node missing edge");
