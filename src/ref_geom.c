@@ -1193,12 +1193,17 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
       each_ref_cell_cell_node(ref_cell, cell_node) {
         RSS(ref_geom_find(ref_geom, nodes[cell_node], type, id, &from_geom),
             "not found");
-        if (node_index != nodes[cell_node] &&
+        if (node_index != cell_node &&
             0 == ref_geom_jump(ref_geom, from_geom)) {
           from = nodes[cell_node];
         }
       }
-      RAS(REF_EMPTY != from, "can't find from in cell");
+      RAB(REF_EMPTY != from, "can't find from in tri cell", {
+        ref_geom_tattle(ref_geom, nodes[0]);
+        ref_geom_tattle(ref_geom, nodes[1]);
+        ref_geom_tattle(ref_geom, nodes[2]);
+        printf("faceid %d node %d node_index %d\n", id, node, node_index);
+      });
       edgeid = ref_geom_jump(ref_geom, geom);
       RSS(ref_geom_tuv(ref_geom, from, REF_GEOM_FACE, id, uv), "from uv");
       RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t), "edge t0");
