@@ -1450,6 +1450,9 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   /* insert face between */
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
+  if (0 == ncell) { /* volume edge */
+    return REF_SUCCESS;
+  }
   REIB(2, ncell, "expected two tri for between", {
     ref_geom_tattle(ref_geom, node0);
     ref_geom_tattle(ref_geom, node1);
