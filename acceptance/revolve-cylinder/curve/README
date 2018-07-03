@@ -1,0 +1,3 @@
+edge id 7 is ONENODE at geom node 3 vertex 85
+edge id 8 is ONENODE at geom node 4 vertex 101
+edge id 9 is used twice by face id 4, 2 found

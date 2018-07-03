@@ -134,6 +134,19 @@ typedef int REF_STATUS;
     }                            \
   }
 
+#define REIB(a, b, msg, block)                                               \
+  {                                                                          \
+    REF_INT ref_private_status_ai, ref_private_status_bi;                    \
+    ref_private_status_ai = (a);                                             \
+    ref_private_status_bi = (b);                                             \
+    if (ref_private_status_ai != ref_private_status_bi) {                    \
+      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__,     \
+             __func__, (msg), ref_private_status_ai, ref_private_status_bi); \
+      block;                                                                 \
+      return REF_FAILURE;                                                    \
+    }                                                                        \
+  }
+
 #define REIS(a, b, msg)                                                      \
   {                                                                          \
     REF_INT ref_private_status_ai, ref_private_status_bi;                    \
@@ -189,6 +202,15 @@ typedef int REF_STATUS;
       REF_WHERE(msg);     \
       return REF_FAILURE; \
     }                     \
+  }
+
+#define RAB(a, msg, block) \
+  {                        \
+    if (!(a)) {            \
+      REF_WHERE(msg);      \
+      block;               \
+      return REF_FAILURE;  \
+    }                      \
   }
 
 #define RAE(a, msg)     \

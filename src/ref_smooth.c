@@ -972,7 +972,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
       ref_node_age(ref_node, node)++;
       continue;
     }
-    RSS(ref_smooth_geom_face(ref_grid, node), "ideal node for edge");
+    RSS(ref_smooth_geom_face(ref_grid, node), "ideal node for face");
     ref_node_age(ref_node, node) = 0;
   }
 

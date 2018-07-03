@@ -38,16 +38,23 @@ typedef enum REF_GEOM_SURFACES {
   /*10 */ REF_GEOM_EXTRUSION,
   /*11 */ REF_GEOM_SURFACE_LAST
 } REF_GEOM_SURFACE;
+
+#define REF_GEOM_NODE (0)
+#define REF_GEOM_EDGE (1)
+#define REF_GEOM_FACE (2)
+
+#define REF_GEOM_DESCR_SIZE (4)
+#define REF_GEOM_DESCR_TYPE (0)
+#define REF_GEOM_DESCR_ID (1)
+#define REF_GEOM_DESCR_JUMP (2)
+#define REF_GEOM_DESCR_NODE (3)
+
 END_C_DECLORATION
 
 #include "ref_adj.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
-
-#define REF_GEOM_NODE (0)
-#define REF_GEOM_EDGE (1)
-#define REF_GEOM_FACE (2)
 
 struct REF_GEOM_STRUCT {
   REF_INT n, max;
@@ -77,11 +84,16 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 
 #define ref_geom_descr(ref_geom, attribute, geom) \
-  ((ref_geom)->descr[(attribute) + 3 * (geom)])
+  ((ref_geom)->descr[(attribute) + REF_GEOM_DESCR_SIZE * (geom)])
 
-#define ref_geom_type(ref_geom, geom) (ref_geom_descr((ref_geom), 0, (geom)))
-#define ref_geom_id(ref_geom, geom) (ref_geom_descr((ref_geom), 1, (geom)))
-#define ref_geom_node(ref_geom, geom) (ref_geom_descr((ref_geom), 2, (geom)))
+#define ref_geom_type(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_TYPE, (geom)))
+#define ref_geom_id(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_ID, (geom)))
+#define ref_geom_jump(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_JUMP, (geom)))
+#define ref_geom_node(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_NODE, (geom)))
 
 #define ref_geom_param(ref_geom, dimension, geom) \
   ((ref_geom)->param[(dimension) + 2 * (geom)])
@@ -90,6 +102,8 @@ struct REF_GEOM_STRUCT {
   ((ref_geom)->segments_per_radian_of_curvature)
 
 #define each_ref_type(ref_geom, type) for ((type) = 0; (type) < 3; (type)++)
+#define each_ref_descr(ref_geom, item) \
+  for ((item) = 0; (item) < REF_GEOM_DESCR_SIZE; (item)++)
 
 #define each_ref_geom(ref_geom, geom)                         \
   for ((geom) = 0; (geom) < ref_geom_max(ref_geom); (geom)++) \
@@ -141,6 +155,8 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
 
 REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
+REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
+                                   REF_DBL *param);
 
 REF_STATUS ref_geom_remove_all(REF_GEOM ref_geom, REF_INT node);
 
@@ -154,6 +170,8 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
 REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
+REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
+                             REF_INT type, REF_DBL *param, REF_INT *sens);
 
 REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_DBL *xyz);
@@ -165,8 +183,8 @@ REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_geom_tri_uv_bounding_box(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *uv_min, REF_DBL *uv_max);
 REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT id,
-                                         REF_DBL *uv_min, REF_DBL *uv_max);
+                                         REF_INT node1, REF_DBL *uv_min,
+                                         REF_DBL *uv_max);
 
 REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node);
 
