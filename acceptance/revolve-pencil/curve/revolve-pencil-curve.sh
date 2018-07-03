@@ -17,5 +17,9 @@ ${two}/ref_driver \
     -g ../gen/pencil.egads \
     -r 2 \
     -o pencil-curve \
-    -t
+    -t \
+    > accept-annulus-uniform.out
+
+cat accept-annulus-uniform.out
+../../check.rb accept-annulus-uniform.out 0.05 2.5
 
