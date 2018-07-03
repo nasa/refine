@@ -42,6 +42,8 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  curvature?
  recon later?
 
+continuous geometry / discrete triangle normal deviation limit in ref_adapt
+
 recon
  revolve cylinder (ONENODE)
  pencil (periodic + degen)
@@ -74,7 +76,6 @@ implement grid CM
   unit test the CM case in their paper for tri
 
 cell pack: insert in first node index order
-
 
 parallel kexact
 
