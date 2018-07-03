@@ -684,7 +684,7 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
       RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri_list[i], tri_nodes),
           "nodes");
       faceid = tri_nodes[3];
-      sense = 0; /* when edge is used twice in loop, this is its index */
+      sense = 0; /* when edge is used twice in loop, this is 1 or -1 */
       RSS(ref_geom_tuv(ref_geom, edge_nodes[0], REF_GEOM_EDGE, edgeid, &t),
           "edge t0");
       REIS(
@@ -840,9 +840,9 @@ static REF_STATUS ref_geom_nodes_uv(REF_GEOM ref_geom, REF_INT *nodes,
   face_ego = ((ego *)(ref_geom->faces))[faceid - 1];
   edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
   REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
-       "eval edge face uv sens = 0");
-  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
        "eval edge face uv sens = 1");
+  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
+       "eval edge face uv sens = -1");
   dist0 = sqrt(pow(uv0[0] - uv[0], 2) + pow(uv0[1] - uv[1], 2));
   dist1 = sqrt(pow(uv1[0] - uv[0], 2) + pow(uv1[1] - uv[1], 2));
   if (dist0 < dist1) {
@@ -1241,10 +1241,10 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
         THROW("from node not in trange");
       }
       if (dist0 < dist1) {
-        *sens = 0;
+        *sens = 1;
         param[0] = trange[0];
       } else {
-        *sens = 1;
+        *sens = -1;
         param[0] = trange[1];
       }
       break;
@@ -1270,17 +1270,17 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
       face_ego = ((ego *)(ref_geom->faces))[id - 1];
       edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
       REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
-           "eval edge face uv sens = 0");
-      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
            "eval edge face uv sens = 1");
+      REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
+           "eval edge face uv sens = -1");
       dist0 = sqrt(pow(uv0[0] - uv[0], 2) + pow(uv0[1] - uv[1], 2));
       dist1 = sqrt(pow(uv1[0] - uv[0], 2) + pow(uv1[1] - uv[1], 2));
       if (dist0 < dist1) {
-        *sens = 0;
+        *sens = 1;
         param[0] = uv0[0];
         param[1] = uv0[1];
       } else {
-        *sens = 1;
+        *sens = -1;
         param[0] = uv1[0];
         param[1] = uv1[1];
       }
@@ -1299,7 +1299,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT cell,
   SUPRESS_UNUSED_COMPILER_WARNING(node);
   SUPRESS_UNUSED_COMPILER_WARNING(cell);
   SUPRESS_UNUSED_COMPILER_WARNING(type);
-  *sens = REF_EMPTY;
+  *sens = 0;
   RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
   RSS(ref_geom_tuv(ref_geom, node, type,
                    ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell),
@@ -1344,7 +1344,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
       faceid = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell);
       RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_FACE, uv, &sense),
           "cell uv");
-      if (0 == sense) { /* sense to use is arbitrary */
+      if (1 == sense) { /* sense to use is arbitrary */
         each_ref_adj_node_item_with_ref(ref_adj, node, geom_item, face_geom) {
           if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
               faceid == ref_geom_id(ref_geom, face_geom)) {
@@ -2964,13 +2964,13 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &tvalue,
                             &sens),
           "from");
-      if (1 == sens) local = nnode - 1;
+      if (-1 == sens) local = nnode - 1;
       t[local] = tvalue;
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
       RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &tvalue,
                             &sens),
           "from");
-      if (1 == sens) local = nnode - 1;
+      if (-1 == sens) local = nnode - 1;
       t[local] = tvalue;
     }
   }
@@ -2994,13 +2994,13 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &tvalue,
                             &sens),
           "from");
-      if (1 == sens) local = nnode - 1;
+      if (-1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
       RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
       RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &tvalue,
                             &sens),
           "from");
-      if (1 == sens) local = nnode - 1;
+      if (-1 == sens) local = nnode - 1;
       fprintf(file, " %d", local + 1);
       fprintf(file, "\n");
     }
@@ -3063,7 +3063,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
         RSS(ref_geom_cell_tuv(ref_grid, nodes[node], cell, REF_GEOM_FACE, param,
                               &sens),
             "cell tuv");
-        if (0 == sens) {
+        if (0 == sens || 1 == sens) {
           RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
         } else {
           RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),
@@ -3096,7 +3096,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
         RSS(ref_geom_cell_tuv(ref_grid, nodes[node], cell, REF_GEOM_FACE, param,
                               &sens),
             "cell tuv");
-        if (0 == sens) {
+        if (0 == sens || 1 == sens) {
           RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
         } else {
           RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),

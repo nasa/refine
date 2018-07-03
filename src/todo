@@ -29,8 +29,8 @@ revolve cylinder (ONENODE) and pencil (periodic + degen) for "dragon"
  + boundary box and box2 learn jump
  refactor tuv methods to convert cell_tuv into nodes and node_index?
  get uv, set uv, throw jump != 0
- ref_geom_eval_edge_face_uv set to one sens consistently
- change sens argument to match EGADS 0, 1, -1
+ + ref_geom_eval_edge_face_uv set to one sens consistently
+ + change sens argument to match EGADS 0, 1, -1
  add ref_geom_eval_edge_face_uv to end of add between
  report improvement to getEdgeUV docs
  + skip curvature
