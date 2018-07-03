@@ -833,8 +833,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
   RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &t0, &sense),
       "get t0");
-  RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_EDGE, &t_orig,
-                        &sense), "get t_orig");
+  RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_EDGE, &t_orig, &sense),
+      "get t_orig");
   edge_nodes[0] = nodes[1];
   edge_nodes[1] = node;
   RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
