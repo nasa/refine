@@ -15,7 +15,7 @@ fi
 ${two}/ref_driver \
     -i pencil.meshb \
     -g ../gen/pencil.egads \
-    -r 4 \
+    -r 2 \
     -o pencil-curve \
     -t
 
