@@ -1,13 +1,9 @@
 
-split edges on initial faces with zero triangles to introduce triangle
+split edges on initial faces with zero triangles to introduce triangle for c25f
 
 convert todo to TODO.md
 
-parmetis edge weights
-
-extract BC tags from egads
-
-revolve c  ylinder (ONENODE) and pencil (periodic + degen)
+revolve cylinder (ONENODE) and pencil (periodic + degen) for "dragon"
  + database learns jump
  + extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
  + delete ref_geom_add_jump, find_jump
@@ -29,18 +25,15 @@ revolve c  ylinder (ONENODE) and pencil (periodic + degen)
  + add between switch to element based
  + add between support for face uv with and without jump when edge split
  + add between learns jump
- switch xyz between to element
  + geom_uv_area
  + boundary box and box2 learn jump
- refactor tuv methods for nodes and node_index?
+ refactor tuv methods to convert cell_tuv into nodes and node_index?
  get uv, set uv, throw jump != 0
- sort out sens meaning 1,-1 or 0,1
- ref_geom_eval_edge_face_uv set to on sens
- set jump param to sens 1 or -1 consistently
+ ref_geom_eval_edge_face_uv set to one sens consistently
+ change sens argument to match EGADS 0, 1, -1
  add ref_geom_eval_edge_face_uv to end of add between
  report improvement to getEdgeUV docs
- curvature?
- recon later?
+ + skip curvature
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
@@ -80,12 +73,13 @@ cell pack: insert in first node index order
 parallel kexact
 
 partition artifacts
-  ref_subdiv only turn off marks with neg vol
-    + ref geom add between xyz location
-    ref subdiv text test xyz
+  ref_subdiv only turn off marks with neg vol tet
+    ref geom add between xyz location switch to element/nodes
+    ref subdiv test xyz
     ref node vol xyz pointers
     interate on unmark
   ref_partition diffusion
+  parmetis edge weights
 
 unify clump plotting diagnostics in parallel
  tri tet mr < 0.1
@@ -194,6 +188,7 @@ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   to ref_smooth_local_cell_about
 merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
+extract BC tags from egads
 
 +++++++++++++++++
 
