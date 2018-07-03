@@ -304,10 +304,10 @@ trap - EXIT
 
 date
 
-LOG=${root_dir}/log.accept-accept-annulus-uniform
+LOG=${root_dir}/log.accept-revolve-pencil-curve
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/revolve-pencil/curve
-./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1
+./revolve-pencil-curve.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 date
