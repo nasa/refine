@@ -255,7 +255,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather meshb");
   } else {
-    if (!ref_mpi_para(ref_mpi)) {
+    /* single core, not mixed element, 2D */
+    if (!ref_mpi_para(ref_mpi) && 0 == ref_cell_n(ref_grid_hex(ref_grid))) {
     snprintf(output_filename, 1024, "%s.meshb", output_project);
     RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
