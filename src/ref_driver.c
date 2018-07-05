@@ -254,6 +254,12 @@ int main(int argc, char *argv[]) {
     snprintf(output_filename, 1024, "%s.meshb", output_project);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather meshb");
+  } else {
+    if (!ref_mpi_para(ref_mpi)) {
+    snprintf(output_filename, 1024, "%s.meshb", output_project);
+    RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
+    }
   }
   snprintf(output_filename, 1024, "%s-final-metric.solb", output_project);
   RSS(ref_gather_metric(ref_grid, output_filename), "met met");
