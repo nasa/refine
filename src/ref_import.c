@@ -1083,7 +1083,11 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(ref_node, 2, node);
     }
 
-  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+  if (3 == dim) {
+    RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
+  } else {
+    RSS(ref_node_initialize_n_global(ref_node, 2 * nnode), "init glob");
+  }
 
   RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
                             &next_position),
