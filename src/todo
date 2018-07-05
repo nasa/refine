@@ -5,6 +5,8 @@ convert todo to TODO.md
 
 report improvement to getEdgeUV docs
 
+ref_geom_test --viz needs to call jump, which should have a uniform init
+
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
 recon
