@@ -1280,7 +1280,10 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
         "jump");
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
-    REIS(3, dim, "only 3D supported");
+    if (dim < 2 || 3 < dim) {
+      printf("dim %d not supported\n", dim);
+      THROW("dim");
+    }
 
     RSS(ref_import_meshb_jump(file, version, key_pos, 62, &available,
                               &next_position),
@@ -1289,35 +1292,54 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-    REIS(ref_node_n_global(ref_node), nnode, "global nnode");
+    if (3 == dim) {
+      REIS(ref_node_n_global(ref_node), nnode, "global 3d nnode");
+    } else {
+      REIS(ref_node_n_global(ref_node)/2, nnode, "global 2d nnode");
+    }
     REIS(1, ntype, "number of solutions");
     REIS(3, type, "metric solution type");
   }
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &dim, 1, REF_INT_TYPE),
+      "bcast dim");
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+      "bcast nnode");
 
-  chunk = MAX(100000,
-              ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = MIN(chunk, ref_node_n_global(ref_node));
+  chunk = MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = MIN(chunk, nnode);
 
   ref_malloc_init(metric, 6 * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
-  while (nnode_read < ref_node_n_global(ref_node)) {
-    section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
+  while (nnode_read < nnode) {
+    section_size = MIN(chunk, nnode - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       for (node = 0; node < section_size; node++) {
-        REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m11");
-        REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m12");
-        /* transposed 3,2 */
-        REIS(1, fread(&(metric[3 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m22");
-        REIS(1, fread(&(metric[2 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m31");
-        REIS(1, fread(&(metric[4 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m32");
-        REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
-             "m33");
+        if (3 == dim) {
+          REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m11");
+          REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m12");
+          /* transposed 3,2 */
+          REIS(1, fread(&(metric[3 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m22");
+          REIS(1, fread(&(metric[2 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m31");
+          REIS(1, fread(&(metric[4 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m32");
+          REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m33");
+        } else {
+          REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m11");
+          metric[1 + 6 * node] = 0.0; /* m12 */
+          REIS(1, fread(&(metric[2 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m31");
+          metric[3 + 6 * node] = 1.0; /* m22 */
+          metric[4 + 6 * node] = 0.0; /* m32 */
+          REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m33");
+        }
       }
       RSS(ref_mpi_bcast(ref_node_mpi(ref_node), metric, 6 * chunk,
                         REF_DBL_TYPE),
@@ -1333,6 +1355,13 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
       if (REF_EMPTY != local)
         for (im = 0; im < 6; im++)
           ref_node_metric(ref_node, im, local) = metric[im + 6 * node];
+      if (2 == dim) {
+        global = nnode + node + nnode_read;
+        RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+        if (REF_EMPTY != local)
+          for (im = 0; im < 6; im++)
+            ref_node_metric(ref_node, im, local) = metric[im + 6 * node];
+      }
     }
     nnode_read += section_size;
   }
