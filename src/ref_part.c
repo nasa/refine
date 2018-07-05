@@ -1295,7 +1295,7 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
     if (3 == dim) {
       REIS(ref_node_n_global(ref_node), nnode, "global 3d nnode");
     } else {
-      REIS(ref_node_n_global(ref_node)/2, nnode, "global 2d nnode");
+      REIS(ref_node_n_global(ref_node) / 2, nnode, "global 2d nnode");
     }
     REIS(1, ntype, "number of solutions");
     REIS(3, type, "metric solution type");
