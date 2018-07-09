@@ -100,6 +100,8 @@ struct REF_GEOM_STRUCT {
 
 #define ref_geom_segments_per_radian_of_curvature(ref_geom) \
   ((ref_geom)->segments_per_radian_of_curvature)
+#define ref_geom_curvature_unlimited(ref_geom) \
+  (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
 
 #define each_ref_type(ref_geom, type) for ((type) = 0; (type) < 3; (type)++)
 #define each_ref_descr(ref_geom, item) \

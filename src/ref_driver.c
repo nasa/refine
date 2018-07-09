@@ -185,6 +185,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "geom param");
   }
 
+  if (ref_geom_curvature_unlimited(ref_grid_geom(ref_grid))) {
+    RAS(!curvature_metric,
+        "[-r seg_per_radian] must be grater than 0.1 or -m provided");
+    curvature_constraint = REF_FALSE;
+  }
+
   if (curvature_metric) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   } else {
