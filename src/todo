@@ -1,44 +1,41 @@
 
-split edges on initial faces with zero triangles to introduce triangle for c25f
-
 convert todo to TODO.md
 
-report improvement to getEdgeUV docs
+report improvement to getEdgeUV EGADS docs
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
 tess surface grid eval and modification
-
-recon
- revolve cylinder (ONENODE)
- pencil (periodic + degen)
- toward full "dragon"
+ split edges on initial faces with zero triangles to introduce triangle for c25f
+ k-tree to drive split for grid size gradation of JSM
 
 add utility to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
 
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
-handle edge reuse for periodic faces
-  use e2f to see if edge is reused
-  add some logic to figure out the right sens for a triangle in edgeuv
-
-ref_geom recover
- make sure that edge t values are monotonic
- take the smallest increment in t, right direction
- handle ONENODE edges
+mixed element in refine/two
+ metric construction
+ interp for mixed element donor
+ parallel edge split
 
 ref_geom
- extract grid associtaion (gas)
- extract/refactor recon
  extract init tess
- revisit tests after jump
- add geom fixture to tests
+ add EGADS geom built fixture to ref_geom_tests
  refactor tuv methods to convert cell_tuv into nodes and node_index?
+ recover
+  extract/refactor recon
+  make sure that edge t values are monotonic
+  take the smallest increment in t, right direction
+  handle ONENODE edges (revolve cylinder)
+  handle periodic + degen ( pencil, toward full "dragon")
+
+start geod support?
+rename ref_geom to ref_egads?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
-implement grid CM
+implement grid Cuthill-Magee
   unit test the CM case in their paper for tri
 
 cell pack: insert in first node index order
@@ -65,7 +62,6 @@ measure gradation and see if there is a connection to histogram convergence
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
-interp for mixed element donor
 get rid of aux and interp instead
 initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
