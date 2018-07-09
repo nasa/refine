@@ -5,8 +5,6 @@ convert todo to TODO.md
 
 report improvement to getEdgeUV docs
 
-ref_geom_test --viz needs to call jump, which should have a uniform init
-
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
 tess surface grid eval and modification
@@ -98,6 +96,7 @@ robustness and metric conformity
  split
   insert optimized node location (uv,xyz) with validity constraint
  collapse
+  cavity operator
   examine triangle MR
   prevent slivers
  smooth
