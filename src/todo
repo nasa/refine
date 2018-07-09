@@ -9,6 +9,8 @@ ref_geom_test --viz needs to call jump, which should have a uniform init
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
+tess surface grid eval and modification
+
 recon
  revolve cylinder (ONENODE)
  pencil (periodic + degen)
