@@ -2306,7 +2306,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   char *ele_name = "ref_geom_test.1.ele";
   char command[1024];
   FILE *file;
-  REF_INT nnode, ndim, attr, mark;
+  REF_INT nnode, ndim, attr, mark, global;
   REF_INT ntet, node_per;
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
@@ -2412,7 +2412,7 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_DBL xyz[3];
-  REF_INT new_node, orig_nnode, node, tri;
+  REF_INT new_node, orig_nnode, node, tri, global;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua;
   REF_INT face_id;
