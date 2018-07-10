@@ -1,12 +1,7 @@
 
-convert todo to TODO.md
-
-report improvement to getEdgeUV EGADS docs
-
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
-tess surface grid eval and modification
- split edges on initial faces with zero triangles to introduce triangle for c25f
+tess
  k-tree to drive split for grid size gradation of JSM
  add --tess acceptance test
 
@@ -31,17 +26,19 @@ ref_geom
   handle ONENODE edges (revolve cylinder)
   handle periodic + degen ( pencil, toward full "dragon")
 
-start geod support?
+start geode support?
 rename ref_geom to ref_egads?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
-implement grid Cuthill-Magee
-  unit test the CM case in their paper for tri
 
-cell pack: insert in first node index order
+performance
+  implement grid vertex Cuthill-Magee reordering
+    unit test the CM case in their paper for tri
+  cell pack: insert in first node index order
+  always store metric in log form
 
-parallel kexact
+parallel kexact Hessian reconstruction
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
@@ -51,11 +48,6 @@ partition artifacts
     interate on unmark
   ref_partition diffusion
   parmetis edge weights
-
-unify clump plotting diagnostics in parallel
- tri tet mr < 0.1
- edge > 3
- clump degree > 50
 
 ref_metric_test --lp should optionally provide intermediate steps
 
@@ -78,8 +70,6 @@ egads recon
    revert on failure (wrap?)
 
 create native inv eval guess
-
-always store metric in log form
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
@@ -161,6 +151,11 @@ merge ref_collapse_face_local_*
 add chunk size to minloc (use MPT work-around instead)
 extract BC tags from egads
 
+unify clump plotting diagnostics in parallel
+ tri tet mr < 0.1
+ edge > 3
+ clump degree > 50
+
 +++++++++++++++++
 
 + revolve cylinder (ONENODE) and pencil (periodic + degen) for "dragon"
@@ -192,6 +187,12 @@ extract BC tags from egads
  + change sens argument to match EGADS 0, 1, -1
  + add ref_geom_eval_edge_face_uv to end of add between
  + skip curvature
+
++ report improvement to getEdgeUV EGADS docs
+
++ split edges on initial faces with zero triangles
+  + c25f fixed with viz global params
+  + will use rebuildTess in future to split edge
 
 + create a uv bounding box from two triangles that span two nodes
 
