@@ -2941,7 +2941,7 @@ REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
              ref_cell_c2n(ref_edg, 2, edg_list[1]));
       RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri, tri_list),
           "tri list for nodes");
-      for (i = 0;i < 2; i++) {
+      for (i = 0;i < 0; i++) {
         RSS(ref_cell_nodes(ref_edg, edg_list[0], nodes), "edg nodes");
         RSS(ref_node_next_global(ref_node, &global), "next global");
         RSS(ref_node_add(ref_node, global, &(new_nodes[i])), "new node");
