@@ -2910,12 +2910,16 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
 
 REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_edg = ref_grid_edg(ref_grid);
   REF_CELL ref_tri = ref_grid_tri(ref_grid);
   REF_INT edg, nedg, edg_list[2];
   REF_INT ntri, tri_list[2];
   REF_INT node0, node1;
   REF_INT *e2f;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT global, new_nodes[2], i;
 
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
 
@@ -2937,6 +2941,17 @@ REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
              ref_cell_c2n(ref_edg, 2, edg_list[1]));
       RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri, tri_list),
           "tri list for nodes");
+      for (i = 0;i < 2; i++) {
+        RSS(ref_cell_nodes(ref_edg, edg_list[0], nodes), "edg nodes");
+        RSS(ref_node_next_global(ref_node, &global), "next global");
+        RSS(ref_node_add(ref_node, global, &(new_nodes[i])), "new node");
+        RSS(ref_node_interpolate_edge(ref_node, nodes[0],
+                                      nodes[1], new_nodes[i]),
+            "interp new node");
+        /* undo during testing */
+        RSS(ref_node_remove(ref_node, new_nodes[i]), "remove new node");
+        RSS(ref_geom_remove_all(ref_geom, new_nodes[i]), "rm");
+      }
     }
   }
 
