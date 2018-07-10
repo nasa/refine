@@ -2684,7 +2684,9 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
          EG_getTessFace(tess, face + 1, &plen, &points, &uv, &ptype, &pindex,
                         &tlen, &tris, &tric),
          "tess query face");
-
+    if (0 == plen || 0 == tlen) {
+      printf("face %d has %d nodes and %d triangles\n", face+1, plen, tlen);
+    }
     for (node = 0; node < plen; node++) {
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, node + 1, &(nodes[0])), "l2g0");
