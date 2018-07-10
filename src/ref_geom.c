@@ -2910,62 +2910,6 @@ REF_STATUS ref_geom_degen_param(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid) {
-#ifdef HAVE_EGADS
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_CELL ref_edg = ref_grid_edg(ref_grid);
-  REF_CELL ref_tri = ref_grid_tri(ref_grid);
-  REF_INT edg, nedg, edg_list[2];
-  REF_INT ntri, tri_list[2];
-  REF_INT node0, node1;
-  REF_INT *e2f;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT global, new_nodes[2], i;
-
-  RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
-
-  each_ref_cell_valid_cell(ref_edg, edg) {
-    node0 = ref_cell_c2n(ref_edg, 0, edg);
-    node1 = ref_cell_c2n(ref_edg, 1, edg);
-    RSS(ref_cell_list_with2(ref_edg, node0, node1, 2, &nedg, edg_list),
-        "edge list for nodes");
-    if (2 == nedg) {
-      printf("two edg found with same nodes %d %d from %d\n", node0, node1,
-             edg);
-      printf("edg %d n %d %d id %d\n", edg_list[0],
-             ref_cell_c2n(ref_edg, 0, edg_list[0]),
-             ref_cell_c2n(ref_edg, 1, edg_list[0]),
-             ref_cell_c2n(ref_edg, 2, edg_list[0]));
-      printf("edg %d n %d %d id %d\n", edg_list[1],
-             ref_cell_c2n(ref_edg, 0, edg_list[1]),
-             ref_cell_c2n(ref_edg, 1, edg_list[1]),
-             ref_cell_c2n(ref_edg, 2, edg_list[1]));
-      RSS(ref_cell_list_with2(ref_tri, node0, node1, 2, &ntri, tri_list),
-          "tri list for nodes");
-      for (i = 0;i < 0; i++) {
-        RSS(ref_cell_nodes(ref_edg, edg_list[0], nodes), "edg nodes");
-        RSS(ref_node_next_global(ref_node, &global), "next global");
-        RSS(ref_node_add(ref_node, global, &(new_nodes[i])), "new node");
-        RSS(ref_node_interpolate_edge(ref_node, nodes[0],
-                                      nodes[1], new_nodes[i]),
-            "interp new node");
-        /* undo during testing */
-        RSS(ref_node_remove(ref_node, new_nodes[i]), "remove new node");
-        RSS(ref_geom_remove_all(ref_geom, new_nodes[i]), "rm");
-      }
-    }
-  }
-
-  ref_free(e2f);
-
-#else
-  printf("unable to %s, No EGADS linked.\n", __func__);
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-#endif
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
