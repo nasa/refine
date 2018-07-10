@@ -51,8 +51,6 @@ partition artifacts
 
 ref_metric_test --lp should optionally provide intermediate steps
 
-measure gradation and see if there is a connection to histogram convergence
-
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
@@ -75,6 +73,7 @@ extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 robustness and metric conformity
  histogram history plots
+ measure gradation and see if there is a connection to histogram convergence
  process complete test (early termination when no more likely progress)
  smarter adapt parameters
   adjustable parameters
