@@ -8,7 +8,7 @@ continuous geometry / discrete triangle normal deviation limit in ref_adapt
 tess surface grid eval and modification
  split edges on initial faces with zero triangles to introduce triangle for c25f
  k-tree to drive split for grid size gradation of JSM
- where should ref_node_initialize_n_global go?
+ add --tess acceptance test
 
 add utility to ref_interp to compute
   \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
