@@ -115,7 +115,6 @@ REF_STATUS ref_node_tattle_global(REF_NODE ref_node, REF_INT global);
 
 REF_STATUS ref_node_local(REF_NODE ref_node, REF_INT global, REF_INT *node);
 
-REF_STATUS ref_node_initialize_n_global_from_locals(REF_NODE ref_node);
 REF_STATUS ref_node_initialize_n_global(REF_NODE ref_node, REF_INT n_global);
 REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_INT *global);
 
