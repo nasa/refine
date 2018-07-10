@@ -2363,7 +2363,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   /* interior nodes */
   for (node = nnode_surface; node < nnode; node++) {
     REIS(1, fscanf(file, "%d", &item), "node item");
-    RES(node, item, "node index");
+    REIS(node, item, "file node index");
+    RSS(ref_node_next_global(ref_node, &global), "next global");
+    REIS(node, global, "global node index");
     RSS(ref_node_add(ref_node, node, &new_node), "new_node");
     RES(node, new_node, "node index");
     RES(1, fscanf(file, "%lf", &(xyz[0])), "x");
@@ -2435,6 +2437,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
     REIS(1, fscanf(file, "%lf", &(xyz[1])), "y");
     REIS(1, fscanf(file, "%lf", &(xyz[2])), "z");
     if (node >= orig_nnode) {
+      RSS(ref_node_next_global(ref_node, &global), "next global");
+      REIS(node, global, "global node index");
       RSS(ref_node_add(ref_node, node, &new_node), "new_node");
       REIS(node, new_node, "node index");
       ref_node_xyz(ref_node, 0, new_node) = xyz[0];
@@ -2664,13 +2668,16 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
     REIS(EGADS_SUCCESS, EG_getGlobal(tess, node + 1, &pty, &pin, verts),
          "global node info");
     RSS(ref_node_add(ref_node, node, &new_node), "new_node");
-    RES(node, new_node, "node index");
+    REIS(node, new_node, "node index");
     ref_node_xyz(ref_node, 0, node) = verts[0];
     ref_node_xyz(ref_node, 1, node) = verts[1];
     ref_node_xyz(ref_node, 2, node) = verts[2];
-    if (0 == pty)
+    /* pty: point type (-) Face local index, (0) Node, (+) Edge local index */
+    if (0 == pty) {
       RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, pin, NULL), "node");
+    }
   }
+  RSS(ref_node_initialize_n_global(ref_node, nvert), "init glob");
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
