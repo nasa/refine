@@ -1892,9 +1892,17 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
        "EG topo node");
 
   for (i = 0; i < type; i++) guess_param[i] = param[i];
+  for (i = 0; i < type; i++) noguess_param[i] = param[i];
   guess_status = EG_invEvaluateGuess(object, xyz, guess_param, guess_closest);
   noguess_status = EG_invEvaluate(object, xyz, noguess_param, noguess_closest);
-  if (verbose) printf("guess %d noguess %d\n", guess_status, noguess_status);
+  if (verbose) {
+    printf("guess %d noguess %d type %d id %d xyz %f %f %f\n",
+           guess_status, noguess_status, type, id, xyz[0], xyz[1], xyz[2]);
+    for (i = 0; i < type; i++) {
+      printf("%d: start %f guess %f noguess %f\n", i,
+             param[i], guess_param[i], noguess_param[i]);
+    }
+  }
   if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS != noguess_status)
     return REF_FAILURE;
 
@@ -1928,9 +1936,7 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   if (verbose) {
     printf("guess %e noguess %e\n", guess_dist, noguess_dist);
-    for (i = 0; i < type; i++)
-      printf("%d:guess %f noguess %f\n", i, guess_param[i], noguess_param[i]);
-    printf("guess %d noguess %d\n", guess_in_range, noguess_in_range);
+    printf("guess %d noguess %d in range\n", guess_in_range, noguess_in_range);
   }
 
   if (guess_in_range && !noguess_in_range) {
