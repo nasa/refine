@@ -1896,11 +1896,11 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   guess_status = EG_invEvaluateGuess(object, xyz, guess_param, guess_closest);
   noguess_status = EG_invEvaluate(object, xyz, noguess_param, noguess_closest);
   if (verbose) {
-    printf("guess %d noguess %d type %d id %d xyz %f %f %f\n",
-           guess_status, noguess_status, type, id, xyz[0], xyz[1], xyz[2]);
+    printf("guess %d noguess %d type %d id %d xyz %f %f %f\n", guess_status,
+           noguess_status, type, id, xyz[0], xyz[1], xyz[2]);
     for (i = 0; i < type; i++) {
-      printf("%d: start %f guess %f noguess %f\n", i,
-             param[i], guess_param[i], noguess_param[i]);
+      printf("%d: start %f guess %f noguess %f\n", i, param[i], guess_param[i],
+             noguess_param[i]);
     }
   }
   if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS != noguess_status)
@@ -2691,7 +2691,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
                         &tlen, &tris, &tric),
          "tess query face");
     if (0 == plen || 0 == tlen) {
-      printf("face %d has %d nodes and %d triangles\n", face+1, plen, tlen);
+      printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
     }
     for (node = 0; node < plen; node++) {
       REIS(EGADS_SUCCESS,
