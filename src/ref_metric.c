@@ -311,10 +311,9 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   RSS(ref_interp_locate(ref_interp), "map");
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "err");
-  RSB(max_error > tol, "large interp error", {
-    if (ref_mpi_once(ref_mpi))
-      printf(" %e max_error greater than %e tol\n", max_error, tol);
-  });
+  if (max_error > tol && ref_mpi_once(ref_mpi)) {
+    printf("warning: %e max_error greater than %e tol\n", max_error, tol);
+  }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) if (ref_node_owned(to_node, node)) {
