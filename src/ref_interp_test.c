@@ -49,6 +49,8 @@
 #include "ref_split.h"
 #include "ref_twod.h"
 
+#include "ref_args.h"
+
 REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr, REF_MPI ref_mpi) {
   REF_GRID from, to;
   RSS(ref_grid_create(&from, ref_mpi), "create");
@@ -65,18 +67,33 @@ REF_STATUS ref_interp_teardown(REF_INTERP ref_interp) {
 }
 
 int main(int argc, char *argv[]) {
+  REF_INT pair_pos = REF_EMPTY;
+  REF_INT error_pos = REF_EMPTY;
+
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  if (argc == 3) {
+  RXS(ref_args_find(argc, argv, "--pair", &pair_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
+      "arg search");
+
+  if (REF_EMPTY != pair_pos) {
     REF_GRID from, to;
     REF_INTERP ref_interp;
 
+    REIS(1, pair_pos,
+         "required args: --pair donor_mesh.ext reciver_mesh.ext\n");
+    if (4 > argc) {
+      printf("required args: --pair donor_mesh.ext reciver_mesh.ext\n");
+      return REF_FAILURE;
+    }
+
     RSS(ref_mpi_stopwatch_start(ref_mpi), "sw start");
-    RSS(ref_part_by_extension(&from, ref_mpi, argv[1]), "import");
+    RSS(ref_part_by_extension(&from, ref_mpi, argv[2]), "import");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "from grid"), "sw start");
-    RSS(ref_part_by_extension(&to, ref_mpi, argv[2]), "import");
+    RSS(ref_part_by_extension(&to, ref_mpi, argv[3]), "import");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "to grid"), "sw start");
 
     RSS(ref_export_tec_surf(to, "ref_interp_test_to.tec"), "export");
@@ -95,6 +112,22 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_free(ref_interp), "interp free");
     RSS(ref_grid_free(to), "free");
     RSS(ref_grid_free(from), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != error_pos) {
+    REIS(1, error_pos,
+         "required args: --error donor_mesh.ext donor_solution.solb "
+         "reciver_mesh.ext reciver_solution.solb\n");
+    if (6 > argc) {
+      printf(
+          "required args: --error donor_mesh.ext donor_solution.solb "
+          "reciver_mesh.ext reciver_solution.solb\n");
+      return REF_FAILURE;
+    }
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
