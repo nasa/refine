@@ -121,8 +121,9 @@ int main(int argc, char *argv[]) {
 
   if (REF_EMPTY != error_pos) {
     REF_GRID truth_grid, candidate_grid;
-    REF_DBL *truth_scalar, *candidate_scalar;
+    REF_DBL *truth_scalar, *candidate_scalar, *interp_scalar;
     REF_INTERP ref_interp;
+    REF_INT p;
     REIS(1, error_pos,
          "required args: --error truth_mesh.ext truth_solution.solb "
          "canidate_mesh.ext canidate_solution.solb norm-order\n");
@@ -143,21 +144,27 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 3");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "truth scalar"), "lap");
 
-    RSS(ref_part_by_extension(&candidate_grid, ref_mpi, argv[2]),
+    RSS(ref_part_by_extension(&candidate_grid, ref_mpi, argv[4]),
         "part candidate grid in position 4");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "candidate grid"), "lap");
     ref_malloc(candidate_scalar, ref_node_max(ref_grid_node(candidate_grid)),
                REF_DBL);
     RSS(ref_part_scalar(ref_grid_node(candidate_grid), candidate_scalar,
-                        argv[3]),
+                        argv[5]),
         "unable to load scalar in position 5");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "candidate scalar"), "lap");
+
+    p = atoi(argv[6]);
+    printf("norm order %d\n", p);
 
     RSS(ref_interp_create(&ref_interp, candidate_grid, truth_grid),
         "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "locate"), "sw start");
 
+    ref_malloc(interp_scalar, ref_node_max(ref_grid_node(truth_grid)), REF_DBL);
+
+    ref_free(interp_scalar);
     RSS(ref_interp_free(ref_interp), "interp free");
     ref_free(candidate_scalar);
     RSS(ref_grid_free(candidate_grid), "free");

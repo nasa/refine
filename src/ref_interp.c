@@ -900,8 +900,10 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   *max_error = 0.0;
 
   n_recept = 0;
-  each_ref_node_valid_node(to_node, node) if (ref_node_owned(to_node, node)) {
-    n_recept++;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      n_recept++;
+    }
   }
 
   ref_malloc(recept_bary, 4 * n_recept, REF_DBL);
@@ -911,15 +913,18 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   ref_malloc(recept_proc, n_recept, REF_INT);
 
   n_recept = 0;
-  each_ref_node_valid_node(to_node, node) if (ref_node_owned(to_node, node)) {
-    RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
-    for (i = 0; i < 4; i++)
-      recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
-    recept_proc[n_recept] = ref_interp->part[node];
-    recept_cell[n_recept] = ref_interp->cell[node];
-    recept_node[n_recept] = node;
-    recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
-    n_recept++;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+      for (i = 0; i < 4; i++) {
+        recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
+      }
+      recept_proc[n_recept] = ref_interp->part[node];
+      recept_cell[n_recept] = ref_interp->cell[node];
+      recept_node[n_recept] = node;
+      recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+      n_recept++;
+    }
   }
 
   RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_cell, 1, n_recept,
