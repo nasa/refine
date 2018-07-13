@@ -52,7 +52,8 @@
 #include "ref_args.h"
 #include "ref_malloc.h"
 
-REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr, REF_MPI ref_mpi) {
+static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
+                                   REF_MPI ref_mpi) {
   REF_GRID from, to;
   RSS(ref_grid_create(&from, ref_mpi), "create");
   RSS(ref_grid_create(&to, ref_mpi), "create");
@@ -60,10 +61,27 @@ REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_teardown(REF_INTERP ref_interp) {
+static REF_STATUS ref_interp_teardown(REF_INTERP ref_interp) {
   RSS(ref_grid_free(ref_interp_from_grid(ref_interp)), "free");
   RSS(ref_grid_free(ref_interp_to_grid(ref_interp)), "free");
   RSS(ref_interp_free(ref_interp), "interp free");
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) {
+    if ((0.01 < ref_node_xyz(ref_node, 0, node) &&
+         0.99 > ref_node_xyz(ref_node, 0, node)) ||
+        (0.01 < ref_node_xyz(ref_node, 1, node) &&
+         0.99 > ref_node_xyz(ref_node, 1, node)) ||
+        (0.01 < ref_node_xyz(ref_node, 2, node) &&
+         0.99 > ref_node_xyz(ref_node, 2, node))) {
+      ref_node_xyz(ref_node, 0, node) += 1.0e-2;
+      ref_node_xyz(ref_node, 1, node) += 2.0e-2;
+      ref_node_xyz(ref_node, 2, node) += 4.0e-2;
+    }
+  }
   return REF_SUCCESS;
 }
 
@@ -184,7 +202,6 @@ int main(int argc, char *argv[]) {
 
   { /* bricks */
     REF_GRID from, to;
-    REF_INT node;
     char file[] = "ref_interp_test.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
@@ -198,18 +215,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&to, ref_mpi, file), "import");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(file), "test clean up");
 
-    each_ref_node_valid_node(ref_grid_node(to), node) {
-      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
-      }
-    }
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
@@ -245,7 +251,6 @@ int main(int argc, char *argv[]) {
 
   { /* odd split one brick */
     REF_GRID from, to;
-    REF_INT node;
     char even[] = "ref_interp_test_even.meshb";
     char odd[] = "ref_interp_test_odd.meshb";
     REF_INTERP ref_interp;
@@ -272,18 +277,7 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(odd), "test clean up");
     }
 
-    each_ref_node_valid_node(ref_grid_node(to), node) {
-      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
-      }
-    }
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
@@ -319,7 +313,6 @@ int main(int argc, char *argv[]) {
 
   { /* odd/even split bricks */
     REF_GRID from, to;
-    REF_INT node;
     char even[] = "ref_interp_test_even.meshb";
     char odd[] = "ref_interp_test_odd.meshb";
     REF_INTERP ref_interp;
@@ -347,18 +340,7 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(odd), "test clean up");
     }
 
-    each_ref_node_valid_node(ref_grid_node(to), node) {
-      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
-      }
-    }
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
@@ -388,6 +370,57 @@ int main(int argc, char *argv[]) {
     RAS(7.0e-16 > max_error, "large interp error");
     RSS(ref_interp_free(ref_interp), "interp free");
 
+    RSS(ref_grid_free(to), "free");
+    RSS(ref_grid_free(from), "free");
+  }
+
+  { /* interp scalar for odd/even split bricks */
+    REF_GRID from, to;
+    char even[] = "ref_interp_test_even.meshb";
+    char odd[] = "ref_interp_test_odd.meshb";
+    REF_INTERP ref_interp;
+    REF_DBL *from_scalar, *to_scalar;
+    REF_INT node, i;
+
+    if (ref_mpi_once(ref_mpi)) {
+      REF_GRID ref_grid;
+
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
+      RSS(ref_split_edge_pattern(ref_grid, 0, 2), "split");
+      RSS(ref_export_by_extension(ref_grid, even), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
+      RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
+      RSS(ref_export_by_extension(ref_grid, odd), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&from, ref_mpi, even), "import");
+    RSS(ref_part_by_extension(&to, ref_mpi, odd), "import");
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(0, remove(even), "test clean up");
+      REIS(0, remove(odd), "test clean up");
+    }
+
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
+
+    ref_malloc(from_scalar, 3 * ref_node_max(ref_grid_node(from)), REF_DBL);
+    ref_malloc_init(to_scalar, 3 * ref_node_max(ref_grid_node(to)), REF_DBL,
+                    0.0);
+
+    each_ref_node_valid_node(ref_grid_node(from), node) {
+      for (i = 0; i < 3; i++) {
+        from_scalar[i + 3 * node] = ref_node_xyz(ref_grid_node(from), i, node);
+      }
+    }
+
+    RSS(ref_interp_create(&ref_interp, from, to), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+
+    ref_free(to_scalar);
+    ref_free(from_scalar);
     RSS(ref_grid_free(to), "free");
     RSS(ref_grid_free(from), "free");
   }
