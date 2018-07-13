@@ -198,17 +198,17 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&to, ref_mpi, file), "import");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(file), "test clean up");
 
-    each_ref_node_valid_node(
-        ref_grid_node(to),
-        node) if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-      ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-      ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-      ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+    each_ref_node_valid_node(ref_grid_node(to), node) {
+      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
+        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
+        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
+        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+      }
     }
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
@@ -272,17 +272,17 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(odd), "test clean up");
     }
 
-    each_ref_node_valid_node(
-        ref_grid_node(to),
-        node) if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-      ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-      ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-      ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+    each_ref_node_valid_node(ref_grid_node(to), node) {
+      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
+        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
+        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
+        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+      }
     }
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
@@ -347,17 +347,17 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(odd), "test clean up");
     }
 
-    each_ref_node_valid_node(
-        ref_grid_node(to),
-        node) if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
-                  (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
-                   0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
-      ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
-      ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
-      ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+    each_ref_node_valid_node(ref_grid_node(to), node) {
+      if ((0.01 < ref_node_xyz(ref_grid_node(to), 0, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 0, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 1, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 1, node)) ||
+          (0.01 < ref_node_xyz(ref_grid_node(to), 2, node) &&
+           0.99 > ref_node_xyz(ref_grid_node(to), 2, node))) {
+        ref_node_xyz(ref_grid_node(to), 0, node) += 1.0e-2;
+        ref_node_xyz(ref_grid_node(to), 1, node) += 2.0e-2;
+        ref_node_xyz(ref_grid_node(to), 2, node) += 4.0e-2;
+      }
     }
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
