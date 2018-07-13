@@ -858,6 +858,111 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
+                             REF_DBL *from_scalar, REF_DBL *to_scalar) {
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_INT node, ibary, im;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT receptor, n_recept, donation, n_donor;
+  REF_DBL *recept_scalar, *donor_scalar, *recept_bary, *donor_bary;
+  REF_INT *donor_node, *donor_ret, *donor_cell;
+  REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      n_recept++;
+    }
+  }
+
+  ref_malloc(recept_bary, 4 * n_recept, REF_DBL);
+  ref_malloc(recept_cell, n_recept, REF_INT);
+  ref_malloc(recept_node, n_recept, REF_INT);
+  ref_malloc(recept_ret, n_recept, REF_INT);
+  ref_malloc(recept_proc, n_recept, REF_INT);
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+      for (ibary = 0; ibary < 4; ibary++) {
+        recept_bary[ibary + 4 * n_recept] = ref_interp->bary[ibary + 4 * node];
+      }
+      recept_proc[n_recept] = ref_interp->part[node];
+      recept_cell[n_recept] = ref_interp->cell[node];
+      recept_node[n_recept] = node;
+      recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+      n_recept++;
+    }
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_cell, 1, n_recept,
+                        (void **)(&donor_cell), &n_donor, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_ret, 1, n_recept,
+                        (void **)(&donor_ret), &n_donor, REF_INT_TYPE),
+      "blind send ret");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_node, 1, n_recept,
+                        (void **)(&donor_node), &n_donor, REF_INT_TYPE),
+      "blind send node");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_bary, 4, n_recept,
+                        (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
+      "blind send bary");
+
+  ref_free(recept_proc);
+  ref_free(recept_ret);
+  ref_free(recept_node);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  ref_malloc(donor_scalar, leading_dim * n_donor, REF_DBL);
+
+  for (donation = 0; donation < n_donor; donation++) {
+    RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
+        "node needs to be localized");
+    for (ibary = 0; ibary < 4; ibary++) {
+      for (im = 0; im < leading_dim; im++) {
+        donor_scalar[im + leading_dim * donation] = 0.0;
+        for (ibary = 0; ibary < 4; ibary++) {
+          donor_scalar[im + leading_dim * donation] +=
+              donor_bary[ibary + 4 * donation] *
+              from_scalar[im + leading_dim * nodes[ibary]];
+        }
+      }
+    }
+  }
+  ref_free(donor_cell);
+  ref_free(donor_bary);
+
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_scalar, leading_dim,
+                        n_donor, (void **)(&recept_scalar), &n_recept,
+                        REF_DBL_TYPE),
+      "blind send bary");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_node, 1, n_donor,
+                        (void **)(&recept_node), &n_recept, REF_INT_TYPE),
+      "blind send node");
+  ref_free(donor_scalar);
+  ref_free(donor_node);
+  ref_free(donor_ret);
+
+  for (receptor = 0; receptor < n_recept; receptor++) {
+    node = recept_node[receptor];
+    for (im = 0; im < leading_dim; im++) {
+      to_scalar[im + leading_dim * node] =
+          recept_scalar[im + leading_dim * receptor];
+    }
+  }
+
+  ref_free(recept_node);
+  ref_free(recept_scalar);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp, REF_DBL *min_bary) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);

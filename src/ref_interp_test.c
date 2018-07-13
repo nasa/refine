@@ -381,6 +381,7 @@ int main(int argc, char *argv[]) {
     REF_INTERP ref_interp;
     REF_DBL *from_scalar, *to_scalar;
     REF_INT node, i;
+    REF_DBL dist2;
 
     if (ref_mpi_once(ref_mpi)) {
       REF_GRID ref_grid;
@@ -418,6 +419,19 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
+
+    RSS(ref_interp_scalar(ref_interp, 3, from_scalar, to_scalar), "interp");
+
+    each_ref_node_valid_node(ref_grid_node(to), node) {
+      if (!ref_node_owned(ref_grid_node(to), node)) continue;
+      dist2 = 0.0;
+      for (i = 0; i < 3; i++) {
+        dist2 += pow(
+            to_scalar[i + 3 * node] - ref_node_xyz(ref_grid_node(to), i, node),
+            2);
+      }
+      RWDS(0.0, dist2, -1.0, "interp scalar xyz not matching");
+    }
 
     ref_free(to_scalar);
     ref_free(from_scalar);

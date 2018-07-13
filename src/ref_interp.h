@@ -67,6 +67,9 @@ REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
 
+REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
+                             REF_DBL *from_scalar, REF_DBL *to_scalar);
+
 REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp, REF_DBL *min_bary);
 REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error);
 REF_STATUS ref_interp_stats(REF_INTERP ref_interp);
