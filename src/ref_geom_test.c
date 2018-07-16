@@ -172,6 +172,7 @@ int main(int argc, char *argv[]) {
     } else {
       RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
     }
+    RSS(ref_grid_inspect(ref_grid), "report size");
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test_vol_geom.tec"), "geom export");
