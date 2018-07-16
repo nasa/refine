@@ -182,6 +182,9 @@ int main(int argc, char *argv[]) {
 
     ref_malloc(interp_scalar, ref_node_max(ref_grid_node(truth_grid)), REF_DBL);
 
+    RSS(ref_interp_scalar(ref_interp, 1, candidate_scalar, interp_scalar),
+        "interp scalar");
+
     ref_free(interp_scalar);
     RSS(ref_interp_free(ref_interp), "interp free");
     ref_free(candidate_scalar);
