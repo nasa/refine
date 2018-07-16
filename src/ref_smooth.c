@@ -831,15 +831,24 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   edge_nodes[0] = nodes[0];
   edge_nodes[1] = node;
   RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
-  RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &t0, &sense),
-      "get t0");
-  RSS(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_EDGE, &t_orig, &sense),
-      "get t_orig");
+  RSB(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &t0, &sense),
+      "get t0", {
+        ref_node_location(ref_node, nodes[0]);
+        ref_geom_tattle(ref_geom, nodes[0]);
+      });
+  RSB(ref_geom_cell_tuv(ref_grid, node, cell, REF_GEOM_EDGE, &t_orig, &sense),
+      "get t_orig", {
+        ref_node_location(ref_node, node);
+        ref_geom_tattle(ref_geom, node);
+      });
   edge_nodes[0] = nodes[1];
   edge_nodes[1] = node;
   RSS(ref_cell_with(edg, edge_nodes, &cell), "find nodes[0] edg cell");
-  RSS(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &t1, &sense),
-      "get t1");
+  RSB(ref_geom_cell_tuv(ref_grid, nodes[1], cell, REF_GEOM_EDGE, &t1, &sense),
+      "get t1", {
+        ref_node_location(ref_node, nodes[1]);
+        ref_geom_tattle(ref_geom, nodes[1]);
+      });
 
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
 
@@ -1290,9 +1299,8 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
     alpha *= 0.5;
   }
 
-  if (max_reductions <=
-      reductions) { /* used all the reductions, step is small, marginal gains
-                       remain */
+  if (max_reductions <= reductions) { /* used all the reductions, step is small,
+                                         marginal gains remain */
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
     ref_node_xyz(ref_node, 2, node) = xyz[2];
