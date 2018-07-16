@@ -2204,13 +2204,13 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         if (no_edge && ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, node)) {
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("geom edge missing edge");
         }
         if (no_face && ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, node)) {
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("geom edge missing tri or qua");
         }
       }
@@ -2219,7 +2219,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           printf("no face for geom\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("geom face missing tri or qua");
         }
       }
@@ -2228,7 +2228,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           printf("no geom for edge\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("geom edge missing for edg");
         }
       }
@@ -2237,7 +2237,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           printf("no geom for face\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("geom face missing tri or qua");
         }
       }
@@ -2255,7 +2255,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           if (found_too_many) printf("found too many\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("multiple geom edge away from geom node");
         }
       }
@@ -2274,7 +2274,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
           if (found_too_many) printf("found too many\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
-          RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+          RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
           THROW("multiple geom face away from geom edge");
         }
       }
@@ -2304,7 +2304,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
       RSS(ref_node_location(ref_node, ref_cell_c2n(ref_cell, 1, cell)), "loc");
       RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 0, cell)), "tatt");
       RSS(ref_geom_tattle(ref_geom, ref_cell_c2n(ref_cell, 1, cell)), "tatt");
-      RSS(ref_geom_tec(ref_grid, "ref_geom_typo_error.tec"), "geom tec");
+      RSS(ref_geom_tec(ref_grid, "ref_geom_topo_error.tec"), "geom tec");
     }
     REIS(1, ncell, "expect only one edge cell for two nodes");
   }

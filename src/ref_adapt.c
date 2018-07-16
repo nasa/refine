@@ -216,20 +216,20 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
     RSS(ref_collapse_pass(ref_grid), "col pass");
     ref_gather_blocking_frame(ref_grid, "collapse");
     if (ngeom > 0)
-      RSS(ref_geom_verify_topo(ref_grid), "collapse geom typo check");
+      RSS(ref_geom_verify_topo(ref_grid), "collapse geom topo check");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
   }
 
   RSS(ref_split_pass(ref_grid), "split pass");
   ref_gather_blocking_frame(ref_grid, "split");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom typo check");
+  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
 
   RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
   ref_gather_blocking_frame(ref_grid, "smooth");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "smooth geom typo check");
+  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
 
