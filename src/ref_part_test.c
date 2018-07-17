@@ -52,6 +52,7 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT ngeom;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
@@ -71,6 +72,14 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_gather_tec_part(import_grid, "ref_part_test.tec"), "part_viz");
     ref_mpi_stopwatch_stop(ref_mpi, "gather");
+
+    RSS(ref_gather_ngeom(ref_grid_node(import_grid), ref_grid_geom(import_grid),
+                         REF_GEOM_FACE, &ngeom),
+        "count ngeom");
+    if (ngeom > 0) {
+      RSS(ref_geom_tec_para_shard(import_grid, "ref_part_geom"), "shard geom");
+      ref_mpi_stopwatch_stop(ref_mpi, "geom");
+    }
 
     RSS(ref_grid_free(import_grid), "free");
 
