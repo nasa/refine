@@ -1,6 +1,4 @@
 
-test parallel
-
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
 
 tess
@@ -32,7 +30,6 @@ start geode support?
 rename ref_geom to ref_egads?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
-
 
 performance
   implement grid vertex Cuthill-Magee reordering
