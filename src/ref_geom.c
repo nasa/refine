@@ -3059,6 +3059,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   /* skip degenerate */
   if (0 == nnode || 0 == ntri) {
+    RSS(ref_dict_free(ref_dict_jump), "free dict");
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -3292,6 +3293,20 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   }
 
   fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
+                                   const char *root_filename) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  char filename[1024];
+  if (ref_mpi_para(ref_mpi)) {
+    sprintf(filename, "%s_%04d_%04d.tec", root_filename, ref_mpi_n(ref_mpi),
+            ref_mpi_rank(ref_mpi));
+  } else {
+    sprintf(filename, "%s.tec", root_filename);
+  }
+  RSS(ref_geom_tec(ref_grid, filename), "tec");
   return REF_SUCCESS;
 }
 
