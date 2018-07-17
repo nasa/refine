@@ -687,8 +687,14 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
       face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
       face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
       face_nodes[3] = face_nodes[0];
-      RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
-          "unable to find tets with face");
+      RSB(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
+          "found too many tets with face_nodes", {
+            printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
+                   face_nodes[1], face_nodes[2], face_nodes[3]);
+            ref_cavity_tec(ref_cavity, ref_grid,
+                           ref_cavity_f2n(ref_cavity, 0, face),
+                           "ref_cavity_error_too_many_tet.tec");
+          });
       if (REF_EMPTY == tet0) THROW("cavity tets missing");
       if (REF_EMPTY == tet1) {
         REF_INT tri;
