@@ -234,6 +234,7 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
+  /* don't remove a geometry CAD node */
   RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node1, REF_GEOM_NODE, &geom_node1),
       "node check");
   if (geom_node1) {
