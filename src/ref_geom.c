@@ -2346,6 +2346,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
   sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
   printf("%s\n", command);
+  fflush(stdout);
   system_status = system(command);
   REIS(0, system_status, "tetgen failed");
 
@@ -2520,6 +2521,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   sprintf(command, "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=180 > %s.out",
           surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
   printf("%s\n", command);
+  fflush(stdout);
   system_status = system(command);
   REIS(0, system_status, "aflr failed");
 
