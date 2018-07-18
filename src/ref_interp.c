@@ -1163,19 +1163,63 @@ REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename) {
   fclose(file);
   return REF_SUCCESS;
 }
+static int nq = 24;
+static double xq[] = { -0.570794257481696, -0.287617227554912, -0.570794257481696,
+		  -0.570794257481696, -0.918652082930777, 0.755956248792332,
+		  -0.918652082930777, -0.918652082930777, -0.355324219715449,
+		  -0.934027340853653, -0.355324219715449, -0.355324219715449,
+		  -0.872677996249965, -0.872677996249965, -0.872677996249965,
+		  -0.872677996249965, -0.872677996249965, -0.872677996249965,
+		  -0.460655337083368, -0.460655337083368, -0.460655337083368,
+		  0.206011329583298, 0.206011329583298, 0.206011329583298 };
+static double yq[] = { -0.570794257481696, -0.570794257481696, -0.287617227554912,
+		  -0.570794257481696, -0.918652082930777, -0.918652082930777,
+		  0.755956248792332, -0.918652082930777, -0.355324219715449,
+		  -0.355324219715449, -0.934027340853653, -0.355324219715449,
+		  -0.872677996249965, -0.460655337083368, -0.872677996249965,
+		  0.206011329583298, -0.460655337083368, 0.206011329583298,
+		  -0.872677996249965, -0.872677996249965, 0.206011329583298,
+		  -0.872677996249965, -0.872677996249965, -0.460655337083368 };
+static double zq[] = { -0.570794257481696, -0.570794257481696, -0.570794257481696,
+		  -0.287617227554912, -0.918652082930777, -0.918652082930777,
+		  -0.918652082930777, 0.755956248792332, -0.355324219715449,
+		  -0.355324219715449, -0.355324219715449, -0.934027340853653,
+		  -0.460655337083368, -0.872677996249965, 0.206011329583298,
+		  -0.872677996249965, 0.206011329583298, -0.460655337083368,
+		  -0.872677996249965, 0.206011329583298, -0.872677996249965,
+		  -0.460655337083368, -0.872677996249965, -0.872677996249965 };
+static double wq[] = { 0.053230333677557, 0.053230333677557, 0.053230333677557,
+		  0.053230333677557, 0.013436281407094, 0.013436281407094,
+		  0.013436281407094, 0.013436281407094, 0.073809575391540,
+		  0.073809575391540, 0.073809575391540, 0.073809575391540,
+		  0.064285714285714, 0.064285714285714, 0.064285714285714,
+		  0.064285714285714, 0.064285714285714, 0.064285714285714,
+		  0.064285714285714, 0.064285714285714, 0.064285714285714,
+		  0.064285714285714, 0.064285714285714, 0.064285714285714 };
 REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
                                 REF_DBL *truth, REF_INT norm_power, 
                                 REF_DBL *error) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT cell, cell_node, node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL volume;
+  REF_INT i, cell, cell_node, node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL diff, volume, bary[4];
+  REF_DBL canidate_at_gauss_point, truth_at_gauss_point;
   *error = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      node = nodes[cell_node];
-      *error += 0.25*volume*pow(ABS(canidate[node]-truth[node]), norm_power);
+    for(i=0;i<nq;i++) {
+      bary[1] = 0.5*(1.0+xq[i]); 
+      bary[2] = 0.5*(1.0+yq[i]); 
+      bary[3] = 0.5*(1.0+zq[i]); 
+      bary[0] = 1.0-bary[1]-bary[2]-bary[3];
+      canidate_at_gauss_point = 0.0; truth_at_gauss_point = 0.0;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        node = nodes[cell_node];
+        canidate_at_gauss_point += bary[cell_node]*canidate[node];
+        truth_at_gauss_point += bary[cell_node]*truth[node];
+      }
+      diff = ABS(canidate_at_gauss_point-truth_at_gauss_point);
+      *error +=  wq[i]*volume*pow(diff, norm_power);
     }
   }
   *error = pow( *error, 1.0/((REF_DBL)norm_power));
