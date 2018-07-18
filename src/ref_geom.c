@@ -2344,7 +2344,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
       "dbg surf");
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
-  sprintf(command, "tetgen -pYq1.0/0z %s > %s.out", smesh_name, smesh_name);
+  sprintf(command, "tetgen -pYq1.0/0z %s < /dev/null > %s.out", smesh_name,
+          smesh_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -2518,8 +2519,10 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   printf("tec360 ref_geom_test_aflr_surf.tec\n");
   RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"), "dbg surf");
   RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
-  sprintf(command, "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=180 > %s.out",
-          surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
+  sprintf(
+      command,
+      "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=180 < /dev/null > %s.out",
+      surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
