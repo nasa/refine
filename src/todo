@@ -82,6 +82,7 @@ robustness and metric conformity
  histogram history plots
  measure gradation and see if there is a connection to histogram convergence
  process complete test (early termination when no more likely progress)
+ surface self intrection test
  smarter adapt parameters
   adjustable parameters
   tighten limits near convergence
