@@ -1,5 +1,13 @@
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
+ compute
+ plot
+
+bound curvature
+make curvature gradation more along surface and less in volume
+ gradation on surface operator
+
+pack node and grid into ref_cavity
 
 tess
  k-tree to drive split for grid size gradation of JSM
