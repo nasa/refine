@@ -1163,3 +1163,22 @@ REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename) {
   fclose(file);
   return REF_SUCCESS;
 }
+REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
+                                REF_DBL *truth, REF_INT norm_power, 
+                                REF_DBL *error) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell, cell_node, node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL volume;
+  *error = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      node = nodes[cell_node];
+      *error += 0.25*volume*pow(ABS(canidate[node]-truth[node]), norm_power);
+    }
+  }
+  *error = pow( *error, 1.0/((REF_DBL)norm_power));
+  return REF_SUCCESS;
+}
+

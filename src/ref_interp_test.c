@@ -142,6 +142,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *truth_scalar, *candidate_scalar, *interp_scalar;
     REF_INTERP ref_interp;
     REF_INT p;
+    REF_DBL error;
     REIS(1, error_pos,
          "required args: --error truth_mesh.ext truth_solution.solb "
          "canidate_mesh.ext canidate_solution.solb norm-order\n");
@@ -184,6 +185,10 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_interp_scalar(ref_interp, 1, candidate_scalar, interp_scalar),
         "interp scalar");
+    RSS(ref_interp_integrate(truth_grid, interp_scalar, truth_scalar, p,
+                             &error),
+        "integrate error");
+    printf("error %e\n", error);
 
     ref_free(interp_scalar);
     RSS(ref_interp_free(ref_interp), "interp free");
