@@ -76,7 +76,7 @@ REF_STATUS ref_interp_stats(REF_INTERP ref_interp);
 
 REF_STATUS ref_interp_tec(REF_INTERP ref_interp, const char *filename);
 REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
-                                REF_DBL *truth, REF_INT norm_power, 
+                                REF_DBL *truth, REF_INT norm_power,
                                 REF_DBL *error);
 
 END_C_DECLORATION

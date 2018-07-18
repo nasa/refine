@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_integrate(truth_grid, interp_scalar, truth_scalar, p,
                              &error),
         "integrate error");
-    h = pow((REF_DBL)ref_node_n(ref_grid_node(candidate_grid)), (-1.0/3.0));
+    h = pow((REF_DBL)ref_node_n(ref_grid_node(candidate_grid)), (-1.0 / 3.0));
     printf("%e %e # error %d\n", h, error, p);
 
     ref_free(interp_scalar);
@@ -457,13 +457,14 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(grid), "test clean up");
     }
 
-    ref_malloc_init(candidate_scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                    3.0);
-    ref_malloc_init(truth_scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                    1.0);
+    ref_malloc_init(candidate_scalar, ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 3.0);
+    ref_malloc_init(truth_scalar, ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
     p = 2;
     RSS(ref_interp_integrate(ref_grid, candidate_scalar, truth_scalar, p,
-                             &error), "int");
+                             &error),
+        "int");
     RWDS(2.0, error, -1.0, "expected sqrt(2^2)");
 
     ref_free(truth_scalar);
