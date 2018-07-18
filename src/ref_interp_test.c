@@ -181,7 +181,9 @@ int main(int argc, char *argv[]) {
                              &error),
         "integrate error");
     h = pow((REF_DBL)ref_node_n(ref_grid_node(candidate_grid)), (-1.0 / 3.0));
-    printf("%e %e # error %d\n", h, error, p);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("%e %e # error %d\n", h, error, p);
+    }
 
     ref_free(interp_scalar);
     RSS(ref_interp_free(ref_interp), "interp free");

@@ -960,6 +960,8 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
+  RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
+
   return REF_SUCCESS;
 }
 
@@ -1201,14 +1203,20 @@ static double wq[] = {
 REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
                                 REF_DBL *truth, REF_INT norm_power,
                                 REF_DBL *error) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i, cell, cell_node, node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL diff, volume, bary[4];
+  REF_DBL diff, volume, total_volume, bary[4];
   REF_DBL canidate_at_gauss_point, truth_at_gauss_point;
+  REF_INT part;
   *error = 0.0;
+  total_volume = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "owner");
+    if (part != ref_mpi_rank(ref_mpi)) continue;
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    total_volume += volume;
     for (i = 0; i < nq; i++) {
       bary[1] = 0.5 * (1.0 + xq[i]);
       bary[2] = 0.5 * (1.0 + yq[i]);
@@ -1226,5 +1234,8 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
     }
   }
   *error = pow(*error, 1.0 / ((REF_DBL)norm_power));
+  RSS(ref_mpi_allsum(ref_mpi, error, 1, REF_DBL_TYPE), "all sum");
+  RSS(ref_mpi_allsum(ref_mpi, &total_volume, 1, REF_DBL_TYPE), "all sum");
+  *error /= total_volume;
   return REF_SUCCESS;
 }
