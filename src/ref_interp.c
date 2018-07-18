@@ -1219,7 +1219,7 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
         truth_at_gauss_point += bary[cell_node]*truth[node];
       }
       diff = ABS(canidate_at_gauss_point-truth_at_gauss_point);
-      *error +=  wq[i]*volume*pow(diff, norm_power);
+      *error +=  (6.0/8.0)*wq[i]*volume*pow(diff, norm_power);
     }
   }
   *error = pow( *error, 1.0/((REF_DBL)norm_power));

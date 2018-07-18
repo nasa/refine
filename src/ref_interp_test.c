@@ -440,6 +440,37 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(from), "free");
   }
 
+  { /* integrate scalar */
+    char grid[] = "ref_interp_test.meshb";
+    REF_GRID ref_grid;
+    REF_DBL *truth_scalar, *candidate_scalar;
+    REF_INT p;
+    REF_DBL error;
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_export_by_extension(ref_grid, grid), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, grid), "import");
+    if (ref_mpi_once(ref_mpi)) {
+      REIS(0, remove(grid), "test clean up");
+    }
+
+    ref_malloc_init(candidate_scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    3.0);
+    ref_malloc_init(truth_scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    1.0);
+    p = 2;
+    RSS(ref_interp_integrate(ref_grid, candidate_scalar, truth_scalar, p,
+                             &error), "int");
+    RWDS(2.0, error, -1.0, "expected sqrt(2^2)");
+
+    ref_free(truth_scalar);
+    ref_free(candidate_scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
