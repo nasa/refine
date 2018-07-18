@@ -153,25 +153,19 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
-    RSS(ref_mpi_stopwatch_start(ref_mpi), "sw start");
-
     RSS(ref_part_by_extension(&truth_grid, ref_mpi, argv[2]),
         "part truth grid in position 2");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "truth grid"), "lap");
     ref_malloc(truth_scalar, ref_node_max(ref_grid_node(truth_grid)), REF_DBL);
     RSS(ref_part_scalar(ref_grid_node(truth_grid), truth_scalar, argv[3]),
         "unable to load scalar in position 3");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "truth scalar"), "lap");
 
     RSS(ref_part_by_extension(&candidate_grid, ref_mpi, argv[4]),
         "part candidate grid in position 4");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "candidate grid"), "lap");
     ref_malloc(candidate_scalar, ref_node_max(ref_grid_node(candidate_grid)),
                REF_DBL);
     RSS(ref_part_scalar(ref_grid_node(candidate_grid), candidate_scalar,
                         argv[5]),
         "unable to load scalar in position 5");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "candidate scalar"), "lap");
 
     p = atoi(argv[6]);
     printf("norm order %d\n", p);
@@ -179,7 +173,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_create(&ref_interp, candidate_grid, truth_grid),
         "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "locate"), "sw start");
 
     ref_malloc(interp_scalar, ref_node_max(ref_grid_node(truth_grid)), REF_DBL);
 
