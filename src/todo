@@ -13,9 +13,8 @@ tess
  k-tree to drive split for grid size gradation of JSM
  add --tess acceptance test
 
-add utility to ref_interp to compute
-  \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
-
+ref_acceptance two dashes
+remove masabl
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 mixed element in refine/two
@@ -164,6 +163,9 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ add utility to ref_interp to compute
+  + \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
 
 + revolve cylinder (ONENODE) and pencil (periodic + degen) for "dragon"
  + database learns jump
