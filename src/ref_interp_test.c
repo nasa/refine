@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *truth_scalar, *candidate_scalar, *interp_scalar;
     REF_INTERP ref_interp;
     REF_INT p;
-    REF_DBL error;
+    REF_DBL h, error;
     REIS(1, error_pos,
          "required args: --error truth_mesh.ext truth_solution.solb "
          "canidate_mesh.ext canidate_solution.solb norm-order\n");
@@ -168,7 +168,6 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 5");
 
     p = atoi(argv[6]);
-    printf("norm order %d\n", p);
 
     RSS(ref_interp_create(&ref_interp, candidate_grid, truth_grid),
         "make interp");
@@ -181,7 +180,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_integrate(truth_grid, interp_scalar, truth_scalar, p,
                              &error),
         "integrate error");
-    printf("error %e\n", error);
+    h = pow((REF_DBL)ref_node_n(ref_grid_node(candidate_grid)), (-1.0/3.0));
+    printf("%e %e # error %d\n", h, error, p);
 
     ref_free(interp_scalar);
     RSS(ref_interp_free(ref_interp), "interp free");
