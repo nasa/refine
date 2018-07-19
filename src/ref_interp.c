@@ -1233,8 +1233,8 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
       *error += (6.0 / 8.0) * wq[i] * volume * pow(diff, norm_power);
     }
   }
-  *error = pow(*error, 1.0 / ((REF_DBL)norm_power));
   RSS(ref_mpi_allsum(ref_mpi, error, 1, REF_DBL_TYPE), "all sum");
+  *error = pow(*error, 1.0 / ((REF_DBL)norm_power));
   RSS(ref_mpi_allsum(ref_mpi, &total_volume, 1, REF_DBL_TYPE), "all sum");
   *error /= total_volume;
   return REF_SUCCESS;
