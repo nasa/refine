@@ -31,6 +31,6 @@ ${two}/ref_acceptance 1 cycle00.meshb
 adapt_cycle cycle00 cycle01 10
 
 cat cycle01.status
-../../../check.rb cycle01.status 0.2 2.0
+../../check.rb cycle01.status 0.2 2.0
 
 exit
