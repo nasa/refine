@@ -43,6 +43,8 @@
 #include "ref_gather.h"
 #include "ref_metric.h"
 
+#include "ref_malloc.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid;
@@ -50,6 +52,7 @@ int main(int argc, char *argv[]) {
   REF_INT masabl_pos;
   REF_INT ugawg_pos;
   REF_INT polar2d_pos;
+  REF_INT u_pos;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -123,6 +126,28 @@ int main(int argc, char *argv[]) {
       RSS(ref_metric_twod_node(ref_grid_node(ref_grid)), "2d");
 
     RSS(ref_gather_metric(ref_grid, argv[2]), "in");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "-u", &u_pos), REF_NOT_FOUND, "arg");
+
+  if (REF_EMPTY != u_pos) {
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar;
+    REIS(1, u_pos, "required args: -u id mesh.ext scalar.solb\n");
+    REIS(5, argc, "required args: -u id mesh.ext scalar.solb\n");
+
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      scalar[node] = 2.0 * pow(ref_node_xyz(ref_node, 0, node), 2) +
+                     2.0 * pow(ref_node_xyz(ref_node, 1, node), 2) +
+                     2.0 * pow(ref_node_xyz(ref_node, 2, node), 2);
+    }
+
+    RSS(ref_gather_scalar(ref_grid, 1, scalar, argv[4]), "in");
     return 0;
   }
 
