@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-bin=${HOME}/refine/strict/two
+bin=${HOME}/refine/strict/src
 
 ${bin}/ref_acceptance 2 ref_adapt_test.b8.ugrid
 
