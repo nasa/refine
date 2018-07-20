@@ -268,7 +268,11 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
     } else {
       RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
     }
-    RAS(volume > 0.0, "negative volume tet");
+    RAB(volume > 0.0, "negative volume tet", {
+      REF_INT cell_node;
+      each_ref_cell_cell_node(ref_cell, cell_node)
+          ref_node_location(ref_node, nodes[cell_node]);
+    });
   }
 
   return REF_SUCCESS;
