@@ -159,10 +159,12 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   ref_migrate_global(ref_migrate, lose) = REF_EMPTY;
 
   /* skip if the lose node has been agglomerated */
-  each_ref_adj_node_item_with_ref(
-      ref_migrate_parent_global(ref_migrate), keep, item,
-      global) if (global == ref_node_global(ref_node, lose)) return REF_SUCCESS;
-
+  each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), keep,
+                                  item, global) {
+    if (global == ref_node_global(ref_node, lose)) {
+      return REF_SUCCESS;
+    }
+  }
   /* update edges pointing to lose node */
   each_ref_adj_node_item_with_ref(conn_adj, lose, item, from_node) {
     RSS(ref_adj_remove(conn_adj, from_node, lose), "rm to lose");
@@ -204,7 +206,7 @@ static int ref_migrate_local_n(void *void_ref_migrate, int *ierr) {
   *ierr = 0;
 
   n = 0;
-  each_ref_migrate_node(ref_migrate, node) n++;
+  each_ref_migrate_node(ref_migrate, node) { n++; }
 
   return n;
 }
@@ -489,14 +491,16 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
     ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-    each_ref_migrate_node(ref_migrate, node) each_ref_adj_node_item_with_ref(
-        ref_migrate_parent_global(ref_migrate), node, item, global) {
-      part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
-      if (ref_mpi_rank(ref_mpi) != part) {
-        a_size[part]++;
-      } else {
-        RSS(ref_node_local(ref_node, global, &local), "g2l");
-        node_part[local] = migrate_part[node];
+    each_ref_migrate_node(ref_migrate, node) {
+      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+                                      node, item, global) {
+        part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
+        if (ref_mpi_rank(ref_mpi) != part) {
+          a_size[part]++;
+        } else {
+          RSS(ref_node_local(ref_node, global, &local), "g2l");
+          node_part[local] = migrate_part[node];
+        }
       }
     }
 
@@ -513,16 +517,19 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 
     ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
     a_next[0] = 0;
-    each_ref_mpi_worker(ref_mpi, part) a_next[part] =
-        a_next[part - 1] + a_size[part - 1];
+    each_ref_mpi_worker(ref_mpi, part) {
+      a_next[part] = a_next[part - 1] + a_size[part - 1];
+    }
 
-    each_ref_migrate_node(ref_migrate, node) each_ref_adj_node_item_with_ref(
-        ref_migrate_parent_global(ref_migrate), node, item, global) {
-      part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
-      if (ref_mpi_rank(ref_mpi) != part) {
-        a_parts[0 + 2 * a_next[part]] = global;
-        a_parts[1 + 2 * a_next[part]] = migrate_part[node];
-        a_next[part]++;
+    each_ref_migrate_node(ref_migrate, node) {
+      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+                                      node, item, global) {
+        part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
+        if (ref_mpi_rank(ref_mpi) != part) {
+          a_parts[0 + 2 * a_next[part]] = global;
+          a_parts[1 + 2 * a_next[part]] = migrate_part[node];
+          a_next[part]++;
+        }
       }
     }
 
@@ -599,7 +606,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     /* skip agglomeration stuff */
 
     n = 0;
-    each_ref_migrate_node(ref_migrate, node) n++;
+    each_ref_migrate_node(ref_migrate, node) { n++; }
 
     ref_malloc(partition_size, ref_mpi_n(ref_mpi), REF_INT);
     RSS(ref_mpi_allgather(ref_mpi, &n, partition_size, REF_INT_TYPE),
@@ -610,8 +617,9 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     ref_malloc(xadj, n + 1, PARM_INT);
 
     vtxdist[0] = 0;
-    each_ref_mpi_part(ref_mpi, proc) vtxdist[proc + 1] =
-        vtxdist[proc] + partition_size[proc];
+    each_ref_mpi_part(ref_mpi, proc) {
+      vtxdist[proc + 1] = vtxdist[proc] + partition_size[proc];
+    }
 
     shift = vtxdist[ref_mpi_rank(ref_mpi)];
     n = 0;
@@ -737,15 +745,16 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    if (ref_node_part(ref_node, node) < 0 ||
-        ref_node_part(ref_node, node) >= ref_mpi_n(ref_mpi)) {
-      printf("id %d node %d global %d part %d", ref_mpi_rank(ref_mpi), node,
-             ref_node_global(ref_node, node), ref_node_part(ref_node, node));
-      THROW("part out of range");
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      if (ref_node_part(ref_node, node) < 0 ||
+          ref_node_part(ref_node, node) >= ref_mpi_n(ref_mpi)) {
+        printf("id %d node %d global %d part %d", ref_mpi_rank(ref_mpi), node,
+               ref_node_global(ref_node, node), ref_node_part(ref_node, node));
+        THROW("part out of range");
+      }
+      a_size[ref_node_part(ref_node, node)]++;
     }
-    a_size[ref_node_part(ref_node, node)]++;
   }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
@@ -772,17 +781,18 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    part = ref_node_part(ref_node, node);
-    a_global[a_next[part]] = ref_node_global(ref_node, node);
-    for (i = 0; i < REF_NODE_REAL_PER; i++)
-      a_real[i + REF_NODE_REAL_PER * a_next[part]] =
-          ref_node_real(ref_node, i, node);
-    for (i = 0; i < ref_node_naux(ref_node); i++)
-      a_aux[i + ref_node_naux(ref_node) * a_next[part]] =
-          ref_node_aux(ref_node, i, node);
-    a_next[part]++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      for (i = 0; i < REF_NODE_REAL_PER; i++)
+        a_real[i + REF_NODE_REAL_PER * a_next[part]] =
+            ref_node_real(ref_node, i, node);
+      for (i = 0; i < ref_node_naux(ref_node); i++)
+        a_aux[i + ref_node_naux(ref_node) * a_next[part]] =
+            ref_node_aux(ref_node, i, node);
+      a_next[part]++;
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
@@ -843,8 +853,9 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       all_parts[node] = ref_node_part(ref_node, nodes[node]);
+    }
     RSS(ref_sort_unique_int(ref_cell_node_per(ref_cell), all_parts, &nunique,
                             unique_parts),
         "unique");
@@ -873,8 +884,9 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
       a_next[part - 1] + a_size[part - 1];
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       all_parts[node] = ref_node_part(ref_node, nodes[node]);
+    }
     RSS(ref_sort_unique_int(ref_cell_node_per(ref_cell), all_parts, &nunique,
                             unique_parts),
         "unique");
@@ -1040,14 +1052,15 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_tri(ref_grid)), "tri");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_qua(ref_grid)), "qua");
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    need_to_keep = REF_FALSE;
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell) need_to_keep =
-        (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
-    if (!need_to_keep) {
-      RSS(ref_node_remove_without_global(ref_node, node), "remove");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm geom");
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      need_to_keep = REF_FALSE;
+      each_ref_grid_ref_cell(ref_grid, group, ref_cell) need_to_keep =
+          (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
+      if (!need_to_keep) {
+        RSS(ref_node_remove_without_global(ref_node, node), "remove");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm geom");
+      }
     }
   }
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild");
