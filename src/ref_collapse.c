@@ -221,7 +221,9 @@ REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1)
 
 REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_BOOL *allowed) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_tri = ref_grid_tri(ref_grid);
+  REF_CELL ref_edg = ref_grid_edg(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT degree1;
   REF_INT ids1[3];
@@ -231,19 +233,30 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
   REF_INT id0, id1;
 
   REF_BOOL geom_node1;
+  REF_BOOL geom_edge1;
 
   *allowed = REF_FALSE;
 
   /* don't remove a geometry CAD node */
-  RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node1, REF_GEOM_NODE, &geom_node1),
+  RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_NODE, &geom_node1),
       "node check");
   if (geom_node1) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
 
+  /* geometery edge allowed if collapse is on edge */
+  RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_EDGE, &geom_edge1),
+      "edge check 1");
+  if (geom_edge1) {
+    RSS(ref_cell_has_side(ref_edg, node0, node1, allowed),
+        "allowed if a side of a triangle");
+    if (!(*allowed)) return REF_SUCCESS;
+    *allowed = REF_FALSE;
+  }
+
   /* ids1 is a list of degree1 face ids for node1 */
-  RXS(ref_cell_id_list_around(ref_cell, node1, 3, &degree1, ids1),
+  RXS(ref_cell_id_list_around(ref_tri, node1, 3, &degree1, ids1),
       REF_INCREASE_LIMIT, "count faceids");
 
   switch (degree1) {
@@ -251,23 +264,23 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
       *allowed = REF_FALSE;
       break;
     case 2: /* geometery edge allowed if collapse is on edge */
-      RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_COLLAPSE, &ncell,
+      RSS(ref_cell_list_with2(ref_tri, node0, node1, MAX_CELL_COLLAPSE, &ncell,
                               cell_to_collapse),
           "list");
       if (2 != ncell) {
         *allowed = REF_FALSE;
         break;
       }
-      RSS(ref_cell_nodes(ref_cell, cell_to_collapse[0], nodes), "nodes");
+      RSS(ref_cell_nodes(ref_tri, cell_to_collapse[0], nodes), "nodes");
       id0 = nodes[3];
-      RSS(ref_cell_nodes(ref_cell, cell_to_collapse[1], nodes), "nodes");
+      RSS(ref_cell_nodes(ref_tri, cell_to_collapse[1], nodes), "nodes");
       id1 = nodes[3];
       if ((id0 == ids1[0] && id1 == ids1[1]) ||
           (id1 == ids1[0] && id0 == ids1[1]))
         *allowed = REF_TRUE;
       break;
     case 1: /* geometry face allowed if on that face */
-      RSS(ref_cell_has_side(ref_cell, node0, node1, allowed),
+      RSS(ref_cell_has_side(ref_tri, node0, node1, allowed),
           "allowed if a side of a triangle");
       break;
     case 0: /* volume node always allowed */
