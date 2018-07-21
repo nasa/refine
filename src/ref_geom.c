@@ -2985,6 +2985,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == nodes[2]) {
       RSB(ref_dict_location(ref_dict, nodes[0], &local), "localize", {
         printf("edg %d %d id %d no edge geom\n", nodes[0], nodes[1], nodes[2]);
+        RSS(ref_node_location(ref_node, nodes[0]), "loc");
         RSS(ref_geom_tattle(ref_geom, nodes[0]), "tatt");
       });
       RSS(ref_geom_cell_tuv(ref_grid, nodes[0], cell, REF_GEOM_EDGE, &tvalue,
