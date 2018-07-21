@@ -70,47 +70,47 @@ typedef int REF_STATUS;
 
 #define RSS(fcn, msg)                                             \
   {                                                               \
-    REF_STATUS ref_private_macro_code;                            \
-    ref_private_macro_code = (fcn);                               \
-    if (REF_SUCCESS != ref_private_macro_code) {                  \
+    REF_STATUS ref_private_macro_code_rss;                        \
+    ref_private_macro_code_rss = (fcn);                           \
+    if (REF_SUCCESS != ref_private_macro_code_rss) {              \
       printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
-             ref_private_macro_code, (msg));                      \
-      return ref_private_macro_code;                              \
+             ref_private_macro_code_rss, (msg));                  \
+      return ref_private_macro_code_rss;                          \
     }                                                             \
   }
 
 #define RSE(fcn, msg)                                             \
   {                                                               \
-    REF_STATUS ref_private_macro_code;                            \
-    ref_private_macro_code = (fcn);                               \
-    if (REF_SUCCESS != ref_private_macro_code) {                  \
+    REF_STATUS ref_private_macro_code_rse;                        \
+    ref_private_macro_code_rse = (fcn);                           \
+    if (REF_SUCCESS != ref_private_macro_code_rse) {              \
       printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
-             ref_private_macro_code, (msg));                      \
+             ref_private_macro_code_rse, (msg));                  \
       return REF_EMPTY;                                           \
     }                                                             \
   }
 
 #define RSB(fcn, msg, block)                                      \
   {                                                               \
-    REF_STATUS ref_private_macro_code;                            \
-    ref_private_macro_code = (fcn);                               \
-    if (REF_SUCCESS != ref_private_macro_code) {                  \
+    REF_STATUS ref_private_macro_code_rsb;                        \
+    ref_private_macro_code_rsb = (fcn);                           \
+    if (REF_SUCCESS != ref_private_macro_code_rsb) {              \
       printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
-             ref_private_macro_code, (msg));                      \
+             ref_private_macro_code_rsb, (msg));                  \
       block;                                                      \
-      return ref_private_macro_code;                              \
+      return ref_private_macro_code_rsb;                          \
     }                                                             \
   }
 
 #define RXS(fcn, allowed_exception, msg)                          \
   {                                                               \
-    REF_STATUS ref_private_macro_code;                            \
-    ref_private_macro_code = (fcn);                               \
-    if (!(REF_SUCCESS == ref_private_macro_code ||                \
-          (allowed_exception) == ref_private_macro_code)) {       \
+    REF_STATUS ref_private_macro_code_rxs;                        \
+    ref_private_macro_code_rxs = (fcn);                           \
+    if (!(REF_SUCCESS == ref_private_macro_code_rxs ||            \
+          (allowed_exception) == ref_private_macro_code_rxs)) {   \
       printf("%s: %d: %s: %d %s\n", __FILE__, __LINE__, __func__, \
-             ref_private_macro_code, (msg));                      \
-      return ref_private_macro_code;                              \
+             ref_private_macro_code_rxs, (msg));                  \
+      return ref_private_macro_code_rxs;                          \
     }                                                             \
   }
 
@@ -134,48 +134,50 @@ typedef int REF_STATUS;
     }                            \
   }
 
-#define REIB(a, b, msg, block)                                               \
-  {                                                                          \
-    REF_INT ref_private_status_ai, ref_private_status_bi;                    \
-    ref_private_status_ai = (a);                                             \
-    ref_private_status_bi = (b);                                             \
-    if (ref_private_status_ai != ref_private_status_bi) {                    \
-      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__,     \
-             __func__, (msg), ref_private_status_ai, ref_private_status_bi); \
-      block;                                                                 \
-      return REF_FAILURE;                                                    \
-    }                                                                        \
+#define REIB(a, b, msg, block)                                           \
+  {                                                                      \
+    REF_INT ref_private_status_reib_ai, ref_private_status_reib_bi;      \
+    ref_private_status_reib_ai = (a);                                    \
+    ref_private_status_reib_bi = (b);                                    \
+    if (ref_private_status_reib_ai != ref_private_status_reib_bi) {      \
+      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__, \
+             __func__, (msg), ref_private_status_reib_ai,                \
+             ref_private_status_reib_bi);                                \
+      block;                                                             \
+      return REF_FAILURE;                                                \
+    }                                                                    \
   }
 
-#define REIS(a, b, msg)                                                      \
-  {                                                                          \
-    REF_INT ref_private_status_ai, ref_private_status_bi;                    \
-    ref_private_status_ai = (a);                                             \
-    ref_private_status_bi = (b);                                             \
-    if (ref_private_status_ai != ref_private_status_bi) {                    \
-      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__,     \
-             __func__, (msg), ref_private_status_ai, ref_private_status_bi); \
-      return REF_FAILURE;                                                    \
-    }                                                                        \
+#define REIS(a, b, msg)                                                  \
+  {                                                                      \
+    REF_INT ref_private_status_reis_ai, ref_private_status_reis_bi;      \
+    ref_private_status_reis_ai = (a);                                    \
+    ref_private_status_reis_bi = (b);                                    \
+    if (ref_private_status_reis_ai != ref_private_status_reis_bi) {      \
+      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__, \
+             __func__, (msg), ref_private_status_reis_ai,                \
+             ref_private_status_reis_bi);                                \
+      return REF_FAILURE;                                                \
+    }                                                                    \
   }
 
 #define RWDS(a, b, tol, msg)                                                  \
   {                                                                           \
-    REF_DBL ref_private_status_ad, ref_private_status_bd;                     \
-    REF_DBL ref_private_status_del, ref_private_status_allowed;               \
-    ref_private_status_ad = (a);                                              \
-    ref_private_status_bd = (b);                                              \
-    ref_private_status_del =                                                  \
-        ABS(ref_private_status_ad - ref_private_status_bd);                   \
-    ref_private_status_allowed = (tol);                                       \
+    REF_DBL ref_private_status_rwds_ad, ref_private_status_rwds_bd;           \
+    REF_DBL ref_private_status_rwds_del, ref_private_status_rwds_allowed;     \
+    ref_private_status_rwds_ad = (a);                                         \
+    ref_private_status_rwds_bd = (b);                                         \
+    ref_private_status_rwds_del =                                             \
+        ABS(ref_private_status_rwds_ad - ref_private_status_rwds_bd);         \
+    ref_private_status_rwds_allowed = (tol);                                  \
     if (tol < 0.0)                                                            \
-      ref_private_status_allowed =                                            \
-          MAX(1.0E-12, 1.0E-12 * ABS(ref_private_status_ad));                 \
-    if (ref_private_status_del > ref_private_status_allowed) {                \
+      ref_private_status_rwds_allowed =                                       \
+          MAX(1.0E-12, 1.0E-12 * ABS(ref_private_status_rwds_ad));            \
+    if (ref_private_status_rwds_del > ref_private_status_rwds_allowed) {      \
       printf("%s: %d: %s: %s\nexpected %.15e, was %.15e, %e outside of %e\n", \
-             __FILE__, __LINE__, __func__, (msg), ref_private_status_ad,      \
-             ref_private_status_bd, ref_private_status_del,                   \
-             ref_private_status_allowed);                                     \
+             __FILE__, __LINE__, __func__, (msg), ref_private_status_rwds_ad, \
+             ref_private_status_rwds_bd, ref_private_status_rwds_del,         \
+             ref_private_status_rwds_allowed);                                \
       return REF_FAILURE;                                                     \
     }                                                                         \
   }
@@ -227,13 +229,13 @@ typedef int REF_STATUS;
     return REF_FAILURE; \
   }
 
-#define RAISE(fcn)                               \
-  {                                              \
-    REF_STATUS ref_private_macro_code;           \
-    ref_private_macro_code = (fcn);              \
-    if (REF_SUCCESS != ref_private_macro_code) { \
-      return ref_private_macro_code;             \
-    }                                            \
+#define RAISE(fcn)                                     \
+  {                                                    \
+    REF_STATUS ref_private_macro_code_raise;           \
+    ref_private_macro_code_raise = (fcn);              \
+    if (REF_SUCCESS != ref_private_macro_code_raise) { \
+      return ref_private_macro_code_raise;             \
+    }                                                  \
   }
 
 #define SUPRESS_UNUSED_COMPILER_WARNING(ptr) \
