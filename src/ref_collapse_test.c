@@ -258,6 +258,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  { /* geometry: collapse of geom node? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+    REF_INT node, type, id;
+    REF_DBL params[2];
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
+    RSS(ref_cell_remove(ref_grid_tri(ref_grid), 0), "remove tri");
+
+    node = 1;
+    type = REF_GEOM_NODE;
+    id = 25;
+    RSS(ref_geom_add(ref_grid_geom(ref_grid), node, type, id, params),
+        "add node geom");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
+        "col geom");
+
+    REIS(REF_FALSE, allowed, "interior edge allowed?");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   { /* same normal after collapse? */
     REF_GRID ref_grid;
     REF_INT node;
