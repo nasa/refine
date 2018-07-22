@@ -284,6 +284,67 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  { /* geometry: collapse allowed on edge with jump? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_INT nodes[4];
+    REF_INT tri1, tri2;
+    REF_BOOL allowed;
+    REF_INT node, type, id;
+    REF_DBL params[2];
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
+    /*
+    2---4
+    |\ 1|\
+    |0\ | \   edge 20, 1-2
+    |  \|2 \  face all 10
+    0---1---5
+    */
+    nodes[0] = 1;
+    nodes[1] = 4, nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri1), "add tri");
+    nodes[0] = 1;
+    nodes[1] = 5, nodes[2] = 4;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri2), "add tri");
+
+    node = 1;
+    type = REF_GEOM_EDGE;
+    id = 20;
+    params[0] = 1.0;
+    RSS(ref_geom_add(ref_grid_geom(ref_grid), node, type, id, params),
+        "add node geom");
+    node = 2;
+    type = REF_GEOM_EDGE;
+    id = 20;
+    params[0] = 2.0;
+    RSS(ref_geom_add(ref_grid_geom(ref_grid), node, type, id, params),
+        "add node geom");
+    /* add jump? */
+
+    node0 = 1;
+    node1 = 4;
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
+        "col geom");
+    REIS(REF_TRUE, allowed, "pull to edge?");
+
+    node0 = 4;
+    node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
+        "col geom");
+    REIS(REF_FALSE, allowed, "pull off edge?");
+
+    node0 = 1;
+    node1 = 2;
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
+        "col geom");
+    REIS(REF_TRUE, allowed, "parallel along geom edge?");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   { /* same normal after collapse? */
     REF_GRID ref_grid;
     REF_INT node;
