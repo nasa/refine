@@ -1,7 +1,14 @@
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
- compute
- plot
+ parametric tri center (average of nodes)
+ inverse eval of tri center needed?
+ add normal dev to gather plots (swap out age?)
+ normal deviation
+ min normal deviation
+ adapt limit
+ limit collapse
+ limit move
+ small failing case?
 
 bound curvature
 make curvature gradation more along surface and less in volume
