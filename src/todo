@@ -1,9 +1,9 @@
 
 continuous geometry / discrete triangle normal deviation limit in ref_adapt
- parametric tri center (average of nodes)
+ + parametric tri center (average of nodes)
  inverse eval of tri center needed?
+ normal deviation (w/ uv_area_sign)
  add normal dev to gather plots (swap out age?)
- normal deviation
  min normal deviation
  adapt limit
  limit collapse

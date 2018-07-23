@@ -1,4 +1,5 @@
 
+
 /* Copyright 2014 United States Government as represented by the
  * Administrator of the National Aeronautics and Space
  * Administration. No copyright is claimed in the United States under
@@ -2083,6 +2084,25 @@ REF_STATUS ref_geom_rsn(REF_GEOM ref_geom, REF_INT geom, REF_DBL *r, REF_DBL *s,
   REF_DBL kr, ks;
   RSS(ref_geom_curvature(ref_geom, geom, &kr, r, &ks, s), "eval face");
   ref_math_cross_product(r, s, n);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL node_uv[2];
+  REF_INT sens;
+  RSS(ref_cell_nodes(ref_cell, cell, nodes), "tri nodes");
+  uv[0] = 0.0;
+  uv[1] = 0.0;
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    RSS(ref_geom_cell_tuv(ref_grid, nodes[cell_node], cell, REF_GEOM_FACE,
+                          node_uv, &sens),
+        "cell node uv");
+    uv[0] += (1.0 / 3.0) * node_uv[0];
+    uv[1] += (1.0 / 3.0) * node_uv[1];
+  }
+
   return REF_SUCCESS;
 }
 
