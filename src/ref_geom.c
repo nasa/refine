@@ -1756,32 +1756,46 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 /*
-   [x_t,y_t,z_t] edge
-   [x_tt,y_tt,z_tt]
-   [x_u,y_u,z_u] [x_v,y_v,z_v] face
-   [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
+  [x_t,y_t,z_t] edge
+  [x_tt,y_tt,z_tt]
+  [x_u,y_u,z_u] [x_v,y_v,z_v] face
+  [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
 */
 REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
                          REF_DBL *dxyz_dtuv) {
+  REF_INT type, id, i;
+  REF_DBL params[2];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
+  params[0] = 0.0;
+  params[1] = 0.0;
+  type = ref_geom_type(ref_geom, geom);
+  id = ref_geom_id(ref_geom, geom);
+
+  for (i = 0; i < type; i++) {
+  params[i] = ref_geom_param(ref_geom, i, geom);
+}
+  RSS(ref_geom_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv), "eval at");
+  return REF_SUCCESS;
+}
+
+  REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+    REF_DBL *params, REF_DBL *xyz,
+                         REF_DBL *dxyz_dtuv) {
 #ifdef HAVE_EGADS
   double eval[18];
-  double params[2];
   REF_INT i;
   ego *nodes, *edges, *faces;
   ego object;
   int status;
-  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
-  params[0] = 0.0;
-  params[1] = 0.0;
+
   object = (ego)NULL;
-  switch (ref_geom_type(ref_geom, geom)) {
+  switch (type) {
     case (REF_GEOM_NODE):
       RNS(ref_geom->nodes, "nodes not loaded");
-      if (ref_geom_id(ref_geom, geom) < 1 ||
-          ref_geom_id(ref_geom, geom) > ref_geom->nnode)
+      if (id < 1 || id > ref_geom->nnode)
         return REF_INVALID;
       nodes = (ego *)(ref_geom->nodes);
-      object = nodes[ref_geom_id(ref_geom, geom) - 1];
+      object = nodes[id - 1];
       {
         ego ref, *pchldrn;
         int oclass, mtype, nchild, *psens;
@@ -1794,22 +1808,19 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
       break;
     case (REF_GEOM_EDGE):
       RNS(ref_geom->edges, "edges not loaded");
-      if (ref_geom_id(ref_geom, geom) < 1 ||
-          ref_geom_id(ref_geom, geom) > ref_geom->nedge)
+      if (id < 1 ||
+          id > ref_geom->nedge)
         return REF_INVALID;
       edges = (ego *)(ref_geom->edges);
-      object = edges[ref_geom_id(ref_geom, geom) - 1];
-      params[0] = ref_geom_param(ref_geom, 0, geom);
+      object = edges[id - 1];
       break;
     case (REF_GEOM_FACE):
       RNS(ref_geom->faces, "faces not loaded");
-      if (ref_geom_id(ref_geom, geom) < 1 ||
-          ref_geom_id(ref_geom, geom) > ref_geom->nface)
+      if (id < 1 ||
+          id > ref_geom->nface)
         return REF_INVALID;
       faces = (ego *)(ref_geom->faces);
-      object = faces[ref_geom_id(ref_geom, geom) - 1];
-      params[0] = ref_geom_param(ref_geom, 0, geom);
-      params[1] = ref_geom_param(ref_geom, 1, geom);
+      object = faces[id - 1];
       break;
     default:
       RSS(REF_IMPLEMENT, "unknown geom");
@@ -1820,10 +1831,9 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
     double trange[2];
-    printf("geom %d type %d id %d\n", geom, ref_geom_type(ref_geom, geom),
-           ref_geom_id(ref_geom, geom));
-    if (ref_geom_type(ref_geom, geom) > 0) printf("param[0] = %f\n", params[0]);
-    if (ref_geom_type(ref_geom, geom) > 1) printf("param[1] = %f\n", params[1]);
+    printf("type %d id %d\n", type, id);
+    if (type > 0) printf("param[0] = %f\n", params[0]);
+    if (type > 1) printf("param[1] = %f\n", params[1]);
     REIS(EGADS_SUCCESS,
          EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
                         &pchldrn, &psens),
@@ -1836,13 +1846,15 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   xyz[2] = eval[2];
   if (NULL != dxyz_dtuv) {
     for (i = 0; i < 6; i++) dxyz_dtuv[i] = eval[3 + i];
-    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom))
+    if (REF_GEOM_FACE == type)
       for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = eval[9 + i];
   }
   return REF_SUCCESS;
 #else
-  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
+  printf("type %d id %d\n",type, id);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(params);
   xyz[0] = 0.0;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
