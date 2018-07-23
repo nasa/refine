@@ -2101,11 +2101,26 @@ REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_contact_dot(REF_GRID ref_grid, REF_INT cell,
-                                    REF_DBL *dot_product) {
+REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT cell,
+                                       REF_DBL *dot_product) {
   REF_DBL uv[2];
+  REF_DBL tri_normal[3];
+  REF_DBL r[3], s[3], n[3], area_sign;
+  REF_INT id, nodes[REF_CELL_MAX_SIZE_PER]; 
+
   *dot_product = -2.0;
+
+  RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "tri nodes");
+  id = nodes[ref_cell_node_per(ref_grid_tri(ref_grid))];
+  RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
+      "tri normal");
+
   RSS(ref_geom_tri_centroid(ref_grid, cell, uv), "tri cent");
+  RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n), "rsn");
+  RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
+
+  *dot_product = area_sign * ref_math_dot(n, tri_normal);
+
   return REF_SUCCESS;
 }
 
