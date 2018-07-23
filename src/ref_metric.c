@@ -680,7 +680,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
 
   each_ref_geom_face(ref_geom, geom) {
     RSS(ref_geom_face_curvature(ref_geom, ref_geom_id(ref_geom, geom),
-                                &(ref_geom_param(ref_geom,0,geom)),&kr, r, &ks, s), "curve");
+                                &(ref_geom_param(ref_geom, 0, geom)), &kr, r,
+                                &ks, s),
+        "curve");
     kr = ABS(kr);
     ks = ABS(ks);
     kr = MAX(kr, curvature_ratio * ks);

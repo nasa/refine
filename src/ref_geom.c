@@ -1772,15 +1772,14 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   id = ref_geom_id(ref_geom, geom);
 
   for (i = 0; i < type; i++) {
-  params[i] = ref_geom_param(ref_geom, i, geom);
-}
+    params[i] = ref_geom_param(ref_geom, i, geom);
+  }
   RSS(ref_geom_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv), "eval at");
   return REF_SUCCESS;
 }
 
-  REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-    REF_DBL *params, REF_DBL *xyz,
-                         REF_DBL *dxyz_dtuv) {
+REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                            REF_DBL *params, REF_DBL *xyz, REF_DBL *dxyz_dtuv) {
 #ifdef HAVE_EGADS
   double eval[18];
   REF_INT i;
@@ -1792,8 +1791,7 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   switch (type) {
     case (REF_GEOM_NODE):
       RNS(ref_geom->nodes, "nodes not loaded");
-      if (id < 1 || id > ref_geom->nnode)
-        return REF_INVALID;
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
       nodes = (ego *)(ref_geom->nodes);
       object = nodes[id - 1];
       {
@@ -1808,17 +1806,13 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
       break;
     case (REF_GEOM_EDGE):
       RNS(ref_geom->edges, "edges not loaded");
-      if (id < 1 ||
-          id > ref_geom->nedge)
-        return REF_INVALID;
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
       edges = (ego *)(ref_geom->edges);
       object = edges[id - 1];
       break;
     case (REF_GEOM_FACE):
       RNS(ref_geom->faces, "faces not loaded");
-      if (id < 1 ||
-          id > ref_geom->nface)
-        return REF_INVALID;
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
       faces = (ego *)(ref_geom->faces);
       object = faces[id - 1];
       break;
@@ -1852,7 +1846,7 @@ REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
   return REF_SUCCESS;
 #else
   printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
-  printf("type %d id %d\n",type, id);
+  printf("type %d id %d\n", type, id);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(params);
   xyz[0] = 0.0;
@@ -1976,9 +1970,9 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
-                                   REF_DBL *kr,
-                                   REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
+REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid,
+                                   REF_DBL *uv, REF_DBL *kr, REF_DBL *r,
+                                   REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_EGADS
   double curvature[8];
   ego *faces;
@@ -2000,7 +1994,8 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *u
     REF_DBL shift = 1.0e-2;
     params[0] = uv[0];
     params[1] = uv[1];
-    RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_duv), "eval at");
+    RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_duv),
+        "eval at");
     du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
     dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
     REIS(EGADS_SUCCESS,
@@ -2027,7 +2022,7 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *u
   s[2] = curvature[7];
   return REF_SUCCESS;
 #else
-  printf("curvature 0, 0: No EGADS linked for %s\n",  __func__);
+  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
   printf("%d %f %f\n", faceid, uv[0], uv[1]);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   *kr = 0.0;
@@ -2079,10 +2074,10 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
 }
 
 REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
-                             REF_DBL *r, REF_DBL *s,
-                        REF_DBL *n) {
+                             REF_DBL *r, REF_DBL *s, REF_DBL *n) {
   REF_DBL kr, ks;
-  RSS(ref_geom_face_curvature(ref_geom, faceid, uv, &kr, r, &ks, s), "eval face");
+  RSS(ref_geom_face_curvature(ref_geom, faceid, uv, &kr, r, &ks, s),
+      "eval face");
   ref_math_cross_product(r, s, n);
   return REF_SUCCESS;
 }
