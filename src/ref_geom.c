@@ -1976,45 +1976,31 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_geom_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
-                              REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
+REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
+                                   REF_DBL *kr,
+                                   REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_EGADS
   double curvature[8];
-  double params[2];
   ego *faces;
   ego object;
   int egads_status;
-  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
-  params[0] = 0.0;
-  params[1] = 0.0;
-  object = (ego)NULL;
-  switch (ref_geom_type(ref_geom, geom)) {
-    case (REF_GEOM_NODE):
-      RSS(REF_IMPLEMENT, "geom node");
-      break;
-    case (REF_GEOM_EDGE):
-      RSS(REF_IMPLEMENT, "geom edge");
-      break;
-    case (REF_GEOM_FACE):
-      RNS(ref_geom->faces, "faces not loaded");
-      faces = (ego *)(ref_geom->faces);
-      object = faces[ref_geom_id(ref_geom, geom) - 1];
-      params[0] = ref_geom_param(ref_geom, 0, geom);
-      params[1] = ref_geom_param(ref_geom, 1, geom);
-      break;
-    default:
-      RSS(REF_IMPLEMENT, "unknown geom");
-  }
+  RNS(ref_geom->faces, "faces not loaded");
+  RAS(1 <= faceid && faceid <= ref_geom->nface, "faceid out of range");
+  faces = (ego *)(ref_geom->faces);
+  object = faces[faceid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
-  egads_status = EG_curvature(object, params, curvature);
+  egads_status = EG_curvature(object, uv, curvature);
   if (EGADS_DEGEN == egads_status) {
     REF_DBL xyz[3], dxyz_duv[15], du, dv;
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
     double uv_range[4];
+    double params[2];
     REF_DBL shift = 1.0e-2;
-    RSS(ref_geom_eval(ref_geom, geom, xyz, dxyz_duv), "eval");
+    params[0] = uv[0];
+    params[1] = uv[1];
+    RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_duv), "eval at");
     du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
     dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
     REIS(EGADS_SUCCESS,
@@ -2041,8 +2027,9 @@ REF_STATUS ref_geom_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
   s[2] = curvature[7];
   return REF_SUCCESS;
 #else
-  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
-  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
+  printf("curvature 0, 0: No EGADS linked for %s\n",  __func__);
+  printf("%d %f %f\n", faceid, uv[0], uv[1]);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   *kr = 0.0;
   r[0] = 1.0;
   r[1] = 0.0;
@@ -2091,10 +2078,11 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_rsn(REF_GEOM ref_geom, REF_INT geom, REF_DBL *r, REF_DBL *s,
+REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
+                             REF_DBL *r, REF_DBL *s,
                         REF_DBL *n) {
   REF_DBL kr, ks;
-  RSS(ref_geom_curvature(ref_geom, geom, &kr, r, &ks, s), "eval face");
+  RSS(ref_geom_face_curvature(ref_geom, faceid, uv, &kr, r, &ks, s), "eval face");
   ref_math_cross_product(r, s, n);
   return REF_SUCCESS;
 }
@@ -3191,7 +3179,7 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
   REF_INT nnode, ntri;
-  REF_DBL r[3], s[3], n[3];
+  REF_DBL r[3], s[3], n[3], uv[2];
   REF_DBL area_sign;
 
   RSS(ref_dict_create(&ref_dict), "create dict");
@@ -3224,7 +3212,9 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
     RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "not found");
-    RSS(ref_geom_rsn(ref_geom, geom, r, s, n), "rsn");
+    uv[0] = ref_geom_param(ref_geom, 0, geom);
+    uv[1] = ref_geom_param(ref_geom, 1, geom);
+    RSS(ref_geom_face_rsn(ref_geom, id, uv, r, s, n), "rsn");
     RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
@@ -3255,7 +3245,7 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
   REF_INT nnode, ntri;
-  REF_DBL kr, r[3], ks, s[3];
+  REF_DBL kr, r[3], ks, s[3], uv[2];
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -3287,7 +3277,9 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
     RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "not found");
-    RSS(ref_geom_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    uv[0] = ref_geom_param(ref_geom, 0, geom);
+    uv[1] = ref_geom_param(ref_geom, 1, geom);
+    RSS(ref_geom_face_curvature(ref_geom, id, uv, &kr, r, &ks, s), "curve");
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
             ref_node_xyz(ref_node, 2, node), ABS(kr), ABS(ks), 0.0);

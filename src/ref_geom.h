@@ -196,15 +196,17 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                             REF_DBL *tuv, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
 REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                  REF_DBL *xyz, REF_DBL *param);
-REF_STATUS ref_geom_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
-                              REF_DBL *r, REF_DBL *ks, REF_DBL *s);
-REF_STATUS ref_geom_rsn(REF_GEOM ref_geom, REF_INT geom, REF_DBL *r, REF_DBL *s,
-                        REF_DBL *n);
+REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
+                                   REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                   REF_DBL *s);
+REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
+                             REF_DBL *r,
+                             REF_DBL *s, REF_DBL *n);
 REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
                            REF_DBL *drsduv);
 REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv);
 REF_STATUS ref_geom_tri_contact_dot(REF_GRID ref_grid, REF_INT cell,
-                                       REF_DBL *dot_product);
+                                    REF_DBL *dot_product);
 
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
