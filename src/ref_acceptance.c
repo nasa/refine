@@ -132,7 +132,6 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-u", &u_pos), REF_NOT_FOUND, "arg");
 
   if (REF_EMPTY != u_pos) {
-    REF_NODE ref_node;
     REF_INT node;
     REF_DBL *scalar;
     REIS(1, u_pos, "required args: -u id mesh.ext scalar.solb\n");
