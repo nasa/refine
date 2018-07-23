@@ -173,9 +173,15 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
           printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__, __func__,
                  first + i, xyzm[5 + dim * i]);
         }
-        fprintf(file, "%.15e %.15e %.15e %.0f %.0f\n", xyzm[0 + dim * i],
-                xyzm[1 + dim * i], xyzm[2 + dim * i], xyzm[3 + dim * i],
-                xyzm[4 + dim * i]);
+        if (NULL == scalar) {
+          fprintf(file, "%.15e %.15e %.15e %.0f %.0f\n", xyzm[0 + dim * i],
+                  xyzm[1 + dim * i], xyzm[2 + dim * i], xyzm[3 + dim * i],
+                  xyzm[4 + dim * i]);
+        } else {
+          fprintf(file, "%.15e %.15e %.15e %.0f %.8f\n", xyzm[0 + dim * i],
+                  xyzm[1 + dim * i], xyzm[2 + dim * i], xyzm[3 + dim * i],
+                  xyzm[4 + dim * i]);
+        }
       }
   }
 
@@ -621,12 +627,23 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_GATHER ref_gather = ref_grid_gather(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell, *l2c;
-  REF_DBL *norm_dev;
+  REF_DBL *norm_dev, dot;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
   norm_dev = NULL;
+  if (ref_geom_model_loaded(ref_geom)) {
+    ref_malloc_init(norm_dev, ref_node_max(ref_node), REF_DBL, 2.0);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_geom_tri_norm_deviation(ref_grid, cell, &dot), "norm dev");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        norm_dev[nodes[cell_node]] = MIN(norm_dev[nodes[cell_node]],dot);
+      }
+    }
+  }
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
