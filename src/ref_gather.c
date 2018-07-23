@@ -79,7 +79,8 @@ static REF_STATUS ref_gather_ncell_below_quality(REF_NODE ref_node,
 }
 
 static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
-                                           REF_INT *l2c, FILE *file) {
+                                           REF_INT *l2c, REF_DBL *scalar,
+                                           FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -141,7 +142,11 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
         local_xyzm[1 + dim * i] = ref_node_xyz(ref_node, 1, local);
         local_xyzm[2 + dim * i] = ref_node_xyz(ref_node, 2, local);
         local_xyzm[3 + dim * i] = (REF_DBL)ref_node_part(ref_node, local);
-        local_xyzm[4 + dim * i] = (REF_DBL)ref_node_age(ref_node, local);
+        if (NULL == scalar) {
+          local_xyzm[4 + dim * i] = (REF_DBL)ref_node_age(ref_node, local);
+        } else {
+          local_xyzm[4 + dim * i] = scalar[local];
+        }
         local_xyzm[5 + dim * i] = 1.0;
       } else {
         local_xyzm[0 + dim * i] = 0.0;
@@ -648,7 +653,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ref_gather->file),
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->file),
       "nodes");
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->file),
       "t");
@@ -675,7 +680,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                 ref_gather->time);
       }
     }
-    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ref_gather->file),
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->file),
         "nodes");
     if (0 == ntet) {
       if (ref_grid_once(ref_grid)) fprintf(ref_gather->file, " 1 1 1 1\n");
@@ -720,7 +725,7 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
         nnode, ncell, "point", "fetriangle");
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, file), "nodes");
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, file), "nodes");
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "nodes");
 
   if (ref_grid_once(ref_grid)) fclose(file);
