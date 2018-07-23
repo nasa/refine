@@ -2075,10 +2075,12 @@ REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
 
 REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
                              REF_DBL *r, REF_DBL *s, REF_DBL *n) {
-  REF_DBL kr, ks;
-  RSS(ref_geom_face_curvature(ref_geom, faceid, uv, &kr, r, &ks, s),
-      "eval face");
-  ref_math_cross_product(r, s, n);
+  REF_DBL xyz[3];
+  REF_DBL dxyz_dtuv[15];
+  REF_DBL drsduv[4];
+  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_dtuv), 
+      "eval");
+  RSS( ref_geom_uv_rsn(dxyz_dtuv, r, s, n, drsduv), "deriv to rsn");
   return REF_SUCCESS;
 }
 
