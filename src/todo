@@ -1,10 +1,11 @@
 
-continuous geometry / discrete triangle normal deviation limit in ref_adapt
+continuous geometry / discrete triangle normal deviation (contact dot)
  + parametric tri center (average of nodes)
  inverse eval of tri center needed?
- normal deviation (w/ uv_area_sign)
- add normal dev to gather plots (swap out age?)
- min normal deviation
+ refactor curvature and rsn to use id+uv not geom
+ contact dot (normal deviation) (w/ uv_area_sign)
+ add contact dot to gather plots (swap out age?)
+ min contact dot
  adapt limit
  limit collapse
  limit move

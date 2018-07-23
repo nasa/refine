@@ -2106,6 +2106,14 @@ REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_tri_contact_dot(REF_GRID ref_grid, REF_INT cell,
+                                    REF_DBL *dot_product) {
+  REF_DBL uv[2];
+  *dot_product = -2.0;
+  RSS(ref_geom_tri_centroid(ref_grid, cell, uv), "tri cent");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
