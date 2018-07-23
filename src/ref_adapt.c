@@ -101,6 +101,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL det, complexity;
   REF_DBL quality, min_quality;
+  REF_DBL dot, min_dot;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
   REF_DBL target;
@@ -178,10 +179,23 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   RSS(ref_mpi_max(ref_mpi, &degree, &max_degree, REF_INT_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_degree, 1, REF_INT_TYPE), "min");
 
+  min_dot = 2.0;
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      RSS(ref_geom_tri_norm_deviation(ref_grid, cell, &dot), "norm dev");
+      min_dot = MIN(min_dot, dot);
+    }
+  }
+  dot = min_dot;
+  RSS(ref_mpi_min(ref_mpi, &dot, &min_dot, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &min_dot, 1, REF_DBL_TYPE), "min");
+
   target = MAX(MIN(0.1, min_quality), 1.0e-3);
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f max cell degree %d\n", target, max_degree);
+    printf("quality floor %6.4f max cell degree %d min dot %7.4f\n", target,
+           max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
   }

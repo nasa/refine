@@ -5,7 +5,7 @@ continuous geometry / discrete triangle normal deviation
  + refactor curvature and rsn to use id+uv not geom
  + normal deviation (w/ uv_area_sign)
  + normal deviation to gather plots (swap out age?)
- report min normal deviation
+ + report min normal deviation
  adapt limit
  limit collapse
  limit move
