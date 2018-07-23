@@ -640,7 +640,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_geom_tri_norm_deviation(ref_grid, cell, &dot), "norm dev");
       each_ref_cell_cell_node(ref_cell, cell_node) {
-        norm_dev[nodes[cell_node]] = MIN(norm_dev[nodes[cell_node]],dot);
+        norm_dev[nodes[cell_node]] = MIN(norm_dev[nodes[cell_node]], dot);
       }
     }
   }

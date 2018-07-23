@@ -2078,9 +2078,9 @@ REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
   REF_DBL xyz[3];
   REF_DBL dxyz_dtuv[15];
   REF_DBL drsduv[4];
-  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_dtuv), 
+  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_dtuv),
       "eval");
-  RSS( ref_geom_uv_rsn(dxyz_dtuv, r, s, n, drsduv), "deriv to rsn");
+  RSS(ref_geom_uv_rsn(dxyz_dtuv, r, s, n, drsduv), "deriv to rsn");
   return REF_SUCCESS;
 }
 
@@ -2108,7 +2108,7 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT cell,
   REF_DBL uv[2];
   REF_DBL tri_normal[3];
   REF_DBL r[3], s[3], n[3], area_sign;
-  REF_INT id, nodes[REF_CELL_MAX_SIZE_PER]; 
+  REF_INT id, nodes[REF_CELL_MAX_SIZE_PER];
 
   *dot_product = -2.0;
 
