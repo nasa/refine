@@ -2114,6 +2114,7 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT cell,
   id = nodes[ref_cell_node_per(ref_grid_tri(ref_grid))];
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
       "tri normal");
+  RSS(ref_math_normalize(tri_normal), "normalize");
 
   RSS(ref_geom_tri_centroid(ref_grid, cell, uv), "tri cent");
   RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n), "rsn");
