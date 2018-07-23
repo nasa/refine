@@ -622,8 +622,11 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT nnode, ncell, *l2c;
+  REF_DBL *norm_dev;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
+
+  norm_dev = NULL;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -653,10 +656,14 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->file),
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, norm_dev,
+                               ref_gather->file),
       "nodes");
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->file),
       "t");
+
+  ref_free(norm_dev);
+  norm_dev = NULL;
 
   if (REF_FALSE) {
     REF_INT ntet;
