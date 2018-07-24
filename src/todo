@@ -6,7 +6,7 @@ continuous geometry / discrete triangle normal deviation
  + normal deviation (w/ uv_area_sign)
  + normal deviation to gather plots (swap out age?)
  + report min normal deviation
- refactor tuv methods to convert cell_tuv into nodes and node_index
+ + refactor tuv methods to convert cell_tuv into nodes and node_index
  ref_geom_tri_norm_deviation: cell  ->  nodes
  adapt limit
  limit collapse
