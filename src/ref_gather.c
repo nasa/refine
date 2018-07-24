@@ -638,7 +638,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   if (ref_geom_model_loaded(ref_geom)) {
     ref_malloc_init(norm_dev, ref_node_max(ref_node), REF_DBL, 2.0);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_geom_tri_norm_deviation(ref_grid, cell, &dot), "norm dev");
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
       each_ref_cell_cell_node(ref_cell, cell_node) {
         norm_dev[nodes[cell_node]] = MIN(norm_dev[nodes[cell_node]], dot);
       }

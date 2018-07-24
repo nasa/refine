@@ -184,8 +184,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   min_dot = 2.0;
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     ref_cell = ref_grid_tri(ref_grid);
-    each_ref_cell_valid_cell(ref_cell, cell) {
-      RSS(ref_geom_tri_norm_deviation(ref_grid, cell, &dot), "norm dev");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
       min_dot = MIN(min_dot, dot);
     }
   }

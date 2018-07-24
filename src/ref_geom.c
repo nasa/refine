@@ -2071,12 +2071,12 @@ REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv) {
+REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT *nodes,
+                                 REF_DBL *uv) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell_node;
   REF_DBL node_uv[2];
   REF_INT sens;
-  RSS(ref_cell_nodes(ref_cell, cell, nodes), "tri nodes");
   uv[0] = 0.0;
   uv[1] = 0.0;
   each_ref_cell_cell_node(ref_cell, cell_node) {
@@ -2090,22 +2090,21 @@ REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT cell, REF_DBL *uv) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT cell,
+REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                        REF_DBL *dot_product) {
   REF_DBL uv[2];
   REF_DBL tri_normal[3];
   REF_DBL r[3], s[3], n[3], area_sign;
-  REF_INT id, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id;
 
   *dot_product = -2.0;
 
-  RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "tri nodes");
   id = nodes[ref_cell_node_per(ref_grid_tri(ref_grid))];
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
       "tri normal");
   RSS(ref_math_normalize(tri_normal), "normalize");
 
-  RSS(ref_geom_tri_centroid(ref_grid, cell, uv), "tri cent");
+  RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
   RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n), "rsn");
   RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
 
