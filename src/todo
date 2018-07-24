@@ -11,7 +11,7 @@ continuous geometry / discrete triangle normal deviation
  + adapt limit
  + limit collapse
  + ref_smooth_tri_normdev_around
- limit move
+ + limit move
  small failing case?
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?

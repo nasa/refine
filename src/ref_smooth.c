@@ -909,7 +909,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
     if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (normdev > ref_grid_adapt(ref_grid, smooth_min_quality) ||
+        (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > 1.0e-12)) {
       return REF_SUCCESS;
@@ -933,6 +933,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_DBL uv_orig[2], uv_ideal[2];
   REF_DBL qtet_orig, qtri_orig;
   REF_DBL qtri, qtet, min_uv_area;
+  REF_DBL normdev_orig, normdev;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
   REF_DBL uv_min[2], uv_max[2];
@@ -951,6 +952,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv_orig), "get uv_orig");
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet_orig), "q tet");
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
+  RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
 
   if (verbose)
     printf("uv %f %f tri %f tet %f\n", uv_orig[0], uv_orig[1], qtri_orig,
@@ -969,11 +971,14 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet), "q tet");
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
+    RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if (qtri >= qtri_orig &&
-        qtet > ref_grid_adapt(ref_grid, smooth_min_quality) &&
-        min_uv_area > 1.0e-12 && uv_min[0] < uv[0] && uv[0] < uv_max[0] &&
-        uv_min[1] < uv[1] && uv[1] < uv_max[1]) {
+    if ((qtri >= qtri_orig) &&
+        (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+        (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
+         normdev > normdev_orig) &&
+        (min_uv_area > 1.0e-12) && (uv_min[0] < uv[0]) && (uv[0] < uv_max[0]) &&
+        (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {
       if (verbose) printf("better qtri %f qtet %f\n", qtri, qtet);
       return REF_SUCCESS;
     }
