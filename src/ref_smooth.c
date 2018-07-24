@@ -824,6 +824,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_DBL r0, r1;
   REF_DBL q_orig;
   REF_DBL s_orig, rsum;
+  REF_DBL normdev_orig, normdev;
 
   REF_DBL t, st, sr, q, backoff, t_target;
   REF_INT tries;
@@ -878,6 +879,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
       });
 
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
+  RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
 
   if (verbose)
     printf("edge %d t %f %f %f r %f %f q %f\n", id, t0, t_orig, t1, r0, r1,
@@ -901,9 +903,12 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_node_ratio(ref_node, nodes[0], node, &r0), "get r0");
     RSS(ref_node_ratio(ref_node, nodes[1], node, &r1), "get r1");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+    RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
 
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
-    if (q > ref_grid_adapt(ref_grid, smooth_min_quality)) {
+    if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+        (normdev > ref_grid_adapt(ref_grid, smooth_min_quality) ||
+         normdev > normdev_orig)) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
