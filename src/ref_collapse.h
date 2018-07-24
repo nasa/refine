@@ -53,6 +53,9 @@ REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
                                      REF_INT node1, REF_BOOL *allowed);
 
+REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *allowed);
+
 REF_STATUS ref_collapse_face(REF_GRID ref_grid, REF_INT keep0, REF_INT remove0,
                              REF_INT keep1, REF_INT remove1);
 

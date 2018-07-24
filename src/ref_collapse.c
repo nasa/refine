@@ -485,6 +485,51 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_BOOL *allowed) {
+  REF_CELL ref_cell;
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_BOOL will_be_collapsed;
+
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BOOL node0_support, node1_support;
+
+  RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
+  RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
+  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node0 == nodes[node]) {
+        will_be_collapsed = REF_TRUE;
+      }
+    }
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      new_nodes[node] = nodes[node];
+      if (node1 == new_nodes[node]) new_nodes[node] = node0;
+    }
+    /* compute old and new normal deviation */
+    /* acceptable? */
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_collapse_face(REF_GRID ref_grid, REF_INT keep0, REF_INT remove0,
                              REF_INT keep1, REF_INT remove1) {
   REF_CELL ref_cell;
