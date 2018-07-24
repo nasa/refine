@@ -495,6 +495,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL node0_support, node1_support;
+  REF_DBL orig_dev, new_dev;
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
@@ -521,8 +522,16 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
       new_nodes[node] = nodes[node];
       if (node1 == new_nodes[node]) new_nodes[node] = node0;
     }
-    /* compute old and new normal deviation */
-    /* acceptable? */
+    /* see if new config is below limit */
+    RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
+    if (new_dev < ref_grid_adapt(ref_grid, collapse_normdev_absolute)) {
+      /* allow if improvement */
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
+      if (new_dev < orig_dev) {
+        *allowed = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
   }
 
   *allowed = REF_TRUE;
