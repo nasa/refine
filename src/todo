@@ -13,6 +13,8 @@ continuous geometry / discrete triangle normal deviation
  limit move
  small failing case?
 
+ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
+
 bound curvature
 make curvature gradation more along surface and less in volume
  gradation on surface operator
