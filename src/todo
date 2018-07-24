@@ -10,6 +10,7 @@ continuous geometry / discrete triangle normal deviation
  + ref_geom_tri_norm_deviation: cell -> nodes
  + adapt limit
  + limit collapse
+ + ref_smooth_tri_normdev_around
  limit move
  small failing case?
 

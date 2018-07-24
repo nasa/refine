@@ -93,6 +93,30 @@ REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
+                                         REF_DBL *min_normdev) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL none_found = REF_TRUE;
+  REF_DBL normdev;
+
+  *min_normdev = 2.0;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    none_found = REF_FALSE;
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "qual");
+    *min_normdev = MIN(*min_normdev, normdev);
+  }
+
+  if (none_found) {
+    *min_normdev = -2.0;
+    THROW("no triagle found, can not compute normdev");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_uv_area) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);

@@ -29,6 +29,8 @@ REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
+REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
+                                         REF_DBL *min_normdev);
 
 REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
                                    REF_BOOL *allowed);
