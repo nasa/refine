@@ -41,6 +41,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL collapse_normdev_absolute;
 
   REF_DBL smooth_min_quality;
+  REF_DBL smooth_min_normdev;
 
   REF_INT collapse_per_pass;
 
