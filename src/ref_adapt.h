@@ -38,6 +38,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL collapse_ratio;
   REF_DBL collapse_quality_absolute;
   REF_DBL collapse_ratio_limit;
+  REF_DBL collapse_normdev_absolute;
 
   REF_DBL smooth_min_quality;
 
