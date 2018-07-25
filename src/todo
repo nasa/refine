@@ -12,6 +12,7 @@ continuous geometry / discrete triangle normal deviation
  + limit collapse
  + ref_smooth_tri_normdev_around
  + limit move
+ seperate volume and surface quality allow
  limit split
  small failing case?
 
