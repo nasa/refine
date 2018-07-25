@@ -48,6 +48,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->split_ratio = 1.5;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.6;
+  ref_adapt->split_normdev_absolute = 0.0;
 
   ref_adapt->collapse_ratio = 0.6;
   ref_adapt->collapse_quality_absolute = 1.0e-3;
@@ -74,6 +75,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
+  ref_adapt->split_normdev_absolute = original->split_normdev_absolute;
 
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;

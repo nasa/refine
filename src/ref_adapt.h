@@ -34,6 +34,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL split_ratio;
   REF_DBL split_quality_absolute;
   REF_DBL split_quality_relative;
+  REF_DBL split_normdev_absolute;
 
   REF_DBL collapse_ratio;
   REF_DBL collapse_quality_absolute;

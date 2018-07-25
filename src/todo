@@ -13,7 +13,7 @@ continuous geometry / discrete triangle normal deviation
  + ref_smooth_tri_normdev_around
  + limit move
  + seperate volume and surface quality allow
- limit split
+ + limit split
  small failing case?
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?

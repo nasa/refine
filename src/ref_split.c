@@ -513,6 +513,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL sign_uv_area, uv_area0, uv_area1;
+  REF_DBL normdev, normdev0, normdev1;
 
   *allowed = REF_FALSE;
 
@@ -524,9 +525,11 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
     for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
       cell = cell_to_split[cell_in_list];
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
       RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area0), "uv area");
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area0 *= sign_uv_area;
@@ -535,11 +538,16 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node1 == nodes[node]) nodes[node] = new_node;
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev1), "nd1");
       RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area1), "uv area");
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 
-      if (1.0e-12 > uv_area0 || 1.0e-12 > uv_area1) {
+      if (1.0e-12 > uv_area0 || 1.0e-12 > uv_area1 ||
+          (normdev0 <= normdev &&
+           normdev0 < ref_grid_adapt(ref_grid, split_normdev_absolute)) ||
+          (normdev1 <= normdev &&
+           normdev1 < ref_grid_adapt(ref_grid, split_normdev_absolute))) {
         *allowed = REF_FALSE;
         return REF_SUCCESS;
       }
