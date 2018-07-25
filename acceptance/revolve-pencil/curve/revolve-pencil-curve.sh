@@ -21,5 +21,5 @@ ${two}/ref_driver \
     > accept-annulus-uniform.out
 
 cat accept-annulus-uniform.out
-../../check.rb accept-annulus-uniform.out 0.05 2.5
+../../check.rb accept-annulus-uniform.out 0.05 3.1
 
