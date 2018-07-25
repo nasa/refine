@@ -530,7 +530,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area0), "uv area");
+      RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area0), "uv area");
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area0 *= sign_uv_area;
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
@@ -539,7 +539,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node1 == nodes[node]) nodes[node] = new_node;
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev1), "nd1");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area1), "uv area");
+      RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area1), "uv area");
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 

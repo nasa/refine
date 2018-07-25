@@ -475,7 +475,7 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
                                 &sign_uv_area),
           "sign");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
       if (sign_uv_area * uv_area < 1.0e-12) return REF_SUCCESS;
     }
   }
