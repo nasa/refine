@@ -47,7 +47,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed, allowed_quality, allowed_local, geom_support, valid_cavity;
+  REF_BOOL allowed_tri_quality, allowed_tet_quality;
+  REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_BOOL span_parts;
@@ -114,12 +115,23 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
-    RSS(ref_split_edge_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                               ref_edge_e2n(ref_edge, 1, edge), new_node,
-                               &allowed_quality),
-        "edge qual");
+    RSS(ref_split_edge_tri_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                   ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                   &allowed_tri_quality),
+        "edge tri qual");
+    if (!allowed_tri_quality) {
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+      continue;
+    }
+
+    RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                   ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                   &allowed_tet_quality),
+        "edge tet qual");
+
     valid_cavity = REF_FALSE;
-    if (!allowed_quality && geom_support) {
+    if (!allowed_tet_quality && geom_support) {
       RSS(ref_cavity_create(&ref_cavity, 3), "cav create");
       RSS(ref_cavity_add_edge(ref_cavity, ref_grid,
                               ref_edge_e2n(ref_edge, 0, edge),
@@ -140,7 +152,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       ref_cavity = (REF_CAVITY)NULL;
     }
 
-    if (!valid_cavity && !allowed_quality) {
+    if (!valid_cavity && !allowed_tet_quality) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
@@ -433,18 +445,16 @@ REF_STATUS ref_split_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_quality(REF_GRID ref_grid, REF_INT node0,
-                                  REF_INT node1, REF_INT new_node,
-                                  REF_BOOL *allowed) {
+REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_INT new_node,
+                                      REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
   REF_DBL quality, quality0, quality1;
-  REF_DBL sign_uv_area, uv_area0, uv_area1;
   REF_DBL min_existing_quality;
 
   *allowed = REF_FALSE;
@@ -487,6 +497,24 @@ REF_STATUS ref_split_edge_quality(REF_GRID ref_grid, REF_INT node0,
       return REF_SUCCESS;
     }
   }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_INT new_node,
+                                      REF_BOOL *allowed) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_DBL sign_uv_area, uv_area0, uv_area1;
+
+  *allowed = REF_FALSE;
 
   if (0 < ref_geom_n(ref_geom)) {
     ref_cell = ref_grid_tri(ref_grid);
