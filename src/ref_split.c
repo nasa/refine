@@ -412,22 +412,20 @@ REF_STATUS ref_split_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_having_node(ref_cell, node0, item, cell) for (
-      search_node = 0; search_node < ref_cell_node_per(ref_cell);
-      search_node++) if (node1 ==
-                         ref_cell_c2n(
-                             ref_cell, search_node,
-                             cell)) for (test_node = 0;
-                                         test_node <
-                                         ref_cell_node_per(ref_cell);
-                                         test_node++) if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
-                                                          ref_node_part(
-                                                              ref_node,
-                                                              ref_cell_c2n(
-                                                                  ref_cell,
-                                                                  test_node,
-                                                                  cell))) {
-    return REF_SUCCESS;
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    for (search_node = 0; search_node < ref_cell_node_per(ref_cell);
+         search_node++) {
+      if (node1 == ref_cell_c2n(ref_cell, search_node, cell)) {
+        for (test_node = 0; test_node < ref_cell_node_per(ref_cell);
+             test_node++) {
+          if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+              ref_node_part(ref_node,
+                            ref_cell_c2n(ref_cell, test_node, cell))) {
+            return REF_SUCCESS;
+          }
+        }
+      }
+    }
   }
 
   *allowed = REF_TRUE;
@@ -763,22 +761,20 @@ REF_STATUS ref_split_edge_local_prisms(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_pri(ref_grid);
-  each_ref_cell_having_node(ref_cell, node0, item, cell) for (
-      search_node = 0; search_node < ref_cell_node_per(ref_cell);
-      search_node++) if (node1 ==
-                         ref_cell_c2n(
-                             ref_cell, search_node,
-                             cell)) for (test_node = 0;
-                                         test_node <
-                                         ref_cell_node_per(ref_cell);
-                                         test_node++) if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
-                                                          ref_node_part(
-                                                              ref_node,
-                                                              ref_cell_c2n(
-                                                                  ref_cell,
-                                                                  test_node,
-                                                                  cell))) {
-    return REF_SUCCESS;
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    for (search_node = 0; search_node < ref_cell_node_per(ref_cell);
+         search_node++) {
+      if (node1 == ref_cell_c2n(ref_cell, search_node, cell)) {
+        for (test_node = 0; test_node < ref_cell_node_per(ref_cell);
+             test_node++) {
+          if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
+              ref_node_part(ref_node,
+                            ref_cell_c2n(ref_cell, test_node, cell))) {
+            return REF_SUCCESS;
+          }
+        }
+      }
+    }
   }
 
   *allowed = REF_TRUE;
