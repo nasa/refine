@@ -2096,16 +2096,17 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REF_DBL tri_normal[3];
   REF_DBL r[3], s[3], n[3], area_sign;
   REF_INT id;
-
+  REF_STATUS status;
   *dot_product = -2.0;
 
   id = nodes[ref_cell_node_per(ref_grid_tri(ref_grid))];
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
       "tri normal");
-  RSB(ref_math_normalize(tri_normal), "normalize", {
-    printf("tri norm %.18e %.18e %.18e\n", tri_normal[0], tri_normal[1],
-           tri_normal[2]);
-  });
+  /* collapse attempts could create zero area, reject the step with -2.0 */
+  status = ref_math_normalize(tri_normal);
+  if ( REF_DIV_ZERO == status )
+    return REF_SUCCESS;
+  RSS(status, "normalize");
 
   RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
   RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n), "rsn");
