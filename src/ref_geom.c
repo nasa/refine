@@ -1187,7 +1187,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
         param[0] = trange[1];
       }
       break;
-  case REF_GEOM_FACE:
+    case REF_GEOM_FACE:
       if (0 < ref_geom_jump(ref_geom, geom)) {
         from = REF_EMPTY;
         for (cell_node = 0; cell_node < node_per; cell_node++) {
@@ -2833,8 +2833,8 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
           EG_getEdgeUV(((ego *)(ref_geom->faces))[face],
                        ((ego *)(ref_geom->edges))[edge], sense, trange[1], uv1),
           "eval edge face uv1");
-      du = ABS(uv0[0]-uv1[0]);
-      dv = ABS(uv0[1]-uv1[1]);
+      du = ABS(uv0[0] - uv1[0]);
+      dv = ABS(uv0[1] - uv1[1]);
       if (du > dv) {
         jump = -1;
       } else {
@@ -2845,8 +2845,8 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
         if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
           node = ref_geom_node(ref_geom, node_geom);
           each_ref_geom_having_node(ref_geom, node, item, face_geom) {
-            if ( REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
-                 (face + 1) == ref_geom_id(ref_geom, face_geom) ) {
+            if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
+                (face + 1) == ref_geom_id(ref_geom, face_geom)) {
               ref_geom_jump(ref_geom, face_geom) = jump;
             }
           }
@@ -2854,7 +2854,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       }
 
       if (ref_grid_once(ref_grid)) {
-        printf("edge id %d is degen for face id %d jump %d du %f dv %f\n", 
+        printf("edge id %d is degen for face id %d jump %d du %f dv %f\n",
                edge + 1, face + 1, jump, du, dv);
       }
     }
