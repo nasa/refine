@@ -18,6 +18,8 @@ continuous geometry / discrete triangle normal deviation
  eval negative face jump with average of other nodes
  small failing case?
 
+throw when global node not found on import or export
+
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 put all uv_area limits in a struct (with volume or ref_adapt?)
