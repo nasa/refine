@@ -2803,6 +2803,19 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
   }
 
   RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->edges))[edge], &eref, &oclass,
+                        &mtype, trange, &nchild, &echilds, &senses),
+         "edge topo");
+    if (mtype == DEGENERATE) {
+      printf("edge id %d is degen for face id %d\n", edge + 1,
+             e2f[0 + 2 * edge]);
+      REIS(REF_EMPTY, e2f[1 + 2 * edge], "DEGENERATE edge has two faces");
+    }
+  }
+
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     if (e2f[0 + 2 * edge] == e2f[1 + 2 * edge]) {
       nfound = 0;
