@@ -873,22 +873,23 @@ REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid) {
     max_uv_area = 0.0;
     n_neg = 0;
     n_pos = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (id == nodes[3]) {
-      RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
-      total_uv_area += uv_area;
-      if (no_cell) {
-        min_uv_area = uv_area;
-        max_uv_area = uv_area;
-        no_cell = REF_FALSE;
-      } else {
-        min_uv_area = MIN(min_uv_area, uv_area);
-        max_uv_area = MAX(max_uv_area, uv_area);
-      }
-      if (uv_area < 0.0) {
-        n_neg++;
-      } else {
-        n_pos++;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (id == nodes[3]) {
+        RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
+        total_uv_area += uv_area;
+        if (no_cell) {
+          min_uv_area = uv_area;
+          max_uv_area = uv_area;
+          no_cell = REF_FALSE;
+        } else {
+          min_uv_area = MIN(min_uv_area, uv_area);
+          max_uv_area = MAX(max_uv_area, uv_area);
+        }
+        if (uv_area < 0.0) {
+          n_neg++;
+        } else {
+          n_pos++;
+        }
       }
     }
     if (!no_cell) {
@@ -2047,8 +2048,7 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
       "tri normal");
   /* collapse attempts could create zero area, reject the step with -2.0 */
   status = ref_math_normalize(tri_normal);
-  if ( REF_DIV_ZERO == status )
-    return REF_SUCCESS;
+  if (REF_DIV_ZERO == status) return REF_SUCCESS;
   RSS(status, "normalize");
 
   RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
