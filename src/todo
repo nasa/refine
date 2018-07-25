@@ -14,6 +14,8 @@ continuous geometry / discrete triangle normal deviation
  + limit move
  + seperate volume and surface quality allow
  + limit split
+ replace ref_geom_degen_param with a jump of -1:u or -2:v in ref_geom_jump_param
+ eval negative face jump with average of other nodes
  small failing case?
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
