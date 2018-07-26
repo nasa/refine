@@ -14,15 +14,14 @@ continuous geometry / discrete triangle normal deviation
  + limit move
  + seperate volume and surface quality allow
  + limit split
- add ref_geom_degen to flags
- replace ref_geom_degen_param with a degen -1:u or -2:v in ref_geom_jump_param
- eval negative face degen with average of other nodes
- check jump tests and replace with degen when needed
+ + add ref_geom_degen to flags
+ + set ref_geom_degen_degen 1:u or 2:v in ref_geom_jump_param
+ + eval face degen with average of other nodes
+ + check jump tests and replace with degen when needed
+ + determine if U or V is DEGEN with
+   + evaluation at the degenerate point on the Face
+   + then look at the first derivatives, one set will be zero
  small failing case?
-
-determine if U or V is DEGEN with
- - evaluation at the degenerate point on the Face
- - then look at the first derivatives, one set will be zero
 
 throw when global node not found on import or export
 

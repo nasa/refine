@@ -2800,19 +2800,22 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   return REF_SUCCESS;
 }
 
+
+
 REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT item, node, geom, edge, face, cad_node;
+  REF_INT node, geom, edge, face, cad_node;
   REF_INT nfound, node_geom, edge_geom, face_geom;
   ego eref;
-  int oclass, mtype, *senses, sense;
+  int oclass, mtype, *senses;
   double trange[2];
-  double uv0[2], uv1[2];
+  double uv[2];
   ego *echilds;
   int nchild;
   int *e2f;
   REF_DBL du, dv;
+  REF_DBL xyz[3], dxyz_duv[15];
   REF_INT geom_node_id, degen;
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
@@ -2856,44 +2859,34 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       face = e2f[0 + 2 * edge] - 1;
       REIS(REF_EMPTY, e2f[1 + 2 * edge], "DEGENERATE edge has two faces");
 
-      sense = 0;
-      REIB(
-          EGADS_SUCCESS,
-          EG_getEdgeUV(((ego *)(ref_geom->faces))[face],
-                       ((ego *)(ref_geom->edges))[edge], sense, trange[0], uv0),
-          "eval edge face uv0", {
-            printf("EG_getEdgeUV %d faceid %d edgeid %d sense %f t\n", face + 1,
-                   edge + 1, sense, trange[0]);
-          });
-      sense = 0;
-      REIS(
-          EGADS_SUCCESS,
-          EG_getEdgeUV(((ego *)(ref_geom->faces))[face],
-                       ((ego *)(ref_geom->edges))[edge], sense, trange[1], uv1),
-          "eval edge face uv1");
-      du = ABS(uv0[0] - uv1[0]);
-      dv = ABS(uv0[1] - uv1[1]);
-      if (du > dv) {
-        degen = 1;
-      } else {
-        degen = 2;
-      }
-
+      face_geom = REF_EMPTY;
       each_ref_geom_node(ref_geom, node_geom) {
         if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
           node = ref_geom_node(ref_geom, node_geom);
-          each_ref_geom_having_node(ref_geom, node, item, face_geom) {
-            if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
-                (face + 1) == ref_geom_id(ref_geom, face_geom)) {
-              ref_geom_degen(ref_geom, face_geom) = degen;
-            }
-          }
+          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face+1, &face_geom),
+              "face for degen edge at node not found");
         }
       }
 
+      /* in parallel, may not have this node */
+      if (REF_EMPTY != face_geom) {
+        uv[0] = ref_geom_param(ref_geom, 0, face_geom);
+        uv[1] = ref_geom_param(ref_geom, 1, face_geom);
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face+1, uv, xyz,
+                             dxyz_duv),
+            "eval at");
+        du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
+        dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
+        if (du > dv) {
+          degen = 2; /* trust uv[0] */
+        } else {
+          degen = 1; /* trust uv[1] */
+        }
+        ref_geom_degen(ref_geom, face_geom) = degen;
+      }
+
       if (ref_grid_once(ref_grid)) {
-        printf("edge id %d is degen for face id %d degen %d du %f dv %f\n",
-               edge + 1, face + 1, degen, du, dv);
+        printf("edge id %d is degen for face id %d\n", edge + 1, face + 1);
       }
     }
   }
