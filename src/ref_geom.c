@@ -910,20 +910,21 @@ REF_STATUS ref_geom_inspect(REF_GEOM ref_geom) {
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++) {
     switch (ref_geom_type(ref_geom, geom)) {
       case REF_GEOM_NODE:
-        printf("%d node: %d id, %d jump, %d global\n", geom,
+        printf("%d node: %d id, %d jump, %d degen, %d global\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom));
+               ref_geom_degen(ref_geom, geom), ref_geom_node(ref_geom, geom));
         break;
       case REF_GEOM_EDGE:
-        printf("%d edge: %d id, %d jump, %d global, t=%e\n", geom,
+        printf("%d edge: %d id, %d jump, %d degen, %d global, t=%e\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom),
+               ref_geom_node(ref_geom, geom), ref_geom_degen(ref_geom, geom),
                ref_geom_param(ref_geom, 0, geom));
         break;
       case REF_GEOM_FACE:
-        printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
+        printf("%d face: %d id, %d jump, %d degen, %d global, uv= %e %e\n",
+               geom, ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_node(ref_geom, geom), ref_geom_degen(ref_geom, geom),
+               ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
@@ -939,20 +940,21 @@ REF_STATUS ref_geom_tattle(REF_GEOM ref_geom, REF_INT node) {
   each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
     switch (ref_geom_type(ref_geom, geom)) {
       case REF_GEOM_NODE:
-        printf("%d node: %d id, %d jump, %d global\n", geom,
+        printf("%d node: %d id, %d jump, %d degen, %d global\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom));
+               ref_geom_degen(ref_geom, geom), ref_geom_node(ref_geom, geom));
         break;
       case REF_GEOM_EDGE:
-        printf("%d edge: %d id, %d jump, %d global, t=%e\n", geom,
+        printf("%d edge: %d id, %d jump, %d degen, %d global, t=%e\n", geom,
                ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom),
+               ref_geom_degen(ref_geom, geom), ref_geom_node(ref_geom, geom),
                ref_geom_param(ref_geom, 0, geom));
         break;
       case REF_GEOM_FACE:
-        printf("%d face: %d id, %d jump, %d global, uv= %e %e\n", geom,
-               ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
-               ref_geom_node(ref_geom, geom), ref_geom_param(ref_geom, 0, geom),
+        printf("%d face: %d id, %d jump, %d degen, %d global, uv= %e %e\n",
+               geom, ref_geom_id(ref_geom, geom), ref_geom_jump(ref_geom, geom),
+               ref_geom_degen(ref_geom, geom), ref_geom_node(ref_geom, geom),
+               ref_geom_param(ref_geom, 0, geom),
                ref_geom_param(ref_geom, 1, geom));
         break;
     }
@@ -1004,13 +1006,15 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
 
 REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
                                    REF_DBL *param) {
-  REF_INT type, id, jump, node, geom;
+  REF_INT type, id, jump, degen, node, geom;
   type = descr[REF_GEOM_DESCR_TYPE];
   id = descr[REF_GEOM_DESCR_ID];
   jump = descr[REF_GEOM_DESCR_JUMP];
+  degen = descr[REF_GEOM_DESCR_DEGEN];
   node = descr[REF_GEOM_DESCR_NODE];
   RSS(ref_geom_add(ref_geom, node, type, id, param), "geom add");
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "geom find");
+  ref_geom_degen(ref_geom, geom) = degen;
   ref_geom_jump(ref_geom, geom) = jump;
   return REF_SUCCESS;
 }
@@ -1040,6 +1044,7 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   ref_geom_type(ref_geom, geom) = type;
   ref_geom_id(ref_geom, geom) = id;
   ref_geom_jump(ref_geom, geom) = 0;
+  ref_geom_degen(ref_geom, geom) = 0;
   ref_geom_node(ref_geom, geom) = node;
 
   ref_geom_param(ref_geom, 0, geom) = 0.0;
@@ -1124,6 +1129,7 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
 
   REIS(0, ref_geom_jump(ref_geom, geom), "use ref_geom_cell_tuv for jumps");
+  REIS(0, ref_geom_degen(ref_geom, geom), "use ref_geom_cell_tuv for degen");
 
   if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
   if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
@@ -1159,7 +1165,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
 
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
 
-  if (0 == ref_geom_jump(ref_geom, geom)) {
+  if (0 == ref_geom_jump(ref_geom, geom) &&
+      0 == ref_geom_degen(ref_geom, geom)) {
     if (type > 0) param[0] = ref_geom_param(ref_geom, 0, geom);
     if (type > 1) param[1] = ref_geom_param(ref_geom, 1, geom);
     *sens = 0;
@@ -1189,13 +1196,14 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
       }
       break;
     case REF_GEOM_FACE:
-      if (0 < ref_geom_jump(ref_geom, geom)) {
+      if (0 == ref_geom_degen(ref_geom, geom)) {
         from = REF_EMPTY;
         for (cell_node = 0; cell_node < node_per; cell_node++) {
           RSS(ref_geom_find(ref_geom, nodes[cell_node], type, id, &from_geom),
               "not found");
           if (node_index != cell_node &&
-              0 == ref_geom_jump(ref_geom, from_geom)) {
+              0 == ref_geom_jump(ref_geom, from_geom) &&
+              0 == ref_geom_degen(ref_geom, from_geom)) {
             from = nodes[cell_node];
           }
         }
@@ -1232,7 +1240,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
         for (cell_node = 0; cell_node < node_per; cell_node++) {
           RSS(ref_geom_find(ref_geom, nodes[cell_node], type, id, &from_geom),
               "not found");
-          if (0 == ref_geom_jump(ref_geom, from_geom)) {
+          if (0 == ref_geom_jump(ref_geom, from_geom) &&
+              0 == ref_geom_degen(ref_geom, from_geom)) {
             RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, id, uv),
                 "from uv");
             uv0[0] += uv[0];
@@ -1240,10 +1249,10 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
             hits++;
           }
         }
-        RAS(0 < hits, "no seed uv found for DEGEN"); 
+        RAS(0 < hits, "no seed uv found for DEGEN");
         uv0[0] /= (REF_DBL)hits;
         uv0[1] /= (REF_DBL)hits;
-        if (-1 == ref_geom_jump(ref_geom, geom)) {
+        if (1 == ref_geom_degen(ref_geom, geom)) {
           *sens = 0;
           param[0] = uv0[0];
           param[1] = ref_geom_param(ref_geom, 1, geom);
@@ -2804,7 +2813,7 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
   int nchild;
   int *e2f;
   REF_DBL du, dv;
-  REF_INT geom_node_id, jump;
+  REF_INT geom_node_id, degen;
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     REIS(EGADS_SUCCESS,
@@ -2862,9 +2871,9 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       du = ABS(uv0[0] - uv1[0]);
       dv = ABS(uv0[1] - uv1[1]);
       if (du > dv) {
-        jump = -1;
+        degen = 1;
       } else {
-        jump = -2;
+        degen = 2;
       }
 
       each_ref_geom_node(ref_geom, node_geom) {
@@ -2873,15 +2882,15 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
           each_ref_geom_having_node(ref_geom, node, item, face_geom) {
             if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
                 (face + 1) == ref_geom_id(ref_geom, face_geom)) {
-              ref_geom_jump(ref_geom, face_geom) = jump;
+              ref_geom_degen(ref_geom, face_geom) = degen;
             }
           }
         }
       }
 
       if (ref_grid_once(ref_grid)) {
-        printf("edge id %d is degen for face id %d jump %d du %f dv %f\n",
-               edge + 1, face + 1, jump, du, dv);
+        printf("edge id %d is degen for face id %d degen %d du %f dv %f\n",
+               edge + 1, face + 1, degen, du, dv);
       }
     }
   }
@@ -3113,7 +3122,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     if (id == ref_geom_id(ref_geom, geom)) {
       RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
           "mark nodes");
-      if (0 != ref_geom_jump(ref_geom, geom)) {
+      if (0 != ref_geom_jump(ref_geom, geom) &&
+          0 == ref_geom_degen(ref_geom, geom)) {
         RSS(ref_dict_store(ref_dict_jump, ref_geom_node(ref_geom, geom), geom),
             "mark nodes");
       }

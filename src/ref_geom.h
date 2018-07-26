@@ -43,11 +43,12 @@ typedef enum REF_GEOM_SURFACES {
 #define REF_GEOM_EDGE (1)
 #define REF_GEOM_FACE (2)
 
-#define REF_GEOM_DESCR_SIZE (4)
+#define REF_GEOM_DESCR_SIZE (5)
 #define REF_GEOM_DESCR_TYPE (0)
 #define REF_GEOM_DESCR_ID (1)
 #define REF_GEOM_DESCR_JUMP (2)
-#define REF_GEOM_DESCR_NODE (3)
+#define REF_GEOM_DESCR_DEGEN (3)
+#define REF_GEOM_DESCR_NODE (4)
 
 END_C_DECLORATION
 
@@ -92,6 +93,8 @@ struct REF_GEOM_STRUCT {
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_ID, (geom)))
 #define ref_geom_jump(ref_geom, geom) \
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_JUMP, (geom)))
+#define ref_geom_degen(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_DEGEN, (geom)))
 #define ref_geom_node(ref_geom, geom) \
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_NODE, (geom)))
 
