@@ -2857,11 +2857,14 @@ REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
       REIS(REF_EMPTY, e2f[1 + 2 * edge], "DEGENERATE edge has two faces");
 
       sense = 0;
-      REIS(
+      REIB(
           EGADS_SUCCESS,
           EG_getEdgeUV(((ego *)(ref_geom->faces))[face],
                        ((ego *)(ref_geom->edges))[edge], sense, trange[0], uv0),
-          "eval edge face uv0");
+          "eval edge face uv0", {
+            printf("EG_getEdgeUV %d faceid %d edgeid %d sense %f t\n", face + 1,
+                   edge + 1, sense, trange[0]);
+          });
       sense = 0;
       REIS(
           EGADS_SUCCESS,
