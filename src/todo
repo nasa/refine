@@ -1,27 +1,6 @@
 
-continuous geometry / discrete triangle normal deviation
- + parametric tri center (average of nodes)
- inverse eval of tri center needed?
- + refactor curvature and rsn to use id+uv not geom
- + normal deviation (w/ uv_area_sign)
- + normal deviation to gather plots (swap out age?)
- + report min normal deviation
- + refactor tuv methods to convert cell_tuv into nodes and node_index
- + ref_geom_tri_norm_deviation: cell -> nodes
- + adapt limit
- + limit collapse
- + ref_smooth_tri_normdev_around
- + limit move
- + seperate volume and surface quality allow
- + limit split
- + add ref_geom_degen to flags
- + set ref_geom_degen_degen 1:u or 2:v in ref_geom_jump_param
- + eval face degen with average of other nodes
- + check jump tests and replace with degen when needed
- + determine if U or V is DEGEN with
-   + evaluation at the degenerate point on the Face
-   + then look at the first derivatives, one set will be zero
- small failing case?
+update in FUN3D
+ parmetis edge weights
 
 throw when global node not found on import or export
 
@@ -43,6 +22,7 @@ tess
 
 ref_acceptance two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
+see Adrien's email
 
 mixed element in refine/two
  metric construction
@@ -79,7 +59,6 @@ partition artifacts
     ref node vol xyz pointers
     interate on unmark
   ref_partition diffusion
-  parmetis edge weights
 
 ref_metric_test --lp should optionally provide intermediate steps
 
@@ -189,6 +168,30 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ continuous geometry / discrete triangle normal deviation
+ - inverse eval of tri center needed?
+ - small failing case?
+ + parametric tri center (average of nodes)
+ + refactor curvature and rsn to use id+uv not geom
+ + normal deviation (w/ uv_area_sign)
+ + normal deviation to gather plots (swap out age?)
+ + report min normal deviation
+ + refactor tuv methods to convert cell_tuv into nodes and node_index
+ + ref_geom_tri_norm_deviation: cell -> nodes
+ + adapt limit
+ + limit collapse
+ + ref_smooth_tri_normdev_around
+ + limit move
+ + seperate volume and surface quality allow
+ + limit split
+ + add ref_geom_degen to flags
+ + set ref_geom_degen_degen 1:u or 2:v in ref_geom_jump_param
+ + eval face degen with average of other nodes
+ + check jump tests and replace with degen when needed
+ + determine if U or V is DEGEN with
+   + evaluation at the degenerate point on the Face
+   + then look at the first derivatives, one set will be zero
 
 + add utility to ref_interp to compute
   + \int{(Mach_{previousGrid}-Mach_{currentGrid})^{p}}^{1/p}
