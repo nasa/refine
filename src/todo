@@ -14,8 +14,10 @@ continuous geometry / discrete triangle normal deviation
  + limit move
  + seperate volume and surface quality allow
  + limit split
- replace ref_geom_degen_param with a jump of -1:u or -2:v in ref_geom_jump_param
- eval negative face jump with average of other nodes
+ add ref_geom_degen to flags
+ replace ref_geom_degen_param with a degen -1:u or -2:v in ref_geom_jump_param
+ eval negative face degen with average of other nodes
+ check jump tests and replace with degen when needed
  small failing case?
 
 throw when global node not found on import or export

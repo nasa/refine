@@ -1143,6 +1143,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
   int periodic;
   REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
+  REF_INT hits;
 
   RAS(1 <= type && type <= 2, "type not allowed");
   node_per = type + 1;
@@ -1225,7 +1226,32 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
           param[1] = uv1[1];
         }
       } else {
-        RSS(REF_IMPLEMENT, "DEGEN uv");
+        uv0[0] = 0.0;
+        uv0[1] = 0.0;
+        hits = 0;
+        for (cell_node = 0; cell_node < node_per; cell_node++) {
+          RSS(ref_geom_find(ref_geom, nodes[cell_node], type, id, &from_geom),
+              "not found");
+          if (0 == ref_geom_jump(ref_geom, from_geom)) {
+            RSS(ref_geom_tuv(ref_geom, nodes[cell_node], REF_GEOM_FACE, id, uv),
+                "from uv");
+            uv0[0] += uv[0];
+            uv0[1] += uv[1];
+            hits++;
+          }
+        }
+        RAS(0 < hits, "no seed uv found for DEGEN"); 
+        uv0[0] /= (REF_DBL)hits;
+        uv0[1] /= (REF_DBL)hits;
+        if (-1 == ref_geom_jump(ref_geom, geom)) {
+          *sens = 0;
+          param[0] = uv0[0];
+          param[1] = ref_geom_param(ref_geom, 1, geom);
+        } else {
+          *sens = 0;
+          param[0] = ref_geom_param(ref_geom, 0, geom);
+          param[1] = uv1[1];
+        }
       }
       break;
     default:
