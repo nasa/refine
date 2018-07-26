@@ -20,6 +20,10 @@ continuous geometry / discrete triangle normal deviation
  check jump tests and replace with degen when needed
  small failing case?
 
+determine if U or V is DEGEN with
+ - evaluation at the degenerate point on the Face
+ - then look at the first derivatives, one set will be zero
+
 throw when global node not found on import or export
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
