@@ -153,139 +153,139 @@ trap - EXIT
 LOG=${root_dir}/log.accept-2d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/linear/two
-./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
+time ./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-2d-polar-2-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/polar-2/two
-./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
+time ./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-2d-mixed
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/mixed
-./accept-2d-mixed.sh ${strict_dir} > $LOG 2>&1
+time ./accept-2d-mixed.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-linear-one
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/one
-./accept-3d-one.sh ${strict_dir} > $LOG 2>&1
+time ./accept-3d-one.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
-./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
+time ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
-./accept-3d-two-para.sh ${zoltan_dir} > $LOG 2>&1
+time ./accept-3d-two-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind-mpi
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/linear010/two
-./accept-cube-cylinder-linear010-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-linear010-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-./accept-cube-cylinder-polar-2-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-polar-2-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-./accept-cube-cylinder-polar-2-para.sh ${zoltan_dir} > $LOG 2>&1
+time ./accept-cube-cylinder-polar-2-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-polar-1-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/polar-1/two
-./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
+time ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-sphere-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/uniform/two
-./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-sphere-ring-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/ring/two
-./accept-cube-sphere-ring-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cube-sphere-ring-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-annulus-uniform
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/annulus/uniform
-./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1
+time ./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cone-cone-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cone-cone/uniform/two
-./accept-cone-cone-uniform-two.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cone-cone-uniform-two.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cone-cone-recon
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cone-cone/recon
-./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1
+time ./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-om6-recon
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/om6/recon
-./accept-om6-recon.sh ${egads_dir} > $LOG 2>&1
+time ./accept-om6-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-revolve-pencil-curve
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/revolve-pencil/curve
-./revolve-pencil-curve.sh ${egads_dir} > $LOG 2>&1
+time ./revolve-pencil-curve.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-hemisphere-uniform
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
-./accept-hemisphere-uniform.sh ${egads_dir} > $LOG 2>&1
+time ./accept-hemisphere-uniform.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
-./accept-hemisphere-uniform-para.sh ${zoltan_dir} > $LOG 2>&1
+time ./accept-hemisphere-uniform-para.sh ${zoltan_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-u5
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/u5
-./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1
+time ./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
