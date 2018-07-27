@@ -2785,7 +2785,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
       }
   }
 
-  RSS(ref_geom_jump_param(ref_grid), "T and UV jumps");
+  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps");
 
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
@@ -2796,9 +2796,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   return REF_SUCCESS;
 }
 
-
-
-REF_STATUS ref_geom_jump_param(REF_GRID ref_grid) {
+REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT node, geom, edge, face, cad_node;
