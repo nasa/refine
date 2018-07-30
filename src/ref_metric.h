@@ -81,7 +81,7 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_METRIC_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
-                               REF_DBL *solution,
+                               REF_INT nequations, REF_DBL *solution,
                                REF_DBL complexity);
 REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid);
 REF_STATUS ref_metric_set_zero_det(REF_DBL *metric_with_zeros,

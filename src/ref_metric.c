@@ -1375,7 +1375,7 @@ REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
-                               REF_DBL *solution,
+                               REF_INT nequations, REF_DBL *solution,
                                REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
@@ -1383,16 +1383,18 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   REF_INT p_norm = 1;
   REF_DBL det, exponent;
   REF_DBL current_complexity;
-  REF_INT ldim = 20;
+  REF_INT ldim;
   REF_INT var, dir;
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
 
+  ldim = 4 * nequations;
+  
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < 6; i++)
       metric[i + 6 * node] = 0.0;
   }
   
-  for (var = 0; var < 5; var++) {
+  for (var = 0; var < nequations; var++) {
     REF_DBL *lam, *grad_lam, *flux, *hess_flux;
     ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
     ref_malloc_init(grad_lam, 3*ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1405,7 +1407,7 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
 
     for (dir=0;dir<3;dir++) {
       each_ref_node_valid_node(ref_node, node) {
-        flux[node] = solution[var+5*dir+ldim*node];
+        flux[node] = solution[var+nequations*dir+ldim*node];
       }
       RSS(ref_metric_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
       each_ref_node_valid_node(ref_node, node) {
