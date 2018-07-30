@@ -2857,7 +2857,8 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
       each_ref_geom_node(ref_geom, node_geom) {
         if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
           node = ref_geom_node(ref_geom, node_geom);
-          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face+1, &face_geom),
+          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
+                            &face_geom),
               "face for degen edge at node not found");
         }
       }
@@ -2866,7 +2867,7 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
       if (REF_EMPTY != face_geom) {
         uv[0] = ref_geom_param(ref_geom, 0, face_geom);
         uv[1] = ref_geom_param(ref_geom, 1, face_geom);
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face+1, uv, xyz,
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uv, xyz,
                              dxyz_duv),
             "eval at");
         du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));

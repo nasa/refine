@@ -1388,31 +1388,31 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
 
   ldim = 4 * nequations;
-  
+
   each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < 6; i++)
-      metric[i + 6 * node] = 0.0;
+    for (i = 0; i < 6; i++) metric[i + 6 * node] = 0.0;
   }
-  
+
   for (var = 0; var < nequations; var++) {
     REF_DBL *lam, *grad_lam, *flux, *hess_flux;
     ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
-    ref_malloc_init(grad_lam, 3*ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
     ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
-    ref_malloc_init(hess_flux, 6*ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
     each_ref_node_valid_node(ref_node, node) {
-      lam[node] = solution[var+5+ldim*node];
+      lam[node] = solution[var + 5 + ldim * node];
     }
-    RSS( ref_metric_l2_projection_grad(ref_grid, lam, grad_lam), "grad_lam");
+    RSS(ref_metric_l2_projection_grad(ref_grid, lam, grad_lam), "grad_lam");
 
-    for (dir=0;dir<3;dir++) {
+    for (dir = 0; dir < 3; dir++) {
       each_ref_node_valid_node(ref_node, node) {
-        flux[node] = solution[var+nequations*dir+ldim*node];
+        flux[node] = solution[var + nequations * dir + ldim * node];
       }
       RSS(ref_metric_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
       each_ref_node_valid_node(ref_node, node) {
         for (i = 0; i < 6; i++)
-          metric[i + 6 * node] += ABS(grad_lam[dir+3*node])*hess_flux[i+6*node];
+          metric[i + 6 * node] +=
+              ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
       }
     }
     ref_free(hess_flux);
@@ -1437,8 +1437,8 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < 6; i++)
       metric[i + 6 * node] *=
-        pow(target_complexity / current_complexity, 2.0 / 3.0);
+          pow(target_complexity / current_complexity, 2.0 / 3.0);
   }
-  
+
   return REF_SUCCESS;
 }
