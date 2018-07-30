@@ -1373,3 +1373,121 @@ REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
+                               REF_DBL *solution,
+                               REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_INT dimension = 3;
+  REF_INT p_norm = 1;
+  REF_DBL det, exponent;
+  REF_DBL current_complexity;
+  REF_INT ldim = 10;
+  REF_INT var;
+  if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
+
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 6; i++)
+      metric[i + 6 * node] = 0.0;
+  }
+  
+  for (var = 0; var < 5; var++) {
+    REF_DBL rho, u, v, w, e, p, f[5];
+    REF_DBL *lam, *grad_lam, *flux, *hess_flux;
+    ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(grad_lam, 3*ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
+    ref_malloc_init(hess_flux, 6*ref_node_max(ref_node), REF_DBL, 0.0);
+    each_ref_node_valid_node(ref_node, node) {
+      lam[node] = solution[var+5+ldim*node];
+    }
+    RSS( ref_metric_l2_projection_grad(ref_grid, lam, grad_lam), "grad_lam");
+
+    each_ref_node_valid_node(ref_node, node) {
+      rho = solution[0+ldim*node];
+      u = solution[1+ldim*node];
+      v = solution[2+ldim*node];
+      w = solution[3+ldim*node];
+      p = solution[4+ldim*node];
+      e = 0.0; /* calculate */
+      f[0] = rho*u;
+      f[1] = rho*u*u + p;
+      f[2] = rho*u*v;
+      f[3] = rho*u*w;
+      f[4] = u*(e+p);
+      flux[node] = f[var];
+    }
+    RSS(ref_metric_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 6; i++)
+        metric[i + 6 * node] += ABS(grad_lam[0+3*node])*hess_flux[i+6*node];
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      rho = solution[0+ldim*node];
+      u = solution[1+ldim*node];
+      v = solution[2+ldim*node];
+      w = solution[3+ldim*node];
+      p = solution[4+ldim*node];
+      e = 0.0; /* calculate */
+      f[0] = rho*v;
+      f[1] = rho*v*u;
+      f[2] = rho*v*v + p;
+      f[3] = rho*v*w;
+      f[4] = v*(e+p);
+      flux[node] = f[var];
+    }
+    RSS(ref_metric_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 6; i++)
+        metric[i + 6 * node] += ABS(grad_lam[1+3*node])*hess_flux[i+6*node];
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      rho = solution[0+ldim*node];
+      u = solution[1+ldim*node];
+      v = solution[2+ldim*node];
+      w = solution[3+ldim*node];
+      p = solution[4+ldim*node];
+      e = 0.0; /* calculate */
+      f[0] = rho*w;
+      f[1] = rho*w*u;
+      f[2] = rho*w*v;
+      f[3] = rho*w*w + p;
+      f[4] = w*(e+p);
+      flux[node] = f[var];
+    }
+    RSS(ref_metric_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 6; i++)
+        metric[i + 6 * node] += ABS(grad_lam[2+3*node])*hess_flux[i+6*node];
+    }
+    
+    ref_free(hess_flux);
+    ref_free(flux);
+    ref_free(grad_lam);
+    ref_free(lam);
+  }
+
+  /* local scaling */
+  exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
+    if (ABS(det) > 1.0e-15) {
+      for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
+    }
+  }
+
+  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (!ref_math_divisible(target_complexity, current_complexity)) {
+    return REF_DIV_ZERO;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 6; i++)
+      metric[i + 6 * node] *=
+        pow(target_complexity / current_complexity, 2.0 / 3.0);
+  }
+  
+  return REF_SUCCESS;
+}
