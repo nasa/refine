@@ -2628,22 +2628,22 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
      SREVERSE (-1), then the natural surface normal points inward and the
      Face points consistently out of the solid. */
   ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
-  for(face = 0; face < nface; face++) {
+  for (face = 0; face < nface; face++) {
     REIS(EGADS_SUCCESS,
-         EG_getTopology(((ego *)(ref_geom->faces))[face], &ref, &oclass,
-                        &mtype, uv_box, &nchild, &children, &senses),
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &ref, &oclass, &mtype,
+                        uv_box, &nchild, &children, &senses),
          "topo");
     switch (mtype) {
       /* refine assumes normal point into the domain (solid), flip sign */
-    case SFORWARD:
-      (ref_geom->uv_area_sign)[face] = -1.0;
-      break;
-    case SREVERSE:
-      (ref_geom->uv_area_sign)[face] = 1.0;
-      break;
-    default:
-      printf("mtype %d\n", mtype);
-      RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
+      case SFORWARD:
+        (ref_geom->uv_area_sign)[face] = -1.0;
+        break;
+      case SREVERSE:
+        (ref_geom->uv_area_sign)[face] = 1.0;
+        break;
+      default:
+        printf("mtype %d\n", mtype);
+        RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
     }
   }
 
