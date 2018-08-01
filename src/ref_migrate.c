@@ -641,8 +641,8 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
       each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                       ref) {
         xadjncy[xadj[n] + degree] = implied[ref];
-        adjwgt[xadj[n] + degree] = ref_node_age(ref_node, node) + 
-          ref_node_age(ref_node, ref) + 1;
+        adjwgt[xadj[n] + degree] =
+            ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1;
         degree++;
       }
       n++;
@@ -691,9 +691,9 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
          "ParMETIS 3 is not o.k.";
 #else
     REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
-                              adjwgt, wgtflag, numflag, ncon, nparts,
-                              tpwgts, ubvec, options, edgecut, part, &comm),
+         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
+                              options, edgecut, part, &comm),
          "ParMETIS 4 is not o.k.");
 #endif
 
