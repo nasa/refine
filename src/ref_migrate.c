@@ -580,9 +580,9 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_MIGRATE ref_migrate;
     PARM_INT *vtxdist;
-    PARM_INT *xadj, *xadjncy;
+    PARM_INT *xadj, *xadjncy, *adjwgt;
     PARM_REAL *tpwgts, *ubvec;
-    PARM_INT wgtflag[] = {0};
+    PARM_INT wgtflag[] = {1};
     PARM_INT numflag[] = {0};
     PARM_INT ncon[] = {1};
     PARM_INT nparts[1];
@@ -633,6 +633,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     RSS(ref_node_ghost_int(ref_node, implied), "implied ghosts");
 
     ref_malloc(xadjncy, xadj[n], PARM_INT);
+    ref_malloc(adjwgt, xadj[n], PARM_INT);
 
     n = 0;
     each_ref_migrate_node(ref_migrate, node) {
@@ -640,6 +641,8 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
       each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                       ref) {
         xadjncy[xadj[n] + degree] = implied[ref];
+        adjwgt[xadj[n] + degree] = ref_node_age(ref_node, node) + 
+          ref_node_age(ref_node, ref) + 1;
         degree++;
       }
       n++;
@@ -683,13 +686,13 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 #if PARMETIS_MAJOR_VERSION == 3
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
-                              (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
+                              adjwgt, wgtflag, numflag, ncon, nparts,
                               tpwgts, ubvec, options, edgecut, part, &comm),
          "ParMETIS 3 is not o.k.";
 #else
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
-                              (PARM_INT *)NULL, wgtflag, numflag, ncon, nparts,
+                              adjwgt, wgtflag, numflag, ncon, nparts,
                               tpwgts, ubvec, options, edgecut, part, &comm),
          "ParMETIS 4 is not o.k.");
 #endif
@@ -714,6 +717,7 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
     ref_free(part);
     ref_free(ubvec);
     ref_free(tpwgts);
+    ref_free(adjwgt);
     ref_free(xadjncy);
     ref_free(xadj);
     ref_free(implied);
