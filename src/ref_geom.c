@@ -2552,6 +2552,9 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
   int oclass, mtype, nbody, *senses, nchild;
   ego solid, *faces, *edges, *nodes;
   int nface, nedge, nnode;
+  REF_INT face;
+  ego ref;
+  double uv_box[4];
 
   context = (ego)(ref_geom->context);
 
@@ -2618,6 +2621,31 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
        "EG face topo");
   ref_geom->nface = nface;
   ref_geom->faces = (void *)faces;
+
+  /* use face mtype SFORWARD, SREVERSE to set uv_area_sign */
+  /* If it is SFORWARD (1) then the Face's Normal is in the same direction as
+     the surface (u cross v), which points outward of the solid. If it is
+     SREVERSE (-1), then the natural surface normal points inward and the
+     Face points consistently out of the solid. */
+  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 0.0);
+  for(face = 0; face < nface; face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &ref, &oclass,
+                        &mtype, uv_box, &nchild, &children, &senses),
+         "topo");
+    switch (mtype) {
+      /* refine assumes normal point into the domain (solid), flip sign */
+    case SFORWARD:
+      (ref_geom->uv_area_sign)[face] = -1.0;
+      break;
+    case SREVERSE:
+      (ref_geom->uv_area_sign)[face] = 1.0;
+      break;
+    default:
+      printf("mtype %d\n", mtype);
+      RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
+    }
+  }
 
 #else
   printf("returning empty grid from %s, No EGADS linked for %s\n", __func__,
