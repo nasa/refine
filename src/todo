@@ -1,14 +1,20 @@
 
+Look at the "mtype" of the Face (when you do an EG_getTopology).
+If it is SFORWARD (1) then the Face's Normal is in the same direction as
+the surface (u cross v), which points outward of the solid. If it is
+SREVERSE (-1), then the natural surface normal points inward and the
+Face points consistently out of the solid.
+
+put all uv_area limits in a struct (with volume or ref_adapt?)
+
+ref_geom_uv_area, ref_geom_cell_tuv take ref_geom not ref_grid?
+
 update in FUN3D
  parmetis edge weights
 
 throw when global node not found on import or export
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
-
-put all uv_area limits in a struct (with volume or ref_adapt?)
-
-ref_geom_uv_area, ref_geom_cell_tuv take ref_geom not ref_grid?
 
 bound curvature
 make curvature gradation more along surface and less in volume
