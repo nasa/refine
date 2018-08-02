@@ -1176,26 +1176,26 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
       if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid))
         ncell++;
-      RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-      if (ncell > 0) {
-        ref_malloc(c2n, ncell * size_per, REF_INT);
-        ncell = 0;
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-          if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-              (!select_faceid ||
-               nodes[ref_cell_node_per(ref_cell)] == faceid)) {
-            for (node = 0; node < node_per; node++)
-              c2n[node + size_per * ncell] =
-                  ref_node_global(ref_node, nodes[node]);
-            for (node = node_per; node < size_per; node++)
-              c2n[node + size_per * ncell] = nodes[node];
-            ncell++;
-          }
+    }
+    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    if (ncell > 0) {
+      ref_malloc(c2n, ncell * size_per, REF_INT);
+      ncell = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+            (!select_faceid ||
+             nodes[ref_cell_node_per(ref_cell)] == faceid)) {
+          for (node = 0; node < node_per; node++)
+            c2n[node + size_per * ncell] =
+              ref_node_global(ref_node, nodes[node]);
+          for (node = node_per; node < size_per; node++)
+            c2n[node + size_per * ncell] = nodes[node];
+          ncell++;
         }
-        RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
-            "send c2n");
-        ref_free(c2n);
       }
+      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
+          "send c2n");
+      ref_free(c2n);
     }
   }
 
