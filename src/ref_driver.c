@@ -155,16 +155,6 @@ int main(int argc, char *argv[]) {
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
-        printf("./ref_geom_test ega.egads \n");
-        printf("./ref_geom_test ega.egads ega.meshb\n");
-        printf("./ref_acceptance ega.meshb ega-metric.solb 0.1\n");
-        printf("./ref_driver -i ega.meshb -g ega.egads -m ega-metric.solb\n");
-        printf("cp ref_driver.meshb ref_driver1.meshb\n");
-        printf(
-            "./ref_acceptance ref_driver1.meshb ref_driver1-metric.solb 0.1\n");
-        printf(
-            "./ref_driver -i ref_driver1.meshb -g ega.egads -m "
-            "ref_driver1-metric.solb\n");
         return 1;
     }
   }
