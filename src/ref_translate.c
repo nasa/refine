@@ -38,6 +38,7 @@ static int print_usage(const char *name) {
   printf("     [--rotate degrees]\n");
   printf("     [--egads cache-geometry-for-lite.egads]\n");
   printf("     [--drop-face faceid]\n");
+  printf("     [--zero-y-face faceid]\n");
   printf("     [--compact-faceids]\n");
   printf("     [--drop-volume]\n");
   return 0;
@@ -148,6 +149,27 @@ int main(int argc, char *argv[]) {
         }
       }
       printf("dropped %d quadrilaterals from face %d\n", ndrop, faceid);
+    }
+    if (strcmp(argv[pos], "--zero-y-face") == 0) {
+      REF_DBL deviation;
+      printf("%d: --zero-y-face\n", pos);
+      if (pos + 2 > argc) return (print_usage(argv[0]));
+      pos++;
+      faceid = strtol(argv[pos], &endptr, 10);
+      RAS(argv[pos] != endptr, "parse faceid to drop");
+      printf(" set y to zero on faceid %d\n", faceid);
+      deviation = 0.0;
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
+          each_ref_cell_cell_node(ref_cell, node) {
+            deviation = MAX(deviation,
+                            ABS(ref_node_xyz(ref_node, 1, nodes[node])));
+            ref_node_xyz(ref_node, 1, nodes[node]) = 0.0;
+          }
+        }
+      }
+      printf("max deviation %e\n", deviation);
     }
     if (strcmp(argv[pos], "--drop-volume") == 0) {
       printf("%d: --drop-volume\n", pos);
