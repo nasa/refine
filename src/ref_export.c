@@ -1635,7 +1635,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
            fwrite(&(ref_node_xyz(ref_node, 2, n2o[node])), sizeof(double), 1,
                   file),
            "z");
-      id = 1;
+      id = REF_EXPORT_MESHB_VERTEX_ID;
       REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
     }
     REIS(next_position, ftell(file), "vertex inconsistent");
@@ -1710,7 +1710,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
         nodes[node] = o2n[nodes[node]] + 1;
         REIS(1, fwrite(&(nodes[node]), sizeof(int), 1, file), "cell");
       }
-      id = 1;
+      id = REF_EXPORT_MESHB_3D_ID;
       REIS(1, fwrite(&(id), sizeof(int), 1, file), "tet id");
     }
     REIS(next_position, ftell(file), "tet inconsistent");
@@ -1835,7 +1835,7 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
          fwrite(&(ref_node_xyz(ref_node, 2, n2o[node])), sizeof(double), 1,
                 file),
          "z");
-    id = 1;
+    id = REF_EXPORT_MESHB_VERTEX_ID;
     REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
   }
 
@@ -1895,7 +1895,7 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
           nodes[node] = o2n[nodes[node]] + 1;
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "tri");
         }
-        id = 1;
+        id = REF_EXPORT_MESHB_2D_ID;
         REIS(1, fwrite(&(id), sizeof(int), 1, file), "tet id");
       }
     }

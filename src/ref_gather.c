@@ -767,7 +767,7 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_DBL swapped_dbl;
   REF_INT nnode_written, first, n, i;
   REF_INT global, local;
-  REF_INT id = 0;
+  REF_INT id = REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
 
   chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
@@ -1119,7 +1119,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
             REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file),
                  "cel node");
           } else {
-            node = 0;
+            node = REF_EXPORT_MESHB_3D_ID;
             if (swap_endian) SWAP_INT(node);
             REIS(1, fwrite(&(node), sizeof(REF_INT), 1, file), "cel node");
           }
@@ -1161,7 +1161,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                             file),
                      "cel node");
               } else {
-                node = 0;
+                node = REF_EXPORT_MESHB_3D_ID;
                 if (swap_endian) SWAP_INT(node);
                 REIS(1, fwrite(&(node), sizeof(REF_INT), 1, file), "cel node");
               }

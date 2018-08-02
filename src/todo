@@ -1,7 +1,7 @@
 
 - meshb only ref_driver option
 - parametis config
-- id 1 for 2d, 0 for 3d
++ id 1 for 2d, 0 for 3d
 
 put all uv_area limits in a struct (with volume or ref_adapt?)
 

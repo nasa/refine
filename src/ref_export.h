@@ -19,6 +19,14 @@
 #ifndef REF_EXPORT_H
 #define REF_EXPORT_H
 
+#include "ref_defs.h"
+
+BEGIN_C_DECLORATION
+#define REF_EXPORT_MESHB_VERTEX_ID (1)
+#define REF_EXPORT_MESHB_2D_ID (1)
+#define REF_EXPORT_MESHB_3D_ID (0)
+END_C_DECLORATION
+
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
