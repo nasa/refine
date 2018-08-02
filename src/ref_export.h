@@ -22,6 +22,7 @@
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
+/* these values requested to emulate Feflo.a behavior, should be all one? */
 #define REF_EXPORT_MESHB_VERTEX_ID (1)
 #define REF_EXPORT_MESHB_2D_ID (1)
 #define REF_EXPORT_MESHB_3D_ID (0)
