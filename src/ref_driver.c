@@ -149,7 +149,7 @@ int main(int argc, char *argv[]) {
         printf(
             "       [-m input_project.{solb,sol,metric}] (curvature metric "
             "when missing)\n");
-        printf("       [-s adapt_cycles] default is 15\n");
+        printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
         printf("       [-c] output clumps\n");
         printf("       [-l] limit metric change\n");
