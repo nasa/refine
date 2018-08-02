@@ -61,7 +61,6 @@
 #include "ref_histogram.h"
 
 #include "ref_cavity.h"
-#include "ref_clump.h"
 
 #include "ref_gather.h"
 #include "ref_mpi.h"
@@ -80,7 +79,6 @@ int main(int argc, char *argv[]) {
   REF_GRID background_grid = NULL;
   int opt;
   int passes = 15, pass;
-  REF_BOOL output_clumps = REF_FALSE;
   REF_BOOL tecplot_movie = REF_FALSE;
   REF_BOOL sanitize_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
@@ -99,7 +97,7 @@ int main(int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:cltdq")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:ltdq")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -127,9 +125,6 @@ int main(int argc, char *argv[]) {
       case 's':
         passes = atoi(optarg);
         break;
-      case 'c':
-        output_clumps = REF_TRUE;
-        break;
       case 'l':
         sanitize_metric = REF_TRUE;
         break;
@@ -155,7 +150,6 @@ int main(int argc, char *argv[]) {
             "when missing)\n");
         printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
-        printf("       [-c] output clumps\n");
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
@@ -280,10 +274,6 @@ int main(int argc, char *argv[]) {
     snprintf(output_filename, 1024, "%s_metric_ellipse.tec", output_project);
     RSS(ref_export_tec_metric_ellipse(ref_grid, output_project), "al");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ellipse");
-  }
-  if (output_clumps && !ref_grid_twod(ref_grid)) {
-    RSS(ref_clump_short_edges(ref_grid, 0.5), "clump");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "clump short");
   }
 
   if (NULL != background_grid) RSS(ref_grid_free(background_grid), "free");
