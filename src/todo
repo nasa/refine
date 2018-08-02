@@ -1,8 +1,4 @@
 
-- meshb only ref_driver option
-- parametis config
-+ id 1 for 2d, 0 for 3d
-
 put all uv_area limits in a struct (with volume or ref_adapt?)
 
 ref_geom_uv_area, ref_geom_cell_tuv take ref_geom not ref_grid?
@@ -172,6 +168,10 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ meshb only ref_driver option
++ parametis config
++ id 1 for 2d, 0 for 3d
 
 + Look at the "mtype" of the Face (when you do an EG_getTopology)
   for uv_area_sign.

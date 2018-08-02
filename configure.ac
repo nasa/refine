@@ -166,14 +166,15 @@ AC_ARG_WITH(parmetis,
 	[  --with-parmetis[=ARG]     use ParMETIS partitioner [ARG=no]],
 	[with_parmetis=$withval],        [with_parmetis="no"])
 
+AC_ARG_WITH(metis,
+	[  --with-metis[=ARG]        use METIS partitioner [ARG=ParMETIS path]],
+	[with_metis=$withval],        [with_metis="$with_parmetis"])
+
 if test "$with_parmetis" != 'no'
 then
   AC_CHECK_FILE([$with_parmetis/include/parmetis.h],
                 [parmetis_h_path=$with_parmetis/include],
                 [parmetis_h_path='no'])
-  AC_CHECK_FILE([$with_parmetis/include/metis.h],
-                [metis_h_path=$with_parmetis/include],
-                [metis_h_path='no'])
 
   AC_CHECK_FILE([$with_parmetis/lib/libparmetis.a],
                 [parmetis_a_path=$with_parmetis/lib],
@@ -185,46 +186,50 @@ then
                 [parmetis_dylib_path=$with_parmetis/lib],
 		[parmetis_dylib_path='no'])
 
-  AC_CHECK_FILE([$with_parmetis/lib/libmetis.a],
-                [metis_a_path=$with_parmetis/lib],
+  AC_CHECK_FILE([$with_metis/include/metis.h],
+                [metis_h_path=$with_metis/include],
+                [metis_h_path='no'])
+
+  AC_CHECK_FILE([$with_metis/lib/libmetis.a],
+                [metis_a_path=$with_metis/lib],
 		[metis_a_path='no'])
-  AC_CHECK_FILE([$with_parmetis/lib/libmetis.so],
-                [metis_so_path=$with_parmetis/lib],
+  AC_CHECK_FILE([$with_metis/lib/libmetis.so],
+                [metis_so_path=$with_metis/lib],
 		[metis_so_path='no'])
-  AC_CHECK_FILE([$with_parmetis/lib/libmetis.dylib],
-                [metis_dylib_path=$with_parmetis/lib],
+  AC_CHECK_FILE([$with_metis/lib/libmetis.dylib],
+                [metis_dylib_path=$with_metis/lib],
 		[metis_dylib_path='no'])
 
-  if test "$parmetis_h_path" != 'no'
+  if test "$metis_h_path" != 'no'
   then
-    parmetis_include="-I$parmetis_h_path"
+    metis_include="-I$metis_h_path"
   else
-    AC_MSG_ERROR([parmetis.h not found in $with_parmetis/include])
-  fi
-
-  if test "$metis_h_path" == 'no'
-  then
-    AC_MSG_WARN([metis.h not found in $with_parmetis/include,
-                    this is not an issue for ParMETIS 3.*, 
-                    but compiling will fail for ParMETIS 4.*])
+    AC_MSG_ERROR([metis.h not found in $with_metis/include])
   fi
 
   metis_ldadd=""
     if test "$metis_a_path" != 'no'
   then
-      metis_ldadd="-lmetis"
+      metis_ldadd="-L${metis_a_path} -lmetis"
   fi
   if test "$metis_so_path" != 'no'
   then
-      metis_ldadd="-lmetis"
+      metis_ldadd="-Wl,-rpath,${metis_so_path} -L${metis_so_path} -lmetis"
   fi
   if test "$metis_dylib_path" != 'no'
   then
-      metis_ldadd="-lmetis"
+      metis_ldadd="-Wl,-rpath,${metis_dylib_path} -L${metis_dylib_path} -lmetis"
   fi
   if test "empty$metis_ldadd" == 'empty'
   then
-    AC_MSG_ERROR([libmetis.{a,so,dylib} not found in $with_parmetis/lib])
+    AC_MSG_ERROR([libmetis.{a,so,dylib} not found in $with_metis/lib])
+  fi
+
+  if test "$parmetis_h_path" != 'no'
+  then
+    parmetis_include="-I$parmetis_h_path ${metis_include}"
+  else
+    AC_MSG_ERROR([parmetis.h not found in $with_parmetis/include])
   fi
 
   parmetis_ldadd=""
