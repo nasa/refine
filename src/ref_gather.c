@@ -1096,32 +1096,32 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT proc;
 
   if (ref_mpi_once(ref_mpi)) {
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell,
-        nodes) if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-                   (!select_faceid ||
-                    nodes[ref_cell_node_per(ref_cell)] == faceid)) {
-      if (faceid_insted_of_c2n) {
-        node = node_per;
-        if (swap_endian) SWAP_INT(nodes[node]);
-        REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cel node");
-      } else {
-        for (node = 0; node < node_per; node++) {
-          nodes[node] = ref_node_global(ref_node, nodes[node]);
-          nodes[node]++;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+          (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
+        if (faceid_insted_of_c2n) {
+          node = node_per;
           if (swap_endian) SWAP_INT(nodes[node]);
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cel node");
-        }
-        if (always_id) {
-          if (ref_cell_last_node_is_an_id(ref_cell)) {
-            node = node_per;
+        } else {
+          for (node = 0; node < node_per; node++) {
+            nodes[node] = ref_node_global(ref_node, nodes[node]);
+            nodes[node]++;
             if (swap_endian) SWAP_INT(nodes[node]);
             REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file),
                  "cel node");
-          } else {
-            node = REF_EXPORT_MESHB_3D_ID;
-            if (swap_endian) SWAP_INT(node);
-            REIS(1, fwrite(&(node), sizeof(REF_INT), 1, file), "cel node");
+          }
+          if (always_id) {
+            if (ref_cell_last_node_is_an_id(ref_cell)) {
+              node = node_per;
+              if (swap_endian) SWAP_INT(nodes[node]);
+              REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file),
+                   "cel node");
+            } else {
+              node = REF_EXPORT_MESHB_3D_ID;
+              if (swap_endian) SWAP_INT(node);
+              REIS(1, fwrite(&(node), sizeof(REF_INT), 1, file), "cel node");
+            }
           }
         }
       }
@@ -1172,30 +1172,30 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
     }
   } else {
     ncell = 0;
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell,
-        nodes) if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-                   (!select_faceid ||
-                    nodes[ref_cell_node_per(ref_cell)] == faceid)) ncell++;
-    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    if (ncell > 0) {
-      ref_malloc(c2n, ncell * size_per, REF_INT);
-      ncell = 0;
-      each_ref_cell_valid_cell_with_nodes(
-          ref_cell, cell,
-          nodes) if (ref_mpi_rank(ref_mpi) ==
-                         ref_node_part(ref_node, nodes[0]) &&
-                     (!select_faceid ||
-                      nodes[ref_cell_node_per(ref_cell)] == faceid)) {
-        for (node = 0; node < node_per; node++)
-          c2n[node + size_per * ncell] = ref_node_global(ref_node, nodes[node]);
-        for (node = node_per; node < size_per; node++)
-          c2n[node + size_per * ncell] = nodes[node];
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+          (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid))
         ncell++;
+      RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+      if (ncell > 0) {
+        ref_malloc(c2n, ncell * size_per, REF_INT);
+        ncell = 0;
+        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+          if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+              (!select_faceid ||
+               nodes[ref_cell_node_per(ref_cell)] == faceid)) {
+            for (node = 0; node < node_per; node++)
+              c2n[node + size_per * ncell] =
+                  ref_node_global(ref_node, nodes[node]);
+            for (node = node_per; node < size_per; node++)
+              c2n[node + size_per * ncell] = nodes[node];
+            ncell++;
+          }
+        }
+        RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
+            "send c2n");
+        ref_free(c2n);
       }
-      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
-          "send c2n");
-      ref_free(c2n);
     }
   }
 
@@ -1540,10 +1540,11 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_FALSE;
   faceid = REF_EMPTY;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
-                          swap_endian, select_faceid, faceid, file),
-          "cell c2n");
+  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+                        swap_endian, select_faceid, faceid, file),
+        "cell c2n");
+  }
 
   if (ref_grid_once(ref_grid)) fclose(file);
 
