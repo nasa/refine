@@ -87,7 +87,6 @@ int main(int argc, char *argv[]) {
   char output_project[1024];
   char output_filename[1024];
   REF_INT ngeom;
-  REF_INT squelch = 1;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
@@ -97,7 +96,7 @@ int main(int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:ltdq")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:ltd")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -135,9 +134,6 @@ int main(int argc, char *argv[]) {
         debug_verbose = REF_TRUE;
         ref_mpi->debug = REF_TRUE;
         break;
-      case 'q':
-        squelch = 0;
-        break;
       case '?':
       default:
         printf("parse error -%c\n", optopt);
@@ -153,7 +149,6 @@ int main(int argc, char *argv[]) {
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
-        printf("       [-q] reduce screen output and files\n");
         return 1;
     }
   }
@@ -254,8 +249,8 @@ int main(int argc, char *argv[]) {
       RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
     }
-  }
-  if (1 <= squelch) {
+   }
+  {
     snprintf(output_filename, 1024, "%s.b8.ugrid", output_project);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "b8.ugrid");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather b8.ugrid");
