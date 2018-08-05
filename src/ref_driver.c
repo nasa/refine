@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
   ref_mpi_stopwatch_start(ref_mpi);
 
-  snprintf(output_project, 1024, "");
+  output_project[0] = '\0';
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
