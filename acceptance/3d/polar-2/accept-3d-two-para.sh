@@ -29,7 +29,6 @@ function adapt_cycle {
     rm ref_adapt_test.b8.ugrid
     mpiexec -np 8 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric \
             -o ref_adapt_test -t
-    cp ref_driver.b8.ugrid ref_adapt_test.b8.ugrid
     cp ref_gather_movie.tec ${proj}_movie.tec
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
