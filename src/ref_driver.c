@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
   ref_mpi_stopwatch_start(ref_mpi);
 
-  snprintf(output_project, 1024, "ref_driver");
+  snprintf(output_project, 1024, "");
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
@@ -238,19 +238,19 @@ int main(int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "final params");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "verify final params");
 
-  if (!ref_grid_twod(ref_grid)) {
-    snprintf(output_filename, 1024, "%s.meshb", output_project);
-    RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather meshb");
-  } else {
-    /* single core, not mixed element, 2D */
-    if (!ref_mpi_para(ref_mpi) && 0 == ref_cell_n(ref_grid_hex(ref_grid))) {
+  if (strcmp(output_project, "") != 0) {
+    if (!ref_grid_twod(ref_grid)) {
       snprintf(output_filename, 1024, "%s.meshb", output_project);
-      RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
+      RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather meshb");
+    } else {
+      /* single core, not mixed element, 2D */
+      if (!ref_mpi_para(ref_mpi) && 0 == ref_cell_n(ref_grid_hex(ref_grid))) {
+        snprintf(output_filename, 1024, "%s.meshb", output_project);
+        RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
+      }
     }
-   }
-  {
     snprintf(output_filename, 1024, "%s.b8.ugrid", output_project);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "b8.ugrid");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather b8.ugrid");
@@ -264,11 +264,11 @@ int main(int argc, char *argv[]) {
       RSS(ref_geom_tec(ref_grid, output_filename), "geom tec");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tec");
     }
-  }
-  if (debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi)) {
-    snprintf(output_filename, 1024, "%s_metric_ellipse.tec", output_project);
-    RSS(ref_export_tec_metric_ellipse(ref_grid, output_project), "al");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ellipse");
+    if (debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi)) {
+      snprintf(output_filename, 1024, "%s_metric_ellipse.tec", output_project);
+      RSS(ref_export_tec_metric_ellipse(ref_grid, output_project), "al");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ellipse");
+    }
   }
 
   if (NULL != background_grid) RSS(ref_grid_free(background_grid), "free");
