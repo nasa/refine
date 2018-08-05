@@ -26,7 +26,7 @@ function adapt_cycle {
     ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.metric
     
     rm ref_adapt_test.b8.ugrid
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric
+    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test
     cp ref_driver.b8.ugrid ref_adapt_test.b8.ugrid
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status

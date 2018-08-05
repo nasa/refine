@@ -25,7 +25,7 @@ function adapt_cycle {
     ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.001
 
     rm ref_adapt_test.b8.ugrid
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -t
+    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test -t
     cp ref_driver.b8.ugrid ref_adapt_test.b8.ugrid
     cp ref_gather_movie.tec ${proj}_movie.tec
     
