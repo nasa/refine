@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:s:ltd")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:s:ltd")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -120,6 +120,8 @@ int main(int argc, char *argv[]) {
         break;
       case 'o':
         snprintf(output_project, 1024, "%s", optarg);
+        break;
+      case 'x':
         break;
       case 's':
         passes = atoi(optarg);
@@ -146,6 +148,7 @@ int main(int argc, char *argv[]) {
             "when missing)\n");
         printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
+        printf("       [-x export_grid.ext]\n");
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
@@ -254,7 +257,7 @@ int main(int argc, char *argv[]) {
     snprintf(output_filename, 1024, "%s.b8.ugrid", output_project);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "b8.ugrid");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather b8.ugrid");
-    
+
     snprintf(output_filename, 1024, "%s-final-metric.solb", output_project);
     RSS(ref_gather_metric(ref_grid, output_filename), "met met");
     if (!ref_mpi_para(ref_mpi)) {
@@ -268,6 +271,17 @@ int main(int argc, char *argv[]) {
       snprintf(output_filename, 1024, "%s_metric_ellipse.tec", output_project);
       RSS(ref_export_tec_metric_ellipse(ref_grid, output_project), "al");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ellipse");
+    }
+  }
+
+  /* export via -x grid.ext */
+  for (opt = 0; opt < argc - 1; opt++) {
+    if (strcmp(argv[opt], "-x") == 0) {
+      if (ref_mpi_para(ref_mpi)) {
+        RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+      } else {
+        RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+      }
     }
   }
 

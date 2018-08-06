@@ -163,8 +163,8 @@ int main(int argc, char *argv[]) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
           each_ref_cell_cell_node(ref_cell, node) {
-            deviation = MAX(deviation,
-                            ABS(ref_node_xyz(ref_node, 1, nodes[node])));
+            deviation =
+                MAX(deviation, ABS(ref_node_xyz(ref_node, 1, nodes[node])));
             ref_node_xyz(ref_node, 1, nodes[node]) = 0.0;
           }
         }

@@ -1183,11 +1183,10 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-            (!select_faceid ||
-             nodes[ref_cell_node_per(ref_cell)] == faceid)) {
+            (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
           for (node = 0; node < node_per; node++)
             c2n[node + size_per * ncell] =
-              ref_node_global(ref_node, nodes[node]);
+                ref_node_global(ref_node, nodes[node]);
           for (node = node_per; node < size_per; node++)
             c2n[node + size_per * ncell] = nodes[node];
           ncell++;
