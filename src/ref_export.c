@@ -159,10 +159,13 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_cogsg(ref_grid, filename), "cogsg export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".html") == 0) {
     RSS(ref_export_html(ref_grid, filename), "html export failed");
-  } else if (strcmp(&filename[end_of_string - 9], ".2d.meshb") == 0) {
-    RSS(ref_export_twod_meshb(ref_grid, filename), "twod meshb export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
-    RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_export_twod_meshb(ref_grid, filename),
+          "twod meshb export failed");
+    } else {
+      RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
+    }
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
   } else {
