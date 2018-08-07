@@ -53,4 +53,11 @@
    ...
    fun:_ZN9BRepTools4ReadER12TopoDS_ShapePKcRK12BRep_BuilderRK32Handle_Message_ProgressIndicator
 }
-
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_Znwm
+   fun:_ZN20Standard_MMgrFactoryC2Ev
+}
