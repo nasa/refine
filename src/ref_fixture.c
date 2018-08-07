@@ -961,29 +961,29 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
 
   ref_grid_twod(ref_grid) = REF_TRUE;
 
-/*
-                             inode7-----11-----inode6
-                               /.                /|
-                              / .               / |
-                             /  .              /  |
-                            /   .             /   |
-                           9    .        /  10    6
-                          /     7           /     |
-                         /      .          /      |
-                        /       .         /       |
-                     inode4-8----------inode5     |
-                       |      inode3.....|...5..inode2
-                       |       .         |       /
-                       |      .          |      /
-                       |     .           |     /
-                       2    1    /       4    3
-z                       |   .             |   /
-^   y                   |  .              |  /
-|  /                    | .               | /
-| /                     |.                |/
-|/                    inode0------0-----inode1
-+----> x
-*/
+  /*
+                               inode7-----11-----inode6
+                                 /.                /|
+                                / .               / |
+                               /  .              /  |
+                              /   .             /   |
+                             9    .        /  10    6
+                            /     7           /     |
+                           /      .          /      |
+                          /       .         /       |
+                       inode4-8----------inode5     |
+                         |      inode3.....|...5..inode2
+                         |       .         |       /
+                         |      .          |      /
+                         |     .           |     /
+                         2    1    /       4    3
+  z                       |   .             |   /
+  ^   y                   |  .              |  /
+  |  /                    | .               | /
+  | /                     |.                |/
+  |/                    inode0------0-----inode1
+  +----> x
+  */
 
 #define ijk2node(i, j, k, l, m, n) ((i) + (j) * (l) + (k) * (l) * (m))
 

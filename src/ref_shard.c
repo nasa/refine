@@ -180,16 +180,16 @@ REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard, REF_INT cell,
       RSS(ref_shard_mark_to_split(ref_shard, nodes[3], nodes[4]), "mark2");
       break;
 
-    /*
-  case 2:  case 6:
-    RSS( ref_shard_mark_to_split(ref_shard, nodes[4], nodes[6] ), "mark1" );
-    RSS( ref_shard_mark_to_split(ref_shard, nodes[0], nodes[2] ), "mark2" );
-    break;
-  case 4:  case 7:
-    RSS( ref_shard_mark_to_split(ref_shard, nodes[7], nodes[5] ), "mark1" );
-    RSS( ref_shard_mark_to_split(ref_shard, nodes[3], nodes[1] ), "mark2" );
-    break;
-    */
+      /*
+    case 2:  case 6:
+      RSS( ref_shard_mark_to_split(ref_shard, nodes[4], nodes[6] ), "mark1" );
+      RSS( ref_shard_mark_to_split(ref_shard, nodes[0], nodes[2] ), "mark2" );
+      break;
+    case 4:  case 7:
+      RSS( ref_shard_mark_to_split(ref_shard, nodes[7], nodes[5] ), "mark1" );
+      RSS( ref_shard_mark_to_split(ref_shard, nodes[3], nodes[1] ), "mark2" );
+      break;
+      */
 
     default:
       printf("%s: %d: %s: cell edge %d not implemented, skipping.\n", __FILE__,
