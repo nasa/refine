@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
-  char output_project[1024];
+  char output_project[1004];
   char output_filename[1024];
   REF_INT ngeom;
 
@@ -119,7 +119,7 @@ int main(int argc, char *argv[]) {
         curvature_metric = REF_FALSE;
         break;
       case 'o':
-        snprintf(output_project, 1024, "%s", optarg);
+        snprintf(output_project, 1004, "%s", optarg);
         break;
       case 'x':
         break;
