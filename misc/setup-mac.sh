@@ -5,7 +5,7 @@ set -x
 ./bootstrap
 
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-7.2.0/zoltan-3.83-xxyq2a3qxwtcrdt3otmiflhgqaz7gial"
-egads_path="/Users/mpark/esp/EngSketchPad"
+egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
 parmetis_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-7.2.0/parmetis-4.0.3-lxz27qnvcp7blhtqltxvngthbnabs24h"
 metis_path="/Users/mpark/spack/opt/spack/darwin-elcapitan-x86_64/gcc-7.2.0/metis-5.1.0-x5ptqjut6c5wzhzs74pcje3lpwfl5lct"
@@ -17,8 +17,8 @@ mkdir -p strict
     ../configure \
     --prefix=`pwd` \
     CFLAGS="${gccflags}" \
-    CC=gcc-7 \
-    FC=gfortran-7 \
+    CC=gcc-8 \
+    FC=gfortran-8 \
     ) \
     || exit
 
@@ -28,8 +28,8 @@ mkdir -p egads
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
     CFLAGS="${gccflags}" \
-    CC=gcc-7 \
-    FC=gfortran-7 \
+    CC=gcc-8 \
+    FC=gfortran-8 \
     ) \
     || exit
 
