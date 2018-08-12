@@ -1034,7 +1034,7 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node0, node1, node2, i1, i2, im, i, j;
   REF_INT nnode1, nnode2;
-  REF_INT node_list1[200], node_list2[200], max_node = 200;
+  REF_INT node_list1[1000], node_list2[1000], max_node = 1000;
   REF_DICT ref_dict;
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
