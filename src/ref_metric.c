@@ -1043,15 +1043,15 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   each_ref_node_valid_node(ref_node, node0) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
-    RSS(ref_cell_node_list_around(ref_cell, node0, max_node, &nnode1,
+    RXS(ref_cell_node_list_around(ref_cell, node0, max_node, &nnode1,
                                   node_list1),
-        "first halo of nodes");
+        REF_INCREASE_LIMIT, "first halo of nodes");
     for (i1 = 0; i1 < nnode1; i1++) {
       node1 = node_list1[i1];
       RSS(ref_dict_store(ref_dict, node1, REF_EMPTY), "store node1");
-      RSS(ref_cell_node_list_around(ref_cell, node1, max_node, &nnode2,
+      RXS(ref_cell_node_list_around(ref_cell, node1, max_node, &nnode2,
                                     node_list2),
-          "halo of halo of nodes");
+          REF_INCREASE_LIMIT, "halo of halo of nodes");
       for (i2 = 0; i2 < nnode2; i2++) {
         node2 = node_list2[i2];
         if (node0 == node2) continue; /* skip self */
