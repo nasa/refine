@@ -11,15 +11,14 @@ ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 make curvature gradation more along surface and less in volume
  gradation on surface operator
 
-allow surface tess modification without volume
-
 pack node and grid into ref_cavity
 
 tess
+ allow surface tess modification without volume
  k-tree to drive split for grid size gradation of JSM
  add --tess acceptance test
 
-ref_acceptance two dashes
+ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
 see Adrien's email
 
@@ -30,7 +29,7 @@ mixed element in refine/two
 
 ref_geom
  extract init tess
- add EGADS geom built fixture to ref_geom_tests
+ add EGADS model builder fixture to ref_geom_tests
  recover
   extract/refactor recon
   make sure that edge t values are monotonic
