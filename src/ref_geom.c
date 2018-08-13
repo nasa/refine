@@ -3050,29 +3050,40 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_DICT ref_dict, ref_dict_jump;
+  REF_DICT ref_dict, ref_dict_jump, ref_dict_degen;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
-  REF_INT nnode, nnode_sens0, ntri;
+  REF_INT nnode, nnode_sens0, nnode_degen, ntri;
   REF_INT sens;
   REF_DBL *uv, param[2];
 
   RSS(ref_dict_create(&ref_dict), "create dict");
   RSS(ref_dict_create(&ref_dict_jump), "create dict");
+  RSS(ref_dict_create(&ref_dict_degen), "create dict");
 
   each_ref_geom_face(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
     if (id == ref_geom_id(ref_geom, geom)) {
-      RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
-          "mark nodes");
-      if (0 != ref_geom_jump(ref_geom, geom) &&
-          0 == ref_geom_degen(ref_geom, geom)) {
-        RSS(ref_dict_store(ref_dict_jump, ref_geom_node(ref_geom, geom), geom),
-            "mark nodes");
+      if (0 == ref_geom_degen(ref_geom, geom)) {
+        RSS(ref_dict_store(ref_dict, node, geom), "mark nodes");
+        if (0 != ref_geom_jump(ref_geom, geom)) {
+          RSS(ref_dict_store(ref_dict_jump, node, geom), "mark jump");
+        }
+      } else {
+        each_ref_cell_having_node(ref_cell, node, item, cell) {
+          RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+          if (id == nodes[3]) {
+            RSS(ref_dict_store(ref_dict_degen, cell, node), "mark degen");
+          }
+        }
       }
     }
   }
+
   nnode_sens0 = ref_dict_n(ref_dict);
-  nnode = ref_dict_n(ref_dict) + ref_dict_n(ref_dict_jump);
+  nnode_degen = ref_dict_n(ref_dict) + ref_dict_n(ref_dict_jump);
+  nnode = ref_dict_n(ref_dict) + ref_dict_n(ref_dict_jump) +
+          ref_dict_n(ref_dict_degen);
 
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -3083,7 +3094,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
 
   /* skip degenerate */
   if (0 == nnode || 0 == ntri) {
-    RSS(ref_dict_free(ref_dict_jump), "free dict");
+    RSS(ref_dict_free(ref_dict_degen), "free degen");
+    RSS(ref_dict_free(ref_dict_jump), "free jump");
     RSS(ref_dict_free(ref_dict), "free dict");
     return REF_SUCCESS;
   }
@@ -3093,19 +3105,26 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
       id, nnode, ntri, "point", "fetriangle");
 
-  ref_malloc(uv, 2 * nnode, REF_DBL);
+  ref_malloc_init(uv, 2 * nnode, REF_DBL, -1.0);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (id == nodes[3]) {
       each_ref_cell_cell_node(ref_cell, node) {
+        RSS(ref_geom_find(ref_geom, nodes[node], REF_GEOM_FACE, id, &geom),
+            "find");
         RSS(ref_geom_cell_tuv(ref_grid, nodes[node], nodes, REF_GEOM_FACE,
                               param, &sens),
             "cell tuv");
-        if (0 == sens || 1 == sens) {
-          RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+        if (0 == ref_geom_degen(ref_geom, geom)) {
+          if (0 == sens || 1 == sens) {
+            RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+          } else {
+            RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),
+                "localize");
+            local += nnode_sens0;
+          }
         } else {
-          RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),
-              "localize");
-          local += nnode_sens0;
+          RSS(ref_dict_location(ref_dict_degen, cell, &local), "localize");
+          local += nnode_degen;
         }
         uv[0 + 2 * local] = param[0];
         uv[1 + 2 * local] = param[1];
@@ -3125,20 +3144,33 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             ref_node_xyz(ref_node, 2, node), uv[0 + 2 * (nnode_sens0 + item)],
             uv[1 + 2 * (nnode_sens0 + item)], 0.0);
   }
+  each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+            ref_node_xyz(ref_node, 2, node), uv[0 + 2 * (nnode_degen + item)],
+            uv[1 + 2 * (nnode_degen + item)], 0.0);
+  }
   ref_free(uv);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (id == nodes[3]) {
       each_ref_cell_cell_node(ref_cell, node) {
+        RSS(ref_geom_find(ref_geom, nodes[node], REF_GEOM_FACE, id, &geom),
+            "find");
         RSS(ref_geom_cell_tuv(ref_grid, nodes[node], nodes, REF_GEOM_FACE,
                               param, &sens),
             "cell tuv");
-        if (0 == sens || 1 == sens) {
-          RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+        if (0 == ref_geom_degen(ref_geom, geom)) {
+          if (0 == sens || 1 == sens) {
+            RSS(ref_dict_location(ref_dict, nodes[node], &local), "localize");
+          } else {
+            RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),
+                "localize");
+            local += nnode_sens0;
+          }
         } else {
-          RSS(ref_dict_location(ref_dict_jump, nodes[node], &local),
-              "localize");
-          local += nnode_sens0;
+          RSS(ref_dict_location(ref_dict_degen, cell, &local), "localize");
+          local += nnode_degen;
         }
         fprintf(file, " %d", local + 1);
       }
@@ -3146,7 +3178,8 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     }
   }
 
-  RSS(ref_dict_free(ref_dict_jump), "free dict");
+  RSS(ref_dict_free(ref_dict_degen), "free degen");
+  RSS(ref_dict_free(ref_dict_jump), "free jump");
   RSS(ref_dict_free(ref_dict), "free dict");
 
   return REF_SUCCESS;
