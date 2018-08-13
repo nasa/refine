@@ -336,6 +336,33 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
+  REF_INT edge;
+
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine edge fill\"\n");
+  fprintf(file, "variables = \"i\" \"j\"\n");
+
+  fprintf(
+	  file,
+	  "zone t=\"fill\", i=%d, datapacking=%s\n",
+	  ref_edge_n(ref_edge), "point");
+
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    fprintf(file, " %d %d\n", ref_edge_e2n(ref_edge, 0, edge),
+	    ref_edge_e2n(ref_edge, 1, edge));
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, REF_NODE ref_node,
                             const char *filename, REF_INT *data) {
   REF_INT edge;
