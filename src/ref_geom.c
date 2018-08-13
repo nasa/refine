@@ -1936,9 +1936,8 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
-REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom,
-                                   REF_DBL *kr, REF_DBL *r,
-                                   REF_DBL *ks, REF_DBL *s) {
+REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
+                                   REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_EGADS
   double curvature[8];
   ego *faces;
@@ -1955,7 +1954,7 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   uv[0] = ref_geom_param(ref_geom, 0, geom);
   uv[1] = ref_geom_param(ref_geom, 1, geom);
   egads_status = EG_curvature(object, uv, curvature);
-  if (0 != ref_geom_degen(ref_geom,geom) || EGADS_DEGEN == egads_status) {
+  if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
     REF_DBL xyz[3], dxyz_duv[15], du, dv;
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
@@ -1974,10 +1973,10 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom,
          "EG topo face");
     if (du > dv) {
       params[0] =
-	(1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
+          (1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
     } else {
       params[1] =
-	(1.0 - shift) * params[1] + shift * 0.5 * (uv_range[2] + uv_range[3]);
+          (1.0 - shift) * params[1] + shift * 0.5 * (uv_range[2] + uv_range[3]);
     }
     egads_status = EG_curvature(object, params, curvature);
   }

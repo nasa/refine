@@ -666,7 +666,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   /* drad is 1/segments per radian */
   drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
   RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
-  hmax *= 0.1;          /* normal spacing and max tangential spacing */
+  hmax *= 0.1; /* normal spacing and max tangential spacing */
   /* prevent div by zero, use hmax for large radius, small kr ks */
   rlimit = hmax / drad; /* h = r*drad, r = h/drad */
   /* limit aspect ratio via curvature */
@@ -685,9 +685,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   }
 
   each_ref_geom_face(ref_geom, geom) {
-    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r,
-                                &ks, s),
-        "curve");
+    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
     /* ignore sign, curvature is 1 / radius */
     kr = ABS(kr);
     ks = ABS(ks);
@@ -712,8 +710,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
     /* form and intersect with previous */
     RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
-    for (i = 0; i < 6; i++)
-      previous_metric[i] = metric[i + 6 * node];
+    for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
     RSS(ref_matrix_intersect(previous_metric, curvature_metric,
                              &(metric[6 * node])),
         "intersect to update metric");
