@@ -131,7 +131,7 @@ REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     id = nodes[ref_cell_node_per(ref_cell)];
     RSS(ref_geom_uv_area_sign(ref_grid, id, &sign_uv_area), "sign");
-    RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
+    RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area), "uv area");
     uv_area *= sign_uv_area;
     if (none_found) {
       *min_uv_area = uv_area;

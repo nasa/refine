@@ -147,7 +147,7 @@ REF_STATUS ref_geom_face_surface(REF_GEOM ref_geom, REF_INT faceid,
 REF_STATUS ref_geom_recon(REF_GRID ref_grid);
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid);
 
-REF_STATUS ref_geom_uv_area(REF_GRID ref_grid, REF_INT *nodes,
+REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
                             REF_DBL *uv_area);
 REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign);
 REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid);

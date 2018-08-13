@@ -798,9 +798,8 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
 #endif
 }
 
-REF_STATUS ref_geom_uv_area(REF_GRID ref_grid, REF_INT *nodes,
+REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
                             REF_DBL *uv_area) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_DBL uv0[2], uv1[2], uv2[2];
   REF_INT sens;
   RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
@@ -827,7 +826,7 @@ REF_STATUS ref_geom_uv_area_sign(REF_GRID ref_grid, REF_INT id, REF_DBL *sign) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       face = nodes[3];
       if (face < 1 || ref_geom->nface < face) continue;
-      RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
       if (uv_area < 0.0) {
         ((ref_geom)->uv_area_sign)[face - 1] -= 1.0;
       } else {
@@ -874,7 +873,7 @@ REF_STATUS ref_geom_uv_area_report(REF_GRID ref_grid) {
     n_pos = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (id == nodes[3]) {
-        RSS(ref_geom_uv_area(ref_grid, nodes, &uv_area), "uv area");
+        RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
         total_uv_area += uv_area;
         if (no_cell) {
           min_uv_area = uv_area;
