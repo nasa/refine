@@ -855,13 +855,13 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   edge_nodes[0] = nodes[0];
   edge_nodes[1] = node;
   edge_nodes[2] = id;
-  RSB(ref_geom_cell_tuv(ref_grid, nodes[0], edge_nodes, REF_GEOM_EDGE, &t0,
+  RSB(ref_geom_cell_tuv(ref_geom, nodes[0], edge_nodes, REF_GEOM_EDGE, &t0,
                         &sense),
       "get t0", {
         ref_node_location(ref_node, nodes[0]);
         ref_geom_tattle(ref_geom, nodes[0]);
       });
-  RSB(ref_geom_cell_tuv(ref_grid, node, edge_nodes, REF_GEOM_EDGE, &t_orig,
+  RSB(ref_geom_cell_tuv(ref_geom, node, edge_nodes, REF_GEOM_EDGE, &t_orig,
                         &sense),
       "get t_orig", {
         ref_node_location(ref_node, node);
@@ -870,7 +870,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   edge_nodes[0] = nodes[1];
   edge_nodes[1] = node;
   edge_nodes[2] = id;
-  RSB(ref_geom_cell_tuv(ref_grid, nodes[1], edge_nodes, REF_GEOM_EDGE, &t1,
+  RSB(ref_geom_cell_tuv(ref_geom, nodes[1], edge_nodes, REF_GEOM_EDGE, &t1,
                         &sense),
       "get t1", {
         ref_node_location(ref_node, nodes[1]);
