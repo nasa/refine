@@ -35,6 +35,8 @@
 
 #include "ref_dict.h"
 
+#define REF_METRIC_MAX_DEGREE (1000)
+
 REF_STATUS ref_metric_show(REF_DBL *m) {
   printf(" %18.10e %18.10e %18.10e\n", m[0], m[1], m[2]);
   printf(" %18.10e %18.10e %18.10e\n", m[1], m[3], m[4]);
@@ -1034,7 +1036,8 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node0, node1, node2, i1, i2, im, i, j;
   REF_INT nnode1, nnode2;
-  REF_INT node_list1[1000], node_list2[1000], max_node = 1000;
+  REF_INT node_list1[REF_METRIC_MAX_DEGREE], node_list2[REF_METRIC_MAX_DEGREE],
+      max_node = REF_METRIC_MAX_DEGREE;
   REF_DICT ref_dict;
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
@@ -1127,8 +1130,8 @@ REF_STATUS ref_metric_extrapolate_boundary(REF_DBL *metric, REF_GRID ref_grid) {
   REF_CELL tris = ref_grid_tri(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
   REF_INT node;
-  REF_INT max_node = 400, nnode;
-  REF_INT node_list[400];
+  REF_INT max_node = REF_METRIC_MAX_DEGREE, nnode;
+  REF_INT node_list[REF_METRIC_MAX_DEGREE];
   REF_INT i, neighbor, nint;
 
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
@@ -1164,8 +1167,8 @@ REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
   REF_CELL tris = ref_grid_tri(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
   REF_INT node;
-  REF_INT max_node = 400, nnode;
-  REF_INT node_list[400];
+  REF_INT max_node = REF_METRIC_MAX_DEGREE, nnode;
+  REF_INT node_list[REF_METRIC_MAX_DEGREE];
   REF_INT i, neighbor, nint;
   REF_BOOL *needs_donor;
   REF_INT pass, remain;
@@ -1336,7 +1339,8 @@ REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL radius, dist;
   REF_DBL round_off_jitter = 1.0e-12;
   REF_DBL eig_floor;
-  REF_INT nnode, node_list[200], max_node = 200;
+  REF_INT nnode, node_list[REF_METRIC_MAX_DEGREE],
+      max_node = REF_METRIC_MAX_DEGREE;
   REF_DBL diag_system[12];
 
   each_ref_node_valid_node(ref_node, node) {
