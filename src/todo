@@ -1,6 +1,4 @@
 
-plot all tri uv at degen points
-
 put all uv_area limits in a struct (with volume or ref_adapt?)
 
 ref_geom_uv_area, ref_geom_cell_tuv take ref_geom not ref_grid?
@@ -12,7 +10,6 @@ throw when global node not found on import or export
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-bound curvature
 make curvature gradation more along surface and less in volume
  gradation on surface operator
 
@@ -172,6 +169,10 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ avoid eval of curvature ona dn near degeneracies
+
++ plot all tri uv at degen points
 
 + meshb only ref_driver option
 + parametis config
