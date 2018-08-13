@@ -1995,8 +1995,8 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   return REF_SUCCESS;
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
-  printf("%d %f %f\n", faceid, uv[0], uv[1]);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
   *kr = 0.0;
   r[0] = 1.0;
   r[1] = 0.0;
