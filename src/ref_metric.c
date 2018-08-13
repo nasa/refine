@@ -662,12 +662,15 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
   }
 
-  /* 1/segments per radian */
+  /* drad is 1/segments per radian */
   drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
   RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
   hmax *= 0.1;          /* normal spacing and max tangential spacing */
+  /* prevent div by zero, use hmax for large radius, small kr ks */
   rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+  /* limit aspect ratio via curvature */
   curvature_ratio = 1.0 / 20.0;
+  /* limit normal direction to a factor of surface spacing */
   norm_ratio = 5.0;
 
   each_ref_node_valid_node(ref_node, node) {
@@ -685,10 +688,13 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
                                 &(ref_geom_param(ref_geom, 0, geom)), &kr, r,
                                 &ks, s),
         "curve");
+    /* ignore sign, curvature is 1 / radius */
     kr = ABS(kr);
     ks = ABS(ks);
+    /* limit the aspect ratio of the metric by reducing the larest radius */
     kr = MAX(kr, curvature_ratio * ks);
     ks = MAX(ks, curvature_ratio * kr);
+    /* cross the tangent vectors to get the (inward or outward) normal */
     ref_math_cross_product(r, s, n);
     node = ref_geom_node(ref_geom, geom);
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
