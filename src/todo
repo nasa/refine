@@ -32,12 +32,13 @@ rename ref_geom to ref_egads?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
-performance
+reordering for cache
   implement grid vertex Cuthill-Magee reordering
     unit test the CM case in their paper for tri
   node and cell reordering for cache
   cell pack: insert in first node index order
-  always store metric in log form
+
+always store metric in log form
 
 parallel kexact Hessian reconstruction
 
