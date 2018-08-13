@@ -1257,7 +1257,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GRID ref_grid, REF_INT node, REF_INT *nodes,
         } else {
           *sens = 0;
           param[0] = ref_geom_param(ref_geom, 0, geom);
-          param[1] = uv1[1];
+          param[1] = uv0[1];
         }
       }
       break;
