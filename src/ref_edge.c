@@ -348,14 +348,12 @@ REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   fprintf(file, "title=\"tecplot refine edge fill\"\n");
   fprintf(file, "variables = \"i\" \"j\"\n");
 
-  fprintf(
-	  file,
-	  "zone t=\"fill\", i=%d, datapacking=%s\n",
-	  ref_edge_n(ref_edge), "point");
+  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n", ref_edge_n(ref_edge),
+          "point");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     fprintf(file, " %d %d\n", ref_edge_e2n(ref_edge, 0, edge),
-	    ref_edge_e2n(ref_edge, 1, edge));
+            ref_edge_e2n(ref_edge, 1, edge));
   }
 
   fclose(file);

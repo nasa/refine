@@ -570,11 +570,13 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
 
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) for (im = 0; im < 6;
-                                                                 im++)
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
         RWDS(ref_node_metric(ref_grid_node(parent_grid), im, node),
              ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
              "interpolant");
+      }
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_grid_free(parent_grid), "free");
@@ -592,11 +594,13 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
 
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) for (im = 0; im < 6;
-                                                                 im++)
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
         RWDS(ref_node_metric(ref_grid_node(parent_grid), im, node),
              ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
              "interpolant");
+      }
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_grid_free(parent_grid), "free");
@@ -627,11 +631,13 @@ int main(int argc, char *argv[]) {
       REIS(0, remove(solb), "test solb clean up");
     }
 
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) for (im = 0; im < 6;
-                                                                 im++)
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
         RWDS(ref_node_metric(ref_grid_node(truth), im, node),
              ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
              "metric wrong");
+      }
+    }
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_grid_free(truth), "free");
