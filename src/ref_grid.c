@@ -153,7 +153,7 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf(" %d tri\n", ref_cell_n(ref_grid_tri(ref_grid)));
   printf(" %d qua\n", ref_cell_n(ref_grid_qua(ref_grid)));
   printf(" %d geom\n", ref_geom_n(ref_grid_geom(ref_grid)));
-  printf(" %p gather\n", (void *)(ref_grid_gather(ref_grid)->file));
+  printf(" %p gather\n", (void *)(ref_grid_gather(ref_grid)->grid_file));
   printf(" %p adapt\n", (void *)(ref_grid->adapt));
 
   return REF_SUCCESS;

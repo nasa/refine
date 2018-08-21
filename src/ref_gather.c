@@ -36,14 +36,14 @@ REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
   ref_gather = *ref_gather_ptr;
 
   ref_gather->recording = REF_FALSE;
-  ref_gather->file = (FILE *)NULL;
+  ref_gather->grid_file = (FILE *)NULL;
   ref_gather->time = 0.0;
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_gather_free(REF_GATHER ref_gather) {
-  if (NULL != (void *)(ref_gather->file)) fclose(ref_gather->file);
+  if (NULL != (void *)(ref_gather->grid_file)) fclose(ref_gather->grid_file);
   ref_free(ref_gather);
 
   return REF_SUCCESS;
@@ -373,22 +373,22 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
 
   if (ref_grid_once(ref_grid)) {
-    if (NULL == (void *)(ref_gather->file)) {
-      ref_gather->file = fopen("ref_gather_movie.tec", "w");
-      if (NULL == (void *)(ref_gather->file))
+    if (NULL == (void *)(ref_gather->grid_file)) {
+      ref_gather->grid_file = fopen("ref_gather_movie.tec", "w");
+      if (NULL == (void *)(ref_gather->grid_file))
         printf("unable to open ref_gather_movie.tec\n");
-      RNS(ref_gather->file, "unable to open file");
+      RNS(ref_gather->grid_file, "unable to open file");
 
-      fprintf(ref_gather->file, "title=\"tecplot refine partion file\"\n");
-      fprintf(ref_gather->file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
+      fprintf(ref_gather->grid_file, "title=\"tecplot refine partion file\"\n");
+      fprintf(ref_gather->grid_file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
     }
     if (NULL == zone_title) {
-      fprintf(ref_gather->file,
+      fprintf(ref_gather->grid_file,
               "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               nnode, ncell, "point", "fetriangle", ref_gather->time);
     } else {
-      fprintf(ref_gather->file,
+      fprintf(ref_gather->grid_file,
               "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               zone_title, nnode, ncell, "point", "fetriangle",
@@ -397,9 +397,9 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, norm_dev,
-                               ref_gather->file),
+                               ref_gather->grid_file),
       "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->file),
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->grid_file),
       "t");
 
   ref_free(norm_dev);
@@ -414,32 +414,32 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
 
     if (ref_grid_once(ref_grid)) {
       if (NULL == zone_title) {
-        fprintf(ref_gather->file,
+        fprintf(ref_gather->grid_file,
                 "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, "
                 "zonetype=%s, solutiontime=%f\n",
                 nnode, MAX(1, ntet), "point", "fetetrahedron",
                 ref_gather->time);
       } else {
-        fprintf(ref_gather->file,
+        fprintf(ref_gather->grid_file,
                 "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, "
                 "zonetype=%s, solutiontime=%f\n",
                 zone_title, nnode, MAX(1, ntet), "point", "fetetrahedron",
                 ref_gather->time);
       }
     }
-    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->file),
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->grid_file),
         "nodes");
     if (0 == ntet) {
-      if (ref_grid_once(ref_grid)) fprintf(ref_gather->file, " 1 1 1 1\n");
+      if (ref_grid_once(ref_grid)) fprintf(ref_gather->grid_file, " 1 1 1 1\n");
     } else {
       RSS(ref_gather_cell_quality_tec(ref_node, ref_grid_tet(ref_grid),
-                                      min_quality, ref_gather->file),
+                                      min_quality, ref_gather->grid_file),
           "qtet");
     }
   }
 
   if (ref_grid_once(ref_grid)) {
-    REIS(0, fflush(ref_gather->file), "gather movie fflush");
+    REIS(0, fflush(ref_gather->grid_file), "gather movie fflush");
     (ref_gather->time) += 1.0;
   }
 

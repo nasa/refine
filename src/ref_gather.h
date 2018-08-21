@@ -36,7 +36,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 struct REF_GATHER_STRUCT {
   REF_BOOL recording;
-  FILE *file;
+  FILE *grid_file;
   REF_DBL time;
 };
 
