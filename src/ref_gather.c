@@ -37,6 +37,7 @@ REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
 
   ref_gather->recording = REF_FALSE;
   ref_gather->grid_file = (FILE *)NULL;
+  ref_gather->hist_file = (FILE *)NULL;
   ref_gather->time = 0.0;
 
   return REF_SUCCESS;
@@ -44,6 +45,7 @@ REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
 
 REF_STATUS ref_gather_free(REF_GATHER ref_gather) {
   if (NULL != (void *)(ref_gather->grid_file)) fclose(ref_gather->grid_file);
+  if (NULL != (void *)(ref_gather->hist_file)) fclose(ref_gather->hist_file);
   ref_free(ref_gather);
 
   return REF_SUCCESS;
