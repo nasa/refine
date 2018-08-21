@@ -82,7 +82,6 @@ create native version of inverse evalute with guess
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 robustness and metric conformity
- histogram history plots
  measure gradation and see if there is a connection to histogram convergence
  process complete test (early termination when no more likely progress)
  surface self intrection test
@@ -167,6 +166,8 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ histogram history plots
 
 + ref_geom_uv_area, ref_geom_cell_tuv take ref_geom not ref_grid?
 
