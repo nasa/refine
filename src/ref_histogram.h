@@ -78,6 +78,8 @@ REF_STATUS ref_histogram_gnuplot(REF_HISTOGRAM ref_histogram,
                                  const char *description);
 REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
                              const char *description);
+REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram,
+			      FILE *file);
 
 REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
                                   REF_DBL observation);

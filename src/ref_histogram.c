@@ -266,6 +266,31 @@ REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram,
+			      FILE *file) {
+  REF_INT i;
+  REF_INT sum;
+  REF_DBL norm, area, portion, center;
+
+  sum = 0;
+  for (i = 0; i < ref_histogram_nbin(ref_histogram); i++)
+    sum += ref_histogram_bin(ref_histogram, i);
+  norm = 0.0;
+  if (0 < sum) norm = 1.0 / (REF_DBL)sum;
+
+  fprintf(file, "ZONE I=%d, DATAPACKING=POINT\n",
+	  ref_histogram_nbin(ref_histogram) - 1);
+  for (i = 0; i < ref_histogram_nbin(ref_histogram) - 2; i++) {
+    area = ref_histogram_to_obs(i + 1) - ref_histogram_to_obs(i);
+    portion = (REF_DBL)ref_histogram_bin(ref_histogram, i) / area * norm;
+    portion = MAX(portion, 1.0e-20);
+    center = 0.5*(ref_histogram_to_obs(i)+ref_histogram_to_obs(i+1));
+    fprintf(file, "%.8e %.8e\n", center, portion);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_add_stat(REF_HISTOGRAM ref_histogram,
                                   REF_DBL observation) {
   REF_INT i;
