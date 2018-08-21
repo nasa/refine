@@ -20,8 +20,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_export.h"
 #include "ref_gather.h"
+
+#include "ref_export.h"
+#include "ref_histogram.h"
 
 #include "ref_endian.h"
 #include "ref_malloc.h"
@@ -347,6 +349,39 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_tec_histogram_frame(REF_GRID ref_grid,
+                                                 const char *zone_title) {
+  REF_GATHER ref_gather = ref_grid_gather(ref_grid);
+  REF_HISTOGRAM ref_histogram;
+
+  if (ref_grid_once(ref_grid)) {
+    if (NULL == (void *)(ref_gather->hist_file)) {
+      ref_gather->hist_file = fopen("ref_gather_histo.tec", "w");
+      if (NULL == (void *)(ref_gather->hist_file))
+        printf("unable to open ref_gather_histo.tec\n");
+      RNS(ref_gather->hist_file, "unable to open file");
+
+      fprintf(ref_gather->hist_file, "title=\"tecplot refine histogram\"\n");
+      fprintf(ref_gather->hist_file,
+              "variables = \"Edge Length\" \"Normalized Count\"\n");
+    }
+  }
+
+  RSS(ref_histogram_create(&ref_histogram), "create");
+  RSS(ref_histogram_resolution(ref_histogram, 288, 12.0), "res");
+
+  RSS(ref_histogram_add_ratio(ref_histogram, ref_grid), "add ratio");
+
+  if (ref_grid_once(ref_grid)) {
+    RSS(ref_histogram_zone(ref_histogram, ref_gather->hist_file,
+                           zone_title), "tec zone");
+  }
+
+  RSS(ref_histogram_free(ref_histogram), "free gram");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                                       const char *zone_title) {
   REF_GATHER ref_gather = ref_grid_gather(ref_grid);
@@ -358,6 +393,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_DBL *norm_dev, dot;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
+
+  RSS(ref_gather_tec_histogram_frame(ref_grid, zone_title), "hist frame");
 
   norm_dev = NULL;
   if (ref_geom_model_loaded(ref_geom)) {
