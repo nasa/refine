@@ -31,20 +31,21 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_ADAPT_STRUCT {
+  REF_INT split_per_pass;
   REF_DBL split_ratio;
   REF_DBL split_quality_absolute;
   REF_DBL split_quality_relative;
   REF_DBL split_normdev_absolute;
 
+  REF_INT collapse_per_pass;
   REF_DBL collapse_ratio;
   REF_DBL collapse_quality_absolute;
   REF_DBL collapse_ratio_limit;
   REF_DBL collapse_normdev_absolute;
 
+  REF_INT smooth_per_pass;
   REF_DBL smooth_min_quality;
   REF_DBL smooth_min_normdev;
-
-  REF_INT collapse_per_pass;
 
   REF_BOOL instrument;
 };

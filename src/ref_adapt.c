@@ -45,20 +45,21 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
 
   ref_adapt = *ref_adapt_ptr;
 
+  ref_adapt->split_per_pass = 1;
   ref_adapt->split_ratio = 1.5;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.6;
   ref_adapt->split_normdev_absolute = 0.0;
 
+  ref_adapt->collapse_per_pass = 1;
   ref_adapt->collapse_ratio = 0.6;
   ref_adapt->collapse_quality_absolute = 1.0e-3;
   ref_adapt->collapse_ratio_limit = 3.0;
   ref_adapt->collapse_normdev_absolute = 0.0;
 
+  ref_adapt->smooth_per_pass = 1;
   ref_adapt->smooth_min_quality = 1.0e-3;
   ref_adapt->smooth_min_normdev = 0.0;
-
-  ref_adapt->collapse_per_pass = 1;
 
   ref_adapt->instrument = REF_FALSE;
 
@@ -72,20 +73,21 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
 
   ref_adapt = *ref_adapt_ptr;
 
+  ref_adapt->split_per_pass = original->split_per_pass;
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
   ref_adapt->split_normdev_absolute = original->split_normdev_absolute;
 
+  ref_adapt->collapse_per_pass = original->collapse_per_pass;
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
   ref_adapt->collapse_ratio_limit = original->collapse_ratio_limit;
   ref_adapt->collapse_normdev_absolute = original->collapse_normdev_absolute;
 
+  ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
   ref_adapt->smooth_min_normdev = original->smooth_min_normdev;
-
-  ref_adapt->collapse_per_pass = original->collapse_per_pass;
 
   ref_adapt->instrument = original->instrument;
 
@@ -227,6 +229,7 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
   RSS(ref_gather_ngeom(ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                        REF_GEOM_FACE, &ngeom),
       "count ngeom");
+
   ref_gather_blocking_frame(ref_grid, "threed pass");
   if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "adapt preflight check");
   if (ref_grid_adapt(ref_grid, instrument))
@@ -241,17 +244,22 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
   }
 
-  RSS(ref_split_pass(ref_grid), "split pass");
-  ref_gather_blocking_frame(ref_grid, "split");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
+  for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
+    RSS(ref_split_pass(ref_grid), "split pass");
+    ref_gather_blocking_frame(ref_grid, "split");
+    if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
+    if (ref_grid_adapt(ref_grid, instrument))
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
+  }
 
-  RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
+  for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
+    RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
+    ref_gather_blocking_frame(ref_grid, "smooth");
+    if (ngeom > 0)
+      RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
+    if (ref_grid_adapt(ref_grid, instrument))
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
+  }
 
   return REF_SUCCESS;
 }
