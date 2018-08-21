@@ -267,7 +267,7 @@ REF_STATUS ref_histogram_tec(REF_HISTOGRAM ref_histogram,
 }
 
 REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram,
-			      FILE *file, const char *zone_title) {
+			      FILE *file, const char *zone_title, REF_DBL time) {
   REF_INT i;
   REF_INT sum;
   REF_DBL norm, area, portion, center;
@@ -279,11 +279,11 @@ REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram,
   if (0 < sum) norm = 1.0 / (REF_DBL)sum;
 
   if (NULL == zone_title) {
-    fprintf(file, "ZONE I=%d, DATAPACKING=POINT\n",
-	    ref_histogram_nbin(ref_histogram) - 2);
+    fprintf(file, "ZONE I=%d, DATAPACKING=POINT, SOLUTIONTIME=%f\n",
+	    ref_histogram_nbin(ref_histogram) - 2, time);
   } else {
-    fprintf(file, "ZONE T=\"%s\", I=%d, DATAPACKING=POINT\n",
-	    zone_title, ref_histogram_nbin(ref_histogram) - 2);
+    fprintf(file, "ZONE T=\"%s\", I=%d, DATAPACKING=POINT, SOLUTIONTIME=%f\n",
+	    zone_title, ref_histogram_nbin(ref_histogram) - 2, time);
   }
   for (i = 0; i < ref_histogram_nbin(ref_histogram) - 2; i++) {
     area = ref_histogram_to_obs(i + 1) - ref_histogram_to_obs(i);

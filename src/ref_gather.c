@@ -374,7 +374,7 @@ static REF_STATUS ref_gather_tec_histogram_frame(REF_GRID ref_grid,
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_histogram_zone(ref_histogram, ref_gather->hist_file,
-                           zone_title), "tec zone");
+                           zone_title, ref_gather->time), "tec zone");
   }
 
   RSS(ref_histogram_free(ref_histogram), "free gram");
