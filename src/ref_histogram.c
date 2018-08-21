@@ -280,10 +280,10 @@ REF_STATUS ref_histogram_zone(REF_HISTOGRAM ref_histogram,
 
   if (NULL == zone_title) {
     fprintf(file, "ZONE I=%d, DATAPACKING=POINT\n",
-	    ref_histogram_nbin(ref_histogram) - 1);
+	    ref_histogram_nbin(ref_histogram) - 2);
   } else {
     fprintf(file, "ZONE T=\"%s\", I=%d, DATAPACKING=POINT\n",
-	    zone_title, ref_histogram_nbin(ref_histogram) - 1);
+	    zone_title, ref_histogram_nbin(ref_histogram) - 2);
   }
   for (i = 0; i < ref_histogram_nbin(ref_histogram) - 2; i++) {
     area = ref_histogram_to_obs(i + 1) - ref_histogram_to_obs(i);
