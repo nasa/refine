@@ -1,5 +1,9 @@
 
 put all uv_area limits in a struct (with volume or ref_adapt?)
+put parameters a place that can be controlled
+ - post split edge length
+
+make the split only target edges first
 
 update in FUN3D
  + parmetis edge weights
