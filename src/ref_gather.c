@@ -373,8 +373,9 @@ static REF_STATUS ref_gather_tec_histogram_frame(REF_GRID ref_grid,
   RSS(ref_histogram_add_ratio(ref_histogram, ref_grid), "add ratio");
 
   if (ref_grid_once(ref_grid)) {
-    RSS(ref_histogram_zone(ref_histogram, ref_gather->hist_file,
-                           zone_title, ref_gather->time), "tec zone");
+    RSS(ref_histogram_zone(ref_histogram, ref_gather->hist_file, zone_title,
+                           ref_gather->time),
+        "tec zone");
   }
 
   RSS(ref_histogram_free(ref_histogram), "free gram");
@@ -419,7 +420,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       RNS(ref_gather->grid_file, "unable to open file");
 
       fprintf(ref_gather->grid_file, "title=\"tecplot refine partion file\"\n");
-      fprintf(ref_gather->grid_file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
+      fprintf(ref_gather->grid_file,
+              "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
     }
     if (NULL == zone_title) {
       fprintf(ref_gather->grid_file,
@@ -438,7 +440,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, norm_dev,
                                ref_gather->grid_file),
       "nodes");
-  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, ref_gather->grid_file),
+  RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
+                          ref_gather->grid_file),
       "t");
 
   ref_free(norm_dev);
@@ -466,7 +469,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                 ref_gather->time);
       }
     }
-    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL, ref_gather->grid_file),
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, NULL,
+                                 ref_gather->grid_file),
         "nodes");
     if (0 == ntet) {
       if (ref_grid_once(ref_grid)) fprintf(ref_gather->grid_file, " 1 1 1 1\n");
