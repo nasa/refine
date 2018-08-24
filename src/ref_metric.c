@@ -1115,51 +1115,57 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_metric_grow_dict_one_layer(REF_DICT ref_dict,
+						 REF_CELL ref_cell) {
+  REF_DICT copy;
+  REF_INT node_list[REF_METRIC_MAX_DEGREE];
+  REF_INT max_node = REF_METRIC_MAX_DEGREE;
+  REF_INT nnode, key_index, cloud_node, i;
+  RSS(ref_dict_deep_copy(&copy, ref_dict), "copy");
+  each_ref_dict_key(copy, key_index, cloud_node) {
+    RXS(ref_cell_node_list_around(ref_cell, cloud_node, max_node, &nnode,
+                                  node_list),
+        REF_INCREASE_LIMIT, "first halo of nodes");
+    for (i = 0; i < nnode; i++) {
+      RSS(ref_dict_store(ref_dict, node_list[i], REF_EMPTY), "store node");
+    }
+  }
+  ref_dict_free(copy);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                      REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT node0, node1, node2, i1, i2, im;
-  REF_INT nnode1, nnode2;
-  REF_INT node_list1[REF_METRIC_MAX_DEGREE], node_list2[REF_METRIC_MAX_DEGREE],
-      max_node = REF_METRIC_MAX_DEGREE;
+  REF_INT node, im;
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
-  each_ref_node_valid_node(ref_node, node0) {
+  each_ref_node_valid_node(ref_node, node) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
-    RSS(ref_dict_store(ref_dict, node0, REF_EMPTY), "store node0");
-    RXS(ref_cell_node_list_around(ref_cell, node0, max_node, &nnode1,
-                                  node_list1),
-        REF_INCREASE_LIMIT, "first halo of nodes");
-    for (i1 = 0; i1 < nnode1; i1++) {
-      node1 = node_list1[i1];
-      RSS(ref_dict_store(ref_dict, node1, REF_EMPTY), "store node1");
-      RXS(ref_cell_node_list_around(ref_cell, node1, max_node, &nnode2,
-                                    node_list2),
-          REF_INCREASE_LIMIT, "halo of halo of nodes");
-      for (i2 = 0; i2 < nnode2; i2++) {
-        node2 = node_list2[i2];
-        RSS(ref_dict_store(ref_dict, node2, REF_EMPTY), "store node2");
-      }
-    }
-    RSS(ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node0, ref_dict,
+    RSS(ref_dict_store(ref_dict, node, REF_EMPTY), "store node0");
+
+    RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
+    RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
+
+    RSS(ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node, ref_dict,
                                            node_hessian),
         "kexact qr node");
     for (im = 0; im < 6; im++) {
-      hessian[im + 6 * node0] = node_hessian[im];
+      hessian[im + 6 * node] = node_hessian[im];
     }
     RSS(ref_dict_free(ref_dict), "free ref_dict");
   }
 
   /* positive eignevalues to make symmetric positive definite */
-  each_ref_node_valid_node(ref_node, node0) {
+  each_ref_node_valid_node(ref_node, node) {
     REF_DBL diag_system[12];
-    RSS(ref_matrix_diag_m(&(hessian[6 * node0]), diag_system), "eigen decomp");
+    RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "eigen decomp");
     ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
     ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
     ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
-    RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node0])), "re-form hess");
+    RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form hess");
   }
 
   return REF_SUCCESS;
