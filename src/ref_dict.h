@@ -37,6 +37,8 @@ struct REF_DICT_STRUCT {
 REF_STATUS ref_dict_create(REF_DICT *ref_dict);
 REF_STATUS ref_dict_free(REF_DICT ref_dict);
 
+REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
+
 #define ref_dict_n(ref_dict) ((ref_dict)->n)
 #define ref_dict_max(ref_dict) ((ref_dict)->max)
 #define ref_dict_key(ref_dict, key_index) ((ref_dict)->key[(key_index)])

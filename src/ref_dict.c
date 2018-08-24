@@ -47,6 +47,28 @@ REF_STATUS ref_dict_free(REF_DICT ref_dict) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
+  REF_DICT ref_dict;
+  REF_INT key_index, dict_key, dict_value;
+
+  ref_malloc(*ref_dict_ptr, 1, REF_DICT_STRUCT);
+
+  ref_dict = (*ref_dict_ptr);
+
+  ref_dict_n(ref_dict) = ref_dict_n(original);
+  ref_dict_max(ref_dict) = ref_dict_max(original);
+
+  ref_malloc(ref_dict->key, ref_dict_max(ref_dict), REF_INT);
+  ref_malloc(ref_dict->value, ref_dict_max(ref_dict), REF_INT);
+
+  each_ref_dict_key_value(original, key_index, dict_key, dict_value) {
+    ref_dict_key(ref_dict, key_index) = dict_key;
+    ref_dict_keyvalue(ref_dict, key_index) = dict_value;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value) {
   REF_INT i, insert_point;
 
