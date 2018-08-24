@@ -635,25 +635,31 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_matrix_show_aqr(REF_INT n, REF_DBL *a, REF_DBL *q, REF_DBL *r) {
+REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
+			       REF_DBL *r) {
   REF_INT row, col;
-  char format[] = "%12.4e";
+  char format[] = " %12.4e";
 
-  for (row = 0; row < n; row++) {
-    for (col = 0; col < n; col++)
-      if (NULL != a) {
-        printf(format, a[row + n * col]);
-        printf(" ");
-        if (col == n - 1) printf("= ");
+  if (NULL != a) {
+    printf("A\n");
+    for (row = 0; row < m; row++) {
+      for (col = 0; col < n; col++) {
+        printf(format, a[row + m * col]);
       }
-    for (col = 0; col < n; col++) {
-      printf(format, q[row + n * col]);
-      printf(" ");
-      if (col == n - 1) printf("x ");
+      printf("\n");
     }
+  }
+  printf("Q\n");
+  for (row = 0; row < m; row++) {
+    for (col = 0; col < n; col++) {
+      printf(format, q[row + m * col]);
+    }
+    printf("\n");
+  }
+  printf("R\n");
+  for (row = 0; row < n; row++) {
     for (col = 0; col < n; col++) {
       printf(format, r[row + n * col]);
-      if (col < n - 1) printf(" ");
     }
     printf("\n");
   }
@@ -867,14 +873,14 @@ REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
     pivot = a[j + n * j];
     for (k = 0; k < n; k++) {
       if (!ref_math_divisible(a[j + k * n], pivot)) {
-        RSS(ref_matrix_show_aqr(3, NULL, a, inv), "show");
+        RSS(ref_matrix_show_aqr(3, 3, NULL, a, inv), "show");
         printf("a pivot %d %e %e\n", j, a[j + k * n], pivot);
         ref_free(a);
         RSS(REF_DIV_ZERO, "pivot");
       }
       a[j + k * n] /= pivot;
       if (!ref_math_divisible(inv[j + k * n], pivot)) {
-        RSS(ref_matrix_show_aqr(3, NULL, a, inv), "show");
+        RSS(ref_matrix_show_aqr(3, 3, NULL, a, inv), "show");
         printf("inv pivot %d %e %e\n", j, inv[j + k * n], pivot);
         ref_free(a);
         RSS(REF_DIV_ZERO, "pivot");
