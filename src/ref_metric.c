@@ -1096,13 +1096,12 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       i++;
     }
     RSB(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr", {
-	printf("QR factorization of system m %d n %d failed\n",m,n);
-	printf("at %f %f %f for kexact Hessian reconstruction\n",
-	       ref_node_xyz(ref_node, 0, node0),
-	       ref_node_xyz(ref_node, 1, node0),
-	       ref_node_xyz(ref_node, 2, node0) );
-	RSS(ref_matrix_show_aqr(m, n, a, q, r), "show aqr");
-      });
+      printf("QR factorization of system m %d n %d failed\n", m, n);
+      printf("at %f %f %f for kexact Hessian reconstruction\n",
+             ref_node_xyz(ref_node, 0, node0), ref_node_xyz(ref_node, 1, node0),
+             ref_node_xyz(ref_node, 2, node0));
+      RSS(ref_matrix_show_aqr(m, n, a, q, r), "show aqr");
+    });
     for (i = 0; i < 90; i++) ab[i] = 0.0;
     for (i = 0; i < 9; i++) {
       for (j = 0; j < 9; j++) {

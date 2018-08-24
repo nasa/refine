@@ -636,7 +636,7 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
 }
 
 REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
-			       REF_DBL *r) {
+                               REF_DBL *r) {
   REF_INT row, col;
   char format[] = " %12.4e";
 
@@ -682,7 +682,7 @@ REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
     r[k + n * k] = sqrt(r[k + n * k]);
     for (i = 0; i < m; i++) {
       if (!ref_math_divisible(q[i + m * k], r[k + n * k])) {
-	return REF_DIV_ZERO;
+        return REF_DIV_ZERO;
       }
       q[i + m * k] /= r[k + n * k];
     }
