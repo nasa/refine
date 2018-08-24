@@ -1141,17 +1141,22 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_INT node, im;
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
+  REF_STATUS status;
   each_ref_node_valid_node(ref_node, node) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
     RSS(ref_dict_store(ref_dict, node, REF_EMPTY), "store node0");
-
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-
-    RSS(ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node, ref_dict,
-                                           node_hessian),
-        "kexact qr node");
+    status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
+						ref_dict, node_hessian);
+    if (REF_DIV_ZERO == status) {
+      printf("adding thrid layer to kexact cloud\n");
+      RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
+      status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
+						  ref_dict, node_hessian);
+    }
+    RSS(status, "kexact qr node");
     for (im = 0; im < 6; im++) {
       hessian[im + 6 * node] = node_hessian[im];
     }
