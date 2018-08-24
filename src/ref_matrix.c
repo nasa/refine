@@ -681,7 +681,9 @@ REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
     for (i = 0; i < m; i++) r[k + n * k] += q[i + m * k] * q[i + m * k];
     r[k + n * k] = sqrt(r[k + n * k]);
     for (i = 0; i < m; i++) {
-      if (!ref_math_divisible(q[i + m * k], r[k + n * k])) return REF_DIV_ZERO;
+      if (!ref_math_divisible(q[i + m * k], r[k + n * k])) {
+	return REF_DIV_ZERO;
+      }
       q[i + m * k] /= r[k + n * k];
     }
     for (j = k + 1; j < n; j++) {
