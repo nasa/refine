@@ -1079,14 +1079,7 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_NODE ref_node,
     i++;
   }
   REIS(m, i, "A row miscount");
-  RSB(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr", {
-    printf("QR factorization of system m %d n %d failed\n", m, n);
-    printf("at %f %f %f for kexact Hessian reconstruction\n",
-           ref_node_xyz(ref_node, 0, center_node),
-           ref_node_xyz(ref_node, 1, center_node),
-           ref_node_xyz(ref_node, 2, center_node));
-    RSS(ref_matrix_show_aqr(m, n, a, q, r), "show aqr");
-  });
+  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
   for (i = 0; i < 90; i++) ab[i] = 0.0;
   for (i = 0; i < 9; i++) {
     for (j = 0; j < 9; j++) {
@@ -1151,7 +1144,8 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
 						ref_dict, node_hessian);
     if (REF_DIV_ZERO == status) {
-      printf("adding thrid layer to kexact cloud\n");
+      printf(" caught %s, adding third layer to kexact cloud and retry\n",
+	     "REF_DIV_ZERO");
       RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
       status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
 						  ref_dict, node_hessian);
