@@ -1039,22 +1039,96 @@ REF_STATUS ref_metric_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_NODE ref_node,
+                                                     REF_DBL *scalar,
+                                                     REF_INT center_node,
+                                                     REF_DICT ref_dict,
+                                                     REF_DBL *hessian) {
+  REF_DBL geom[9], ab[90];
+  REF_DBL dx, dy, dz, dq;
+  REF_DBL *a, *q, *r;
+  REF_INT m, n, cloud_node;
+  REF_INT i2, im, i, j;
+  /* solve A with QR factorization size m x n */
+  m = ref_dict_n(ref_dict) - 1; /* skip self */
+  n = 9;
+  ref_malloc(a, m * n, REF_DBL);
+  ref_malloc(q, m * n, REF_DBL);
+  ref_malloc(r, n * n, REF_DBL);
+  i = 0;
+  each_ref_dict_key(ref_dict, i2, cloud_node) {
+    if (center_node == cloud_node) continue; /* skip self */
+    dx = ref_node_xyz(ref_node, 0, cloud_node) -
+         ref_node_xyz(ref_node, 0, center_node);
+    dy = ref_node_xyz(ref_node, 1, cloud_node) -
+         ref_node_xyz(ref_node, 1, center_node);
+    dz = ref_node_xyz(ref_node, 2, cloud_node) -
+         ref_node_xyz(ref_node, 2, center_node);
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+    }
+    i++;
+  }
+  REIS(m, i, "A row miscount");
+  RSB(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr", {
+    printf("QR factorization of system m %d n %d failed\n", m, n);
+    printf("at %f %f %f for kexact Hessian reconstruction\n",
+           ref_node_xyz(ref_node, 0, center_node),
+           ref_node_xyz(ref_node, 1, center_node),
+           ref_node_xyz(ref_node, 2, center_node));
+    RSS(ref_matrix_show_aqr(m, n, a, q, r), "show aqr");
+  });
+  for (i = 0; i < 90; i++) ab[i] = 0.0;
+  for (i = 0; i < 9; i++) {
+    for (j = 0; j < 9; j++) {
+      ab[i + 9 * j] += r[i + 9 * j];
+    }
+  }
+  i = 0;
+  each_ref_dict_key(ref_dict, i2, cloud_node) {
+    if (center_node == cloud_node) continue; /* skip self */
+    dq = scalar[cloud_node] - scalar[center_node];
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+  }
+  REIS(m, i, "b row miscount");
+  RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
+  j = 9;
+  for (im = 0; im < 6; im++) {
+    hessian[im] = ab[im + 9 * j];
+  }
+  ref_free(r);
+  ref_free(q);
+  ref_free(a);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                      REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT node0, node1, node2, i1, i2, im, i, j;
+  REF_INT node0, node1, node2, i1, i2, im;
   REF_INT nnode1, nnode2;
   REF_INT node_list1[REF_METRIC_MAX_DEGREE], node_list2[REF_METRIC_MAX_DEGREE],
       max_node = REF_METRIC_MAX_DEGREE;
   REF_DICT ref_dict;
-  REF_DBL geom[9], ab[90];
-  REF_DBL dx, dy, dz, dq;
-  REF_DBL *a, *q, *r;
-  REF_INT m, n;
+  REF_DBL node_hessian[6];
   each_ref_node_valid_node(ref_node, node0) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
+    RSS(ref_dict_store(ref_dict, node0, REF_EMPTY), "store node0");
     RXS(ref_cell_node_list_around(ref_cell, node0, max_node, &nnode1,
                                   node_list1),
         REF_INCREASE_LIMIT, "first halo of nodes");
@@ -1066,64 +1140,15 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
           REF_INCREASE_LIMIT, "halo of halo of nodes");
       for (i2 = 0; i2 < nnode2; i2++) {
         node2 = node_list2[i2];
-        if (node0 == node2) continue; /* skip self */
         RSS(ref_dict_store(ref_dict, node2, REF_EMPTY), "store node2");
       }
     }
-    /* solve A with QR factorization size m x n */
-    m = ref_dict_n(ref_dict);
-    n = 9;
-    ref_malloc(a, m * n, REF_DBL);
-    ref_malloc(q, m * n, REF_DBL);
-    ref_malloc(r, n * n, REF_DBL);
-    i = 0;
-    each_ref_dict_key(ref_dict, i2, node2) {
-      dx = ref_node_xyz(ref_node, 0, node2) - ref_node_xyz(ref_node, 0, node0);
-      dy = ref_node_xyz(ref_node, 1, node2) - ref_node_xyz(ref_node, 1, node0);
-      dz = ref_node_xyz(ref_node, 2, node2) - ref_node_xyz(ref_node, 2, node0);
-      geom[0] = 0.5 * dx * dx;
-      geom[1] = dx * dy;
-      geom[2] = dx * dz;
-      geom[3] = 0.5 * dy * dy;
-      geom[4] = dy * dz;
-      geom[5] = 0.5 * dz * dz;
-      geom[6] = dx;
-      geom[7] = dy;
-      geom[8] = dz;
-      for (j = 0; j < n; j++) {
-        a[i + m * j] = geom[j];
-      }
-      i++;
-    }
-    RSB(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr", {
-      printf("QR factorization of system m %d n %d failed\n", m, n);
-      printf("at %f %f %f for kexact Hessian reconstruction\n",
-             ref_node_xyz(ref_node, 0, node0), ref_node_xyz(ref_node, 1, node0),
-             ref_node_xyz(ref_node, 2, node0));
-      RSS(ref_matrix_show_aqr(m, n, a, q, r), "show aqr");
-    });
-    for (i = 0; i < 90; i++) ab[i] = 0.0;
-    for (i = 0; i < 9; i++) {
-      for (j = 0; j < 9; j++) {
-        ab[i + 9 * j] += r[i + 9 * j];
-      }
-    }
-    i = 0;
-    each_ref_dict_key(ref_dict, i2, node2) {
-      dq = scalar[node2] - scalar[node0];
-      for (j = 0; j < 9; j++) {
-        ab[j + 9 * 9] += q[i + m * j] * dq;
-      }
-      i++;
-    }
-    RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
-    j = 9;
+    RSS(ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node0, ref_dict,
+                                           node_hessian),
+        "kexact qr node");
     for (im = 0; im < 6; im++) {
-      hessian[im + 6 * node0] = ab[im + 9 * j];
+      hessian[im + 6 * node0] = node_hessian[im];
     }
-    ref_free(r);
-    ref_free(q);
-    ref_free(a);
     RSS(ref_dict_free(ref_dict), "free ref_dict");
   }
 
