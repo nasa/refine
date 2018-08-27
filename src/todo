@@ -9,7 +9,9 @@ smooth ordering
 smooth verify improvement
 optimized 4th tet node placement
 
-make the split only target edges first
+integrate complexity more accurately
+
+make the collapse only target edges first?
 
 update in FUN3D
  + parmetis edge weights
