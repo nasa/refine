@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
+  REF_INT hmax_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
   REF_INT complexity_pos = REF_EMPTY;
 
@@ -87,6 +88,8 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--hmax", &hmax_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--complexity", &complexity_pos), REF_NOT_FOUND,
       "arg search");
@@ -124,7 +127,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *metric;
     REF_INT p;
-    REF_DBL gradation, complexity, current_complexity;
+    REF_DBL gradation, complexity, current_complexity, hmax;
     REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
     REIS(1, lp_pos,
          "required args: --lp grid.meshb scalar-mach.solb p gradation "
@@ -134,6 +137,14 @@ int main(int argc, char *argv[]) {
           "required args: --lp grid.meshb scalar-mach.solb p gradation "
           "complexity output-metric.solb\n");
       return REF_FAILURE;
+    }
+    hmax = -1.0;
+    if (REF_EMPTY != hmax_pos) {
+      if (hmax_pos >= argc - 1) {
+        printf("option missing value: --hmax max_edge_length\n");
+        return REF_FAILURE;
+      }
+      hmax = atof(argv[hmax_pos + 1]);
     }
 
     p = atoi(argv[4]);
@@ -146,6 +157,7 @@ int main(int argc, char *argv[]) {
     printf("gradation %f\n", gradation);
     printf("complexity %f\n", complexity);
     printf("reconstruction %d\n", (int)reconstruction);
+    printf("hmax %f\n", hmax);
 
     printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
