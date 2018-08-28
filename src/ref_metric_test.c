@@ -793,7 +793,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
+  if (!ref_mpi_para(ref_mpi)) { /* gradation */
     REF_GRID ref_grid;
     REF_DBL *metric;
     REF_INT node;
