@@ -35,7 +35,7 @@ In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
 an implementation of the Lp-norm metric is provided.
 ```
-./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb [--kexact]
+./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb [--kexact] [--hmax max_edge_length]
 ```
 Where,
  - `project.meshb` is the grid in libMeshb format
@@ -46,6 +46,7 @@ Where,
  - `project-metric.solb` is the output metric in libMeshb format
  - use (sequential only) k-exact Hessian reconstruction with --kexact,
    otherwise default to L2-projection Hessian reconstruction
+ - max_edge_length is an optional limit on max edge length with an attempt to hold complexity
 
 See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
 for details on the libMeshb format.
