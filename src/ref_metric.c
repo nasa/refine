@@ -1303,6 +1303,30 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
+                              REF_DBL hmax) {
+  REF_DBL diag_system[12];
+  REF_DBL eig;
+  REF_INT node;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
+    if (hmin > 0.0) {
+      eig = 1.0 / (hmin * hmin);
+      ref_matrix_eig(diag_system, 0) = MIN(ref_matrix_eig(diag_system, 0), eig);
+      ref_matrix_eig(diag_system, 1) = MIN(ref_matrix_eig(diag_system, 1), eig);
+      ref_matrix_eig(diag_system, 2) = MIN(ref_matrix_eig(diag_system, 2), eig);
+    }
+    if (hmax > 0.0) {
+      eig = 1.0 / (hmax * hmax);
+      ref_matrix_eig(diag_system, 0) = MAX(ref_matrix_eig(diag_system, 0), eig);
+      ref_matrix_eig(diag_system, 1) = MAX(ref_matrix_eig(diag_system, 1), eig);
+      ref_matrix_eig(diag_system, 2) = MAX(ref_matrix_eig(diag_system, 2), eig);
+    }
+    RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform m");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_METRIC_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation,
