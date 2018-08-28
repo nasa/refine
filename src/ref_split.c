@@ -507,6 +507,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_INT new_node,
                                       REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ncell, cell_in_list;
@@ -543,7 +544,8 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 
-      if (1.0e-12 > uv_area0 || 1.0e-12 > uv_area1 ||
+      if (ref_node_min_uv_area(ref_node) > uv_area0 ||
+          ref_node_min_uv_area(ref_node) > uv_area1 ||
           (normdev0 <= normdev &&
            normdev0 < ref_grid_adapt(ref_grid, split_normdev_absolute)) ||
           (normdev1 <= normdev &&

@@ -924,6 +924,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
 REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL geom_node, geom_edge, geom_face, no_quads;
   REF_INT id;
   REF_DBL uv_orig[2], uv_ideal[2];
@@ -973,8 +974,8 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
          normdev > normdev_orig) &&
-        (min_uv_area > 1.0e-12) && (uv_min[0] < uv[0]) && (uv[0] < uv_max[0]) &&
-        (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {
+        (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
+        (uv[0] < uv_max[0]) && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {
       if (verbose) printf("better qtri %f qtet %f\n", qtri, qtet);
       return REF_SUCCESS;
     }

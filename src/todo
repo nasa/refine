@@ -1,5 +1,4 @@
 
-put all uv_area limits in a struct (with volume or ref_adapt?)
 put parameters a place that can be controlled (better names)
  - post split edge length
  - collapse_ratio_limit
@@ -178,6 +177,8 @@ unify clump plotting diagnostics in parallel
  clump degree > 50
 
 +++++++++++++++++
+
++ put all uv_area limits in a ref_node struct (with volume)
 
 + histogram history plots
 

@@ -47,6 +47,7 @@ struct REF_NODE_STRUCT {
   REF_INT old_n_global, new_n_global;
   REF_DBL twod_mid_plane;
   REF_DBL min_volume;
+  REF_DBL min_uv_area;
   REF_INT tet_quality;
   REF_INT tri_quality;
 };
@@ -102,6 +103,7 @@ struct REF_NODE_STRUCT {
 
 #define ref_node_twod_mid_plane(ref_node) ((ref_node)->twod_mid_plane)
 #define ref_node_min_volume(ref_node) ((ref_node)->min_volume)
+#define ref_node_min_uv_area(ref_node) ((ref_node)->min_uv_area)
 
 REF_STATUS ref_node_create(REF_NODE *ref_node, REF_MPI ref_mpi);
 REF_STATUS ref_node_free(REF_NODE ref_node);
