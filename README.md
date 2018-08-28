@@ -71,11 +71,10 @@ mean ratio/edge length and normalized count.
 
 # Grid Adaptation
 ```
-./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -o output-project
+./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -x output.meshb
 ```
 Where,
  - `-i project.meshb` is the grid in libMeshb format
  - `-m project-metric.solb` is the metric in libMeshb format
  - `-g project.egads` is optional geometry (when compiled with EGADS)
- - `-o output-project` is the output project name, i.e., output-project.meshb
-
+ - `-x output.meshb` is the output grid name
