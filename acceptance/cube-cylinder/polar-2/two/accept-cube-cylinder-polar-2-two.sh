@@ -21,7 +21,6 @@ function adapt_cycle {
 
     ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -t
     mv ref_gather_movie.tec ${inproj}_movie.tec
-    mv ref_gather_histo.tec ${inproj}_histo.tec
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
 }
