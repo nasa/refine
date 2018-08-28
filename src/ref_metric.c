@@ -1109,7 +1109,7 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_NODE ref_node,
 }
 
 static REF_STATUS ref_metric_grow_dict_one_layer(REF_DICT ref_dict,
-						 REF_CELL ref_cell) {
+                                                 REF_CELL ref_cell) {
   REF_DICT copy;
   REF_INT node_list[REF_METRIC_MAX_DEGREE];
   REF_INT max_node = REF_METRIC_MAX_DEGREE;
@@ -1142,13 +1142,13 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
     status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
-						ref_dict, node_hessian);
+                                                ref_dict, node_hessian);
     if (REF_DIV_ZERO == status) {
       printf(" caught %s, adding third layer to kexact cloud and retry\n",
-	     "REF_DIV_ZERO");
+             "REF_DIV_ZERO");
       RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
       status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
-						  ref_dict, node_hessian);
+                                                  ref_dict, node_hessian);
     }
     RSS(status, "kexact qr node");
     for (im = 0; im < 6; im++) {
