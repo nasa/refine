@@ -53,7 +53,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->split_normdev_absolute = 0.0;
 
   ref_adapt->collapse_per_pass = 1;
-  ref_adapt->collapse_ratio = 1.0/sqrt(2.);
+  ref_adapt->collapse_ratio = 1.0 / sqrt(2.);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
   ref_adapt->collapse_ratio_limit = 3.0;
   ref_adapt->collapse_normdev_absolute = 0.0;
@@ -119,6 +119,10 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
+  REF_DBL ratio, min_ratio, max_ratio, overshoot;
+  REF_INT edge, part;
+  REF_BOOL active;
+  REF_EDGE ref_edge;
 
   if (ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -201,16 +205,48 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   RSS(ref_mpi_min(ref_mpi, &dot, &min_dot, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &min_dot, 1, REF_DBL_TYPE), "min");
 
+  min_ratio = 1.0e100;
+  max_ratio = -1.0e100;
+  RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
+                           ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), &active),
+        "twod edge");
+    active = (active || !ref_grid_twod(ref_grid));
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+      RSS(ref_node_ratio(ref_grid_node(ref_grid),
+                         ref_edge_e2n(ref_edge, 0, edge),
+                         ref_edge_e2n(ref_edge, 1, edge), &ratio),
+          "rat");
+      min_ratio = MIN(min_ratio, ratio);
+      max_ratio = MIN(max_ratio, ratio);
+    }
+  }
+  RSS(ref_edge_free(ref_edge), "free edge");
+  ratio = min_ratio;
+  RSS(ref_mpi_min(ref_mpi, &ratio, &min_ratio, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_ratio, 1, REF_DBL_TYPE), "min");
+  ratio = max_ratio;
+  RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
+
   target = MAX(MIN(0.1, min_quality), 1.0e-3);
+  overshoot = MAX(max_ratio, 1.0 / min_ratio);
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f max cell degree %d min dot %7.4f\n", target,
-           max_degree, min_dot);
+    printf("quality floor %6.4f overshoot %6.2f ", target, overshoot);
+    printf("max cell degree %d min dot %7.4f\n", max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
   }
+
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
+
+  ref_adapt->split_ratio_limit = MIN(1.0 / overshoot, 1.0 / sqrt(2.0));
+  ref_adapt->collapse_ratio_limit = MAX(overshoot, sqrt(2.0));
 
   return REF_SUCCESS;
 }
