@@ -65,6 +65,12 @@
 #include "ref_mpi.h"
 #include "ref_part.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define VERSION "not available"
+#endif
+
 static void echo_argv(int argc, char *argv[]) {
   int pos;
   printf("\n");
@@ -93,7 +99,10 @@ int main(int argc, char *argv[]) {
 
   output_project[0] = '\0';
 
-  if (ref_mpi_once(ref_mpi)) echo_argv(argc, argv);
+  if (ref_mpi_once(ref_mpi)) {
+    printf("version %s, after 1.8.18\n", VERSION);
+    echo_argv(argc, argv);
+  }
 
   while ((opt = getopt(argc, argv, "i:m:g:r:o:x:s:ltd")) != -1) {
     switch (opt) {
