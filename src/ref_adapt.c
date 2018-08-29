@@ -40,20 +40,21 @@
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   REF_ADAPT ref_adapt;
+  REF_DBL overshoot = 1.1;
 
   ref_malloc(*ref_adapt_ptr, 1, REF_ADAPT_STRUCT);
 
   ref_adapt = *ref_adapt_ptr;
 
   ref_adapt->split_per_pass = 1;
-  ref_adapt->split_ratio = sqrt(2.0);
+  ref_adapt->split_ratio = sqrt(2.0) * overshoot;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
   ref_adapt->split_ratio_limit = 1.0e-3;
   ref_adapt->split_normdev_absolute = 0.0;
 
   ref_adapt->collapse_per_pass = 1;
-  ref_adapt->collapse_ratio = 1.0 / sqrt(2.);
+  ref_adapt->collapse_ratio = 1.0 / (sqrt(2.0) * overshoot);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
   ref_adapt->collapse_ratio_limit = 3.0;
   ref_adapt->collapse_normdev_absolute = 0.0;
