@@ -222,7 +222,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),
           "rat");
       min_ratio = MIN(min_ratio, ratio);
-      max_ratio = MIN(max_ratio, ratio);
+      max_ratio = MAX(max_ratio, ratio);
     }
   }
   RSS(ref_edge_free(ref_edge), "free edge");
