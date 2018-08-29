@@ -1,4 +1,3 @@
-
 /* Copyright 2014 United States Government as represented by the
  * Administrator of the National Aeronautics and Space
  * Administration. No copyright is claimed in the United States under
@@ -208,7 +207,7 @@ int main(int argc, char *argv[]) {
 
   for (pass = 0; pass < passes; pass++) {
     if (ref_mpi_once(ref_mpi))
-      printf(" pass %d of %d with %d ranks\n", pass, passes,
+      printf(" pass %d of %d with %d ranks\n", pass+1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
     RSS(ref_adapt_parameter(ref_grid), "param");
     RSS(ref_adapt_pass(ref_grid), "pass");
