@@ -245,8 +245,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
 
-  ref_adapt->split_ratio_limit = MIN(1.0 / overshoot, 1.0 / sqrt(2.0));
-  ref_adapt->collapse_ratio_limit = MAX(overshoot, sqrt(2.0));
+  ref_adapt->split_ratio_limit = MIN(2.0 / overshoot, 1.0 / sqrt(2.0));
+  ref_adapt->collapse_ratio_limit = MAX(0.5 * overshoot, sqrt(2.0));
 
   return REF_SUCCESS;
 }
