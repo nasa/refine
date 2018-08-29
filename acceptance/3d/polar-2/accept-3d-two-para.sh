@@ -23,11 +23,10 @@ function adapt_cycle {
     ${two}/ref_translate ${proj}.b8.ugrid ${proj}.html
     ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.metric \
-          -o ref_adapt_test
+    ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.solb
     
     rm ref_adapt_test.b8.ugrid
-    mpiexec -np 8 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric \
+    mpiexec -np 2 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb \
             -o ref_adapt_test -t
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
