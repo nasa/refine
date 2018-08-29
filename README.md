@@ -44,9 +44,9 @@ Where,
  - `1.5` is the gradation limit
  - `3.e4` is the complexity (C), where the new mesh will have approximately 2C vertices and 12C tetrahedra
  - `project-metric.solb` is the output metric in libMeshb format
- - use (sequential only) k-exact Hessian reconstruction with --kexact,
+ - use (sequential only) k-exact Hessian reconstruction with `--kexact`,
    otherwise default to L2-projection Hessian reconstruction
- - max_edge_length is an optional limit on max edge length with an attempt to hold complexity
+ - `max_edge_length` is an optional limit on maximum edge length with an attempt to hold complexity
 
 See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
 for details on the libMeshb format.
