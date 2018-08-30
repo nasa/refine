@@ -34,7 +34,7 @@ cd ${build_directory_root} && \
   cd ${BUILD_TAG} && \
     cd refine && \
       pwd && \
-      git status'
+      git status
 EOF
 
 ssh fun3d@${build_machine} <<EOF
