@@ -20,9 +20,13 @@ cd ${build_directory_root} && \
     git clone ${git_url} && \
     cd refine && \
       pwd && \
-      git checkout '${gitlabSourceBranch}' && \
-      git merge '${gitlabTargetBranch}'
+      git checkout '${GIT_COMMIT}'
 EOF
+
+# when merging:
+#      git checkout '${gitlabSourceBranch}' && \
+#      git merge '${gitlabTargetBranch}'
+
 
 ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
 
