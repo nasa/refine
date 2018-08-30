@@ -343,7 +343,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality %6.4f ratio %6.4f %6.2f nnode %d", min_quality, min_ratio,
+    printf("quality %6.4f ratio %6.4f %6.2f nnode %d\n", min_quality, min_ratio,
 	   max_ratio, nnode);
   }
 
