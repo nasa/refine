@@ -49,6 +49,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL smooth_min_normdev;
 
   REF_BOOL instrument;
+  REF_BOOL watch_param;
 };
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt);

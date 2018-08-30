@@ -64,6 +64,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->smooth_min_normdev = 0.0;
 
   ref_adapt->instrument = REF_FALSE;
+  ref_adapt->watch_param = REF_FALSE;
 
   return REF_SUCCESS;
 }
@@ -93,6 +94,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->smooth_min_normdev = original->smooth_min_normdev;
 
   ref_adapt->instrument = original->instrument;
+  ref_adapt->watch_param = original->watch_param;
 
   return REF_SUCCESS;
 }
