@@ -31,7 +31,7 @@ function adapt_cycle {
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
     
-    ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
+    ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.solb > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
