@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
   output_project[0] = '\0';
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("version %s, after 1.8.18\n", VERSION);
+    printf("version %s, on or after 1.8.19\n", VERSION);
     echo_argv(argc, argv);
   }
 
