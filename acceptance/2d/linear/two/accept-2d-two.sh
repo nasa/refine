@@ -23,7 +23,7 @@ function adapt_cycle {
     ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
     ${two}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric 0.0001
-    ${two}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric | tee ${proj}.out || exit 1
+    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test | tee ${proj}.out || exit 1
 
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
