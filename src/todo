@@ -1,4 +1,6 @@
 
+report params and limits
+
 put parameters a place that can be controlled (better names)
  - post split edge length
  - collapse_ratio_limit
