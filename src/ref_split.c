@@ -903,6 +903,66 @@ REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_INT new_node,
+                                     REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_INT e0, e1, cell_edge;
+  REF_DBL ratio;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
+                          cell_to_split),
+      "get list");
+
+  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
+    cell = cell_to_split[cell_in_list];
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) nodes[node] = new_node;
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, split_ratio_limit)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (new_node == nodes[node]) nodes[node] = node0;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = new_node;
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, split_ratio_limit)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
                                   REF_INT skip) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
