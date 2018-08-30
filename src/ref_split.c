@@ -654,6 +654,15 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
 
+    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0,
+				  &allowed),
+        "ratio of new tri sides");
+    if (!allowed) {
+      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      continue;
+    }
+
     RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node0,
                                     &allowed),
         "quality of new tri");
