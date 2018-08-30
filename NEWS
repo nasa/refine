@@ -1,4 +1,6 @@
 
+Thu, Aug 30, 2018 : Released Refine 1.8.19
+
 - added histogram movies
 - uv_area sign based on topology
 - triangle windings are flipped for normal into domain
