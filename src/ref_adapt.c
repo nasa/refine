@@ -239,14 +239,12 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
 
-  ref_adapt->split_ratio_limit =
-      MIN(min_ratio, ref_adapt->collapse_ratio);
-  ref_adapt->collapse_ratio_limit =
-      MAX(max_ratio, ref_adapt->split_ratio);
+  ref_adapt->split_ratio_limit = MIN(min_ratio, ref_adapt->collapse_ratio);
+  ref_adapt->collapse_ratio_limit = MAX(max_ratio, ref_adapt->split_ratio);
 
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
-	   ref_adapt->split_ratio_limit, ref_adapt->collapse_ratio_limit);
+           ref_adapt->split_ratio_limit, ref_adapt->collapse_ratio_limit);
     printf("max cell degree %d min dot %7.4f\n", max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
@@ -344,7 +342,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
 
   if (ref_grid_once(ref_grid)) {
     printf("quality %6.4f ratio %6.4f %6.2f nnode %d\n", min_quality, min_ratio,
-	   max_ratio, nnode);
+           max_ratio, nnode);
   }
 
   return REF_SUCCESS;
