@@ -13,9 +13,12 @@ function adapt_cycle {
     ${bin}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
     ${bin}/ref_acceptance ${proj}.b8.ugrid ${proj}.metric -masabl
-    ${bin}/ref_adapt_test ${proj}.b8.ugrid ${proj}.metric | tee ${proj}.out || exit 1
+    ${bin}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test -t | tee ${proj}.out || exit 1
 
-    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric
+    cp ref_gather_movie.tec ${proj}_movie.tec
+    cp ref_gather_histo.tec ${proj}_histo.tec
+
+    ${bin}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
@@ -25,8 +28,8 @@ adapt_cycle accept-2d-two-02
 adapt_cycle accept-2d-two-03
 adapt_cycle accept-2d-two-04
 adapt_cycle accept-2d-two-05
-adapt_cycle accept-2d-two-06
-adapt_cycle accept-2d-two-07
-adapt_cycle accept-2d-two-08
-adapt_cycle accept-2d-two-09
+
+cat accept-2d-two-05.status
+../../../check.rb accept-2d-two-05.status 0.45 1.6
+
 

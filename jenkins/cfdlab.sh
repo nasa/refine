@@ -162,6 +162,12 @@ cd ${source_dir}/acceptance/2d/polar-2/two
 time ./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-2d-masabl-two
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/masabl/two
+time ./accept-2d-two.sh ${strict_dir} > $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.accept-2d-mixed
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/mixed
