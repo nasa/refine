@@ -255,6 +255,101 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality, min_quality;
+  REF_DBL dot, min_dot;
+  REF_BOOL active_twod;
+  REF_INT node, nnode;
+  REF_DBL ratio, min_ratio, max_ratio;
+  REF_INT edge, part;
+  REF_BOOL active;
+  REF_EDGE ref_edge;
+
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
+
+  min_quality = 1.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
+          "active twod tri");
+      if (!active_twod) continue;
+      RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
+          "qual");
+    } else {
+      RSS(ref_node_tet_quality(ref_grid_node(ref_grid), nodes, &quality),
+          "qual");
+    }
+    min_quality = MIN(min_quality, quality);
+  }
+  quality = min_quality;
+  RSS(ref_mpi_min(ref_mpi, &quality, &min_quality, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &quality, 1, REF_DBL_TYPE), "min");
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      nnode++;
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
+  if (ref_grid_twod(ref_grid)) nnode = nnode / 2;
+
+  min_dot = 2.0;
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
+      min_dot = MIN(min_dot, dot);
+    }
+  }
+  dot = min_dot;
+  RSS(ref_mpi_min(ref_mpi, &dot, &min_dot, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &min_dot, 1, REF_DBL_TYPE), "min");
+
+  min_ratio = 1.0e100;
+  max_ratio = -1.0e100;
+  RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
+                           ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), &active),
+        "twod edge");
+    active = (active || !ref_grid_twod(ref_grid));
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+      RSS(ref_node_ratio(ref_grid_node(ref_grid),
+                         ref_edge_e2n(ref_edge, 0, edge),
+                         ref_edge_e2n(ref_edge, 1, edge), &ratio),
+          "rat");
+      min_ratio = MIN(min_ratio, ratio);
+      max_ratio = MAX(max_ratio, ratio);
+    }
+  }
+  RSS(ref_edge_free(ref_edge), "free edge");
+  ratio = min_ratio;
+  RSS(ref_mpi_min(ref_mpi, &ratio, &min_ratio, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_ratio, 1, REF_DBL_TYPE), "min");
+  ratio = max_ratio;
+  RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
+
+  if (ref_grid_once(ref_grid)) {
+    printf("quality %6.4f ratio %6.4f %6.2f nnode %d", min_quality, min_ratio,
+	   max_ratio, nnode);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_adapt_pass(REF_GRID ref_grid) {
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_adapt_twod_pass(ref_grid), "pass");
