@@ -120,7 +120,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio, overshoot;
+  REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
   REF_BOOL active;
   REF_EDGE ref_edge;
@@ -234,20 +234,21 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
   target = MAX(MIN(0.1, min_quality), 1.0e-3);
-  overshoot = MAX(max_ratio, 1.0 / min_ratio);
+  ref_adapt->collapse_quality_absolute = target;
+  ref_adapt->smooth_min_quality = target;
+
+  ref_adapt->split_ratio_limit =
+      MIN(min_ratio, ref_adapt->collapse_ratio);
+  ref_adapt->collapse_ratio_limit =
+      MAX(max_ratio, ref_adapt->split_ratio);
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f overshoot %6.2f ", target, overshoot);
+    printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
+	   ref_adapt->split_ratio_limit, ref_adapt->collapse_ratio_limit);
     printf("max cell degree %d min dot %7.4f\n", max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
   }
-
-  ref_adapt->collapse_quality_absolute = target;
-  ref_adapt->smooth_min_quality = target;
-
-  ref_adapt->split_ratio_limit = MIN(2.0 / overshoot, 1.0 / sqrt(2.0));
-  ref_adapt->collapse_ratio_limit = MAX(0.5 * overshoot, sqrt(2.0));
 
   return REF_SUCCESS;
 }
