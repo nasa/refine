@@ -28,7 +28,14 @@ EOF
 #      git merge '${gitlabTargetBranch}'
 
 
-ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
+ssh fun3d@${build_machine} <<EOF
+whoami && \
+cd ${build_directory_root} && \
+  cd ${BUILD_TAG} && \
+    cd refine && \
+      pwd && \
+      git status'
+EOF
 
 ssh fun3d@${build_machine} <<EOF
 whoami && \
