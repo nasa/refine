@@ -369,6 +369,8 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
 
   ref_gather_blocking_frame(ref_grid, "threed pass");
   if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "adapt preflight check");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt start");
 
@@ -377,6 +379,8 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
     ref_gather_blocking_frame(ref_grid, "collapse");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "collapse geom topo check");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
   }
@@ -385,6 +389,8 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
     RSS(ref_split_pass(ref_grid), "split pass");
     ref_gather_blocking_frame(ref_grid, "split");
     if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
   }
@@ -394,6 +400,8 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
     ref_gather_blocking_frame(ref_grid, "smooth");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
   }
@@ -402,12 +410,23 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "twod pass");
+
   RSS(ref_collapse_twod_pass(ref_grid), "col pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "collapse");
+
   RSS(ref_split_twod_pass(ref_grid), "split pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "split");
+
   RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "smooth");
 
   return REF_SUCCESS;

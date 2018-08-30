@@ -167,6 +167,7 @@ int main(int argc, char *argv[]) {
   RNS(ref_grid, "input grid required");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read inputs");
 
+  ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
   ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
   ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
 
