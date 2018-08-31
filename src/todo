@@ -1,6 +1,11 @@
 
 split quality and edge allowed
-add edge allowed to twod and threed
+add edge allowed to threed
+
+smooth ratio limit
+best new smooth location?
+
+gather post ratio limits
 
 input means for all these parameters for optimizer setting
 smooth ordering
