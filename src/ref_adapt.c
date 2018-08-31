@@ -119,12 +119,12 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_DBL dot, min_dot;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
-  REF_DBL target;
+  REF_DBL target_quality;
   REF_INT cell_node;
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio;
+  REF_DBL ratio, min_ratio, max_ratio, target_ratio;
   REF_INT edge, part;
   REF_BOOL active;
   REF_EDGE ref_edge;
@@ -237,16 +237,17 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
-  target = MAX(MIN(0.1, min_quality), 1.0e-3);
-  ref_adapt->collapse_quality_absolute = target;
-  ref_adapt->smooth_min_quality = target;
+  target_quality = MAX(MIN(0.1, min_quality), 1.0e-3);
+  ref_adapt->collapse_quality_absolute = target_quality;
+  ref_adapt->smooth_min_quality = target_quality;
 
   /* bound ratio to current range */
-  ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
-  ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
+  target_ratio = MAX(max_ratio, 1.0/min_ratio);
+  ref_adapt->post_min_ratio = MIN(1.0/target_ratio, ref_adapt->collapse_ratio);
+  ref_adapt->post_max_ratio = MAX(target_ratio, ref_adapt->split_ratio);
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
+    printf("quality floor %6.4f ratio %6.4f %6.2f ", target_quality,
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max cell degree %d min dot %7.4f\n", max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
