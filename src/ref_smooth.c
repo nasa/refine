@@ -76,7 +76,7 @@ REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL none_found = REF_TRUE;
   REF_DBL ratio;
-
+  
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
@@ -88,7 +88,7 @@ REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
 	  *max_ratio = ratio;
 	} else {
 	  *min_ratio = MIN(*min_ratio, ratio);
-	  *max_ratio = MIN(*max_ratio, ratio);
+	  *max_ratio = MAX(*max_ratio, ratio);
 	}
       }
     }
@@ -490,7 +490,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
   REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality;
+  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz, opposite;
   REF_BOOL allowed;
 
@@ -512,7 +512,11 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
     if (allowed) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-      if (quality > quality0) {
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+	  "ratio");
+      if ( (quality > quality0) &&
+	   (min_ratio > ref_grid_adapt(ref_grid, split_ratio_limit)) &&
+	   (max_ratio < ref_grid_adapt(ref_grid, collapse_ratio_limit)) ) {
         /* update opposite side: X and Z only */
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
             "opp");
