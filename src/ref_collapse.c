@@ -437,7 +437,7 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node1 != nodes[node]) {
         RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
-        if (edge_ratio > ref_grid_adapt(ref_grid, collapse_ratio_limit))
+        if (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio))
           return REF_SUCCESS;
       }
 
@@ -693,7 +693,7 @@ REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (remove != nodes[node]) {
         RSS(ref_node_ratio(ref_node, keep, nodes[node], &ratio), "ratio");
-        if (ratio > ref_grid_adapt(ref_grid, collapse_ratio_limit))
+        if (ratio > ref_grid_adapt(ref_grid, post_max_ratio))
           return REF_SUCCESS;
       }
     }

@@ -50,18 +50,19 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->split_ratio = sqrt(2.0) * overshoot;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
-  ref_adapt->split_ratio_limit = 1.0e-3;
   ref_adapt->split_normdev_absolute = 0.0;
 
   ref_adapt->collapse_per_pass = 1;
   ref_adapt->collapse_ratio = 1.0 / (sqrt(2.0) * overshoot);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
-  ref_adapt->collapse_ratio_limit = 3.0;
   ref_adapt->collapse_normdev_absolute = 0.0;
 
   ref_adapt->smooth_per_pass = 1;
   ref_adapt->smooth_min_quality = 1.0e-3;
   ref_adapt->smooth_min_normdev = 0.0;
+
+  ref_adapt->post_min_ratio = 1.0e-3;
+  ref_adapt->post_max_ratio = 3.0;
 
   ref_adapt->instrument = REF_FALSE;
   ref_adapt->watch_param = REF_FALSE;
@@ -80,18 +81,19 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
-  ref_adapt->split_ratio_limit = original->split_ratio_limit;
   ref_adapt->split_normdev_absolute = original->split_normdev_absolute;
 
   ref_adapt->collapse_per_pass = original->collapse_per_pass;
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
-  ref_adapt->collapse_ratio_limit = original->collapse_ratio_limit;
   ref_adapt->collapse_normdev_absolute = original->collapse_normdev_absolute;
 
   ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
   ref_adapt->smooth_min_normdev = original->smooth_min_normdev;
+
+  ref_adapt->post_min_ratio = original->post_min_ratio;
+  ref_adapt->post_max_ratio = original->post_max_ratio;
 
   ref_adapt->instrument = original->instrument;
   ref_adapt->watch_param = original->watch_param;
@@ -239,12 +241,12 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->collapse_quality_absolute = target;
   ref_adapt->smooth_min_quality = target;
 
-  ref_adapt->split_ratio_limit = MIN(min_ratio, ref_adapt->collapse_ratio);
-  ref_adapt->collapse_ratio_limit = MAX(max_ratio, ref_adapt->split_ratio);
+  ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
+  ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
-           ref_adapt->split_ratio_limit, ref_adapt->collapse_ratio_limit);
+           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max cell degree %d min dot %7.4f\n", max_degree, min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
@@ -349,9 +351,9 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     long_met = is_ok;
     if ( min_quality < ref_grid_adapt(ref_grid, smooth_min_quality))
 	 quality_met = not_ok;
-    if ( min_ratio < ref_grid_adapt(ref_grid,split_ratio_limit))
+    if ( min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
       short_met = not_ok;
-    if ( max_ratio > ref_grid_adapt(ref_grid,collapse_ratio_limit))
+    if ( max_ratio > ref_grid_adapt(ref_grid, post_max_ratio))
       long_met = not_ok;
 
     printf("quality %c %6.4f ratio %c %6.4f %6.2f %c nnode %d\n", quality_met,

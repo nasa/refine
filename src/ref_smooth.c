@@ -515,8 +515,8 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
 	  "ratio");
       if ( (quality > quality0) &&
-	   (min_ratio > ref_grid_adapt(ref_grid, split_ratio_limit)) &&
-	   (max_ratio < ref_grid_adapt(ref_grid, collapse_ratio_limit)) ) {
+	   (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+	   (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) ) {
         /* update opposite side: X and Z only */
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
             "opp");
