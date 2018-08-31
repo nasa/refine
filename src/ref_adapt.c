@@ -245,10 +245,6 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
   ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
-  /* give collapse more opportunities when short edges */
-  if (min_ratio < 0.4)
-    ref_adapt->post_max_ratio = MAX(ref_adapt->post_max_ratio, 1.0/min_ratio);
-  
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
