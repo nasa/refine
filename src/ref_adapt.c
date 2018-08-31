@@ -246,7 +246,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
   /* give collapse more opportunities when short edges */
-  ref_adapt->post_max_ratio = MAX(ref_adapt->post_max_ratio, 1.0/min_ratio);
+  if (min_ratio < 0.4)
+    ref_adapt->post_max_ratio = MAX(ref_adapt->post_max_ratio, 1.0/min_ratio);
   
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target,
@@ -427,24 +428,32 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
+  REF_INT pass;
+
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "twod pass");
 
-  RSS(ref_collapse_twod_pass(ref_grid), "col pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "collapse");
+  for (pass = 0; pass < ref_grid_adapt(ref_grid, collapse_per_pass); pass++) {
+    RSS(ref_collapse_twod_pass(ref_grid), "col pass");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
+    ref_gather_blocking_frame(ref_grid, "collapse");
+  }
 
-  RSS(ref_split_twod_pass(ref_grid), "split pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "split");
+  for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
+    RSS(ref_split_twod_pass(ref_grid), "split pass");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
+    ref_gather_blocking_frame(ref_grid, "split");
+  }
 
-  RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "smooth");
+  for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
+    RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
+    if (ref_grid_adapt(ref_grid, watch_param))
+      RSS(ref_adapt_tattle(ref_grid), "tattle");
+    ref_gather_blocking_frame(ref_grid, "smooth");
+  }
 
   return REF_SUCCESS;
 }
