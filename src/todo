@@ -3,9 +3,11 @@ split quality and edge allowed
 add edge allowed to threed
 
 smooth ratio limit
-best new smooth location?
-
 gather post ratio limits
+
+increase required improvement to settle
+
+best new smooth location with gradation?
 
 input means for all these parameters for optimizer setting
 smooth ordering
