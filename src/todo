@@ -3,7 +3,8 @@ split quality and edge allowed
 add edge allowed to threed
 
 smooth ratio limit
-gather post ratio limits
+
+sooth with collpase and split
 
 increase required improvement to settle
 
@@ -189,6 +190,7 @@ put parameters a place that can be controlled
  - split_ratio_limit
  - collapse_ratio_limit
 report params and limits
+gather post ratio limits
 
 + put all uv_area limits in a ref_node struct (with volume)
 
