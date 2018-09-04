@@ -69,7 +69,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid);
 
-REF_STATUS ref_smooth_threed_post_split(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node);
 
