@@ -19,5 +19,5 @@ ${two}/ref_acceptance mixed01.b8.ugrid mixed01.metric 0.01
 ${two}/ref_driver -i mixed01.b8.ugrid -m mixed01.metric -o mixed02 > accept-2d-mixed-02.status
 
 cat accept-2d-mixed-02.status
-../../check.rb accept-2d-mixed-02.status 0.2 12.0
+../../check.rb accept-2d-mixed-02.status 0.1 12.0
 
