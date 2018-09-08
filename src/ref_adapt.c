@@ -124,7 +124,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio, target_ratio;
+  REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
   REF_BOOL active;
   REF_EDGE ref_edge;
@@ -242,9 +242,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->smooth_min_quality = target_quality;
 
   /* bound ratio to current range */
-  target_ratio = MAX(max_ratio, 1.0/min_ratio);
-  ref_adapt->post_min_ratio = MIN(1.0/target_ratio, ref_adapt->collapse_ratio);
-  ref_adapt->post_max_ratio = MAX(target_ratio, ref_adapt->split_ratio);
+  ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
+  ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target_quality,
