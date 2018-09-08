@@ -48,7 +48,7 @@ struct REF_ADAPT_STRUCT {
 
   REF_DBL post_min_ratio;
   REF_DBL post_max_ratio;
-  
+
   REF_BOOL instrument;
   REF_BOOL watch_param;
 };

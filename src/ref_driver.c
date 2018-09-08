@@ -191,6 +191,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   } else {
     RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
+    ref_grid_parent(ref_grid) = background_grid;
   }
 
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid),
@@ -217,7 +218,7 @@ int main(int argc, char *argv[]) {
 
   for (pass = 0; pass < passes; pass++) {
     if (ref_mpi_once(ref_mpi))
-      printf("\n pass %d of %d with %d ranks\n", pass+1, passes,
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
     RSS(ref_adapt_parameter(ref_grid), "param");
     RSS(ref_adapt_pass(ref_grid), "pass");

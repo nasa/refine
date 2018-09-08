@@ -38,6 +38,8 @@
 #include "ref_smooth.h"
 #include "ref_subdiv.h"
 
+#include "ref_metric.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass(REF_GRID ref_grid) {
@@ -194,7 +196,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
 
     RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
-	"smooth after split");
+        "smooth after split");
   }
 
   ref_free(edges);
@@ -651,12 +653,16 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node0), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node0),
         "interp new node");
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      RSS(ref_metric_interpolate_node(ref_grid, new_node0,
+                                      ref_grid_parent(ref_grid)),
+          "interp new node0");
+    }
     RSS(ref_geom_add_between(ref_grid, node0, node1, new_node0),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
 
-    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0,
-				  &allowed),
+    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0, &allowed),
         "ratio of new tri sides");
     if (!allowed) {
       RSS(ref_node_remove(ref_node, new_node0), "remove new node");
@@ -691,6 +697,11 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node1), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node2, node3, new_node1),
         "interp new node");
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      RSS(ref_metric_interpolate_node(ref_grid, new_node1,
+                                      ref_grid_parent(ref_grid)),
+          "interp new node1");
+    }
     RSS(ref_geom_add_between(ref_grid, node2, node3, new_node1),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");

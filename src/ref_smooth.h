@@ -28,7 +28,7 @@ BEGIN_C_DECLORATION
 REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
-				       REF_DBL *min_ratio, REF_DBL *max_ratio);
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio);
 REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
 REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,

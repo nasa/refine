@@ -26,6 +26,7 @@
 #include "ref_geom.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_smooth.h"
 #include "ref_twod.h"
@@ -69,31 +70,31 @@ REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node) {
 }
 
 REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
-				       REF_DBL *min_ratio, REF_DBL *max_ratio) {
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL none_found = REF_TRUE;
   REF_DBL ratio;
-  
+
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (node != nodes[cell_node]) {
         RSS(ref_node_ratio(ref_node, node, nodes[cell_node], &ratio), "ratio");
-	if (none_found) {
-	  none_found = REF_FALSE;
-	  *min_ratio = ratio;
-	  *max_ratio = ratio;
-	} else {
-	  *min_ratio = MIN(*min_ratio, ratio);
-	  *max_ratio = MAX(*max_ratio, ratio);
-	}
+        if (none_found) {
+          none_found = REF_FALSE;
+          *min_ratio = ratio;
+          *max_ratio = ratio;
+        } else {
+          *min_ratio = MIN(*min_ratio, ratio);
+          *max_ratio = MAX(*max_ratio, ratio);
+        }
       }
     }
   }
-  
+
   if (none_found) {
     *min_ratio = 2000.0;
     *max_ratio = -2.0;
@@ -511,17 +512,27 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
     RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
     if (allowed) {
+      if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+        RSS(ref_metric_interpolate_node(ref_grid, node,
+                                        ref_grid_parent(ref_grid)),
+            "interp node");
+      }
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-	  "ratio");
-      if ( (quality > quality0) &&
-	   (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-	   (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) ) {
+          "ratio");
+      if ((quality > quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
         /* update opposite side: X and Z only */
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
             "opp");
         ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
         ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
+        if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+          RSS(ref_metric_interpolate_node(ref_grid, opposite,
+                                          ref_grid_parent(ref_grid)),
+              "interp opposite");
+        }
         return REF_SUCCESS;
       }
     }

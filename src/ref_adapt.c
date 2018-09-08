@@ -350,15 +350,14 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     quality_met = is_ok;
     short_met = is_ok;
     long_met = is_ok;
-    if ( min_quality < ref_grid_adapt(ref_grid, smooth_min_quality))
-	 quality_met = not_ok;
-    if ( min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
+    if (min_quality < ref_grid_adapt(ref_grid, smooth_min_quality))
+      quality_met = not_ok;
+    if (min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
       short_met = not_ok;
-    if ( max_ratio > ref_grid_adapt(ref_grid, post_max_ratio))
-      long_met = not_ok;
+    if (max_ratio > ref_grid_adapt(ref_grid, post_max_ratio)) long_met = not_ok;
 
     printf("quality %c %6.4f ratio %c %6.4f %6.2f %c nnode %d\n", quality_met,
-	   min_quality, short_met, min_ratio, max_ratio, long_met, nnode);
+           min_quality, short_met, min_ratio, max_ratio, long_met, nnode);
   }
 
   return REF_SUCCESS;

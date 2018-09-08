@@ -668,7 +668,7 @@ REF_STATUS ref_collapse_face_quality(REF_GRID ref_grid, REF_INT keep,
 }
 
 REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
-				   REF_INT remove, REF_BOOL *allowed) {
+                                   REF_INT remove, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -697,7 +697,6 @@ REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
           return REF_SUCCESS;
       }
     }
-   
   }
 
   *allowed = REF_TRUE;
