@@ -2,6 +2,9 @@
 split quality and edge allowed
 add edge allowed to threed
 
+smooth after collapse?
+interpolate after move/split
+
 smooth ratio limit
 
 sooth with collpase and split
