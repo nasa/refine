@@ -52,6 +52,8 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
   RSS(ref_adapt_create(&(ref_grid->adapt)), "adapt create");
 
+  ref_grid_parent(ref_grid) = NULL;
+
   ref_grid_twod(ref_grid) = REF_FALSE;
 
   return REF_SUCCESS;
@@ -91,6 +93,8 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
   RSS(ref_adapt_deep_copy(&(ref_grid->adapt), original->adapt),
       "adapt deep copy");
+
+  ref_grid_parent(ref_grid) = NULL;
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
 
@@ -155,6 +159,8 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf(" %d geom\n", ref_geom_n(ref_grid_geom(ref_grid)));
   printf(" %p gather\n", (void *)(ref_grid_gather(ref_grid)->grid_file));
   printf(" %p adapt\n", (void *)(ref_grid->adapt));
+  printf(" %p parent\n", (void *)(ref_grid->parent));
+  printf(" %d twod\n", (ref_grid->twod));
 
   return REF_SUCCESS;
 }
