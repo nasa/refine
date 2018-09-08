@@ -621,33 +621,33 @@ REF_STATUS ref_grid_enclosing_tri(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tri,
 
     if (bary[0] > bary[1] && bary[0] > bary[2]) {
       if (rand() % 2) {
-	RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[1], &guess),
-	    "update next to 0, 0 1");
+        RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[1], &guess),
+            "update next to 0, 0 1");
       } else {
-	RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[2], &guess),
-	    "update next to 0, 0 2");
+        RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[2], &guess),
+            "update next to 0, 0 2");
       }
       continue;
     }
 
     if (bary[1] > bary[0] && bary[1] > bary[2]) {
       if (rand() % 2) {
-	RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[0], &guess),
-	    "update next to 1, 1 0");
+        RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[0], &guess),
+            "update next to 1, 1 0");
       } else {
-	RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[2], &guess),
-	    "update next to 1, 1 2");
+        RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[2], &guess),
+            "update next to 1, 1 2");
       }
       continue;
     }
 
     if (bary[2] > bary[0] && bary[2] > bary[1]) {
       if (rand() % 2) {
-	RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[0], &guess),
-	    "update next to 2, 2 0");
+        RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[0], &guess),
+            "update next to 2, 2 0");
       } else {
-	RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[1], &guess),
-	    "update next to 2, 2 1");
+        RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[1], &guess),
+            "update next to 2, 2 1");
       }
       continue;
     }
