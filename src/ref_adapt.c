@@ -107,7 +107,7 @@ REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
+REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
@@ -124,7 +124,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio;
+  REF_DBL ratio, min_ratio, max_ratio, old_min_ratio, old_max_ratio;
   REF_INT edge, part;
   REF_BOOL active;
   REF_EDGE ref_edge;
@@ -241,9 +241,23 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid) {
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
 
+  old_min_ratio = ref_adapt->post_min_ratio;
+  old_max_ratio = ref_adapt->post_max_ratio;
+
   /* bound ratio to current range */
   ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
   ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
+
+  if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-12 &&
+      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-12) {
+    *all_done = REF_TRUE;
+    if (ref_grid_once(ref_grid)) {
+      printf("termination recommended\n");
+    }
+  } else {
+    *all_done = REF_FALSE;
+  }
+  RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
 
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f ", target_quality,

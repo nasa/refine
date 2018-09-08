@@ -70,6 +70,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT i, passes;
+    REF_BOOL all_done;
 
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "part grid");
@@ -135,7 +136,7 @@ int main(int argc, char *argv[]) {
     passes = 20;
     for (i = 0; i < passes; i++) {
       printf(" pass %d of %d\n", i, passes);
-      RSS(ref_adapt_parameter(ref_grid), "param");
+      RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
       RSS(ref_adapt_pass(ref_grid), "pass");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
       RSS(ref_validation_cell_volume(ref_grid), "vol");
@@ -177,6 +178,7 @@ int main(int argc, char *argv[]) {
   if (2 == argc) {
     REF_GRID ref_grid;
     REF_INT i, passes;
+    REF_BOOL all_done;
 
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "part grid");
@@ -216,7 +218,7 @@ int main(int argc, char *argv[]) {
 
     passes = 10;
     for (i = 0; i < passes; i++) {
-      RSS(ref_adapt_parameter(ref_grid), "param");
+      RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
       RSS(ref_adapt_pass(ref_grid), "pass");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
       RSS(ref_validation_cell_volume(ref_grid), "vol");
