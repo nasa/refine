@@ -49,7 +49,7 @@ struct REF_GRID_STRUCT {
   REF_GATHER gather;
   REF_ADAPT adapt;
 
-  REF_GRID parent;
+  REF_GRID background;
 
   REF_BOOL twod;
 };
@@ -78,7 +78,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
 #define ref_grid_adapt(ref_grid, param) (((ref_grid)->adapt)->param)
-#define ref_grid_parent(ref_grid) ((ref_grid)->parent)
+#define ref_grid_background(ref_grid) ((ref_grid)->background)
 
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 

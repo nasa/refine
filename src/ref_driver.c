@@ -192,7 +192,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   } else {
     RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
-    ref_grid_parent(ref_grid) = background_grid;
+    ref_grid_background(ref_grid) = background_grid;
   }
 
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid),

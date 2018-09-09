@@ -655,7 +655,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
         "interp new node");
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       RSS(ref_metric_interpolate_node(ref_grid, new_node0,
-                                      ref_grid_parent(ref_grid)),
+                                      ref_grid_background(ref_grid)),
           "interp new node0");
     }
     RSS(ref_geom_add_between(ref_grid, node0, node1, new_node0),
@@ -699,7 +699,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
         "interp new node");
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       RSS(ref_metric_interpolate_node(ref_grid, new_node1,
-                                      ref_grid_parent(ref_grid)),
+                                      ref_grid_background(ref_grid)),
           "interp new node1");
     }
     RSS(ref_geom_add_between(ref_grid, node2, node3, new_node1),

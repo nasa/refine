@@ -6,6 +6,7 @@ smooth after collapse?
 interpolate after move/split
 
 load balance interp
+store background in grid
 interp every node
 
 smooth ratio limit
