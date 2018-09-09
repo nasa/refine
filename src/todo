@@ -1,13 +1,14 @@
 
 split quality and edge allowed
-add edge allowed to threed
+  add edge allowed to threed
 
 smooth after collapse?
 interpolate after move/split
 
-smooth ratio limit
+load balance interp
+interp every node
 
-sooth with collpase and split
+smooth ratio limit
 
 increase required improvement to settle
 
