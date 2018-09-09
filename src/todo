@@ -1,4 +1,6 @@
 
+min_uv_area > 1.0e-12 line 1003 of ref_smooth.c
+
 split quality and edge allowed
   add edge allowed to threed
 

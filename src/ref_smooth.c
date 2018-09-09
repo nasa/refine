@@ -591,7 +591,7 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
   REF_DBL ideal[3], original[3];
-  REF_DBL backoff, tri_quality0, tri_quality, tet_quality;
+  REF_DBL backoff, tri_quality0, tri_quality, tet_quality, min_ratio, max_ratio;
   REF_INT ixyz;
   REF_INT n_ids, ids[2];
   REF_BOOL allowed, geom_face;
@@ -625,7 +625,11 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
-    if (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
+    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+	"ratio");
+    if ((tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+	(min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+	(max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
       if (tri_quality > tri_quality0) {
         return REF_SUCCESS;
@@ -838,7 +842,7 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
   REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality;
+  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz;
 
   /* can't handle boundaries yet */
@@ -859,7 +863,11 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
-    if (quality > quality0) {
+    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+	"ratio");
+    if ((quality > quality0) &&
+	(min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+	(max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
@@ -908,7 +916,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_DBL normdev_orig, normdev;
   REF_DBL min_uv_area;
 
-  REF_DBL t, st, sr, q, backoff, t_target;
+  REF_DBL t, st, sr, q, backoff, t_target, min_ratio, max_ratio;
   REF_INT tries;
   REF_BOOL verbose = REF_FALSE;
   REF_INT edge_nodes[REF_CELL_MAX_SIZE_PER], sense;
@@ -985,11 +993,15 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_node_ratio(ref_node, nodes[0], node, &r0), "get r0");
     RSS(ref_node_ratio(ref_node, nodes[1], node, &r1), "get r1");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+	"ratio");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-
+    
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
     if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+	(min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+	(max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
         (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > 1.0e-12)) {
@@ -1014,7 +1026,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_INT id;
   REF_DBL uv_orig[2], uv_ideal[2];
   REF_DBL qtet_orig, qtri_orig;
-  REF_DBL qtri, qtet, min_uv_area;
+  REF_DBL qtri, qtet, min_uv_area, min_ratio, max_ratio;
   REF_DBL normdev_orig, normdev;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
@@ -1052,11 +1064,15 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet), "q tet");
+    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+	"ratio");
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
     if ((qtri >= qtri_orig) &&
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+	(min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+	(max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
         (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
@@ -1238,6 +1254,7 @@ REF_STATUS ref_smooth_tet_report_quality_around(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+/* does not have ratio limits */
 REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
                                REF_BOOL *complete) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
