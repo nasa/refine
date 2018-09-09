@@ -1004,7 +1004,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 	(max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
         (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
          normdev > normdev_orig) &&
-        (min_uv_area > 1.0e-12)) {
+        (min_uv_area > ref_node_min_uv_area(ref_node))) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
