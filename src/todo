@@ -1,15 +1,10 @@
 
-split quality and edge allowed
-  add edge allowed to threed
-
 smooth after collapse?
 interpolate after move/split
 
 load balance interp
 store background in grid
 interp every node
-
-smooth ratio limit
 
 increase required improvement to settle
 
@@ -191,11 +186,13 @@ unify clump plotting diagnostics in parallel
 
 +++++++++++++++++
 
-put parameters a place that can be controlled
- - split_ratio_limit
- - collapse_ratio_limit
-report params and limits
-gather post ratio limits
++ split quality and edge allowed
+
++ put parameters a place that can be controlled
+ + split_ratio_limit
+ + collapse_ratio_limit
++ report params and limits
++ gather post ratio limits
 
 + put all uv_area limits in a ref_node struct (with volume)
 

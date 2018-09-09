@@ -155,6 +155,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     RSS(ref_collapse_edge_quality(ref_grid, node0, node1, &allowed), "qual");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed) continue;
+
     RSS(ref_collapse_edge_local_tets(ref_grid, node0, node1, &allowed),
         "colloc");
     if (!allowed) {
@@ -419,7 +422,6 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
   REF_INT node, ntri;
   REF_DBL quality;
   REF_BOOL will_be_collapsed;
-  REF_DBL edge_ratio;
   REF_BOOL has_support;
   REF_DBL sign_uv_area, uv_area;
 
@@ -433,13 +435,6 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
     if (will_be_collapsed) continue;
-
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
-      if (node1 != nodes[node]) {
-        RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
-        if (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio))
-          return REF_SUCCESS;
-      }
 
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node1 == nodes[node]) nodes[node] = node0;
@@ -479,6 +474,40 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
       if (sign_uv_area * uv_area < ref_node_min_uv_area(ref_node))
         return REF_SUCCESS;
     }
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
+				   REF_INT node1, REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_BOOL will_be_collapsed;
+  REF_DBL edge_ratio;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 != nodes[node]) {
+        RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
+        if ((edge_ratio < ref_grid_adapt(ref_grid, post_min_ratio)) ||
+	    (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio)))
+          return REF_SUCCESS;
+      }
   }
 
   *allowed = REF_TRUE;
