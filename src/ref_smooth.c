@@ -98,7 +98,7 @@ REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
   if (none_found) {
     *min_ratio = 2000.0;
     *max_ratio = -2.0;
-    THROW("no triagle found, can not compute ratio");
+    THROW("no triangle found, can not compute ratio");
   }
 
   return REF_SUCCESS;
@@ -709,6 +709,41 @@ REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
   if (none_found) {
     *min_quality = -2.0;
     return REF_NOT_FOUND;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_smooth_tet_ratio_around(REF_GRID ref_grid, REF_INT node,
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT item, cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL none_found = REF_TRUE;
+  REF_DBL ratio;
+
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (node != nodes[cell_node]) {
+        RSS(ref_node_ratio(ref_node, node, nodes[cell_node], &ratio), "ratio");
+        if (none_found) {
+          none_found = REF_FALSE;
+          *min_ratio = ratio;
+          *max_ratio = ratio;
+        } else {
+          *min_ratio = MIN(*min_ratio, ratio);
+          *max_ratio = MAX(*max_ratio, ratio);
+        }
+      }
+    }
+  }
+
+  if (none_found) {
+    *min_ratio = 2000.0;
+    *max_ratio = -2.0;
+    THROW("no tet found, can not compute ratio");
   }
 
   return REF_SUCCESS;

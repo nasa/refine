@@ -55,6 +55,8 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid);
 
 REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
+REF_STATUS ref_smooth_tet_ratio_around(REF_GRID ref_grid, REF_INT node,
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio);
 
 REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
                                 REF_DBL *ideal_location);
