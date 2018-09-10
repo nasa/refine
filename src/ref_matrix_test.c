@@ -1201,7 +1201,7 @@ m12 = m1half'*m12bar*m1half
     RWDS(1.05760258074793, m12[5], tol, "m12[5]");
   }
 
-  { /* intersect same */
+  { /* intersect same diag */
     REF_DBL m1[6] = {1.0, 0.0, 0.0, 2.0, 0.0, 3.0};
     REF_DBL m2[6] = {1.0, 0.0, 0.0, 2.0, 0.0, 3.0};
     REF_DBL m12[6];
@@ -1213,6 +1213,20 @@ m12 = m1half'*m12bar*m1half
     RWDS(2.0, m12[3], tol, "m12[3]");
     RWDS(0.0, m12[4], tol, "m12[4]");
     RWDS(3.0, m12[5], tol, "m12[5]");
+  }
+
+  { /* intersect same rand */
+    REF_DBL m1[6] = {2.5816, 1.8358, 2.1290, 1.3066, 1.5208, 1.8035};
+    REF_DBL m2[6] = {2.5816, 1.8358, 2.1290, 1.3066, 1.5208, 1.8035};
+    REF_DBL m12[6];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_intersect(m1, m2, m12), "int");
+    RWDS(m1[0], m12[0], tol, "m12[0]");
+    RWDS(m1[1], m12[1], tol, "m12[1]");
+    RWDS(m1[2], m12[2], tol, "m12[2]");
+    RWDS(m1[3], m12[3], tol, "m12[3]");
+    RWDS(m1[4], m12[4], tol, "m12[4]");
+    RWDS(m1[5], m12[5], tol, "m12[5]");
   }
 
   { /* intersect one direction small */
