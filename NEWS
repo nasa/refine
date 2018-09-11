@@ -1,4 +1,9 @@
 
+Tue, Sep 11, 2018 : Released Refine 1.8.20
+
+- added limits (current min/max) on ratio during operations
+- sequential 2D continuously interpolates metric 
+
 Thu, Aug 30, 2018 : Released Refine 1.8.19
 
 - added histogram movies
