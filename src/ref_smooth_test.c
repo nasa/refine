@@ -361,6 +361,7 @@ int main(int argc, char *argv[]) {
 
   if (argc > 2) {
     REF_GRID ref_grid;
+    REF_BOOL all_done;
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
@@ -378,7 +379,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
 
-    RSS(ref_adapt_parameter(ref_grid), "param");
+    RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
     RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");

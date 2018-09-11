@@ -34,6 +34,7 @@
 #include "ref_matrix.h"
 
 #include "ref_dict.h"
+#include "ref_twod.h"
 
 #define REF_METRIC_MAX_DEGREE (1000)
 
@@ -232,6 +233,60 @@ REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
     ref_node_metric(ref_node, 3, node) = 1.0;
     ref_node_metric(ref_node, 4, node) = 0.0;
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
+                                       REF_GRID parent_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_NODE parent_node;
+  REF_INT tri, ixyz, ibary, im;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[3], interpolated_xyz[3], bary[3];
+  REF_DBL tol = 1.0e-11;
+  REF_DBL log_parent_m[3][6];
+  REF_DBL log_interpolated_m[6];
+
+  /* skip null parent */
+  if (NULL == parent_grid) return REF_SUCCESS;
+  parent_node = ref_grid_node(parent_grid);
+
+  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
+    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate_node not para");
+
+  if (!ref_grid_twod(ref_grid))
+    RSS(REF_IMPLEMENT, "ref_metric_interpolate_node only implemented for twod");
+
+  /* skip mixed element nodes, they can't move */
+  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    xyz[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  tri = REF_EMPTY;
+  RSS(ref_grid_enclosing_tri(parent_grid, xyz, &tri, bary), "enclosing tri");
+  RSS(ref_cell_nodes(ref_grid_tri(parent_grid), tri, nodes), "c2n");
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    interpolated_xyz[ixyz] = 0.0;
+    for (ibary = 0; ibary < 3; ibary++)
+      interpolated_xyz[ixyz] +=
+          bary[ibary] * ref_node_real(parent_node, ixyz, nodes[ibary]);
+  }
+  /* override y for fake twod */
+  interpolated_xyz[1] = ref_node_xyz(ref_node, 1, node);
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
+  for (ibary = 0; ibary < 3; ibary++)
+    RSS(ref_matrix_log_m(ref_node_metric_ptr(parent_node, nodes[ibary]),
+                         log_parent_m[ibary]),
+        "log(parentM)");
+  for (im = 0; im < 6; im++) {
+    log_interpolated_m[im] = 0.0;
+    for (ibary = 0; ibary < 3; ibary++)
+      log_interpolated_m[im] += bary[ibary] * log_parent_m[ibary][im];
+  }
+  RSS(ref_matrix_exp_m(log_interpolated_m, ref_node_metric_ptr(ref_node, node)),
+      "exp(intrpM)");
 
   return REF_SUCCESS;
 }

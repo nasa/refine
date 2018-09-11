@@ -415,8 +415,7 @@ REF_STATUS ref_clump_long_edges(REF_GRID ref_grid, REF_DBL ratio_tol) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
     RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
-    if (edge_ratio >
-        ratio_tol * ref_grid_adapt(ref_grid, collapse_ratio_limit)) {
+    if (edge_ratio > ratio_tol * ref_grid_adapt(ref_grid, post_max_ratio)) {
       sprintf(filename, "clump%d.t", ntarget);
       RSS(ref_clump_between(ref_grid, node0, node1, filename), "dump");
       ntarget++;

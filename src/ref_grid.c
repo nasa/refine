@@ -52,6 +52,8 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
   RSS(ref_adapt_create(&(ref_grid->adapt)), "adapt create");
 
+  ref_grid_background(ref_grid) = NULL;
+
   ref_grid_twod(ref_grid) = REF_FALSE;
 
   return REF_SUCCESS;
@@ -91,6 +93,8 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
   RSS(ref_adapt_deep_copy(&(ref_grid->adapt), original->adapt),
       "adapt deep copy");
+
+  ref_grid_background(ref_grid) = NULL;
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
 
@@ -155,6 +159,8 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf(" %d geom\n", ref_geom_n(ref_grid_geom(ref_grid)));
   printf(" %p gather\n", (void *)(ref_grid_gather(ref_grid)->grid_file));
   printf(" %p adapt\n", (void *)(ref_grid->adapt));
+  printf(" %p background\n", (void *)(ref_grid->background));
+  printf(" %d twod\n", (ref_grid->twod));
 
   return REF_SUCCESS;
 }
@@ -619,6 +625,41 @@ REF_STATUS ref_grid_enclosing_tri(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tri,
       continue;
     }
 
+    if (bary[0] > bary[1] && bary[0] > bary[2]) {
+      if (rand() % 2) {
+        RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[1], &guess),
+            "update next to 0, 0 1");
+      } else {
+        RSS(ref_update_tri_guess(ref_cell, nodes[0], nodes[2], &guess),
+            "update next to 0, 0 2");
+      }
+      continue;
+    }
+
+    if (bary[1] > bary[0] && bary[1] > bary[2]) {
+      if (rand() % 2) {
+        RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[0], &guess),
+            "update next to 1, 1 0");
+      } else {
+        RSS(ref_update_tri_guess(ref_cell, nodes[1], nodes[2], &guess),
+            "update next to 1, 1 2");
+      }
+      continue;
+    }
+
+    if (bary[2] > bary[0] && bary[2] > bary[1]) {
+      if (rand() % 2) {
+        RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[0], &guess),
+            "update next to 2, 2 0");
+      } else {
+        RSS(ref_update_tri_guess(ref_cell, nodes[2], nodes[1], &guess),
+            "update next to 2, 2 1");
+      }
+      continue;
+    }
+
+    printf("at %.15e %.15e %.15e\n", xyz[0], xyz[1], xyz[2]);
+    printf("bary %.15e %.15e %.15e\n", bary[0], bary[1], bary[2]);
     THROW("unable to find the next step");
   }
 

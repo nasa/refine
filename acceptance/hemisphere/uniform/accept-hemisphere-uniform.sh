@@ -24,7 +24,7 @@ ${two}/ref_acceptance hemicurve1.meshb hemicurve1-metric.solb 0.1
 ${two}/ref_metric_test hemicurve1.meshb hemicurve1-metric.solb > accept-hemisphere-uniform-01.status
 
 cat accept-hemisphere-uniform-01.status
-../../check.rb accept-hemisphere-uniform-01.status 0.15 1.8
+../../check.rb accept-hemisphere-uniform-01.status 0.3 2.0
 
 ${two}/ref_interp_test hemicurve.meshb hemicurve1.meshb
 ${two}/ref_interp_test hemicurve1.meshb hemicurve.meshb

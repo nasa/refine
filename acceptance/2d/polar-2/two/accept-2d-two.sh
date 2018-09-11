@@ -20,6 +20,7 @@ function adapt_cycle {
     sweeps=$3
 
     ${two}/ref_driver -i ${inproj}.b8.ugrid -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
+    mv ref_gather_histo.tec ${inproj}_histo.tec
     mv ref_gather_movie.tec ${inproj}_movie.tec
     ${two}/ref_acceptance -polar2d ${outproj}.b8.ugrid ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
@@ -43,5 +44,5 @@ adapt_cycle cycle08 cycle09 10
 adapt_cycle cycle09 cycle10 10
 
 cat cycle10.status
-../../../check.rb cycle10.status 0.10 5.0
+../../../check.rb cycle10.status 0.10 4.0
 

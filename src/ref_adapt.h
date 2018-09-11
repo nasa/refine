@@ -35,27 +35,30 @@ struct REF_ADAPT_STRUCT {
   REF_DBL split_ratio;
   REF_DBL split_quality_absolute;
   REF_DBL split_quality_relative;
-  REF_DBL split_ratio_limit;
   REF_DBL split_normdev_absolute;
 
   REF_INT collapse_per_pass;
   REF_DBL collapse_ratio;
   REF_DBL collapse_quality_absolute;
-  REF_DBL collapse_ratio_limit;
   REF_DBL collapse_normdev_absolute;
 
   REF_INT smooth_per_pass;
   REF_DBL smooth_min_quality;
   REF_DBL smooth_min_normdev;
 
+  REF_DBL post_min_ratio;
+  REF_DBL post_max_ratio;
+
   REF_BOOL instrument;
+  REF_BOOL watch_param;
 };
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt);
 REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original);
 REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt);
 
-REF_STATUS ref_adapt_parameter(REF_GRID ref_grid);
+REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done);
+REF_STATUS ref_adapt_tattle(REF_GRID ref_grid);
 REF_STATUS ref_adapt_pass(REF_GRID ref_grid);
 REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid);
 REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid);

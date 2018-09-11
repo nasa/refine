@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
   char output_project[1004];
   char output_filename[1024];
   REF_INT ngeom;
+  REF_BOOL all_done;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
@@ -167,6 +168,7 @@ int main(int argc, char *argv[]) {
   RNS(ref_grid, "input grid required");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read inputs");
 
+  ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
   ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
   ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
 
@@ -190,6 +192,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   } else {
     RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
+    ref_grid_background(ref_grid) = background_grid;
   }
 
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid),
@@ -216,9 +219,10 @@ int main(int argc, char *argv[]) {
 
   for (pass = 0; pass < passes; pass++) {
     if (ref_mpi_once(ref_mpi))
-      printf("\n pass %d of %d with %d ranks\n", pass+1, passes,
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
-    RSS(ref_adapt_parameter(ref_grid), "param");
+    RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
+    if (all_done) break;
     RSS(ref_adapt_pass(ref_grid), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     if (curvature_metric) {

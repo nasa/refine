@@ -53,27 +53,9 @@ adapt_cycle cycle08 cycle09 2
 adapt_cycle cycle09 cycle10 2
 adapt_cycle cycle10 cycle11 2
 adapt_cycle cycle11 cycle12 2
-adapt_cycle cycle12 cycle13 2
-adapt_cycle cycle13 cycle14 2
-adapt_cycle cycle14 cycle15 2
-adapt_cycle cycle15 cycle16 2
-adapt_cycle cycle16 cycle17 2
-adapt_cycle cycle17 cycle18 2
-adapt_cycle cycle18 cycle19 2
-adapt_cycle cycle19 cycle20 2
-adapt_cycle cycle20 cycle21 10
-adapt_cycle cycle21 cycle22 10
-adapt_cycle cycle22 cycle23 10
-adapt_cycle cycle23 cycle24 10
-adapt_cycle cycle24 cycle25 10
-adapt_cycle cycle25 cycle26 10
-adapt_cycle cycle26 cycle27 10
-adapt_cycle cycle27 cycle28 10
-adapt_cycle cycle28 cycle29 10
-adapt_cycle cycle29 cycle30 10
 
-cat cycle30.status
-../../../check.rb cycle30.status 0.060 10.0
+cat cycle12.status
+../../../check.rb cycle12.status 0.10 3.0
 
 
 

@@ -38,6 +38,8 @@
 #include "ref_smooth.h"
 #include "ref_subdiv.h"
 
+#include "ref_metric.h"
+
 #define MAX_CELL_SPLIT (100)
 
 REF_STATUS ref_split_pass(REF_GRID ref_grid) {
@@ -47,7 +49,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed_tri_quality, allowed_tet_quality;
+  REF_BOOL allowed_tet_ratio, allowed_tri_quality, allowed_tet_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
@@ -114,6 +116,16 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
+
+    RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+				 ref_edge_e2n(ref_edge, 1, edge), new_node,
+				 &allowed_tet_ratio),
+        "edge tet ratio");
+    if (!allowed_tet_ratio) {
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+      continue;
+    }
 
     RSS(ref_split_edge_tri_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                    ref_edge_e2n(ref_edge, 1, edge), new_node,
@@ -193,7 +205,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
 
-    RSS(ref_smooth_threed_post_split(ref_grid, new_node), "smooth after split");
+    RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
+        "smooth after split");
   }
 
   ref_free(edges);
@@ -454,8 +467,6 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node;
-  REF_INT cell_edge, e0, e1;
-  REF_DBL ratio;
   REF_DBL quality, quality0, quality1;
   REF_DBL min_existing_quality;
 
@@ -482,37 +493,15 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (node0 == nodes[node]) nodes[node] = new_node;
     }
-
     RSS(ref_node_tet_quality(ref_node, nodes, &quality0), "q0");
-    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
-      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
-      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
-      if (e0 == new_node || e1 == new_node) {
-        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
-        if (ratio < ref_grid_adapt(ref_grid, split_ratio_limit)) {
-          *allowed = REF_FALSE;
-          return REF_SUCCESS;
-        }
-      }
-    }
 
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (new_node == nodes[node]) nodes[node] = node0;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
-      if (node1 == nodes[node]) nodes[node] = new_node;
-
-    RSS(ref_node_tet_quality(ref_node, nodes, &quality1), "q1");
-    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
-      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
-      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
-      if (e0 == new_node || e1 == new_node) {
-        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node1");
-        if (ratio < ref_grid_adapt(ref_grid, split_ratio_limit)) {
-          *allowed = REF_FALSE;
-          return REF_SUCCESS;
-        }
-      }
     }
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node1 == nodes[node]) nodes[node] = new_node;
+    }
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality1), "q1");
 
     if (quality0 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
         quality1 < ref_grid_adapt(ref_grid, split_quality_absolute) ||
@@ -523,6 +512,73 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
+				    REF_INT node1, REF_INT new_node,
+				    REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_INT cell_edge, e0, e1;
+  REF_DBL ratio;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
+                          cell_to_split),
+      "tets");
+
+  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
+    cell = cell_to_split[cell_in_list];
+
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node0 == nodes[node]) nodes[node] = new_node;
+    }
+
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (new_node == nodes[node]) nodes[node] = node0;
+    }
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node1 == nodes[node]) nodes[node] = new_node;
+    }
+
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
+
   }
 
   *allowed = REF_TRUE;
@@ -650,9 +706,22 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node0), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node0),
         "interp new node");
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      RSS(ref_metric_interpolate_node(ref_grid, new_node0,
+                                      ref_grid_background(ref_grid)),
+          "interp new node0");
+    }
     RSS(ref_geom_add_between(ref_grid, node0, node1, new_node0),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
+
+    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0, &allowed),
+        "ratio of new tri sides");
+    if (!allowed) {
+      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      continue;
+    }
 
     RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node0,
                                     &allowed),
@@ -681,6 +750,11 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node1), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node2, node3, new_node1),
         "interp new node");
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      RSS(ref_metric_interpolate_node(ref_grid, new_node1,
+                                      ref_grid_background(ref_grid)),
+          "interp new node1");
+    }
     RSS(ref_geom_add_between(ref_grid, node2, node3, new_node1),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");
@@ -896,6 +970,68 @@ REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
         quality1 < ref_grid_adapt(ref_grid, split_quality_relative) *
                        min_existing_quality)
       return REF_SUCCESS;
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
+                                     REF_INT node1, REF_INT new_node,
+                                     REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, cell_in_list;
+  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT node;
+  REF_INT e0, e1, cell_edge;
+  REF_DBL ratio;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
+                          cell_to_split),
+      "get list");
+
+  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
+    cell = cell_to_split[cell_in_list];
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) nodes[node] = new_node;
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (new_node == nodes[node]) nodes[node] = node0;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = new_node;
+    each_ref_cell_cell_edge(ref_cell, cell_edge) { /* limit ratio */
+      e0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+      e1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+      if (e0 == new_node || e1 == new_node) {
+        RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
+        if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
+          *allowed = REF_FALSE;
+          return REF_SUCCESS;
+        }
+      }
+    }
   }
 
   *allowed = REF_TRUE;

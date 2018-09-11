@@ -27,6 +27,8 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node);
 
+REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio);
 REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
 REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
@@ -53,6 +55,8 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid);
 
 REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
+REF_STATUS ref_smooth_tet_ratio_around(REF_GRID ref_grid, REF_INT node,
+                                       REF_DBL *min_ratio, REF_DBL *max_ratio);
 
 REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
                                 REF_DBL *ideal_location);
@@ -67,7 +71,8 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid);
 
-REF_STATUS ref_smooth_threed_post_split(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_smooth_threed_post_face_split(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node);
 
