@@ -482,7 +482,7 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
 }
 
 REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
-				   REF_INT node1, REF_BOOL *allowed) {
+                                   REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -505,7 +505,7 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
       if (node1 != nodes[node]) {
         RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
         if ((edge_ratio < ref_grid_adapt(ref_grid, post_min_ratio)) ||
-	    (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio)))
+            (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio)))
           return REF_SUCCESS;
       }
   }

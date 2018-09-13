@@ -118,8 +118,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "geom support");
 
     RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-				 ref_edge_e2n(ref_edge, 1, edge), new_node,
-				 &allowed_tet_ratio),
+                                 ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                 &allowed_tet_ratio),
         "edge tet ratio");
     if (!allowed_tet_ratio) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
@@ -520,8 +520,8 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
 }
 
 REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
-				    REF_INT node1, REF_INT new_node,
-				    REF_BOOL *allowed) {
+                                    REF_INT node1, REF_INT new_node,
+                                    REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -578,7 +578,6 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
         }
       }
     }
-
   }
 
   *allowed = REF_TRUE;

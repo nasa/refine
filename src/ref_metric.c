@@ -1106,7 +1106,7 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_GRID ref_grid,
   REF_INT m, n, cloud_node;
   REF_INT i2, im, i, j;
   /* solve A with QR factorization size m x n */
-  m = ref_dict_n(ref_dict) - 1; /* skip self */
+  m = ref_dict_n(ref_dict) - 1;     /* skip self */
   if (ref_grid_twod(ref_grid)) m++; /* add mid node */
   n = 9;
   ref_malloc(a, m * n, REF_DBL);

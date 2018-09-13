@@ -258,8 +258,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
   if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-12 &&
-      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-12 &&
-      max_age < 10) {
+      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-12 && max_age < 10) {
     *all_done = REF_TRUE;
     if (ref_grid_once(ref_grid)) {
       printf("termination recommended\n");
@@ -273,7 +272,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     printf("quality floor %6.4f ratio %6.4f %6.2f\n", target_quality,
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max degree %d max age %d min dot %7.4f\n", max_degree, max_age,
-	   min_dot);
+           min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
   }
