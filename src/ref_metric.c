@@ -1094,11 +1094,12 @@ REF_STATUS ref_metric_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_NODE ref_node,
+static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_GRID ref_grid,
                                                      REF_DBL *scalar,
                                                      REF_INT center_node,
                                                      REF_DICT ref_dict,
                                                      REF_DBL *hessian) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
   REF_DBL *a, *q, *r;
@@ -1196,13 +1197,13 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     RSS(ref_dict_store(ref_dict, node, REF_EMPTY), "store node0");
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
     RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-    status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
+    status = ref_metric_kexact_hessian_at_cloud(ref_grid, scalar, node,
                                                 ref_dict, node_hessian);
     if (REF_DIV_ZERO == status) {
       printf(" caught %s, adding third layer to kexact cloud and retry\n",
              "REF_DIV_ZERO");
       RSS(ref_metric_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-      status = ref_metric_kexact_hessian_at_cloud(ref_node, scalar, node,
+      status = ref_metric_kexact_hessian_at_cloud(ref_grid, scalar, node,
                                                   ref_dict, node_hessian);
     }
     RSS(status, "kexact qr node");
