@@ -1107,11 +1107,30 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_GRID ref_grid,
   REF_INT i2, im, i, j;
   /* solve A with QR factorization size m x n */
   m = ref_dict_n(ref_dict) - 1; /* skip self */
+  if (ref_grid_twod(ref_grid)) m++; /* add mid node */
   n = 9;
   ref_malloc(a, m * n, REF_DBL);
   ref_malloc(q, m * n, REF_DBL);
   ref_malloc(r, n * n, REF_DBL);
   i = 0;
+  if (ref_grid_twod(ref_grid)) {
+    dx = 0;
+    dy = ref_node_twod_mid_plane(ref_node);
+    dz = 0;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+    }
+    i++;
+  }
   each_ref_dict_key(ref_dict, i2, cloud_node) {
     if (center_node == cloud_node) continue; /* skip self */
     dx = ref_node_xyz(ref_node, 0, cloud_node) -
@@ -1143,6 +1162,13 @@ static REF_STATUS ref_metric_kexact_hessian_at_cloud(REF_GRID ref_grid,
     }
   }
   i = 0;
+  if (ref_grid_twod(ref_grid)) {
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+  }
   each_ref_dict_key(ref_dict, i2, cloud_node) {
     if (center_node == cloud_node) continue; /* skip self */
     dq = scalar[cloud_node] - scalar[center_node];
@@ -1191,6 +1217,7 @@ REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
   REF_STATUS status;
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
   each_ref_node_valid_node(ref_node, node) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
