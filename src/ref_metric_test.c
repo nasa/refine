@@ -68,6 +68,7 @@
 */
 
 int main(int argc, char *argv[]) {
+  REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
@@ -80,6 +81,8 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  RXS(ref_args_find(argc, argv, "--fixed-point", &fixed_point_pos),
+      REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--curve-limit", &curve_limit_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--parent", &parent_pos), REF_NOT_FOUND,
@@ -187,6 +190,81 @@ int main(int argc, char *argv[]) {
 
     printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (fixed_point_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *metric;
+    REF_INT p, n, timestep;
+    REF_DBL gradation, complexity, current_complexity, hmin, hmax;
+    REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
+    char solb[1024];
+    REIS(1, fixed_point_pos,
+         "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
+         "p gradation complexity output-metric.solb");
+    if (9 > argc) {
+      printf(
+          "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
+          "p gradation complexity output-metric.solb");
+      return REF_FAILURE;
+    }
+    hmin = -1.0;
+    hmax = -1.0;
+    if (REF_EMPTY != hmax_pos) {
+      if (hmax_pos >= argc - 1) {
+        printf("option missing value: --hmax max_edge_length\n");
+        return REF_FAILURE;
+      }
+      hmax = atof(argv[hmax_pos + 1]);
+    }
+
+    n = atoi(argv[4]);
+    p = atoi(argv[5]);
+    gradation = atof(argv[6]);
+    complexity = atof(argv[7]);
+    reconstruction = REF_METRIC_KEXACT;
+
+    printf("N=%d\n", n);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("complexity %f\n", complexity);
+    printf("reconstruction %d\n", (int)reconstruction);
+    printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
+
+    printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    for (timestep = 1; timestep <= n; timestep++) {
+      snprintf(solb, 1024, "%s%d.solb", argv[3], timestep);
+      printf("reading scalar %s\n", solb);
+      RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, solb),
+          "unable to load scalar in position 3");
+    }
+
+    if (hmin > 0.0 || hmax > 0.0) {
+      RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
+                                           complexity),
+          "limit at complexity");
+    }
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("actual complexity %e\n", current_complexity);
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(scalar);
+    ref_free(metric);
+
+    printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
