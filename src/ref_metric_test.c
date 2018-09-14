@@ -199,8 +199,8 @@ int main(int argc, char *argv[]) {
 
   if (fixed_point_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_DBL *scalar, *metric;
-    REF_INT p, n, timestep;
+    REF_DBL *scalar, *hess, *metric;
+    REF_INT p, n, timestep, node, im;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
     char solb[1024];
@@ -242,6 +242,7 @@ int main(int argc, char *argv[]) {
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
+    ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     for (timestep = 1; timestep <= n; timestep++) {
@@ -249,6 +250,12 @@ int main(int argc, char *argv[]) {
       printf("reading scalar %s\n", solb);
       RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, solb),
           "unable to load scalar in position 3");
+      RSS(ref_metric_kexact_hessian(ref_grid, scalar, hess), "k-exact hess");
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (im = 0; im < 6; im++) {
+          metric[im + 6 * node] += hess[im + 6 * node];
+        }
+      }
     }
 
     if (hmin > 0.0 || hmax > 0.0) {
@@ -261,6 +268,7 @@ int main(int argc, char *argv[]) {
       printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(scalar);
+    ref_free(hess);
     ref_free(metric);
 
     printf("writing metric %s\n", argv[8]);
