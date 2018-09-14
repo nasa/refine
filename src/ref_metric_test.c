@@ -258,6 +258,9 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    RSS(ref_metric_lp_scale_hessian(metric, ref_grid, p, gradation, complexity),
+        "lp norm scaling");
+
     if (hmin > 0.0 || hmax > 0.0) {
       RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
                                            complexity),
