@@ -131,7 +131,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
-    REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REIS(1, lp_pos,
          "required args: --lp grid.meshb scalar-mach.solb p gradation "
          "complexity output-metric.solb");
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
     gradation = atof(argv[5]);
     complexity = atof(argv[6]);
     if (REF_EMPTY != kexact_pos) {
-      reconstruction = REF_METRIC_KEXACT;
+      reconstruction = REF_RECON_KEXACT;
     }
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hess, *metric;
     REF_INT p, n, timestep, node, im;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
-    REF_METRIC_RECONSTRUCTION reconstruction = REF_METRIC_L2PROJECTION;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     char solb[1024];
     REIS(1, fixed_point_pos,
          "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
     p = atoi(argv[5]);
     gradation = atof(argv[6]);
     complexity = atof(argv[7]);
-    reconstruction = REF_METRIC_KEXACT;
+    reconstruction = REF_RECON_KEXACT;
 
     printf("N=%d\n", n);
     printf("Lp=%d\n", p);
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
       printf("reading scalar %s\n", solb);
       RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, solb),
           "unable to load scalar in position 3");
-      RSS(ref_metric_kexact_hessian(ref_grid, scalar, hess), "k-exact hess");
+      RSS(ref_recon_kexact_hessian(ref_grid, scalar, hess), "k-exact hess");
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         for (im = 0; im < 6; im++) {
           metric[im + 6 * node] += hess[im + 6 * node];
@@ -750,144 +750,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(truth), "free");
   }
 
-  { /* l2-projection grad */
-    REF_DBL tol = -1.0;
-    REF_GRID ref_grid;
-    REF_DBL *scalar, *grad;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
-
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
-                     3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
-                     7.2 * ref_node_xyz(ref_grid_node(ref_grid), 2, node) +
-                     15.0;
-    }
-
-    RSS(ref_metric_l2_projection_grad(ref_grid, scalar, grad), "l2 grad");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(1.3, grad[0 + 3 * node], tol, "gradx");
-      RWDS(3.5, grad[1 + 3 * node], tol, "grady");
-      RWDS(7.2, grad[2 + 3 * node], tol, "gradz");
-    }
-
-    ref_free(grad);
-    ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* l2-projection hessian zero, constant gradient */
-    REF_DBL tol = -1.0;
-    REF_GRID ref_grid;
-    REF_DBL *scalar, *hessian;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
-                     3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
-                     7.2 * ref_node_xyz(ref_grid_node(ref_grid), 2, node) +
-                     15.0;
-    }
-
-    RSS(ref_metric_l2_projection_hessian(ref_grid, scalar, hessian), "l2 hess");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(0.0, hessian[0 + 6 * node], tol, "m11");
-      RWDS(0.0, hessian[1 + 6 * node], tol, "m12");
-      RWDS(0.0, hessian[2 + 6 * node], tol, "m13");
-      RWDS(0.0, hessian[3 + 6 * node], tol, "m22");
-      RWDS(0.0, hessian[4 + 6 * node], tol, "m23");
-      RWDS(0.0, hessian[5 + 6 * node], tol, "m33");
-    }
-
-    ref_free(hessian);
-    ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* boundary averaging constant metric */
-    REF_DBL tol = -1.0;
-    REF_GRID ref_grid;
-    REF_DBL *metric;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-
-    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      metric[0 + 6 * node] = 100.0;
-      metric[1 + 6 * node] = 7.0;
-      metric[2 + 6 * node] = 22.0;
-      metric[3 + 6 * node] = 200.0;
-      metric[4 + 6 * node] = 15.0;
-      metric[5 + 6 * node] = 300.0;
-    }
-
-    RSS(ref_metric_extrapolate_boundary(metric, ref_grid), "bound extrap");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(100.0, metric[0 + 6 * node], tol, "m11");
-      RWDS(7.0, metric[1 + 6 * node], tol, "m12");
-      RWDS(22.0, metric[2 + 6 * node], tol, "m13");
-      RWDS(200.0, metric[3 + 6 * node], tol, "m22");
-      RWDS(15.0, metric[4 + 6 * node], tol, "m23");
-      RWDS(300.0, metric[5 + 6 * node], tol, "m33");
-    }
-
-    ref_free(metric);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* multipass boundary averaging constant metric */
-    REF_DBL tol = -1.0;
-    REF_GRID ref_grid;
-    REF_DBL *metric;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-
-    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      metric[0 + 6 * node] = 100.0;
-      metric[1 + 6 * node] = 7.0;
-      metric[2 + 6 * node] = 22.0;
-      metric[3 + 6 * node] = 200.0;
-      metric[4 + 6 * node] = 15.0;
-      metric[5 + 6 * node] = 300.0;
-    }
-
-    RSS(ref_metric_extrapolate_boundary_multipass(metric, ref_grid),
-        "bound extrap");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(100.0, metric[0 + 6 * node], tol, "m11");
-      RWDS(7.0, metric[1 + 6 * node], tol, "m12");
-      RWDS(22.0, metric[2 + 6 * node], tol, "m13");
-      RWDS(200.0, metric[3 + 6 * node], tol, "m22");
-      RWDS(15.0, metric[4 + 6 * node], tol, "m23");
-      RWDS(300.0, metric[5 + 6 * node], tol, "m33");
-    }
-
-    ref_free(metric);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
   if (!ref_mpi_para(ref_mpi)) { /* gradation */
     REF_GRID ref_grid;
     REF_DBL *metric;
@@ -1055,7 +917,7 @@ int main(int argc, char *argv[]) {
                      0.02 * pow(ref_node_xyz(ref_node, 1, node), 2) +
                      0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
     }
-    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, 2, 1.5,
+    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
                       1000.0),
         "lp norm");
     ref_free(metric);
@@ -1076,102 +938,11 @@ int main(int argc, char *argv[]) {
       scalar[node] = 0.5;
     }
     REIS(REF_DIV_ZERO,
-         ref_metric_lp(metric, ref_grid, scalar, REF_METRIC_L2PROJECTION, 2,
-                       1.5, 1000.0),
+         ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
+                       1000.0),
          "lp norm expected div zero");
     ref_free(metric);
     ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  if (!ref_mpi_para(ref_mpi)) { /* k-exact for small variation */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_INT node;
-    REF_DBL *scalar, *hessian;
-    REF_DBL tol = -1.0;
-
-    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-    ref_node = ref_grid_node(ref_grid);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL x = ref_node_xyz(ref_node, 0, node);
-      REF_DBL y = ref_node_xyz(ref_node, 1, node);
-      REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      scalar[node] = 0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * y +
-                     0.04 * (0.5 * y * y) + 0.06 * (0.5 * z * z);
-    }
-    RSS(ref_metric_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(0.01, hessian[0 + 6 * node], tol, "m[0]");
-      RWDS(0.02, hessian[1 + 6 * node], tol, "m[1]");
-      RWDS(0.00, hessian[2 + 6 * node], tol, "m[2]");
-      RWDS(0.04, hessian[3 + 6 * node], tol, "m[3]");
-      RWDS(0.00, hessian[4 + 6 * node], tol, "m[4]");
-      RWDS(0.06, hessian[5 + 6 * node], tol, "m[5]");
-    }
-
-    ref_free(hessian);
-    ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  if (!ref_mpi_para(ref_mpi)) { /* k-exact 2D */
-    REF_GRID ref_grid;
-    REF_NODE ref_node;
-    REF_INT node;
-    REF_DBL *scalar, *hessian;
-    REF_DBL tol = -1.0;
-
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
-    ref_node = ref_grid_node(ref_grid);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL x = ref_node_xyz(ref_node, 0, node);
-      REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      scalar[node] =
-          0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * z + 0.06 * (0.5 * z * z);
-    }
-    RSS(ref_metric_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(0.01, hessian[0 + 6 * node], tol, "m[0] xx");
-      RWDS(0.00, hessian[1 + 6 * node], tol, "m[1] xy");
-      RWDS(0.02, hessian[2 + 6 * node], tol, "m[2] xz");
-      RWDS(0.00, hessian[3 + 6 * node], tol, "m[3] yy");
-      RWDS(0.00, hessian[4 + 6 * node], tol, "m[4] yz");
-      RWDS(0.06, hessian[5 + 6 * node], tol, "m[5] zz");
-    }
-
-    ref_free(hessian);
-    ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* imply metric right tet */
-    REF_DBL tol = 1.0e-12;
-    REF_GRID ref_grid;
-    REF_DBL *metric;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
-
-    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                    0.0);
-
-    RSS(ref_metric_roundoff_limit(metric, ref_grid), "imply");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RAS(tol < metric[0 + 6 * node], "m[0]");
-      RAS(tol < metric[3 + 6 * node], "m[3]");
-      RAS(tol < metric[5 + 6 * node], "m[5]");
-    }
-
-    ref_free(metric);
 
     RSS(ref_grid_free(ref_grid), "free");
   }

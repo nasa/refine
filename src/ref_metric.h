@@ -22,14 +22,11 @@
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
-typedef enum REF_METRIC_RECONSTRUCTIONS { /* 0 */ REF_METRIC_L2PROJECTION,
-                                          /* 1 */ REF_METRIC_KEXACT,
-                                          /* 2 */ REF_METRIC_LAST
-} REF_METRIC_RECONSTRUCTION;
 END_C_DECLORATION
 
 #include "ref_grid.h"
 #include "ref_node.h"
+#include "ref_recon.h"
 
 BEGIN_C_DECLORATION
 
@@ -68,15 +65,7 @@ REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid);
 
 REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
                           REF_GRID ref_grid);
-REF_STATUS ref_metric_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
-                                         REF_DBL *grad);
-REF_STATUS ref_metric_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                            REF_DBL *hessian);
-REF_STATUS ref_metric_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                     REF_DBL *hessian);
-REF_STATUS ref_metric_extrapolate_boundary(REF_DBL *metric, REF_GRID ref_grid);
-REF_STATUS ref_metric_extrapolate_boundary_multipass(REF_DBL *metric,
-                                                     REF_GRID ref_grid);
+
 REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *complexity);
 REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
@@ -85,7 +74,7 @@ REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                             REF_DBL hmin, REF_DBL hmax,
                                             REF_DBL complexity);
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
-                         REF_METRIC_RECONSTRUCTION reconstruction,
+                         REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
 REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
                                        REF_INT p_norm, REF_DBL gradation,
@@ -93,7 +82,7 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_INT nequations, REF_DBL *solution,
                                REF_DBL complexity);
-REF_STATUS ref_metric_roundoff_limit(REF_DBL *metric, REF_GRID ref_grid);
+
 REF_STATUS ref_metric_set_zero_det(REF_DBL *metric_with_zeros,
                                    REF_DBL *metric_donor, REF_GRID ref_grid);
 

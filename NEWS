@@ -1,4 +1,7 @@
 
+- extracted ref_recon from ref_metric
+- ref_metric_test --fixed-point metric from series of solb
+
 Tue, Sep 11, 2018 : Released Refine 1.8.20
 
 - added limits (current min/max) on ratio during operations
