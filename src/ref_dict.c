@@ -95,6 +95,8 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
 REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value) {
   REF_INT i, insert_point;
 
+  if (0 < ref_dict_naux(ref_dict)) return REF_INVALID;
+
   if (ref_dict_max(ref_dict) == ref_dict_n(ref_dict)) {
     ref_dict_max(ref_dict) += 1000;
 
@@ -123,6 +125,56 @@ REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value) {
   ref_dict_n(ref_dict)++;
   ref_dict->key[insert_point] = key;
   ref_dict->value[insert_point] = value;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_dict_store_with_aux(REF_DICT ref_dict, REF_INT key,
+                                   REF_INT value, REF_DBL *aux) {
+  REF_INT i, insert_point, aux_index;
+
+  if (0 == ref_dict_naux(ref_dict)) return REF_INVALID;
+
+  if (ref_dict_max(ref_dict) == ref_dict_n(ref_dict)) {
+    ref_dict_max(ref_dict) += 100;
+
+    ref_realloc(ref_dict->key, ref_dict_max(ref_dict), REF_INT);
+    ref_realloc(ref_dict->value, ref_dict_max(ref_dict), REF_INT);
+    ref_realloc(ref_dict->aux, ref_dict_naux(ref_dict) * ref_dict_max(ref_dict),
+                REF_DBL);
+  }
+
+  insert_point = 0;
+  for (i = ref_dict_n(ref_dict) - 1; i >= 0; i--) {
+    if (ref_dict->key[i] == key) {
+      ref_dict->value[i] = value;
+      return REF_SUCCESS;
+    }
+    if (ref_dict->key[i] < key) {
+      insert_point = i + 1;
+      break;
+    }
+  }
+  /* shift to open up insert_point */
+  for (i = ref_dict_n(ref_dict); i > insert_point; i--) {
+    ref_dict->key[i] = ref_dict->key[i - 1];
+  }
+  for (i = ref_dict_n(ref_dict); i > insert_point; i--) {
+    ref_dict->value[i] = ref_dict->value[i - 1];
+  }
+  for (i = ref_dict_n(ref_dict); i > insert_point; i--) {
+    each_ref_dict_aux_index(ref_dict, aux_index) {
+      ref_dict_keyvalueaux(ref_dict, aux_index, i) =
+          ref_dict_keyvalueaux(ref_dict, aux_index, i - 1);
+    }
+  }
+  /* fill insert_point */
+  ref_dict_n(ref_dict)++;
+  ref_dict->key[insert_point] = key;
+  ref_dict->value[insert_point] = value;
+  each_ref_dict_aux_index(ref_dict, aux_index) {
+    ref_dict_keyvalueaux(ref_dict, aux_index, insert_point) = aux[aux_index];
+  }
 
   return REF_SUCCESS;
 }

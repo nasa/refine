@@ -68,6 +68,8 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
   for ((aux_index) = 0; (aux_index) < ref_dict_naux(ref_dict); (aux_index)++)
 
 REF_STATUS ref_dict_store(REF_DICT ref_dict, REF_INT key, REF_INT value);
+REF_STATUS ref_dict_store_with_aux(REF_DICT ref_dict, REF_INT key,
+                                   REF_INT value, REF_DBL *aux);
 REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key, REF_INT *location);
 REF_STATUS ref_dict_remove(REF_DICT ref_dict, REF_INT key);
 REF_STATUS ref_dict_value(REF_DICT ref_dict, REF_INT key, REF_INT *value);
