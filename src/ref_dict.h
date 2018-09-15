@@ -49,17 +49,27 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
 #define ref_dict_keyvalueaux(ref_dict, aux_index, key_index) \
   ((ref_dict)->aux[(aux_index) + ref_dict_naux(ref_dict) * (key_index)])
 
-#define each_ref_dict_key(ref_dict, key_index, dict_key)                \
-  for ((key_index) = 0, (dict_key) = ref_dict_key(ref_dict, key_index); \
-       (key_index) < ref_dict_n(ref_dict);                              \
-       (key_index)++, (dict_key) = ref_dict_key(ref_dict, key_index))
+#define ref_dict_valid(ref_dict, key_index) \
+  (0 <= (key_index) && (key_index) < ref_dict_max(ref_dict))
 
-#define each_ref_dict_key_value(ref_dict, key_index, dict_key, dict_value) \
-  for ((key_index) = 0, (dict_key) = ref_dict_key(ref_dict, key_index),    \
-      (dict_value) = ref_dict_keyvalue(ref_dict, key_index);               \
-       (key_index) < ref_dict_n(ref_dict);                                 \
-       (key_index)++, (dict_key) = ref_dict_key(ref_dict, key_index),      \
-      (dict_value) = ref_dict_keyvalue(ref_dict, key_index))
+#define ref_dict_safe_key(ref_dict, key_index)                        \
+  (ref_dict_valid(ref_dict, key_index) ? (ref_dict)->key[(key_index)] \
+                                       : REF_EMPTY)
+#define ref_dict_safe_keyvalue(ref_dict, key_index)                     \
+  (ref_dict_valid(ref_dict, key_index) ? (ref_dict)->value[(key_index)] \
+                                       : REF_EMPTY)
+
+#define each_ref_dict_key(ref_dict, key_index, dict_key)                     \
+  for ((key_index) = 0, (dict_key) = ref_dict_safe_key(ref_dict, key_index); \
+       (key_index) < ref_dict_n(ref_dict);                                   \
+       (key_index)++, (dict_key) = ref_dict_safe_key(ref_dict, key_index))
+
+#define each_ref_dict_key_value(ref_dict, key_index, dict_key, dict_value)   \
+  for ((key_index) = 0, (dict_key) = ref_dict_safe_key(ref_dict, key_index), \
+      (dict_value) = ref_dict_safe_keyvalue(ref_dict, key_index);            \
+       (key_index) < ref_dict_n(ref_dict);                                   \
+       (key_index)++, (dict_key) = ref_dict_safe_key(ref_dict, key_index),   \
+      (dict_value) = ref_dict_safe_keyvalue(ref_dict, key_index))
 
 #define each_ref_dict_key_index(ref_dict, key_index) \
   for ((key_index) = 0; (key_index) < ref_dict_n(ref_dict); (key_index)++)
