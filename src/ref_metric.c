@@ -1066,19 +1066,9 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation,
                          REF_DBL target_complexity) {
-  switch (reconstruction) {
-    case REF_RECON_L2PROJECTION:
-      RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, metric), "l2");
-      RSS(ref_recon_extrapolate_boundary_multipass(metric, ref_grid),
-          "bound extrap");
-      break;
-    case REF_RECON_KEXACT:
-      RSS(ref_recon_kexact_hessian(ref_grid, scalar, metric), "k-exact");
-      break;
-    default:
-      THROW("reconstruction not available");
-  }
-
+  RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eignvalues based on grid size and solution jitter");
   RSS(ref_metric_lp_scale_hessian(metric, ref_grid, p_norm, gradation,
                                   target_complexity),
       "lp norm");
@@ -1103,9 +1093,6 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
     dimension = 2;
     complexity_scale = 1.0;
   }
-
-  RSS(ref_recon_roundoff_limit(metric, ref_grid),
-      "floor metric eignvalues based on grid size and solution jitter");
 
   /* local scaling */
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
@@ -1197,6 +1184,8 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   REF_DBL current_complexity;
   REF_INT ldim;
   REF_INT var, dir;
+  REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
 
   ldim = 4 * nequations;
@@ -1214,13 +1203,13 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = solution[var + 5 + ldim * node];
     }
-    RSS(ref_recon_l2_projection_grad(ref_grid, lam, grad_lam), "grad_lam");
+    RSS(ref_recon_gradient(ref_grid, lam, grad_lam, recon), "grad_lam");
 
     for (dir = 0; dir < 3; dir++) {
       each_ref_node_valid_node(ref_node, node) {
         flux[node] = solution[var + nequations * dir + ldim * node];
       }
-      RSS(ref_recon_l2_projection_hessian(ref_grid, flux, hess_flux), "l2");
+      RSS(ref_recon_hessian(ref_grid, flux, hess_flux, recon), "l2");
       each_ref_node_valid_node(ref_node, node) {
         for (i = 0; i < 6; i++)
           metric[i + 6 * node] +=

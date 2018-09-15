@@ -33,16 +33,15 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
-                                        REF_DBL *grad);
-REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                           REF_DBL *hessian);
-REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                    REF_DBL *hessian);
-REF_STATUS ref_recon_extrapolate_boundary(REF_DBL *recon, REF_GRID ref_grid);
+REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
+
 REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
                                                     REF_GRID ref_grid);
-REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
+
+REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
+                              REF_RECON_RECONSTRUCTION recon);
+REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon);
 
 END_C_DECLORATION
 

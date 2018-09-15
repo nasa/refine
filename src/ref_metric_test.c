@@ -202,7 +202,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *scalar, *hess, *metric;
     REF_INT p, n, timestep, node, im;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
-    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_RECON_RECONSTRUCTION reconstruction;
     char solb[1024];
     REIS(1, fixed_point_pos,
          "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
       printf("reading scalar %s\n", solb);
       RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, solb),
           "unable to load scalar in position 3");
-      RSS(ref_recon_kexact_hessian(ref_grid, scalar, hess), "k-exact hess");
+      RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         for (im = 0; im < 6; im++) {
           metric[im + 6 * node] += hess[im + 6 * node];

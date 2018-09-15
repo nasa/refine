@@ -83,7 +83,8 @@ int main(int argc, char *argv[]) {
                      15.0;
     }
 
-    RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2 grad");
+    RSS(ref_recon_gradient(ref_grid, scalar, grad, REF_RECON_L2PROJECTION),
+        "l2 grad");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(1.3, grad[0 + 3 * node], tol, "gradx");
@@ -115,7 +116,8 @@ int main(int argc, char *argv[]) {
                      15.0;
     }
 
-    RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, hessian), "l2 hess");
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_L2PROJECTION),
+        "l2 hess");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.0, hessian[0 + 6 * node], tol, "m11");
@@ -128,41 +130,6 @@ int main(int argc, char *argv[]) {
 
     ref_free(hessian);
     ref_free(scalar);
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* boundary averaging constant recon */
-    REF_DBL tol = -1.0;
-    REF_GRID ref_grid;
-    REF_DBL *recon;
-    REF_INT node;
-
-    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-
-    ref_malloc(recon, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      recon[0 + 6 * node] = 100.0;
-      recon[1 + 6 * node] = 7.0;
-      recon[2 + 6 * node] = 22.0;
-      recon[3 + 6 * node] = 200.0;
-      recon[4 + 6 * node] = 15.0;
-      recon[5 + 6 * node] = 300.0;
-    }
-
-    RSS(ref_recon_extrapolate_boundary(recon, ref_grid), "bound extrap");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(100.0, recon[0 + 6 * node], tol, "m11");
-      RWDS(7.0, recon[1 + 6 * node], tol, "m12");
-      RWDS(22.0, recon[2 + 6 * node], tol, "m13");
-      RWDS(200.0, recon[3 + 6 * node], tol, "m22");
-      RWDS(15.0, recon[4 + 6 * node], tol, "m23");
-      RWDS(300.0, recon[5 + 6 * node], tol, "m33");
-    }
-
-    ref_free(recon);
 
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -221,7 +188,8 @@ int main(int argc, char *argv[]) {
       scalar[node] = 0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * y +
                      0.04 * (0.5 * y * y) + 0.06 * (0.5 * z * z);
     }
-    RSS(ref_recon_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_KEXACT),
+        "k-exact hess");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.01, hessian[0 + 6 * node], tol, "m[0]");
       RWDS(0.02, hessian[1 + 6 * node], tol, "m[1]");
@@ -254,7 +222,8 @@ int main(int argc, char *argv[]) {
       scalar[node] =
           0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * z + 0.06 * (0.5 * z * z);
     }
-    RSS(ref_recon_kexact_hessian(ref_grid, scalar, hessian), "k-exact hess");
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_KEXACT),
+        "k-exact hess");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.01, hessian[0 + 6 * node], tol, "m[0] xx");
       RWDS(0.00, hessian[1 + 6 * node], tol, "m[1] xy");

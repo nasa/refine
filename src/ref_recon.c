@@ -40,8 +40,8 @@
 
 /* Alauzet and A. Loseille doi:10.1016/j.jcp.2009.09.020
  * section 2.2.4.1. A double L2-projection */
-REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
-                                        REF_DBL *grad) {
+static REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid,
+                                               REF_DBL *scalar, REF_DBL *grad) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, node, cell, group, cell_node;
@@ -92,8 +92,9 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   return (div_by_zero ? REF_DIV_ZERO : REF_SUCCESS);
 }
 
-REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                           REF_DBL *hessian) {
+static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
+                                                  REF_DBL *scalar,
+                                                  REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL *grad, *dsdx, *gradx, *grady, *gradz;
@@ -262,8 +263,8 @@ static REF_STATUS ref_recon_grow_dict_one_layer(REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                    REF_DBL *hessian) {
+static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                           REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node, im;
@@ -311,42 +312,6 @@ REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_extrapolate_boundary(REF_DBL *recon, REF_GRID ref_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL tris = ref_grid_tri(ref_grid);
-  REF_CELL tets = ref_grid_tet(ref_grid);
-  REF_INT node;
-  REF_INT max_node = REF_RECON_MAX_DEGREE, nnode;
-  REF_INT node_list[REF_RECON_MAX_DEGREE];
-  REF_INT i, neighbor, nint;
-
-  if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
-
-  /* each boundary node */
-  each_ref_node_valid_node(ref_node,
-                           node) if (!ref_cell_node_empty(tris, node)) {
-    RXS(ref_cell_node_list_around(tets, node, max_node, &nnode, node_list),
-        REF_INCREASE_LIMIT, "unable to build neighbor list ");
-    nint = 0;
-    for (neighbor = 0; neighbor < nnode; neighbor++)
-      if (ref_cell_node_empty(tris, node_list[neighbor])) nint++;
-    if (0 < nint) {
-      for (i = 0; i < 6; i++) recon[i + 6 * node] = 0.0;
-      for (neighbor = 0; neighbor < nnode; neighbor++)
-        if (ref_cell_node_empty(tris, node_list[neighbor])) {
-          /* use Euclidean average, these are derivatives */
-          for (i = 0; i < 6; i++)
-            recon[i + 6 * node] += recon[i + 6 * node_list[neighbor]];
-        }
-      for (i = 0; i < 6; i++) recon[i + 6 * node] /= (REF_DBL)nint;
-    }
-  }
-
-  RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
                                                     REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -387,6 +352,7 @@ REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
             for (i = 0; i < 6; i++)
               recon[i + 6 * node] += recon[i + 6 * node_list[neighbor]];
           }
+        /* use Euclidean average, these are derivatives */
         for (i = 0; i < 6; i++) recon[i + 6 * node] /= (REF_DBL)nint;
         needs_donor[node] = REF_FALSE;
       }
@@ -458,6 +424,36 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
   }
 
   RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
+                              REF_RECON_RECONSTRUCTION recon) {
+  switch (recon) {
+    case REF_RECON_L2PROJECTION:
+      RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2");
+      break;
+    default:
+      THROW("reconstruction not available");
+  }
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon) {
+  switch (recon) {
+    case REF_RECON_L2PROJECTION:
+      RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, hessian), "l2");
+      RSS(ref_recon_extrapolate_boundary_multipass(hessian, ref_grid),
+          "bound extrap");
+      break;
+    case REF_RECON_KEXACT:
+      RSS(ref_recon_kexact_hessian(ref_grid, scalar, hessian), "k-exact");
+      break;
+    default:
+      THROW("reconstruction not available");
+  }
 
   return REF_SUCCESS;
 }
