@@ -78,6 +78,7 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
     ref_dict_keyvalue(ref_dict, key_index) = dict_value;
   }
 
+  ref_dict->aux = (REF_DBL *)NULL;
   if (0 < ref_dict_naux(ref_dict)) {
     ref_malloc(ref_dict->aux, ref_dict_naux(ref_dict) * ref_dict_max(ref_dict),
                REF_DBL);
