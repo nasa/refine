@@ -29,12 +29,13 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 struct REF_DICT_STRUCT {
-  REF_INT n, max;
+  REF_INT real_per_value, n, max;
   REF_INT *key;
   REF_INT *value;
 };
 
 REF_STATUS ref_dict_create(REF_DICT *ref_dict);
+REF_STATUS ref_dict_includes_reals(REF_DICT ref_dict, REF_INT real_per_value);
 REF_STATUS ref_dict_free(REF_DICT ref_dict);
 
 REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);

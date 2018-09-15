@@ -30,12 +30,19 @@ REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
 
   ref_dict = (*ref_dict_ptr);
 
+  ref_dict->real_per_value = 0;
   ref_dict_n(ref_dict) = 0;
   ref_dict_max(ref_dict) = 10;
 
   ref_malloc(ref_dict->key, ref_dict_max(ref_dict), REF_INT);
   ref_malloc(ref_dict->value, ref_dict_max(ref_dict), REF_INT);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_dict_includes_reals(REF_DICT ref_dict, REF_INT real_per_value) {
+  if (0 != ref_dict->real_per_value) return REF_INVALID;
+  ref_dict->real_per_value = real_per_value;
   return REF_SUCCESS;
 }
 
@@ -55,6 +62,7 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict_ptr, REF_DICT original) {
 
   ref_dict = (*ref_dict_ptr);
 
+  ref_dict->real_per_value = original->real_per_value;
   ref_dict_n(ref_dict) = ref_dict_n(original);
   ref_dict_max(ref_dict) = ref_dict_max(original);
 

@@ -136,5 +136,14 @@ int main(void) {
     RSS(ref_dict_free(ref_dict), "free");
   }
 
+  {
+    REF_INT real_per_value = 4;
+    REIS(REF_NULL, ref_dict_free(NULL), "dont free NULL");
+    RSS(ref_dict_create(&ref_dict), "create");
+    RSS(ref_dict_includes_reals(ref_dict, real_per_value), "set first");
+    REIS(REF_INVALID, ref_dict_includes_reals(ref_dict, 0), "immutable");
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
   return 0;
 }
