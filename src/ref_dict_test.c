@@ -183,5 +183,42 @@ int main(void) {
     RSS(ref_dict_free(ref_dict), "free");
   }
 
+  { /* store two, deep copy */
+    REF_DICT deep_copy;
+    REF_INT key, value;
+    RSS(ref_dict_create(&ref_dict), "create");
+    key = 2;
+    value = 5;
+    RSS(ref_dict_store(ref_dict, key, value), "store");
+    key = 1;
+    value = 3;
+    RSS(ref_dict_store(ref_dict, key, value), "store");
+
+    RSS(ref_dict_deep_copy(&deep_copy, ref_dict), "copy");
+
+    key = 1;
+    RSS(ref_dict_value(deep_copy, key, &value), "retrieve");
+    REIS(3, value, "get value");
+    key = 2;
+    RSS(ref_dict_value(deep_copy, key, &value), "retrieve");
+    REIS(5, value, "get value");
+    RSS(ref_dict_free(deep_copy), "free");
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
+  { /* store lots, deep copy */
+    REF_DICT deep_copy;
+    REF_INT key, value, max;
+    RSS(ref_dict_create(&ref_dict), "create");
+    max = ref_dict_max(ref_dict);
+    for (key = 0; key <= max; key++) {
+      value = 10 * key;
+      RSS(ref_dict_store(ref_dict, key, value), "store");
+    }
+    RSS(ref_dict_deep_copy(&deep_copy, ref_dict), "copy");
+    RSS(ref_dict_free(deep_copy), "free");
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
   return 0;
 }
