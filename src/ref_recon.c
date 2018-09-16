@@ -503,13 +503,17 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
 
   /* positive eignevalues to make symrecon positive definite */
   each_ref_node_valid_node(ref_node, node) {
-    REF_DBL diag_system[12];
-    RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "eigen decomp");
-    ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
-    ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
-    ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
-    RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form hess");
+    if (ref_node_owned(ref_node, node)) {
+      REF_DBL diag_system[12];
+      RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "eigen decomp");
+      ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
+      ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
+      ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
+      RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form hess");
+    }
   }
+
+  RSS(ref_node_ghost_dbl(ref_node, hessian, 6), "update ghosts");
 
   return REF_SUCCESS;
 }
