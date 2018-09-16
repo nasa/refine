@@ -440,7 +440,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
   REF_STATUS status;
-  REF_DICT *one_layer;
+  REF_DICT *one_layer, *cloud;
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
 
   ref_malloc_init(one_layer, ref_node_max(ref_node), REF_DICT, NULL);
@@ -451,9 +451,17 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
 
   RSS(ref_recon_local_immediate_cloud(one_layer, ref_node, ref_cell, scalar),
       "fill immediate cloud");
-
   RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
 
+  ref_malloc_init(cloud, ref_node_max(ref_node), REF_DICT, NULL);
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_dict_deep_copy(&(cloud[node]), one_layer[node]), "dup one layer");
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    ref_dict_free(cloud[node]); /* no-op for null */
+  }
+  ref_free(cloud);
   each_ref_node_valid_node(ref_node, node) {
     ref_dict_free(one_layer[node]); /* no-op for null */
   }
