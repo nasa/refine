@@ -56,7 +56,7 @@
 #include "ref_twod.h"
 #include "ref_validation.h"
 
-#include "ref_geom.h"
+#include "ref_dict.h"
 
 #include "ref_clump.h"
 
@@ -261,6 +261,76 @@ int main(int argc, char *argv[]) {
     ref_free(hess);
 
     RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* ghost int */
+    REF_NODE ref_node;
+    REF_INT local, ghost, global;
+    REF_DICT one_layer[] = {NULL, NULL};
+    REF_DBL xyzs[4];
+
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+
+    /* set up 0-local and 1-ghost with global=part */
+    global = ref_mpi_rank(ref_mpi);
+    RSS(ref_node_add(ref_node, global, &local), "add");
+    ref_node_part(ref_node, local) = global;
+
+    if (ref_mpi_para(ref_mpi)) {
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
+      RSS(ref_node_add(ref_node, global, &ghost), "add");
+      ref_node_part(ref_node, ghost) = global;
+    }
+
+    /* set up local dict with both nodes if para */
+    each_ref_node_valid_node(ref_node, local) {
+      RSS(ref_dict_create(&(one_layer[local])), "cloud storage");
+      RSS(ref_dict_includes_aux_value(one_layer[local], 4), "x y z s");
+    }
+    local = 0;
+    xyzs[0] = 10.0 * ref_node_part(ref_node, local);
+    xyzs[1] = 20.0 * ref_node_part(ref_node, local);
+    xyzs[2] = 30.0 * ref_node_part(ref_node, local);
+    xyzs[3] = 40.0 * ref_node_part(ref_node, local);
+    global = ref_node_global(ref_node, local);
+    RSS(ref_dict_store_with_aux(one_layer[0], global, REF_EMPTY, xyzs),
+        "store cloud stencil");
+    local = 1;
+    if (ref_node_valid(ref_node, local)) {
+      xyzs[0] = 10.0 * ref_node_part(ref_node, local);
+      xyzs[1] = 20.0 * ref_node_part(ref_node, local);
+      xyzs[2] = 30.0 * ref_node_part(ref_node, local);
+      xyzs[3] = 40.0 * ref_node_part(ref_node, local);
+      global = ref_node_global(ref_node, local);
+      RSS(ref_dict_store_with_aux(one_layer[0], global, REF_EMPTY, xyzs),
+          "store cloud stencil");
+    }
+    RSS(ref_recon_ghost_cloud(one_layer, ref_node), "update ghosts");
+
+    if (ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_dict_n(one_layer[0]), "local");
+      global = ref_mpi_rank(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[0], global), "local");
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
+      RAS(ref_dict_has_key(one_layer[0], global), "local");
+
+      REIS(2, ref_dict_n(one_layer[1]), "ghost");
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global -= ref_mpi_n(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[1], global), "local");
+      global = ref_mpi_rank(ref_mpi) + 2;
+      if (global >= ref_mpi_n(ref_mpi)) global -= ref_mpi_n(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[1], global), "local");
+    } else {
+      REIS(1, ref_dict_n(one_layer[0]), "no one");
+    }
+
+    each_ref_node_valid_node(ref_node, local) {
+      ref_dict_free(one_layer[local]); /* no-op for null */
+    }
+    RSS(ref_node_free(ref_node), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

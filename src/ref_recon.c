@@ -288,8 +288,7 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer,
-                                        REF_NODE ref_node) {
+REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_DICT ref_dict;
   REF_INT *a_nnode, *b_nnode;

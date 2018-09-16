@@ -28,20 +28,24 @@ typedef enum REF_RECON_RECONSTRUCTIONS { /* 0 */ REF_RECON_L2PROJECTION,
 } REF_RECON_RECONSTRUCTION;
 END_C_DECLORATION
 
+#include "ref_dict.h"
 #include "ref_grid.h"
 #include "ref_node.h"
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
-
-REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
-                                                    REF_GRID ref_grid);
-
 REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
                               REF_RECON_RECONSTRUCTION recon);
 REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                              REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon);
+
+/* for testing */
+REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
+                                                    REF_GRID ref_grid);
+REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node);
+
+/* eliminate */
+REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
 
 END_C_DECLORATION
 
