@@ -244,11 +244,10 @@ static REF_STATUS ref_recon_kexact_hessian_at_cloud(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_hessian_with_aux(REF_INT center_global,
-                                                    REF_DICT ref_dict,
-                                                    REF_BOOL twod,
-                                                    REF_DBL mid_plane,
-                                                    REF_DBL *hessian) {
+static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
+                                            REF_DICT ref_dict, REF_BOOL twod,
+                                            REF_DBL mid_plane,
+                                            REF_DBL *hessian) {
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
   REF_DBL *a, *q, *r;
@@ -587,11 +586,27 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
       RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
           "grow");
-      RSS(ref_recon_kexact_hessian_with_aux(ref_node_global(ref_node, node),
-                                            ref_dict, ref_grid_twod(ref_grid),
-                                            ref_node_twod_mid_plane(ref_node),
-                                            hessian),
-          "aux");
+      status = ref_recon_kexact_with_aux(
+          ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
+          ref_node_twod_mid_plane(ref_node), node_hessian);
+      if (REF_DIV_ZERO == status) {
+        printf(" caught %s, adding third layer to kexact cloud and retry\n",
+               "REF_DIV_ZERO");
+        RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
+            "grow");
+        status = ref_recon_kexact_with_aux(
+            ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
+            ref_node_twod_mid_plane(ref_node), node_hessian);
+      }
+      RSS(status, "kexact qr node");
+      for (im = 0; im < 6; im++) {
+        hessian[im + 6 * node] = node_hessian[im];
+      }
+      if (ref_grid_twod(ref_grid)) {
+        node_hessian[1] = 0.0;
+        node_hessian[3] = 0.0;
+        node_hessian[4] = 0.0;
+      }
       RSS(ref_dict_free(ref_dict), "free ref_dict");
     }
   }
