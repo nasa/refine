@@ -646,33 +646,37 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       a_size[ref_node_part(ref_node, node)]++;
+    }
+  }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
       "alltoall sizes");
 
   a_total = 0;
-  each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
+  each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
   ref_malloc(a_global, a_total, REF_INT);
   ref_malloc(a_scalar, a_total, REF_INT);
 
   b_total = 0;
-  each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
+  each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
   ref_malloc(b_global, b_total, REF_INT);
   ref_malloc(b_scalar, b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
-  each_ref_mpi_worker(ref_mpi, part) a_next[part] =
-      a_next[part - 1] + a_size[part - 1];
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    part = ref_node_part(ref_node, node);
-    a_global[a_next[part]] = ref_node_global(ref_node, node);
-    a_next[ref_node_part(ref_node, node)]++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
