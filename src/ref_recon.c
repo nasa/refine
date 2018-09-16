@@ -432,6 +432,36 @@ REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_grow_cloud_one_layer(REF_DICT ref_dict,
+                                                 REF_DICT *one_layer,
+                                                 REF_NODE ref_node) {
+  REF_DICT copy;
+  REF_STATUS ref_status;
+  REF_INT pivot_index, global_pivot, local_pivot;
+  REF_INT add_index, global;
+  REF_DBL xyzs[4];
+  RSS(ref_dict_deep_copy(&copy, ref_dict), "copy");
+  each_ref_dict_key(copy, pivot_index, global_pivot) {
+    ref_status = ref_node_local(ref_node, global_pivot, &local_pivot);
+    if (REF_NOT_FOUND == ref_status) {
+      continue;
+    } else {
+      RSS(ref_status, "local search");
+    }
+    each_ref_dict_key(one_layer[local_pivot], add_index, global) {
+      xyzs[0] = ref_dict_keyvalueaux(one_layer[local_pivot], 0, add_index);
+      xyzs[1] = ref_dict_keyvalueaux(one_layer[local_pivot], 1, add_index);
+      xyzs[2] = ref_dict_keyvalueaux(one_layer[local_pivot], 2, add_index);
+      xyzs[3] = ref_dict_keyvalueaux(one_layer[local_pivot], 3, add_index);
+      RSS(ref_dict_store_with_aux(ref_dict, global, REF_EMPTY, xyzs),
+          "store stencil increase");
+    }
+  }
+  ref_dict_free(copy);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                            REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -440,7 +470,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
   REF_STATUS status;
-  REF_DICT *one_layer, *cloud;
+  REF_DICT *one_layer;
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
 
   ref_malloc_init(one_layer, ref_node_max(ref_node), REF_DICT, NULL);
@@ -453,15 +483,13 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       "fill immediate cloud");
   RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
 
-  ref_malloc_init(cloud, ref_node_max(ref_node), REF_DICT, NULL);
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_dict_deep_copy(&(cloud[node]), one_layer[node]), "dup one layer");
+    /* use ref_dict to get a unique list of halo(2) nodes */
+    RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
+    RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node), "grow");
+    RSS(ref_dict_free(ref_dict), "free ref_dict");
   }
 
-  each_ref_node_valid_node(ref_node, node) {
-    ref_dict_free(cloud[node]); /* no-op for null */
-  }
-  ref_free(cloud);
   each_ref_node_valid_node(ref_node, node) {
     ref_dict_free(one_layer[node]); /* no-op for null */
   }
