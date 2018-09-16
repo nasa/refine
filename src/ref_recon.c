@@ -288,6 +288,22 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer,
+                                        REF_NODE ref_node) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT node, total;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  total = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_node_owned(ref_node, node)) {
+      total += ref_dict_n(one_layer[node]);
+    }
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                            REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -304,8 +320,12 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     RSS(ref_dict_create(&(one_layer[node])), "cloud storage");
     RSS(ref_dict_includes_aux_value(one_layer[node], 4), "x y z s");
   }
+
   RSS(ref_recon_local_immediate_cloud(one_layer, ref_node, ref_cell, scalar),
       "fill immediate cloud");
+
+  RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
+
   each_ref_node_valid_node(ref_node, node) {
     ref_dict_free(one_layer[node]); /* no-op for null */
   }
