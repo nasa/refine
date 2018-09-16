@@ -647,7 +647,7 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_node_valid_node(ref_node, node) {
-    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+    if (!ref_node_owned(ref_node, node)) {
       a_size[ref_node_part(ref_node, node)]++;
     }
   }
@@ -672,7 +672,7 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   }
 
   each_ref_node_valid_node(ref_node, node) {
-    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+    if (!ref_node_owned(ref_node, node)) {
       part = ref_node_part(ref_node, node);
       a_global[a_next[part]] = ref_node_global(ref_node, node);
       a_next[ref_node_part(ref_node, node)]++;
