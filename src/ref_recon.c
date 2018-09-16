@@ -244,6 +244,104 @@ static REF_STATUS ref_recon_kexact_hessian_at_cloud(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_kexact_hessian_with_aux(REF_INT center_global,
+                                                    REF_DICT ref_dict,
+                                                    REF_BOOL twod,
+                                                    REF_DBL mid_plane,
+                                                    REF_DBL *hessian) {
+  REF_DBL geom[9], ab[90];
+  REF_DBL dx, dy, dz, dq;
+  REF_DBL *a, *q, *r;
+  REF_INT m, n;
+  REF_INT cloud_global, key_index, im, i, j;
+  REF_INT xyzs[4];
+  RSS(ref_dict_location(ref_dict, center_global, &key_index), "missing center");
+  xyzs[0] = ref_dict_keyvalueaux(ref_dict, 0, key_index);
+  xyzs[1] = ref_dict_keyvalueaux(ref_dict, 1, key_index);
+  xyzs[2] = ref_dict_keyvalueaux(ref_dict, 2, key_index);
+  xyzs[3] = ref_dict_keyvalueaux(ref_dict, 3, key_index);
+  /* solve A with QR factorization size m x n */
+  m = ref_dict_n(ref_dict) - 1; /* skip self */
+  if (twod) m++;                /* add mid node */
+  n = 9;
+  ref_malloc(a, m * n, REF_DBL);
+  ref_malloc(q, m * n, REF_DBL);
+  ref_malloc(r, n * n, REF_DBL);
+  i = 0;
+  if (twod) {
+    dx = 0;
+    dy = mid_plane - xyzs[1];
+    dz = 0;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+    }
+    i++;
+  }
+  each_ref_dict_key(ref_dict, key_index, cloud_global) {
+    if (center_global == cloud_global) continue; /* skip self */
+    dx = ref_dict_keyvalueaux(ref_dict, 0, key_index) - xyzs[0];
+    dy = ref_dict_keyvalueaux(ref_dict, 1, key_index) - xyzs[1];
+    dz = ref_dict_keyvalueaux(ref_dict, 2, key_index) - xyzs[2];
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+    }
+    i++;
+  }
+  REIS(m, i, "A row miscount");
+  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
+  for (i = 0; i < 90; i++) ab[i] = 0.0;
+  for (i = 0; i < 9; i++) {
+    for (j = 0; j < 9; j++) {
+      ab[i + 9 * j] += r[i + 9 * j];
+    }
+  }
+  i = 0;
+  if (twod) {
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+  }
+  each_ref_dict_key(ref_dict, key_index, cloud_global) {
+    if (center_global == cloud_global) continue; /* skip self */
+    dq = ref_dict_keyvalueaux(ref_dict, 3, key_index) - xyzs[3];
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+  }
+  REIS(m, i, "b row miscount");
+  RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
+  j = 9;
+  for (im = 0; im < 6; im++) {
+    hessian[im] = ab[im + 9 * j];
+  }
+  ref_free(r);
+  ref_free(q);
+  ref_free(a);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_recon_grow_dict_one_layer(REF_DICT ref_dict,
                                                 REF_CELL ref_cell) {
   REF_DICT copy;
@@ -484,10 +582,18 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
 
   each_ref_node_valid_node(ref_node, node) {
-    /* use ref_dict to get a unique list of halo(2) nodes */
-    RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
-    RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node), "grow");
-    RSS(ref_dict_free(ref_dict), "free ref_dict");
+    if (ref_node_owned(ref_node, node)) {
+      /* use ref_dict to get a unique list of halo(2) nodes */
+      RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
+      RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
+          "grow");
+      RSS(ref_recon_kexact_hessian_with_aux(ref_node_global(ref_node, node),
+                                            ref_dict, ref_grid_twod(ref_grid),
+                                            ref_node_twod_mid_plane(ref_node),
+                                            hessian),
+          "aux");
+      RSS(ref_dict_free(ref_dict), "free ref_dict");
+    }
   }
 
   each_ref_node_valid_node(ref_node, node) {
