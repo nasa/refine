@@ -148,102 +148,6 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_hessian_at_cloud(REF_GRID ref_grid,
-                                                    REF_DBL *scalar,
-                                                    REF_INT center_node,
-                                                    REF_DICT ref_dict,
-                                                    REF_DBL *hessian) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL geom[9], ab[90];
-  REF_DBL dx, dy, dz, dq;
-  REF_DBL *a, *q, *r;
-  REF_INT m, n, cloud_node;
-  REF_INT i2, im, i, j;
-  /* solve A with QR factorization size m x n */
-  m = ref_dict_n(ref_dict) - 1;     /* skip self */
-  if (ref_grid_twod(ref_grid)) m++; /* add mid node */
-  n = 9;
-  ref_malloc(a, m * n, REF_DBL);
-  ref_malloc(q, m * n, REF_DBL);
-  ref_malloc(r, n * n, REF_DBL);
-  i = 0;
-  if (ref_grid_twod(ref_grid)) {
-    dx = 0;
-    dy = ref_node_twod_mid_plane(ref_node);
-    dz = 0;
-    geom[0] = 0.5 * dx * dx;
-    geom[1] = dx * dy;
-    geom[2] = dx * dz;
-    geom[3] = 0.5 * dy * dy;
-    geom[4] = dy * dz;
-    geom[5] = 0.5 * dz * dz;
-    geom[6] = dx;
-    geom[7] = dy;
-    geom[8] = dz;
-    for (j = 0; j < n; j++) {
-      a[i + m * j] = geom[j];
-    }
-    i++;
-  }
-  each_ref_dict_key(ref_dict, i2, cloud_node) {
-    if (center_node == cloud_node) continue; /* skip self */
-    dx = ref_node_xyz(ref_node, 0, cloud_node) -
-         ref_node_xyz(ref_node, 0, center_node);
-    dy = ref_node_xyz(ref_node, 1, cloud_node) -
-         ref_node_xyz(ref_node, 1, center_node);
-    dz = ref_node_xyz(ref_node, 2, cloud_node) -
-         ref_node_xyz(ref_node, 2, center_node);
-    geom[0] = 0.5 * dx * dx;
-    geom[1] = dx * dy;
-    geom[2] = dx * dz;
-    geom[3] = 0.5 * dy * dy;
-    geom[4] = dy * dz;
-    geom[5] = 0.5 * dz * dz;
-    geom[6] = dx;
-    geom[7] = dy;
-    geom[8] = dz;
-    for (j = 0; j < n; j++) {
-      a[i + m * j] = geom[j];
-    }
-    i++;
-  }
-  REIS(m, i, "A row miscount");
-  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
-  for (i = 0; i < 90; i++) ab[i] = 0.0;
-  for (i = 0; i < 9; i++) {
-    for (j = 0; j < 9; j++) {
-      ab[i + 9 * j] += r[i + 9 * j];
-    }
-  }
-  i = 0;
-  if (ref_grid_twod(ref_grid)) {
-    dq = 0;
-    for (j = 0; j < 9; j++) {
-      ab[j + 9 * 9] += q[i + m * j] * dq;
-    }
-    i++;
-  }
-  each_ref_dict_key(ref_dict, i2, cloud_node) {
-    if (center_node == cloud_node) continue; /* skip self */
-    dq = scalar[cloud_node] - scalar[center_node];
-    for (j = 0; j < 9; j++) {
-      ab[j + 9 * 9] += q[i + m * j] * dq;
-    }
-    i++;
-  }
-  REIS(m, i, "b row miscount");
-  RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
-  j = 9;
-  for (im = 0; im < 6; im++) {
-    hessian[im] = ab[im + 9 * j];
-  }
-  ref_free(r);
-  ref_free(q);
-  ref_free(a);
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
                                             REF_DICT ref_dict, REF_BOOL twod,
                                             REF_DBL mid_plane,
@@ -338,25 +242,6 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   ref_free(q);
   ref_free(a);
 
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_recon_grow_dict_one_layer(REF_DICT ref_dict,
-                                                REF_CELL ref_cell) {
-  REF_DICT copy;
-  REF_INT node_list[REF_RECON_MAX_DEGREE];
-  REF_INT max_node = REF_RECON_MAX_DEGREE;
-  REF_INT nnode, key_index, cloud_node, i;
-  RSS(ref_dict_deep_copy(&copy, ref_dict), "copy");
-  each_ref_dict_key(copy, key_index, cloud_node) {
-    RXS(ref_cell_node_list_around(ref_cell, cloud_node, max_node, &nnode,
-                                  node_list),
-        REF_INCREASE_LIMIT, "first halo of nodes");
-    for (i = 0; i < nnode; i++) {
-      RSS(ref_dict_store(ref_dict, node_list[i], REF_EMPTY), "store node");
-    }
-  }
-  ref_dict_free(copy);
   return REF_SUCCESS;
 }
 
@@ -615,33 +500,6 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     ref_dict_free(one_layer[node]); /* no-op for null */
   }
   ref_free(one_layer);
-
-  each_ref_node_valid_node(ref_node, node) {
-    /* use ref_dict to get a unique list of halo(2) nodes */
-    RSS(ref_dict_create(&ref_dict), "create ref_dict");
-    RSS(ref_dict_store(ref_dict, node, REF_EMPTY), "store node0");
-    RSS(ref_recon_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-    RSS(ref_recon_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-    status = ref_recon_kexact_hessian_at_cloud(ref_grid, scalar, node, ref_dict,
-                                               node_hessian);
-    if (REF_DIV_ZERO == status) {
-      printf(" caught %s, adding third layer to kexact cloud and retry\n",
-             "REF_DIV_ZERO");
-      RSS(ref_recon_grow_dict_one_layer(ref_dict, ref_cell), "grow");
-      status = ref_recon_kexact_hessian_at_cloud(ref_grid, scalar, node,
-                                                 ref_dict, node_hessian);
-    }
-    RSS(status, "kexact qr node");
-    for (im = 0; im < 6; im++) {
-      hessian[im + 6 * node] = node_hessian[im];
-    }
-    if (ref_grid_twod(ref_grid)) {
-      node_hessian[1] = 0.0;
-      node_hessian[3] = 0.0;
-      node_hessian[4] = 0.0;
-    }
-    RSS(ref_dict_free(ref_dict), "free ref_dict");
-  }
 
   /* positive eignevalues to make symrecon positive definite */
   each_ref_node_valid_node(ref_node, node) {
