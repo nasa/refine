@@ -253,7 +253,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   REF_DBL *a, *q, *r;
   REF_INT m, n;
   REF_INT cloud_global, key_index, im, i, j;
-  REF_INT xyzs[4];
+  REF_DBL xyzs[4];
   RSS(ref_dict_location(ref_dict, center_global, &key_index), "missing center");
   xyzs[0] = ref_dict_keyvalueaux(ref_dict, 0, key_index);
   xyzs[1] = ref_dict_keyvalueaux(ref_dict, 1, key_index);
