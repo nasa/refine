@@ -291,16 +291,145 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
 static REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer,
                                         REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT node, total;
+  REF_DICT ref_dict;
+  REF_INT *a_nnode, *b_nnode;
+  REF_INT a_nnode_total, b_nnode_total;
+  REF_INT *a_global, *b_global;
+  REF_INT *a_part, *b_part;
+  REF_INT *a_ndict, *b_ndict;
+  REF_INT a_ndict_total, b_ndict_total;
+  REF_INT *a_keyval, *b_keyval;
+  REF_DBL *a_aux, *b_aux;
+  REF_INT part, node, degree;
+  REF_INT *a_next, *b_next;
+  REF_INT local, global, dict, key_index, aux_index;
+  REF_INT nkeyval = 3, naux = 4;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-  total = 0;
+  ref_malloc_init(a_next, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_next, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_ndict, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_ndict, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  /* ghost nodes need to fill */
   each_ref_node_valid_node(ref_node, node) {
-    if (!ref_node_owned(ref_node, node)) {
-      total += ref_dict_n(one_layer[node]);
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      a_nnode[ref_node_part(ref_node, node)]++;
     }
   }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_nnode, b_nnode, REF_INT_TYPE),
+      "alltoall nnodes");
+
+  a_nnode_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_nnode_total += a_nnode[part];
+  ref_malloc(a_global, a_nnode_total, REF_INT);
+  ref_malloc(a_part, a_nnode_total, REF_INT);
+
+  b_nnode_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_nnode_total += b_nnode[part];
+  ref_malloc(b_global, b_nnode_total, REF_INT);
+  ref_malloc(b_part, b_nnode_total, REF_INT);
+
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_nnode[part - 1];
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_part[a_next[part]] = ref_mpi_rank(ref_mpi);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_nnode, b_global, b_nnode, 1,
+                        REF_INT_TYPE),
+      "alltoallv global");
+  RSS(ref_mpi_alltoallv(ref_mpi, a_part, a_nnode, b_part, b_nnode, 1,
+                        REF_INT_TYPE),
+      "alltoallv global");
+
+  /* degree of these node dict to send */
+  for (node = 0; node < b_nnode_total; node++) {
+    RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
+    part = b_part[node];
+    degree = ref_dict_n(one_layer[local]);
+    b_ndict[part] += degree;
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, b_ndict, a_ndict, REF_INT_TYPE),
+      "alltoall ndicts");
+
+  a_ndict_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_ndict_total += a_ndict[part];
+  ref_malloc(a_keyval, nkeyval * a_ndict_total, REF_INT);
+  ref_malloc(a_aux, naux * a_ndict_total, REF_DBL);
+
+  b_ndict_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_ndict_total += b_ndict[part];
+  ref_malloc(b_keyval, nkeyval * b_ndict_total, REF_INT);
+  ref_malloc(b_aux, naux * b_ndict_total, REF_DBL);
+
+  b_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    b_next[part] = b_next[part - 1] + b_ndict[part - 1];
+  }
+
+  for (node = 0; node < b_nnode_total; node++) {
+    RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
+    part = b_part[node];
+    ref_dict = one_layer[local];
+    each_ref_dict_key_index(ref_dict, key_index) {
+      b_keyval[0 + nkeyval * b_next[part]] = b_global[node];
+      b_keyval[1 + nkeyval * b_next[part]] = ref_dict_key(ref_dict, key_index);
+      b_keyval[2 + nkeyval * b_next[part]] =
+          ref_dict_keyvalue(ref_dict, key_index);
+      for (aux_index = 0; aux_index < naux; aux_index++) {
+        b_aux[aux_index + naux * b_next[part]] =
+            ref_dict_keyvalueaux(ref_dict, aux_index, key_index);
+      }
+      b_next[part]++;
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, b_keyval, b_ndict, a_keyval, a_ndict, nkeyval,
+                        REF_INT_TYPE),
+      "alltoallv keyval");
+  RSS(ref_mpi_alltoallv(ref_mpi, b_aux, b_ndict, a_aux, a_ndict, naux,
+                        REF_DBL_TYPE),
+      "alltoallv aux");
+
+  for (dict = 0; dict < a_ndict_total; dict++) {
+    global = a_keyval[0 + nkeyval * dict];
+    RSS(ref_node_local(ref_node, global, &local), "g2l");
+    ref_dict = one_layer[local];
+    RSS(ref_dict_store_with_aux(ref_dict, a_keyval[1 + nkeyval * dict],
+                                a_keyval[2 + nkeyval * dict],
+                                &(a_aux[naux * dict])),
+        "add ghost");
+  }
+
+  free(b_aux);
+  free(b_keyval);
+  free(a_aux);
+  free(a_keyval);
+  free(b_part);
+  free(b_global);
+  free(a_part);
+  free(a_global);
+  free(b_ndict);
+  free(a_ndict);
+  free(b_nnode);
+  free(a_nnode);
+  free(b_next);
+  free(a_next);
+
   return REF_SUCCESS;
 }
 
