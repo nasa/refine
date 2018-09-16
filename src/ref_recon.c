@@ -263,6 +263,31 @@ static REF_STATUS ref_recon_grow_dict_one_layer(REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
+                                                  REF_NODE ref_node,
+                                                  REF_CELL ref_cell,
+                                                  REF_DBL *scalar) {
+  REF_INT node, item, cell, cell_node, target, global;
+  REF_DBL xyzs[4];
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          target = ref_cell_c2n(ref_cell, cell_node, cell);
+          global = ref_node_global(ref_node, target);
+          xyzs[0] = ref_node_xyz(ref_node, 0, target);
+          xyzs[1] = ref_node_xyz(ref_node, 1, target);
+          xyzs[2] = ref_node_xyz(ref_node, 2, target);
+          xyzs[3] = scalar[target];
+          RSS(ref_dict_store_with_aux(one_layer[node], global, REF_EMPTY, xyzs),
+              "store could stencil");
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                                            REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -271,7 +296,21 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_DICT ref_dict;
   REF_DBL node_hessian[6];
   REF_STATUS status;
+  REF_DICT *one_layer;
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
+
+  ref_malloc_init(one_layer, ref_node_max(ref_node), REF_DICT, NULL);
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_dict_create(&(one_layer[node])), "cloud storage");
+    RSS(ref_dict_includes_aux_value(one_layer[node], 4), "x y z s");
+  }
+  RSS(ref_recon_local_immediate_cloud(one_layer, ref_node, ref_cell, scalar),
+      "fill immediate cloud");
+  each_ref_node_valid_node(ref_node, node) {
+    ref_dict_free(one_layer[node]); /* no-op for null */
+  }
+  ref_free(one_layer);
+
   each_ref_node_valid_node(ref_node, node) {
     /* use ref_dict to get a unique list of halo(2) nodes */
     RSS(ref_dict_create(&ref_dict), "create ref_dict");
