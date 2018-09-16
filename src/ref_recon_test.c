@@ -263,7 +263,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* ghost int */
+  { /* ghost dict one_layer cloud */
     REF_NODE ref_node;
     REF_INT local, ghost, global;
     REF_DICT one_layer[] = {NULL, NULL};
