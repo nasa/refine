@@ -72,7 +72,7 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m_upper_tri, REF_DBL *xyz0,
 
 REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
                                REF_DBL *r);
-REF_STATUS ref_matrix_qr(REF_INT n, REF_INT m, REF_DBL *a, REF_DBL *q,
+REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
                          REF_DBL *r);
 
 REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,

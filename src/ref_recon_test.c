@@ -56,7 +56,7 @@
 #include "ref_twod.h"
 #include "ref_validation.h"
 
-#include "ref_geom.h"
+#include "ref_dict.h"
 
 #include "ref_clump.h"
 
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (!ref_mpi_para(ref_mpi)) { /* k-exact for small variation */
+  if (!ref_mpi_para(ref_mpi)) { /* seq k-exact for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
@@ -178,6 +178,49 @@ int main(int argc, char *argv[]) {
     REF_DBL tol = -1.0;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      scalar[node] = 0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * y +
+                     0.04 * (0.5 * y * y) + 0.06 * (0.5 * z * z);
+    }
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_KEXACT),
+        "k-exact hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(0.01, hessian[0 + 6 * node], tol, "m[0]");
+      RWDS(0.02, hessian[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, hessian[2 + 6 * node], tol, "m[2]");
+      RWDS(0.04, hessian[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, hessian[4 + 6 * node], tol, "m[4]");
+      RWDS(0.06, hessian[5 + 6 * node], tol, "m[5]");
+    }
+
+    ref_free(hessian);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* para file k-exact for small variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar, *hessian;
+    REF_DBL tol = -1.0;
+    char file[] = "ref_recon_test.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_export_by_extension(ref_grid, file), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "import");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(file), "test clean up");
+
     ref_node = ref_grid_node(ref_grid);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -261,6 +304,76 @@ int main(int argc, char *argv[]) {
     ref_free(hess);
 
     RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* ghost dict one_layer cloud */
+    REF_NODE ref_node;
+    REF_INT local, ghost, global;
+    REF_DICT one_layer[] = {NULL, NULL};
+    REF_DBL xyzs[4];
+
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+
+    /* set up 0-local and 1-ghost with global=part */
+    global = ref_mpi_rank(ref_mpi);
+    RSS(ref_node_add(ref_node, global, &local), "add");
+    ref_node_part(ref_node, local) = global;
+
+    if (ref_mpi_para(ref_mpi)) {
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
+      RSS(ref_node_add(ref_node, global, &ghost), "add");
+      ref_node_part(ref_node, ghost) = global;
+    }
+
+    /* set up local dict with both nodes if para */
+    each_ref_node_valid_node(ref_node, local) {
+      RSS(ref_dict_create(&(one_layer[local])), "cloud storage");
+      RSS(ref_dict_includes_aux_value(one_layer[local], 4), "x y z s");
+    }
+    local = 0;
+    xyzs[0] = 10.0 * ref_node_part(ref_node, local);
+    xyzs[1] = 20.0 * ref_node_part(ref_node, local);
+    xyzs[2] = 30.0 * ref_node_part(ref_node, local);
+    xyzs[3] = 40.0 * ref_node_part(ref_node, local);
+    global = ref_node_global(ref_node, local);
+    RSS(ref_dict_store_with_aux(one_layer[0], global, REF_EMPTY, xyzs),
+        "store cloud stencil");
+    local = 1;
+    if (ref_node_valid(ref_node, local)) {
+      xyzs[0] = 10.0 * ref_node_part(ref_node, local);
+      xyzs[1] = 20.0 * ref_node_part(ref_node, local);
+      xyzs[2] = 30.0 * ref_node_part(ref_node, local);
+      xyzs[3] = 40.0 * ref_node_part(ref_node, local);
+      global = ref_node_global(ref_node, local);
+      RSS(ref_dict_store_with_aux(one_layer[0], global, REF_EMPTY, xyzs),
+          "store cloud stencil");
+    }
+    RSS(ref_recon_ghost_cloud(one_layer, ref_node), "update ghosts");
+
+    if (ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_dict_n(one_layer[0]), "local");
+      global = ref_mpi_rank(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[0], global), "local");
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global = 0;
+      RAS(ref_dict_has_key(one_layer[0], global), "local");
+
+      REIS(2, ref_dict_n(one_layer[1]), "ghost");
+      global = ref_mpi_rank(ref_mpi) + 1;
+      if (global >= ref_mpi_n(ref_mpi)) global -= ref_mpi_n(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[1], global), "local");
+      global = ref_mpi_rank(ref_mpi) + 2;
+      if (global >= ref_mpi_n(ref_mpi)) global -= ref_mpi_n(ref_mpi);
+      RAS(ref_dict_has_key(one_layer[1], global), "local");
+    } else {
+      REIS(1, ref_dict_n(one_layer[0]), "no one");
+    }
+
+    each_ref_node_valid_node(ref_node, local) {
+      ref_dict_free(one_layer[local]); /* no-op for null */
+    }
+    RSS(ref_node_free(ref_node), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
