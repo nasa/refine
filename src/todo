@@ -2,26 +2,17 @@
 get rid of ref_recon_roundoff_limit
   (while updating in one-ring with candles acceprtance)
 
-smooth after collapse?
-interpolate after move/split
-
-load balance interp
 store background in grid
-interp every node
-
-increase required improvement to settle
-
-best new smooth location with gradation?
+load balance interp
+allow interp asynchronously
 
 input means for all these parameters for optimizer setting
 smooth ordering
 smooth verify improvement
 optimized 4th tet node placement
 
-integrate complexity more accurately
+integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
-
-make the collapse only target edges first?
 
 update in FUN3D
  + parmetis edge weights
@@ -30,27 +21,16 @@ throw when global node not found on import or export
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-make curvature gradation more along surface and less in volume
- gradation on surface operator
-
-pack node and grid into ref_cavity
-
 tess
  allow surface tess modification without volume
  k-tree to drive split for grid size gradation of JSM
  add --tess acceptance test
+make curvature gradation more along surface and less in volume
+ gradation on surface operator
 
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
 see Adrien's email
-
-mixed element in refine/two
- metric construction
- interp for mixed element donor
- parallel edge split
-
-start geode support?
-rename ref_geom to ref_egads?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
@@ -61,8 +41,6 @@ reordering for cache
   cell pack: insert in first node index order
 
 always store metric in log form
-
-parallel kexact Hessian reconstruction
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
@@ -81,10 +59,15 @@ initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
+start geode support?
+
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  extract init tess
  add EGADS model builder fixture to ref_geom_tests
+ rename ref_geom to ref_egads?
+ create native version of inverse evalute with guess
+  use newton with discrete grid to constrain
 
 egads recon
  clean up method
@@ -98,12 +81,10 @@ egads recon
    why is is not working for faces near edges (start from faces interior)
    revert on failure (wrap?)
 
-create native version of inverse evalute with guess
- use newton with discrete grid to constrain
-
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 robustness and metric conformity
+ increase required improvement to settle
  measure gradation and see if there is a connection to histogram convergence
  process complete test (early termination when no more likely progress)
  surface self intrection test
@@ -113,17 +94,24 @@ robustness and metric conformity
   rigorous way to set these
  split
   insert optimized node location (uv,xyz) with validity constraint
+  interpolate metric after split
  collapse
   cavity operator
   examine triangle MR
   prevent slivers
+  smooth after collapse?
  smooth
+  better new smooth location with metric gradation?
+   ideal tet using principle direction? but faces dissaggree? optimizer?
+  interpolate metric after smooth
   sort worst to best? sort biggest neighbor difference?
     for edge, surface, volume sequence
   ideal tri/tet use log avg m?
   requeue neighbors with large changes? particulary quality drops
   minmax optimize uv
+  
  cavity operator in 2D/3D
+  add node and grid into REF_CAVITY_STRUCT
   eliminate short edges and sliver deletion
   cavity operator parallel
    with an array of cavity made from para edge on geom
@@ -168,9 +156,7 @@ create jenkins test
 interp metric on curved surface
  interpolate in u,v,s
 
-ideal tet using principle direction? but faces dissaggree? optimizer?
-
-low priority, surface reconstruction when EGADS not available
+surrogate surface reconstruction when EGADS not available
 
 ooooooooooooooooo
 
@@ -187,7 +173,12 @@ unify clump plotting diagnostics in parallel
  edge > 3
  clump degree > 50
 
+mixed element in refine/two
+ metric construction, interp for mixed element donor, parallel edge split
+
 +++++++++++++++++
+
++ parallel kexact Hessian reconstruction
 
 + split quality and edge allowed
 
