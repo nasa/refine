@@ -135,6 +135,7 @@ int main(int argc, char *argv[]) {
     REF_INT node;
     REF_DBL *scalar;
     REF_INT name_pos = 2;
+    REF_DBL x, y, z;
     REIS(1, u_pos, "required args: -u id mesh.ext scalar.solb\n");
     REIS(5, argc, "required args: -u id mesh.ext scalar.solb\n");
 
@@ -142,10 +143,11 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      z = ref_node_xyz(ref_node, 2, node);
       if (strcmp(argv[name_pos], "5") == 0) {
-	scalar[node] = 2.0 * pow(ref_node_xyz(ref_node, 0, node), 2) +
-	               2.0 * pow(ref_node_xyz(ref_node, 1, node), 2) +
-                       2.0 * pow(ref_node_xyz(ref_node, 2, node), 2);
+	scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
       } else {
 	printf("%s: %d: %s %s\n", __FILE__, __LINE__,
 	       "unknown user function", argv[name_pos]);
