@@ -147,11 +147,21 @@ int main(int argc, char *argv[]) {
       y = ref_node_xyz(ref_node, 1, node);
       z = ref_node_xyz(ref_node, 2, node);
       if (strcmp(argv[name_pos], "5") == 0) {
-	scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+        scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+      } else if (strcmp(argv[name_pos], "sinfun3") == 0) {
+        REF_DBL xyz;
+        xyz = (x - 0.4) * (y - 0.4) * (z - 0.4); /* sphere2 */
+        if (xyz <= (-1.0 * ref_math_pi / 50.0)) {
+          scalar[node] = 0.1 * sin(50. * xyz);
+        } else if (xyz <= (2.0 * ref_math_pi / 50.0)) {
+          scalar[node] = sin(50.0 * xyz);
+        } else {
+          scalar[node] = 0.1 * sin(50.0 * xyz);
+        }
       } else {
-	printf("%s: %d: %s %s\n", __FILE__, __LINE__,
-	       "unknown user function", argv[name_pos]);
-	return 1;
+        printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
+               argv[name_pos]);
+        return 1;
       }
     }
 
