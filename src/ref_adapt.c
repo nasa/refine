@@ -112,7 +112,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
   REF_CELL ref_cell;
-  REF_INT cell;
+  REF_INT cell, ncell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL det, complexity;
   REF_DBL quality, min_quality;
@@ -140,6 +140,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   min_volume = 1.0e100;
   max_volume = -1.0e100;
   complexity = 0.0;
+  ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (ref_grid_twod(ref_grid)) {
       RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
@@ -166,6 +167,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
             sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
       }
     }
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "owner");
+    if (part == ref_mpi_rank(ref_mpi)) ncell++;
   }
   quality = min_quality;
   RSS(ref_mpi_min(ref_mpi, &quality, &min_quality, REF_DBL_TYPE), "min");
@@ -178,6 +181,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, &max_volume, 1, REF_DBL_TYPE), "min");
 
   RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
+  RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "cell int sum");
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
@@ -273,8 +277,9 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max degree %d max age %d min dot %7.4f\n", max_degree, max_age,
            min_dot);
-    printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e\n",
+    printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
+    printf("ncell %10d\n", ncell);
   }
 
   return REF_SUCCESS;
