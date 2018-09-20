@@ -45,6 +45,43 @@
 
 #include "ref_malloc.h"
 
+static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
+                                   REF_DBL *scalar) {
+  REF_INT node;
+  REF_DBL x, y, z;
+  each_ref_node_valid_node(ref_node, node) {
+    x = ref_node_xyz(ref_node, 0, node);
+    y = ref_node_xyz(ref_node, 1, node);
+    z = ref_node_xyz(ref_node, 2, node);
+    if (strcmp(function_name, "5") == 0) {
+      scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+    } else if (strcmp(function_name, "sinfun3") == 0) {
+      REF_DBL xyz;
+      xyz = (x - 0.4) * (y - 0.4) * (z - 0.4); /* sphere2 */
+      if (xyz <= (-1.0 * ref_math_pi / 50.0)) {
+        scalar[node] = 0.1 * sin(50. * xyz);
+      } else if (xyz <= (2.0 * ref_math_pi / 50.0)) {
+        scalar[node] = sin(50.0 * xyz);
+      } else {
+        scalar[node] = 0.1 * sin(50.0 * xyz);
+      }
+    } else if (strcmp(function_name, "sinatan3") == 0) {
+      REF_DBL eps = 0.1;
+      REF_DBL xz;
+      xz = x * z;
+      scalar[node] =
+          0.1 * sin(50.0 * xz) + atan(eps / (sin(5.0 * y) - 2.0 * xz));
+    } else if (strcmp(function_name, "tanh3") == 0) {
+      scalar[node] = tanh(pow(x + 1.3, 20.0) * pow(y - 0.3, 9.0) * z);
+    } else {
+      printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
+             function_name);
+      return REF_NOT_FOUND;
+    }
+  }
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid;
@@ -132,52 +169,23 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-u", &u_pos), REF_NOT_FOUND, "arg");
 
   if (REF_EMPTY != u_pos) {
-    REF_INT node;
     REF_DBL *scalar;
     REF_INT name_pos = 2;
-    REF_DBL x, y, z;
     REIS(1, u_pos, "required args: -u id mesh.ext scalar.solb\n");
     REIS(5, argc, "required args: -u id mesh.ext scalar.solb\n");
 
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
     ref_node = ref_grid_node(ref_grid);
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    each_ref_node_valid_node(ref_node, node) {
-      x = ref_node_xyz(ref_node, 0, node);
-      y = ref_node_xyz(ref_node, 1, node);
-      z = ref_node_xyz(ref_node, 2, node);
-      if (strcmp(argv[name_pos], "5") == 0) {
-        scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
-      } else if (strcmp(argv[name_pos], "sinfun3") == 0) {
-        REF_DBL xyz;
-        xyz = (x - 0.4) * (y - 0.4) * (z - 0.4); /* sphere2 */
-        if (xyz <= (-1.0 * ref_math_pi / 50.0)) {
-          scalar[node] = 0.1 * sin(50. * xyz);
-        } else if (xyz <= (2.0 * ref_math_pi / 50.0)) {
-          scalar[node] = sin(50.0 * xyz);
-        } else {
-          scalar[node] = 0.1 * sin(50.0 * xyz);
-        }
-      } else if (strcmp(argv[name_pos], "sinatan3") == 0) {
-        REF_DBL eps = 0.1;
-        REF_DBL xz;
-        xz = x * z;
-        scalar[node] =
-            0.1 * sin(50.0 * xz) + atan(eps / (sin(5.0 * y) - 2.0 * xz));
-      } else if (strcmp(argv[name_pos], "tanh3") == 0) {
-        scalar[node] = tanh(pow(x + 1.3, 20.0) * pow(y - 0.3, 9.0) * z);
-      } else {
-        printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
-               argv[name_pos]);
-        return 1;
-      }
-    }
-
+    RSS(ref_acceptance_u(ref_grid_node(ref_grid), argv[name_pos], scalar),
+        "fill u");
     RSS(ref_gather_scalar(ref_grid, 1, scalar, argv[4]), "in");
 
     RSS(ref_export_tec_dbl(ref_grid, scalar, "ref_acceptance_scalar.tec"),
         "scalar");
 
+    ref_free(scalar);
+    ref_grid_free(ref_grid);
     return 0;
   }
 
