@@ -158,6 +158,14 @@ int main(int argc, char *argv[]) {
         } else {
           scalar[node] = 0.1 * sin(50.0 * xyz);
         }
+      } else if (strcmp(argv[name_pos], "sinatan3") == 0) {
+        REF_DBL eps = 0.1;
+        REF_DBL xz;
+        xz = x * z;
+        scalar[node] =
+            0.1 * sin(50.0 * xz) + atan(eps / (sin(5.0 * y) - 2.0 * xz));
+      } else if (strcmp(argv[name_pos], "tanh3") == 0) {
+        scalar[node] = tanh(pow(x + 1.3, 20.0) * pow(y - 0.3, 9.0) * z);
       } else {
         printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
                argv[name_pos]);
