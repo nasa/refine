@@ -167,6 +167,9 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   m = ref_dict_n(ref_dict) - 1; /* skip self */
   if (twod) m++;                /* add mid node */
   n = 9;
+  if (m < n) {           /* underdetermined, will end badly */
+    return REF_DIV_ZERO; /* signal cloud growth required */
+  }
   ref_malloc(a, m * n, REF_DBL);
   ref_malloc(q, m * n, REF_DBL);
   ref_malloc(r, n * n, REF_DBL);
