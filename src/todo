@@ -1,4 +1,8 @@
 
+acceptace test that checks interp error for functions
+
+sinfun stability
+
 get rid of ref_recon_roundoff_limit
   (while updating in one-ring with candles acceprtance)
 
