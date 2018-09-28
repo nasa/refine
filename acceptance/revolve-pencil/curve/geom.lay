@@ -47,6 +47,7 @@ $!ReadDataSet  '|LFDSFN1|'
 $!RemoveVar |LFDSVL1|
 $!RemoveVar |LFDSFN1|
 $!FrameLayout 
+  ShowBorder = No
   ShowHeader = No
   HeaderColor = Red
   XYPos
@@ -124,6 +125,7 @@ $!ContourLevels New
 6
 $!GlobalContour  2
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -158,6 +160,7 @@ $!ContourLevels New
 6
 $!GlobalContour  3
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -192,6 +195,7 @@ $!ContourLevels New
 6
 $!GlobalContour  4
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -226,6 +230,7 @@ $!ContourLevels New
 6
 $!GlobalContour  5
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -260,6 +265,7 @@ $!ContourLevels New
 6
 $!GlobalContour  6
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -294,6 +300,7 @@ $!ContourLevels New
 6
 $!GlobalContour  7
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -328,6 +335,7 @@ $!ContourLevels New
 6
 $!GlobalContour  8
   Var = 6
+  DefNumLevels = 12
   Legend
     {
     Show = Yes
@@ -409,7 +417,7 @@ $!FieldMap  [1-8]
     }
   Surfaces
     {
-    SurfacesToPlot = None
+    SurfacesToPlot = KPlanes
     IRange
       {
       Max = 1
@@ -461,7 +469,7 @@ $!FieldMap  [9-12]
     }
   Surfaces
     {
-    SurfacesToPlot = None
+    SurfacesToPlot = KPlanes
     IRange
       {
       Max = 1
@@ -642,6 +650,18 @@ $!SliceAttributes  1
     I = 1
     J = 1
     K = 1
+    }
+  StartPosition
+    {
+    X = -0.0675106316731
+    Y = -0.899904547838
+    Z = -0.9
+    }
+  EndPosition
+    {
+    X = 1.89118365096
+    Y = 0.900005023798
+    Z = 0.9
     }
   EdgeLayer
     {
