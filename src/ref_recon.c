@@ -158,6 +158,8 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   REF_INT m, n;
   REF_INT cloud_global, key_index, im, i, j;
   REF_DBL xyzs[4];
+  REF_BOOL verbose = REF_FALSE;
+
   RSS(ref_dict_location(ref_dict, center_global, &key_index), "missing center");
   xyzs[0] = ref_dict_keyvalueaux(ref_dict, 0, key_index);
   xyzs[1] = ref_dict_keyvalueaux(ref_dict, 1, key_index);
@@ -167,6 +169,8 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   m = ref_dict_n(ref_dict) - 1; /* skip self */
   if (twod) m++;                /* add mid node */
   n = 9;
+  if (verbose)
+    printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
   if (m < n) {           /* underdetermined, will end badly */
     return REF_DIV_ZERO; /* signal cloud growth required */
   }
@@ -236,7 +240,9 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
     i++;
   }
   REIS(m, i, "b row miscount");
+  if (verbose) RSS(ref_matrix_show_ab(9, 10, ab), "show");
   RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
+  if (verbose) RSS(ref_matrix_show_ab(9, 10, ab), "show");
   j = 9;
   for (im = 0; im < 6; im++) {
     hessian[im] = ab[im + 9 * j];
