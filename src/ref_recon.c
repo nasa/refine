@@ -485,9 +485,13 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       status = ref_recon_kexact_with_aux(
           ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
           ref_node_twod_mid_plane(ref_node), node_hessian);
-      if (REF_DIV_ZERO == status) {
-        printf(" caught %s, adding third layer to kexact cloud and retry\n",
-               "REF_DIV_ZERO");
+      if (REF_DIV_ZERO == status || REF_ILL_CONDITIONED == status) {
+        if (REF_DIV_ZERO == status)
+          printf(" caught %s, adding third layer to kexact cloud and retry\n",
+                 "REF_DIV_ZERO");
+        if (REF_ILL_CONDITIONED == status)
+          printf(" caught %s, adding third layer to kexact cloud and retry\n",
+                 "REF_ILL_CONDITIONED");
         RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
             "grow");
         status = ref_recon_kexact_with_aux(

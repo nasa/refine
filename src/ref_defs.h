@@ -67,6 +67,7 @@ typedef int REF_STATUS;
 #define REF_NOT_FOUND (5)
 #define REF_IMPLEMENT (6)
 #define REF_INCREASE_LIMIT (7)
+#define REF_ILL_CONDITIONED (8)
 
 #define RSS(fcn, msg)                                             \
   {                                                               \

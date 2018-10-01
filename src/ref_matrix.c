@@ -557,6 +557,7 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   REF_DBL temp;
   REF_DBL factor;
   REF_DBL rhs;
+  REF_BOOL ill_condition = REF_FALSE;
 
   for (col = 0; col < rows; col++) {
     /* find largest pivot */
@@ -582,7 +583,12 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
     /* normalize pivot row */
     pivot = ab[col + rows * col];
     for (j = col; j < cols; j++) {
-      if (!ref_math_divisible(ab[col + j * rows], pivot)) return REF_DIV_ZERO;
+      if (!ref_math_divisible(ab[col + j * rows], pivot)) {
+        return REF_DIV_ZERO;
+      }
+      if (ABS(pivot) < 1.0e-13) {
+        ill_condition = REF_TRUE;
+      }
       ab[col + j * rows] /= pivot;
     }
 
@@ -603,7 +609,7 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
       ab[row + col * rows] = rhs / ab[row + row * rows];
     }
 
-  return REF_SUCCESS;
+  return (ill_condition ? REF_ILL_CONDITIONED : REF_SUCCESS);
 }
 
 #define fill_ab(row, n1, n0)                                           \
