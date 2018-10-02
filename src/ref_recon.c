@@ -463,6 +463,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_STATUS status;
   REF_DICT *one_layer;
   REF_BOOL report_large_eig = REF_FALSE;
+  REF_INT layer;
 
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
 
@@ -480,23 +481,19 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     if (ref_node_owned(ref_node, node)) {
       /* use ref_dict to get a unique list of halo(2) nodes */
       RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
-      RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
-          "grow");
-      status = ref_recon_kexact_with_aux(
-          ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
-          ref_node_twod_mid_plane(ref_node), node_hessian);
-      if (REF_DIV_ZERO == status || REF_ILL_CONDITIONED == status) {
-        if (REF_DIV_ZERO == status)
-          printf(" caught %s, adding third layer to kexact cloud and retry\n",
-                 "REF_DIV_ZERO");
-        if (REF_ILL_CONDITIONED == status)
-          printf(" caught %s, adding third layer to kexact cloud and retry\n",
-                 "REF_ILL_CONDITIONED");
+      status = REF_INVALID;
+      for (layer = 2; status != REF_SUCCESS && layer <= 5; layer++) {
         RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
             "grow");
         status = ref_recon_kexact_with_aux(
-            ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
-            ref_node_twod_mid_plane(ref_node), node_hessian);
+          ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
+          ref_node_twod_mid_plane(ref_node), node_hessian);
+        if (REF_DIV_ZERO == status)
+          printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                 "REF_DIV_ZERO", layer);
+        if (REF_ILL_CONDITIONED == status)
+          printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                 "REF_ILL_CONDITIONED", layer);
       }
       RSS(status, "kexact qr node");
       for (im = 0; im < 6; im++) {
