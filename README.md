@@ -69,6 +69,26 @@ Histograms are written as `ref_histogram_quality.tec` and
 `ref_histogram_ratio.tec`, where each of the two the columns are
 mean ratio/edge length and normalized count.  
 
+# Interpolation Error Evaluation
+The norm of interpolation error of a scalar function on a "candidate" grid can
+be computed based on a scalar function on "truth" grid.
+The candidate solution is interpolated to the truth grid,
+assuming the solution is linear in each element, and
+a norm of the difference of the interpolated candidate solution and the
+truth solution is integrated on the truth grid.
+```
+./build/src/ref_interp_test --error truth.meshb truth-scalar.solb candidate.meshb candidate-scalar.solb 2
+```
+Where,
+ - `truth.meshb` is the truth grid in libMeshb format
+ - `truth-scalar.solb` is truth scalar field in libMeshb format
+ - `candidate.meshb` is the candidate grid in libMeshb format
+ - `candidate-scalar.solb` is candidate scalar field in libMeshb format
+ - `2` is the power of the norm
+
+The output is two numbers: the characteristic edge length
+(number of vertices raised to the -1/3 power) and the interpolation error norm.
+
 # Grid Adaptation
 ```
 ./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -x output.meshb
