@@ -30,10 +30,10 @@ with EGADSlite,
 ```
 These can be combined, e.g., MPI+Zoltan+EGADSlite.
 
-# Metric for Control of Interpolation Error in Lp-norm
+# Multiscale Metric for Control of Interpolation Error in Lp-norm
 In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
-an implementation of the Lp-norm metric is provided.
+an implementation of the multiscale metric is provided.
 ```
 ./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb [--kexact] [--hmax max_edge_length]
 ```
@@ -68,6 +68,20 @@ for details on the libMeshb format.
 Histograms are written as `ref_histogram_quality.tec` and
 `ref_histogram_ratio.tec`, where each of the two the columns are
 mean ratio/edge length and normalized count.  
+
+# Scalar Field for Interpolation Error Verification
+To create an initial unit cube domain
+```
+./build/src/ref_acceptance 1 initial.meshb
+```
+To compute the scalar on a domain,
+```
+./build/src/ref_acceptance -u tanh3 project.meshb project-scalar.solb
+```
+Where,
+ - `tanh3` can be `sinfun3`, `sinatan3`, or `tanh3`
+ - `project.meshb` is the grid in libMeshb format
+ - `project-scalar.solb` is a scalar field in libMeshb format
 
 # Interpolation Error Evaluation
 The norm of interpolation error of a scalar function on a "candidate" grid can
