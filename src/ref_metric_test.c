@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
+  REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
   REF_INT complexity_pos = REF_EMPTY;
@@ -90,6 +91,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
+      "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--hmax", &hmax_pos), REF_NOT_FOUND,
@@ -276,6 +279,49 @@ int main(int argc, char *argv[]) {
 
     printf("writing metric %s\n", argv[8]);
     RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (opt_goal_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *metric;
+    REF_DBL complexity;
+
+    REIS(1, lp_pos,
+         "required args: --opt-goal grid.meshb solution.solb complexity "
+         "output-metric.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --opt-goal grid.meshb solution.solb complexity "
+          "output-metric.solb\n");
+      return REF_FAILURE;
+    }
+    complexity = atof(argv[4]);
+
+    printf("complexity %f\n", complexity);
+
+    printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    printf("reading solution %s\n", argv[3]);
+    ref_malloc(scalar, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, argv[3]),
+        "unable to load scalar in position 3");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, complexity),
+        "opt goal");
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_free(scalar);
+
+    printf("writing metric %s\n", argv[5]);
+    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
