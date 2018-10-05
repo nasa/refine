@@ -91,32 +91,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
 
-    if (3 < argc) {
-      REF_SUBDIV ref_subdiv;
-      REF_DBL *node_ratio;
-
-      RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
-
-      ref_malloc(node_ratio, ref_node_max(ref_node), REF_DBL);
-
-      RSS(ref_part_scalar(ref_node, node_ratio, argv[3]), "part metric");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read ratio");
-
-      RSS(ref_subdiv_mark_prism_by_ratio(ref_subdiv, node_ratio), "mark rat");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "subdiv mark");
-
-      ref_free(node_ratio);
-
-      RSS(ref_subdiv_split(ref_subdiv), "split");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "subdiv split");
-
-      RSS(ref_subdiv_free(ref_subdiv), "free");
-
-      RSS(ref_validation_cell_volume(ref_grid), "vol");
-      RSS(ref_migrate_to_balance(ref_grid), "balance");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "balance");
-    }
-
     if (REF_FALSE) {
       printf("limit with existing grid\n");
       RSS(ref_export_tec(ref_grid, "ref_adapt_ellipseg.tec"), "ex");
