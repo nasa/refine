@@ -1593,10 +1593,10 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
     RAS(available, "SolAtVertices missing");
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
-    REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
     REIS(ref_node_n_global(ref_node), nnode, "global nnode");
     *ldim = ntype;
     for (i = 0; i < *ldim; i++) {
+      REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
       REIS(1, type, "scalar solution type");
     }
   }
