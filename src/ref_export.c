@@ -568,7 +568,7 @@ REF_STATUS ref_export_tec_int(REF_GRID ref_grid, REF_INT *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_DBL *scalar,
+REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
                               const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -579,6 +579,7 @@ REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_DBL *scalar,
   REF_INT cell;
   REF_INT ncell;
   REF_INT group;
+  REF_INT i;
 
   FILE *file;
 
@@ -587,7 +588,11 @@ REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_DBL *scalar,
   RNS(file, "unable to open file");
 
   fprintf(file, "title=\"tecplot refine scalar file\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\" \"s\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"");
+  for (i = 0; i < ldim; i++) {
+    fprintf(file, " \"s%d\"", i + 1);
+  }
+  fprintf(file, "\n");
 
   ncell = 0;
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) ncell +=
@@ -600,11 +605,15 @@ REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_DBL *scalar,
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
-  for (node = 0; node < ref_node_n(ref_node); node++)
-    fprintf(file, " %.16e %.16e %.16e %.16e\n",
-            ref_node_xyz(ref_node, 0, n2o[node]),
+  for (node = 0; node < ref_node_n(ref_node); node++) {
+    fprintf(file, " %.16e %.16e %.16e", ref_node_xyz(ref_node, 0, n2o[node]),
             ref_node_xyz(ref_node, 1, n2o[node]),
-            ref_node_xyz(ref_node, 2, n2o[node]), scalar[n2o[node]]);
+            ref_node_xyz(ref_node, 2, n2o[node]));
+    for (i = 0; i < ldim; i++) {
+      fprintf(file, " %.16e", scalar[i + ldim * node]);
+    }
+    fprintf(file, "\n");
+  }
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell)
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {

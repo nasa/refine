@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
         "fill u");
     RSS(ref_gather_scalar(ref_grid, 1, scalar, argv[4]), "in");
 
-    RSS(ref_export_tec_dbl(ref_grid, scalar, "ref_acceptance_scalar.tec"),
+    RSS(ref_export_tec_dbl(ref_grid, 1, scalar, "ref_acceptance_scalar.tec"),
         "scalar");
 
     ref_free(scalar);
