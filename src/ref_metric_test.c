@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
     REF_DBL complexity;
     REF_INT ldim;
 
-    REIS(1, lp_pos,
+    REIS(1, opt_goal_pos,
          "required args: --opt-goal grid.meshb solution.solb complexity "
          "output-metric.solb");
     if (6 > argc) {
