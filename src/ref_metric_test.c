@@ -135,6 +135,7 @@ int main(int argc, char *argv[]) {
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
     REIS(1, lp_pos,
          "required args: --lp grid.meshb scalar-mach.solb p gradation "
          "complexity output-metric.solb");
@@ -171,9 +172,9 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     printf("reading scalar %s\n", argv[3]);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
+    REIS(1, ldim, "expected one scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
@@ -207,6 +208,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_RECON_RECONSTRUCTION reconstruction;
     char solb[1024];
+    REF_INT ldim;
     REIS(1, fixed_point_pos,
          "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
          "p gradation complexity output-metric.solb");
@@ -246,14 +248,15 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
     ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     for (timestep = 1; timestep <= n; timestep++) {
       snprintf(solb, 1024, "%s%d.solb", argv[3], timestep);
       printf("reading scalar %s\n", solb);
-      RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, solb),
+      RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
           "unable to load scalar in position 3");
+      REIS(1, ldim, "expected one scalar");
       RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+      ref_free(scalar);
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         for (im = 0; im < 6; im++) {
           metric[im + 6 * node] += hess[im + 6 * node];
@@ -273,7 +276,6 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
       printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
-    ref_free(scalar);
     ref_free(hess);
     ref_free(metric);
 
@@ -290,6 +292,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *metric;
     REF_DBL complexity;
+    REF_INT ldim;
 
     REIS(1, lp_pos,
          "required args: --opt-goal grid.meshb solution.solb complexity "
@@ -309,9 +312,9 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
 
     printf("reading solution %s\n", argv[3]);
-    ref_malloc(scalar, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
+    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, complexity),

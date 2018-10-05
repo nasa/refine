@@ -143,6 +143,7 @@ int main(int argc, char *argv[]) {
     REF_INTERP ref_interp;
     REF_INT p;
     REF_DBL h, error;
+    REF_INT ldim;
     REIS(1, error_pos,
          "required args: --error truth_mesh.ext truth_solution.solb "
          "canidate_mesh.ext canidate_solution.solb norm-order\n");
@@ -155,17 +156,17 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&truth_grid, ref_mpi, argv[2]),
         "part truth grid in position 2");
-    ref_malloc(truth_scalar, ref_node_max(ref_grid_node(truth_grid)), REF_DBL);
-    RSS(ref_part_scalar(ref_grid_node(truth_grid), truth_scalar, argv[3]),
+    RSS(ref_part_scalar(ref_grid_node(truth_grid), &ldim, &truth_scalar,
+                        argv[3]),
         "unable to load scalar in position 3");
+    REIS(1, ldim, "expected one truth scalar");
 
     RSS(ref_part_by_extension(&candidate_grid, ref_mpi, argv[4]),
         "part candidate grid in position 4");
-    ref_malloc(candidate_scalar, ref_node_max(ref_grid_node(candidate_grid)),
-               REF_DBL);
-    RSS(ref_part_scalar(ref_grid_node(candidate_grid), candidate_scalar,
+    RSS(ref_part_scalar(ref_grid_node(candidate_grid), &ldim, &candidate_scalar,
                         argv[5]),
         "unable to load scalar in position 5");
+    REIS(1, ldim, "expected one truth scalar");
 
     p = atoi(argv[6]);
 

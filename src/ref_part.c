@@ -1556,7 +1556,7 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
+REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
                            const char *filename) {
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
@@ -1567,7 +1567,7 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
   REF_INT node, local, global;
   size_t end_of_string;
   REF_BOOL available;
-  REF_INT version, dim, nnode, ntype, type;
+  REF_INT version, dim, nnode, ntype, type, i;
 
   file = NULL;
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
@@ -1595,32 +1595,43 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_DBL *scalar,
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
     REIS(ref_node_n_global(ref_node), nnode, "global nnode");
-    REIS(1, ntype, "number of solutions");
-    REIS(1, type, "scalar solution type");
+    *ldim = ntype;
+    for (i = 0; i < *ldim; i++) {
+      REIS(1, type, "scalar solution type");
+    }
   }
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
+      "bcast ldim");
+  ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
   chunk = MAX(100000,
               ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
   chunk = MIN(chunk, ref_node_n_global(ref_node));
 
-  ref_malloc_init(data, chunk, REF_DBL, -1.0);
+  ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
   while (nnode_read < ref_node_n_global(ref_node)) {
     section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
-      for (node = 0; node < section_size; node++)
-        REIS(1, fread(&(data[node]), sizeof(REF_DBL), 1, file), "dat");
-      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, chunk, REF_DBL_TYPE),
+      REIS((*ldim) * section_size,
+           fread(data, sizeof(REF_DBL), (*ldim) * section_size, file), "dat");
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
           "bcast");
     } else {
-      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, chunk, REF_DBL_TYPE),
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
           "bcast");
     }
     for (node = 0; node < section_size; node++) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
-      if (REF_EMPTY != local) scalar[local] = data[node];
+      if (REF_EMPTY != local) {
+        for (i = 0; i < *ldim; i++) {
+          (*scalar)[i + local * (*ldim)] = data[i + node * (*ldim)];
+        }
+      }
     }
     nnode_read += section_size;
   }
