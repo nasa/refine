@@ -77,10 +77,6 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
 
-    /* for Troy Lake Pointwise extruded 2D grids
-       ref_node_twod_mid_plane(ref_node)=-1;
-    */
-
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "balance");
 
