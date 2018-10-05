@@ -772,7 +772,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    next_position = 4 + 4 + 4 + 4 + 4 +
+    next_position = 4 + 4 + 4 + 4 + (ldim * 4) +
                     ref_node_n_global(ref_node) * (ldim * 8) + ftell(file);
     keyword_code = 62;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
@@ -782,7 +782,9 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     keyword_code = ldim; /* one solution at node */
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "n solutions");
     keyword_code = 1; /* solution type 1, scalar */
-    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "metric solution");
+    for (i = 0; i < ldim; i++) {
+      REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "scalar");
+    }
   }
 
   chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
