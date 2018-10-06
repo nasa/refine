@@ -2175,3 +2175,22 @@ REF_STATUS ref_node_tet_grad(REF_NODE ref_node, REF_INT *nodes, REF_DBL *scalar,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
+                                REF_INT *closest_node, REF_DBL *distance) {
+  REF_INT node;
+  REF_DBL dist;
+  *closest_node = REF_EMPTY;
+  *distance = 1.0e100;
+  each_ref_node_valid_node(ref_node, node) {
+    dist = pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+           pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+           pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2);
+    if (dist < *distance) {
+      *closest_node = node;
+      *distance = dist;
+    }
+  }
+  *distance = sqrt(*distance);
+  return REF_SUCCESS;
+}
