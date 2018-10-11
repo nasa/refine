@@ -2532,10 +2532,10 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   printf("tec360 ref_geom_test_aflr_surf.tec\n");
   RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"), "dbg surf");
   RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
-  sprintf(
-      command,
-      "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=179.99 -angqbfmin=0.01 < /dev/null > %s.out",
-      surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
+  sprintf(command,
+          "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=179.99 -angqbfmin=0.01 "
+          "< /dev/null > %s.out",
+          surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
