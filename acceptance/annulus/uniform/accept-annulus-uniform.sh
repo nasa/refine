@@ -28,7 +28,7 @@ ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric 0.1
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-annulus-uniform-02.status
 
 cat accept-annulus-uniform-02.status
-../../check.rb accept-annulus-uniform-02.status 0.03 2.1
+../../check.rb accept-annulus-uniform-02.status 0.1 2.2
 
 
 
