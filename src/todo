@@ -147,8 +147,12 @@ viz
 Marshall
  provide 2D api
 
-make sure all triangles have one tet and tet has one neighbor by
-turning on validation.
+create a standard --with-mpi configure flag
+
+validation:
+validaiton_all: turn on
+validation_face: make parallel
+validation_face: all triangles have one tet and tet has one neighbor
 
 create jenkins test
 - make check stack fuzz
