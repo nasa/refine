@@ -261,6 +261,11 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
   ref_adapt->post_max_ratio = MAX(max_ratio, ref_adapt->split_ratio);
 
+  if (ref_adapt->post_max_ratio > 4.0 && ref_adapt->post_min_ratio > 0.4) {
+    ref_adapt->post_min_ratio =
+        (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
+  }
+
   if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-12 &&
       ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-12 && max_age < 10) {
     *all_done = REF_TRUE;

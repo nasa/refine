@@ -40,6 +40,6 @@ adapt_cycle accept-2d-two-04
 adapt_cycle accept-2d-two-05
 
 cat accept-2d-two-05.status
-../../../check.rb accept-2d-two-05.status 0.45 2.0
+../../../check.rb accept-2d-two-05.status 0.40 2.0
 
 
