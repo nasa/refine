@@ -5,9 +5,6 @@ mpt crash
 
 acceptace test that checks interp error for functions
 
-get rid of ref_recon_roundoff_limit
-  (while updating in one-ring with candles acceprtance)
-
 store background in grid
 load balance interp
 allow interp asynchronously
@@ -187,6 +184,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ get rid of ref_recon_roundoff_limit (while updating in one-ring)
 
 + cube/polar-2 para/seq metric conformity differences
 + sinfun stability

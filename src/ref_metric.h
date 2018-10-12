@@ -83,9 +83,6 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_INT nequations, REF_DBL *solution,
                                REF_DBL complexity);
 
-REF_STATUS ref_metric_set_zero_det(REF_DBL *metric_with_zeros,
-                                   REF_DBL *metric_donor, REF_GRID ref_grid);
-
 END_C_DECLORATION
 
 #endif /* REF_METRIC_H */
