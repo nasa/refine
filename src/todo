@@ -1,6 +1,4 @@
 
-cube/polar-2 para/seq metric conformity differences
-
 mpt crash
  cube/polar-2
  delta 22M
@@ -190,6 +188,7 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ cube/polar-2 para/seq metric conformity differences
 + sinfun stability
 
 + parallel kexact Hessian reconstruction
