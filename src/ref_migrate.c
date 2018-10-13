@@ -560,12 +560,12 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 
     REIS(ZOLTAN_OK,
          Zoltan_LB_Free_Part(&import_local, &import_global, &import_proc,
-                             &import_proc),
+                             &import_part),
          "Zoltan is angry");
 
     REIS(ZOLTAN_OK,
          Zoltan_LB_Free_Part(&export_local, &export_global, &export_proc,
-                             &export_proc),
+                             &export_part),
          "Zoltan is angry");
 
     Zoltan_Destroy(&zz);
