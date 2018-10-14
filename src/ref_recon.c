@@ -495,7 +495,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_ILL_CONDITIONED", layer);
       }
-      RSS(status, "kexact qr node");
+      RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       for (im = 0; im < 6; im++) {
         hessian[im + 6 * node] = node_hessian[im];
       }
