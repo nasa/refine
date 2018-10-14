@@ -485,18 +485,22 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       /* use ref_dict to get a unique list of halo(2) nodes */
       RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
       status = REF_INVALID;
-      for (layer = 2; status != REF_SUCCESS && layer <= 5; layer++) {
+      for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
         RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
             "grow");
         status = ref_recon_kexact_with_aux(
             ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
             ref_node_twod_mid_plane(ref_node), node_hessian);
-        if (REF_DIV_ZERO == status)
-          printf(" caught %s, for %d layers to kexact cloud; retry\n",
+        if (REF_DIV_ZERO == status) {
+	  ref_node_location(ref_node, node);
+	  printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_DIV_ZERO", layer);
-        if (REF_ILL_CONDITIONED == status)
+	}
+        if (REF_ILL_CONDITIONED == status) {
+	  ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_ILL_CONDITIONED", layer);
+	}
       }
       RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       for (im = 0; im < 6; im++) {
