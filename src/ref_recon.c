@@ -212,11 +212,14 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
     geom[8] = dz;
     for (j = 0; j < n; j++) {
       a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
     }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
     i++;
   }
   REIS(m, i, "A row miscount");
   RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
+  if (verbose) RSS(ref_matrix_show_aqr(m, n, a, q, r), "show qr");
   for (i = 0; i < 90; i++) ab[i] = 0.0;
   for (i = 0; i < 9; i++) {
     for (j = 0; j < 9; j++) {
