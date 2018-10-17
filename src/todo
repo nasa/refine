@@ -1,4 +1,7 @@
 
+interp solb files
+mach from solb
+
 update best practice multiscale in docs: grad, kexact, parallel
 
 get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
