@@ -1,4 +1,6 @@
 
+update best practice multiscale in docs: grad, kexact, parallel
+
 get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
 
 mpt crash (parmetis not mpt?)
