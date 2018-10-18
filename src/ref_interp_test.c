@@ -223,9 +223,11 @@ int main(int argc, char *argv[]) {
         "part old grid in position 2");
     RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_field, argv[3]),
         "unable to load old scalar field in position 3");
-
     RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
         "part candidate grid in position 4");
+    printf("%d leading dim from %d nodes to %d nodes\n", ldim,
+           ref_node_n_global(ref_grid_node(old_grid)),
+           ref_node_n_global(ref_grid_node(new_grid)));
 
     RSS(ref_interp_create(&ref_interp, old_grid, new_grid), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
@@ -233,7 +235,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(new_field, ldim * ref_node_max(ref_grid_node(new_grid)),
                REF_DBL);
 
-    RSS(ref_interp_scalar(ref_interp, ldim, new_field, old_field),
+    RSS(ref_interp_scalar(ref_interp, ldim, old_field, new_field),
         "interp scalar");
 
     RSS(ref_gather_scalar(new_grid, ldim, new_field, argv[5]),
