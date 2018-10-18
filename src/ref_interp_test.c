@@ -89,6 +89,7 @@ int main(int argc, char *argv[]) {
   REF_INT pair_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
   REF_INT field_pos = REF_EMPTY;
+  REF_INT mach_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -99,6 +100,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--field", &field_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--mach", &mach_pos), REF_NOT_FOUND,
       "arg search");
 
   if (REF_EMPTY != pair_pos) {
@@ -227,7 +230,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_create(&ref_interp, old_grid, new_grid), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
 
-    ref_malloc(new_field, ref_node_max(ref_grid_node(new_grid)), REF_DBL);
+    ref_malloc(new_field, ldim * ref_node_max(ref_grid_node(new_grid)),
+               REF_DBL);
 
     RSS(ref_interp_scalar(ref_interp, ldim, new_field, old_field),
         "interp scalar");
@@ -240,6 +244,46 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(new_grid), "free");
     ref_free(old_field);
     RSS(ref_grid_free(old_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != mach_pos) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *mach;
+    REF_INT ldim, node;
+    REIS(1, mach_pos,
+         "required args: --mach grid.ext solution.solb mach.solb\n");
+    if (5 > argc) {
+      printf("required args: --mach grid.ext solution.solb mach.solb\n");
+      return REF_FAILURE;
+    }
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "part grid in position 2");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+        "unable to load field in position 3");
+
+    ref_malloc(mach, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, p, temp;
+      REF_DBL gamma = 1.4;
+      rho = field[0 + ldim * node];
+      u = field[1 + ldim * node];
+      v = field[2 + ldim * node];
+      w = field[3 + ldim * node];
+      p = field[4 + ldim * node];
+      temp = gamma * p / rho;
+      mach[node] = sqrt((u * u + v * v + w * w) / temp);
+    }
+
+    RSS(ref_gather_scalar(ref_grid, 1, mach, argv[4]), "export mach");
+
+    ref_free(mach);
+    ref_free(field);
+    RSS(ref_grid_free(ref_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
