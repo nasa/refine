@@ -492,15 +492,15 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
             ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
             ref_node_twod_mid_plane(ref_node), node_hessian);
         if (REF_DIV_ZERO == status) {
-	  ref_node_location(ref_node, node);
-	  printf(" caught %s, for %d layers to kexact cloud; retry\n",
+          ref_node_location(ref_node, node);
+          printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_DIV_ZERO", layer);
-	}
+        }
         if (REF_ILL_CONDITIONED == status) {
-	  ref_node_location(ref_node, node);
+          ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_ILL_CONDITIONED", layer);
-	}
+        }
       }
       RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       for (im = 0; im < 6; im++) {
