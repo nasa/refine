@@ -88,6 +88,7 @@ static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
 int main(int argc, char *argv[]) {
   REF_INT pair_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
+  REF_INT field_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -96,6 +97,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--pair", &pair_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--field", &field_pos), REF_NOT_FOUND,
       "arg search");
 
   if (REF_EMPTY != pair_pos) {
@@ -192,6 +195,51 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(candidate_grid), "free");
     ref_free(truth_scalar);
     RSS(ref_grid_free(truth_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != field_pos) {
+    REF_GRID old_grid, new_grid;
+    REF_DBL *old_field, *new_field;
+    REF_INTERP ref_interp;
+    REF_INT ldim;
+    REIS(1, field_pos,
+         "required args: --field old_mesh.ext old_solution.solb "
+         "new_mesh.ext new_solution.solb\n");
+    if (6 > argc) {
+      printf(
+          "required args: --field old_mesh.ext old_solution.solb "
+          "new_mesh.ext new_solution.solb\n");
+      return REF_FAILURE;
+    }
+
+    RSS(ref_part_by_extension(&old_grid, ref_mpi, argv[2]),
+        "part old grid in position 2");
+    RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_field, argv[3]),
+        "unable to load old scalar field in position 3");
+
+    RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
+        "part candidate grid in position 4");
+
+    RSS(ref_interp_create(&ref_interp, old_grid, new_grid), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+
+    ref_malloc(new_field, ref_node_max(ref_grid_node(new_grid)), REF_DBL);
+
+    RSS(ref_interp_scalar(ref_interp, ldim, new_field, old_field),
+        "interp scalar");
+
+    RSS(ref_gather_scalar(new_grid, ldim, new_field, argv[5]),
+        "export new field");
+
+    ref_free(new_field);
+    RSS(ref_interp_free(ref_interp), "interp free");
+    RSS(ref_grid_free(new_grid), "free");
+    ref_free(old_field);
+    RSS(ref_grid_free(old_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
