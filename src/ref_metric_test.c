@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
     if (REF_EMPTY != kexact_pos) {
       reconstruction = REF_RECON_KEXACT;
     }
-    if (ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    if (ref_mpi_once(ref_mpi)) {
       printf("Lp=%d\n", p);
       printf("gradation %f\n", gradation);
       printf("complexity %f\n", complexity);
@@ -169,12 +169,12 @@ int main(int argc, char *argv[]) {
       printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
     }
 
-    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    if (ref_mpi_once(ref_mpi))
       printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
-    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    if (ref_mpi_once(ref_mpi))
       printf("reading scalar %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
@@ -190,13 +190,13 @@ int main(int argc, char *argv[]) {
           "limit at complexity");
     }
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
-    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    if (ref_mpi_once(ref_mpi))
       printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
     ref_free(scalar);
 
-    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    if (ref_mpi_once(ref_mpi))
       printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
 
