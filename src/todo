@@ -32,8 +32,9 @@ tess
  allow surface tess modification without volume
  k-tree to drive split for grid size gradation of JSM
  add --tess acceptance test
-make curvature gradation more along surface and less in volume
- gradation on surface operator
+ make curvature gradation more along surface and less in volume
+  gradation on surface operator
+ test with OM6
 
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
