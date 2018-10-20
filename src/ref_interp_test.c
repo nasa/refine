@@ -227,8 +227,8 @@ int main(int argc, char *argv[]) {
         "part candidate grid in position 4");
     if (ref_mpi_once(ref_mpi)) {
       printf("%d leading dim from %d nodes to %d nodes\n", ldim,
-	     ref_node_n_global(ref_grid_node(old_grid)),
-	     ref_node_n_global(ref_grid_node(new_grid)));
+             ref_node_n_global(ref_grid_node(old_grid)),
+             ref_node_n_global(ref_grid_node(new_grid)));
     }
     RSS(ref_interp_create(&ref_interp, old_grid, new_grid), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
