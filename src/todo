@@ -1,7 +1,4 @@
 
-interp solb files
-mach from solb
-
 update best practice multiscale in docs: grad, kexact, parallel
 
 get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
@@ -10,7 +7,7 @@ mpt crash (parmetis not mpt?)
  cube/polar-2
  delta 22M
 
-acceptace test that checks interp error for functions
+acceptance test that checks interp error for functions
 
 store background in grid
 load balance interp
@@ -191,6 +188,9 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ interp solb files
++ mach from solb
 
 + get rid of ref_recon_roundoff_limit (while updating in one-ring)
 
