@@ -130,8 +130,8 @@ int main(int argc, char *argv[]) {
 
   ref_fortran_allow_screen_output = REF_FALSE;
 
-  RSS(FC_FUNC_(ref_fortran_init, REF_FORTRAN_INIT)(&nnodes, &nnodesg, l2g, part,
-                                                   &partition, x, y, z),
+  RSS(REF_FORT_(ref_fortran_init, REF_FORTRAN_INIT)(&nnodes, &nnodesg, l2g,
+                                                    part, &partition, x, y, z),
       "init node");
 
   node_per_cell = 4;
@@ -143,8 +143,8 @@ int main(int argc, char *argv[]) {
   c2n[2] = 3;
   c2n[3] = 4;
 
-  RSS(FC_FUNC_(ref_fortran_import_cell, REF_FORTRAN_IMPORT_CELL)(&node_per_cell,
-                                                                 &ncell, c2n),
+  RSS(REF_FORT_(ref_fortran_import_cell, REF_FORTRAN_IMPORT_CELL)(
+          &node_per_cell, &ncell, c2n),
       "import cell");
 
   node_per_face = 3;
@@ -155,23 +155,23 @@ int main(int argc, char *argv[]) {
   f2n[2] = 1;
 
   ibound = 1;
-  RSS(FC_FUNC_(ref_fortran_import_face, REF_FORTRAN_IMPORT_FACE)(
+  RSS(REF_FORT_(ref_fortran_import_face, REF_FORTRAN_IMPORT_FACE)(
           &ibound, &node_per_face, &nface, f2n),
       "import face");
 
-  RSS(FC_FUNC_(ref_fortran_import_metric, REF_FORTRAN_IMPORT_METRIC)(&nnodes,
-                                                                     m),
+  RSS(REF_FORT_(ref_fortran_import_metric, REF_FORTRAN_IMPORT_METRIC)(&nnodes,
+                                                                      m),
       "import metric");
 
-  RSS(FC_FUNC_(ref_fortran_import_ratio, REF_FORTRAN_IMPORT_RATIO)(&nnodes,
-                                                                   ratio),
+  RSS(REF_FORT_(ref_fortran_import_ratio, REF_FORTRAN_IMPORT_RATIO)(&nnodes,
+                                                                    ratio),
       "import ratio");
 
-  RSS(FC_FUNC_(ref_fortran_naux, REF_FORTRAN_NAUX)(&naux), "naux");
+  RSS(REF_FORT_(ref_fortran_naux, REF_FORTRAN_NAUX)(&naux), "naux");
 
   offset = 0;
-  RSS(FC_FUNC_(ref_fortran_import_aux, REF_FORTRAN_IMPORT_AUX)(&naux, &nnodes,
-                                                               &offset, aux),
+  RSS(REF_FORT_(ref_fortran_import_aux, REF_FORTRAN_IMPORT_AUX)(&naux, &nnodes,
+                                                                &offset, aux),
       "aux");
 
   free(f2n);
@@ -186,8 +186,8 @@ int main(int argc, char *argv[]) {
   free(l2g);
 
   nnodes = nnodesg = REF_EMPTY;
-  RSS(FC_FUNC_(ref_fortran_size_node, REF_FORTRAN_SIZE_NODE)(&nnodes0, &nnodes,
-                                                             &nnodesg),
+  RSS(REF_FORT_(ref_fortran_size_node, REF_FORTRAN_SIZE_NODE)(&nnodes0, &nnodes,
+                                                              &nnodesg),
       "size_node");
   REIS(2, nnodes0, "n");
   REIS(4, nnodes, "n");
@@ -198,37 +198,39 @@ int main(int argc, char *argv[]) {
   y = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
   z = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
 
-  RSS(FC_FUNC_(ref_fortran_node, REF_FORTRAN_NODE)(&nnodes, l2g, x, y, z),
+  RSS(REF_FORT_(ref_fortran_node, REF_FORTRAN_NODE)(&nnodes, l2g, x, y, z),
       "get node");
 
   aux = (REF_DBL *)malloc(sizeof(REF_DBL) * naux * nnodes);
 
-  RSS(FC_FUNC_(ref_fortran_aux, REF_FORTRAN_NODE)(&naux, &nnodes, &offset, aux),
+  RSS(REF_FORT_(ref_fortran_aux, REF_FORTRAN_NODE)(&naux, &nnodes, &offset,
+                                                   aux),
       "get aux");
 
   ncell = REF_EMPTY;
-  RSS(FC_FUNC_(ref_fortran_size_cell, REF_FORTRAN_SIZE_CELL)(&node_per_cell,
-                                                             &ncell),
+  RSS(REF_FORT_(ref_fortran_size_cell, REF_FORTRAN_SIZE_CELL)(&node_per_cell,
+                                                              &ncell),
       "size cell");
   REIS(1, ncell, "n");
 
   c2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_cell * ncell);
 
-  RSS(FC_FUNC_(ref_fortran_cell, REF_FORTRAN_CELL)(&node_per_cell, &ncell, c2n),
+  RSS(REF_FORT_(ref_fortran_cell, REF_FORTRAN_CELL)(&node_per_cell, &ncell,
+                                                    c2n),
       "get cell");
 
   ibound = 1;
   node_per_face = 3;
   nface = REF_EMPTY;
-  RSS(FC_FUNC_(ref_fortran_size_face, REF_FORTRAN_SIZE_FACE)(
+  RSS(REF_FORT_(ref_fortran_size_face, REF_FORTRAN_SIZE_FACE)(
           &ibound, &node_per_face, &nface),
       "size face");
   REIS(1, nface, "n");
 
   f2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_face * nface);
 
-  RSS(FC_FUNC_(ref_fortran_face, REF_FORTRAN_FACE)(&ibound, &node_per_face,
-                                                   &nface, f2n),
+  RSS(REF_FORT_(ref_fortran_face, REF_FORTRAN_FACE)(&ibound, &node_per_face,
+                                                    &nface, f2n),
       "face");
 
   free(f2n);
@@ -239,7 +241,7 @@ int main(int argc, char *argv[]) {
   free(x);
   free(l2g);
 
-  RSS(FC_FUNC_(ref_fortran_free, REF_FORTRAN_FREE)(), "free");
+  RSS(REF_FORT_(ref_fortran_free, REF_FORTRAN_FREE)(), "free");
 
   RSS(ref_mpi_stop(), "stop");
 
