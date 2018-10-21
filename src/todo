@@ -3,8 +3,6 @@ prevent negative min dot
 
 update best practice multiscale in docs: grad, kexact, parallel
 
-get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
-
 acceptance test that checks interp error for functions
 
 store background in grid
@@ -184,6 +182,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
 
 + parmetis edge weights
 
