@@ -26,12 +26,12 @@
 #endif
 
 BEGIN_C_DECLORATION
-void FC_FUNC_(unravel_start,UNRAVEL_START)( int *unravel_api_version, int *status );
-void FC_FUNC_(unravel_tet,UNRAVEL_TET)( int *c2n, double *x, double *y, double *z, int *status );
-void FC_FUNC_(unravel_thaw,UNRAVEL_THAW)( int *nodeid, int *status );
-void FC_FUNC_(unravel_it,UNRAVEL_IT)( int *status );
-void FC_FUNC_(unravel_xyz,UNRAVEL_XYZ)( int *nodeid, double *x, double *y, double *z, int *status );
-void FC_FUNC_(unravel_cleanup,UNRAVEL_CLEANUP)( int *status );
+void REF_FORT_(unravel_start,UNRAVEL_START)( int *unravel_api_version, int *status );
+void REF_FORT_(unravel_tet,UNRAVEL_TET)( int *c2n, double *x, double *y, double *z, int *status );
+void REF_FORT_(unravel_thaw,UNRAVEL_THAW)( int *nodeid, int *status );
+void REF_FORT_(unravel_it,UNRAVEL_IT)( int *status );
+void REF_FORT_(unravel_xyz,UNRAVEL_XYZ)( int *nodeid, double *x, double *y, double *z, int *status );
+void REF_FORT_(unravel_cleanup,UNRAVEL_CLEANUP)( int *status );
 END_C_DECLORATION
 
 #endif /* UNRAVEL_FORTRAN_H */

@@ -85,6 +85,12 @@ typedef short   GridBool;
 #define MAX(a,b) ((a)>(b)?(a):(b))
 #endif
 
+/* Define to a macro mangling the given C identifier (in lower and upper
+   case), which must not contain underscores, for linking with Fortran */
+#define REF_FORT(name,NAME) name ## _
+/* but for C identifiers containing underscores. */
+#define REF_FORT_(name,NAME) name ## _
+
 END_C_DECLORATION
 
 #endif /* HAVE_SDK */
