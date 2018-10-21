@@ -19,7 +19,6 @@ mkdir -p strict
     --prefix=`pwd` \
     CFLAGS="${gccflags}" \
     CC=gcc-8 \
-    FC=gfortran-8 \
     ) \
     || exit
 
@@ -31,7 +30,6 @@ mkdir -p egads
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS="${gccflags}" \
     CC=gcc-8 \
-    FC=gfortran-8 \
     ) \
     || exit
 
@@ -57,7 +55,6 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    FC=mpif90 \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
     ) \
     || exit

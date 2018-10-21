@@ -29,8 +29,6 @@ AC_PROG_CC
 AC_HEADER_STDC
 AM_PROG_CC_C_O
 
-AC_FC_WRAPPERS
-
 arch=`uname`
 
 dnl special arch libs

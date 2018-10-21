@@ -14,7 +14,6 @@ mkdir -p strict
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
     ) \
     || exit
 
@@ -24,7 +23,6 @@ mkdir -p egads
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
     ) \
     || exit
 
@@ -36,7 +34,6 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=icc \
-    FC=ifort \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
     LIBS=-lmpi \
     ) \
@@ -50,7 +47,6 @@ mkdir -p parmetis
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=icc \
-    FC=ifort \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
     LIBS=-lmpi \
     ) \

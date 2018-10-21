@@ -15,7 +15,6 @@ mkdir -p strict
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
     ) \
     || exit
 
@@ -26,7 +25,6 @@ mkdir -p egads
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran \
     ) \
     || exit
 
@@ -38,7 +36,6 @@ mkdir -p parmetis
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -ftrapuv' \
     ) \
     || exit
@@ -51,7 +48,6 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    FC=mpif90 \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
     ) \
     || exit
@@ -61,7 +57,6 @@ mkdir -p profile
     ../configure \
     --prefix=`pwd` \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -pg' \
-    FC=gfortran \
     ) \
     || exit
 
