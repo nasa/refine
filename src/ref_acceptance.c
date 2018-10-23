@@ -80,11 +80,11 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       REF_DBL c = 1.0;
       REF_DBL nu = 0.01;
       REF_DBL scale = -1;
-      REF_DBL offset = 1;x
-      f = (1.0 - exp(-a*(1.0 - x)/nu)) / (1.0 - exp(-a/nu));
-      g = (1.0 - exp(-b*(1.0 - y)/nu)) / (1.0 - exp(-b/nu));
-      h = (1.0 - exp(-c*(1.0 - z)/nu)) / (1.0 - exp(-c/nu));
-      scalar[node] = scale*f*g*h+offset;
+      REF_DBL offset = 1;
+      x f = (1.0 - exp(-a * (1.0 - x) / nu)) / (1.0 - exp(-a / nu));
+      g = (1.0 - exp(-b * (1.0 - y) / nu)) / (1.0 - exp(-b / nu));
+      h = (1.0 - exp(-c * (1.0 - z) / nu)) / (1.0 - exp(-c / nu));
+      scalar[node] = scale * f * g * h + offset;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
