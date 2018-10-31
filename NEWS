@@ -1,4 +1,5 @@
 
+- added non-parallel .su2 export
 - extracted ref_recon from ref_metric
 - ref_metric_test --fixed-point metric from series of solb
 
