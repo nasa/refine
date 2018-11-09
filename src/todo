@@ -1,7 +1,4 @@
 
-.SU2 same convections with VTK see here page 9
-https://www.vtk.org/wp-content/uploads/2015/04/file-formats.pdf
-
 prevent negative min dot
 
 update best practice multiscale in docs: grad, kexact, parallel

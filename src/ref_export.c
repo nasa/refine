@@ -1070,6 +1070,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
 
   fprintf(file, "NELEM= %d\n", ntet + npyr + npri + nhex);
 
+  /* uses VTK windings */
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -1079,9 +1080,11 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
           break;
         case 5:
           fprintf(file, "14");
+          VTK_PYRAMID_ORDER(nodes);
           break;
         case 6:
           fprintf(file, "13");
+          VTK_WEDGE_ORDER(nodes);
           break;
         case 8:
           fprintf(file, "12");
@@ -1118,7 +1121,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
       }
     }
 
-    fprintf(file, "MARKER_TAG= faceid%d\n", faceid);
+    fprintf(file, "MARKER_TAG= face%d\n", faceid);
     fprintf(file, "MARKER_ELEMS= %d\n", ntri + nqua);
 
     ref_cell = ref_grid_tri(ref_grid);
