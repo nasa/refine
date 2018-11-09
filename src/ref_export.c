@@ -77,7 +77,7 @@
 5-+-2| VTK
  \3-\0
 */
-#define VTK_WEDGE_ORDER(vtk_nodes) \
+#define VTK_WEDGE_ORDER(vtk_nodes)   \
   {                                  \
     REF_INT ugrid_nodes[6];          \
     ugrid_nodes[0] = (vtk_nodes)[0]; \
