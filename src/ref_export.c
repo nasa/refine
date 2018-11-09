@@ -70,6 +70,31 @@
   }
 
 /*
+ /3-/0
+5-+-2| UGRID
+ \4-\1
+ /4-/1
+5-+-2| VTK
+ \3-\0
+*/
+#define VTK_WEDGE_ORDER(vtk_nodes) \
+  {                                  \
+    REF_INT ugrid_nodes[6];          \
+    ugrid_nodes[0] = (vtk_nodes)[0]; \
+    ugrid_nodes[1] = (vtk_nodes)[1]; \
+    ugrid_nodes[2] = (vtk_nodes)[2]; \
+    ugrid_nodes[3] = (vtk_nodes)[3]; \
+    ugrid_nodes[4] = (vtk_nodes)[4]; \
+    ugrid_nodes[5] = (vtk_nodes)[5]; \
+    (vtk_nodes)[0] = ugrid_nodes[1]; \
+    (vtk_nodes)[1] = ugrid_nodes[0]; \
+    (vtk_nodes)[2] = ugrid_nodes[2]; \
+    (vtk_nodes)[3] = ugrid_nodes[4]; \
+    (vtk_nodes)[4] = ugrid_nodes[3]; \
+    (vtk_nodes)[5] = ugrid_nodes[5]; \
+  }
+
+/*
   tecplot "brick"
       7---6
      /|  /|
@@ -226,6 +251,7 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       fprintf(file, " %d", node_per);
       if (5 == node_per) VTK_PYRAMID_ORDER(nodes);
+      if (6 == node_per) VTK_WEDGE_ORDER(nodes);
       for (node = 0; node < node_per; node++)
         fprintf(file, " %d", o2n[nodes[node]]);
       fprintf(file, "\n");
