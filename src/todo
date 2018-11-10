@@ -17,8 +17,6 @@ optimized 4th tet node placement
 integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
 
-throw when global node not found on import or export
-
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 tess
@@ -164,6 +162,8 @@ interp metric on curved surface
 surrogate surface reconstruction when EGADS not available
 
 ooooooooooooooooo
+
+throw when global node not found on import or export
 
 merge ref_split_edge_local_tets ref_split_edge_local_prism
   to ref_split_edge_local_cell
