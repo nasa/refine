@@ -5,9 +5,15 @@ update best practice multiscale in docs: grad, kexact, parallel
 
 acceptance test that checks interp error for functions
 
-store background in grid
-load balance interp
-allow interp asynchronously
+continuous metric interpolation
+ pair and store interp at startup
+ incremental interp for new
+ incremental interp for move
+ store new node assoc
+ seq cube test
+ store background in grid
+ load balance interp
+ allow interp asynchronously
 
 input means for all these parameters for optimizer setting
 smooth ordering
