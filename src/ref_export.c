@@ -1121,7 +1121,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
       }
     }
 
-    fprintf(file, "MARKER_TAG= face%d\n", faceid);
+    fprintf(file, "MARKER_TAG= %d\n", faceid);
     fprintf(file, "MARKER_ELEMS= %d\n", ntri + nqua);
 
     ref_cell = ref_grid_tri(ref_grid);
