@@ -290,7 +290,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_once(ref_grid)) {
     printf("quality floor %6.4f ratio %6.4f %6.2f\n", target_quality,
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
-    printf("max degree %d max age %d min dot %7.4f\n", max_degree, max_age,
+    printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
@@ -316,7 +316,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   REF_EDGE ref_edge;
   char is_ok = ' ';
   char not_ok = '*';
-  char quality_met, short_met, long_met;
+  char quality_met, short_met, long_met, normdev_met;
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -402,9 +402,13 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     if (min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
       short_met = not_ok;
     if (max_ratio > ref_grid_adapt(ref_grid, post_max_ratio)) long_met = not_ok;
+    if (min_dot < ref_grid_adapt(ref_grid, smooth_min_normdev))
+      normdev_met = not_ok;
 
-    printf("quality %c %6.4f ratio %c %6.4f %6.2f %c nnode %d\n", quality_met,
-           min_quality, short_met, min_ratio, max_ratio, long_met, nnode);
+    printf(
+        "quality %c %6.4f ratio %c %6.4f %6.2f %c normdev %6.4f %c nnode %d\n",
+        quality_met, min_quality, short_met, min_ratio, max_ratio, long_met,
+        min_dot, normdev_met, nnode);
   }
 
   return REF_SUCCESS;
