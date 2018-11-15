@@ -3,6 +3,8 @@ prevent negative min dot
 
 update best practice multiscale in docs: grad, kexact, parallel
 
+hybrid gradation
+
 acceptance test that checks interp error for functions
 
 continuous metric interpolation
