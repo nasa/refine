@@ -14,7 +14,6 @@ fi
 
 geomfile=ega.egads
 
-# ${two}/ref_geom_test ${geomfile}
 # ${two}/ref_geom_test ${geomfile} ega.meshb
 
 ${two}/ref_acceptance ega.meshb ega.metric 0.1
