@@ -170,7 +170,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
     if (!allowed) continue;
 
-    RSS(ref_collapse_edge_local_tets(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
         "colloc");
     if (!allowed) {
       ref_node_age(ref_node, node0)++;
@@ -360,7 +360,7 @@ REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
+REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
                                         REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -368,8 +368,9 @@ REF_STATUS ref_collapse_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
-  ref_cell = ref_grid_tet(ref_grid);
+  /* may be able to relax node0 local if geom constraint is o.k. */
 
+  ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
@@ -377,8 +378,23 @@ REF_STATUS ref_collapse_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
       }
     }
   }
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+        return REF_SUCCESS;
+      }
+    }
+  }
 
-  /* may be able to relax node0 local if geom constraint is o.k. */
+  /* for parallel surf if ever needed */
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+        return REF_SUCCESS;
+      }
+    }
+  }
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {

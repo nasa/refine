@@ -456,7 +456,7 @@ int main(int argc, char *argv[]) {
 
     node0 = 0;
     node1 = 1;
-    RSS(ref_collapse_edge_local_tets(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
         "col loc");
     REIS(REF_TRUE, allowed, "local collapse allowed?");
 
@@ -465,7 +465,7 @@ int main(int argc, char *argv[]) {
 
     node0 = 0;
     node1 = 1;
-    RSS(ref_collapse_edge_local_tets(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
         "col loc");
     REIS(REF_FALSE, allowed, "ghost collapse allowed?");
 
