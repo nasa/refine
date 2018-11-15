@@ -1022,7 +1022,11 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "set t");
   RSS(ref_geom_constrain(ref_grid, node), "constrain");
-  RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+  if (ref_grid_surf(ref_grid)) {
+    q = 1.0;
+  } else {
+    RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+  }
 
   if (verbose) printf("undo q %f\n", q);
 
