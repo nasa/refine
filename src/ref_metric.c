@@ -746,7 +746,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   /* limit aspect ratio via curvature */
   curvature_ratio = 1.0 / 20.0;
   /* limit normal direction to a factor of surface spacing */
-  norm_ratio = 5.0;
+  norm_ratio = 2.0;
 
   each_ref_node_valid_node(ref_node, node) {
     h = hmax;
