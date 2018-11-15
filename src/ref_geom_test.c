@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
   REF_INT tess_pos = REF_EMPTY;
   REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
+  REF_INT surf_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -62,6 +63,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--tetgen", &tetgen_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
       "arg search");
 
   if (face_pos != REF_EMPTY) {
@@ -188,6 +191,42 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "constrained params");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "constrained validation");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (surf_pos != REF_EMPTY) { /* egads to surf */
+    REF_GRID ref_grid;
+    REF_INT node;
+    double size;
+    REF_DBL params[3];
+
+    REIS(1, surf_pos, "required args: --surf input.egads output.meshb");
+    REIS(4, argc, "required args: --surf input.egads output.meshb");
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+    RSS(ref_geom_egads_diagonal(ref_grid_geom(ref_grid), &size), "bbox diag");
+    params[0] = 0.25 * size;
+    params[1] = 0.001 * size;
+    params[2] = 15.0;
+    printf("default params %f %f %f\n", params[0], params[1], params[2]);
+    RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
+
+    printf("verify topo\n");
+    RSS(ref_geom_verify_topo(ref_grid), "original params");
+    printf("verify param\n");
+    RSS(ref_geom_verify_param(ref_grid), "original params");
+    printf("constrain\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_geom_constrain(ref_grid, node), "original params");
+    }
+    printf("verify param\n");
+    RSS(ref_geom_verify_param(ref_grid), "original params");
+
+    RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
+
     RSS(ref_grid_free(ref_grid), "free");
   }
 
