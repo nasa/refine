@@ -55,6 +55,7 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   ref_grid_background(ref_grid) = NULL;
 
   ref_grid_twod(ref_grid) = REF_FALSE;
+  ref_grid_surf(ref_grid) = REF_FALSE;
 
   return REF_SUCCESS;
 }
@@ -97,6 +98,7 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
   ref_grid_background(ref_grid) = NULL;
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
+  ref_grid_surf(ref_grid) = ref_grid_surf(original);
 
   return REF_SUCCESS;
 }
@@ -161,6 +163,7 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf(" %p adapt\n", (void *)(ref_grid->adapt));
   printf(" %p background\n", (void *)(ref_grid->background));
   printf(" %d twod\n", (ref_grid->twod));
+  printf(" %d surf\n", (ref_grid->surf));
 
   return REF_SUCCESS;
 }

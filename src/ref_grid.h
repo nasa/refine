@@ -52,6 +52,7 @@ struct REF_GRID_STRUCT {
   REF_GRID background;
 
   REF_BOOL twod;
+  REF_BOOL surf;
 };
 
 REF_STATUS ref_grid_create(REF_GRID *ref_grid, REF_MPI ref_mpi);
@@ -81,6 +82,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_background(ref_grid) ((ref_grid)->background)
 
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
+#define ref_grid_surf(ref_grid) ((ref_grid)->surf)
 
 #define each_ref_grid_ref_cell(ref_grid, group, ref_cell)                     \
   for ((group) = 0, (ref_cell) = ref_grid_cell(ref_grid, group); (group) < 4; \
