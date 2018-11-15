@@ -25,6 +25,9 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
+swapping
+ prototype in surf/2D
+
 tess
  edge feature size i.e., om6 trailing edge
  test with OM6
@@ -88,11 +91,11 @@ egads recon
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 robustness and metric conformity
- increase required improvement to settle
  measure gradation and see if there is a connection to histogram convergence
  process complete test (early termination when no more likely progress)
  surface self intrection test
  smarter adapt parameters
+  increase required improvement to settle
   adjustable parameters
   tighten limits near convergence
   rigorous way to set these
