@@ -234,6 +234,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_geom_test_surf_met"),
         "al");
 
+    ref_grid_surf(ref_grid) = REF_TRUE;
     ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
     ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
     ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
