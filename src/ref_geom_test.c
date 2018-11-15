@@ -231,9 +231,14 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
 
+    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_geom_test_surf_met"),
+        "al");
+
     ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
     ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
     ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "show time");
 
     for (pass = 0; pass < passes; pass++) {
       if (ref_mpi_once(ref_mpi))
