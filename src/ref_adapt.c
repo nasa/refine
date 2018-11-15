@@ -130,7 +130,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_BOOL active;
   REF_EDGE ref_edge;
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
@@ -149,6 +149,14 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
       RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
       RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &volume), "vol");
+    } else if (ref_grid_surf(ref_grid)) {
+      REF_INT id;
+      REF_DBL area_sign, uv_area;
+      id = nodes[ref_cell_node_per(ref_cell)];
+      RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
+      RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area),
+          "uv area");
+      volume = area_sign * uv_area;
     } else {
       RSS(ref_node_tet_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
