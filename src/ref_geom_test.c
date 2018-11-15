@@ -40,6 +40,8 @@
 #include "ref_sort.h"
 #include "ref_validation.h"
 
+#include "ref_histogram.h"
+
 #include "ref_args.h"
 #include "ref_math.h"
 
@@ -199,6 +201,8 @@ int main(int argc, char *argv[]) {
     REF_INT node;
     double size;
     REF_DBL params[3];
+    REF_BOOL all_done;
+    int passes = 15, pass;
 
     REIS(1, surf_pos, "required args: --surf input.egads output.meshb");
     REIS(4, argc, "required args: --surf input.egads output.meshb");
@@ -224,6 +228,29 @@ int main(int argc, char *argv[]) {
     }
     printf("verify param\n");
     RSS(ref_geom_verify_param(ref_grid), "original params");
+
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+
+    ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
+    ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
+    ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
+
+    for (pass = 0; pass < passes; pass++) {
+      if (ref_mpi_once(ref_mpi))
+        printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+               ref_mpi_n(ref_grid_mpi(ref_grid)));
+      RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
+      if (all_done) break;
+      RSS(ref_adapt_pass(ref_grid), "pass");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
+      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+      RSS(ref_validation_cell_volume(ref_grid), "vol");
+      RSS(ref_histogram_quality(ref_grid), "gram");
+      RSS(ref_histogram_ratio(ref_grid), "gram");
+      RSS(ref_grid_pack(ref_grid), "pack");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
+    }
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
 
