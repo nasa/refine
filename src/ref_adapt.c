@@ -152,6 +152,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     } else if (ref_grid_surf(ref_grid)) {
       REF_INT id;
       REF_DBL area_sign, uv_area;
+      RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
+          "qual");
       id = nodes[ref_cell_node_per(ref_cell)];
       RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
       RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area),
@@ -316,7 +318,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   char not_ok = '*';
   char quality_met, short_met, long_met;
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
@@ -328,6 +330,9 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
       RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
           "active twod tri");
       if (!active_twod) continue;
+      RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
+          "qual");
+    } else if (ref_grid_surf(ref_grid)) {
       RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
     } else {
