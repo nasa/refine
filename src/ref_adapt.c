@@ -116,7 +116,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL det, complexity;
   REF_DBL quality, min_quality;
-  REF_DBL dot, min_dot;
+  REF_DBL normdev, min_normdev;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
   REF_DBL target_quality, target_normdev;
@@ -221,17 +221,17 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_max(ref_mpi, &age, &max_age, REF_INT_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_age, 1, REF_INT_TYPE), "min");
 
-  min_dot = 2.0;
+  min_normdev = 2.0;
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
-      min_dot = MIN(min_dot, dot);
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+      min_normdev = MIN(min_normdev, normdev);
     }
   }
-  dot = min_dot;
-  RSS(ref_mpi_min(ref_mpi, &dot, &min_dot, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &min_dot, 1, REF_DBL_TYPE), "min");
+  normdev = min_normdev;
+  RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
 
   min_ratio = 1.0e100;
   max_ratio = -1.0e100;
@@ -260,7 +260,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
-  target_normdev = MAX(MIN(0.1, min_dot), 1.0e-3);
+  target_normdev = MAX(MIN(0.1, min_normdev), 1.0e-3);
   ref_adapt->split_normdev_absolute = target_normdev;
   ref_adapt->collapse_normdev_absolute = target_normdev;
   ref_adapt->smooth_min_normdev = target_normdev;
@@ -297,7 +297,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
            target_quality, target_normdev, ref_adapt->post_min_ratio,
            ref_adapt->post_max_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
-           min_dot);
+           min_normdev);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
            nnode, complexity, nodes_per_complexity, max_volume, min_volume);
     printf("ncell %10d\n", ncell);
@@ -313,7 +313,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_quality;
-  REF_DBL dot, min_dot;
+  REF_DBL normdev, min_normdev;
   REF_BOOL active_twod;
   REF_INT node, nnode;
   REF_DBL ratio, min_ratio, max_ratio;
@@ -360,17 +360,17 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
   if (ref_grid_twod(ref_grid)) nnode = nnode / 2;
 
-  min_dot = 2.0;
+  min_normdev = 2.0;
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
-      min_dot = MIN(min_dot, dot);
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+      min_normdev = MIN(min_normdev, normdev);
     }
   }
-  dot = min_dot;
-  RSS(ref_mpi_min(ref_mpi, &dot, &min_dot, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &min_dot, 1, REF_DBL_TYPE), "min");
+  normdev = min_normdev;
+  RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
 
   min_ratio = 1.0e100;
   max_ratio = -1.0e100;
@@ -409,13 +409,13 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     if (min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
       short_met = not_ok;
     if (max_ratio > ref_grid_adapt(ref_grid, post_max_ratio)) long_met = not_ok;
-    if (min_dot < ref_grid_adapt(ref_grid, smooth_min_normdev))
+    if (min_normdev < ref_grid_adapt(ref_grid, smooth_min_normdev))
       normdev_met = not_ok;
 
     printf(
         "quality %c %6.4f ratio %c %6.4f %6.2f %c normdev %6.4f %c nnode %d\n",
         quality_met, min_quality, short_met, min_ratio, max_ratio, long_met,
-        min_dot, normdev_met, nnode);
+        min_normdev, normdev_met, nnode);
   }
 
   return REF_SUCCESS;
