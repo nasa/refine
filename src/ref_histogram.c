@@ -423,7 +423,7 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
   REF_DBL quality;
   REF_BOOL active_twod;
 
-  if (ref_grid_twod(ref_grid)) {
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
@@ -435,6 +435,9 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
         RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
             "active twod tri");
         if (!active_twod) continue;
+        RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
+            "qual");
+      } else if (ref_grid_surf(ref_grid)) {
         RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
             "qual");
       } else {
