@@ -158,6 +158,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       RSS(ref_collapse_edge_cad_constrained(ref_grid, node0, node1, &allowed),
           "cad constrained");
       if (!allowed) continue;
+      RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed),
+          "normdev");
+      if (!allowed) continue;
     } else {
       RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
           "normal deviation");
@@ -596,6 +599,8 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
       new_nodes[node] = nodes[node];
       if (node1 == new_nodes[node]) new_nodes[node] = node0;
     }
+    new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
+
     /* see if new config is below limit */
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
     if (new_dev < ref_grid_adapt(ref_grid, collapse_normdev_absolute)) {
