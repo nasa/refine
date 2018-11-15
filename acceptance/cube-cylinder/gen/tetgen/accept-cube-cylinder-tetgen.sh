@@ -14,6 +14,6 @@ fi
 
 geomfile=../csm/cube-cylinder.egads
 
-ref_geom_test --tetgen ${geomfile} cube-cylinder.meshb 0.2 0.01 15.0
+${two}/ref_geom_test --tetgen ${geomfile} cube-cylinder.meshb 0.2 0.01 15.0
 
 
