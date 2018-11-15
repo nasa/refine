@@ -968,7 +968,11 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
         ref_geom_tattle(ref_geom, nodes[1]);
       });
 
-  RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
+  if (ref_grid_surf(ref_grid)) {
+    q_orig = 1.0;
+  } else {
+    RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
+  }
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
 
   if (verbose)
@@ -992,9 +996,15 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_ratio(ref_node, nodes[0], node, &r0), "get r0");
     RSS(ref_node_ratio(ref_node, nodes[1], node, &r1), "get r1");
-    RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
-    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-        "ratio");
+    if (ref_grid_surf(ref_grid)) {
+      q = 1.0;
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+    } else {
+      RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+      RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+    }
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
 
@@ -1044,7 +1054,11 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   RSB(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "get-id",
       ref_clump_around(ref_grid, node, "get-id.tec"));
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv_orig), "get uv_orig");
-  RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet_orig), "q tet");
+  if (ref_grid_surf(ref_grid)) {
+    qtet_orig = 1.0;
+  } else {
+    RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet_orig), "q tet");
+  }
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
 
@@ -1063,9 +1077,15 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
 
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
-    RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet), "q tet");
-    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-        "ratio");
+    if (ref_grid_surf(ref_grid)) {
+      qtet = 1.0;
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+    } else {
+      RSS(ref_smooth_tet_quality_around(ref_grid, node, &qtet), "q tet");
+      RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+    }
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
