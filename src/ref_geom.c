@@ -2764,11 +2764,12 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
           "face uv");
     }
     for (tri = 0; tri < tlen; tri++) {
+      /* triangle orientation flipped, per refine convention */
       REIS(EGADS_SUCCESS,
-           EG_localToGlobal(tess, face + 1, tris[0 + 3 * tri], &(nodes[0])),
+           EG_localToGlobal(tess, face + 1, tris[0 + 3 * tri], &(nodes[1])),
            "l2g0");
       REIS(EGADS_SUCCESS,
-           EG_localToGlobal(tess, face + 1, tris[1 + 3 * tri], &(nodes[1])),
+           EG_localToGlobal(tess, face + 1, tris[1 + 3 * tri], &(nodes[0])),
            "l2g1");
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, tris[2 + 3 * tri], &(nodes[2])),
