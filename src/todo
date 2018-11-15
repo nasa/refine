@@ -1,6 +1,4 @@
 
-prevent negative min dot
-
 update best practice multiscale in docs: grad, kexact, parallel
 
 hybrid gradation
@@ -28,12 +26,11 @@ integrate complexity more accurately (Josh)
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 tess
- allow surface tess modification without volume
+ edge feature size i.e., om6 trailing edge
+ test with OM6
  k-tree to drive split for grid size gradation of JSM
- add --tess acceptance test
  make curvature gradation more along surface and less in volume
   gradation on surface operator
- test with OM6
 
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
@@ -190,6 +187,12 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ tess
+  + allow surface tess modification without volume
+  + add --tess acceptance test
+
++ prevent negative min dot
 
 + get rid of AC_FC_WRAPPERS in configure.ac which defines FC_FUNC_
 
