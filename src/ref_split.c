@@ -45,6 +45,7 @@
 REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   REF_EDGE ref_edge;
   REF_DBL *ratio;
   REF_INT *edges, *order;
@@ -59,6 +60,12 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_SUBDIV ref_subdiv = NULL;
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
+
+  if (ref_grid_surf(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
 
   span_parts = ref_mpi_para(ref_grid_mpi(ref_grid));
 
@@ -89,8 +96,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   for (i = n - 1; i >= 0; i--) {
     edge = edges[order[i]];
 
-    RSS(ref_cell_has_side(ref_grid_tet(ref_grid),
-                          ref_edge_e2n(ref_edge, 0, edge),
+    RSS(ref_cell_has_side(ref_cell, ref_edge_e2n(ref_edge, 0, edge),
                           ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "has side");
     if (!allowed) continue;
