@@ -105,8 +105,8 @@ REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
 
 REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
   REF_INT node;
-  REF_DBL h0=0.1;
-  REF_DBL h=0.01;
+  REF_DBL h0 = 0.1;
+  REF_DBL h = 0.01;
   REF_DBL hh;
 
   each_ref_node_valid_node(ref_node, node) {
