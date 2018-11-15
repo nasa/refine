@@ -18,6 +18,9 @@ module load git # for git describe
 # module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
 # module load ESP/113
 
+module use --append /usr/local/pkgs-geolab/Modules/modulefiles
+module add geolab_64 AFLR3/current
+
 module load valgrind_3.13.0
 
 module list
@@ -192,6 +195,12 @@ LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
 time ./accept-3d-two-para.sh ${zoltan_dir} > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.accept-cube-cylinder-gen-aflr3
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/gen/aflr3
+time ./accept-cube-cylinder-aflr3.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
