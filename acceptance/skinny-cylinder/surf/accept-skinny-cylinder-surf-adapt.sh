@@ -14,4 +14,5 @@ fi
 
 geomfile=skinny-cylinder.egads
 
-ref_geom_test --surf ${geomfile} skinny-cylinder.meshb
+${two}/ref_geom_test --surf ${geomfile} skinny-cylinder.meshb
+
