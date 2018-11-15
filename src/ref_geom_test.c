@@ -45,6 +45,40 @@
 #include "ref_args.h"
 #include "ref_math.h"
 
+static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
+  REF_BOOL all_done;
+  int passes = 15, pass;
+
+  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+
+  ref_grid_surf(ref_grid) = REF_TRUE;
+  ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 5.0;
+  ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
+  ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
+  ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
+  RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+      "show time");
+
+  for (pass = 0; pass < passes; pass++) {
+    if (ref_grid_once(ref_grid))
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+             ref_mpi_n(ref_grid_mpi(ref_grid)));
+    RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
+    if (all_done) break;
+    RSS(ref_adapt_pass(ref_grid), "pass");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
+  }
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT recon_pos = REF_EMPTY;
@@ -137,16 +171,23 @@ int main(int argc, char *argv[]) {
     if (tess_pos != REF_EMPTY) {
       REIS(1, tess_pos,
            "required args: --tess input.egads output.meshb edge chord angle");
-      REIS(7, argc,
-           "required args: --tess input.egads output.meshb edge chord angle");
+      if (7 > argc) {
+        printf(
+            "required args: --tess input.egads output.meshb edge chord angle");
+        return REF_FAILURE;
+      }
       aflr_over_tetgen = REF_TRUE;
     }
 
     if (tetgen_pos != REF_EMPTY) {
       REIS(1, tetgen_pos,
            "required args: --tetgen input.egads output.meshb edge chord angle");
-      REIS(7, argc,
-           "required args: --tetgen input.egads output.meshb edge chord angle");
+      if (7 > argc) {
+        printf(
+            "required args: --tetgen input.egads output.meshb edge chord "
+            "angle");
+        return REF_FAILURE;
+      }
       aflr_over_tetgen = REF_FALSE;
     }
 
@@ -171,6 +212,10 @@ int main(int argc, char *argv[]) {
     printf("verify param\n");
     RSS(ref_geom_verify_param(ref_grid), "original params");
 
+    if (REF_EMPTY != surf_pos) {
+      RSS(ref_geom_surf_adapt(ref_grid), "adapt surface before volume");
+    }
+
     printf("generate volume\n");
     if (aflr_over_tetgen) {
       RSS(ref_geom_aflr_volume(ref_grid), "surface to volume ");
@@ -193,74 +238,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "constrained params");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "constrained validation");
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  if (surf_pos != REF_EMPTY) { /* egads to surf */
-    REF_GRID ref_grid;
-    REF_INT node;
-    double size;
-    REF_DBL params[3];
-    REF_BOOL all_done;
-    int passes = 15, pass;
-
-    REIS(1, surf_pos, "required args: --surf input.egads output.meshb");
-    REIS(4, argc, "required args: --surf input.egads output.meshb");
-
-    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
-    RSS(ref_geom_egads_diagonal(ref_grid_geom(ref_grid), &size), "bbox diag");
-    params[0] = 0.25 * size;
-    params[1] = 0.001 * size;
-    params[2] = 15.0;
-    printf("default params %f %f %f\n", params[0], params[1], params[2]);
-    RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
-    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
-
-    printf("verify topo\n");
-    RSS(ref_geom_verify_topo(ref_grid), "original params");
-    printf("verify param\n");
-    RSS(ref_geom_verify_param(ref_grid), "original params");
-    printf("constrain\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_geom_constrain(ref_grid, node), "original params");
-    }
-    printf("verify param\n");
-    RSS(ref_geom_verify_param(ref_grid), "original params");
-
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-
-    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_geom_test_surf_met"),
-        "al");
-
-    ref_grid_surf(ref_grid) = REF_TRUE;
-    ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 5.0;
-    ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
-    ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
-    ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
-    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
-        "show time");
-
-    for (pass = 0; pass < passes; pass++) {
-      if (ref_mpi_once(ref_mpi))
-        printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
-               ref_mpi_n(ref_grid_mpi(ref_grid)));
-      RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
-      if (all_done) break;
-      RSS(ref_adapt_pass(ref_grid), "pass");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
-      RSS(ref_validation_cell_volume(ref_grid), "vol");
-      RSS(ref_histogram_quality(ref_grid), "gram");
-      RSS(ref_histogram_ratio(ref_grid), "gram");
-      RSS(ref_grid_pack(ref_grid), "pack");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
-    }
-
-    RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
-
     RSS(ref_grid_free(ref_grid), "free");
   }
 

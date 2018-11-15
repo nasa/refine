@@ -12,9 +12,7 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-geomfile=skinny-cylinder.egads
-
-${two}/ref_geom_test --tetgen skinny-cylinder.egads skinny-cylinder.meshb \
-      1 0.1 15.0 \
+${two}/ref_geom_test --tetgen ../recon/onera-m6-sharp-te.egads om6-surf.meshb \
+      80 0.3 15 \
       --surf
 
