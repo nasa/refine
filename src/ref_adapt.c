@@ -119,7 +119,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_DBL dot, min_dot;
   REF_DBL volume, min_volume, max_volume;
   REF_BOOL active_twod;
-  REF_DBL target_quality;
+  REF_DBL target_quality, target_normdev;
   REF_INT cell_node;
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
@@ -260,6 +260,11 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
+  target_normdev = MAX(MIN(0.1, min_dot), 1.0e-3);
+  ref_adapt->split_normdev_absolute = target_normdev;
+  ref_adapt->collapse_normdev_absolute = target_normdev;
+  ref_adapt->smooth_min_normdev = target_normdev;
+
   target_quality = MAX(MIN(0.1, min_quality), 1.0e-3);
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
@@ -288,8 +293,9 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality floor %6.4f ratio %6.4f %6.2f\n", target_quality,
-           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
+    printf("quality lim %6.4f normdev lim %6.4f ratio %6.4f %6.2f\n",
+           target_quality, target_normdev, ref_adapt->post_min_ratio,
+           ref_adapt->post_max_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_dot);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
