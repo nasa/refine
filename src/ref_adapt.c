@@ -397,6 +397,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     quality_met = is_ok;
     short_met = is_ok;
     long_met = is_ok;
+    normdev_met = is_ok;
     if (min_quality < ref_grid_adapt(ref_grid, smooth_min_quality))
       quality_met = not_ok;
     if (min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
