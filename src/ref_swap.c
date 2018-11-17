@@ -226,15 +226,31 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
-				REF_INT node1, REF_BOOL *allowed) {
+REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                                REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell;
   REF_INT cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id0, id1;
+
   *allowed = REF_FALSE;
+
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
+
   if (0 == ncell) { /* away from boundary */
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+  REIS(2, ncell, "there should be zero or two triangles for manifold");
+
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  id0 = nodes[ref_cell_node_per(ref_cell)];
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes tri1");
+  id1 = nodes[ref_cell_node_per(ref_cell)];
+
+  if (id0 == id1) {
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }

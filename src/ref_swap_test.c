@@ -126,7 +126,7 @@ int main(void) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  { /* swap no face */
+  { /* swap no face allowed */
     REF_GRID ref_grid;
     REF_INT node0, node1;
     REF_BOOL allowed;
@@ -138,6 +138,60 @@ int main(void) {
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "no face");
 
     REIS(REF_TRUE, allowed, "yes");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  { /* swap same faceid allowed */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri0");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 3;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri1");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "no face");
+
+    REIS(REF_TRUE, allowed, "yes");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  { /* swap different faceid not allowed */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri0");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 3;
+    nodes[3] = 20;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri1");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "no face");
+
+    REIS(REF_FALSE, allowed, "yes");
 
     RSS(ref_grid_free(ref_grid), "free grid");
   }
