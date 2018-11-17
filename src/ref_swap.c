@@ -225,3 +225,19 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
+				REF_INT node1, REF_BOOL *allowed) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell;
+  REF_INT cell_to_swap[2];
+  *allowed = REF_FALSE;
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+  if (0 == ncell) { /* away from boundary */
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}

@@ -29,6 +29,10 @@ REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell);
 REF_STATUS ref_swap_remove_three_face_cell(REF_GRID ref_grid, REF_INT cell);
 REF_STATUS ref_swap_pass(REF_GRID ref_grid);
 
+REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
+				REF_INT node1, REF_BOOL *allowed);
+
+
 END_C_DECLORATION
 
 #endif /* REF_SWAP_H */

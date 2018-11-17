@@ -126,6 +126,22 @@ int main(void) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  { /* swap no face */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "no face");
+
+    REIS(REF_TRUE, allowed, "yes");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   return 0;
 }
