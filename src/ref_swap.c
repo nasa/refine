@@ -289,3 +289,31 @@ REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                            REF_BOOL *allowed) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT ncell;
+  REF_INT cell_to_swap[2];
+  REF_BOOL node0_support, node1_support;
+
+  RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
+  RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
+  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+
+  if (0 == ncell) { /* away from boundary */
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+  REIS(2, ncell, "there should be zero or two triangles for manifold");
+
+  return REF_SUCCESS;
+}
