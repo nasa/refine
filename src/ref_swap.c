@@ -288,3 +288,4 @@ REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
   return REF_SUCCESS;
 }
+
