@@ -226,6 +226,39 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+			   REF_INT *node2, REF_INT *node3) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell, cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  *node2 = REF_EMPTY;
+  *node3 = REF_EMPTY;
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+  REIS(2, ncell, "there should be two triangles for manifold");
+
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  if (node0 == nodes[0] && node1 == nodes[1]) *node2 = nodes[2];
+  if (node0 == nodes[1] && node1 == nodes[2]) *node2 = nodes[0];
+  if (node0 == nodes[2] && node1 == nodes[0]) *node2 = nodes[1];
+  if (node1 == nodes[0] && node0 == nodes[1]) *node3 = nodes[2];
+  if (node1 == nodes[1] && node0 == nodes[2]) *node3 = nodes[0];
+  if (node1 == nodes[2] && node0 == nodes[0]) *node3 = nodes[1];
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes tri0");
+  if (node0 == nodes[0] && node1 == nodes[1]) *node2 = nodes[2];
+  if (node0 == nodes[1] && node1 == nodes[2]) *node2 = nodes[0];
+  if (node0 == nodes[2] && node1 == nodes[0]) *node2 = nodes[1];
+  if (node1 == nodes[0] && node0 == nodes[1]) *node3 = nodes[2];
+  if (node1 == nodes[1] && node0 == nodes[2]) *node3 = nodes[0];
+  if (node1 == nodes[2] && node0 == nodes[0]) *node3 = nodes[1];
+
+  RUS(REF_EMPTY, *node2, "node2 not found");
+  RUS(REF_EMPTY, *node3, "node3 not found");
+
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);

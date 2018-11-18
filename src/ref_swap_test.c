@@ -236,6 +236,33 @@ int main(void) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  { /* swap nodes 23 */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_INT node2, node3;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri0");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 3;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri1");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "no others");
+    REIS(2, node2, "yes");
+    REIS(3, node3, "yes");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   return 0;
 }
