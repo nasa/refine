@@ -860,8 +860,8 @@ static REF_STATUS ref_gather_node_scalar_tec(REF_NODE ref_node, REF_INT ldim,
 
   chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
 
-  ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
-  ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
+  ref_malloc(local_xyzm, (3 + ldim + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (3 + ldim + 1) * chunk, REF_DBL);
 
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
@@ -878,26 +878,29 @@ static REF_STATUS ref_gather_node_scalar_tec(REF_NODE ref_node, REF_INT ldim,
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status &&
           ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+        local_xyzm[0 + (ldim + 4) * i] = ref_node_xyz(ref_node, 0, local);
+        local_xyzm[1 + (ldim + 4) * i] = ref_node_xyz(ref_node, 1, local);
+        local_xyzm[2 + (ldim + 4) * i] = ref_node_xyz(ref_node, 2, local);
         for (im = 0; im < ldim; im++)
-          local_xyzm[im + (ldim + 1) * i] = scalar[im + ldim * local];
-        local_xyzm[ldim + (ldim + 1) * i] = 1.0;
+          local_xyzm[3 + im + (ldim + 4) * i] = scalar[im + ldim * local];
+        local_xyzm[3 + ldim + (ldim + 4) * i] = 1.0;
       } else {
-        for (im = 0; im < (ldim + 1); im++)
-          local_xyzm[im + (ldim + 1) * i] = 0.0;
+        for (im = 0; im < (ldim + 4); im++)
+          local_xyzm[im + (ldim + 4) * i] = 0.0;
       }
     }
 
-    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
+    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 4) * n, REF_DBL_TYPE),
         "sum");
 
     if (ref_mpi_once(ref_mpi)) {
       for (i = 0; i < n; i++) {
-        if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
+        if (ABS(xyzm[3 + ldim + (ldim + 4) * i] - 1.0) > 0.1) {
           printf("error gather node %d %f\n", first + i,
-                 xyzm[ldim + (ldim + 1) * i]);
+                 xyzm[3 + ldim + (ldim + 4) * i]);
         }
-        for (im = 0; im < ldim; im++) {
-          fprintf(file, " %.15e", xyzm[im + (ldim + 1) * i]);
+        for (im = 0; im < ldim + 3; im++) {
+          fprintf(file, " %.15e", xyzm[im + (ldim + 4) * i]);
         }
         fprintf(file, "\n");
       }
@@ -1505,7 +1508,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scala
         printf("unable to open %s\n",filename);
       RNS(file, "unable to open file");
       fprintf(file, "title=\"tecplot refine gather\"\n");
-      fprintf(file,"variables =");
+      fprintf(file,"variables = \"x\" \"y\" \"z\"");
       if ( NULL != scalar_names ) {
         for (i=0;i<ldim;i++) fprintf(file, " \"%s\"",scalar_names[i]);
       } else {
