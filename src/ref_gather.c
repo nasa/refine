@@ -849,71 +849,6 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_scalar_tec(REF_NODE ref_node, REF_INT ldim,
-                                             REF_DBL *scalar, FILE *file) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT chunk;
-  REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
-  REF_STATUS status;
-
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
-
-  ref_malloc(local_xyzm, (3 + ldim + 1) * chunk, REF_DBL);
-  ref_malloc(xyzm, (3 + ldim + 1) * chunk, REF_DBL);
-
-  nnode_written = 0;
-  while (nnode_written < ref_node_n_global(ref_node)) {
-    first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
-
-    nnode_written += n;
-
-    for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
-
-    for (i = 0; i < n; i++) {
-      global = first + i;
-      status = ref_node_local(ref_node, global, &local);
-      RXS(status, REF_NOT_FOUND, "node local failed");
-      if (REF_SUCCESS == status &&
-          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
-        local_xyzm[0 + (ldim + 4) * i] = ref_node_xyz(ref_node, 0, local);
-        local_xyzm[1 + (ldim + 4) * i] = ref_node_xyz(ref_node, 1, local);
-        local_xyzm[2 + (ldim + 4) * i] = ref_node_xyz(ref_node, 2, local);
-        for (im = 0; im < ldim; im++)
-          local_xyzm[3 + im + (ldim + 4) * i] = scalar[im + ldim * local];
-        local_xyzm[3 + ldim + (ldim + 4) * i] = 1.0;
-      } else {
-        for (im = 0; im < (ldim + 4); im++)
-          local_xyzm[im + (ldim + 4) * i] = 0.0;
-      }
-    }
-
-    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 4) * n, REF_DBL_TYPE),
-        "sum");
-
-    if (ref_mpi_once(ref_mpi)) {
-      for (i = 0; i < n; i++) {
-        if (ABS(xyzm[3 + ldim + (ldim + 4) * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i,
-                 xyzm[3 + ldim + (ldim + 4) * i]);
-        }
-        for (im = 0; im < ldim + 3; im++) {
-          fprintf(file, " %.15e", xyzm[im + (ldim + 4) * i]);
-        }
-        fprintf(file, "\n");
-      }
-    }
-
-  }
-
-  ref_free(xyzm);
-  ref_free(local_xyzm);
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL faceid_insted_of_c2n,
                                   REF_BOOL always_id, REF_BOOL swap_endian,
@@ -1498,8 +1433,11 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
 
 REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
                                  const char **scalar_names, const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   FILE *file;
   REF_INT i;
+  REF_INT nnode, ncell, *l2c;
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1517,8 +1455,41 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scala
       fprintf(file, "\n");
   }
 
-  RSS(ref_gather_node_scalar_tec(ref_grid_node(ref_grid), ldim, scalar, file),
-      "gather tec nodes");
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  if (nnode>0&&ncell>0){
+    if (ref_grid_once(ref_grid)) {
+      fprintf(file,
+              "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
+              "zonetype=%s\n",
+              nnode, ncell, "point", "fetriangle");
+    }
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+        "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
+                            file),
+        "t");
+  }
+  ref_free(l2c);
+
+  ref_cell = ref_grid_tet(ref_grid);
+  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  if (nnode>0&&ncell>0){
+    if (ref_grid_once(ref_grid)) {
+      fprintf(file,
+              "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
+              "zonetype=%s\n",
+              nnode, ncell, "point", "fetetrahedron");
+    }
+    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+        "nodes");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
+                            file),
+        "t");
+  }
+  ref_free(l2c);
 
   return REF_SUCCESS;
 }
