@@ -65,6 +65,10 @@ REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
 REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
                             REF_INT *ngeom);
 
+REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
+                                 const char **scalar_names, const char *filename);
+
+
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */

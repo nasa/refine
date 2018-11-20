@@ -849,6 +849,68 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_node_scalar_tec(REF_NODE ref_node, REF_INT ldim,
+                                             REF_DBL *scalar, FILE *file) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT chunk;
+  REF_DBL *local_xyzm, *xyzm;
+  REF_INT nnode_written, first, n, i, im;
+  REF_INT global, local;
+  REF_STATUS status;
+
+  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+
+  ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
+  ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
+
+  nnode_written = 0;
+  while (nnode_written < ref_node_n_global(ref_node)) {
+    first = nnode_written;
+    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+
+    nnode_written += n;
+
+    for (i = 0; i < (ldim + 1) * chunk; i++) local_xyzm[i] = 0.0;
+
+    for (i = 0; i < n; i++) {
+      global = first + i;
+      status = ref_node_local(ref_node, global, &local);
+      RXS(status, REF_NOT_FOUND, "node local failed");
+      if (REF_SUCCESS == status &&
+          ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
+        for (im = 0; im < ldim; im++)
+          local_xyzm[im + (ldim + 1) * i] = scalar[im + ldim * local];
+        local_xyzm[ldim + (ldim + 1) * i] = 1.0;
+      } else {
+        for (im = 0; im < (ldim + 1); im++)
+          local_xyzm[im + (ldim + 1) * i] = 0.0;
+      }
+    }
+
+    RSS(ref_mpi_sum(ref_mpi, local_xyzm, xyzm, (ldim + 1) * n, REF_DBL_TYPE),
+        "sum");
+
+    if (ref_mpi_once(ref_mpi)) {
+      for (i = 0; i < n; i++) {
+        if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
+          printf("error gather node %d %f\n", first + i,
+                 xyzm[ldim + (ldim + 1) * i]);
+        }
+        for (im = 0; im < ldim; im++) {
+          fprintf(file, " %.15e", xyzm[im + (ldim + 1) * i]);
+        }
+        fprintf(file, "\n");
+      }
+    }
+
+  }
+
+  ref_free(xyzm);
+  ref_free(local_xyzm);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL faceid_insted_of_c2n,
                                   REF_BOOL always_id, REF_BOOL swap_endian,
@@ -1430,3 +1492,32 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
+                                 const char **scalar_names, const char *filename) {
+  FILE *file;
+  REF_INT i;
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+      if (NULL == (void *)file)
+        printf("unable to open %s\n",filename);
+      RNS(file, "unable to open file");
+      fprintf(file, "title=\"tecplot refine gather\"\n");
+      fprintf(file,"variables =");
+      if ( NULL != scalar_names ) {
+        for (i=0;i<ldim;i++) fprintf(file, " \"%s\"",scalar_names[i]);
+      } else {
+        for (i=0;i<ldim;i++) fprintf(file, " \"V%d\"",i+1);
+      }
+      fprintf(file, "\n");
+  }
+
+  RSS(ref_gather_node_scalar_tec(ref_grid_node(ref_grid), ldim, scalar, file),
+      "gather tec nodes");
+
+  return REF_SUCCESS;
+}
+
+
