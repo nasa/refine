@@ -227,7 +227,7 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-			   REF_INT *node2, REF_INT *node3) {
+                           REF_INT *node2, REF_INT *node3) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell, cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -257,7 +257,6 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
   return REF_SUCCESS;
 }
-
 
 REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed) {

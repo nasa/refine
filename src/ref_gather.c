@@ -84,8 +84,7 @@ static REF_STATUS ref_gather_ncell_below_quality(REF_NODE ref_node,
 
 static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
                                            REF_INT *l2c, REF_INT ldim,
-                                           REF_DBL *scalar,
-                                           FILE *file) {
+                                           REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -139,15 +138,15 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++) {
       global = first + i;
       status =
-        ref_sort_search(total_cellnode, sorted_cellnode, global, &position);
+          ref_sort_search(total_cellnode, sorted_cellnode, global, &position);
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status) {
         local = sorted_local[position];
         local_xyzm[0 + dim * i] = ref_node_xyz(ref_node, 0, local);
         local_xyzm[1 + dim * i] = ref_node_xyz(ref_node, 1, local);
         local_xyzm[2 + dim * i] = ref_node_xyz(ref_node, 2, local);
-        for(id=0;id<ldim;id++) {
-          local_xyzm[3 + id + dim * i] = scalar[id+ldim*local];
+        for (id = 0; id < ldim; id++) {
+          local_xyzm[3 + id + dim * i] = scalar[id + ldim * local];
         }
         local_xyzm[3 + ldim + dim * i] = 1.0;
       }
@@ -169,7 +168,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
           printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__, __func__,
                  first + i, xyzm[3 + ldim + dim * i]);
         }
-        for(id=0;id<3+ldim;id++) {
+        for (id = 0; id < 3 + ldim; id++) {
           fprintf(file, " %.15e", xyzm[id + dim * i]);
         }
         fprintf(file, " \n");
@@ -414,19 +413,18 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
   }
 
-  ref_malloc(scalar, 2*ref_node_max(ref_node), REF_DBL);
+  ref_malloc(scalar, 2 * ref_node_max(ref_node), REF_DBL);
   each_ref_node_valid_node(ref_node, node) {
-    scalar[0+2*node] = (REF_DBL)ref_node_part(ref_node, node);
-    scalar[1+2*node] = (REF_DBL)ref_node_age(ref_node, node);
+    scalar[0 + 2 * node] = (REF_DBL)ref_node_part(ref_node, node);
+    scalar[1 + 2 * node] = (REF_DBL)ref_node_age(ref_node, node);
   }
   if (ref_geom_model_loaded(ref_geom)) {
-    each_ref_node_valid_node(ref_node, node) {
-      scalar[1+2*node] = 2.0;
-    }
+    each_ref_node_valid_node(ref_node, node) { scalar[1 + 2 * node] = 2.0; }
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
       each_ref_cell_cell_node(ref_cell, cell_node) {
-        scalar[1+2*nodes[cell_node]] = MIN(scalar[1+2*nodes[cell_node]], dot);
+        scalar[1 + 2 * nodes[cell_node]] =
+            MIN(scalar[1 + 2 * nodes[cell_node]], dot);
       }
     }
   }
@@ -508,10 +506,10 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
         nnode, ncell, "point", "fetriangle");
   }
 
-  ref_malloc(scalar, 2*ref_node_max(ref_node), REF_DBL);
+  ref_malloc(scalar, 2 * ref_node_max(ref_node), REF_DBL);
   each_ref_node_valid_node(ref_node, node) {
-    scalar[0+2*node] = (REF_DBL)ref_node_part(ref_node, node);
-    scalar[1+2*node] = (REF_DBL)ref_node_age(ref_node, node);
+    scalar[0 + 2 * node] = (REF_DBL)ref_node_part(ref_node, node);
+    scalar[1 + 2 * node] = (REF_DBL)ref_node_age(ref_node, node);
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 2, scalar, file), "nodes");
@@ -1431,8 +1429,9 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
-                                 const char **scalar_names, const char *filename) {
+REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
+                                 REF_DBL *scalar, const char **scalar_names,
+                                 const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   FILE *file;
@@ -1442,24 +1441,23 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scala
   file = NULL;
   if (ref_grid_once(ref_grid)) {
     file = fopen(filename, "w");
-      if (NULL == (void *)file)
-        printf("unable to open %s\n",filename);
-      RNS(file, "unable to open file");
-      fprintf(file, "title=\"tecplot refine gather\"\n");
-      fprintf(file,"variables = \"x\" \"y\" \"z\"");
-      if ( NULL != scalar_names ) {
-        for (i=0;i<ldim;i++) fprintf(file, " \"%s\"",scalar_names[i]);
-      } else {
-        for (i=0;i<ldim;i++) fprintf(file, " \"V%d\"",i+1);
-      }
-      fprintf(file, "\n");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine gather\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"");
+    if (NULL != scalar_names) {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"%s\"", scalar_names[i]);
+    } else {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"V%d\"", i + 1);
+    }
+    fprintf(file, "\n");
   }
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
-  if (nnode>0&&ncell>0){
+  if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
               "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
@@ -1468,15 +1466,13 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scala
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
         "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
-                            file),
-        "t");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "t");
   }
   ref_free(l2c);
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
-  if (nnode>0&&ncell>0){
+  if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
               "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
@@ -1485,13 +1481,9 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scala
     }
     RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
         "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
-                            file),
-        "t");
+    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "t");
   }
   ref_free(l2c);
 
   return REF_SUCCESS;
 }
-
-
