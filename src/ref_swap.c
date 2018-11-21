@@ -482,7 +482,7 @@ REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
+REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge, node0, node1;
