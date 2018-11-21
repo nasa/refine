@@ -47,16 +47,7 @@ REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                             REF_BOOL *allowed);
 
-/*
-ref_swap_same_faceid
-ref_swap_normdev
-ref_swap_ratio
-ref_swap_quality (volume/area checks)
-ref_swap_local_cell
-later:
-ref_collapse_edge_same_normal
-ref_collapse_edge_mixed
- */
+REF_STATUS ref_split_surf_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 
