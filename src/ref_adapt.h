@@ -35,17 +35,16 @@ struct REF_ADAPT_STRUCT {
   REF_DBL split_ratio;
   REF_DBL split_quality_absolute;
   REF_DBL split_quality_relative;
-  REF_DBL split_normdev_absolute;
 
   REF_INT collapse_per_pass;
   REF_DBL collapse_ratio;
   REF_DBL collapse_quality_absolute;
-  REF_DBL collapse_normdev_absolute;
 
   REF_INT smooth_per_pass;
   REF_DBL smooth_min_quality;
   REF_DBL smooth_min_normdev;
 
+  REF_DBL post_min_normdev;
   REF_DBL post_min_ratio;
   REF_DBL post_max_ratio;
 

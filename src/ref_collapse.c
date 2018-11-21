@@ -603,7 +603,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
     /* see if new config is below limit */
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
-    if (new_dev < ref_grid_adapt(ref_grid, collapse_normdev_absolute)) {
+    if (new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) {
       /* allow if improvement */
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
       if (new_dev < orig_dev) {

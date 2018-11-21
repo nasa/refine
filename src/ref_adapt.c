@@ -50,17 +50,15 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->split_ratio = sqrt(2.0) * overshoot;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
-  ref_adapt->split_normdev_absolute = 0.0;
 
   ref_adapt->collapse_per_pass = 1;
   ref_adapt->collapse_ratio = 1.0 / (sqrt(2.0) * overshoot);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
-  ref_adapt->collapse_normdev_absolute = 0.0;
 
   ref_adapt->smooth_per_pass = 1;
   ref_adapt->smooth_min_quality = 1.0e-3;
-  ref_adapt->smooth_min_normdev = 0.0;
 
+  ref_adapt->post_min_normdev = 0.0;
   ref_adapt->post_min_ratio = 1.0e-3;
   ref_adapt->post_max_ratio = 3.0;
 
@@ -81,17 +79,15 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
-  ref_adapt->split_normdev_absolute = original->split_normdev_absolute;
 
   ref_adapt->collapse_per_pass = original->collapse_per_pass;
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
-  ref_adapt->collapse_normdev_absolute = original->collapse_normdev_absolute;
 
   ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
-  ref_adapt->smooth_min_normdev = original->smooth_min_normdev;
 
+  ref_adapt->post_min_normdev = original->post_min_normdev;
   ref_adapt->post_min_ratio = original->post_min_ratio;
   ref_adapt->post_max_ratio = original->post_max_ratio;
 
@@ -261,9 +257,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
   target_normdev = MAX(MIN(0.1, min_normdev), 1.0e-3);
-  ref_adapt->split_normdev_absolute = target_normdev;
-  ref_adapt->collapse_normdev_absolute = target_normdev;
-  ref_adapt->smooth_min_normdev = target_normdev;
+  ref_adapt->post_min_normdev = target_normdev;
 
   target_quality = MAX(MIN(0.1, min_quality), 1.0e-3);
   ref_adapt->collapse_quality_absolute = target_quality;
@@ -293,9 +287,9 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
 
   if (ref_grid_once(ref_grid)) {
-    printf("quality lim %6.4f normdev lim %6.4f ratio %6.4f %6.2f\n",
-           target_quality, target_normdev, ref_adapt->post_min_ratio,
-           ref_adapt->post_max_ratio);
+    printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f\n",
+           target_quality, ref_adapt->post_min_normdev,
+           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_normdev);
     printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
@@ -409,7 +403,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     if (min_ratio < ref_grid_adapt(ref_grid, post_min_ratio))
       short_met = not_ok;
     if (max_ratio > ref_grid_adapt(ref_grid, post_max_ratio)) long_met = not_ok;
-    if (min_normdev < ref_grid_adapt(ref_grid, smooth_min_normdev))
+    if (min_normdev < ref_grid_adapt(ref_grid, post_min_normdev))
       normdev_met = not_ok;
 
     printf(

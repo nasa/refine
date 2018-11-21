@@ -634,9 +634,9 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
       if (ref_node_min_uv_area(ref_node) > uv_area0 ||
           ref_node_min_uv_area(ref_node) > uv_area1 ||
           (normdev0 <= normdev &&
-           normdev0 < ref_grid_adapt(ref_grid, split_normdev_absolute)) ||
+           normdev0 < ref_grid_adapt(ref_grid, post_min_normdev)) ||
           (normdev1 <= normdev &&
-           normdev1 < ref_grid_adapt(ref_grid, split_normdev_absolute))) {
+           normdev1 < ref_grid_adapt(ref_grid, post_min_normdev))) {
         *allowed = REF_FALSE;
         return REF_SUCCESS;
       }
