@@ -1475,7 +1475,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
-              "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
+              "zone t=\"tet\", nodes=%d, elements=%d, datapacking=%s, "
               "zonetype=%s\n",
               nnode, ncell, "point", "fetetrahedron");
     }
@@ -1484,6 +1484,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "t");
   }
   ref_free(l2c);
+
+  if (ref_grid_once(ref_grid)) fclose(file);
 
   return REF_SUCCESS;
 }
