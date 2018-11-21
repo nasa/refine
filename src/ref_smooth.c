@@ -1012,7 +1012,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
-        (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
+        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node))) {
       return REF_SUCCESS;
@@ -1097,7 +1097,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
-        (normdev > ref_grid_adapt(ref_grid, smooth_min_normdev) ||
+        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
         (uv[0] < uv_max[0]) && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {

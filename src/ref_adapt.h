@@ -42,7 +42,6 @@ struct REF_ADAPT_STRUCT {
 
   REF_INT smooth_per_pass;
   REF_DBL smooth_min_quality;
-  REF_DBL smooth_min_normdev;
 
   REF_DBL post_min_normdev;
   REF_DBL post_min_ratio;
