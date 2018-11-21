@@ -456,6 +456,34 @@ REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell, cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
+  REF_INT new_cell;
+
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+  REIS(2, ncell, "there should be two triangles for manifold");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
+  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
+
+  nodes[0] = node0;
+  nodes[1] = node3;
+  nodes[2] = node2;
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -493,7 +521,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    /* swap away */
+    RSS(ref_swap_tri_edge(ref_grid, node0, node1), "swap");
   }
 
   ref_edge_free(ref_edge);
