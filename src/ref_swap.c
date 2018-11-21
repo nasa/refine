@@ -359,12 +359,12 @@ REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   nodes[2] = node3;
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3), "nd3");
 
-  if (MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) {
+  if ((MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) ||
+      (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) &&
+       normdev3 > ref_grid_adapt(ref_grid, post_min_normdev))) {
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
-
-  RSS(REF_IMPLEMENT, "absolute limit");
 
   return REF_SUCCESS;
 }
