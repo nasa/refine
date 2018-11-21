@@ -388,3 +388,69 @@ REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                            REF_BOOL *allowed) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT ncell, cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
+  REF_BOOL node0_support, node1_support;
+  REF_DBL quality0, quality1, quality2, quality3;
+  REF_DBL sign_uv_area, uv_area2, uv_area3;
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+  REIS(2, ncell, "there should be two triangles for manifold");
+
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  RSS(ref_node_tri_quality(ref_node, nodes, &quality0), "qual");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes tri1");
+  RSS(ref_node_tri_quality(ref_node, nodes, &quality1), "qual");
+  nodes[0] = node0;
+  nodes[1] = node3;
+  nodes[2] = node2;
+  RSS(ref_node_tri_quality(ref_node, nodes, &quality2), "qual");
+  RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area2), "uv area");
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  RSS(ref_node_tri_quality(ref_node, nodes, &quality3), "qual");
+  RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
+
+  if (MIN(quality2, quality3) < MIN(quality0, quality1)) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
+  RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
+  if (node0_support && node0_support) {
+    RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
+                              &sign_uv_area),
+        "sign");
+    nodes[0] = node0;
+    nodes[1] = node3;
+    nodes[2] = node2;
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area2), "uv area");
+    nodes[0] = node1;
+    nodes[1] = node2;
+    nodes[2] = node3;
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
+    if (sign_uv_area * uv_area2 < ref_node_min_uv_area(ref_node) ||
+        sign_uv_area * uv_area3 < ref_node_min_uv_area(ref_node)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+  }
+
+  *allowed = REF_TRUE;
+  return REF_SUCCESS;
+}
