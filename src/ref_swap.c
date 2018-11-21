@@ -325,9 +325,13 @@ REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                             REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT ncell;
-  REF_INT cell_to_swap[2];
+  REF_INT ncell, cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
   REF_BOOL node0_support, node1_support;
+  REF_DBL normdev0, normdev1, normdev2, normdev3;
+
+  *allowed = REF_FALSE;
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
@@ -336,16 +340,31 @@ REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     return REF_SUCCESS;
   }
 
-  *allowed = REF_FALSE;
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
 
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
+  REIS(2, ncell, "there should be two triangles for manifold");
 
-  if (0 == ncell) { /* away from boundary */
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes tri1");
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev1), "nd1");
+  nodes[0] = node0;
+  nodes[1] = node3;
+  nodes[2] = node2;
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev2), "nd2");
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3), "nd3");
+
+  if (MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) {
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
-  REIS(2, ncell, "there should be zero or two triangles for manifold");
+
+  RSS(REF_IMPLEMENT, "absolute limit");
 
   return REF_SUCCESS;
 }
