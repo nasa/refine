@@ -1,7 +1,11 @@
 
-update best practice multiscale in docs: grad, kexact, parallel
-
 hybrid gradation
+
+swapping
+ prototype in surf/2D
+
+Add normdev to tri quality
+  differentiate
 
 acceptance test that checks interp error for functions
 
@@ -24,9 +28,6 @@ integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
-
-swapping
- prototype in surf/2D
 
 tess
  edge feature size i.e., om6 trailing edge
@@ -67,6 +68,8 @@ cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
 start geode support?
+
+update best practice multiscale in docs: grad, kexact, parallel
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
