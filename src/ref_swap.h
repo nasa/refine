@@ -42,6 +42,8 @@ REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                REF_BOOL *allowed);
 REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                             REF_BOOL *allowed);
+REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                          REF_BOOL *allowed);
 
 /*
 ref_swap_normdev

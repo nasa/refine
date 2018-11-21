@@ -368,3 +368,23 @@ REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                          REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node2, node3;
+  REF_DBL ratio;
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+  RSS(ref_node_ratio(ref_node, node2, node3, &ratio), "ratio");
+
+  if (ref_grid_adapt(ref_grid, post_min_ratio) < ratio &&
+      ratio < ref_grid_adapt(ref_grid, post_max_ratio)) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
