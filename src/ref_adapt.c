@@ -460,6 +460,19 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
   }
 
+  if (ref_grid_surf(ref_grid)) {
+    for (pass = 0; pass < 3; pass++) {
+      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
+      ref_gather_blocking_frame(ref_grid, "swap");
+      if (ngeom > 0)
+        RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");
+      if (ref_grid_adapt(ref_grid, watch_param))
+        RSS(ref_adapt_tattle(ref_grid), "tattle");
+      if (ref_grid_adapt(ref_grid, instrument))
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swp");
+    }
+  }
+
   for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
     RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
@@ -472,13 +485,16 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
   }
 
   if (ref_grid_surf(ref_grid)) {
-    RSS(ref_swap_surf_pass(ref_grid), "swap pass");
-    ref_gather_blocking_frame(ref_grid, "swap");
-    if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    if (ref_grid_adapt(ref_grid, instrument))
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swp");
+    for (pass = 0; pass < 3; pass++) {
+      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
+      ref_gather_blocking_frame(ref_grid, "swap");
+      if (ngeom > 0)
+        RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");
+      if (ref_grid_adapt(ref_grid, watch_param))
+        RSS(ref_adapt_tattle(ref_grid), "tattle");
+      if (ref_grid_adapt(ref_grid, instrument))
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swp");
+    }
   }
 
   return REF_SUCCESS;
