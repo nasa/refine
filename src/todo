@@ -1,13 +1,24 @@
 
 check that quality improves in all smooth methods
 
-hybrid gradation
-
-swapping
- prototype in surf/2D
-
 Add normdev to tri quality
   differentiate
+
+cavity operator in 2D/3D
+  add node and grid into REF_CAVITY_STRUCT
+  eliminate short edges and sliver deletion
+  cavity operator parallel
+    with an array of cavity made from para edge on geom
+    enlarge returns complete, same part request, or boundary
+    replace completed cavities
+    deactivate cavity constrained by boundaries
+    new part empty
+    apply cavity requests
+    max ghost
+    deactivate collisions
+    migrate
+
+hybrid gradation
 
 acceptance test that checks interp error for functions
 
@@ -121,20 +132,6 @@ robustness and metric conformity
   ideal tri/tet use log avg m?
   requeue neighbors with large changes? particulary quality drops
   minmax optimize uv
-  
- cavity operator in 2D/3D
-  add node and grid into REF_CAVITY_STRUCT
-  eliminate short edges and sliver deletion
-  cavity operator parallel
-   with an array of cavity made from para edge on geom
-   enlarge returns complete, same part request, or boundary
-   replace completed cavities
-   deactivate cavity constrained by boundaries
-   new part empty
-   apply cavity requests
-   max ghost
-   deactivate collisions
-   migrate
 
 performance
  profile
@@ -195,6 +192,9 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ swapping
+  + prototype in surf/2D
 
 + tess
   + allow surface tess modification without volume
