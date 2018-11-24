@@ -8,6 +8,7 @@ tattle throw out out range
 ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
 
 Add normdev to tri quality
+  create triangle quality for smooth/swap
   differentiate
 
 cavity operator in 2D/3D
