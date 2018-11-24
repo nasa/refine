@@ -1161,15 +1161,16 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
 
-  /* smooth faces without geom*/
-  each_ref_node_valid_node(
-      ref_node, node) if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-    RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
-    if (!allowed) {
-      ref_node_age(ref_node, node)++;
-      continue;
+  /* smooth faces without geom */
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
+      RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+      if (!allowed) {
+	ref_node_age(ref_node, node)++;
+	continue;
+      }
+      RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
     }
-    RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
   }
 
   /* smooth interior */
