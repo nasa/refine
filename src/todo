@@ -1,6 +1,12 @@
 
 check that quality improves in all smooth methods
 
+check that post conditions are implemented completely
+
+tattle throw out out range
+
+ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
+
 Add normdev to tri quality
   differentiate
 
