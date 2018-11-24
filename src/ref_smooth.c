@@ -878,30 +878,6 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_local_tet_about(REF_GRID ref_grid,
-                                             REF_INT about_node,
-                                             REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT item, cell, node;
-
-  *allowed = REF_FALSE;
-
-  ref_cell = ref_grid_tet(ref_grid);
-
-  each_ref_cell_having_node(ref_cell, about_node, item, cell) {
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
-          ref_node_part(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
-        return REF_SUCCESS;
-      }
-    }
-  }
-  *allowed = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1130,7 +1106,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
     if (geom_node) continue;
     /* next to ghost node, can't move */
-    RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
+                                    &allowed),
+        "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
       continue;
@@ -1149,7 +1127,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "node check");
     if (geom_edge) continue;
     /* next to ghost node, can't move */
-    RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
+                                    &allowed),
+        "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
       continue;
@@ -1164,7 +1144,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
     if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-      RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+      RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
+                                      &allowed),
+          "para");
       if (!allowed) {
         ref_node_age(ref_node, node)++;
         continue;
@@ -1175,7 +1157,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
 
   /* smooth interior */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
+                                    &allowed),
+        "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
       continue;
@@ -1201,7 +1185,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
       if (quality < min_quality) {
         each_ref_cell_cell_node(ref_grid_tet(ref_grid), cell_node) {
           node = nodes[cell_node];
-          RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+          RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node,
+                                          node, &allowed),
+              "para");
           if (!allowed) {
             ref_node_age(ref_node, node)++;
             continue;
@@ -1224,7 +1210,9 @@ REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL allowed, interior;
 
-  RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+  RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
+                                  &allowed),
+      "para");
   if (!allowed) {
     ref_node_age(ref_node, node)++;
     return REF_SUCCESS;
@@ -1512,7 +1500,9 @@ REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL complete = REF_FALSE;
   REF_INT step;
 
-  RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
+  RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid),
+                                  ref_grid_node(ref_grid), node, &allowed),
+      "para");
   if (!allowed) return REF_SUCCESS;
 
   interior = ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
