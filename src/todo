@@ -1,15 +1,12 @@
 
 check that quality improves in all smooth methods
-
-check that post conditions are implemented completely
-
-tattle throw out out range
-
-ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
-
 Add normdev to tri quality
   create triangle quality for smooth/swap
   differentiate
+
+check that post conditions are implemented completely for all ops
+  ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
+  tattle throw out out range
 
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
