@@ -1094,10 +1094,17 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
 }
 
 REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
+  REF_CELL ref_cell;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, interior;
+
+  if (ref_grid_surf(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
 
   /* smooth edges first if we have geom */
   each_ref_geom_edge(ref_geom, geom) {
@@ -1106,8 +1113,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
     if (geom_node) continue;
     /* next to ghost node, can't move */
-    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
-                                    &allowed),
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
@@ -1127,8 +1133,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "node check");
     if (geom_edge) continue;
     /* next to ghost node, can't move */
-    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
-                                    &allowed),
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
@@ -1144,8 +1149,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
     if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-      RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
-                                      &allowed),
+      RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
           "para");
       if (!allowed) {
         ref_node_age(ref_node, node)++;
@@ -1157,8 +1161,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
 
   /* smooth interior */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node, node,
-                                    &allowed),
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
@@ -1176,17 +1179,16 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov int");
 
-  /* smooth bad ones */
-  {
+  /* smooth low quality tets */
+  if (!ref_grid_surf(ref_grid)) {
     REF_DBL quality, min_quality = 0.10;
     REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-    each_ref_cell_valid_cell_with_nodes(ref_grid_tet(ref_grid), cell, nodes) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
       if (quality < min_quality) {
-        each_ref_cell_cell_node(ref_grid_tet(ref_grid), cell_node) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
           node = nodes[cell_node];
-          RSS(ref_smooth_local_cell_about(ref_grid_tet(ref_grid), ref_node,
-                                          node, &allowed),
+          RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
               "para");
           if (!allowed) {
             ref_node_age(ref_node, node)++;
