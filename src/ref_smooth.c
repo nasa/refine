@@ -1142,7 +1142,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
 
-  /* smooth faces if we have geom skip edges*/
+  /* smooth faces if we have geom, but skip edges*/
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     /* don't move geom nodes */

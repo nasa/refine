@@ -8,6 +8,8 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
+ref_smooth_local_tet_about -> ref_smooth_local_cell_about
+
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
   eliminate short edges and sliver deletion
