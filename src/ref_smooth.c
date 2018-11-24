@@ -654,7 +654,7 @@ static REF_STATUS ref_smooth_local_cell_about(REF_CELL ref_cell,
 
   each_ref_cell_having_node(ref_cell, about_node, item, cell) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+      if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
         return REF_SUCCESS;
       }
     }
