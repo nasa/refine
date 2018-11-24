@@ -1,9 +1,4 @@
 
-check that quality improves in all smooth methods
-Add normdev to tri quality
-  create triangle quality for smooth/swap
-  differentiate
-
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
@@ -198,6 +193,9 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ add normdev to tri quality for smooth/swap
+  + check that quality improves in all smooth methods
 
 + swapping
   + prototype in surf/2D
