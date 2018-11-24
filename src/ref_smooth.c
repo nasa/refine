@@ -644,21 +644,17 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_smooth_local_pris_about(REF_GRID ref_grid,
+static REF_STATUS ref_smooth_local_cell_about(REF_CELL ref_cell,
+                                              REF_NODE ref_node,
                                               REF_INT about_node,
                                               REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
   REF_INT item, cell, node;
 
   *allowed = REF_FALSE;
 
-  ref_cell = ref_grid_pri(ref_grid);
-
   each_ref_cell_having_node(ref_cell, about_node, item, cell) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
-          ref_node_part(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+      if (ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
         return REF_SUCCESS;
       }
     }
@@ -681,7 +677,9 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
     allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
     if (!allowed) continue;
 
-    RSS(ref_smooth_local_pris_about(ref_grid, node, &allowed), "para");
+    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
+                                    &allowed),
+        "para");
     if (!allowed) {
       ref_node_age(ref_node, node)++;
       continue;
@@ -1246,7 +1244,9 @@ REF_STATUS ref_smooth_threed_post_face_split(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL allowed, interior;
 
-  RSS(ref_smooth_local_pris_about(ref_grid, node, &allowed), "para");
+  RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
+                                  &allowed),
+      "para");
   if (!allowed) {
     ref_node_age(ref_node, node)++;
     return REF_SUCCESS;
