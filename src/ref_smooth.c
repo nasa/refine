@@ -1093,7 +1093,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if ((qtri >= qtri_orig) &&
+    if ((normdev * qtri >= normdev_orig * qtri_orig) &&
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
@@ -1166,8 +1166,8 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
       RSS(ref_smooth_local_tet_about(ref_grid, node, &allowed), "para");
       if (!allowed) {
-	ref_node_age(ref_node, node)++;
-	continue;
+        ref_node_age(ref_node, node)++;
+        continue;
       }
       RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
     }

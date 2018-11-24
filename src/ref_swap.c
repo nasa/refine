@@ -398,6 +398,7 @@ REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT node2, node3;
   REF_BOOL node0_support, node1_support;
   REF_DBL quality0, quality1, quality2, quality3;
+  REF_DBL normdev0, normdev1, normdev2, normdev3;
   REF_DBL sign_uv_area, uv_area2, uv_area3;
 
   *allowed = REF_FALSE;
@@ -409,21 +410,26 @@ REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REIS(2, ncell, "there should be two triangles for manifold");
 
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
   RSS(ref_node_tri_quality(ref_node, nodes, &quality0), "qual");
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes tri1");
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev1), "nd1");
   RSS(ref_node_tri_quality(ref_node, nodes, &quality1), "qual");
   nodes[0] = node0;
   nodes[1] = node3;
   nodes[2] = node2;
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev2), "nd2");
   RSS(ref_node_tri_quality(ref_node, nodes, &quality2), "qual");
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area2), "uv area");
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3), "nd3");
   RSS(ref_node_tri_quality(ref_node, nodes, &quality3), "qual");
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
 
-  if (MIN(quality2, quality3) < MIN(quality0, quality1)) {
+  if (MIN(normdev2 * quality2, normdev3 * quality3) <
+      MIN(normdev0 * quality0, normdev1 * quality1)) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
