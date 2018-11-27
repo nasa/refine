@@ -47,6 +47,7 @@ integrate complexity more accurately (Josh)
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 tess
+ report tri area and tet volume ranges
  edge feature size i.e., om6 trailing edge
  test with OM6
  k-tree to drive split for grid size gradation of JSM
@@ -55,7 +56,6 @@ tess
 
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
-see Adrien's email
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
@@ -230,6 +230,8 @@ mixed element in refine/two
 + parallel kexact Hessian reconstruction
 
 + split quality and edge allowed
+
++ tanh3, sinatan2, sinfun3 scalar fields
 
 + put parameters a place that can be controlled
  + split_ratio_limit
