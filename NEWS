@@ -1,4 +1,6 @@
 
+Tue, Nov 17, 2018 : Released Refine 1.8.21
+
 - ref_driver repartitions before first pass to improve partition "shape"
 - gather tecplot refactored for multiple scalars and T-infinity viz plugin
 - added tri-surface normal deviation constraint
