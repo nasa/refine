@@ -1,9 +1,12 @@
 
-make the normdev wieght an configure option in ref_geom
-
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
+
+swap in 3D, classic implementation
+  gem
+  equator
+  continuous
 
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
