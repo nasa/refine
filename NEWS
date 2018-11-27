@@ -1,7 +1,16 @@
 
+- ref_driver repartitions before first pass to improve partition "shape"
+- gather tecplot refactored for multiple scalars and T-infinity viz plugin
+- added tri-surface normal deviation constraint
+- added tri-surface normal deviation to smooth/swap tri quality
+- ref_geom_test tessellation can be adapted before volume generation (w/ --surf)
+- added non-parallel surface adaptation without volume (w/ swap)
 - added non-parallel .su2 export
 - extracted ref_recon from ref_metric
+- ref_interp_test --field interpolates solution
 - ref_metric_test --fixed-point metric from series of solb
+- configuration does not need fortran compiler, gfortran or ifort assumed
+- ref_metric_test --kexact parallel and can grow stencil for conditioning
 
 Tue, Sep 11, 2018 : Released Refine 1.8.20
 
