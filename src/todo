@@ -3,6 +3,19 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
+tess
+ report tri area and tet volume ranges
+ test with OM6
+ k-tree to drive split for grid size gradation of JSM
+ edge feature size i.e., om6 trailing edge
+ make curvature gradation more along surface and less in volume
+  gradation on surface operator
+
+layer insert
+ cavity recover triangle side
+ cavity recover tet face
+ remove tet walking from grid (ref_layer uses?) ref_interp one at time
+
 swap in 3D, classic implementation
   gem
   equator
@@ -54,14 +67,6 @@ integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
-
-tess
- report tri area and tet volume ranges
- edge feature size i.e., om6 trailing edge
- test with OM6
- k-tree to drive split for grid size gradation of JSM
- make curvature gradation more along surface and less in volume
-  gradation on surface operator
 
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
@@ -154,11 +159,6 @@ performance
   zero partition cost
  implemetnt INRIA space filling curve native partitioner
  
-layer insert
- cavity recover triangle side
- cavity recover tet face
- remove tet walking from grid (ref_layer uses?) ref_interp one at time
-
 viz
  ellipsoid metric or something cheaper
 
