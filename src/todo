@@ -31,6 +31,10 @@ hybrid gradation
 
 acceptance test that checks interp error for functions
 
+start geode support?
+PW isotropic spacing
+  http://pointclouds.org/documentation/tutorials/pcd_file_format.php
+
 continuous metric interpolation
  pair and store interp at startup
  incremental interp for new
@@ -88,8 +92,6 @@ get rid of aux and interp instead
 initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
-
-start geode support?
 
 update best practice multiscale in docs: grad, kexact, parallel
 
