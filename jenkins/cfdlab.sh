@@ -281,6 +281,12 @@ cd ${source_dir}/acceptance/om6/recon
 time ./accept-om6-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
+LOG=${root_dir}/log.accept-om6-surf
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/om6/surf
+time ./accept-om6-surf-adapt.sh ${egads_dir} > $LOG 2>&1
+trap - EXIT
+
 LOG=${root_dir}/log.accept-revolve-pencil-curve
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/revolve-pencil/curve
