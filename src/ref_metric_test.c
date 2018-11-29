@@ -206,18 +206,18 @@ int main(int argc, char *argv[]) {
   if (fixed_point_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *hess, *metric;
-    REF_INT p, n, timestep, node, im;
+    REF_INT p, n, timestep, timestep_increment, node, im;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_RECON_RECONSTRUCTION reconstruction;
     char solb[1024];
     REF_INT ldim;
     REIS(1, fixed_point_pos,
          "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
-         "p gradation complexity output-metric.solb");
-    if (9 > argc) {
+         "timestep_increment p gradation complexity output-metric.solb");
+    if (10 > argc) {
       printf(
           "required args: --fixed-point grid.meshb scalar-mach-root Ntimesteps "
-          "p gradation complexity output-metric.solb");
+          "timestep_increment p gradation complexity output-metric.solb");
       return REF_FAILURE;
     }
     hmin = -1.0;
@@ -231,9 +231,10 @@ int main(int argc, char *argv[]) {
     }
 
     n = atoi(argv[4]);
-    p = atoi(argv[5]);
-    gradation = atof(argv[6]);
-    complexity = atof(argv[7]);
+    timestep_increment = atoi(argv[5]);
+    p = atoi(argv[6]);
+    gradation = atof(argv[7]);
+    complexity = atof(argv[8]);
     reconstruction = REF_RECON_KEXACT;
 
     printf("N=%d\n", n);
@@ -251,7 +252,8 @@ int main(int argc, char *argv[]) {
                     0.0);
     ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-    for (timestep = 1; timestep <= n; timestep++) {
+    for (timestep = timestep_increment; timestep <= n;
+         timestep += timestep_increment) {
       snprintf(solb, 1024, "%s%d.solb", argv[3], timestep);
       printf("reading scalar %s\n", solb);
       RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
@@ -281,8 +283,8 @@ int main(int argc, char *argv[]) {
     ref_free(hess);
     ref_free(metric);
 
-    printf("writing metric %s\n", argv[8]);
-    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
+    printf("writing metric %s\n", argv[9]);
+    RSS(ref_gather_metric(ref_grid, argv[9]), "export curve limit metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
