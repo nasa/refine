@@ -75,6 +75,24 @@ static REF_STATUS ref_geom_tri_status(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_geom_tet_status(REF_GRID ref_grid) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL min_volume, max_volume;
+  REF_DBL volume;
+
+  min_volume = 1.0e100;
+  max_volume = -1.0e100;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
+    min_volume = MIN(min_volume, volume);
+    max_volume = MAX(max_volume, volume);
+  }
+  printf("volume %.5e %.5e\n", min_volume, max_volume);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
   REF_BOOL all_done;
   int passes = 15, pass;
@@ -261,6 +279,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test_vol_geom.tec"), "geom export");
+
+    RSS(ref_geom_tet_status(ref_grid), "original validation");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "original validation");
     printf("constrain\n");
