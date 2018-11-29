@@ -681,7 +681,7 @@ REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(metric, ref_grid), "curve");
   for (gradation = 0; gradation < 10; gradation++) {
-    RSS(ref_metric_gradation(metric, ref_grid, 1.2), "grad");
+    RSS(ref_metric_gradation(metric, ref_grid, 1.5), "grad");
   }
   RSS(ref_metric_to_node(metric, ref_node), "to node");
   ref_free(metric);
