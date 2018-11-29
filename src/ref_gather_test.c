@@ -50,7 +50,33 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  if (1 == argc) {
+  if (1 < argc) {
+    REF_GRID import_grid;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read");
+    RSS(ref_migrate_to_balance(import_grid), "balance");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "balance");
+
+    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
+    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.meshb"),
+        "gather");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "meshb");
+
+    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
+    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.b8.ugrid"),
+        "gather");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "b8.ugrid");
+
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+
+    return 0;
+  }
+
+  { /* gather prism lb8 */
     REF_GRID ref_grid;
 
     RSS(ref_fixture_pri_stack_grid(&ref_grid, ref_mpi), "set up tet");
@@ -63,7 +89,7 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_gather_test.lb8.ugrid"), "test clean up");
   }
 
-  if (1 == argc) {
+  { /* gather prism b8 */
     REF_GRID ref_grid;
 
     RSS(ref_fixture_pri_stack_grid(&ref_grid, ref_mpi), "set up tet");
@@ -76,7 +102,7 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_gather_test.b8.ugrid"), "test clean up");
   }
 
-  if (1 == argc) { /* export import .meshb tet with cad_model */
+  { /* export import .meshb tet with cad_model */
     REF_GRID export_grid, import_grid;
     REF_GEOM ref_geom;
     char file[] = "ref_gather_test.meshb";
@@ -102,28 +128,6 @@ int main(int argc, char *argv[]) {
       RSS(ref_grid_free(import_grid), "free");
       REIS(0, remove(file), "test clean up");
     }
-  }
-
-  if (1 < argc) {
-    REF_GRID import_grid;
-
-    ref_mpi_stopwatch_start(ref_mpi);
-    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read");
-    RSS(ref_migrate_to_balance(import_grid), "balance");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "balance");
-
-    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
-    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.meshb"),
-        "gather");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "meshb");
-
-    ref_mpi_stopwatch_start(ref_grid_mpi(import_grid));
-    RSS(ref_gather_by_extension(import_grid, "ref_gather_test.b8.ugrid"),
-        "gather");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "b8.ugrid");
-
-    RSS(ref_grid_free(import_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
