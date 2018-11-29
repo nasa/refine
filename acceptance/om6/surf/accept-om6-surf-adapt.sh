@@ -12,7 +12,10 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_geom_test --tetgen ../recon/onera-m6-sharp-te.egads om6-surf.meshb \
+${two}/ref_geom_test --tess ../recon/onera-m6-sharp-te.egads om6-init.meshb \
       80 0.3 15 \
       --surf
+
+${two}/ref_driver -i om6-init.meshb -g ../recon/onera-m6-sharp-te.egads \
+      -x om6-crv.meshb -r 2 -t
 
