@@ -548,61 +548,6 @@ REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_surface_gradation(REF_DBL *metric, REF_GRID ref_grid,
-                                        REF_DBL r) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_EDGE ref_edge;
-  REF_DBL *metric_orig;
-  REF_DBL *metric_limit;
-  REF_DBL ratio, lr;
-  REF_DBL l0[6], l1[6];
-  REF_DBL m0[6], m1[6];
-  REF_INT node, i;
-  REF_INT edge, node0, node1;
-  REF_BOOL have_side;
-
-  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-
-  ref_malloc(metric_orig, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  ref_malloc(metric_limit, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    for (i = 0; i < 6; i++) metric_orig[i + 6 * node] = metric[i + 6 * node];
-  }
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    for (i = 0; i < 6; i++)
-      metric_limit[i + 6 * node] = metric[i + 6 * node] * (1.0 / r / r);
-  }
-
-  each_ref_edge(ref_edge, edge) {
-    node0 = ref_edge_e2n(ref_edge, 0, edge);
-    node1 = ref_edge_e2n(ref_edge, 1, edge);
-    RSS(ref_cell_has_side(ref_cell, node0, node1, &have_side), "side");
-    if (!have_side) continue;
-    RSS(ref_node_ratio(ref_grid_node(ref_grid), node0, node1, &ratio), "ratio");
-    lr = pow(r, ratio);
-    for (i = 0; i < 6; i++)
-      l0[i] = metric_limit[i + 6 * node0] * (1.0 / lr / lr);
-    for (i = 0; i < 6; i++)
-      l1[i] = metric_limit[i + 6 * node1] * (1.0 / lr / lr);
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node0]), l1, m0), "m0");
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node1]), l0, m1), "m1");
-    RSS(ref_matrix_intersect(m0, &(metric[6 * node0]), &(metric[6 * node0])),
-        "m0");
-    RSS(ref_matrix_intersect(m1, &(metric[6 * node1]), &(metric[6 * node1])),
-        "m0");
-  }
-
-  ref_free(metric_limit);
-  ref_free(metric_orig);
-
-  ref_edge_free(ref_edge);
-
-  RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6), "update ghosts");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_sanitize_twod(ref_grid), "threed");
