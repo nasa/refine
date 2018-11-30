@@ -1,4 +1,13 @@
 
+hybrid gradation
+  extract local lp scaling
+  extract global complexity scaling
+  refactor ref_metric_lp_scale_hessian
+  rename metric_space_gradation
+  gradation at higher level (with switch)
+  implement mixed_space_gradation
+  circle analytical example
+
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
@@ -34,15 +43,6 @@ cavity operator in 2D/3D
     max ghost
     deactivate collisions
     migrate
-
-hybrid gradation
-  extract local lp scaling
-  extract global complexity scaling
-  refactor ref_metric_lp_scale_hessian
-  rename metric_space_gradation
-  gradation at higher level (with switch)
-  implement mixed_space_gradation
-  circle analytical example
 
 acceptance test that checks interp error for functions
 
