@@ -146,6 +146,11 @@ int main(int argc, char *argv[]) {
       printf(" -ugawg side metric\n");
       RSS(ref_metric_side_node(ref_grid_node(ref_grid)), "side");
     }
+    if (strcmp(argv[2], "circle") == 0) {
+      metric_recognized = REF_TRUE;
+      printf(" -ugawg circle metric\n");
+      RSS(ref_metric_circle_node(ref_grid_node(ref_grid)), "side");
+    }
     RAS(metric_recognized, "did not recognize metric field name");
     printf("%s metric exported\n", argv[4]);
     RSS(ref_gather_metric(ref_grid, argv[4]), "in");

@@ -43,6 +43,7 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node);
 REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node);
 REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version);
 REF_STATUS ref_metric_masabl_node(REF_NODE ref_node);
+REF_STATUS ref_metric_circle_node(REF_NODE ref_node);
 REF_STATUS ref_metric_twod_node(REF_NODE ref_node);
 
 REF_STATUS ref_metric_interpolate(REF_GRID ref_grid, REF_GRID parent);

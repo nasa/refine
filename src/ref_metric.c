@@ -244,6 +244,44 @@ REF_STATUS ref_metric_masabl_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
+  REF_INT node;
+  REF_DBL x, z, r, t;
+  REF_DBL hy, h1, h2;
+  REF_DBL d[12], m[6];
+
+  each_ref_node_valid_node(ref_node, node) {
+    x = ref_node_xyz(ref_node, 0, node);
+    z = ref_node_xyz(ref_node, 2, node);
+    r = sqrt(x * x + z * z);
+    t = atan2(z, x);
+    hy = 1.0;
+    h1 = 0.0005 + 1.5 * ABS(1.0 - r);
+    h2 = 0.1 * r + 1.5 * ABS(1.0 - r);
+    ref_matrix_eig(d, 0) = 1.0 / (h1 * h1);
+    ref_matrix_eig(d, 1) = 1.0 / (h2 * h2);
+    ref_matrix_eig(d, 2) = 1.0 / (hy * hy);
+    ref_matrix_vec(d, 0, 0) = cos(t);
+    ref_matrix_vec(d, 1, 0) = 0.0;
+    ref_matrix_vec(d, 2, 0) = sin(t);
+    ref_matrix_vec(d, 0, 1) = -sin(t);
+    ref_matrix_vec(d, 1, 1) = 0.0;
+    ref_matrix_vec(d, 2, 1) = cos(t);
+    ref_matrix_vec(d, 0, 2) = 0.0;
+    ref_matrix_vec(d, 1, 2) = 1.0;
+    ref_matrix_vec(d, 2, 2) = 0.0;
+    ref_matrix_form_m(d, m);
+    ref_node_metric(ref_node, 0, node) = m[0];
+    ref_node_metric(ref_node, 1, node) = m[1];
+    ref_node_metric(ref_node, 2, node) = m[2];
+    ref_node_metric(ref_node, 3, node) = m[3];
+    ref_node_metric(ref_node, 4, node) = m[4];
+    ref_node_metric(ref_node, 5, node) = m[5];
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
   REF_INT node;
 
