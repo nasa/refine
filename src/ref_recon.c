@@ -151,6 +151,7 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
 static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
                                             REF_DICT ref_dict, REF_BOOL twod,
                                             REF_DBL mid_plane,
+                                            REF_DBL *gradient,
                                             REF_DBL *hessian) {
   REF_DBL geom[9], ab[90];
   REF_DBL dx, dy, dz, dq;
@@ -249,6 +250,9 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   j = 9;
   for (im = 0; im < 6; im++) {
     hessian[im] = ab[im + 9 * j];
+  }
+  for (im = 0; im < 3; im++) {
+    gradient[im] = ab[im + 6 + 9 * j];
   }
   ref_free(r);
   ref_free(q);
@@ -462,7 +466,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node, im;
   REF_DICT ref_dict;
-  REF_DBL node_hessian[6];
+  REF_DBL node_gradient[3], node_hessian[6];
   REF_STATUS status;
   REF_DICT *one_layer;
   REF_BOOL report_large_eig = REF_FALSE;
@@ -490,7 +494,7 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
             "grow");
         status = ref_recon_kexact_with_aux(
             ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
-            ref_node_twod_mid_plane(ref_node), node_hessian);
+            ref_node_twod_mid_plane(ref_node), node_gradient, node_hessian);
         if (REF_DIV_ZERO == status) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
