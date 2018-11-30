@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
       w = field[3 + ldim * node];
       p = field[4 + ldim * node];
       temp = gamma * p / rho;
-      cust[node] = sqrt((u * u + v * v + w * w) / temp) - rho;
+      cust[node] = sqrt((u * u + v * v + w * w) / temp) - 0.2 * rho;
     }
 
     RSS(ref_gather_scalar(ref_grid, 1, cust, argv[4]), "export cust");
