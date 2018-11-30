@@ -507,13 +507,13 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
         }
       }
       RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
-      for (im = 0; im < 6; im++) {
-        hessian[im + 6 * node] = node_hessian[im];
-      }
       if (ref_grid_twod(ref_grid)) {
         node_hessian[1] = 0.0;
         node_hessian[3] = 0.0;
         node_hessian[4] = 0.0;
+      }
+      for (im = 0; im < 6; im++) {
+        hessian[im + 6 * node] = node_hessian[im];
       }
       RSS(ref_dict_free(ref_dict), "free ref_dict");
     }
