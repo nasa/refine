@@ -2,12 +2,12 @@
 hybrid gradation
   + rename metric_space_gradation
   + delete ref_metric_surface_gradation
+  circle analytical example
+  implement mixed_space_gradation
   extract local lp scaling
   extract global complexity scaling
   refactor ref_metric_lp_scale_hessian
   gradation at higher level (with switch)
-  implement mixed_space_gradation
-  circle analytical example
 
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
