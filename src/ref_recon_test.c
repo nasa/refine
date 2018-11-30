@@ -170,7 +170,77 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (!ref_mpi_para(ref_mpi)) { /* seq k-exact for small variation */
+  if (!ref_mpi_para(ref_mpi)) { /* seq k-exact gradient for small variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar, *gradient;
+    REF_DBL tol = -1.0;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(gradient, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      scalar[node] = 0.5 + 0.01 * x + 0.02 * y + 0.06 * z;
+    }
+    RSS(ref_recon_gradient(ref_grid, scalar, gradient, REF_RECON_KEXACT),
+        "k-exact hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(0.01, gradient[0 + 3 * node], tol, "g[0]");
+      RWDS(0.02, gradient[1 + 3 * node], tol, "g[1]");
+      RWDS(0.06, gradient[2 + 3 * node], tol, "g[2]");
+    }
+
+    ref_free(gradient);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* para file k-exact gradient for small variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *scalar, *gradient;
+    REF_DBL tol = -1.0;
+    char file[] = "ref_recon_test.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_export_by_extension(ref_grid, file), "export");
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "import");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(file), "test clean up");
+
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(gradient, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      scalar[node] = 0.5 + 0.01 * x + 0.02 * y + 0.06 * z;
+    }
+    RSS(ref_recon_gradient(ref_grid, scalar, gradient, REF_RECON_KEXACT),
+        "k-exact hess");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(0.01, gradient[0 + 3 * node], tol, "g[0]");
+      RWDS(0.02, gradient[1 + 3 * node], tol, "g[1]");
+      RWDS(0.06, gradient[2 + 3 * node], tol, "g[2]");
+    }
+
+    ref_free(gradient);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* seq k-exact hessian for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;
@@ -205,7 +275,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* para file k-exact for small variation */
+  { /* para file k-exact hessian for small variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INT node;

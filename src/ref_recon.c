@@ -460,8 +460,10 @@ static REF_STATUS ref_recon_grow_cloud_one_layer(REF_DICT ref_dict,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                                           REF_DBL *hessian) {
+static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
+                                                    REF_DBL *scalar,
+                                                    REF_DBL *gradient,
+                                                    REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node, im;
@@ -507,13 +509,23 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
         }
       }
       RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
-      if (ref_grid_twod(ref_grid)) {
-        node_hessian[1] = 0.0;
-        node_hessian[3] = 0.0;
-        node_hessian[4] = 0.0;
+      if (NULL != gradient) {
+        if (ref_grid_twod(ref_grid)) {
+          node_gradient[1] = 0.0;
+        }
+        for (im = 0; im < 3; im++) {
+          gradient[im + 3 * node] = node_gradient[im];
+        }
       }
-      for (im = 0; im < 6; im++) {
-        hessian[im + 6 * node] = node_hessian[im];
+      if (NULL != hessian) {
+        if (ref_grid_twod(ref_grid)) {
+          node_hessian[1] = 0.0;
+          node_hessian[3] = 0.0;
+          node_hessian[4] = 0.0;
+        }
+        for (im = 0; im < 6; im++) {
+          hessian[im + 6 * node] = node_hessian[im];
+        }
       }
       RSS(ref_dict_free(ref_dict), "free ref_dict");
     }
@@ -524,27 +536,32 @@ static REF_STATUS ref_recon_kexact_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   }
   ref_free(one_layer);
 
-  /* positive eignevalues to make symrecon positive definite */
-  each_ref_node_valid_node(ref_node, node) {
-    if (ref_node_owned(ref_node, node)) {
-      REF_DBL diag_system[12];
-      RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "eigen decomp");
-      ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
-      ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
-      ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
-      RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form hess");
-      if (report_large_eig) {
-        if (ref_matrix_eig(diag_system, 0) > 2.0e5) {
-          printf("n %d e %f\n", node, ref_matrix_eig(diag_system, 0));
-          printf("%f\n", ref_node_xyz(ref_node, 0, node));
-          printf("%f\n", ref_node_xyz(ref_node, 1, node));
-          printf("%f\n", ref_node_xyz(ref_node, 2, node));
+  if (NULL != gradient) {
+    RSS(ref_node_ghost_dbl(ref_node, gradient, 3), "update ghosts");
+  }
+
+  if (NULL != hessian) {
+    /* positive eignevalues to make symrecon positive definite */
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        REF_DBL diag_system[12];
+        RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "decomp");
+        ref_matrix_eig(diag_system, 0) = ABS(ref_matrix_eig(diag_system, 0));
+        ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
+        ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
+        RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form");
+        if (report_large_eig) {
+          if (ref_matrix_eig(diag_system, 0) > 2.0e5) {
+            printf("n %d e %f\n", node, ref_matrix_eig(diag_system, 0));
+            printf("%f\n", ref_node_xyz(ref_node, 0, node));
+            printf("%f\n", ref_node_xyz(ref_node, 1, node));
+            printf("%f\n", ref_node_xyz(ref_node, 2, node));
+          }
         }
       }
     }
+    RSS(ref_node_ghost_dbl(ref_node, hessian, 6), "update ghosts");
   }
-
-  RSS(ref_node_ghost_dbl(ref_node, hessian, 6), "update ghosts");
 
   return REF_SUCCESS;
 }
@@ -671,6 +688,10 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
     case REF_RECON_L2PROJECTION:
       RSS(ref_recon_l2_projection_grad(ref_grid, scalar, grad), "l2");
       break;
+    case REF_RECON_KEXACT:
+      RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, grad, NULL),
+          "k-exact");
+      break;
     default:
       THROW("reconstruction not available");
   }
@@ -686,7 +707,8 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
           "bound extrap");
       break;
     case REF_RECON_KEXACT:
-      RSS(ref_recon_kexact_hessian(ref_grid, scalar, hessian), "k-exact");
+      RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, NULL, hessian),
+          "k-exact");
       break;
     default:
       THROW("reconstruction not available");
