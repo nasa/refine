@@ -49,7 +49,8 @@ REF_STATUS ref_metric_interpolate(REF_GRID ref_grid, REF_GRID parent);
 REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
                                        REF_GRID parent);
 
-REF_STATUS ref_metric_gradation(REF_DBL *metric, REF_GRID ref_grid, REF_DBL r);
+REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric,
+					      REF_GRID ref_grid, REF_DBL r);
 REF_STATUS ref_metric_surface_gradation(REF_DBL *metric, REF_GRID ref_grid,
                                         REF_DBL r);
 

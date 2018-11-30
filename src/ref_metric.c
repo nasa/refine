@@ -485,7 +485,8 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_gradation(REF_DBL *metric, REF_GRID ref_grid, REF_DBL r) {
+REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric,
+					     REF_GRID ref_grid, REF_DBL r) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_DBL *metric_orig;
@@ -681,7 +682,7 @@ REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(metric, ref_grid), "curve");
   for (gradation = 0; gradation < 10; gradation++) {
-    RSS(ref_metric_gradation(metric, ref_grid, 1.5), "grad");
+    RSS(ref_metric_metric_space_gradation(metric, ref_grid, 1.5), "grad");
   }
   RSS(ref_metric_to_node(metric, ref_node), "to node");
   ref_free(metric);
@@ -703,7 +704,8 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   ref_malloc(curvature_metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(curvature_metric, ref_grid), "curve");
   for (gradation = 0; gradation < 5; gradation++) {
-    RSS(ref_metric_gradation(curvature_metric, ref_grid, 1.5), "grad");
+    RSS(ref_metric_metric_space_gradation(curvature_metric, ref_grid, 1.5),
+	"grad");
   }
 
   each_ref_node_valid_node(ref_node, node) {
@@ -1146,7 +1148,7 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
         metric[4 + 6 * node] = 0.0;
       }
     }
-    RSS(ref_metric_gradation(metric, ref_grid, gradation), "gradation");
+    RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation), "gradation");
     if (ref_grid_twod(ref_grid)) {
       each_ref_node_valid_node(ref_node, node) {
         metric[1 + 6 * node] = 0.0;

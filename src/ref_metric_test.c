@@ -853,7 +853,7 @@ int main(int argc, char *argv[]) {
     metric[5 + 6 * node] = 4.0;
 
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
-    RSS(ref_metric_gradation(metric, ref_grid, 1.1), "grad");
+    RSS(ref_metric_metric_space_gradation(metric, ref_grid, 1.1), "grad");
 
     node = 0;
     RWDS(1.0, metric[0 + 6 * node], tol, "m[0]");
