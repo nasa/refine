@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
   REF_INT complexity_pos = REF_EMPTY;
+  REF_INT gradation_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -98,6 +99,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--hmax", &hmax_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--complexity", &complexity_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--gradation", &gradation_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -405,6 +408,59 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
       printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (gradation_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL complexity, gradation;
+    REF_DBL *metric;
+    REF_INT npass = 10, pass;
+    char *gradation_type;
+    
+    REIS(1, gradation_pos,
+         "required args: --gradation grid.ext input-metric.solb output-metric.solb metric gradation");
+    REIS(7, argc,
+         "required args: --gradation grid.ext input-metric.solb output-metric.solb metric gradation");
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load grid in position 2");
+    if (ref_mpi_once(ref_mpi)) printf("reading metric %s\n", argv[3]);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
+        "unable to load metric in position 3");
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
+    gradation_type = argv[5];
+
+    printf("gradation type %s\n",gradation_type);
+    if (strcmp(gradation_type, "metric") == 0) {
+      gradation = atof(argv[6]);
+      if (ref_mpi_once(ref_mpi))
+	printf("metric-space gradation %e\n", gradation);
+      for (pass = 0; pass < npass; pass++) {
+	RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");
+	printf("pass %d complexity %.5e\n", pass, complexity);
+	RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+	    "metric_space");
+      }
+      RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");
+      printf("pass %d complexity %.5e\n", npass, complexity);
+    } else {
+      printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown gradation",
+             gradation_type);
+      return REF_NOT_FOUND;
+    }
+
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+
+    if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+      printf("writing metric %s\n", argv[4]);
+    RSS(ref_gather_metric(ref_grid, argv[4]), "export scaled metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
