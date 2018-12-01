@@ -419,7 +419,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL complexity, gradation;
     REF_DBL *metric;
-    REF_INT npass = 10, pass;
+    REF_INT npass = 20, pass;
     char *gradation_type;
 
     REIS(1, gradation_pos,
