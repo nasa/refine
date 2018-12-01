@@ -1,5 +1,5 @@
 
-hybrid gradation
+mixed gradation
   + rename metric_space_gradation
   + delete ref_metric_surface_gradation
   + circle analytical example

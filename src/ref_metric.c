@@ -1215,8 +1215,13 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
         metric[4 + 6 * node] = 0.0;
       }
     }
-    RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
-        "gradation");
+    if (gradation < 1.0) {
+      RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
+	  "gradation");
+    } else {
+      RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+	  "gradation");
+    }
     if (ref_grid_twod(ref_grid)) {
       each_ref_node_valid_node(ref_node, node) {
         metric[1 + 6 * node] = 0.0;
