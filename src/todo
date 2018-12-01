@@ -3,7 +3,7 @@ hybrid gradation
   + rename metric_space_gradation
   + delete ref_metric_surface_gradation
   + circle analytical example
-  implement mixed_space_gradation
+  + implement mixed_space_gradation
   extract local lp scaling
   extract global complexity scaling
   refactor ref_metric_lp_scale_hessian
