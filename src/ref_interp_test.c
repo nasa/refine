@@ -341,8 +341,8 @@ int main(int argc, char *argv[]) {
 
   if (REF_EMPTY != heat_pos) {
     REF_GRID ref_grid;
-    REF_DBL *field, *temp;
-    REF_INT ldim, node;
+    REF_DBL *field, *temp, *grad, *heat, *hits;
+    REF_INT ldim, node, faceid;
     REIS(1, heat_pos, "required args: --heat grid.ext solution.solb faceid\n");
     if (5 > argc) {
       printf("required args: --heat grid.ext solution.solb faceid\n");
@@ -353,6 +353,7 @@ int main(int argc, char *argv[]) {
         "part grid in position 2");
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
         "unable to load field in position 3");
+    faceid = atoi(argv[4]);
 
     ref_malloc(temp, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -363,6 +364,40 @@ int main(int argc, char *argv[]) {
       temp[node] = gamma * p / rho;
     }
 
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc_init(heat, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    ref_malloc_init(hits, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    RSS(ref_recon_gradient(ref_grid, temp, grad, REF_RECON_KEXACT), "grad");
+    {
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_CELL ref_cell = ref_grid_tri(ref_grid);
+      REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+      REF_DBL normal[3], dtdn;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
+          RSS(ref_node_tri_normal(ref_node, nodes, normal), "tri norm");
+          RSS(ref_math_normalize(normal), "zero normal tri");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            node = nodes[cell_node];
+            dtdn = ref_math_dot(&(grad[3 * node]), normal);
+            heat[node] += dtdn;
+            hits[node] += 1.0;
+          }
+        }
+      }
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        if (hits[node] > 0.5) {
+          heat[node] /= hits[node];
+          printf("%.15e %.15e %.15e %.15e\n", ref_node_xyz(ref_node, 0, node),
+                 ref_node_xyz(ref_node, 1, node),
+                 ref_node_xyz(ref_node, 2, node), heat[node]);
+        }
+      }
+    }
+
+    ref_free(hits);
+    ref_free(heat);
+    ref_free(grad);
     ref_free(temp);
     ref_free(field);
     RSS(ref_grid_free(ref_grid), "free");
