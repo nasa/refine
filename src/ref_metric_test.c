@@ -417,17 +417,21 @@ int main(int argc, char *argv[]) {
 
   if (gradation_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_DBL complexity, gradation;
+    REF_DBL complexity, gradation, t;
     REF_DBL *metric;
     REF_INT npass = 20, pass;
     char *gradation_type;
 
     REIS(1, gradation_pos,
          "required args: --gradation grid.ext input-metric.solb "
-         "output-metric.solb metric gradation");
-    REIS(7, argc,
-         "required args: --gradation grid.ext input-metric.solb "
-         "output-metric.solb metric gradation");
+         "output-metric.solb  {metric beta|mixed beta t}");
+
+    if (7 > argc) {
+      printf(
+          "required args: --gradation grid.ext input-metric.solb "
+          "output-metric.solb {metric beta|mixed beta t}");
+      return REF_FAILURE;
+    }
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load grid in position 2");
@@ -440,6 +444,9 @@ int main(int argc, char *argv[]) {
 
     printf("gradation type %s\n", gradation_type);
     if (strcmp(gradation_type, "metric") == 0) {
+      REIS(7, argc,
+           "required args: --gradation grid.ext input-metric.solb "
+           "output-metric.solb metric beta");
       gradation = atof(argv[6]);
       if (ref_mpi_once(ref_mpi))
         printf("metric-space gradation %e\n", gradation);
@@ -447,6 +454,22 @@ int main(int argc, char *argv[]) {
         RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");
         printf("pass %d complexity %.5e\n", pass, complexity);
         RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+            "metric_space");
+      }
+      RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");
+      printf("pass %d complexity %.5e\n", npass, complexity);
+    } else if (strcmp(gradation_type, "mixed") == 0) {
+      REIS(8, argc,
+           "required args: --gradation grid.ext input-metric.solb "
+           "output-metric.solb mixed beta t");
+      gradation = atof(argv[6]);
+      t = atof(argv[7]);
+      if (ref_mpi_once(ref_mpi))
+        printf("mixed-space gradation %e %e\n", gradation, t);
+      for (pass = 0; pass < npass; pass++) {
+        RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");
+        printf("pass %d complexity %.5e\n", pass, complexity);
+        RSS(ref_metric_mixed_space_gradation(metric, ref_grid, gradation, t),
             "metric_space");
       }
       RSS(ref_metric_complexity(metric, ref_grid, &complexity), "cmp");

@@ -586,6 +586,90 @@ REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
+                                            REF_DBL r, REF_DBL t) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_EDGE ref_edge;
+  REF_DBL *metric_orig;
+  REF_DBL dist, ratio, enlarge, log_r;
+  REF_DBL direction[3];
+  REF_DBL limit_metric[6], limited[6];
+  REF_INT node, i;
+  REF_INT edge, node0, node1;
+  REF_DBL diag_system[12];
+  REF_DBL metric_space, phys_space;
+
+  if (r < 1.0) r = 1.5;
+  if (t < 0.0 || 1.0 > t) t = 1.0 / 8.0;
+
+  log_r = log(r);
+
+  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+
+  ref_malloc(metric_orig, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 6; i++) metric_orig[i + 6 * node] = metric[i + 6 * node];
+  }
+
+  /* F. Alauzet doi:10.1016/j.finel.2009.06.028
+   * 6.2.1. Mixed-space homogeneous gradation */
+
+  each_ref_edge(ref_edge, edge) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+    direction[0] =
+        (ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0));
+    direction[1] =
+        (ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0));
+    direction[2] =
+        (ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0));
+    dist = sqrt(ref_math_dot(direction, direction));
+
+    ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node1]), direction);
+
+    RSS(ref_matrix_diag_m(&(metric_orig[6 * node1]), diag_system), "decomp");
+    for (i = 0; i < 3; i++) {
+      metric_space = 1.0 + log_r * ratio;
+      phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
+      enlarge = pow(pow(phys_space, t) * pow(metric_space, 1.0 - t), -2.0);
+      ref_matrix_eig(diag_system, i) *= enlarge;
+    }
+    RSS(ref_matrix_form_m(diag_system, limit_metric), "reform limit");
+
+    RSS(ref_matrix_intersect(&(metric_orig[6 * node0]), limit_metric, limited),
+        "limit m0 with enlarged m1");
+    RSS(ref_matrix_intersect(&(metric[6 * node0]), limited,
+                             &(metric[6 * node0])),
+        "update m0");
+
+    ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node0]), direction);
+
+    RSS(ref_matrix_diag_m(&(metric_orig[6 * node0]), diag_system), "decomp");
+    for (i = 0; i < 3; i++) {
+      metric_space = 1.0 + log_r * ratio;
+      phys_space = 1.0 + sqrt(ref_matrix_eig(diag_system, i)) * dist * log_r;
+      enlarge = pow(pow(phys_space, t) * pow(metric_space, 1.0 - t), -2.0);
+      ref_matrix_eig(diag_system, i) *= enlarge;
+    }
+    RSS(ref_matrix_form_m(diag_system, limit_metric), "reform limit");
+
+    RSS(ref_matrix_intersect(&(metric_orig[6 * node1]), limit_metric, limited),
+        "limit m1 with enlarged m0");
+    RSS(ref_matrix_intersect(&(metric[6 * node1]), limited,
+                             &(metric[6 * node1])),
+        "update m1");
+  }
+
+  ref_free(metric_orig);
+
+  ref_edge_free(ref_edge);
+
+  RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_sanitize(REF_GRID ref_grid) {
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_sanitize_twod(ref_grid), "threed");

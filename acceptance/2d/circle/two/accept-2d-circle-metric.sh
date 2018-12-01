@@ -15,6 +15,7 @@ fi
 tecplot=-t
 metric=circle
 gradation="metric 1.5"
+gradation="mixed 1.5 -1.0"
 
 function adapt_cycle {
     inproj=$1
@@ -49,5 +50,5 @@ adapt_cycle cycle03 cycle04 10
 adapt_cycle cycle04 cycle05 10
 
 cat cycle05.status
-#../../../check.rb cycle05.status 0.30 2.0
+../../../check.rb cycle05.status 0.30 2.2
 
