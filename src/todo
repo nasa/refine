@@ -1,25 +1,14 @@
 
-mixed gradation
-  + rename metric_space_gradation
-  + delete ref_metric_surface_gradation
-  + circle analytical example
-  + implement mixed_space_gradation
-  extract local lp scaling
-  extract global complexity scaling
-  refactor ref_metric_lp_scale_hessian
-  gradation at higher level (with switch)
-
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
 tess
- report tri area and tet volume ranges
- test with OM6
+ + report tri area and tet volume ranges
+ + test with OM6
+ test mixed space gradation
  k-tree to drive split for grid size gradation of JSM
  edge feature size i.e., om6 trailing edge
- make curvature gradation more along surface and less in volume
-  gradation on surface operator
 
 layer insert
  cavity recover triangle side
@@ -60,6 +49,12 @@ continuous metric interpolation
  store background in grid
  load balance interp
  allow interp asynchronously
+
+mixed gradation
+  extract local lp scaling
+  extract global complexity scaling
+  refactor ref_metric_lp_scale_hessian
+  gradation at higher level (with switch)
 
 input means for all these parameters for optimizer setting
 smooth ordering
@@ -206,6 +201,13 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ mixed gradation
+  + rename metric_space_gradation
+  + delete ref_metric_surface_gradation
+  + circle analytical example
+  + implement mixed_space_gradation
+
 
 + 1.8.21
 
