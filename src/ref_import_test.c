@@ -253,28 +253,27 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import .b8.ugrid tet */
-    REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.b8.ugrid";
-    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
-    RSS(ref_export_by_extension(export_grid, file), "export");
+  { /* read AFLR3 < 14 surf */
+    REF_GRID import_grid;
+    char file[] = "ref_import_test.surf";
+    FILE *f;
+    f = fopen(file, "w");
+    fprintf(f, "1 0 3\n");
+    fprintf(f, "12.0 14.0 16.0\n");
+    fprintf(f, "22.0 24.0 26.0\n");
+    fprintf(f, "32.0 34.0 36.0\n");
+    fprintf(f, "1 2 3 1 0 1\n");
+    fclose(f);
+
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
-    REIS(ref_node_n(ref_grid_node(export_grid)),
-         ref_node_n(ref_grid_node(import_grid)), "node count");
-    REIS(ref_cell_n(ref_grid_tri(export_grid)),
-         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
-    REIS(ref_cell_n(ref_grid_qua(export_grid)),
-         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
-    REIS(ref_cell_n(ref_grid_tet(export_grid)),
-         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
-    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
-         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
-    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
-         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
-    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
-         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+
+    REIS(3, ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(1, ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(0, ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    RWDS(12.0, ref_node_xyz(ref_grid_node(import_grid), 0, 0), 1e-15, "x 0");
+    RWDS(36.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
     RSS(ref_grid_free(import_grid), "free");
-    RSS(ref_grid_free(export_grid), "free");
+
     REIS(0, remove(file), "test clean up");
   }
 
