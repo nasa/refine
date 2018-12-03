@@ -294,6 +294,7 @@ static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua, new_qua;
   REF_INT dummy;
+  char buffer[1024];
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -316,6 +317,7 @@ static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     ref_node_xyz(ref_node, 0, new_node) = xyz[0];
     ref_node_xyz(ref_node, 1, new_node) = xyz[1];
     ref_node_xyz(ref_node, 2, new_node) = xyz[2];
+    fgets(buffer, sizeof(buffer), file);
   }
 
   RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");

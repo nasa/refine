@@ -277,6 +277,30 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  { /* read AFLR3 > 15 surf */
+    REF_GRID import_grid;
+    char file[] = "ref_import_test.surf";
+    FILE *f;
+    f = fopen(file, "w");
+    fprintf(f, "1 0 3\n");
+    fprintf(f, "12.0 14.0 16.0 0 0\n");
+    fprintf(f, "22.0 24.0 26.0 0 0\n");
+    fprintf(f, "32.0 34.0 36.0 0 0\n");
+    fprintf(f, "1 2 3 1 0 0\n");
+    fclose(f);
+
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+
+    REIS(3, ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(1, ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(0, ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    RWDS(12.0, ref_node_xyz(ref_grid_node(import_grid), 0, 0), 1e-15, "x 0");
+    RWDS(36.0, ref_node_xyz(ref_grid_node(import_grid), 2, 2), 1e-15, "z 2");
+    RSS(ref_grid_free(import_grid), "free");
+
+    REIS(0, remove(file), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   return 0;
 }
