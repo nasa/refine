@@ -227,7 +227,7 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
-  fprintf(file, "DARASET UNSTRUCTURED_GRID\n");
+  fprintf(file, "DATASET UNSTRUCTURED_GRID\n");
   fprintf(file, "POINTS %d double\n", ref_node_n(ref_node));
 
   for (node = 0; node < ref_node_n(ref_node); node++) {
