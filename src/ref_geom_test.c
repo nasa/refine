@@ -247,6 +247,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+    RSS(ref_export_by_extension(ref_grid, "ref_geom_test_tess.meshb"),
+	"meshb export");
+    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
 
     RSS(ref_geom_tri_status(ref_grid), "tri status");
