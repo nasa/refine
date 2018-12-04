@@ -36,6 +36,8 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 
+#define VTK_TRIANGLE (5)
+#define VTK_QUAD (9)
 #define VTK_TETRA (10)
 #define VTK_HEXAHEDRON (12)
 #define VTK_WEDGE (13)
@@ -204,6 +206,7 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+/* https://www.vtk.org/VTK/img/file-formats.pdf */
 REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
@@ -237,14 +240,40 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   }
 
   ncell = 0;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) ncell +=
-      ref_cell_n(ref_cell);
-
   size = 0;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) size +=
-      ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
+
+  ref_cell = ref_grid_tri(ref_grid);
+  ncell += ref_cell_n(ref_cell);
+  size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
+
+  ref_cell = ref_grid_qua(ref_grid);
+  ncell += ref_cell_n(ref_cell);
+  size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
+
+  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    ncell += ref_cell_n(ref_cell);
+    size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
+  }
 
   fprintf(file, "CELLS %d %d\n", ncell, size);
+
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    fprintf(file, " %d", node_per);
+    for (node = 0; node < node_per; node++)
+      fprintf(file, " %d", o2n[nodes[node]]);
+    fprintf(file, "\n");
+  }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    fprintf(file, " %d", node_per);
+    for (node = 0; node < node_per; node++)
+      fprintf(file, " %d", o2n[nodes[node]]);
+    fprintf(file, "\n");
+  }
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
@@ -259,6 +288,12 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   }
 
   fprintf(file, "CELL_TYPES %d\n", ncell);
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell(ref_cell, cell) fprintf(file, " %d\n", VTK_TRIANGLE);
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell(ref_cell, cell) fprintf(file, " %d\n", VTK_QUAD);
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell(ref_cell, cell) fprintf(file, " %d\n", VTK_TETRA);
@@ -1032,6 +1067,7 @@ REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+/* https://su2code.github.io/docs/Mesh-File/ */
 REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
