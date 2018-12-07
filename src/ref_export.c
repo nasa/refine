@@ -849,6 +849,106 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_tec_metric_ellipse_twod(
+    REF_GRID ref_grid, const char *root_filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT nnode, node;
+  REF_INT *o2n, *n2o;
+  REF_INT ncell, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL d[12];
+  REF_DBL x, y, z;
+  REF_DBL ex, ey;
+  FILE *file;
+  char viz_file[256];
+  REF_INT i, n = 36;
+  REF_INT e0, e1, eb;
+  REF_DBL best_y;
+  REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
+  REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
+
+  sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", root_filename,
+          ref_mpi_n(ref_grid_mpi(ref_grid)),
+          ref_mpi_rank(ref_grid_mpi(ref_grid)));
+
+  file = fopen(viz_file, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", viz_file);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine metric axes\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  nnode = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (REF_EMPTY == o2n[nodes[node]]) {
+        o2n[nodes[node]] = nnode;
+        nnode++;
+      }
+    }
+  }
+
+  ref_malloc(n2o, nnode, REF_INT);
+  for (node = 0; node < ref_node_max(ref_node); node++) {
+    if (REF_EMPTY != o2n[node]) {
+      n2o[o2n[node]] = node;
+    }
+  }
+
+  ncell = nnode * n;
+
+  fprintf(
+      file,
+      "zone t=\"scalar\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+      1 * ncell, 1 * ncell, "point", "felineseg");
+
+  for (node = 0; node < nnode; node++) {
+    RSS(ref_matrix_diag_m(ref_node_metric_ptr(ref_node, n2o[node]), d), "diag");
+    RSS(ref_matrix_ascending_eig(d), "sort eig");
+    eb = REF_EMPTY;
+    best_y = -1.0;
+    for (e0 = 0; e0 < 3; e0++) {
+      if (ABS(d[4 + 3 * e0]) > best_y) {
+        eb = e0;
+        best_y = ABS(d[4 + 3 * e0]);
+      }
+    }
+    RUS(REF_EMPTY, eb, "couldn't find best y");
+    e0 = eb + 1;
+    if (e0 > 2) e0 -= 3;
+    e1 = eb + 2;
+    if (e1 > 2) e1 -= 3;
+    for (i = 0; i < n; i++) {
+      ex = scale * cos(i * dt) / sqrt(d[e0]);
+      ey = scale * sin(i * dt) / sqrt(d[e1]);
+      x = d[3 + 3 * e0] * ex + d[3 + 3 * e1] * ey;
+      y = d[4 + 3 * e0] * ex + d[4 + 3 * e1] * ey;
+      z = d[5 + 3 * e0] * ex + d[5 + 3 * e1] * ey;
+      fprintf(file, " %.16e %.16e %.16e\n",
+              ref_node_xyz(ref_node, 0, n2o[node]) + x,
+              ref_node_xyz(ref_node, 1, n2o[node]) + y,
+              ref_node_xyz(ref_node, 2, n2o[node]) + z);
+    }
+  }
+
+  e0 = 0;
+  for (node = 0; node < nnode; node++) {
+    for (i = 0; i < n - 1; i++)
+      fprintf(file, " %d %d\n", i + node * n + 1, i + 1 + node * n + 1);
+    fprintf(file, " %d %d\n", n + node * n, 1 + node * n);
+  }
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  RSS(ref_export_tec_surf_zone(ref_grid, file), "ellipse surf");
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
                                          const char *root_filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -865,6 +965,11 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   REF_INT e0, e1;
   REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
+
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_export_tec_metric_ellipse_twod(ref_grid, root_filename), "2d met");
+    return REF_SUCCESS;
+  }
 
   sprintf(viz_file, "%s_n%d_p%d_ellipse.tec", root_filename,
           ref_mpi_n(ref_grid_mpi(ref_grid)),
