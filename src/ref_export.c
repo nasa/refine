@@ -879,16 +879,21 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
 
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   nnode = 0;
-  each_ref_cell_valid_cell_with_nodes(
-      ref_cell, cell, nodes) for (node = 0; node < ref_cell_node_per(ref_cell);
-                                  node++) if (REF_EMPTY == o2n[nodes[node]]) {
-    o2n[nodes[node]] = nnode;
-    nnode++;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (REF_EMPTY == o2n[nodes[node]]) {
+        o2n[nodes[node]] = nnode;
+        nnode++;
+      }
+    }
   }
 
   ref_malloc(n2o, nnode, REF_INT);
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    if (REF_EMPTY != o2n[node]) n2o[o2n[node]] = node;
+  for (node = 0; node < ref_node_max(ref_node); node++) {
+    if (REF_EMPTY != o2n[node]) {
+      n2o[o2n[node]] = node;
+    }
+  }
 
   ncell = nnode * n;
 
