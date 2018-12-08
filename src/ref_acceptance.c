@@ -257,12 +257,9 @@ int main(int argc, char *argv[]) {
       r = MAX(r, 0.32 * c * c);
       h = c * pow(r, k);
 
-      ref_node_metric(ref_node, 0, node) = 1.0 / (h * h);
-      ref_node_metric(ref_node, 1, node) = 0.0;
-      ref_node_metric(ref_node, 2, node) = 0.0;
-      ref_node_metric(ref_node, 3, node) = 1.0;
-      ref_node_metric(ref_node, 4, node) = 0.0;
-      ref_node_metric(ref_node, 5, node) = 1.0 / (h * h);
+      RSS(ref_node_metric_set(ref_node, node, 1.0 / (h * h), 0, 0, 1.0, 0,
+                              1.0 / (h * h)),
+          "set linear");
     }
 
     if (ref_grid_twod(ref_grid))
@@ -277,7 +274,7 @@ int main(int argc, char *argv[]) {
     REF_DBL h0, r;
     REF_DBL z, hx, hz;
     REF_DBL x0, c, k, x, h;
-    REF_DBL m0[6], m1[6];
+    REF_DBL m0[6], m1[6], m2[6];
 
     REF_INT i;
     REF_INT pos;
@@ -306,12 +303,9 @@ int main(int argc, char *argv[]) {
           z = ref_node_xyz(ref_node, 2, node);
           hz = h0 * pow(1.0 + r, z / h0);
 
-          ref_node_metric(ref_node, 0, node) = 1.0 / (hx * hx);
-          ref_node_metric(ref_node, 1, node) = 0.0;
-          ref_node_metric(ref_node, 2, node) = 0.0;
-          ref_node_metric(ref_node, 3, node) = 1.0;
-          ref_node_metric(ref_node, 4, node) = 0.0;
-          ref_node_metric(ref_node, 5, node) = 1.0 / (hz * hz);
+          RSS(ref_node_metric_set(ref_node, node, 1.0 / (hx * hx), 0, 0, 1.0, 0,
+                                  1.0 / (hz * hz)),
+              "set linear");
         }
 
       } else if (strcmp(argv[pos], "-r") == 0) {
@@ -344,8 +338,10 @@ int main(int argc, char *argv[]) {
           m1[4] = 0.0;
           m1[5] = 1.0 / (h * h);
 
-          RSS(ref_matrix_intersect(m0, m1, ref_node_metric_ptr(ref_node, node)),
-              "intersect");
+          RSS(ref_matrix_intersect(m0, m1, m2), "intersect");
+          RSS(ref_node_metric_set(ref_node, node, m2[0], m2[1], m2[2], m2[3],
+                                  m2[4], m2[5]),
+              "set intersect");
         }
 
       } else if (strcmp(argv[pos], "-h") == 0) {
