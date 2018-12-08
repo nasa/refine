@@ -307,6 +307,13 @@ static REF_STATUS ref_node_add_core(REF_NODE ref_node, REF_INT global,
       ref_mpi_rank(ref_node_mpi(ref_node)); /*local default*/
   ref_node->age[*node] = 0;                 /* default new born */
 
+  ref_node_metric(ref_node, 0, *node) = 1.0;
+  ref_node_metric(ref_node, 1, *node) = 0.0;
+  ref_node_metric(ref_node, 2, *node) = 0.0;
+  ref_node_metric(ref_node, 3, *node) = 1.0;
+  ref_node_metric(ref_node, 4, *node) = 0.0;
+  ref_node_metric(ref_node, 5, *node) = 1.0;
+
   (ref_node->n)++;
   return REF_SUCCESS;
 }

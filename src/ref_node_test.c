@@ -96,6 +96,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* add initializes metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    RWDS(1.0, ref_node_metric(ref_node, 0, node), -1.0, "m[0] init");
+    RWDS(0.0, ref_node_metric(ref_node, 1, node), -1.0, "m[1] init");
+    RWDS(0.0, ref_node_metric(ref_node, 2, node), -1.0, "m[2] init");
+    RWDS(1.0, ref_node_metric(ref_node, 3, node), -1.0, "m[3] init");
+    RWDS(0.0, ref_node_metric(ref_node, 4, node), -1.0, "m[4] init");
+    RWDS(1.0, ref_node_metric(ref_node, 5, node), -1.0, "m[5] init");
+  }
+
   { /* remove max node */
     REF_INT global, node, max;
     REF_NODE ref_node;
