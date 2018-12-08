@@ -56,17 +56,24 @@ REF_STATUS ref_metric_inspect(REF_NODE ref_node) {
 REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node) {
   REF_INT node, im;
 
-  each_ref_node_valid_node(ref_node, node) for (im = 0; im < 6; im++)
+  each_ref_node_valid_node(ref_node, node) {
+    for (im = 0; im < 6; im++)
       metric[im + 6 * node] = ref_node_metric(ref_node, im, node);
+  }
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
-  REF_INT node, im;
+  REF_INT node;
 
-  each_ref_node_valid_node(ref_node, node) for (im = 0; im < 6; im++)
-      ref_node_metric(ref_node, im, node) = metric[im + 6 * node];
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_metric_set(ref_node, node, metric[0 + 6 * node],
+                            metric[1 + 6 * node], metric[2 + 6 * node],
+                            metric[3 + 6 * node], metric[4 + 6 * node],
+                            metric[5 + 6 * node]),
+        "set node met");
+  }
 
   return REF_SUCCESS;
 }
@@ -76,13 +83,10 @@ REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
   REF_DBL hh;
 
   each_ref_node_valid_node(ref_node, node) {
-    ref_node_metric(ref_node, 0, node) = 1.0 / (0.1 * 0.1);
-    ref_node_metric(ref_node, 1, node) = 0.0;
-    ref_node_metric(ref_node, 2, node) = 0.0;
-    ref_node_metric(ref_node, 3, node) = 1.0 / (0.1 * 0.1);
-    ref_node_metric(ref_node, 4, node) = 0.0;
     hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 2, node) - 0.5) / 0.5;
-    ref_node_metric(ref_node, 5, node) = 1.0 / (hh * hh);
+    RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                            1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
+        "set node met");
   }
 
   return REF_SUCCESS;
@@ -95,13 +99,10 @@ REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
   REF_DBL hh;
 
   each_ref_node_valid_node(ref_node, node) {
-    ref_node_metric(ref_node, 0, node) = 1.0 / (h0 * h0);
-    ref_node_metric(ref_node, 1, node) = 0.0;
-    ref_node_metric(ref_node, 2, node) = 0.0;
-    ref_node_metric(ref_node, 3, node) = 1.0 / (h0 * h0);
-    ref_node_metric(ref_node, 4, node) = 0.0;
     hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
-    ref_node_metric(ref_node, 5, node) = 1.0 / (hh * hh);
+    RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                            1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
+        "set node met");
   }
 
   return REF_SUCCESS;
