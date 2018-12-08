@@ -68,10 +68,10 @@ REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
   REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_metric_set(ref_node, node, metric[0 + 6 * node],
-                            metric[1 + 6 * node], metric[2 + 6 * node],
-                            metric[3 + 6 * node], metric[4 + 6 * node],
-                            metric[5 + 6 * node]),
+    RSS(ref_node_metric_form(ref_node, node, metric[0 + 6 * node],
+                             metric[1 + 6 * node], metric[2 + 6 * node],
+                             metric[3 + 6 * node], metric[4 + 6 * node],
+                             metric[5 + 6 * node]),
         "set node met");
   }
 
@@ -84,8 +84,8 @@ REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
 
   each_ref_node_valid_node(ref_node, node) {
     hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 2, node) - 0.5) / 0.5;
-    RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
-                            1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
+    RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                             1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
         "set node met");
   }
 
@@ -100,8 +100,8 @@ REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
 
   each_ref_node_valid_node(ref_node, node) {
     hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
-    RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
-                            1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
+    RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                             1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
         "set node met");
   }
 
@@ -116,8 +116,8 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
   each_ref_node_valid_node(ref_node, node) {
     x = ref_node_xyz(ref_node, 0, node);
     hh = h + (0.1 - h) * MIN(2 * ABS(x - 1.0), 1);
-    RSS(ref_node_metric_set(ref_node, node, 1.0 / (hh * hh), 0, 0,
-                            1.0 / (0.1 * 0.1), 0, 1.0 / (0.1 * 0.1)),
+    RSS(ref_node_metric_form(ref_node, node, 1.0 / (hh * hh), 0, 0,
+                             1.0 / (0.1 * 0.1), 0, 1.0 / (0.1 * 0.1)),
         "set node met");
   }
 
@@ -152,7 +152,8 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node) {
     ref_matrix_vec(d, 1, 2) = 1.0;
     ref_matrix_vec(d, 2, 2) = 0.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_set(ref_node, node, m[0], m[1], m[2], m[3], m[4], m[5]),
+    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
+                             m[5]),
         "set node met");
   }
 
@@ -191,7 +192,8 @@ REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
     ref_matrix_vec(d, 1, 2) = 0.0;
     ref_matrix_vec(d, 2, 2) = 1.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_set(ref_node, node, m[0], m[1], m[2], m[3], m[4], m[5]),
+    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
+                             m[5]),
         "set node met");
   }
 
@@ -208,8 +210,8 @@ REF_STATUS ref_metric_masabl_node(REF_NODE ref_node) {
     c = 0.001;
     k1 = 6.0;
     hz = c * exp(k1 * ref_node_xyz(ref_node, 2, node));
-    RSS(ref_node_metric_set(ref_node, node, 1.0 / (hx * hx), 0, 0,
-                            1.0 / (0.1 * 0.1), 0, 1.0 / (hz * hz)),
+    RSS(ref_node_metric_form(ref_node, node, 1.0 / (hx * hx), 0, 0,
+                             1.0 / (0.1 * 0.1), 0, 1.0 / (hz * hz)),
         "set node met");
   }
 
@@ -243,7 +245,8 @@ REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
     ref_matrix_vec(d, 1, 2) = 1.0;
     ref_matrix_vec(d, 2, 2) = 0.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_set(ref_node, node, m[0], m[1], m[2], m[3], m[4], m[5]),
+    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
+                             m[5]),
         "set node met");
   }
 
@@ -478,7 +481,7 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
 
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
-    RSS(ref_node_metric_set(
+    RSS(ref_node_metric_form(
             to_node, node, recept_m[0 + 6 * receptor],
             recept_m[1 + 6 * receptor], recept_m[2 + 6 * receptor],
             recept_m[3 + 6 * receptor], recept_m[4 + 6 * receptor],
@@ -750,7 +753,8 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
     RSS(ref_matrix_intersect(&(curvature_metric[6 * node]),
                              ref_node_metric_ptr(ref_node, node), m),
         "intersect");
-    RSS(ref_node_metric_set(ref_node, node, m[0], m[1], m[2], m[3], m[4], m[5]),
+    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
+                             m[5]),
         "set node met");
   }
 

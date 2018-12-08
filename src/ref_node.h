@@ -142,9 +142,9 @@ REF_STATUS ref_node_edge_twod(REF_NODE ref_node, REF_INT node0, REF_INT node1,
 
 REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod);
 
-REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL m11,
-                               REF_DBL m12, REF_DBL m13, REF_DBL m22,
-                               REF_DBL m23, REF_DBL m33);
+REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
+                                REF_DBL m12, REF_DBL m13, REF_DBL m22,
+                                REF_DBL m23, REF_DBL m33);
 
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio);

@@ -809,9 +809,9 @@ REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL m11,
-                               REF_DBL m12, REF_DBL m13, REF_DBL m22,
-                               REF_DBL m23, REF_DBL m33) {
+REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
+                                REF_DBL m12, REF_DBL m13, REF_DBL m22,
+                                REF_DBL m23, REF_DBL m33) {
   ref_node_metric(ref_node, 0, node) = m11;
   ref_node_metric(ref_node, 1, node) = m12;
   ref_node_metric(ref_node, 2, node) = m13;

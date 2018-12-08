@@ -490,8 +490,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), 3, 1, 0, 0, 1, 0,
-                            1.0 / (10.0 * 10.0)),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 3, 1, 0, 0, 1, 0,
+                             1.0 / (10.0 * 10.0)),
         "set top z big");
 
     RSS(ref_collapse_pass(ref_grid), "pass");
@@ -647,13 +647,12 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), 1, 1, 0, 0, 1, 0,
-                            1.0 / (10.0 * 10.0)),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 1, 1, 0, 0, 1, 0,
+                             1.0 / (10.0 * 10.0)),
         "set top z big");
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), 4, 1, 0, 0, 1, 0,
-                            1.0 / (10.0 * 10.0)),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 4, 1, 0, 0, 1, 0,
+                             1.0 / (10.0 * 10.0)),
         "set top z big");
-
 
     RSS(ref_collapse_twod_pass(ref_grid), "pass");
 

@@ -418,7 +418,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_smooth_tri_single_fixture(&ref_grid, ref_mpi, &node, &cell),
         "2d fix");
 
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), node, 0.25, 0, 0, 1, 0, 1),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), node, 0.25, 0, 0, 1, 0,
+                             1),
         "set node small");
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal), "ideal");
@@ -437,7 +438,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_smooth_tri_single_fixture(&ref_grid, ref_mpi, &node, &cell),
         "2d fix");
 
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), node, 1, 0, 0, 1, 0, 0.25),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), node, 1, 0, 0, 1, 0,
+                             0.25),
         "set node small");
 
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal), "ideal");
@@ -528,8 +530,8 @@ int main(int argc, char *argv[]) {
     cell = 0;
 
     hz = 2.0;
-    RSS(ref_node_metric_set(ref_grid_node(ref_grid), node, 1, 0, 0, 1, 0,
-                            1.0 / hz / hz),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), node, 1, 0, 0, 1, 0,
+                             1.0 / hz / hz),
         "set node small");
     ref_node_xyz(ref_grid_node(ref_grid), 0, 2) = 0.5;
     ref_node_xyz(ref_grid_node(ref_grid), 1, 2) = 0.5 * sqrt(3.0);

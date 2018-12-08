@@ -765,8 +765,8 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
 
     each_ref_node_valid_node(ref_node, node) {
-      RSS(ref_node_metric_set(ref_node, node, 1.0, 0, 0, 1.0 / (0.8 * 0.8), 0,
-                              1),
+      RSS(ref_node_metric_form(ref_node, node, 1.0, 0, 0, 1.0 / (0.8 * 0.8), 0,
+                               1),
           "add");
     }
 
@@ -793,8 +793,8 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
 
     each_ref_node_valid_node(ref_node, node) {
-      RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.8 * 0.8), 0, 0,
-                              1.0 / (0.8 * 0.8), 0, 1),
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.8 * 0.8), 0, 0,
+                               1.0 / (0.8 * 0.8), 0, 1),
           "add");
     }
 
