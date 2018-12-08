@@ -1265,7 +1265,7 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
   REF_INT chunk;
   REF_DBL *metric;
   REF_INT nnode_read, section_size;
-  REF_INT node, local, global, im;
+  REF_INT node, local, global;
   REF_BOOL available;
   REF_INT version, dim, nnode, ntype, type;
 
@@ -1352,15 +1352,23 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
     for (node = 0; node < section_size; node++) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
-      if (REF_EMPTY != local)
-        for (im = 0; im < 6; im++)
-          ref_node_metric(ref_node, im, local) = metric[im + 6 * node];
+      if (REF_EMPTY != local) {
+        RSS(ref_node_metric_set(ref_node, local, metric[0 + 6 * node],
+                                metric[1 + 6 * node], metric[2 + 6 * node],
+                                metric[3 + 6 * node], metric[4 + 6 * node],
+                                metric[5 + 6 * node]),
+            "set local node met");
+      }
       if (2 == dim) {
         global = nnode + node + nnode_read;
         RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
-        if (REF_EMPTY != local)
-          for (im = 0; im < 6; im++)
-            ref_node_metric(ref_node, im, local) = metric[im + 6 * node];
+        if (REF_EMPTY != local) {
+          RSS(ref_node_metric_set(ref_node, local, metric[0 + 6 * node],
+                                  metric[1 + 6 * node], metric[2 + 6 * node],
+                                  metric[3 + 6 * node], metric[4 + 6 * node],
+                                  metric[5 + 6 * node]),
+              "set local node met");
+        }
       }
     }
     nnode_read += section_size;
@@ -1380,7 +1388,7 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   REF_INT chunk;
   REF_DBL *metric;
   REF_INT nnode_read, section_size;
-  REF_INT node, local, global, im;
+  REF_INT node, local, global;
   size_t end_of_string;
   REF_BOOL sol_format, found_keyword;
   REF_INT nnode, ntype, type;
@@ -1470,9 +1478,13 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
     for (node = 0; node < section_size; node++) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
-      if (REF_EMPTY != local)
-        for (im = 0; im < 6; im++)
-          ref_node_metric(ref_node, im, local) = metric[im + 6 * node];
+      if (REF_EMPTY != local) {
+        RSS(ref_node_metric_set(ref_node, local, metric[0 + 6 * node],
+                                metric[1 + 6 * node], metric[2 + 6 * node],
+                                metric[3 + 6 * node], metric[4 + 6 * node],
+                                metric[5 + 6 * node]),
+            "set local node met");
+      }
     }
     nnode_read += section_size;
   }
@@ -1531,20 +1543,16 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
-        ref_node_metric(ref_node, 0, local) = metric[0 + 3 * node];
-        ref_node_metric(ref_node, 1, local) = 0.0;
-        ref_node_metric(ref_node, 2, local) = metric[1 + 3 * node];
-        ref_node_metric(ref_node, 3, local) = 1.0;
-        ref_node_metric(ref_node, 4, local) = 0.0;
-        ref_node_metric(ref_node, 5, local) = metric[2 + 3 * node];
+        RSS(ref_node_metric_set(ref_node, local, metric[0 + 3 * node], 0,
+                                metric[1 + 3 * node], 1, 0,
+                                metric[2 + 3 * node]),
+            "set local node met");
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), local, &opposite),
             "opposite twod node on other plane missing");
-        ref_node_metric(ref_node, 0, opposite) = metric[0 + 3 * node];
-        ref_node_metric(ref_node, 1, opposite) = 0.0;
-        ref_node_metric(ref_node, 2, opposite) = metric[1 + 3 * node];
-        ref_node_metric(ref_node, 3, opposite) = 1.0;
-        ref_node_metric(ref_node, 4, opposite) = 0.0;
-        ref_node_metric(ref_node, 5, opposite) = metric[2 + 3 * node];
+        RSS(ref_node_metric_set(ref_node, opposite, metric[0 + 3 * node], 0,
+                                metric[1 + 3 * node], 1, 0,
+                                metric[2 + 3 * node]),
+            "set local node met");
       }
     }
     nnode_read += section_size;
