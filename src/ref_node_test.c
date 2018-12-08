@@ -96,20 +96,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* add initializes metric */
-    REF_NODE ref_node;
-    REF_INT global, node;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-    global = 30;
-    RSS(ref_node_add(ref_node, global, &node), "add");
-    RWDS(1.0, ref_node_metric(ref_node, 0, node), -1.0, "m[0] init");
-    RWDS(0.0, ref_node_metric(ref_node, 1, node), -1.0, "m[1] init");
-    RWDS(0.0, ref_node_metric(ref_node, 2, node), -1.0, "m[2] init");
-    RWDS(1.0, ref_node_metric(ref_node, 3, node), -1.0, "m[3] init");
-    RWDS(0.0, ref_node_metric(ref_node, 4, node), -1.0, "m[4] init");
-    RWDS(1.0, ref_node_metric(ref_node, 5, node), -1.0, "m[5] init");
-  }
-
   { /* remove max node */
     REF_INT global, node, max;
     REF_NODE ref_node;
@@ -540,6 +526,35 @@ int main(int argc, char *argv[]) {
     REIS(REF_FALSE, twod, "twod");
 
     RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* add initializes metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    RWDS(1.0, ref_node_metric(ref_node, 0, node), -1.0, "m[0] init");
+    RWDS(0.0, ref_node_metric(ref_node, 1, node), -1.0, "m[1] init");
+    RWDS(0.0, ref_node_metric(ref_node, 2, node), -1.0, "m[2] init");
+    RWDS(1.0, ref_node_metric(ref_node, 3, node), -1.0, "m[3] init");
+    RWDS(0.0, ref_node_metric(ref_node, 4, node), -1.0, "m[4] init");
+    RWDS(1.0, ref_node_metric(ref_node, 5, node), -1.0, "m[5] init");
+  }
+
+  { /* set metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    RSS(ref_node_metric_set(ref_node, node, 10, 1, 2, 20, 3, 30), "add");
+    RWDS(10.0, ref_node_metric(ref_node, 0, node), -1.0, "m[0] set");
+    RWDS(1.0, ref_node_metric(ref_node, 1, node), -1.0, "m[1] set");
+    RWDS(2.0, ref_node_metric(ref_node, 2, node), -1.0, "m[2] set");
+    RWDS(20.0, ref_node_metric(ref_node, 3, node), -1.0, "m[3] set");
+    RWDS(3.0, ref_node_metric(ref_node, 4, node), -1.0, "m[4] set");
+    RWDS(30.0, ref_node_metric(ref_node, 5, node), -1.0, "m[5] set");
   }
 
   { /* distance in metric */
