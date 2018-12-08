@@ -52,9 +52,6 @@ static REF_STATUS set_up_tet_for_subdiv(REF_SUBDIV *ref_subdiv_ptr,
   REF_GRID ref_grid;
 
   RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "tet");
-
-  RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
-
   RSS(ref_subdiv_create(ref_subdiv_ptr, ref_grid), "create");
 
   return REF_SUCCESS;
@@ -65,9 +62,6 @@ static REF_STATUS set_up_pyramid_for_subdiv(REF_SUBDIV *ref_subdiv_ptr,
   REF_GRID ref_grid;
 
   RSS(ref_fixture_pyr_grid(&ref_grid, ref_mpi), "pri");
-
-  RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
-
   RSS(ref_subdiv_create(ref_subdiv_ptr, ref_grid), "create");
 
   return REF_SUCCESS;
@@ -78,9 +72,6 @@ static REF_STATUS set_up_prism_for_subdiv(REF_SUBDIV *ref_subdiv_ptr,
   REF_GRID ref_grid;
 
   RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "pri");
-
-  RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
-
   RSS(ref_subdiv_create(ref_subdiv_ptr, ref_grid), "create");
 
   return REF_SUCCESS;
@@ -112,9 +103,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
     RSS(ref_migrate_to_balance(ref_grid), "new part");
-
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
-
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
 
     RSS(ref_export_tec_part(ref_grid, "ref_subdiv_orig"), "orig part");
@@ -159,9 +147,6 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
 
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
-
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
-
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
 
     RSS(ref_subdiv_mark_prism_sides(ref_subdiv), "mark sides");
@@ -186,8 +171,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_pri_stack_grid(&ref_grid, ref_mpi), "stack");
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
-
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "id metric");
 
     if (ref_mpi_para(ref_mpi))
       RSS(ref_export_tec_part(ref_grid, "stack_orig"), "stack part");
@@ -781,14 +764,9 @@ int main(int argc, char *argv[]) {
     ref_grid = ref_subdiv_grid(ref_subdiv);
     ref_node = ref_grid_node(ref_grid);
 
-    each_ref_node_valid_node(ref_node, node) {
-      ref_node_metric(ref_node, 0, node) = 1.0;
-      ref_node_metric(ref_node, 1, node) = 0.0;
-      ref_node_metric(ref_node, 2, node) = 0.0;
-      ref_node_metric(ref_node, 3, node) = 1.0 / (0.1 * 0.1);
-      ref_node_metric(ref_node, 4, node) = 0.0;
-      ref_node_metric(ref_node, 5, node) = 1.0;
-    }
+    each_ref_node_valid_node(ref_node, node){RSS(
+        ref_node_metric_set(ref_node, node, 1.0, 0, 0, 1.0 / (0.8 * 0.8), 0, 1),
+        "add")}
 
     RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv), "mark metric");
 
@@ -812,14 +790,10 @@ int main(int argc, char *argv[]) {
     ref_grid = ref_subdiv_grid(ref_subdiv);
     ref_node = ref_grid_node(ref_grid);
 
-    each_ref_node_valid_node(ref_node, node) {
-      ref_node_metric(ref_node, 0, node) = 1.0 / (0.8 * 0.8);
-      ref_node_metric(ref_node, 1, node) = 0.0;
-      ref_node_metric(ref_node, 2, node) = 0.0;
-      ref_node_metric(ref_node, 3, node) = 1.0 / (0.8 * 0.8);
-      ref_node_metric(ref_node, 4, node) = 0.0;
-      ref_node_metric(ref_node, 5, node) = 1.0;
-    }
+    each_ref_node_valid_node(ref_node, node){
+        RSS(ref_node_metric_set(ref_node, node, 1.0 / (0.8 * 0.8), 0, 0,
+                                1.0 / (0.8 * 0.8), 0, 1),
+            "add")}
 
     RSS(ref_subdiv_mark_prism_by_metric(ref_subdiv), "mark metric");
 
