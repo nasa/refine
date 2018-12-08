@@ -122,8 +122,6 @@ static REF_STATUS ref_smooth_tri_single_fixture(REF_GRID *ref_grid_ptr,
 
   RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add pri");
 
-  RSS(ref_metric_unit_node(ref_node), "unit node");
-
   return REF_SUCCESS;
 }
 
@@ -209,8 +207,6 @@ static REF_STATUS ref_smooth_tri_two_fixture(REF_GRID *ref_grid_ptr,
 
   RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add pri");
 
-  RSS(ref_metric_unit_node(ref_node), "unit node");
-
   return REF_SUCCESS;
 }
 
@@ -269,8 +265,6 @@ static REF_STATUS ref_smooth_tet_two_fixture(REF_GRID *ref_grid_ptr,
   *top_node = node;
 
   RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &cell), "add tri");
-
-  RSS(ref_metric_unit_node(ref_node), "unit node");
 
   return REF_SUCCESS;
 }
@@ -348,8 +342,6 @@ static REF_STATUS ref_smooth_tet_tri_fixture(REF_GRID *ref_grid_ptr,
   nodes[2] = 2;
   RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &cell), "add tet");
   RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tet");
-
-  RSS(ref_metric_unit_node(ref_node), "unit node");
 
   return REF_SUCCESS;
 }
@@ -512,7 +504,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "2d fix");
     node = 3;
     cell = 0;
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit node");
 
     ref_node_xyz(ref_grid_node(ref_grid), 0, 2) = 0.5;
     ref_node_xyz(ref_grid_node(ref_grid), 1, 2) = 0.5 * sqrt(3.0);
@@ -533,7 +524,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "2d fix");
     node = 3;
     cell = 0;
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit node");
 
     hz = 2.0;
     ref_node_metric(ref_grid_node(ref_grid), 5, node) = 1.0 / hz / hz;
@@ -618,7 +608,6 @@ int main(int argc, char *argv[]) {
     REF_DBL quality, original;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit node");
     RSS(ref_smooth_tet_quality_around(ref_grid, target_node, &original),
         "orig qual");
     ref_node_xyz(ref_grid_node(ref_grid), 0, target_node) += 0.15;

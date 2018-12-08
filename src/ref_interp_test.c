@@ -473,12 +473,10 @@ int main(int argc, char *argv[]) {
       REF_GRID ref_grid;
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_export_by_extension(ref_grid, even), "export");
       RSS(ref_grid_free(ref_grid), "free");
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");
@@ -535,13 +533,11 @@ int main(int argc, char *argv[]) {
       REF_GRID ref_grid;
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_split_edge_pattern(ref_grid, 0, 2), "split");
       RSS(ref_export_by_extension(ref_grid, even), "export");
       RSS(ref_grid_free(ref_grid), "free");
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");
@@ -600,13 +596,11 @@ int main(int argc, char *argv[]) {
       REF_GRID ref_grid;
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_split_edge_pattern(ref_grid, 0, 2), "split");
       RSS(ref_export_by_extension(ref_grid, even), "export");
       RSS(ref_grid_free(ref_grid), "free");
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "m");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");

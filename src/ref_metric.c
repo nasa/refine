@@ -71,21 +71,6 @@ REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_unit_node(REF_NODE ref_node) {
-  REF_INT node;
-
-  each_ref_node_valid_node(ref_node, node) {
-    ref_node_metric(ref_node, 0, node) = 1.0;
-    ref_node_metric(ref_node, 1, node) = 0.0;
-    ref_node_metric(ref_node, 2, node) = 0.0;
-    ref_node_metric(ref_node, 3, node) = 1.0;
-    ref_node_metric(ref_node, 4, node) = 0.0;
-    ref_node_metric(ref_node, 5, node) = 1.0;
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h) {
   REF_INT node;
   REF_DBL hh;

@@ -193,7 +193,6 @@ int main(int argc, char *argv[]) {
     printf("verify topo and params\n");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo conflict");
     RSS(ref_geom_verify_param(ref_grid), "test constrained params");
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit metric");
     printf("validate\n");
     RSS(ref_validation_all(ref_grid), "validate");
     printf("constrain\n");

@@ -59,7 +59,6 @@ int main(int argc, char *argv[]) {
     REF_INT faceid;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "tet brick");
-    RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit metric");
     RSS(ref_layer_create(&ref_layer, ref_mpi), "create");
 
     faceid = 6;

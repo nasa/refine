@@ -1,4 +1,5 @@
 
+- ref_metric_unit_node removed, metric initialized to unity during ref_node_add
 - ref_metric_test --fixed-point asks for the timestep_increment
 
 Tue, Nov 17, 2018 : Released Refine 1.8.21
