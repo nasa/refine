@@ -1,4 +1,10 @@
 
+always store metric in log form
+
+clean up ref_acceptance uses without a flag
+ref_acceptance should use two dashes
+try https://doi.org/10.2514/6.2007-4186 analytic test cases
+
 version 3 .meshb
 
 check that post conditions are implemented completely for all ops
@@ -68,9 +74,6 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-ref_acceptance should use two dashes
-try https://doi.org/10.2514/6.2007-4186 analytic test cases
-
 add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 reordering for cache
@@ -78,8 +81,6 @@ reordering for cache
     unit test the CM case in their paper for tri
   node and cell reordering for cache
   cell pack: insert in first node index order
-
-always store metric in log form
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
