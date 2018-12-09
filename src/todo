@@ -12,7 +12,18 @@ always store metric in log form
  store log and regular only
  measure performance
 
+compact adj
 
+node smooth after node, cell, and, adj are compact
+ metric exact after split
+
+reordering for cache
+  implement grid vertex Cuthill-Magee reordering
+    unit test the CM case in their paper for tri
+  node and cell reordering for cache
+  cell pack: insert in first node index order
+reordering global for faster file read
+  concatenate local rcm ordered indexes
 
 clean up ref_acceptance uses without a flag
 ref_acceptance should use two dashes
@@ -88,14 +99,6 @@ integrate complexity more accurately (Josh)
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
 add om6 metric case to acceptance (part one for nnodesg <10k?)
-
-reordering for cache
-  implement grid vertex Cuthill-Magee reordering
-    unit test the CM case in their paper for tri
-  node and cell reordering for cache
-  cell pack: insert in first node index order
-reordering global for faster file read
-  concatenate local rcm ordered indexes
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
