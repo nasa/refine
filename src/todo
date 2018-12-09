@@ -12,11 +12,6 @@ always store metric in log form
  store log and regular only
  measure performance
 
-compact adj
-
-node smooth after node, cell, and, adj are compact
- metric exact after split
-
 reordering for cache
   implement grid vertex Cuthill-Magee reordering
     unit test the CM case in their paper for tri
@@ -24,6 +19,10 @@ reordering for cache
   cell pack: insert in first node index order
 reordering global for faster file read
   concatenate local rcm ordered indexes
+compact adj
+
+node smooth after node, cell, and, adj are compact
+ metric exact after split
 
 clean up ref_acceptance uses without a flag
 ref_acceptance should use two dashes
