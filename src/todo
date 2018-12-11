@@ -1,17 +1,4 @@
 
-always store metric in log form
- eliminate direct structure access
- ref_node_metric_form
- ref_node_metric_set
- ref_node_metric_get
- ref_node_metric_log_set
- ref_node_metric_log_get
- measure performance
- store log only
- measure performance
- store log and regular only
- measure performance
-
 reordering for cache
   implement grid vertex Cuthill-Magee reordering
     unit test the CM case in their paper for tri
@@ -221,6 +208,19 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ always store metric in log form
+  + eliminate direct structure access
+  + ref_node_metric_form
+  + ref_node_metric_set
+  + ref_node_metric_get
+  + ref_node_metric_log_set
+  + ref_node_metric_log_get
+  + measure performance
+  + store log only
+  + measure performance
+  + store log and regular only
+  + measure performance
 
 + mixed gradation
   + rename metric_space_gradation
