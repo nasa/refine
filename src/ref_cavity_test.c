@@ -447,7 +447,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &node), "new node");
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
 
     ref_node_xyz(ref_node, 0, node) = 0.2;
     ref_node_xyz(ref_node, 1, node) = 1.0;
@@ -475,7 +474,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
     REIS(32, ref_node_n(ref_grid_node(ref_grid)), "nodes");
 
     RSS(ref_cavity_create(&ref_cavity, 2), "create");
@@ -509,7 +507,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
 
     RSS(ref_cavity_create(&ref_cavity, 2), "create");
     node = 1;
@@ -560,7 +557,6 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 1, node) = 1.0;
     ref_node_xyz(ref_node, 2, node) = 0.1;
     RSS(ref_node_twod_clone(ref_node, node, &clone), "new node");
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
 
     RSS(ref_cavity_replace_tri(ref_cavity, ref_grid, node, clone), "free");
     RSS(ref_cavity_free(ref_cavity), "free");
@@ -693,7 +689,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
     nnode = ref_node_n(ref_node);
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
 
     node = 39;
     ref_node_xyz(ref_node, 0, node) = 0.5;
@@ -718,7 +713,6 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
-    RSS(ref_metric_unit_node(ref_node), "unit metric");
 
     node = 39;
     ref_node_xyz(ref_node, 0, node) = -0.5;

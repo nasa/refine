@@ -528,6 +528,151 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* add initializes metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    RWDS(1.0, m[0], -1.0, "m[0]");
+    RWDS(0.0, m[1], -1.0, "m[1]");
+    RWDS(0.0, m[2], -1.0, "m[2]");
+    RWDS(1.0, m[3], -1.0, "m[3]");
+    RWDS(0.0, m[4], -1.0, "m[4]");
+    RWDS(1.0, m[5], -1.0, "m[5]");
+
+    RSS(ref_node_metric_get_log(ref_node, node, m), "get");
+    RWDS(0.0, m[0], -1.0, "m[0]");
+    RWDS(0.0, m[1], -1.0, "m[1]");
+    RWDS(0.0, m[2], -1.0, "m[2]");
+    RWDS(0.0, m[3], -1.0, "m[3]");
+    RWDS(0.0, m[4], -1.0, "m[4]");
+    RWDS(0.0, m[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* form get metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    RSS(ref_node_metric_form(ref_node, node, 10, 1, 2, 20, 3, 30), "from");
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    RWDS(10.0, m[0], -1.0, "m[0]");
+    RWDS(1.0, m[1], -1.0, "m[1]");
+    RWDS(2.0, m[2], -1.0, "m[2]");
+    RWDS(20.0, m[3], -1.0, "m[3]");
+    RWDS(3.0, m[4], -1.0, "m[4]");
+    RWDS(30.0, m[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set get metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = 10;
+    m0[1] = 1;
+    m0[2] = 2;
+    m0[3] = 20;
+    m0[4] = 3;
+    m0[5] = 30;
+    RSS(ref_node_metric_set(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get(ref_node, node, m1), "get");
+    RWDS(m0[0], m1[0], -1.0, "m[0]");
+    RWDS(m0[1], m1[1], -1.0, "m[1]");
+    RWDS(m0[2], m1[2], -1.0, "m[2]");
+    RWDS(m0[3], m1[3], -1.0, "m[3]");
+    RWDS(m0[4], m1[4], -1.0, "m[4]");
+    RWDS(m0[5], m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set log get log metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = 2.3; /* exp(10) */
+    m0[1] = 1;
+    m0[2] = 2;
+    m0[3] = 3.0; /* exp(20) */
+    m0[4] = 3;
+    m0[5] = 3.4; /* exp(30) */
+    RSS(ref_node_metric_set_log(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get_log(ref_node, node, m1), "get");
+    RWDS(m0[0], m1[0], -1.0, "m[0]");
+    RWDS(m0[1], m1[1], -1.0, "m[1]");
+    RWDS(m0[2], m1[2], -1.0, "m[2]");
+    RWDS(m0[3], m1[3], -1.0, "m[3]");
+    RWDS(m0[4], m1[4], -1.0, "m[4]");
+    RWDS(m0[5], m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set log get metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = 1;
+    m0[1] = 0;
+    m0[2] = 0;
+    m0[3] = 2;
+    m0[4] = 0;
+    m0[5] = 3;
+    RSS(ref_node_metric_set_log(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get(ref_node, node, m1), "get");
+    RWDS(exp(1), m1[0], -1.0, "m[0]");
+    RWDS(0, m1[1], -1.0, "m[1]");
+    RWDS(0, m1[2], -1.0, "m[2]");
+    RWDS(exp(2), m1[3], -1.0, "m[3]");
+    RWDS(0, m1[4], -1.0, "m[4]");
+    RWDS(exp(3), m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set get log metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = exp(1);
+    m0[1] = 0;
+    m0[2] = 0;
+    m0[3] = exp(2);
+    m0[4] = 0;
+    m0[5] = exp(3);
+    RSS(ref_node_metric_set(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get_log(ref_node, node, m1), "get");
+    RWDS(1, m1[0], -1.0, "m[0]");
+    RWDS(0, m1[1], -1.0, "m[1]");
+    RWDS(0, m1[2], -1.0, "m[2]");
+    RWDS(2, m1[3], -1.0, "m[3]");
+    RWDS(0, m1[4], -1.0, "m[4]");
+    RWDS(3, m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
   { /* distance in metric */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
@@ -540,24 +685,12 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.0;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 0, node0) = 1.0;
-    ref_node_metric(ref_node, 1, node0) = 0.0;
-    ref_node_metric(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 3, node0) = 1.0;
-    ref_node_metric(ref_node, 4, node0) = 0.0;
-    ref_node_metric(ref_node, 5, node0) = 1.0;
 
     global = 1;
     RSS(ref_node_add(ref_node, global, &node1), "add");
     ref_node_xyz(ref_node, 0, node1) = 0.0;
     ref_node_xyz(ref_node, 1, node1) = 0.0;
     ref_node_xyz(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 0, node1) = 1.0;
-    ref_node_metric(ref_node, 1, node1) = 0.0;
-    ref_node_metric(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 3, node1) = 1.0;
-    ref_node_metric(ref_node, 4, node1) = 0.0;
-    ref_node_metric(ref_node, 5, node1) = 1.0;
 
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(0.0, ratio, -1.0, "ratio expected");
@@ -567,13 +700,16 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, ratio, -1.0, "ratio expected");
 
     h = 0.5;
-    ref_node_metric(ref_node, 0, node0) = 1.0 / (h * h);
-    ref_node_metric(ref_node, 0, node1) = 1.0 / (h * h);
+    RSS(ref_node_metric_form(ref_node, node0, 1.0 / (h * h), 0, 0, 1, 0, 1),
+        "node0 met");
+    RSS(ref_node_metric_form(ref_node, node1, 1.0 / (h * h), 0, 0, 1, 0, 1),
+        "node1 met");
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(2.0, ratio, -1.0, "ratio expected");
 
     h = 0.1;
-    ref_node_metric(ref_node, 0, node0) = 1.0 / (h * h);
+    RSS(ref_node_metric_form(ref_node, node0, 1.0 / (h * h), 0, 0, 1, 0, 1),
+        "node0 met");
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(4.970679, ratio, 0.00001, "ratio expected");
 
@@ -612,24 +748,12 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.0;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 0, node0) = 1.0;
-    ref_node_metric(ref_node, 1, node0) = 0.0;
-    ref_node_metric(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 3, node0) = 1.0;
-    ref_node_metric(ref_node, 4, node0) = 0.0;
-    ref_node_metric(ref_node, 5, node0) = 1.0;
 
     global = 1;
     RSS(ref_node_add(ref_node, global, &node1), "add");
     ref_node_xyz(ref_node, 0, node1) = 0.0;
     ref_node_xyz(ref_node, 1, node1) = 0.0;
     ref_node_xyz(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 0, node1) = 1.0;
-    ref_node_metric(ref_node, 1, node1) = 0.0;
-    ref_node_metric(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 3, node1) = 1.0;
-    ref_node_metric(ref_node, 4, node1) = 0.0;
-    ref_node_metric(ref_node, 5, node1) = 1.0;
 
     /* same node */
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
@@ -675,24 +799,14 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.0;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 0, node0) = 1.0;
-    ref_node_metric(ref_node, 1, node0) = 1.3;
-    ref_node_metric(ref_node, 2, node0) = 0.4;
-    ref_node_metric(ref_node, 3, node0) = 1.8;
-    ref_node_metric(ref_node, 4, node0) = 0.5;
-    ref_node_metric(ref_node, 5, node0) = 0.5;
+    RSS(ref_node_metric_form(ref_node, node0, 1.0, 1.3, 0.4, 1.8, 0.5, 0.5),
+        "node0 set");
 
     global = 1;
     RSS(ref_node_add(ref_node, global, &node1), "add");
     ref_node_xyz(ref_node, 0, node1) = 0.6;
     ref_node_xyz(ref_node, 1, node1) = 0.7;
     ref_node_xyz(ref_node, 2, node1) = 0.8;
-    ref_node_metric(ref_node, 0, node1) = 1.0;
-    ref_node_metric(ref_node, 1, node1) = 0.0;
-    ref_node_metric(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 3, node1) = 1.0;
-    ref_node_metric(ref_node, 4, node1) = 0.0;
-    ref_node_metric(ref_node, 5, node1) = 1.0;
 
     FD_NODE0(ref_node_dratio_dnode0);
 
@@ -801,12 +915,8 @@ int main(int argc, char *argv[]) {
     RWDS(vol, f_vol, -1.0, "vol expected");
 
     for (global = 0; global < 4; global++) {
-      ref_node_metric(ref_node, 0, nodes[global]) = 20.0;
-      ref_node_metric(ref_node, 1, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 3, nodes[global]) = 20.0;
-      ref_node_metric(ref_node, 4, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 5, nodes[global]) = 20.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 20, 0, 0, 20, 0, 20),
+          "set 20 iso metric");
     }
 
     ref_node->tet_quality = REF_NODE_JAC_QUALITY;
@@ -862,12 +972,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 2.0;
@@ -983,12 +1087,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
@@ -1000,12 +1098,8 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 100.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 100.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 100.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 100, 0, 0, 100, 0, 100),
+          "set 100 iso metric");
     }
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
@@ -1035,12 +1129,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
     ref_node_xyz(ref_node, 0, nodes[2]) = 0.5;
@@ -1053,12 +1141,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
@@ -1070,12 +1152,8 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 100.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 100.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 100.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 100, 0, 0, 100, 0, 100),
+          "set 100 iso metric");
     }
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
@@ -1102,12 +1180,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_add(ref_node, global, &(nodes[2])), "add");
 
     for (global = 0; global < 3; global++) {
-      ref_node_metric(ref_node, 0, global) = 10.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 10.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 10.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 10, 0, 0, 10, 0, 10),
+          "set 10 iso metric");
     }
 
     ref_node_xyz(ref_node, 0, nodes[0]) = 0.1;
@@ -1155,12 +1229,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_add(ref_node, global, &(nodes[2])), "add");
 
     for (global = 0; global < 3; global++) {
-      ref_node_metric(ref_node, 0, global) = 14.0;
-      ref_node_metric(ref_node, 1, global) = 25.0;
-      ref_node_metric(ref_node, 2, global) = 40.0;
-      ref_node_metric(ref_node, 3, global) = 45.0;
-      ref_node_metric(ref_node, 4, global) = 71.0;
-      ref_node_metric(ref_node, 5, global) = 115.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 14, 25, 40, 45, 71,
+                               115),
+          "set gen metric");
     }
 
     ref_node_xyz(ref_node, 0, nodes[0]) = 0.1;
@@ -1205,12 +1276,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
       ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
@@ -1260,12 +1325,6 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, global) = 0.0;
       ref_node_xyz(ref_node, 1, global) = 0.0;
       ref_node_xyz(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
@@ -1281,12 +1340,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.839947, qual, 0.00001, "jac qual expected");
 
     for (global = 0; global < 4; global++) {
-      ref_node_metric(ref_node, 0, global) = 100.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 100.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 100.0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 100, 0, 0, 100, 0, 100),
+          "set 100 iso metric");
     }
 
     ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
@@ -1330,12 +1385,11 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 0, global) = 0.0;
       ref_node_xyz(ref_node, 1, global) = 0.0;
       ref_node_xyz(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 0, global) = 5.569680186165702e+00;
-      ref_node_metric(ref_node, 1, global) = -1.669546513836191e-01;
-      ref_node_metric(ref_node, 2, global) = -5.647583642671333e-02;
-      ref_node_metric(ref_node, 3, global) = 5.645045675922971e+00;
-      ref_node_metric(ref_node, 4, global) = 1.230436787883563e+00;
-      ref_node_metric(ref_node, 5, global) = 2.881886210688973e+0;
+      RSS(ref_node_metric_form(ref_node, nodes[global], 5.569680186165702e+00,
+                               -1.669546513836191e-01, -5.647583642671333e-02,
+                               5.645045675922971e+00, 1.230436787883563e+00,
+                               2.881886210688973e+00),
+          "set gen metric");
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
@@ -1369,15 +1423,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_add(ref_node, global, &(nodes[2])), "add");
     global = 3;
     RSS(ref_node_add(ref_node, global, &(nodes[3])), "add");
-
-    for (global = 0; global < 4; global++) {
-      ref_node_metric(ref_node, 0, global) = 1.0;
-      ref_node_metric(ref_node, 1, global) = 0.0;
-      ref_node_metric(ref_node, 2, global) = 0.0;
-      ref_node_metric(ref_node, 3, global) = 1.0;
-      ref_node_metric(ref_node, 4, global) = 0.0;
-      ref_node_metric(ref_node, 5, global) = 1.0;
-    }
 
     a = 1.0;
 
@@ -1416,6 +1461,7 @@ int main(int argc, char *argv[]) {
   { /* interpolate */
     REF_NODE ref_node;
     REF_INT node0, node1, new_node, global;
+    REF_DBL m[6];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -1424,24 +1470,12 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.0;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 0, node0) = 1.0;
-    ref_node_metric(ref_node, 1, node0) = 0.0;
-    ref_node_metric(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 3, node0) = 1.0;
-    ref_node_metric(ref_node, 4, node0) = 0.0;
-    ref_node_metric(ref_node, 5, node0) = 1.0;
 
     RSS(ref_node_next_global(ref_node, &global), "next_global");
     RSS(ref_node_add(ref_node, global, &node1), "add");
     ref_node_xyz(ref_node, 0, node1) = 1.0;
     ref_node_xyz(ref_node, 1, node1) = 0.0;
     ref_node_xyz(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 0, node1) = 1.0;
-    ref_node_metric(ref_node, 1, node1) = 0.0;
-    ref_node_metric(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 3, node1) = 1.0;
-    ref_node_metric(ref_node, 4, node1) = 0.0;
-    ref_node_metric(ref_node, 5, node1) = 1.0;
 
     RSS(ref_node_next_global(ref_node, &global), "next_global");
     RSS(ref_node_add(ref_node, global, &new_node), "add");
@@ -1451,22 +1485,26 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, ref_node_xyz(ref_node, 1, new_node), -1.0, "y");
     RWDS(0.0, ref_node_xyz(ref_node, 2, new_node), -1.0, "z");
 
-    RWDS(1.0, ref_node_metric(ref_node, 0, new_node), -1.0, "m0");
-    RWDS(0.0, ref_node_metric(ref_node, 1, new_node), -1.0, "m1");
-    RWDS(0.0, ref_node_metric(ref_node, 2, new_node), -1.0, "m2");
-    RWDS(1.0, ref_node_metric(ref_node, 3, new_node), -1.0, "m3");
-    RWDS(0.0, ref_node_metric(ref_node, 4, new_node), -1.0, "m4");
-    RWDS(1.0, ref_node_metric(ref_node, 5, new_node), -1.0, "m5");
+    RSS(ref_node_metric_get(ref_node, new_node, m), "get");
+    RWDS(1.0, m[0], -1.0, "m[0]");
+    RWDS(0.0, m[1], -1.0, "m[1]");
+    RWDS(0.0, m[2], -1.0, "m[2]");
+    RWDS(1.0, m[3], -1.0, "m[3]");
+    RWDS(0.0, m[4], -1.0, "m[4]");
+    RWDS(1.0, m[5], -1.0, "m[5]");
 
-    ref_node_metric(ref_node, 0, node1) = 1.0 / (0.1 * 0.1);
+    RSS(ref_node_metric_form(ref_node, node1, 1.0 / (0.1 * 0.1), 0, 0, 1, 0, 1),
+        "set 0.1 metric");
 
     RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node), "interp");
-    RWDS(1.0 / 0.1, ref_node_metric(ref_node, 0, new_node), -1.0, "m0");
-    RWDS(0.0, ref_node_metric(ref_node, 1, new_node), -1.0, "m1");
-    RWDS(0.0, ref_node_metric(ref_node, 2, new_node), -1.0, "m2");
-    RWDS(1.0, ref_node_metric(ref_node, 3, new_node), -1.0, "m3");
-    RWDS(0.0, ref_node_metric(ref_node, 4, new_node), -1.0, "m4");
-    RWDS(1.0, ref_node_metric(ref_node, 5, new_node), -1.0, "m5");
+
+    RSS(ref_node_metric_get(ref_node, new_node, m), "get");
+    RWDS(1.0 / 0.1, m[0], -1.0, "m[0]");
+    RWDS(0.0, m[1], -1.0, "m[1]");
+    RWDS(0.0, m[2], -1.0, "m[2]");
+    RWDS(1.0, m[3], -1.0, "m[3]");
+    RWDS(0.0, m[4], -1.0, "m[4]");
+    RWDS(1.0, m[5], -1.0, "m[5]");
 
     RSS(ref_node_free(ref_node), "free");
   }
@@ -1474,6 +1512,7 @@ int main(int argc, char *argv[]) {
   { /* clone a twod node  */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
+    REF_DBL m[6];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -1485,12 +1524,8 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.1;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.3;
-    ref_node_metric(ref_node, 0, node0) = 1.1;
-    ref_node_metric(ref_node, 1, node0) = 0.2;
-    ref_node_metric(ref_node, 2, node0) = 0.3;
-    ref_node_metric(ref_node, 3, node0) = 1.4;
-    ref_node_metric(ref_node, 4, node0) = 0.5;
-    ref_node_metric(ref_node, 5, node0) = 1.6;
+    RSS(ref_node_metric_form(ref_node, node0, 1.1, 0.2, 0.3, 1.4, 0.5, 1.6),
+        "set gen metric");
 
     ref_node_aux(ref_node, 0, node0) = 1.0;
     ref_node_aux(ref_node, 1, node0) = 20.0;
@@ -1504,7 +1539,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, ref_node_xyz(ref_node, 1, node1), -1.0, "y");
     RWDS(0.3, ref_node_xyz(ref_node, 2, node1), -1.0, "z");
 
-    RWDS(1.4, ref_node_metric(ref_node, 3, node1), -1.0, "m");
+    RSS(ref_node_metric_get(ref_node, node1, m), "get");
+    RWDS(1.4, m[3], -1.0, "m[3]");
 
     RSS(ref_node_free(ref_node), "free");
   }
@@ -1523,12 +1559,6 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node0) = 0.0;
     ref_node_xyz(ref_node, 1, node0) = 0.0;
     ref_node_xyz(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 0, node0) = 1.0;
-    ref_node_metric(ref_node, 1, node0) = 0.0;
-    ref_node_metric(ref_node, 2, node0) = 0.0;
-    ref_node_metric(ref_node, 3, node0) = 1.0;
-    ref_node_metric(ref_node, 4, node0) = 0.0;
-    ref_node_metric(ref_node, 5, node0) = 1.0;
 
     ref_node_aux(ref_node, 0, node0) = 1.0;
     ref_node_aux(ref_node, 1, node0) = 20.0;
@@ -1538,12 +1568,6 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node1) = 1.0;
     ref_node_xyz(ref_node, 1, node1) = 0.0;
     ref_node_xyz(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 0, node1) = 1.0;
-    ref_node_metric(ref_node, 1, node1) = 0.0;
-    ref_node_metric(ref_node, 2, node1) = 0.0;
-    ref_node_metric(ref_node, 3, node1) = 1.0;
-    ref_node_metric(ref_node, 4, node1) = 0.0;
-    ref_node_metric(ref_node, 5, node1) = 1.0;
 
     ref_node_aux(ref_node, 0, node1) = 2.0;
     ref_node_aux(ref_node, 1, node1) = 40.0;

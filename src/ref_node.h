@@ -52,7 +52,7 @@ struct REF_NODE_STRUCT {
   REF_INT tri_quality;
 };
 
-#define REF_NODE_REAL_PER (9) /* x,y,z, m[6] */
+#define REF_NODE_REAL_PER (15) /* x,y,z, m[6], log_m[6] */
 
 #define REF_NODE_EPIC_QUALITY (1)
 #define REF_NODE_JAC_QUALITY (2)
@@ -80,11 +80,6 @@ struct REF_NODE_STRUCT {
   ((ref_node)->real[(ixyz) + REF_NODE_REAL_PER * (node)])
 #define ref_node_xyz_ptr(ref_node, node) \
   (&((ref_node)->real[REF_NODE_REAL_PER * (node)]))
-
-#define ref_node_metric(ref_node, im, node) \
-  ((ref_node)->real[(im + 3) + REF_NODE_REAL_PER * (node)])
-#define ref_node_metric_ptr(ref_node, node) \
-  (&((ref_node)->real[3 + REF_NODE_REAL_PER * (node)]))
 
 #define ref_node_real(ref_node, ireal, node) \
   ((ref_node)->real[(ireal) + REF_NODE_REAL_PER * (node)])
@@ -141,6 +136,16 @@ REF_STATUS ref_node_edge_twod(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                               REF_BOOL *twod);
 
 REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod);
+
+REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
+                                REF_DBL m12, REF_DBL m13, REF_DBL m22,
+                                REF_DBL m23, REF_DBL m33);
+REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL *m);
+REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m);
+REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m);
+REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m);
 
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio);

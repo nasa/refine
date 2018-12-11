@@ -215,6 +215,7 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   REF_INT ixyz;
   REF_DBL dn[3];
   REF_DBL dt[3];
+  REF_DBL m[6];
   REF_DBL tangent_length, projection, scale, length_in_metric;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes), "get tri");
@@ -256,8 +257,8 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
 
   RSS(ref_math_normalize(dn), "normalize direction");
   /* would an averaged metric be more appropriate? */
-  length_in_metric =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node), dn);
+  RSS(ref_node_metric_get(ref_node, node, m), "get node m");
+  length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
 
   scale = 0.5 * sqrt(3.0); /* altitude of equilateral triangle */
   if (ref_math_divisible(scale, length_in_metric)) {
@@ -761,6 +762,7 @@ REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
   REF_INT tet_node, tri_node;
   REF_INT ixyz;
   REF_DBL dn[3];
+  REF_DBL m[6];
   REF_DBL scale, length_in_metric;
 
   RSS(ref_cell_nodes(ref_cell, tet, nodes), "get tri");
@@ -787,8 +789,8 @@ REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
 
   RSS(ref_math_normalize(dn), "normalize direction");
   /* would an averaged metric be more appropriate? */
-  length_in_metric =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node), dn);
+  RSS(ref_node_metric_get(ref_node, node, m), "get node m");
+  length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
 
   scale = sqrt(6.0) / 3.0; /* altitude of regular tetrahedra */
   if (ref_math_divisible(scale, length_in_metric)) {

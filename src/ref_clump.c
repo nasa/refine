@@ -37,11 +37,12 @@ static REF_STATUS ref_clump_zone_around(FILE *f, REF_CELL ref_cell,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL xyz_comp[3], xyz_phys[3];
   REF_INT local;
-  REF_DBL jacob[9];
+  REF_DBL m[6], jacob[9];
 
   if (ref_dict_n(ref_dict) <= 0) return REF_SUCCESS;
 
-  RSS(ref_matrix_jacob_m(ref_node_metric_ptr(ref_node, node), jacob), "jac");
+  RSS(ref_node_metric_get(ref_node, node, m), "get");
+  RSS(ref_matrix_jacob_m(m, jacob), "jac");
 
   fprintf(
       f, "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
@@ -261,7 +262,7 @@ REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local;
   REF_DBL xyz_comp[3], xyz_phys[3];
-  REF_DBL jacob[9];
+  REF_DBL m[6], jacob[9];
 
   FILE *f;
 
@@ -287,9 +288,8 @@ REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
       "zone t=\"clump\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
       ref_dict_n(node_dict), ref_dict_n(tri_dict), "point", "fequadrilateral");
 
-  RSS(ref_matrix_jacob_m(ref_node_metric_ptr(ref_grid_node(ref_grid), node),
-                         jacob),
-      "jac");
+  RSS(ref_node_metric_get(ref_grid_node(ref_grid), node, m), "get");
+  RSS(ref_matrix_jacob_m(m, jacob), "jac");
   for (item = 0; item < ref_dict_n(node_dict); item++) {
     local = ref_dict_key(node_dict, item);
     xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local) -

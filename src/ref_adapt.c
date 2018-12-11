@@ -125,6 +125,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT age, max_age;
   REF_BOOL active;
   REF_EDGE ref_edge;
+  REF_DBL m[6];
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -166,9 +167,8 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
 
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {
-        RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[cell_node]),
-                             &det),
-            "det");
+        RSS(ref_node_metric_get(ref_node, nodes[cell_node], m), "get");
+        RSS(ref_matrix_det_m(m, &det), "det");
         complexity +=
             sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
       }

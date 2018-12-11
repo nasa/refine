@@ -307,6 +307,8 @@ static REF_STATUS ref_node_add_core(REF_NODE ref_node, REF_INT global,
       ref_mpi_rank(ref_node_mpi(ref_node)); /*local default*/
   ref_node->age[*node] = 0;                 /* default new born */
 
+  RSS(ref_node_metric_form(ref_node, *node, 1, 0, 0, 1, 0, 1), "set ident");
+
   (ref_node->n)++;
   return REF_SUCCESS;
 }
@@ -526,11 +528,11 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
   ref_free(everyones_new_nodes);
 
   if (0 != offset) {
-    each_ref_node_valid_node(
-        ref_node, node) if (ref_node_global(ref_node, node) >=
-                            ref_node->old_n_global)(ref_node->global[node]) +=
-        offset;
-
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_global(ref_node, node) >= ref_node->old_n_global) {
+        (ref_node->global[node]) += offset;
+      }
+    }
     for (node = ref_node_n(ref_node) - 1;
          node >= 0 && ref_node->sorted_global[node] >= ref_node->old_n_global;
          node--)
@@ -604,18 +606,18 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n_ptr,
 
   nnode = 0;
 
-  each_ref_node_valid_node(ref_node,
-                           node) if (ref_mpi_rank(ref_node_mpi(ref_node)) ==
-                                     ref_node_part(ref_node, node)) {
-    o2n[node] = nnode;
-    nnode++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_node_mpi(ref_node)) == ref_node_part(ref_node, node)) {
+      o2n[node] = nnode;
+      nnode++;
+    }
   }
 
-  each_ref_node_valid_node(ref_node,
-                           node) if (ref_mpi_rank(ref_node_mpi(ref_node)) !=
-                                     ref_node_part(ref_node, node)) {
-    o2n[node] = nnode;
-    nnode++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_node_mpi(ref_node)) != ref_node_part(ref_node, node)) {
+      o2n[node] = nnode;
+      nnode++;
+    }
   }
 
   RES(nnode, ref_node_n(ref_node), "nnode miscount");
@@ -724,9 +726,11 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       a_size[ref_node_part(ref_node, node)]++;
+    }
+  }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
       "alltoall sizes");
@@ -746,11 +750,12 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    part = ref_node_part(ref_node, node);
-    a_global[a_next[part]] = ref_node_global(ref_node, node);
-    a_next[ref_node_part(ref_node, node)]++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
@@ -802,11 +807,70 @@ REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
+                                REF_DBL m12, REF_DBL m13, REF_DBL m22,
+                                REF_DBL m23, REF_DBL m33) {
+  REF_DBL m[6];
+  m[0] = m11;
+  m[1] = m12;
+  m[2] = m13;
+  m[3] = m22;
+  m[4] = m23;
+  m[5] = m33;
+  RSS(ref_node_metric_set(ref_node, node, m), "set");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
+  REF_INT i;
+  REF_DBL log_m[6];
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]) = m[i];
+  }
+  RSS(ref_matrix_log_m(m, log_m), "exp");
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]) = log_m[i];
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
+  REF_INT i;
+  for (i = 0; i < 6; i++) {
+    m[i] = ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]);
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m) {
+  REF_INT i;
+  REF_DBL m[6];
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]) = log_m[i];
+  }
+  RSS(ref_matrix_exp_m(log_m, m), "exp");
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]) = m[i];
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m) {
+  REF_INT i;
+  for (i = 0; i < 6; i++) {
+    log_m[i] = ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]);
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio) {
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
   REF_DBL r, r_min, r_max;
+  REF_DBL m[6];
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -828,10 +892,10 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
     return REF_SUCCESS;
   }
 
-  ratio0 =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node0), direction);
-  ratio1 =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node1), direction);
+  RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
+  ratio0 = ref_matrix_sqrt_vt_m_v(m, direction);
+  RSS(ref_node_metric_get(ref_node, node1, m), "node1 m");
+  ratio1 = ref_matrix_sqrt_vt_m_v(m, direction);
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
   /* Alauzet Finite Elements in Analysis and Design 46 (2010) pg 185 */
@@ -864,6 +928,7 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
   REF_DBL r, d_r[3], r_min, d_r_min[3], r_max, d_r_max[3];
   REF_INT i;
   REF_DBL r_log_r;
+  REF_DBL m[6];
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -888,13 +953,11 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
     return REF_SUCCESS;
   }
 
-  RSS(ref_matrix_sqrt_vt_m_v_deriv(ref_node_metric_ptr(ref_node, node0),
-                                   direction, &ratio0, d_ratio0),
-      "vt m v0");
+  RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
+  RSS(ref_matrix_sqrt_vt_m_v_deriv(m, direction, &ratio0, d_ratio0), "vt m v0");
   for (i = 0; i < 3; i++) d_ratio0[i] = -d_ratio0[i]; /* node 0 is neg */
-  RSS(ref_matrix_sqrt_vt_m_v_deriv(ref_node_metric_ptr(ref_node, node1),
-                                   direction, &ratio1, d_ratio1),
-      "vt m v0");
+  RSS(ref_node_metric_get(ref_node, node1, m), "node1 m");
+  RSS(ref_matrix_sqrt_vt_m_v_deriv(m, direction, &ratio1, d_ratio1), "vt m v0");
   for (i = 0; i < 3; i++) d_ratio1[i] = -d_ratio1[i]; /* node 0 is neg */
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
@@ -963,6 +1026,7 @@ REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
   REF_DBL det, min_det, volume;
   REF_DBL volume_in_metric;
   REF_DBL num, denom;
+  REF_DBL m[6];
 
   RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
 
@@ -978,13 +1042,20 @@ REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
   RSS(ref_node_ratio(ref_node, nodes[1], nodes[3], &l4), "l4");
   RSS(ref_node_ratio(ref_node, nodes[2], nodes[3], &l5), "l5");
 
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det), "n0");
+  RSS(ref_node_metric_get(ref_node, nodes[0], m), "nodes[0] m");
+  RSS(ref_matrix_det_m(m, &det), "n0");
   min_det = det;
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det), "n1");
+
+  RSS(ref_node_metric_get(ref_node, nodes[1], m), "nodes[1] m");
+  RSS(ref_matrix_det_m(m, &det), "n1");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det), "n2");
+
+  RSS(ref_node_metric_get(ref_node, nodes[2], m), "nodes[2] m");
+  RSS(ref_matrix_det_m(m, &det), "n2");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]), &det), "n3");
+
+  RSS(ref_node_metric_get(ref_node, nodes[3], m), "nodes[3] m");
+  RSS(ref_matrix_det_m(m, &det), "n3");
   min_det = MIN(min_det, det);
 
   volume_in_metric = sqrt(min_det) * volume;
@@ -1015,6 +1086,7 @@ REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
   REF_DBL num, denom;
   REF_DBL d_num[3], d_denom[3];
   REF_INT i;
+  REF_DBL m[6];
 
   RSS(ref_node_dratio_dnode0(ref_node, nodes[0], nodes[1], &l0, d_l0), "l0");
   RSS(ref_node_dratio_dnode0(ref_node, nodes[0], nodes[2], &l1, d_l1), "l1");
@@ -1031,13 +1103,20 @@ REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
     return REF_SUCCESS;
   }
 
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det), "n0");
+  RSS(ref_node_metric_get(ref_node, nodes[0], m), "nodes[0] m");
+  RSS(ref_matrix_det_m(m, &det), "n0");
   min_det = det;
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det), "n1");
+
+  RSS(ref_node_metric_get(ref_node, nodes[1], m), "nodes[1] m");
+  RSS(ref_matrix_det_m(m, &det), "n1");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det), "n2");
+
+  RSS(ref_node_metric_get(ref_node, nodes[2], m), "nodes[2] m");
+  RSS(ref_matrix_det_m(m, &det), "n2");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[3]), &det), "n3");
+
+  RSS(ref_node_metric_get(ref_node, nodes[3], m), "nodes[3] m");
+  RSS(ref_matrix_det_m(m, &det), "n3");
   min_det = MIN(min_det, det);
 
   volume_in_metric = sqrt(min_det) * volume;
@@ -1087,10 +1166,10 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
     return REF_SUCCESS;
   }
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0), "log0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1), "log1");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2), "log2");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[3]), mlog3), "log3");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
+  RSS(ref_node_metric_get_log(ref_node, nodes[3], mlog3), "log3");
   for (i = 0; i < 6; i++)
     mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i] + mlog3[i]) / 4.0;
   RSS(ref_matrix_exp_m(mlog, m), "exp");
@@ -1192,10 +1271,10 @@ REF_STATUS ref_node_tet_jac_quality(REF_NODE ref_node, REF_INT *nodes,
     return REF_SUCCESS;
   }
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0), "log0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1), "log1");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2), "log2");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[3]), mlog3), "log3");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
+  RSS(ref_node_metric_get_log(ref_node, nodes[3], mlog3), "log3");
   for (i = 0; i < 6; i++)
     mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i] + mlog3[i]) / 4.0;
   RSS(ref_matrix_exp_m(mlog, m), "exp");
@@ -1270,6 +1349,7 @@ static REF_STATUS ref_node_tri_epic_quality(REF_NODE ref_node, REF_INT *nodes,
   REF_DBL det, min_det, area;
   REF_DBL area_in_metric;
   REF_DBL num, denom;
+  REF_DBL m[6];
 
   RSS(ref_node_ratio(ref_node, nodes[0], nodes[1], &l0), "l0");
   RSS(ref_node_ratio(ref_node, nodes[0], nodes[2], &l1), "l1");
@@ -1277,11 +1357,16 @@ static REF_STATUS ref_node_tri_epic_quality(REF_NODE ref_node, REF_INT *nodes,
 
   RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
 
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det), "n0");
+  RSS(ref_node_metric_get(ref_node, nodes[0], m), "nodes[0] m");
+  RSS(ref_matrix_det_m(m, &det), "n0");
   min_det = det;
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det), "n1");
+
+  RSS(ref_node_metric_get(ref_node, nodes[1], m), "nodes[1] m");
+  RSS(ref_matrix_det_m(m, &det), "n1");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det), "n2");
+
+  RSS(ref_node_metric_get(ref_node, nodes[2], m), "nodes[2] m");
+  RSS(ref_matrix_det_m(m, &det), "n2");
   min_det = MIN(min_det, det);
 
   area_in_metric = pow(min_det, 1.0 / 3.0) * area;
@@ -1308,9 +1393,9 @@ static REF_STATUS ref_node_tri_jac_quality(REF_NODE ref_node, REF_INT *nodes,
   REF_DBL a, l2;
   REF_INT i;
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0), "log0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1), "log1");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2), "log2");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
   for (i = 0; i < 6; i++) mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i]) / 3.0;
   RSS(ref_matrix_exp_m(mlog, m), "exp");
   RSS(ref_matrix_jacob_m(m, jac), "jac");
@@ -1375,6 +1460,7 @@ static REF_STATUS ref_node_tri_epic_dquality_dnode0(REF_NODE ref_node,
   REF_DBL num, d_num[3], denom, d_denom[3];
   REF_DBL d_l0[3], d_l1[3];
   REF_INT i;
+  REF_DBL m[6];
 
   RSS(ref_node_dratio_dnode0(ref_node, nodes[0], nodes[1], &l0, d_l0), "l0");
   RSS(ref_node_dratio_dnode0(ref_node, nodes[0], nodes[2], &l1, d_l1), "l1");
@@ -1382,11 +1468,16 @@ static REF_STATUS ref_node_tri_epic_dquality_dnode0(REF_NODE ref_node,
 
   RSS(ref_node_tri_darea_dnode0(ref_node, nodes, &area, d_area), "area");
 
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[0]), &det), "n0");
+  RSS(ref_node_metric_get(ref_node, nodes[0], m), "nodes[0] m");
+  RSS(ref_matrix_det_m(m, &det), "n0");
   min_det = det;
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[1]), &det), "n1");
+
+  RSS(ref_node_metric_get(ref_node, nodes[1], m), "nodes[1] m");
+  RSS(ref_matrix_det_m(m, &det), "n1");
   min_det = MIN(min_det, det);
-  RSS(ref_matrix_det_m(ref_node_metric_ptr(ref_node, nodes[2]), &det), "n2");
+
+  RSS(ref_node_metric_get(ref_node, nodes[2], m), "nodes[2] m");
+  RSS(ref_matrix_det_m(m, &det), "n2");
   min_det = MIN(min_det, det);
 
   area_in_metric = pow(min_det, 1.0 / 3.0) * area;
@@ -1424,9 +1515,9 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
   REF_DBL a, l2, da[3], dl2[3];
   REF_INT i, j;
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[0]), mlog0), "log0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[1]), mlog1), "log1");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, nodes[2]), mlog2), "log2");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
   for (i = 0; i < 6; i++) mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i]) / 3.0;
   RSS(ref_matrix_exp_m(mlog, m), "exp");
   RSS(ref_matrix_jacob_m(m, jac), "jac");
@@ -1764,6 +1855,7 @@ REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
   REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
   REF_INT global, clone;
   REF_INT i;
+  REF_DBL m[6];
 
   RSS(ref_node_next_global(ref_node, &global), "next global");
   RSS(ref_node_add(ref_node, global, clone_ptr), "new node");
@@ -1777,16 +1869,15 @@ REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
   for (i = 0; i < ref_node_naux(ref_node); i++)
     ref_node_aux(ref_node, i, clone) = ref_node_aux(ref_node, i, original);
 
-  for (i = 0; i < 6; i++)
-    ref_node_metric(ref_node, i, clone) =
-        ref_node_metric(ref_node, i, original);
+  RSS(ref_node_metric_get(ref_node, original, m), "get original m");
+  RSS(ref_node_metric_set(ref_node, clone, m), "set clone m");
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
                                      REF_INT node1, REF_INT new_node) {
-  REF_DBL log_m0[6], log_m1[6], m[6];
+  REF_DBL log_m0[6], log_m1[6], log_m[6];
   REF_INT i;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
@@ -1802,12 +1893,12 @@ REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
         0.5 *
         (ref_node_aux(ref_node, i, node0) + ref_node_aux(ref_node, i, node1));
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, node0), log_m0), "log 0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, node1), log_m1), "log 1");
+  RSS(ref_node_metric_get_log(ref_node, node0, log_m0), "log 0");
+  RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "log 1");
 
-  RSS(ref_matrix_average_m(log_m0, log_m1, m), "log 1");
+  RSS(ref_matrix_average_m(log_m0, log_m1, log_m), "log 1");
 
-  RSS(ref_matrix_exp_m(m, ref_node_metric_ptr(ref_node, new_node)), "exp m");
+  RSS(ref_node_metric_set_log(ref_node, new_node, log_m), "log new");
 
   return REF_SUCCESS;
 }
@@ -1815,7 +1906,7 @@ REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
 REF_STATUS ref_node_interpolate_face(REF_NODE ref_node, REF_INT node0,
                                      REF_INT node1, REF_INT node2,
                                      REF_INT new_node) {
-  REF_DBL log_m0[6], log_m1[6], log_m2[6], m[6];
+  REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m[6];
   REF_INT i;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1) ||
@@ -1834,14 +1925,14 @@ REF_STATUS ref_node_interpolate_face(REF_NODE ref_node, REF_INT node0,
         (ref_node_aux(ref_node, i, node0) + ref_node_aux(ref_node, i, node1) +
          ref_node_aux(ref_node, i, node2));
 
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, node0), log_m0), "log 0");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, node1), log_m1), "log 1");
-  RSS(ref_matrix_log_m(ref_node_metric_ptr(ref_node, node2), log_m2), "log 2");
+  RSS(ref_node_metric_get_log(ref_node, node0, log_m0), "log 0");
+  RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "log 1");
+  RSS(ref_node_metric_get_log(ref_node, node2, log_m2), "log 2");
 
   for (i = 0; i < 6; i++)
-    m[i] = (1.0 / 3.0) * (log_m0[i] + log_m1[i] + log_m2[i]);
+    log_m[i] = (1.0 / 3.0) * (log_m0[i] + log_m1[i] + log_m2[i]);
 
-  RSS(ref_matrix_exp_m(m, ref_node_metric_ptr(ref_node, new_node)), "exp m");
+  RSS(ref_node_metric_set_log(ref_node, new_node, log_m), "log new");
 
   return REF_SUCCESS;
 }

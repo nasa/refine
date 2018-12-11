@@ -59,8 +59,6 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
     if (2 < argc) {
       RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "part m");
-    } else {
-      RSS(ref_metric_unit_node(ref_grid_node(ref_grid)), "unit m");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "metric");
     RSS(ref_clump_long_edges(ref_grid, 1.0), "long edge");

@@ -36,7 +36,6 @@ REF_STATUS ref_metric_inspect(REF_NODE ref_node);
 REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node);
 REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node);
 
-REF_STATUS ref_metric_unit_node(REF_NODE ref_node);
 REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h);
 REF_STATUS ref_metric_side_node(REF_NODE ref_node);
 REF_STATUS ref_metric_ring_node(REF_NODE ref_node);

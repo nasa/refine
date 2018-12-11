@@ -1,4 +1,20 @@
 
+reordering for cache
+  implement grid vertex Cuthill-Magee reordering
+    unit test the CM case in their paper for tri
+  node and cell reordering for cache
+  cell pack: insert in first node index order
+reordering global for faster file read
+  concatenate local rcm ordered indexes
+compact adj
+
+node smooth after node, cell, and, adj are compact
+ metric exact after split
+
+clean up ref_acceptance uses without a flag
+ref_acceptance should use two dashes
+try https://doi.org/10.2514/6.2007-4186 analytic test cases
+
 version 3 .meshb
 
 check that post conditions are implemented completely for all ops
@@ -68,18 +84,7 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-ref_acceptance should use two dashes
-try https://doi.org/10.2514/6.2007-4186 analytic test cases
-
 add om6 metric case to acceptance (part one for nnodesg <10k?)
-
-reordering for cache
-  implement grid vertex Cuthill-Magee reordering
-    unit test the CM case in their paper for tri
-  node and cell reordering for cache
-  cell pack: insert in first node index order
-
-always store metric in log form
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
@@ -203,6 +208,19 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ always store metric in log form
+  + eliminate direct structure access
+  + ref_node_metric_form
+  + ref_node_metric_set
+  + ref_node_metric_get
+  + ref_node_metric_log_set
+  + ref_node_metric_log_get
+  + measure performance
+  + store log only
+  + measure performance
+  + store log and regular only
+  + measure performance
 
 + mixed gradation
   + rename metric_space_gradation
