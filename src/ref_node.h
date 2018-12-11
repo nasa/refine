@@ -52,7 +52,7 @@ struct REF_NODE_STRUCT {
   REF_INT tri_quality;
 };
 
-#define REF_NODE_REAL_PER (9) /* x,y,z, m[6] */
+#define REF_NODE_REAL_PER (15) /* x,y,z, m[6], log_m[6] */
 
 #define REF_NODE_EPIC_QUALITY (1)
 #define REF_NODE_JAC_QUALITY (2)

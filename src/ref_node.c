@@ -822,24 +822,36 @@ REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
 }
 
 REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
+  REF_INT i;
   REF_DBL log_m[6];
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]) = m[i];
+  }
   RSS(ref_matrix_log_m(m, log_m), "exp");
-  RSS(ref_node_metric_set_log(ref_node, node, log_m), "set");
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]) = log_m[i];
+  }
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
-  REF_DBL log_m[6];
-  RSS(ref_node_metric_get_log(ref_node, node, log_m), "get");
-  RSS(ref_matrix_exp_m(log_m, m), "log");
+  REF_INT i;
+  for (i = 0; i < 6; i++) {
+    m[i] = ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]);
+  }
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
                                    REF_DBL *log_m) {
   REF_INT i;
+  REF_DBL m[6];
   for (i = 0; i < 6; i++) {
-    ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]) = log_m[i];
+    ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]) = log_m[i];
+  }
+  RSS(ref_matrix_exp_m(log_m, m), "exp");
+  for (i = 0; i < 6; i++) {
+    ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]) = m[i];
   }
   return REF_SUCCESS;
 }
@@ -848,7 +860,7 @@ REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
                                    REF_DBL *log_m) {
   REF_INT i;
   for (i = 0; i < 6; i++) {
-    log_m[i] = ((ref_node)->real[(i + 3) + REF_NODE_REAL_PER * (node)]);
+    log_m[i] = ((ref_node)->real[(i + 9) + REF_NODE_REAL_PER * (node)]);
   }
   return REF_SUCCESS;
 }
