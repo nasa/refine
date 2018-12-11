@@ -884,6 +884,8 @@ int main(int argc, char *argv[]) {
     REF_DBL tol = -1.0;
     char meshb[] = "ref_metric_test.meshb";
     char solb[] = "ref_metric_test-metric.solb";
+    REF_DBL truth_m[6];
+    REF_DBL m[6];
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
@@ -904,10 +906,11 @@ int main(int argc, char *argv[]) {
     }
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_node_metric_get(ref_grid_node(truth), node, truth_m),
+          "get truth m");
+      RSS(ref_node_metric_get(ref_grid_node(ref_grid), node, m), "get m");
       for (im = 0; im < 6; im++) {
-        RWDS(ref_node_metric(ref_grid_node(truth), im, node),
-             ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
-             "metric wrong");
+        RWDS(truth_m[im], m[im], tol, "interpolant");
       }
     }
 
