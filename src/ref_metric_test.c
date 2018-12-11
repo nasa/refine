@@ -825,6 +825,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid, parent_grid;
     REF_INT node, im;
     REF_DBL tol = -1.0;
+    REF_DBL parent_m[6];
+    REF_DBL child_m[6];
 
     RSS(ref_fixture_twod_brick_grid(&parent_grid, ref_mpi), "brick");
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
@@ -835,10 +837,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_node_metric_get(ref_grid_node(parent_grid), node, parent_m),
+          "get parent m");
+      RSS(ref_node_metric_get(ref_grid_node(ref_grid), node, child_m),
+          "get child m");
       for (im = 0; im < 6; im++) {
-        RWDS(ref_node_metric(ref_grid_node(parent_grid), im, node),
-             ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
-             "interpolant");
+        RWDS(parent_m[im], child_m[im], tol, "interpolant");
       }
     }
 
@@ -850,6 +854,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid, parent_grid;
     REF_INT node, im;
     REF_DBL tol = -1.0;
+    REF_DBL parent_m[6];
+    REF_DBL child_m[6];
 
     RSS(ref_fixture_tet_brick_grid(&parent_grid, ref_mpi), "brick");
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
@@ -859,10 +865,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_node_metric_get(ref_grid_node(parent_grid), node, parent_m),
+          "get parent m");
+      RSS(ref_node_metric_get(ref_grid_node(ref_grid), node, child_m),
+          "get child m");
       for (im = 0; im < 6; im++) {
-        RWDS(ref_node_metric(ref_grid_node(parent_grid), im, node),
-             ref_node_metric(ref_grid_node(ref_grid), im, node), tol,
-             "interpolant");
+        RWDS(parent_m[im], child_m[im], tol, "interpolant");
       }
     }
 
