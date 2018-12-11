@@ -147,6 +147,10 @@ REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
                                 REF_DBL m23, REF_DBL m33);
 REF_STATUS ref_node_metric_set(REF_NODE ref_node, REF_INT node, REF_DBL *m);
 REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m);
+REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m);
+REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m);
 
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio);

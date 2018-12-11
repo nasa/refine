@@ -837,6 +837,22 @@ REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_metric_set_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m) {
+  REF_DBL m[6];
+  RSS(ref_matrix_exp_m(log_m, m), "exp");
+  RSS(ref_node_metric_set(ref_node, node, m), "set");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
+                                   REF_DBL *log_m) {
+  REF_DBL m[6];
+  RSS(ref_node_metric_get(ref_node, node, m), "get");
+  RSS(ref_matrix_log_m(m, log_m), "log");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio) {
   REF_DBL direction[3], length;

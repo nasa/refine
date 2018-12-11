@@ -543,6 +543,14 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, m[4], -1.0, "m[4]");
     RWDS(1.0, m[5], -1.0, "m[5]");
 
+    RSS(ref_node_metric_get_log(ref_node, node, m), "get");
+    RWDS(0.0, m[0], -1.0, "m[0]");
+    RWDS(0.0, m[1], -1.0, "m[1]");
+    RWDS(0.0, m[2], -1.0, "m[2]");
+    RWDS(0.0, m[3], -1.0, "m[3]");
+    RWDS(0.0, m[4], -1.0, "m[4]");
+    RWDS(0.0, m[5], -1.0, "m[5]");
+
     RSS(ref_node_free(ref_node), "free");
   }
 
@@ -586,6 +594,81 @@ int main(int argc, char *argv[]) {
     RWDS(m0[3], m1[3], -1.0, "m[3]");
     RWDS(m0[4], m1[4], -1.0, "m[4]");
     RWDS(m0[5], m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set log get log metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6], tol = 1.0e-7;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = 10;
+    m0[1] = 1;
+    m0[2] = 2;
+    m0[3] = 20;
+    m0[4] = 3;
+    m0[5] = 30;
+    RSS(ref_node_metric_set_log(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get_log(ref_node, node, m1), "get");
+    RWDS(m0[0], m1[0], tol, "m[0]");
+    RWDS(m0[1], m1[1], tol, "m[1]");
+    RWDS(m0[2], m1[2], tol, "m[2]");
+    RWDS(m0[3], m1[3], tol, "m[3]");
+    RWDS(m0[4], m1[4], tol, "m[4]");
+    RWDS(m0[5], m1[5], tol, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set log get metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = 1;
+    m0[1] = 0;
+    m0[2] = 0;
+    m0[3] = 2;
+    m0[4] = 0;
+    m0[5] = 3;
+    RSS(ref_node_metric_set_log(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get(ref_node, node, m1), "get");
+    RWDS(exp(1), m1[0], -1.0, "m[0]");
+    RWDS(0, m1[1], -1.0, "m[1]");
+    RWDS(0, m1[2], -1.0, "m[2]");
+    RWDS(exp(2), m1[3], -1.0, "m[3]");
+    RWDS(0, m1[4], -1.0, "m[4]");
+    RWDS(exp(3), m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* set get log metric */
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL m0[6], m1[6];
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 30;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    m0[0] = exp(1);
+    m0[1] = 0;
+    m0[2] = 0;
+    m0[3] = exp(2);
+    m0[4] = 0;
+    m0[5] = exp(3);
+    RSS(ref_node_metric_set(ref_node, node, m0), "set");
+    RSS(ref_node_metric_get_log(ref_node, node, m1), "get");
+    RWDS(1, m1[0], -1.0, "m[0]");
+    RWDS(0, m1[1], -1.0, "m[1]");
+    RWDS(0, m1[2], -1.0, "m[2]");
+    RWDS(2, m1[3], -1.0, "m[3]");
+    RWDS(0, m1[4], -1.0, "m[4]");
+    RWDS(3, m1[5], -1.0, "m[5]");
 
     RSS(ref_node_free(ref_node), "free");
   }
