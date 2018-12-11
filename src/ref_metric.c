@@ -718,7 +718,7 @@ REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
 REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *curvature_metric;
-  REF_DBL m[6];
+  REF_DBL m[6], m_constrained[6];
   REF_INT node, gradation;
 
   if (!ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
@@ -734,12 +734,10 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   }
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_matrix_intersect(&(curvature_metric[6 * node]),
-                             ref_node_metric_ptr(ref_node, node), m),
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    RSS(ref_matrix_intersect(&(curvature_metric[6 * node]), m, m_constrained),
         "intersect");
-    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
-                             m[5]),
-        "set node met");
+    RSS(ref_node_metric_set(ref_node, node, m_constrained), "set node met");
   }
 
   ref_free(curvature_metric);
