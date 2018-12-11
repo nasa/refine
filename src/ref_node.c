@@ -307,12 +307,7 @@ static REF_STATUS ref_node_add_core(REF_NODE ref_node, REF_INT global,
       ref_mpi_rank(ref_node_mpi(ref_node)); /*local default*/
   ref_node->age[*node] = 0;                 /* default new born */
 
-  ref_node_metric(ref_node, 0, *node) = 1.0;
-  ref_node_metric(ref_node, 1, *node) = 0.0;
-  ref_node_metric(ref_node, 2, *node) = 0.0;
-  ref_node_metric(ref_node, 3, *node) = 1.0;
-  ref_node_metric(ref_node, 4, *node) = 0.0;
-  ref_node_metric(ref_node, 5, *node) = 1.0;
+  RSS(ref_node_metric_form(ref_node, *node, 1, 0, 0, 1, 0, 1), "set ident");
 
   (ref_node->n)++;
   return REF_SUCCESS;
@@ -815,12 +810,14 @@ REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
 REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
                                 REF_DBL m12, REF_DBL m13, REF_DBL m22,
                                 REF_DBL m23, REF_DBL m33) {
-  ref_node_metric(ref_node, 0, node) = m11;
-  ref_node_metric(ref_node, 1, node) = m12;
-  ref_node_metric(ref_node, 2, node) = m13;
-  ref_node_metric(ref_node, 3, node) = m22;
-  ref_node_metric(ref_node, 4, node) = m23;
-  ref_node_metric(ref_node, 5, node) = m33;
+  REF_DBL m[6];
+  m[0] = m11;
+  m[1] = m12;
+  m[2] = m13;
+  m[3] = m22;
+  m[4] = m23;
+  m[5] = m33;
+  RSS(ref_node_metric_set(ref_node, node, m), "set");
   return REF_SUCCESS;
 }
 
