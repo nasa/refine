@@ -858,6 +858,7 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
   REF_DBL r, r_min, r_max;
+  REF_DBL m[6];
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -879,10 +880,10 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
     return REF_SUCCESS;
   }
 
-  ratio0 =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node0), direction);
-  ratio1 =
-      ref_matrix_sqrt_vt_m_v(ref_node_metric_ptr(ref_node, node1), direction);
+  RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
+  ratio0 = ref_matrix_sqrt_vt_m_v(m, direction);
+  RSS(ref_node_metric_get(ref_node, node1, m), "node1 m");
+  ratio1 = ref_matrix_sqrt_vt_m_v(m, direction);
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
   /* Alauzet Finite Elements in Analysis and Design 46 (2010) pg 185 */
@@ -915,6 +916,7 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
   REF_DBL r, d_r[3], r_min, d_r_min[3], r_max, d_r_max[3];
   REF_INT i;
   REF_DBL r_log_r;
+  REF_DBL m[6];
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -939,13 +941,11 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
     return REF_SUCCESS;
   }
 
-  RSS(ref_matrix_sqrt_vt_m_v_deriv(ref_node_metric_ptr(ref_node, node0),
-                                   direction, &ratio0, d_ratio0),
-      "vt m v0");
+  RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
+  RSS(ref_matrix_sqrt_vt_m_v_deriv(m, direction, &ratio0, d_ratio0), "vt m v0");
   for (i = 0; i < 3; i++) d_ratio0[i] = -d_ratio0[i]; /* node 0 is neg */
-  RSS(ref_matrix_sqrt_vt_m_v_deriv(ref_node_metric_ptr(ref_node, node1),
-                                   direction, &ratio1, d_ratio1),
-      "vt m v0");
+  RSS(ref_node_metric_get(ref_node, node1, m), "node1 m");
+  RSS(ref_matrix_sqrt_vt_m_v_deriv(m, direction, &ratio1, d_ratio1), "vt m v0");
   for (i = 0; i < 3; i++) d_ratio1[i] = -d_ratio1[i]; /* node 0 is neg */
 
   /* Loseille Lohner IMR 18 (2009) pg 613 */
