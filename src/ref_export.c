@@ -731,7 +731,7 @@ REF_STATUS ref_export_metric_xyzdirlen(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_DBL d[12];
+  REF_DBL m[6], d[12];
   FILE *file;
 
   file = fopen(filename, "w");
@@ -741,7 +741,8 @@ REF_STATUS ref_export_metric_xyzdirlen(REF_GRID ref_grid,
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
   for (node = 0; node < ref_node_n(ref_node); node++) {
-    RSS(ref_matrix_diag_m(ref_node_metric_ptr(ref_node, n2o[node]), d), "diag");
+    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+    RSS(ref_matrix_diag_m(m, d), "diag");
     RSS(ref_matrix_ascending_eig(d), "sort eig");
 
     fprintf(file,
@@ -772,7 +773,7 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
   REF_INT cell;
   REF_INT ncell;
   REF_INT group;
-  REF_DBL d[12];
+  REF_DBL m[6], d[12];
   REF_DBL dx, dy, dz;
   FILE *file;
   char viz_file[256];
@@ -802,8 +803,8 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
     RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
     for (node = 0; node < ref_node_n(ref_node); node++) {
-      RSS(ref_matrix_diag_m(ref_node_metric_ptr(ref_node, n2o[node]), d),
-          "diag");
+      RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+      RSS(ref_matrix_diag_m(m, d), "diag");
       RSS(ref_matrix_ascending_eig(d), "sort eig");
       dx = d[3 + 3 * e] / sqrt(d[e]);
       dy = d[4 + 3 * e] / sqrt(d[e]);
@@ -856,7 +857,7 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
   REF_INT nnode, node;
   REF_INT *o2n, *n2o;
   REF_INT ncell, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL d[12];
+  REF_DBL m[6], d[12];
   REF_DBL x, y, z;
   REF_DBL ex, ey;
   FILE *file;
@@ -904,7 +905,8 @@ static REF_STATUS ref_export_tec_metric_ellipse_twod(
       1 * ncell, 1 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
-    RSS(ref_matrix_diag_m(ref_node_metric_ptr(ref_node, n2o[node]), d), "diag");
+    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+    RSS(ref_matrix_diag_m(m, d), "diag");
     RSS(ref_matrix_ascending_eig(d), "sort eig");
     eb = REF_EMPTY;
     best_y = -1.0;
@@ -956,7 +958,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   REF_INT nnode, node;
   REF_INT *o2n, *n2o;
   REF_INT ncell, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL d[12];
+  REF_DBL m[6], d[12];
   REF_DBL x, y, z;
   REF_DBL ex, ey;
   FILE *file;
@@ -1008,7 +1010,8 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
       3 * ncell, 3 * ncell, "point", "felineseg");
 
   for (node = 0; node < nnode; node++) {
-    RSS(ref_matrix_diag_m(ref_node_metric_ptr(ref_node, n2o[node]), d), "diag");
+    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+    RSS(ref_matrix_diag_m(m, d), "diag");
     RSS(ref_matrix_ascending_eig(d), "sort eig");
     for (e0 = 0; e0 < 3; e0++) {
       e1 = e0 + 1;
@@ -2384,6 +2387,7 @@ REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
   REF_INT *o2n, *n2o;
   REF_BOOL twod_node;
   REF_INT nnode;
+  REF_DBL m[6];
 
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
@@ -2404,9 +2408,8 @@ REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
 
   fprintf(f, "%d %d\n", nnode, 3);
   for (node = 0; node < nnode; node++) {
-    fprintf(f, "%.16E %.16E  %.16E \n", ref_node_metric(ref_node, 0, n2o[node]),
-            ref_node_metric(ref_node, 2, n2o[node]),
-            ref_node_metric(ref_node, 5, n2o[node]));
+    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+    fprintf(f, "%.16E %.16E %.16E \n", m[0], m[2], m[5]);
   }
 
   ref_free(n2o);
@@ -2424,6 +2427,7 @@ REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
   REF_INT *o2n, *n2o;
   REF_BOOL twod_node;
   REF_INT nnode;
+  REF_DBL m[6];
 
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
@@ -2447,9 +2451,8 @@ REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
   fprintf(f, "SolAtVertices\n%d\n1 3\n", nnode);
 
   for (node = 0; node < nnode; node++) {
-    fprintf(f, "%.16E %.16E  %.16E \n", ref_node_metric(ref_node, 0, n2o[node]),
-            ref_node_metric(ref_node, 2, n2o[node]),
-            ref_node_metric(ref_node, 5, n2o[node]));
+    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
+    fprintf(f, "%.16E %.16E %.16E \n", m[0], m[2], m[5]);
   }
 
   ref_free(n2o);

@@ -620,8 +620,7 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status &&
           ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
-        for (im = 0; im < 6; im++)
-          local_xyzm[im + 7 * i] = ref_node_metric(ref_node, im, local);
+        RSS(ref_node_metric_get(ref_node, local, &(local_xyzm[7 * i])), "get");
         local_xyzm[6 + 7 * i] = 1.0;
       } else {
         for (im = 0; im < 7; im++) local_xyzm[im + 7 * i] = 0.0;
@@ -704,8 +703,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status &&
           ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, local)) {
-        for (im = 0; im < 6; im++)
-          local_xyzm[im + 7 * i] = ref_node_metric(ref_node, im, local);
+        RSS(ref_node_metric_get(ref_node, local, &(local_xyzm[7 * i])), "get");
         local_xyzm[6 + 7 * i] = 1.0;
       } else {
         for (im = 0; im < 7; im++) local_xyzm[im + 7 * i] = 0.0;

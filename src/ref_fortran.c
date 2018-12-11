@@ -186,12 +186,12 @@ REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void) {
 
 REF_STATUS REF_FORT_(ref_fortran_import_metric,
                      REF_FORTRAN_IMPORT_METRIC)(REF_INT *nnodes, REF_DBL *m) {
-  REF_INT node, i;
+  REF_INT node;
   REF_NODE ref_node = ref_grid_node(ref_grid);
 
-  for (node = 0; node < (*nnodes); node++)
-    for (i = 0; i < 6; i++)
-      ref_node_metric(ref_node, i, node) = m[i + 6 * node];
+  for (node = 0; node < (*nnodes); node++) {
+    RSS(ref_node_metric_set(ref_node, node, &(m[6 * node])), "set node met");
+  }
 
   return REF_SUCCESS;
 }
