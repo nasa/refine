@@ -276,7 +276,6 @@ int main(int argc, char *argv[]) {
     REF_DBL x0, c, k, x, h;
     REF_DBL m0[6], m1[6], m2[6];
 
-    REF_INT i;
     REF_INT pos;
     REF_INT node;
 
@@ -329,7 +328,7 @@ int main(int argc, char *argv[]) {
           r = MAX(r, 0.32 * c * c);
           h = c * pow(r, k);
 
-          for (i = 0; i < 6; i++) m0[i] = ref_node_metric(ref_node, i, node);
+          RSS(ref_node_metric_get(ref_node, node, m0), "get intersect");
 
           m1[0] = 1.0 / (h * h);
           m1[1] = 0.0;
@@ -339,9 +338,7 @@ int main(int argc, char *argv[]) {
           m1[5] = 1.0 / (h * h);
 
           RSS(ref_matrix_intersect(m0, m1, m2), "intersect");
-          RSS(ref_node_metric_form(ref_node, node, m2[0], m2[1], m2[2], m2[3],
-                                   m2[4], m2[5]),
-              "set intersect");
+          RSS(ref_node_metric_set(ref_node, node, m2), "set intersect");
         }
 
       } else if (strcmp(argv[pos], "-h") == 0) {
