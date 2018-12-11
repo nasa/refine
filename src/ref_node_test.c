@@ -542,6 +542,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, m[3], -1.0, "m[3]");
     RWDS(0.0, m[4], -1.0, "m[4]");
     RWDS(1.0, m[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
   }
 
   { /* form get metric */
@@ -559,6 +561,8 @@ int main(int argc, char *argv[]) {
     RWDS(20.0, m[3], -1.0, "m[3]");
     RWDS(3.0, m[4], -1.0, "m[4]");
     RWDS(30.0, m[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
   }
 
   { /* set get metric */
@@ -582,6 +586,8 @@ int main(int argc, char *argv[]) {
     RWDS(m0[3], m1[3], -1.0, "m[3]");
     RWDS(m0[4], m1[4], -1.0, "m[4]");
     RWDS(m0[5], m1[5], -1.0, "m[5]");
+
+    RSS(ref_node_free(ref_node), "free");
   }
 
   { /* distance in metric */
