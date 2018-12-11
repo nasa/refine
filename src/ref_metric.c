@@ -47,18 +47,19 @@ REF_STATUS ref_metric_show(REF_DBL *m) {
 
 REF_STATUS ref_metric_inspect(REF_NODE ref_node) {
   REF_INT node;
-  each_ref_node_valid_node(ref_node, node)
-      RSS(ref_metric_show(ref_node_metric_ptr(ref_node, node)), "show it");
-
+  REF_DBL m[6];
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    RSS(ref_metric_show(m), "show it");
+  }
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_metric_from_node(REF_DBL *metric, REF_NODE ref_node) {
-  REF_INT node, im;
+  REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
-    for (im = 0; im < 6; im++)
-      metric[im + 6 * node] = ref_node_metric(ref_node, im, node);
+    RSS(ref_node_metric_get(ref_node, node, &(metric[6 * node])), "get");
   }
 
   return REF_SUCCESS;
@@ -68,11 +69,7 @@ REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node) {
   REF_INT node;
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_metric_form(ref_node, node, metric[0 + 6 * node],
-                             metric[1 + 6 * node], metric[2 + 6 * node],
-                             metric[3 + 6 * node], metric[4 + 6 * node],
-                             metric[5 + 6 * node]),
-        "set node met");
+    RSS(ref_node_metric_set(ref_node, node, &(metric[6 * node])), "set");
   }
 
   return REF_SUCCESS;
@@ -152,9 +149,7 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node) {
     ref_matrix_vec(d, 1, 2) = 1.0;
     ref_matrix_vec(d, 2, 2) = 0.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
-                             m[5]),
-        "set node met");
+    RSS(ref_node_metric_set(ref_node, node, m), "set node met");
   }
 
   return REF_SUCCESS;
@@ -192,9 +187,7 @@ REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
     ref_matrix_vec(d, 1, 2) = 0.0;
     ref_matrix_vec(d, 2, 2) = 1.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
-                             m[5]),
-        "set node met");
+    RSS(ref_node_metric_set(ref_node, node, m), "set node met");
   }
 
   return REF_SUCCESS;
@@ -245,9 +238,7 @@ REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
     ref_matrix_vec(d, 1, 2) = 1.0;
     ref_matrix_vec(d, 2, 2) = 0.0;
     ref_matrix_form_m(d, m);
-    RSS(ref_node_metric_form(ref_node, node, m[0], m[1], m[2], m[3], m[4],
-                             m[5]),
-        "set node met");
+    RSS(ref_node_metric_set(ref_node, node, m), "set node met");
   }
 
   return REF_SUCCESS;
@@ -255,11 +246,14 @@ REF_STATUS ref_metric_circle_node(REF_NODE ref_node) {
 
 REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
   REF_INT node;
+  REF_DBL m[6];
 
   each_ref_node_valid_node(ref_node, node) {
-    ref_node_metric(ref_node, 1, node) = 0.0;
-    ref_node_metric(ref_node, 3, node) = 1.0;
-    ref_node_metric(ref_node, 4, node) = 0.0;
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    m[1] = 0.0;
+    m[3] = 1.0;
+    m[4] = 0.0;
+    RSS(ref_node_metric_set(ref_node, node, m), "set");
   }
 
   return REF_SUCCESS;
@@ -305,16 +299,15 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
   for (ixyz = 0; ixyz < 3; ixyz++)
     RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
   for (ibary = 0; ibary < 3; ibary++)
-    RSS(ref_matrix_log_m(ref_node_metric_ptr(parent_node, nodes[ibary]),
-                         log_parent_m[ibary]),
+    RSS(ref_node_metric_get_log(parent_node, nodes[ibary], log_parent_m[ibary]),
         "log(parentM)");
   for (im = 0; im < 6; im++) {
     log_interpolated_m[im] = 0.0;
     for (ibary = 0; ibary < 3; ibary++)
       log_interpolated_m[im] += bary[ibary] * log_parent_m[ibary][im];
   }
-  RSS(ref_matrix_exp_m(log_interpolated_m, ref_node_metric_ptr(ref_node, node)),
-      "exp(intrpM)");
+  RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
+      "log(interpM)");
 
   return REF_SUCCESS;
 }
@@ -355,17 +348,16 @@ static REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
     for (ixyz = 0; ixyz < 3; ixyz++)
       RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
     for (ibary = 0; ibary < 3; ibary++)
-      RSS(ref_matrix_log_m(ref_node_metric_ptr(parent_node, nodes[ibary]),
-                           log_parent_m[ibary]),
+      RSS(ref_node_metric_get_log(parent_node, nodes[ibary],
+                                  log_parent_m[ibary]),
           "log(parentM)");
     for (im = 0; im < 6; im++) {
       log_interpolated_m[im] = 0.0;
       for (ibary = 0; ibary < 3; ibary++)
         log_interpolated_m[im] += bary[ibary] * log_parent_m[ibary][im];
     }
-    RSS(ref_matrix_exp_m(log_interpolated_m,
-                         ref_node_metric_ptr(ref_node, node)),
-        "exp(intrpM)");
+    RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
+        "log(interpM)");
   }
 
   return REF_SUCCESS;
