@@ -821,6 +821,14 @@ REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_metric_get(REF_NODE ref_node, REF_INT node, REF_DBL *m) {
+  REF_INT i;
+  for (i = 0; i < 6; i++) {
+    m[i] = ref_node_metric(ref_node, i, node);
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio) {
   REF_DBL direction[3], length;
