@@ -533,11 +533,11 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
   ref_free(everyones_new_nodes);
 
   if (0 != offset) {
-    each_ref_node_valid_node(
-        ref_node, node) if (ref_node_global(ref_node, node) >=
-                            ref_node->old_n_global)(ref_node->global[node]) +=
-        offset;
-
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_global(ref_node, node) >= ref_node->old_n_global) {
+        (ref_node->global[node]) += offset;
+      }
+    }
     for (node = ref_node_n(ref_node) - 1;
          node >= 0 && ref_node->sorted_global[node] >= ref_node->old_n_global;
          node--)
@@ -611,18 +611,18 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n_ptr,
 
   nnode = 0;
 
-  each_ref_node_valid_node(ref_node,
-                           node) if (ref_mpi_rank(ref_node_mpi(ref_node)) ==
-                                     ref_node_part(ref_node, node)) {
-    o2n[node] = nnode;
-    nnode++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_node_mpi(ref_node)) == ref_node_part(ref_node, node)) {
+      o2n[node] = nnode;
+      nnode++;
+    }
   }
 
-  each_ref_node_valid_node(ref_node,
-                           node) if (ref_mpi_rank(ref_node_mpi(ref_node)) !=
-                                     ref_node_part(ref_node, node)) {
-    o2n[node] = nnode;
-    nnode++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_node_mpi(ref_node)) != ref_node_part(ref_node, node)) {
+      o2n[node] = nnode;
+      nnode++;
+    }
   }
 
   RES(nnode, ref_node_n(ref_node), "nnode miscount");
@@ -731,9 +731,11 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node))
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       a_size[ref_node_part(ref_node, node)]++;
+    }
+  }
 
   RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
       "alltoall sizes");
@@ -753,11 +755,12 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   each_ref_mpi_worker(ref_mpi, part) a_next[part] =
       a_next[part - 1] + a_size[part - 1];
 
-  each_ref_node_valid_node(ref_node, node) if (ref_mpi_rank(ref_mpi) !=
-                                               ref_node_part(ref_node, node)) {
-    part = ref_node_part(ref_node, node);
-    a_global[a_next[part]] = ref_node_global(ref_node, node);
-    a_next[ref_node_part(ref_node, node)]++;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
