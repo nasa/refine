@@ -1512,6 +1512,7 @@ int main(int argc, char *argv[]) {
   { /* clone a twod node  */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
+    REF_DBL m[6];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -1538,7 +1539,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, ref_node_xyz(ref_node, 1, node1), -1.0, "y");
     RWDS(0.3, ref_node_xyz(ref_node, 2, node1), -1.0, "z");
 
-    RWDS(1.4, ref_node_metric(ref_node, 3, node1), -1.0, "m");
+    RSS(ref_node_metric_get(ref_node, node1, m), "get");
+    RWDS(1.4, m[3], -1.0, "m[3]");
 
     RSS(ref_node_free(ref_node), "free");
   }
