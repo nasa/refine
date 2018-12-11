@@ -1353,21 +1353,15 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
-        RSS(ref_node_metric_form(ref_node, local, metric[0 + 6 * node],
-                                 metric[1 + 6 * node], metric[2 + 6 * node],
-                                 metric[3 + 6 * node], metric[4 + 6 * node],
-                                 metric[5 + 6 * node]),
+        RSS(ref_node_metric_set(ref_node, local, &(metric[6 * node])),
             "set local node met");
       }
       if (2 == dim) {
         global = nnode + node + nnode_read;
         RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
         if (REF_EMPTY != local) {
-          RSS(ref_node_metric_form(ref_node, local, metric[0 + 6 * node],
-                                   metric[1 + 6 * node], metric[2 + 6 * node],
-                                   metric[3 + 6 * node], metric[4 + 6 * node],
-                                   metric[5 + 6 * node]),
-              "set local node met");
+	  RSS(ref_node_metric_set(ref_node, local, &(metric[6 * node])),
+	      "set local node met");
         }
       }
     }
@@ -1479,10 +1473,7 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
-        RSS(ref_node_metric_form(ref_node, local, metric[0 + 6 * node],
-                                 metric[1 + 6 * node], metric[2 + 6 * node],
-                                 metric[3 + 6 * node], metric[4 + 6 * node],
-                                 metric[5 + 6 * node]),
+	RSS(ref_node_metric_set(ref_node, local, &(metric[6 * node])),
             "set local node met");
       }
     }
