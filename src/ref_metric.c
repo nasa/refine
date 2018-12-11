@@ -373,9 +373,8 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL max_error, tol = 1.0e-8;
   REF_DBL log_parent_m[4][6];
-  REF_DBL log_interpolated_m[6];
   REF_INT receptor, n_recept, donation, n_donor;
-  REF_DBL *recept_m, *donor_m, *recept_bary, *donor_bary;
+  REF_DBL *recept_log_m, *donor_log_m, *recept_bary, *donor_bary;
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
@@ -439,50 +438,43 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   ref_free(recept_cell);
   ref_free(recept_bary);
 
-  ref_malloc(donor_m, 6 * n_donor, REF_DBL);
+  ref_malloc(donor_log_m, 6 * n_donor, REF_DBL);
 
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
     for (ibary = 0; ibary < 4; ibary++)
-      RSS(ref_matrix_log_m(ref_node_metric_ptr(from_node, nodes[ibary]),
-                           log_parent_m[ibary]),
+      RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
           "log(parentM)");
     for (im = 0; im < 6; im++) {
-      log_interpolated_m[im] = 0.0;
+      donor_log_m[im + 6 * donation] = 0.0;
       for (ibary = 0; ibary < 4; ibary++) {
-        log_interpolated_m[im] +=
+        donor_log_m[im + 6 * donation] +=
             donor_bary[ibary + 4 * donation] * log_parent_m[ibary][im];
       }
     }
-    RSS(ref_matrix_exp_m(log_interpolated_m, &(donor_m[6 * donation])),
-        "exp(intrpM)");
   }
   ref_free(donor_cell);
   ref_free(donor_bary);
 
-  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_m, 6, n_donor,
-                        (void **)(&recept_m), &n_recept, REF_DBL_TYPE),
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_log_m, 6, n_donor,
+                        (void **)(&recept_log_m), &n_recept, REF_DBL_TYPE),
       "blind send bary");
   RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_node, 1, n_donor,
                         (void **)(&recept_node), &n_recept, REF_INT_TYPE),
       "blind send node");
-  ref_free(donor_m);
+  ref_free(donor_log_m);
   ref_free(donor_node);
   ref_free(donor_ret);
 
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
-    RSS(ref_node_metric_form(
-            to_node, node, recept_m[0 + 6 * receptor],
-            recept_m[1 + 6 * receptor], recept_m[2 + 6 * receptor],
-            recept_m[3 + 6 * receptor], recept_m[4 + 6 * receptor],
-            recept_m[5 + 6 * receptor]),
-        "set received met");
+    RSS(ref_node_metric_set_log(to_node, node, &(recept_log_m[6 * receptor])),
+        "set received log met");
   }
 
   ref_free(recept_node);
-  ref_free(recept_m);
+  ref_free(recept_log_m);
 
   RSS(ref_interp_free(ref_interp), "interp free");
 
