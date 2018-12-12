@@ -203,8 +203,16 @@ int main(void) {
     RSS(ref_adj_add(ref_adj, 5, 28), "add");
 
     RSS(ref_adj_min_degree_node(ref_adj, &min_degree, &min_degree_node), "deg");
-    REIS(2, min_degree, "one min degree");
-    REIS(5, min_degree_node, "one min degree node");
+    REIS(2, min_degree, "two min degree");
+    REIS(5, min_degree_node, "two min degree node");
+
+    RSS(ref_adj_add(ref_adj, 10, 38), "add");
+    RSS(ref_adj_add(ref_adj, 10, 32), "add");
+    RSS(ref_adj_add(ref_adj, 10, 35), "add");
+
+    RSS(ref_adj_min_degree_node(ref_adj, &min_degree, &min_degree_node), "deg");
+    REIS(2, min_degree, "two min degree");
+    REIS(5, min_degree_node, "two min degree node");
 
     RSS(ref_adj_free(ref_adj), "free");
   }
