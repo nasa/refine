@@ -51,6 +51,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "create");
     RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_fill.tec"), "plot fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
+    RSS(ref_edge_rcm(ref_edge, ref_grid_node(ref_grid)), "rcm");
+    ref_mpi_stopwatch_stop(ref_mpi, "rcm");
     RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");

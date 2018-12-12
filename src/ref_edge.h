@@ -74,6 +74,8 @@ REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, REF_NODE ref_node,
 REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, REF_NODE ref_node,
                               const char *root_filename);
 
+REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node);
+
 END_C_DECLORATION
 
 #endif /* REF_EDGE_H */
