@@ -497,9 +497,10 @@ REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_min_degree_node(REF_ADJ ref_adj, REF_NODE ref_node,
+static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_NODE ref_node,
                                            REF_INT *o2n, REF_INT *min_degree,
                                            REF_INT *min_degree_node) {
+  REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT node, degree;
   *min_degree = REF_EMPTY;
   *min_degree_node = REF_EMPTY;
@@ -518,22 +519,60 @@ static REF_STATUS ref_edge_min_degree_node(REF_ADJ ref_adj, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
+                                          REF_INT *queue, REF_INT *nqueue) {
+  queue[0 + 2 * (*nqueue)] = node;
+  queue[1 + 2 * (*nqueue)] = degree;
+  (*nqueue)++;
+  /* sort */
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
+                                     REF_INT *o2n, REF_INT *n2o, REF_INT *ndone,
+                                     REF_INT *queue, REF_INT *nqueue) {
+  REF_ADJ ref_adj = ref_edge_adj(ref_edge);
+  REF_INT item, ref, other, degree;
+  n2o[(*ndone)] = node;
+  o2n[node] = (*ndone);
+  (*ndone)++;
+
+  each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
+    other = ref_edge_e2n(ref_edge, 0, ref);
+    if (REF_EMPTY == o2n[other]) {
+      RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n0");
+    }
+    other = ref_edge_e2n(ref_edge, 1, ref);
+    if (REF_EMPTY == o2n[other]) {
+      RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n1");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
   REF_INT *o2n, *n2o, *queue;
   REF_INT min_degree, min_degree_node;
-  REF_ADJ ref_adj = ref_edge_adj(ref_edge);
-  REF_INT ndone;
+  REF_INT ndone, nqueue;
 
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   ref_malloc(n2o, ref_node_n(ref_node), REF_INT);
-  ref_malloc(queue, ref_node_n(ref_node), REF_INT);
+  ref_malloc(queue, 2 * ref_node_n(ref_node), REF_INT);
 
   ndone = 0;
+  nqueue = 0;
 
-  RSS(ref_edge_min_degree_node(ref_adj, ref_node, o2n, &min_degree,
+  RSS(ref_edge_min_degree_node(ref_edge, ref_node, o2n, &min_degree,
                                &min_degree_node),
       "min degree node");
   printf("node %d min degree %d\n", min_degree_node, min_degree);
+
+  RSS(ref_edge_rcm_queue(ref_edge, min_degree_node, o2n, n2o, &ndone, queue,
+                         &nqueue),
+      "min");
 
   n2o[ndone] = min_degree_node;
   o2n[min_degree_node] = ndone;
