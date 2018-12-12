@@ -224,7 +224,7 @@ REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
     if (degree > 0) {
       if (REF_EMPTY == (*min_degree_node) || degree < (*min_degree)) {
         *min_degree_node = node;
-	*min_degree = degree;
+        *min_degree = degree;
       }
     }
   }
