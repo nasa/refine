@@ -78,6 +78,8 @@ REF_STATUS ref_adj_remove(REF_ADJ ref_adj, REF_INT node, REF_INT reference);
 REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
                                 REF_INT reference);
 REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node, REF_INT *degree);
+REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
+                                   REF_INT *min_degree_node);
 
 END_C_DECLORATION
 

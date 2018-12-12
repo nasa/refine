@@ -182,5 +182,32 @@ int main(void) {
     RSS(ref_adj_free(ref_adj), "free");
   }
 
+  { /* min degree node */
+    REF_ADJ ref_adj;
+    REF_INT min_degree, min_degree_node;
+    RSS(ref_adj_create(&ref_adj), "create");
+
+    RSS(ref_adj_min_degree_node(ref_adj, &min_degree, &min_degree_node), "deg");
+    REIS(REF_EMPTY, min_degree, "empty min degree");
+    REIS(REF_EMPTY, min_degree_node, "empty min degree node");
+
+    RSS(ref_adj_add(ref_adj, 0, 12), "add");
+
+    RSS(ref_adj_min_degree_node(ref_adj, &min_degree, &min_degree_node), "deg");
+    REIS(1, min_degree, "one min degree");
+    REIS(0, min_degree_node, "one min degree node");
+
+    RSS(ref_adj_add(ref_adj, 0, 14), "add");
+    RSS(ref_adj_add(ref_adj, 0, 16), "add");
+    RSS(ref_adj_add(ref_adj, 5, 27), "add");
+    RSS(ref_adj_add(ref_adj, 5, 28), "add");
+
+    RSS(ref_adj_min_degree_node(ref_adj, &min_degree, &min_degree_node), "deg");
+    REIS(2, min_degree, "one min degree");
+    REIS(5, min_degree_node, "one min degree node");
+
+    RSS(ref_adj_free(ref_adj), "free");
+  }
+
   return 0;
 }
