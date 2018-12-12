@@ -523,11 +523,11 @@ static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
                                           REF_INT *queue, REF_INT *nqueue) {
   REF_INT location, insert_point;
 
-  /* smallest degree first */
+  /* largest degree first, will dequeue smallest from end of array */
 
   insert_point = (*nqueue);
   for (location = 0; location < (*nqueue); location++) {
-    if (queue[1 + 2 * location] > degree) {
+    if (queue[1 + 2 * location] < degree) {
       insert_point = location;
       break;
     }
@@ -542,11 +542,13 @@ static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
   queue[1 + 2 * insert_point] = degree;
   (*nqueue)++;
 
+  /*
   printf("nqueue %d of %d (%d) ins %d\n", *nqueue, node, degree, insert_point);
   for (location = 0; location < (*nqueue); location++) {
     printf("%d: %d (%d)\n", location, queue[0 + 2 * location],
            queue[1 + 2 * location]);
   }
+  */
 
   return REF_SUCCESS;
 }
@@ -556,11 +558,12 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
                                      REF_INT *queue, REF_INT *nqueue) {
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT item, ref, other, degree;
+
   n2o[(*ndone)] = node;
   o2n[node] = (*ndone);
   (*ndone)++;
 
-  printf("%d done %d\n", *ndone, node);
+  printf("%d done %d nq %d\n", *ndone, node, *nqueue);
 
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
     other = ref_edge_e2n(ref_edge, 0, ref);
@@ -592,13 +595,13 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
 
   while (ndone < ref_node_n(ref_node)) {
     RSS(ref_edge_min_degree_node(ref_edge, ref_node, o2n, &min_degree,
-				 &min_degree_node),
-	"min degree node");
+                                 &min_degree_node),
+        "min degree node");
     printf("node %d min degree %d\n", min_degree_node, min_degree);
 
     RSS(ref_edge_rcm_queue(ref_edge, min_degree_node, o2n, n2o, &ndone, queue,
-			   &nqueue),
-	"min");
+                           &nqueue),
+        "min");
 
     /* drain queue */
     while (nqueue > 0) {
@@ -606,8 +609,8 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
       min_degree = queue[1 + 2 * (nqueue - 1)];
       nqueue--;
       RSS(ref_edge_rcm_queue(ref_edge, min_degree_node, o2n, n2o, &ndone, queue,
-			     &nqueue),
-	  "min");
+                             &nqueue),
+          "min");
     }
   }
 
