@@ -563,16 +563,18 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
   o2n[node] = (*ndone);
   (*ndone)++;
 
-  printf("%d done %d nq %d\n", *ndone, node, *nqueue);
+  /* printf("%d done %d nq %d\n", *ndone, node, *nqueue); */
 
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
     other = ref_edge_e2n(ref_edge, 0, ref);
     if (REF_EMPTY == o2n[other]) {
+      o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
       RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n0");
     }
     other = ref_edge_e2n(ref_edge, 1, ref);
     if (REF_EMPTY == o2n[other]) {
+      o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
       RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n1");
     }
@@ -597,8 +599,6 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
     RSS(ref_edge_min_degree_node(ref_edge, ref_node, o2n, &min_degree,
                                  &min_degree_node),
         "min degree node");
-    printf("node %d min degree %d\n", min_degree_node, min_degree);
-
     RSS(ref_edge_rcm_queue(ref_edge, min_degree_node, o2n, n2o, &ndone, queue,
                            &nqueue),
         "min");
@@ -613,6 +613,8 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
           "min");
     }
   }
+
+  REIS(ndone, ref_node_n(ref_node), "reodering does not match original nodes");
 
   ref_free(queue);
   ref_free(n2o);
