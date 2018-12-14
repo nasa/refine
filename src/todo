@@ -1,24 +1,11 @@
 
-reordering global for faster file read
-  concatenate local rcm ordered indexes
-
-node smooth after node, cell, and, adj are compact
- metric exact after split
-
-clean up ref_acceptance uses without a flag
-ref_acceptance should use two dashes
-try https://doi.org/10.2514/6.2007-4186 analytic test cases
-
 version 3 .meshb
-
-ref_edge handle ref_node uniformly
 
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
 post-mortum normdev plot
-latest ESP laptop, desktop, k
 
 tess
  + report tri area and tet volume ranges
@@ -58,6 +45,9 @@ cavity operator in 2D/3D
     migrate
 
 acceptance test that checks interp error for functions
+clean up ref_acceptance uses without a flag
+ref_acceptance should use two dashes
+try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 start geode support?
 PW isotropic spacing
@@ -98,8 +88,6 @@ partition artifacts
     ref node vol xyz pointers
     interate on unmark
   ref_partition diffusion
-
-ref_metric_test --lp should optionally provide intermediate steps
 
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
@@ -161,6 +149,8 @@ robustness and metric conformity
 
 performance
  profile
+ node smooth after node, cell, and, adj are compact
+   metric exact after split
  make faster, more efficient
  don't balloon up in size
  insert once, right place
@@ -214,6 +204,13 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ latest ESP laptop, desktop, k
+
++ reordering global for faster file read
+  + concatenate local rcm ordered indexes
+
++ ref_edge handle ref_node uniformly
+
 + reordering for cache
   + implement grid vertex Cuthill-Magee reordering
   + ref_edge_node unform use (remove from arg list)
@@ -240,7 +237,6 @@ mixed element in refine/two
   + delete ref_metric_surface_gradation
   + circle analytical example
   + implement mixed_space_gradation
-
 
 + 1.8.21
 
