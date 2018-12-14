@@ -150,6 +150,27 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* uniq */
+    REF_EDGE ref_edge;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_node_add(ref_node, 0, &node), "first add");
+    RSS(ref_node_add(ref_node, 1, &node), "first add");
+
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    RSS(ref_edge_uniq(ref_edge, 0, 1), "uniq");
+    REIS(1, ref_edge_n(ref_edge), "nedge");
+
+    RSS(ref_edge_uniq(ref_edge, 0, 1), "uniq");
+    REIS(1, ref_edge_n(ref_edge), "nedge");
+
+    RSS(ref_edge_free(ref_edge), "edge");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* rcm */
     REF_EDGE ref_edge;
     REF_GRID ref_grid;

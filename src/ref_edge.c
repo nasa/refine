@@ -24,44 +24,6 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
-  REF_INT edge;
-
-  /* do nothing if we already have it */
-  RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
-      "find existing");
-  if (REF_EMPTY != edge) return REF_SUCCESS;
-
-  /* incemental reallocation */
-  if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
-    REF_INT orig, chunk;
-    orig = ref_edge_max(ref_edge);
-    /* geometric growth for efficiency */
-    chunk = MAX(5000, (REF_INT)(1.5 * (REF_DBL)orig));
-    ref_edge_max(ref_edge) = orig + chunk;
-
-    ref_realloc(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT);
-    for (edge = orig; edge < ref_edge_max(ref_edge); edge++) {
-      ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
-      ref_edge_e2n(ref_edge, 1, edge) = REF_EMPTY;
-    }
-  }
-
-  edge = ref_edge_n(ref_edge);
-  ref_edge_n(ref_edge)++;
-  ref_edge_e2n(ref_edge, 0, edge) = node0;
-  ref_edge_e2n(ref_edge, 1, edge) = node1;
-
-  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
-                  edge),
-      "adj n0");
-  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
-                  edge),
-      "adj n1");
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
   REF_INT group, cell, cell_edge;
   REF_INT node0, node1;
@@ -135,6 +97,44 @@ REF_STATUS ref_edge_free(REF_EDGE ref_edge) {
   ref_free(ref_edge->e2n);
 
   ref_free(ref_edge);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
+  REF_INT edge;
+
+  /* do nothing if we already have it */
+  RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
+      "find existing");
+  if (REF_EMPTY != edge) return REF_SUCCESS;
+
+  /* incemental reallocation */
+  if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
+    REF_INT orig, chunk;
+    orig = ref_edge_max(ref_edge);
+    /* geometric growth for efficiency */
+    chunk = MAX(5000, (REF_INT)(1.5 * (REF_DBL)orig));
+    ref_edge_max(ref_edge) = orig + chunk;
+
+    ref_realloc(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT);
+    for (edge = orig; edge < ref_edge_max(ref_edge); edge++) {
+      ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
+      ref_edge_e2n(ref_edge, 1, edge) = REF_EMPTY;
+    }
+  }
+
+  edge = ref_edge_n(ref_edge);
+  ref_edge_n(ref_edge)++;
+  ref_edge_e2n(ref_edge, 0, edge) = node0;
+  ref_edge_e2n(ref_edge, 1, edge) = node1;
+
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
+                  edge),
+      "adj n0");
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
+                  edge),
+      "adj n1");
 
   return REF_SUCCESS;
 }
