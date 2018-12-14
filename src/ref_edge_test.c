@@ -50,13 +50,21 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
     RSS(ref_edge_create(&ref_edge, ref_grid), "create");
     ref_mpi_stopwatch_stop(ref_mpi, "create");
-    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_fill_raw.tec"), "plot fill");
+    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_efill_raw.tec"),
+        "plot edge fill");
+    RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
+                          "ref_edge_test_cfill_raw.tec"),
+        "plot cell fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
     ref_grid_pack(ref_grid);
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
     RSS(ref_edge_create(&ref_edge, ref_grid), "create");
     ref_mpi_stopwatch_stop(ref_mpi, "create");
-    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_fill_rcm.tec"), "plot fill");
+    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_efill_rcm.tec"),
+        "plot fill");
+    RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
+                          "ref_edge_test_cfill_rcm.tec"),
+        "plot cell fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
     RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_grid_free(ref_grid), "free");

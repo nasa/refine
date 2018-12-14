@@ -367,7 +367,7 @@ REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   fprintf(file, "variables = \"i\" \"j\"\n");
 
   fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n",
-	  2 * ref_edge_n(ref_edge), "point");
+          2 * ref_edge_n(ref_edge), "point");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     fprintf(file, " %d %d\n", ref_edge_e2n(ref_edge, 0, edge),
@@ -523,7 +523,7 @@ static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_NODE ref_node,
 
 static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
                                           REF_INT *queue, REF_INT *nqueue,
-					  REF_INT *nhere) {
+                                          REF_INT *nhere) {
   REF_INT location, insert_point;
 
   /* largest degree first, will dequeue smallest from end of array */
@@ -576,13 +576,15 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
     if (REF_EMPTY == o2n[other]) {
       o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere), "queue n0");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
+          "queue n0");
     }
     other = ref_edge_e2n(ref_edge, 1, ref);
     if (REF_EMPTY == o2n[other]) {
       o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere), "queue n1");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
+          "queue n1");
     }
   }
 

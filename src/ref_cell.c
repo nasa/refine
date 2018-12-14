@@ -1115,3 +1115,30 @@ REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
+  REF_INT cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine cell fill\"\n");
+  fprintf(file, "variables = \"node\" \"cell\"\n");
+
+  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n",
+          ref_cell_node_per(ref_cell) * ref_cell_n(ref_cell), "point");
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      fprintf(file, " %d %d\n", ref_cell_c2n(ref_cell, cell_node, cell), cell);
+    }
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}

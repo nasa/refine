@@ -172,6 +172,8 @@ REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
 REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
                            REF_INT **global);
 
+REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_CELL_H */
