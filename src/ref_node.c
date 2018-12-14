@@ -550,6 +550,52 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT node, nnode, *global;
+  REF_INT *everyones_nnode, offset, proc;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      nnode++;
+    }
+  }
+
+  ref_malloc(everyones_nnode, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &nnode, everyones_nnode, REF_INT_TYPE),
+      "allgather");
+
+  offset = 0;
+  for (proc = 0; proc < ref_mpi_rank(ref_mpi); proc++)
+    offset += everyones_nnode[proc];
+
+  ref_free(everyones_nnode);
+  ref_malloc(global, ref_node_max(ref_node), REF_INT);
+  
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      global[node] = offset + nnode;
+      nnode++;
+    }
+  }
+  
+  RSS(ref_node_ghost_int(ref_node, global), "ghost int");
+
+  each_ref_node_valid_node(ref_node, node) {
+    ref_node->global[node] = global[node];
+  }
+
+  ref_free(global);
+
+  RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild globals");
+  
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   REF_LIST ref_list = ref_node->unused_global_list;
   REF_INT sort, offset, local;
