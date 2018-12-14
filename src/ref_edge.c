@@ -624,7 +624,7 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node, REF_INT **o2n_ptr,
     }
   }
 
-  REIS(ndone, ref_node_n(ref_node), "reodering does not match original nodes");
+  REIS(ndone, ref_node_n(ref_node), "reordering done not original nodes");
 
   /* reverse with queue as temporary space */
   for (node = 0; node < ndone; node++) {
