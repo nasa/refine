@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "create");
     RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_efill_raw.tec"),
         "plot edge fill");
+    RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
                           "ref_edge_test_cfill_raw.tec"),
         "plot cell fill");
