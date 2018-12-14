@@ -24,8 +24,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0,
-                                REF_INT node1) {
+REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
   REF_INT edge;
 
   /* do nothing if we already have it */
