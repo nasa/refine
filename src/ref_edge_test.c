@@ -32,12 +32,14 @@
 #include "ref_sort.h"
 
 #include "ref_fixture.h"
+#include "ref_malloc.h"
 #include "ref_mpi.h"
 
 #include "ref_import.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT *n2o, *o2n;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
@@ -51,8 +53,14 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "create");
     RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_fill.tec"), "plot fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
-    RSS(ref_edge_rcm(ref_edge, ref_grid_node(ref_grid)), "rcm");
+    RSS(ref_edge_rcm(ref_edge, ref_grid_node(ref_grid), &o2n, &n2o), "rcm");
+    RSS(ref_edge_free(ref_edge), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "rcm");
+    ref_free(o2n);
+    ref_free(n2o);
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    ref_mpi_stopwatch_stop(ref_mpi, "create");
     RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");

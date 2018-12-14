@@ -583,11 +583,14 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
+REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node, REF_INT **o2n_ptr,
+                        REF_INT **n2o_ptr) {
   REF_INT *o2n, *n2o, *queue;
   REF_INT min_degree, min_degree_node;
-  REF_INT ndone, nqueue;
+  REF_INT ndone, nqueue, node;
 
+  *o2n_ptr = NULL;
+  *n2o_ptr = NULL;
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   ref_malloc(n2o, ref_node_n(ref_node), REF_INT);
   ref_malloc(queue, 2 * ref_node_n(ref_node), REF_INT);
@@ -616,8 +619,23 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node) {
 
   REIS(ndone, ref_node_n(ref_node), "reodering does not match original nodes");
 
+  /* reverse with queue as temporary space */
+  for (node = 0; node < ndone; node++) {
+    queue[ndone - node - 1] = n2o[node];
+  }
+  /* copy back */
+  for (node = 0; node < ndone; node++) {
+    n2o[node] = queue[node];
+  }
   ref_free(queue);
-  ref_free(n2o);
-  ref_free(o2n);
+
+  /* set o2n to reverse */
+  for (node = 0; node < ndone; node++) {
+    o2n[n2o[node]] = node;
+  }
+
+  *o2n_ptr = o2n;
+  *n2o_ptr = n2o;
+
   return REF_SUCCESS;
 }
