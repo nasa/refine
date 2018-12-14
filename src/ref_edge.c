@@ -522,13 +522,14 @@ static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_NODE ref_node,
 }
 
 static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
-                                          REF_INT *queue, REF_INT *nqueue) {
+                                          REF_INT *queue, REF_INT *nqueue,
+					  REF_INT *nhere) {
   REF_INT location, insert_point;
 
   /* largest degree first, will dequeue smallest from end of array */
 
-  insert_point = (*nqueue);
-  for (location = 0; location < (*nqueue); location++) {
+  insert_point = *nhere;
+  for (location = 0; location < (*nhere); location++) {
     if (queue[1 + 2 * location] < degree) {
       insert_point = location;
       break;
@@ -543,6 +544,8 @@ static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
   queue[0 + 2 * insert_point] = node;
   queue[1 + 2 * insert_point] = degree;
   (*nqueue)++;
+
+  (*nhere)++;
 
   /*
   printf("nqueue %d of %d (%d) ins %d\n", *nqueue, node, degree, insert_point);
@@ -560,10 +563,11 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
                                      REF_INT *queue, REF_INT *nqueue) {
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT item, ref, other, degree;
-
+  REF_INT nhere;
   n2o[(*ndone)] = node;
   o2n[node] = (*ndone);
   (*ndone)++;
+  nhere = 0;
 
   /* printf("%d done %d nq %d\n", *ndone, node, *nqueue); */
 
@@ -572,13 +576,13 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
     if (REF_EMPTY == o2n[other]) {
       o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n0");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere), "queue n0");
     }
     other = ref_edge_e2n(ref_edge, 1, ref);
     if (REF_EMPTY == o2n[other]) {
       o2n[other] = 0;
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n1");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere), "queue n1");
     }
   }
 
