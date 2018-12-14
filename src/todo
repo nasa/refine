@@ -24,9 +24,10 @@ check that post conditions are implemented completely for all ops
 tess
  + report tri area and tet volume ranges
  + test with OM6
- test mixed space gradation
+ mixed space gradation surf with aflr3 positive volume
+ edge feature size i.e., tiny edges
+ face feature size i.e., om6 trailing edge
  k-tree to drive split for grid size gradation of JSM
- edge feature size i.e., om6 trailing edge
 
 layer insert
  cavity recover triangle side
