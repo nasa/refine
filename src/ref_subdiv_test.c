@@ -124,8 +124,8 @@ int main(int argc, char *argv[]) {
 
     if (!ref_mpi_para(ref_mpi)) {
       RSS(ref_subdiv_mark_relax(ref_subdiv), "relax");
-      ref_edge_tec_int(ref_subdiv_edge(ref_subdiv), ref_grid_node(ref_grid),
-                       "edge.tec", ref_subdiv->mark);
+      ref_edge_tec_int(ref_subdiv_edge(ref_subdiv), "edge.tec",
+                       ref_subdiv->mark);
       RSS(ref_subdiv_mark_verify(ref_subdiv), "vrfy");
     }
 

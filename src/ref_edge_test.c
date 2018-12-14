@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_edge_uniq(ref_edge, 3, 0), "uniq");
     RSS(ref_edge_uniq(ref_edge, 4, 0), "uniq");
 
-    RSS(ref_edge_rcm(ref_edge, ref_node, &o2n, &n2o), "create");
+    RSS(ref_edge_rcm(ref_edge, &o2n, &n2o), "create");
 
     REIS(2, n2o[0], "n2o[0]");
     REIS(1, n2o[1], "n2o[1]");

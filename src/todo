@@ -1,11 +1,4 @@
 
-reordering for cache
-  + implement grid vertex Cuthill-Magee reordering
-  ref_edge_node unform use (remove from arg list)
-  + unit test the CM case in their paper for tri (empty ref_grid)
-  + node and cell reordering for cache
-  + cell pack: insert in first node index order
-  + compact adj (happens narturally durring cell rodering)
 reordering global for faster file read
   concatenate local rcm ordered indexes
 
@@ -220,6 +213,14 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ reordering for cache
+  + implement grid vertex Cuthill-Magee reordering
+  + ref_edge_node unform use (remove from arg list)
+  + unit test the CM case in their paper for tri (empty ref_grid)
+  + node and cell reordering for cache
+  + cell pack: insert in first node index order
+  + compact adj (happens narturally during cell rodering)
 
 + always store metric in log form
   + eliminate direct structure access

@@ -380,8 +380,9 @@ REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, REF_NODE ref_node,
-                            const char *filename, REF_INT *data) {
+REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, const char *filename,
+                            REF_INT *data) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
 
@@ -418,8 +419,9 @@ REF_STATUS ref_edge_tec_int(REF_EDGE ref_edge, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, REF_NODE ref_node,
-                            const char *filename, REF_DBL *data) {
+REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, const char *filename,
+                            REF_DBL *data) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
 
@@ -456,8 +458,8 @@ REF_STATUS ref_edge_tec_dbl(REF_EDGE ref_edge, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, REF_NODE ref_node,
-                              const char *filename) {
+REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, const char *filename) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT edge;
   REF_INT node;
   REF_DBL ratio;
@@ -498,9 +500,10 @@ REF_STATUS ref_edge_tec_ratio(REF_EDGE ref_edge, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_NODE ref_node,
-                                           REF_INT *o2n, REF_INT *min_degree,
+static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_INT *o2n,
+                                           REF_INT *min_degree,
                                            REF_INT *min_degree_node) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT node, degree;
   *min_degree = REF_EMPTY;
@@ -590,8 +593,9 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node, REF_INT **o2n_ptr,
+REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_INT **o2n_ptr,
                         REF_INT **n2o_ptr) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
   REF_INT *o2n, *n2o, *queue;
   REF_INT min_degree, min_degree_node;
   REF_INT ndone, nqueue, node;
@@ -606,8 +610,7 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node, REF_INT **o2n_ptr,
   nqueue = 0;
 
   while (ndone < ref_node_n(ref_node)) {
-    RSS(ref_edge_min_degree_node(ref_edge, ref_node, o2n, &min_degree,
-                                 &min_degree_node),
+    RSS(ref_edge_min_degree_node(ref_edge, o2n, &min_degree, &min_degree_node),
         "min degree node");
     RSS(ref_edge_rcm_queue(ref_edge, min_degree_node, o2n, n2o, &ndone, queue,
                            &nqueue),
