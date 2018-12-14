@@ -21,6 +21,9 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
+post-mortum normdev plot
+latest ESP laptop, desktop, k
+
 tess
  + report tri area and tet volume ranges
  + test with OM6
