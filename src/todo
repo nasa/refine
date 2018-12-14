@@ -17,6 +17,8 @@ try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 version 3 .meshb
 
+ref_edge handle ref_node uniformly
+
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
