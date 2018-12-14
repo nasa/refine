@@ -31,6 +31,11 @@ tess
  edge feature size i.e., tiny edges
  face feature size i.e., om6 trailing edge
  k-tree to drive split for grid size gradation of JSM
+ 2D cavity operator for surf geom edges
+ edge chord height warning/constraint?
+
+C2S
+ how/when to fail fast?
 
 layer insert
  cavity recover triangle side
