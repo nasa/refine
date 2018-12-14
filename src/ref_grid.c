@@ -19,11 +19,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_adj.h"
 #include "ref_grid.h"
 
 #include "ref_malloc.h"
-#include "ref_matrix.h"
 
 REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_GRID ref_grid;
