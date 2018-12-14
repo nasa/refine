@@ -573,14 +573,14 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
     other = ref_edge_e2n(ref_edge, 0, ref);
     if (REF_EMPTY == o2n[other]) {
-      o2n[other] = 0;
+      o2n[other] = -2; /* mark as queued */
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
       RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
           "queue n0");
     }
     other = ref_edge_e2n(ref_edge, 1, ref);
     if (REF_EMPTY == o2n[other]) {
-      o2n[other] = 0;
+      o2n[other] = -2; /* mark as queued */
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
       RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
           "queue n1");
