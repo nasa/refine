@@ -255,6 +255,10 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
   }
 
+  RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
+      "implicit global");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "implicit global");
+
   RSS(ref_geom_verify_param(ref_grid), "final params");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "verify final params");
 
