@@ -39,7 +39,6 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_INT *n2o, *o2n;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
@@ -51,16 +50,29 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
     RSS(ref_edge_create(&ref_edge, ref_grid), "create");
     ref_mpi_stopwatch_stop(ref_mpi, "create");
-    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_fill.tec"), "plot fill");
-    ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
-    RSS(ref_edge_rcm(ref_edge, ref_grid_node(ref_grid), &o2n, &n2o), "rcm");
+    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_efill_raw.tec"),
+        "plot edge fill");
     RSS(ref_edge_free(ref_edge), "free");
-    ref_mpi_stopwatch_stop(ref_mpi, "rcm");
-    ref_free(o2n);
-    ref_free(n2o);
+    RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
+                          "ref_edge_test_cfill_raw.tec"),
+        "plot cell fill");
+    RSS(ref_adj_tec_fill(ref_cell_adj(ref_grid_tet(ref_grid)),
+                         "ref_edge_test_afill_raw.tec"),
+        "plot adj fill");
+    ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
+    ref_grid_pack(ref_grid);
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
     RSS(ref_edge_create(&ref_edge, ref_grid), "create");
     ref_mpi_stopwatch_stop(ref_mpi, "create");
+    RSS(ref_edge_tec_fill(ref_edge, "ref_edge_test_efill_rcm.tec"),
+        "plot fill");
+    RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
+                          "ref_edge_test_cfill_rcm.tec"),
+        "plot cell fill");
+    RSS(ref_adj_tec_fill(ref_cell_adj(ref_grid_tet(ref_grid)),
+                         "ref_edge_test_afill_rcm.tec"),
+        "plot adj fill");
+    ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
     RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -133,6 +145,77 @@ int main(int argc, char *argv[]) {
 
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++)
       REIS(edge, data[edge], "ghost");
+
+    RSS(ref_edge_free(ref_edge), "edge");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* uniq */
+    REF_EDGE ref_edge;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_node_add(ref_node, 0, &node), "first add");
+    RSS(ref_node_add(ref_node, 1, &node), "first add");
+
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    RSS(ref_edge_uniq(ref_edge, 0, 1), "uniq");
+    REIS(1, ref_edge_n(ref_edge), "nedge");
+
+    RSS(ref_edge_uniq(ref_edge, 0, 1), "uniq");
+    REIS(1, ref_edge_n(ref_edge), "nedge");
+
+    RSS(ref_edge_free(ref_edge), "edge");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* rcm */
+    REF_EDGE ref_edge;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT *o2n, *n2o;
+    REF_INT node;
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_node_add(ref_node, 0, &node), "first add");
+    RSS(ref_node_add(ref_node, 1, &node), "first add");
+    RSS(ref_node_add(ref_node, 2, &node), "first add");
+    RSS(ref_node_add(ref_node, 3, &node), "first add");
+    RSS(ref_node_add(ref_node, 4, &node), "first add");
+
+    /*  3 0 4 1 2
+     *  1 - 2
+     *   \ /
+     *    0 - 4
+     *    |
+     *    3
+     */
+
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+    RSS(ref_edge_uniq(ref_edge, 1, 2), "uniq");
+    RSS(ref_edge_uniq(ref_edge, 1, 0), "uniq");
+    RSS(ref_edge_uniq(ref_edge, 2, 0), "uniq");
+    RSS(ref_edge_uniq(ref_edge, 3, 0), "uniq");
+    RSS(ref_edge_uniq(ref_edge, 4, 0), "uniq");
+
+    RSS(ref_edge_rcm(ref_edge, ref_node, &o2n, &n2o), "create");
+
+    REIS(2, n2o[0], "n2o[0]");
+    REIS(1, n2o[1], "n2o[1]");
+    REIS(4, n2o[2], "n2o[2]");
+    REIS(0, n2o[3], "n2o[3]");
+    REIS(3, n2o[4], "n2o[4]");
+
+    REIS(3, o2n[0], "o2n[0]");
+    REIS(1, o2n[1], "o2n[1]");
+    REIS(0, o2n[2], "o2n[2]");
+    REIS(4, o2n[3], "o2n[3]");
+    REIS(2, o2n[4], "o2n[4]");
+
+    ref_free(n2o);
+    ref_free(o2n);
 
     RSS(ref_edge_free(ref_edge), "edge");
     RSS(ref_grid_free(ref_grid), "free");

@@ -21,6 +21,8 @@
 
 #include "ref_grid.h"
 
+#include "ref_edge.h"
+
 #include "ref_malloc.h"
 
 REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
@@ -105,8 +107,11 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_INT group;
   REF_INT *o2n, *n2o;
   REF_CELL ref_cell;
+  REF_EDGE ref_edge;
 
-  RSS(ref_node_compact(ref_grid_node(ref_grid), &o2n, &n2o), "compact");
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+  RSS(ref_edge_rcm(ref_edge, ref_grid_node(ref_grid), &o2n, &n2o), "compact");
+  RSS(ref_edge_free(ref_edge), "free edge");
 
   RSS(ref_node_pack(ref_grid_node(ref_grid), o2n, n2o), "pack node");
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {

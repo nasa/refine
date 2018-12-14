@@ -418,6 +418,36 @@ REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
     ref_cell_blank(ref_cell) = REF_EMPTY;
   }
 
+  {
+    REF_INT *key, *order, *c2n;
+    ref_malloc(key, ref_cell_n(ref_cell), REF_INT);
+    ref_malloc(order, ref_cell_n(ref_cell), REF_INT);
+    ref_malloc(c2n, ref_cell_size_per(ref_cell) * ref_cell_n(ref_cell),
+               REF_INT);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      key[cell] = nodes[0];
+      for (node = 1; node < ref_cell_node_per(ref_cell); node++) {
+        if (nodes[node] < key[cell]) key[cell] = nodes[node];
+      }
+    }
+    RSS(ref_sort_heap_int(ref_cell_n(ref_cell), key, order), "sort smallest");
+    for (cell = 0; cell < ref_cell_n(ref_cell); cell++) {
+      for (node = 0; node < ref_cell_size_per(ref_cell); node++) {
+        c2n[node + cell * ref_cell_size_per(ref_cell)] =
+            ref_cell_c2n(ref_cell, node, order[cell]);
+      }
+    }
+    for (cell = 0; cell < ref_cell_n(ref_cell); cell++) {
+      for (node = 0; node < ref_cell_size_per(ref_cell); node++) {
+        ref_cell_c2n(ref_cell, node, cell) =
+            c2n[node + cell * ref_cell_size_per(ref_cell)];
+      }
+    }
+    ref_free(c2n);
+    ref_free(order);
+    ref_free(key);
+  }
+
   RSS(ref_adj_free(ref_cell_adj(ref_cell)), "free adj");
   RSS(ref_adj_create(&(ref_cell->ref_adj)), "fresh ref_adj for ref_cell");
 
@@ -1112,6 +1142,33 @@ REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
   }
 
   RSS(ref_cell_ghost_int(ref_cell, ref_node, *global), "ghost");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename) {
+  REF_INT cell, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine cell fill\"\n");
+  fprintf(file, "variables = \"node\" \"cell\"\n");
+
+  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n",
+          ref_cell_node_per(ref_cell) * ref_cell_n(ref_cell), "point");
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      fprintf(file, " %d %d\n", ref_cell_c2n(ref_cell, cell_node, cell), cell);
+    }
+  }
+
+  fclose(file);
 
   return REF_SUCCESS;
 }

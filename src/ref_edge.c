@@ -24,45 +24,6 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
-static REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0,
-                                REF_INT node1) {
-  REF_INT edge;
-
-  /* do nothing if we already have it */
-  RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
-      "find existing");
-  if (REF_EMPTY != edge) return REF_SUCCESS;
-
-  /* incemental reallocation */
-  if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
-    REF_INT orig, chunk;
-    orig = ref_edge_max(ref_edge);
-    /* geometric growth for efficiency */
-    chunk = MAX(5000, (REF_INT)(1.5 * (REF_DBL)orig));
-    ref_edge_max(ref_edge) = orig + chunk;
-
-    ref_realloc(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT);
-    for (edge = orig; edge < ref_edge_max(ref_edge); edge++) {
-      ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
-      ref_edge_e2n(ref_edge, 1, edge) = REF_EMPTY;
-    }
-  }
-
-  edge = ref_edge_n(ref_edge);
-  ref_edge_n(ref_edge)++;
-  ref_edge_e2n(ref_edge, 0, edge) = node0;
-  ref_edge_e2n(ref_edge, 1, edge) = node1;
-
-  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
-                  edge),
-      "adj n0");
-  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
-                  edge),
-      "adj n1");
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_edge_builder_uniq(REF_EDGE ref_edge, REF_GRID ref_grid) {
   REF_INT group, cell, cell_edge;
   REF_INT node0, node1;
@@ -136,6 +97,44 @@ REF_STATUS ref_edge_free(REF_EDGE ref_edge) {
   ref_free(ref_edge->e2n);
 
   ref_free(ref_edge);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
+  REF_INT edge;
+
+  /* do nothing if we already have it */
+  RXS(ref_edge_with(ref_edge, node0, node1, &edge), REF_NOT_FOUND,
+      "find existing");
+  if (REF_EMPTY != edge) return REF_SUCCESS;
+
+  /* incemental reallocation */
+  if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
+    REF_INT orig, chunk;
+    orig = ref_edge_max(ref_edge);
+    /* geometric growth for efficiency */
+    chunk = MAX(5000, (REF_INT)(1.5 * (REF_DBL)orig));
+    ref_edge_max(ref_edge) = orig + chunk;
+
+    ref_realloc(ref_edge->e2n, 2 * ref_edge_max(ref_edge), REF_INT);
+    for (edge = orig; edge < ref_edge_max(ref_edge); edge++) {
+      ref_edge_e2n(ref_edge, 0, edge) = REF_EMPTY;
+      ref_edge_e2n(ref_edge, 1, edge) = REF_EMPTY;
+    }
+  }
+
+  edge = ref_edge_n(ref_edge);
+  ref_edge_n(ref_edge)++;
+  ref_edge_e2n(ref_edge, 0, edge) = node0;
+  ref_edge_e2n(ref_edge, 1, edge) = node1;
+
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 0, edge),
+                  edge),
+      "adj n0");
+  RSS(ref_adj_add(ref_edge_adj(ref_edge), ref_edge_e2n(ref_edge, 1, edge),
+                  edge),
+      "adj n1");
 
   return REF_SUCCESS;
 }
@@ -366,12 +365,14 @@ REF_STATUS ref_edge_tec_fill(REF_EDGE ref_edge, const char *filename) {
   fprintf(file, "title=\"tecplot refine edge fill\"\n");
   fprintf(file, "variables = \"i\" \"j\"\n");
 
-  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n", ref_edge_n(ref_edge),
-          "point");
+  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n",
+          2 * ref_edge_n(ref_edge), "point");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     fprintf(file, " %d %d\n", ref_edge_e2n(ref_edge, 0, edge),
             ref_edge_e2n(ref_edge, 1, edge));
+    fprintf(file, " %d %d\n", ref_edge_e2n(ref_edge, 1, edge),
+            ref_edge_e2n(ref_edge, 0, edge));
   }
 
   fclose(file);
@@ -520,13 +521,14 @@ static REF_STATUS ref_edge_min_degree_node(REF_EDGE ref_edge, REF_NODE ref_node,
 }
 
 static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
-                                          REF_INT *queue, REF_INT *nqueue) {
+                                          REF_INT *queue, REF_INT *nqueue,
+                                          REF_INT *nhere) {
   REF_INT location, insert_point;
 
   /* largest degree first, will dequeue smallest from end of array */
 
-  insert_point = (*nqueue);
-  for (location = 0; location < (*nqueue); location++) {
+  insert_point = *nhere;
+  for (location = 0; location < (*nhere); location++) {
     if (queue[1 + 2 * location] < degree) {
       insert_point = location;
       break;
@@ -541,6 +543,8 @@ static REF_STATUS ref_edge_rcm_queue_node(REF_INT node, REF_INT degree,
   queue[0 + 2 * insert_point] = node;
   queue[1 + 2 * insert_point] = degree;
   (*nqueue)++;
+
+  (*nhere)++;
 
   /*
   printf("nqueue %d of %d (%d) ins %d\n", *nqueue, node, degree, insert_point);
@@ -558,25 +562,28 @@ static REF_STATUS ref_edge_rcm_queue(REF_EDGE ref_edge, REF_INT node,
                                      REF_INT *queue, REF_INT *nqueue) {
   REF_ADJ ref_adj = ref_edge_adj(ref_edge);
   REF_INT item, ref, other, degree;
-
+  REF_INT nhere;
   n2o[(*ndone)] = node;
   o2n[node] = (*ndone);
   (*ndone)++;
+  nhere = 0;
 
   /* printf("%d done %d nq %d\n", *ndone, node, *nqueue); */
 
   each_ref_adj_node_item_with_ref(ref_adj, node, item, ref) {
     other = ref_edge_e2n(ref_edge, 0, ref);
     if (REF_EMPTY == o2n[other]) {
-      o2n[other] = 0;
+      o2n[other] = -2; /* mark as queued */
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n0");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
+          "queue n0");
     }
     other = ref_edge_e2n(ref_edge, 1, ref);
     if (REF_EMPTY == o2n[other]) {
-      o2n[other] = 0;
+      o2n[other] = -2; /* mark as queued */
       RSS(ref_adj_degree(ref_adj, other, &degree), "deg");
-      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue), "queue n1");
+      RSS(ref_edge_rcm_queue_node(other, degree, queue, nqueue, &nhere),
+          "queue n1");
     }
   }
 
@@ -617,7 +624,7 @@ REF_STATUS ref_edge_rcm(REF_EDGE ref_edge, REF_NODE ref_node, REF_INT **o2n_ptr,
     }
   }
 
-  REIS(ndone, ref_node_n(ref_node), "reodering does not match original nodes");
+  REIS(ndone, ref_node_n(ref_node), "reordering done not original nodes");
 
   /* reverse with queue as temporary space */
   for (node = 0; node < ndone; node++) {

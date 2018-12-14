@@ -231,3 +231,33 @@ REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename) {
+  REF_INT node, item, nadj;
+
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine adj fill\"\n");
+  fprintf(file, "variables = \"item\" \"node\"\n");
+
+  nadj = 0;
+  for (node = 0; node < ref_adj_nnode(ref_adj); node++) {
+    each_ref_adj_node_item(ref_adj, node, item) { nadj++; }
+  }
+
+  fprintf(file, "zone t=\"fill\", i=%d, datapacking=%s\n", nadj, "point");
+
+  for (node = 0; node < ref_adj_nnode(ref_adj); node++) {
+    each_ref_adj_node_item(ref_adj, node, item) {
+      fprintf(file, " %d %d\n", item, node);
+    }
+  }
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
