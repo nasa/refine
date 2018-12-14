@@ -56,6 +56,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
                           "ref_edge_test_cfill_raw.tec"),
         "plot cell fill");
+    RSS(ref_adj_tec_fill(ref_cell_adj(ref_grid_tet(ref_grid)),
+                         "ref_edge_test_afill_raw.tec"),
+        "plot adj fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
     ref_grid_pack(ref_grid);
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
@@ -66,6 +69,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_tec_fill(ref_grid_tet(ref_grid),
                           "ref_edge_test_cfill_rcm.tec"),
         "plot cell fill");
+    RSS(ref_adj_tec_fill(ref_cell_adj(ref_grid_tet(ref_grid)),
+                         "ref_edge_test_afill_rcm.tec"),
+        "plot adj fill");
     ref_mpi_stopwatch_stop(ref_mpi, "plot fill");
     RSS(ref_edge_free(ref_edge), "free");
     RSS(ref_grid_free(ref_grid), "free");

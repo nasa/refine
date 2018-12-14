@@ -69,6 +69,10 @@ REF_STATUS ref_adj_deep_copy(REF_ADJ *ref_adj, REF_ADJ original);
        ref_adj_valid(item); (item) = ref_adj_item_next(ref_adj, item), \
       (ref) = ref_adj_safe_ref(ref_adj, item))
 
+#define each_ref_adj_node_item(ref_adj, node, item)                \
+  for ((item) = ref_adj_first(ref_adj, node); ref_adj_valid(item); \
+       (item) = ref_adj_item_next(ref_adj, item))
+
 REF_STATUS ref_adj_inspect(REF_ADJ ref_adj);
 REF_STATUS ref_adj_node_inspect(REF_ADJ ref_adj, REF_INT node);
 
@@ -80,6 +84,8 @@ REF_STATUS ref_adj_add_uniquely(REF_ADJ ref_adj, REF_INT node,
 REF_STATUS ref_adj_degree(REF_ADJ ref_adj, REF_INT node, REF_INT *degree);
 REF_STATUS ref_adj_min_degree_node(REF_ADJ ref_adj, REF_INT *min_degree,
                                    REF_INT *min_degree_node);
+
+REF_STATUS ref_adj_tec_fill(REF_ADJ ref_adj, const char *filename);
 
 END_C_DECLORATION
 
