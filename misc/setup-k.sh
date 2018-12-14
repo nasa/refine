@@ -7,7 +7,7 @@ set -x
 module_path="/u/shared/fun3d/fun3d_users/modules"
 zoltan_path="${module_path}/Zoltan/3.82-mpt-2.16-intel_2017.2.174"
 parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.16-intel_2017.2.174"
-egads_path="${module_path}/ESP/113.1/EngSketchPad"
+egads_path="${module_path}/ESP/114/EngSketchPad"
 
 mkdir -p strict
 ( cd strict && \
