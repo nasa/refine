@@ -1,9 +1,8 @@
 
 reordering for cache
   + implement grid vertex Cuthill-Magee reordering
-  refactor rcm
   ref_edge_node unform use (remove from arg list)
-  unit test the CM case in their paper for tri (empty ref_grid)
+  + unit test the CM case in their paper for tri (empty ref_grid)
   + node and cell reordering for cache
   + cell pack: insert in first node index order
   + compact adj (happens narturally durring cell rodering)
