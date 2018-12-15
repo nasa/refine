@@ -777,7 +777,6 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   if (ref_mpi_once(ref_mpi)) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-    version = 2;
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
     next_position = (REF_FILEPOS)header_size + ftell(file);
     keyword_code = 3;
