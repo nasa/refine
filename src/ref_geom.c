@@ -2692,6 +2692,47 @@ REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
+                                 REF_DBL *length) {
+#ifdef HAVE_EGADS
+  REF_BOOL on_node;
+  REF_INT item, geom, id;
+  ego ref, *pchldrn, object;
+  int oclass, mtype, nchild, *psens;
+  double trange[2];
+  REF_DBL xyz0[3], xyz1[3];
+
+  RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &on_node), "on node");
+  if (on_node) {
+    each_ref_geom_having_node(ref_geom, node, item, geom) {
+      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+        id = ref_geom_id(ref_geom, geom);
+        object = ((ego *)(ref_geom->edges))[id - 1];
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                            &pchldrn, &psens),
+             "EG topo node");
+        if (mtype == ONENODE || mtype == DEGENERATE) continue;
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &(trange[0]), xyz0,
+                             NULL),
+            "eval at tmin");
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &(trange[1]), xyz1,
+                             NULL),
+            "eval at tmax");
+        *length = MIN(*length, sqrt(pow(xyz1[0] - xyz0[0], 2) +
+                                    pow(xyz1[1] - xyz0[1], 2) +
+                                    pow(xyz1[2] - xyz0[2], 2)));
+      }
+    }
+  }
+#else
+  RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
+  SUPRESS_UNUSED_COMPILER_WARNING(node);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 #ifdef HAVE_EGADS
   REF_NODE ref_node = ref_grid_node(ref_grid);
