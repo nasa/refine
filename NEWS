@@ -1,4 +1,8 @@
 
+- version 3 .meshb/.solb export for grids larger than 2 GBytes (10M vertex)
+- ref_driver RCM global node order per proc on export
+- ref_grid_pack uses RCM ordering
+- ref_node_metric removed, use getters/setters, results in code speedup
 - ref_metric_unit_node removed, metric initialized to unity during ref_node_add
 - ref_metric_test --fixed-point asks for the timestep_increment
 

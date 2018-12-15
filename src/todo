@@ -1,8 +1,6 @@
 
 format.sh accepts arguments
 
-version 3 .meshb
-
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
@@ -205,6 +203,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ version 3 .meshb
 
 + latest ESP laptop, desktop, k
 
