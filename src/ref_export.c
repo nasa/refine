@@ -1991,7 +1991,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT *o2n, *n2o;
   REF_INT code, version, dim;
   REF_FILEPOS next_position;
-  int keyword_code;
+  REF_INT keyword_code;
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
