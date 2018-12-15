@@ -28,6 +28,7 @@
 #endif
 
 #include <limits.h>
+#include <stdio.h>
 
 BEGIN_C_DECLORATION
 
@@ -56,6 +57,8 @@ typedef int REF_INT;
 typedef double REF_DBL;
 
 typedef char REF_BYTE;
+
+typedef off_t REF_FILEPOS;
 
 typedef int REF_STATUS;
 
