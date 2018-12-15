@@ -762,28 +762,40 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   REF_INT nnode_written, first, n, i, im;
   REF_INT global, local;
   REF_STATUS status;
-  int next_position, keyword_code;
-  int code, version, dim;
+  REF_FILEPOS next_position = 0;
+  REF_INT keyword_code, header_size;
+  REF_INT code, version, dim;
+
+  if (0000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
     version = 2;
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = 4 + 4 + 4 + ftell(file);
+    next_position = (REF_FILEPOS)header_size + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    next_position = 4 + 4 + 4 + 4 + (ldim * 4) +
-                    ref_node_n_global(ref_node) * (ldim * 8) + ftell(file);
+    next_position =
+        (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(ldim * 8) +
+        ftell(file);
     keyword_code = 62;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
          "nnode");
     keyword_code = ldim; /* one solution at node */
@@ -850,7 +862,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     keyword_code = 54;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "end kw");
     next_position = 0;
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
   }
 
   return REF_SUCCESS;
