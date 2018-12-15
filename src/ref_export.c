@@ -1964,20 +1964,20 @@ REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename) {
 
 REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
                                           REF_FILEPOS next_position) {
-  int temp_int;
-  long temp_long;
+  int32_t one_word;
+  int64_t two_word;
 
   if (3 <= version) {
-    temp_long = (long)next_position;
-    REIS(1, fwrite(&temp_long, sizeof(temp_long), 1, file), "next pos");
+    two_word = (int64_t)next_position;
+    REIS(1, fwrite(&two_word, sizeof(two_word), 1, file), "write next pos");
   } else {
-    if (next_position < REF_INT_MAX || REF_INT_MAX < next_position) {
-      printf("next_position %lld outside int limits %d %d\n", next_position,
-             REF_INT_MAX, REF_INT_MAX);
+    if (next_position < -2147483647 || 2147483647 < next_position) {
+      printf("next_position %lld outside int32 limits %d %d\n", next_position,
+             -2147483647, 2147483647);
       RSS(REF_INVALID, "meshb version does not support file size");
     }
-    temp_int = (int)next_position;
-    REIS(1, fwrite(&temp_int, sizeof(temp_int), 1, file), "next pos");
+    one_word = (int32_t)next_position;
+    REIS(1, fwrite(&one_word, sizeof(one_word), 1, file), "write next pos");
   }
 
   return REF_SUCCESS;
