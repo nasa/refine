@@ -1991,7 +1991,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT *o2n, *n2o;
   REF_INT code, version, dim;
   REF_FILEPOS next_position;
-  REF_INT keyword_code;
+  REF_INT keyword_code, header_size;
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -1999,6 +1999,14 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT geom;
   int ngeom;
   REF_BOOL verbose = REF_FALSE;
+
+  if (10000000 < ref_node_n(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
 
   file = fopen(filename, "w");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2008,9 +2016,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
 
   code = 1;
   REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-  version = 2;
   REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-  next_position = 4 + 4 + 4 + ftell(file);
+  next_position = header_size + ftell(file);
   keyword_code = 3;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
   RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
@@ -2020,7 +2027,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
 
   if (ref_node_n(ref_node) > 0) {
     next_position =
-        4 + 4 + 4 + ref_node_n(ref_node) * (3 * 8 + 4) + ftell(file);
+        header_size + ref_node_n(ref_node) * (3 * 8 + 4) + ftell(file);
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
@@ -2052,7 +2059,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   if (ref_cell_n(ref_cell) > 0) {
     node_per = ref_cell_node_per(ref_cell);
     next_position =
-        4 + 4 + 4 + ftell(file) + ref_cell_n(ref_cell) * (4 * (node_per + 1));
+        header_size + ftell(file) + ref_cell_n(ref_cell) * (4 * (node_per + 1));
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
@@ -2078,7 +2085,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   if (ref_cell_n(ref_cell) > 0) {
     node_per = ref_cell_node_per(ref_cell);
     next_position =
-        4 + 4 + 4 + ftell(file) + ref_cell_n(ref_cell) * (4 * (node_per + 1));
+        header_size + ftell(file) + ref_cell_n(ref_cell) * (4 * (node_per + 1));
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
@@ -2103,7 +2110,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   if (ref_cell_n(ref_cell) > 0) {
     node_per = ref_cell_node_per(ref_cell);
     next_position =
-        4 + 4 + 4 + ref_cell_n(ref_cell) * (4 * (node_per + 1)) + ftell(file);
+        header_size + ref_cell_n(ref_cell) * (4 * (node_per + 1)) + ftell(file);
     keyword_code = 8;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
@@ -2127,7 +2134,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     each_ref_geom_of(ref_geom, type, geom) ngeom++;
     if (ngeom > 0) {
       keyword_code = 40 + type; /* GmfVerticesOnGeometricVertices */
-      next_position = 4 + 4 + 4 + ngeom * (4 * 2 + 8 * type) +
+      next_position = header_size + ngeom * (4 * 2 + 8 * type) +
                       (0 < type ? 8 * ngeom : 0) + ftell(file);
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
@@ -2154,7 +2161,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
 
   if (0 < ref_geom_cad_data_size(ref_geom)) {
     keyword_code = 126; /* GmfByteFlow 173-47 */
-    next_position = 4 + 4 + 4 + ref_geom_cad_data_size(ref_geom) + ftell(file);
+    next_position =
+        header_size + ref_geom_cad_data_size(ref_geom) + ftell(file);
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_geom_cad_data_size(ref_geom)), sizeof(int), 1, file),
