@@ -1972,8 +1972,8 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
     REIS(1, fwrite(&two_word, sizeof(two_word), 1, file), "write next pos");
   } else {
     if (next_position < -2147483647 || 2147483647 < next_position) {
-      printf("next_position %lld outside int32 limits %d %d\n", next_position,
-             -2147483647, 2147483647);
+      printf("next_position %lli outside int32 limits %d %d\n",
+             (long long)next_position, -2147483647, 2147483647);
       RSS(REF_INVALID, "meshb version does not support file size");
     }
     one_word = (int32_t)next_position;
@@ -2025,8 +2025,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_node_n(ref_node)), sizeof(int), 1, file), "nnode");
     if (verbose)
-      printf("vertex kw %d next %lld n %d\n", keyword_code, next_position,
-             ref_node_n(ref_node));
+      printf("vertex kw %d next %lli n %d\n", keyword_code,
+             (long long)next_position, ref_node_n(ref_node));
     for (node = 0; node < ref_node_n(ref_node); node++) {
       REIS(1,
            fwrite(&(ref_node_xyz(ref_node, 0, n2o[node])), sizeof(double), 1,
@@ -2056,8 +2056,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
     if (verbose)
-      printf("edge kw %d next %lld n %d node_per %d\n", keyword_code,
-             next_position, ref_cell_n(ref_cell), node_per);
+      printf("edge kw %d next %lli n %d node_per %d\n", keyword_code,
+             (long long)next_position, ref_cell_n(ref_cell), node_per);
     RSS(ref_export_edgeid_range(ref_grid, &min_faceid, &max_faceid), "range");
     if (verbose) printf("edge id range %d %d\n", min_faceid, max_faceid);
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
@@ -2082,8 +2082,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
     if (verbose)
-      printf("tri kw %d next %lld n %d\n", keyword_code, next_position,
-             ref_cell_n(ref_cell));
+      printf("tri kw %d next %lli n %d\n", keyword_code,
+             (long long)next_position, ref_cell_n(ref_cell));
     RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
@@ -2108,8 +2108,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
     if (verbose)
-      printf("tet kw %d next %lld n %d\n", keyword_code, next_position,
-             ref_cell_n(ref_cell));
+      printf("tet kw %d next %lli n %d\n", keyword_code,
+             (long long)next_position, ref_cell_n(ref_cell));
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < node_per; node++) {
         nodes[node] = o2n[nodes[node]] + 1;
@@ -2132,8 +2132,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
       REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "n");
       if (verbose)
-        printf("geom type %d kw %d next %lld n %d\n", type, keyword_code,
-               next_position, ngeom);
+        printf("geom type %d kw %d next %lli n %d\n", type, keyword_code,
+               (long long)next_position, ngeom);
       each_ref_geom_of(ref_geom, type, geom) {
         double filler = 0.0;
         node = o2n[ref_geom_node(ref_geom, geom)] + 1;
@@ -2170,7 +2170,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
   next_position = 0;
   RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-  if (verbose) printf("end kw %d next %lld\n", keyword_code, next_position);
+  if (verbose)
+    printf("end kw %d next %lli\n", keyword_code, (long long)next_position);
 
   ref_free(n2o);
   ref_free(o2n);
