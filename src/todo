@@ -1,4 +1,6 @@
 
+format.sh accepts arguments
+
 version 3 .meshb
 
 check that post conditions are implemented completely for all ops
