@@ -1073,7 +1073,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
 
-  if (10000000 < ref_node_n_global(ref_node)) {
+  if (0000000 < ref_node_n_global(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {

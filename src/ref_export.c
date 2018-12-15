@@ -2000,7 +2000,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   int ngeom;
   REF_BOOL verbose = REF_FALSE;
 
-  if (10000000 < ref_node_n(ref_node)) {
+  if (0000000 < ref_node_n(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {
