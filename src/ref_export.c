@@ -2141,8 +2141,9 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     if (ngeom > 0) {
       keyword_code = 40 + type; /* GmfVerticesOnGeometricVertices */
       next_position = (REF_FILEPOS)header_size +
-                      (REF_FILEPOS)ngeom * (REF_FILEPOS)(4 * 2 + 8 * type) +
-                      (REF_FILEPOS)(0 < type ? 8 * ngeom : 0) + ftell(file);
+                      (REF_FILEPOS)ngeom *
+                          (REF_FILEPOS)(4 * 2 + 8 * type + (0 < type ? 8 : 0)) +
+                      ftell(file);
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
       REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "n");
