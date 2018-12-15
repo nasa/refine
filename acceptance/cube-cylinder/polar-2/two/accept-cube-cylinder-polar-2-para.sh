@@ -20,17 +20,17 @@ function adapt_cycle {
     sweeps=$3
     cores=$4
 
-    mpiexec -np ${cores} ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -t
+    mpiexec -np ${cores} ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t
     mv ref_gather_movie.tec ${inproj}_movie.tec
     mv ref_gather_histo.tec ${inproj}_histo.tec
-    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
-    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
+    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}-metric.solb > ${outproj}.status
 }
 
 # ${two}/ref_geom_test ega.egads
 # ${two}/ref_geom_test ega.egads ega.ugrid
 
-${two}/ref_acceptance -ugawg ${field} ega.meshb ega.metric
+${two}/ref_acceptance -ugawg ${field} ega.meshb ega-metric.solb
 
 adapt_cycle ega para01 2 1
 adapt_cycle para01 para02 5 1

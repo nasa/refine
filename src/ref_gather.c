@@ -653,28 +653,39 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   REF_INT nnode_written, first, n, i, im;
   REF_INT global, local;
   REF_STATUS status;
-  int next_position, keyword_code;
-  int code, version, dim;
+  REF_FILEPOS next_position = 0;
+  REF_INT keyword_code, header_size;
+  REF_INT code, version, dim;
+
+  if (10000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-    version = 2;
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = 4 + 4 + 4 + ftell(file);
+    next_position = (REF_FILEPOS)header_size + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
   }
 
   if (ref_mpi_once(ref_mpi)) {
     next_position =
-        4 + 4 + 4 + 4 + 4 + ref_node_n_global(ref_node) * (6 * 8) + ftell(file);
+        (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + 4) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(6 * 8) +
+        ftell(file);
     keyword_code = 62;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
          "nnode");
     keyword_code = 1; /* one solution at node */
@@ -737,7 +748,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     keyword_code = 54;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "end kw");
     next_position = 0;
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
   }
 
   return REF_SUCCESS;
@@ -751,28 +762,39 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   REF_INT nnode_written, first, n, i, im;
   REF_INT global, local;
   REF_STATUS status;
-  int next_position, keyword_code;
-  int code, version, dim;
+  REF_FILEPOS next_position = 0;
+  REF_INT keyword_code, header_size;
+  REF_INT code, version, dim;
+
+  if (10000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
 
   if (ref_mpi_once(ref_mpi)) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-    version = 2;
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = 4 + 4 + 4 + ftell(file);
+    next_position = (REF_FILEPOS)header_size + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    next_position = 4 + 4 + 4 + 4 + (ldim * 4) +
-                    ref_node_n_global(ref_node) * (ldim * 8) + ftell(file);
+    next_position =
+        (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(ldim * 8) +
+        ftell(file);
     keyword_code = 62;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
          "nnode");
     keyword_code = ldim; /* one solution at node */
@@ -839,7 +861,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     keyword_code = 54;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "end kw");
     next_position = 0;
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
   }
 
   return REF_SUCCESS;
@@ -1059,7 +1081,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT code, version, dim;
-  int next_position, keyword_code;
+  REF_FILEPOS next_position = 0;
+  REF_INT keyword_code, header_size;
   REF_INT ncell, node_per;
   REF_INT ngeom, type;
   REF_CELL ref_cell;
@@ -1072,6 +1095,14 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
 
+  if (10000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
+
   RSS(ref_node_synchronize_globals(ref_node), "sync");
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1081,27 +1112,29 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-    version = 2;
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = 4 + 4 + 4 + ftell(file);
+    next_position = (REF_FILEPOS)header_size + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
   }
 
   if (ref_grid_once(ref_grid)) {
     next_position =
-        4 + 4 + 4 + ref_node_n_global(ref_node) * (3 * 8 + 4) + ftell(file);
+        (REF_FILEPOS)header_size +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(3 * 8 + 4) +
+        ftell(file);
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
          "nnode");
     if (verbose)
-      printf("vertex kw %d next %d n %d\n", keyword_code, next_position,
-             ref_node_n_global(ref_node));
+      printf("vertex kw %d next %lli n %d\n", keyword_code,
+             (long long)next_position, ref_node_n_global(ref_node));
   }
   RSS(ref_gather_node(ref_node, swap_endian, always_id, file), "nodes");
   if (ref_grid_once(ref_grid))
@@ -1115,14 +1148,17 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   if (ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       node_per = ref_cell_node_per(ref_cell);
-      next_position = 4 + 4 + 4 + ncell * (4 * (node_per + 1)) + ftell(file);
+      next_position = (REF_FILEPOS)header_size +
+                      (REF_FILEPOS)ncell * (REF_FILEPOS)(4 * (node_per + 1)) +
+                      ftell(file);
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
            "vertex version code");
-      REIS(1, fwrite(&next_position, sizeof(next_position), 1, file),
-           "next pos");
+      RSS(ref_export_meshb_next_position(file, version, next_position),
+          "next pos");
       REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
       if (verbose)
-        printf("elem kw %d next %d n %d\n", keyword_code, next_position, ncell);
+        printf("elem kw %d next %lli n %d\n", keyword_code,
+               (long long)next_position, ncell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1137,14 +1173,17 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   if (ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       node_per = ref_cell_node_per(ref_cell);
-      next_position = 4 + 4 + 4 + ncell * (4 * (node_per + 1)) + ftell(file);
+      next_position = (REF_FILEPOS)header_size +
+                      (REF_FILEPOS)ncell * (REF_FILEPOS)(4 * (node_per + 1)) +
+                      ftell(file);
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
            "vertex version code");
-      REIS(1, fwrite(&next_position, sizeof(next_position), 1, file),
-           "next pos");
+      RSS(ref_export_meshb_next_position(file, version, next_position),
+          "next p");
       REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
       if (verbose)
-        printf("elem kw %d next %d n %d\n", keyword_code, next_position, ncell);
+        printf("elem kw %d next %lli n %d\n", keyword_code,
+               (long long)next_position, ncell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1159,14 +1198,17 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   if (ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       node_per = ref_cell_node_per(ref_cell);
-      next_position = 4 + 4 + 4 + ncell * (4 * (node_per + 1)) + ftell(file);
+      next_position = (REF_FILEPOS)header_size +
+                      (REF_FILEPOS)ncell * (REF_FILEPOS)(4 * (node_per + 1)) +
+                      ftell(file);
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
            "vertex version code");
-      REIS(1, fwrite(&next_position, sizeof(next_position), 1, file),
-           "next pos");
+      RSS(ref_export_meshb_next_position(file, version, next_position),
+          "next p");
       REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
       if (verbose)
-        printf("elem kw %d next %d n %d\n", keyword_code, next_position, ncell);
+        printf("elem kw %d next %lli n %d\n", keyword_code,
+               (long long)next_position, ncell);
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1181,16 +1223,16 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     if (ngeom > 0) {
       if (ref_grid_once(ref_grid)) {
         node_per = ref_cell_node_per(ref_cell);
-        next_position = 4 + 4 + 4 + ngeom * (4 * 2 + 8 * type) +
+        next_position = (REF_FILEPOS)header_size +
+                        (REF_FILEPOS)ngeom * (REF_FILEPOS)(4 * 2 + 8 * type) +
                         (0 < type ? 8 * ngeom : 0) + ftell(file);
         REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
              "vertex version code");
-        REIS(1, fwrite(&next_position, sizeof(next_position), 1, file),
-             "next pos");
+        RSS(ref_export_meshb_next_position(file, version, next_position), "np");
         REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "nnode");
         if (verbose)
-          printf("geom type %d kw %d next %d n %d\n", type, keyword_code,
-                 next_position, ngeom);
+          printf("geom type %d kw %d next %lli n %d\n", type, keyword_code,
+                 (long long)next_position, ngeom);
       }
       RSS(ref_gather_geom(ref_node, ref_geom, type, file), "nodes");
       if (ref_grid_once(ref_grid))
@@ -1200,9 +1242,10 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 
   if (ref_grid_once(ref_grid) && 0 < ref_geom_cad_data_size(ref_geom)) {
     keyword_code = 126; /* GmfByteFlow */
-    next_position = 4 + 4 + 4 + ref_geom_cad_data_size(ref_geom) + ftell(file);
+    next_position = (REF_FILEPOS)header_size +
+                    (REF_FILEPOS)ref_geom_cad_data_size(ref_geom) + ftell(file);
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_geom_cad_data_size(ref_geom)), sizeof(int), 1, file),
          "n");
     REIS(ref_geom_cad_data_size(ref_geom),
@@ -1216,8 +1259,9 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     keyword_code = 54;           /* GmfEnd 101-47 */
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     next_position = 0;
-    REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
-    if (verbose) printf("end kw %d next %d\n", keyword_code, next_position);
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    if (verbose)
+      printf("end kw %d next %lli\n", keyword_code, (long long)next_position);
     if (verbose) printf("close %s\n", filename);
     fclose(file);
   }

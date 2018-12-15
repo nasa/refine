@@ -922,7 +922,7 @@ static REF_STATUS meshb_pos(FILE *file, REF_INT version, REF_FILEPOS *pos) {
   int temp_int;
   long temp_long;
 
-  if (3 == version) {
+  if (3 <= version) {
     REIS(1, fread(&temp_long, sizeof(temp_long), 1, file), "read long");
     *pos = temp_long;
   } else {
