@@ -657,7 +657,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   REF_INT keyword_code, header_size;
   REF_INT code, version, dim;
 
-  if (0000000 < ref_node_n_global(ref_node)) {
+  if (10000000 < ref_node_n_global(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {
@@ -766,7 +766,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   REF_INT keyword_code, header_size;
   REF_INT code, version, dim;
 
-  if (0000000 < ref_node_n_global(ref_node)) {
+  if (10000000 < ref_node_n_global(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {
@@ -1095,7 +1095,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
 
-  if (0000000 < ref_node_n_global(ref_node)) {
+  if (10000000 < ref_node_n_global(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {
