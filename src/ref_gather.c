@@ -1090,6 +1090,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
   }
 
   if (ref_grid_once(ref_grid)) {
