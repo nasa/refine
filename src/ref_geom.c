@@ -2774,7 +2774,7 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
 				&ref, &oclass, &mtype, trange, &nchild,
 				&pchldrn, &psens),
 		 "EG topo node");
-	    RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
+	    if (mtype != DEGENERATE) continue; /* skip DEGENERATE */
 	    RAS(0 < nchild && nchild < 3, "edge children");
 	    cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
 	    if (2 == nchild) {
