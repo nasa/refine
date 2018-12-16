@@ -3,7 +3,7 @@
 set -e
 set -u
 
-if [ -z "$1" ] ; then
+if [ $# -eq 0 ] ; then
     for filename in `ls *.h *.c` ; do
 	$0 ${filename}
     done
