@@ -10,7 +10,7 @@ tess
  + test with OM6
  + mixed space gradation surf with aflr3 positive volume
  + cad node feature size length of incident cad edge
- + cad edge feature size distance to nonadjacent edge, i.e., om6 trailing edge
+ cad edge feature size distance to nonadjacent edge, i.e., om6 trailing edge
  anisotropic feature size, edge length tangent, dist to other edge normal?
  near-tree to drive split for grid size gradation of JSM
  2D cavity operator for surf geom edges
