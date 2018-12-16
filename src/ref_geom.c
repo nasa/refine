@@ -2519,8 +2519,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
 
 REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  char *surface_ugrid_name = "ref_geom_test_surface.ugrid";
-  char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
+  char *surface_ugrid_name = "ref_geom_test_surface.lb8.ugrid";
+  char *volume_ugrid_name = "ref_geom_test_volume.lb8.ugrid";
   char command[1024];
   int system_status;
 
