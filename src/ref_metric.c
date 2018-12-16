@@ -758,6 +758,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL rlimit;
   REF_DBL h, hr, hs, hn;
   REF_DBL curvature_ratio, norm_ratio;
+  REF_DBL xyz[3];
 
   if (!ref_geom_model_loaded(ref_geom)) {
     printf("\nNo geometry model, did you forget to load it?\n\n");
@@ -776,7 +777,10 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   norm_ratio = 2.0;
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_geom_feature_size(ref_geom, node, &h), "get feature size");
+    xyz[0] = ref_node_xyz(ref_node, 0, node);
+    xyz[1] = ref_node_xyz(ref_node, 1, node);
+    xyz[2] = ref_node_xyz(ref_node, 2, node);
+    RSS(ref_geom_feature_size(ref_geom, node, xyz, &h), "get feature size");
     metric[0 + 6 * node] = 1.0 / (h * h);
     metric[1 + 6 * node] = 0.0;
     metric[2 + 6 * node] = 0.0;

@@ -2693,32 +2693,39 @@ REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag) {
 }
 
 REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
-                                 REF_DBL *length) {
+                                 REF_DBL *xyz, REF_DBL *length) {
 #ifdef HAVE_EGADS
-  REF_BOOL on_node;
-  REF_INT item, geom, id;
-  ego ref, *pchldrn, object;
-  int oclass, mtype, nchild, *psens;
+  REF_BOOL on_node, on_edge;
+  REF_INT item, geom, edgeid, faceid, iloop;
+  ego ref, *pchldrn, object, *eedges, ecurve, *eloops, esurf;
+  int oclass, mtype, nchild, *psens, nedge, *senses, nloop;
+  double data[18];
   double trange[2];
   REF_DBL xyz0[3], xyz1[3];
-
+  REF_INT ineligible_cad_node0, ineligible_cad_node1;
+  REF_INT cad_node0, cad_node1;
+  REF_DBL param[2];
+  REF_INT other_edgeid, iedge;
+  int status;
+  
   RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
+
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &on_node), "on node");
   if (on_node) {
     each_ref_geom_having_node(ref_geom, node, item, geom) {
       if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
-        id = ref_geom_id(ref_geom, geom);
-        object = ((ego *)(ref_geom->edges))[id - 1];
+        edgeid = ref_geom_id(ref_geom, geom);
+        object = ((ego *)(ref_geom->edges))[edgeid - 1];
         REIS(EGADS_SUCCESS,
              EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
                             &pchldrn, &psens),
              "EG topo node");
         if (mtype == ONENODE || mtype == DEGENERATE) continue;
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &(trange[0]), xyz0,
-                             NULL),
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(trange[0]),
+			     xyz0, NULL),
             "eval at tmin");
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &(trange[1]), xyz1,
-                             NULL),
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(trange[1]),
+			     xyz1, NULL),
             "eval at tmax");
         *length = MIN(*length, sqrt(pow(xyz1[0] - xyz0[0], 2) +
                                     pow(xyz1[1] - xyz0[1], 2) +
@@ -2726,9 +2733,79 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
       }
     }
   }
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &on_edge), "on edge");
+  if (on_edge && !on_node) {
+    RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_EDGE, &edgeid),
+	"assume uniq edge id");
+    REIS(EGADS_SUCCESS,
+	 EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1],
+			&ref, &oclass, &mtype, trange, &nchild,
+			&pchldrn, &psens),
+	 "EG topo node");
+    RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
+    RAS(0 < nchild && nchild < 3, "edge children");
+    ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+    if (2 == nchild) {
+      ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+    } else {
+      ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
+    }
+    each_ref_geom_having_node(ref_geom, node, item, geom) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+        faceid = ref_geom_id(ref_geom, geom);
+	REIS(EGADS_SUCCESS,
+	     EG_getTopology(((ego *)(ref_geom->faces))[faceid-1],
+			    &esurf, &oclass,
+			    &mtype, data, &nloop, &eloops, &senses),
+	     "topo");
+	for (iloop = 0; iloop < nloop; iloop++) {
+	  /* loop through all Edges associated with this Loop */
+	  REIS(EGADS_SUCCESS,
+	       EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data,
+			      &nedge, &eedges, &senses),
+	       "topo");
+	  for (iedge = 0; iedge < nedge; iedge++) {
+	    other_edgeid = EG_indexBodyTopo((ego)(ref_geom->solid),
+					    eedges[iedge]);
+	    /* qualified? does not share geom nodes */
+	    REIS(EGADS_SUCCESS,
+		 EG_getTopology(((ego *)(ref_geom->edges))[other_edgeid - 1],
+				&ref, &oclass, &mtype, trange, &nchild,
+				&pchldrn, &psens),
+		 "EG topo node");
+	    RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
+	    RAS(0 < nchild && nchild < 3, "edge children");
+	    cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+	    if (2 == nchild) {
+	      cad_node1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+	    } else {
+	      cad_node1 = cad_node0; /* ONENODE edge */
+	    }
+	    if (cad_node0 == ineligible_cad_node0 ||
+		cad_node0 == ineligible_cad_node1 || 
+		cad_node1 == ineligible_cad_node0 || 
+		cad_node1 == ineligible_cad_node1 ) continue;
+	    /* inverse projection */
+	    status =
+	      EG_invEvaluate(((ego *)(ref_geom->edges))[other_edgeid - 1],
+			     xyz, param, xyz1);
+	    REIS(EGADS_SUCCESS, status, "EG_invEvaluate opp edge");
+	    *length = MIN(*length, sqrt(pow(xyz1[0] - xyz[0], 2) +
+					pow(xyz1[1] - xyz[1], 2) +
+					pow(xyz1[2] - xyz[2], 2)));
+
+	  }
+	}
+
+
+      }
+    }
+  }
 #else
   RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
   SUPRESS_UNUSED_COMPILER_WARNING(node);
+  SUPRESS_UNUSED_COMPILER_WARNING(xyz);
 #endif
   return REF_SUCCESS;
 }
