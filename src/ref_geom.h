@@ -217,8 +217,8 @@ REF_STATUS ref_geom_egads_export(const char *filename);
 
 REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
-REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
-                                 REF_DBL *xyz, REF_DBL *length);
+REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
+                                 REF_DBL *length);
 /* positive max_length is absolute, negative max_length is relative to bbox */
 REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params);
 
