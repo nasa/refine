@@ -776,7 +776,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   norm_ratio = 2.0;
 
   each_ref_node_valid_node(ref_node, node) {
-    h = hmax;
+    RSS(ref_geom_feature_size(ref_geom, node, &h), "get feature size");
     metric[0 + 6 * node] = 1.0 / (h * h);
     metric[1 + 6 * node] = 0.0;
     metric[2 + 6 * node] = 0.0;
