@@ -2751,6 +2751,8 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
     } else {
       ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
     }
+    printf("node %d xyz %f %f %f edgeid %d ineligible_cad_node %d %d\n",
+	   node, xyz[0],xyz[1],xyz[2], edgeid, ineligible_cad_node0,ineligible_cad_node1);
     each_ref_geom_having_node(ref_geom, node, item, geom) {
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
         faceid = ref_geom_id(ref_geom, geom);
@@ -2759,12 +2761,17 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
 			    &esurf, &oclass,
 			    &mtype, data, &nloop, &eloops, &senses),
 	     "topo");
+	printf("faceid %d loops %d\n",
+	       faceid, nloop);
+
 	for (iloop = 0; iloop < nloop; iloop++) {
 	  /* loop through all Edges associated with this Loop */
 	  REIS(EGADS_SUCCESS,
 	       EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data,
 			      &nedge, &eedges, &senses),
 	       "topo");
+	  printf("iloop %d nedge %d\n", iloop,nedge);
+
 	  for (iedge = 0; iedge < nedge; iedge++) {
 	    other_edgeid = EG_indexBodyTopo((ego)(ref_geom->solid),
 					    eedges[iedge]);
@@ -2774,7 +2781,8 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
 				&ref, &oclass, &mtype, trange, &nchild,
 				&pchldrn, &psens),
 		 "EG topo node");
-	    if (mtype != DEGENERATE) continue; /* skip DEGENERATE */
+	    printf("other_edgeid %d nchild %d\n", other_edgeid, nchild);
+	    if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
 	    RAS(0 < nchild && nchild < 3, "edge children");
 	    cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
 	    if (2 == nchild) {
@@ -2782,6 +2790,9 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
 	    } else {
 	      cad_node1 = cad_node0; /* ONENODE edge */
 	    }
+	    printf("other_edgeid %d cad node %d %d loop %d edge %d\n",
+		   other_edgeid, cad_node0, cad_node1, iloop,iedge);
+
 	    if (cad_node0 == ineligible_cad_node0 ||
 		cad_node0 == ineligible_cad_node1 || 
 		cad_node1 == ineligible_cad_node0 || 
@@ -2794,7 +2805,10 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
 	    *length = MIN(*length, sqrt(pow(xyz1[0] - xyz[0], 2) +
 					pow(xyz1[1] - xyz[1], 2) +
 					pow(xyz1[2] - xyz[2], 2)));
-
+	    printf("edgeid %d other_edgeid %d dist %f\n",
+		   edgeid, other_edgeid, sqrt(pow(xyz1[0] - xyz[0], 2) +
+					pow(xyz1[1] - xyz[1], 2) +
+					pow(xyz1[2] - xyz[2], 2)));
 	  }
 	}
 
