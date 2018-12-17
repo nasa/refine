@@ -37,6 +37,7 @@
 #include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 #include "ref_sort.h"
 #include "ref_validation.h"
 
@@ -117,6 +118,7 @@ int main(int argc, char *argv[]) {
   REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
   REF_INT surf_pos = REF_EMPTY;
+  REF_INT triage_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -131,6 +133,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--triage", &triage_pos), REF_NOT_FOUND,
       "arg search");
 
   if (face_pos != REF_EMPTY) {
@@ -156,6 +160,31 @@ int main(int argc, char *argv[]) {
     printf("grid source %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     RSS(ref_geom_tec(ref_grid, "ref_geom_viz.tec"), "geom export");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    return 0;
+  }
+
+  if (triage_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    if (4 > argc) {
+      printf("required args: --triage grid.ext geom.egads [metric.solb]");
+      return REF_FAILURE;
+    }
+    REIS(1, triage_pos,
+         "required args: --triage grid.ext geom.egads [metric.solb]");
+    printf("grid source %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    if (4 < argc) {
+      RSS(ref_part_metric(ref_grid_node(ref_grid), argv[4]), "part m");
+    } else {
+      ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
+      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    }
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+    RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame")
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
