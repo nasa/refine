@@ -2697,8 +2697,8 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
 #ifdef HAVE_EGADS
   REF_BOOL on_node, on_edge;
   REF_INT item, edge_geom, face_geom, edgeid, faceid, iloop;
-  ego ref, *children, *eedges, ecurve, *eloops, esurf;
-  int oclass, mtype, nchild, nedge, *senses, nloop;
+  ego ref, *cadnodes, *edges, *loops;
+  int oclass, mtype, ncadnode, nedge, nloop, *senses;
   double data[18];
   double trange[2];
   REF_DBL xyz0[3], xyz1[3];
@@ -2717,7 +2717,7 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
         edgeid = ref_geom_id(ref_geom, edge_geom);
         REIS(EGADS_SUCCESS,
              EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref,
-                            &oclass, &mtype, trange, &nchild, &children,
+                            &oclass, &mtype, trange, &ncadnode, &cadnodes,
                             &senses),
              "EG topo node");
         if (mtype == ONENODE || mtype == DEGENERATE) continue;
@@ -2740,13 +2740,13 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
         "assume uniq edge id");
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref, &oclass,
-                        &mtype, trange, &nchild, &children, &senses),
+                        &mtype, trange, &ncadnode, &cadnodes, &senses),
          "EG topo node");
     RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
-    RAS(0 < nchild && nchild < 3, "edge children");
-    ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, children[0]);
-    if (2 == nchild) {
-      ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, children[1]);
+    RAS(0 < ncadnode && ncadnode < 3, "edge children");
+    ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
+    if (2 == ncadnode) {
+      ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes[1]);
     } else {
       ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
     }
@@ -2754,29 +2754,29 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
         faceid = ref_geom_id(ref_geom, face_geom);
         REIS(EGADS_SUCCESS,
-             EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf,
-                            &oclass, &mtype, data, &nloop, &eloops, &senses),
+             EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &ref,
+                            &oclass, &mtype, data, &nloop, &loops, &senses),
              "topo");
         for (iloop = 0; iloop < nloop; iloop++) {
           /* loop through all Edges associated with this Loop */
           REIS(EGADS_SUCCESS,
-               EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data,
-                              &nedge, &eedges, &senses),
+               EG_getTopology(loops[iloop], &ref, &oclass, &mtype, data, &nedge,
+                              &edges, &senses),
                "topo");
           for (iedge = 0; iedge < nedge; iedge++) {
             other_edgeid =
-                EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]);
+                EG_indexBodyTopo((ego)(ref_geom->solid), edges[iedge]);
             /* qualified? does not share geom nodes */
             REIS(EGADS_SUCCESS,
                  EG_getTopology(((ego *)(ref_geom->edges))[other_edgeid - 1],
-                                &ref, &oclass, &mtype, trange, &nchild,
-                                &children, &senses),
+                                &ref, &oclass, &mtype, trange, &ncadnode,
+                                &cadnodes, &senses),
                  "EG topo node");
             if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
-            RAS(0 < nchild && nchild < 3, "edge children");
-            cad_node0 = EG_indexBodyTopo(ref_geom->solid, children[0]);
-            if (2 == nchild) {
-              cad_node1 = EG_indexBodyTopo(ref_geom->solid, children[1]);
+            RAS(0 < ncadnode && ncadnode < 3, "edge children");
+            cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
+            if (2 == ncadnode) {
+              cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes[1]);
             } else {
               cad_node1 = cad_node0; /* ONENODE edge */
             }
