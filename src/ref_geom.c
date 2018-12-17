@@ -2063,9 +2063,10 @@ REF_STATUS ref_geom_tri_centroid(REF_GRID ref_grid, REF_INT *nodes,
   uv[0] = 0.0;
   uv[1] = 0.0;
   each_ref_cell_cell_node(ref_cell, cell_node) {
-    RSS(ref_geom_cell_tuv(ref_geom, nodes[cell_node], nodes, REF_GEOM_FACE,
+    RSB(ref_geom_cell_tuv(ref_geom, nodes[cell_node], nodes, REF_GEOM_FACE,
                           node_uv, &sens),
-        "cell node uv");
+        "cell node uv",
+        { ref_geom_tec(ref_grid, "ref_geom_tri_centroid_error.tec"); });
     uv[0] += (1.0 / 3.0) * node_uv[0];
     uv[1] += (1.0 / 3.0) * node_uv[1];
   }
