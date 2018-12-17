@@ -291,6 +291,20 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                         REF_BOOL *allowed) {
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_BOOL has_side;
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side), "edge side");
+
+  *allowed = !has_side;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -508,6 +522,8 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     /* skip mixed */
 
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
+    if (!allowed) continue;
+    RSS(ref_swap_topo(ref_grid, node0, node1, &allowed), "topo");
     if (!allowed) continue;
     RSS(ref_swap_quality(ref_grid, node0, node1, &allowed), "qual");
     if (!allowed) continue;

@@ -196,6 +196,64 @@ int main(void) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  { /* swap topo across edge not allowed, periodic */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri0");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 3;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri1");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 100;
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &cell), "tri1");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_topo(ref_grid, node0, node1, &allowed), "no swap edge");
+
+    REIS(REF_FALSE, allowed, "no");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+  { /* swap topo across no edge allowed */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri0");
+    nodes[0] = 1;
+    nodes[1] = 0;
+    nodes[2] = 3;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "tri1");
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_swap_topo(ref_grid, node0, node1, &allowed), "no swap edge");
+
+    REIS(REF_TRUE, allowed, "yes");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
   { /* local: swap allowed? */
     REF_GRID ref_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];

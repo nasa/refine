@@ -38,6 +38,8 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                            REF_INT *node2, REF_INT *node3);
 REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed);
+REF_STATUS ref_swap_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                         REF_BOOL *allowed);
 REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                REF_BOOL *allowed);
 REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
