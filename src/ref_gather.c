@@ -42,6 +42,8 @@ REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
   ref_gather->hist_file = (FILE *)NULL;
   ref_gather->time = 0.0;
 
+  ref_gather->low_quality_zone = REF_FALSE;
+
   return REF_SUCCESS;
 }
 
@@ -436,7 +438,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                           ref_gather->grid_file),
       "t");
 
-  if (REF_FALSE) {
+  if (ref_gather_low_quality_zone(ref_gather)) {
     REF_INT ntet;
     REF_DBL min_quality = 0.10;
     RSS(ref_gather_ncell_below_quality(ref_node, ref_grid_tet(ref_grid),
