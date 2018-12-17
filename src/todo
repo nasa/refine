@@ -6,13 +6,9 @@ check that post conditions are implemented completely for all ops
 post-mortum normdev plot
 
 tess
- + report tri area and tet volume ranges
- + test with OM6
- mixed space gradation surf with aflr3 positive volume
- edge feature size i.e., tiny edges
- face feature size i.e., om6 trailing edge
- k-tree to drive split for grid size gradation of JSM
- 2D cavity operator for surf geom edges
+ unfreeze edges for AFLR volume
+ anisotropic feature size, edge length tangent, dist to other edge normal?
+ near-tree to drive split for grid size gradation of JSM
  edge chord height warning/constraint?
 
 C2S
@@ -31,6 +27,7 @@ swap in 3D, classic implementation
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
   eliminate short edges and sliver deletion
+  2D cavity operator for surf geom edges
   cavity operator parallel
     with an array of cavity made from para edge on geom
     enlarge returns complete, same part request, or boundary
@@ -201,6 +198,13 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ tess
+  + report tri area and tet volume ranges
+  + test with OM6
+  + mixed space gradation surf with aflr3 positive volume
+  + cad node feature size length of incident cad edge
+  + cad edge feature size distance to nonadjacent edge, i.e., om6 trailing edge
 
 + version 3 .meshb
 

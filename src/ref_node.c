@@ -574,7 +574,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
 
   ref_free(everyones_nnode);
   ref_malloc(global, ref_node_max(ref_node), REF_INT);
-  
+
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
@@ -582,7 +582,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
       nnode++;
     }
   }
-  
+
   RSS(ref_node_ghost_int(ref_node, global), "ghost int");
 
   each_ref_node_valid_node(ref_node, node) {
@@ -592,7 +592,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   ref_free(global);
 
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild globals");
-  
+
   return REF_SUCCESS;
 }
 

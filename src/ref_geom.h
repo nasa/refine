@@ -106,7 +106,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_curvature_unlimited(ref_geom) \
   (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
 
-#define each_ref_type(ref_geom, type) for ((type) = 0; (type) < 3; (type)++)
+#define each_ref_type(refx_geom, type) for ((type) = 0; (type) < 3; (type)++)
 #define each_ref_descr(ref_geom, item) \
   for ((item) = 0; (item) < REF_GEOM_DESCR_SIZE; (item)++)
 
@@ -217,7 +217,7 @@ REF_STATUS ref_geom_egads_export(const char *filename);
 
 REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
-REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node,
+REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
                                  REF_DBL *length);
 /* positive max_length is absolute, negative max_length is relative to bbox */
 REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params);
