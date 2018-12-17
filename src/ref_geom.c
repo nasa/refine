@@ -2696,9 +2696,9 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
                                  REF_DBL *length) {
 #ifdef HAVE_EGADS
   REF_BOOL on_node, on_edge;
-  REF_INT item, geom, edgeid, faceid, iloop;
-  ego ref, *pchldrn, object, *eedges, ecurve, *eloops, esurf;
-  int oclass, mtype, nchild, *psens, nedge, *senses, nloop;
+  REF_INT item, edge_geom, face_geom, edgeid, faceid, iloop;
+  ego ref, *children, *eedges, ecurve, *eloops, esurf;
+  int oclass, mtype, nchild, nedge, *senses, nloop;
   double data[18];
   double trange[2];
   REF_DBL xyz0[3], xyz1[3];
@@ -2712,13 +2712,13 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &on_node), "on node");
   if (on_node) {
-    each_ref_geom_having_node(ref_geom, node, item, geom) {
-      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
-        edgeid = ref_geom_id(ref_geom, geom);
-        object = ((ego *)(ref_geom->edges))[edgeid - 1];
+    each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
+      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom)) {
+        edgeid = ref_geom_id(ref_geom, edge_geom);
         REIS(EGADS_SUCCESS,
-             EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
-                            &pchldrn, &psens),
+             EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref,
+                            &oclass, &mtype, trange, &nchild, &children,
+                            &senses),
              "EG topo node");
         if (mtype == ONENODE || mtype == DEGENERATE) continue;
         RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, edgeid, &(trange[0]),
@@ -2740,19 +2740,19 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
         "assume uniq edge id");
     REIS(EGADS_SUCCESS,
          EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref, &oclass,
-                        &mtype, trange, &nchild, &pchldrn, &psens),
+                        &mtype, trange, &nchild, &children, &senses),
          "EG topo node");
     RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
     RAS(0 < nchild && nchild < 3, "edge children");
-    ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+    ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, children[0]);
     if (2 == nchild) {
-      ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+      ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, children[1]);
     } else {
       ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
     }
-    each_ref_geom_having_node(ref_geom, node, item, geom) {
-      if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
-        faceid = ref_geom_id(ref_geom, geom);
+    each_ref_geom_having_node(ref_geom, node, item, face_geom) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
+        faceid = ref_geom_id(ref_geom, face_geom);
         REIS(EGADS_SUCCESS,
              EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf,
                             &oclass, &mtype, data, &nloop, &eloops, &senses),
@@ -2770,13 +2770,13 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
             REIS(EGADS_SUCCESS,
                  EG_getTopology(((ego *)(ref_geom->edges))[other_edgeid - 1],
                                 &ref, &oclass, &mtype, trange, &nchild,
-                                &pchldrn, &psens),
+                                &children, &senses),
                  "EG topo node");
             if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
             RAS(0 < nchild && nchild < 3, "edge children");
-            cad_node0 = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+            cad_node0 = EG_indexBodyTopo(ref_geom->solid, children[0]);
             if (2 == nchild) {
-              cad_node1 = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+              cad_node1 = EG_indexBodyTopo(ref_geom->solid, children[1]);
             } else {
               cad_node1 = cad_node0; /* ONENODE edge */
             }
