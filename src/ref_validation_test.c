@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_inspect(ref_grid), "inspection");
 
     printf("validate.\n");
+    RSS(ref_validation_volume_status(ref_grid), "tet volume grid");
     RSS(ref_validation_all(ref_grid), "invalid grid");
 
     printf("vtk.\n");

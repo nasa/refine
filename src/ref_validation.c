@@ -288,3 +288,30 @@ REF_STATUS ref_validation_all(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL min_volume, max_volume;
+  REF_DBL volume;
+
+  min_volume = 1.0e100;
+  max_volume = -1.0e100;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
+    min_volume = MIN(min_volume, volume);
+    max_volume = MAX(max_volume, volume);
+  }
+  volume = min_volume;
+  RSS(ref_mpi_min(ref_mpi, &volume, &min_volume, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_volume, 1, REF_DBL_TYPE), "min");
+  volume = max_volume;
+  RSS(ref_mpi_max(ref_mpi, &volume, &max_volume, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_volume, 1, REF_DBL_TYPE), "min");
+
+  if (ref_grid_once(ref_grid))
+    printf("volume %.5e %.5e\n", min_volume, max_volume);
+
+  return REF_SUCCESS;
+}
