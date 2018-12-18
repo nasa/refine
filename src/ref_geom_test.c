@@ -175,16 +175,22 @@ int main(int argc, char *argv[]) {
          "required args: --triage grid.ext geom.egads [metric.solb]");
     printf("grid source %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
+    RSS(ref_validation_volume_status(ref_grid), "report volume range");
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
     if (4 < argc) {
       RSS(ref_part_metric(ref_grid_node(ref_grid), argv[4]), "part m");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part metric");
     } else {
       ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature metric");
     }
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
-    RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame")
+    RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
