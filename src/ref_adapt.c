@@ -443,6 +443,10 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
   }
 
+  if (ref_grid_adapt(ref_grid, post_max_ratio) < 3.0) {
+    RSS(ref_adapt_parameter(ref_grid, all_done), "param");
+  }
+
   for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
     RSS(ref_split_pass(ref_grid), "split pass");
     ref_gather_blocking_frame(ref_grid, "split");
