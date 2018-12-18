@@ -1,4 +1,8 @@
 
+- termination recommendation based on one percent edge-metric ratio limit change
+- edge-metric ratio post floor more aggresive once ceiling drops below 3
+- ref_adapt_parameter is private method
+- ref_adapt_pass returns termination recommendation
 - curvature based metric includes geometry topology feature size
 - version 3 .meshb/.solb export for grids larger than 2 GBytes (10M vertex)
 - ref_driver RCM global node order per proc on export
