@@ -2358,7 +2358,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
       "dbg surf");
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
-  sprintf(command, "tetgen -pYq2.0/0z %s < /dev/null > %s.out", smesh_name,
+  sprintf(command, "tetgen -pYq2.0/10zV %s < /dev/null > %s.out", smesh_name,
           smesh_name);
   printf("%s\n", command);
   fflush(stdout);
