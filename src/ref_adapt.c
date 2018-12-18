@@ -275,8 +275,9 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
   }
 
-  if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-12 &&
-      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-12 && max_age < 10) {
+  if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
+      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
+      max_age < 50) {
     *all_done = REF_TRUE;
     if (ref_grid_once(ref_grid)) {
       printf("termination recommended\n");
@@ -441,6 +442,10 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  }
+
+  if (ref_grid_adapt(ref_grid, post_max_ratio) < 3.0) {
+    RSS(ref_adapt_parameter(ref_grid, all_done), "param");
   }
 
   for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {

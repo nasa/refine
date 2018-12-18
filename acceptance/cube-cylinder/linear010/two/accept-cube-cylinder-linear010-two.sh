@@ -26,7 +26,7 @@ ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric ${h}
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-linear010-two-02.status
 
 cat accept-cube-cylinder-linear010-two-02.status
-../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.1 2.0
+../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.3 3.0
 
 
 
