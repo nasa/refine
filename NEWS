@@ -1,4 +1,5 @@
 
+- curvature based metric includes geometry topology feature size
 - version 3 .meshb/.solb export for grids larger than 2 GBytes (10M vertex)
 - ref_driver RCM global node order per proc on export
 - ref_grid_pack uses RCM ordering
