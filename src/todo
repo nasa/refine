@@ -3,8 +3,6 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
-post-mortum normdev plot
-
 tess
  unfreeze edges for AFLR volume
  anisotropic feature size, edge length tangent, dist to other edge normal?
@@ -198,6 +196,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ post-mortum normdev plot
 
 + tess
   + report tri area and tet volume ranges
