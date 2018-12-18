@@ -291,16 +291,17 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                         REF_BOOL *allowed) {
-  REF_CELL ref_cell = ref_grid_edg(ref_grid);
-  REF_BOOL has_side;
+REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                              REF_BOOL *allowed) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BOOL node0_has_jump, node1_has_jump;
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side), "edge side");
+  RSS(ref_geom_has_jump(ref_geom, node0, &node0_has_jump), "n0 jump");
+  RSS(ref_geom_has_jump(ref_geom, node1, &node1_has_jump), "n1 jump");
 
-  *allowed = !has_side;
+  *allowed = !node0_has_jump && !node1_has_jump;
 
   return REF_SUCCESS;
 }
@@ -523,7 +524,7 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
 
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
-    RSS(ref_swap_topo(ref_grid, node0, node1, &allowed), "topo");
+    RSS(ref_swap_geom_topo(ref_grid, node0, node1, &allowed), "topo");
     if (!allowed) continue;
     RSS(ref_swap_quality(ref_grid, node0, node1, &allowed), "qual");
     if (!allowed) continue;
