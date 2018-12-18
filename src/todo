@@ -197,6 +197,11 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ termination recommendation based on one percent edge-metric ratio limit change
++ edge-metric ratio post floor more aggresive once ceiling drops below 3
++ ref_adapt_parameter is private method
++ ref_adapt_pass returns termination recommendation
+
 + post-mortum normdev plot
 
 + tess
