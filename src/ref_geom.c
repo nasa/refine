@@ -3037,6 +3037,20 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_has_jump(REF_GEOM ref_geom, REF_INT node,
+                             REF_BOOL *has_jump) {
+  REF_INT item, geom;
+  *has_jump = REF_FALSE;
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (0 != ref_geom_jump(ref_geom, geom)) {
+      *has_jump = REF_TRUE;
+      return REF_SUCCESS;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
