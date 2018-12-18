@@ -103,7 +103,7 @@ REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
+static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
@@ -415,9 +415,11 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
   REF_INT pass;
+
+  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
 
   RSS(ref_gather_ngeom(ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                        REF_GEOM_FACE, &ngeom),
@@ -491,8 +493,10 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT pass;
+
+  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
 
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
@@ -522,12 +526,11 @@ static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid) {
+REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_twod(ref_grid)) {
-    RSS(ref_adapt_twod_pass(ref_grid), "pass");
+    RSS(ref_adapt_twod_pass(ref_grid, all_done), "2D pass");
   } else {
-    RSS(ref_adapt_threed_pass(ref_grid), "pass");
+    RSS(ref_adapt_threed_pass(ref_grid, all_done), "3D pass");
   }
   return REF_SUCCESS;
 }
-

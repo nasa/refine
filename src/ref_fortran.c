@@ -129,6 +129,7 @@ REF_STATUS REF_FORT_(ref_fortran_viz, REF_FORTRAN_VIZ)(void) {
 REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void) {
   REF_INT passes, i;
   REF_INT ntet, npri;
+  REF_BOOL all_done;
 
   RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_tet(ref_grid), &ntet),
       "ntet");
@@ -164,8 +165,8 @@ REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void) {
   RSS(ref_histogram_ratio(ref_grid), "gram");
 
   passes = 20;
-  for (i = 0; i < passes; i++) {
-    RSS(ref_adapt_pass(ref_grid), "pass");
+  for (i = 0; !all_done && i < passes; i++) {
+    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_ratio(ref_grid), "gram");

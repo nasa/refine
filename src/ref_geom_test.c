@@ -77,7 +77,7 @@ static REF_STATUS ref_geom_tri_status(REF_GRID ref_grid) {
 }
 
 static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
-  REF_BOOL all_done;
+  REF_BOOL all_done = REF_FALSE;
   int passes = 15, pass;
 
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
@@ -90,13 +90,11 @@ static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
       "show time");
 
-  for (pass = 0; pass < passes; pass++) {
+  for (pass = 0; !all_done && pass < passes; pass++) {
     if (ref_grid_once(ref_grid))
       printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
-    RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
-    if (all_done) break;
-    RSS(ref_adapt_pass(ref_grid), "pass");
+    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");

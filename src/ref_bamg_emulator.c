@@ -111,8 +111,9 @@ int main(int argc, char *argv[]) {
 
   passes = 20;
   for (i = 0; i < passes; i++) {
+    REF_BOOL all_done;
     printf(" pass %d of %d\n", i, passes);
-    RSS(ref_adapt_pass(ref_grid), "pass");
+    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     if (NULL != background_grid) {
       RSS(ref_metric_interpolate(ref_grid, background_grid), "interp");

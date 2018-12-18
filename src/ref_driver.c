@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
   char output_project[1004];
   char output_filename[1024];
   REF_INT ngeom;
-  REF_BOOL all_done;
+  REF_BOOL all_done = REF_FALSE;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
@@ -222,13 +222,11 @@ int main(int argc, char *argv[]) {
   RSS(ref_grid_pack(ref_grid), "pack");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
 
-  for (pass = 0; pass < passes; pass++) {
+  for (pass = 0; !all_done && pass < passes; pass++) {
     if (ref_mpi_once(ref_mpi))
       printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
              ref_mpi_n(ref_grid_mpi(ref_grid)));
-    RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
-    if (all_done) break;
-    RSS(ref_adapt_pass(ref_grid), "pass");
+    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     if (curvature_metric) {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");

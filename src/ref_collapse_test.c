@@ -61,7 +61,6 @@ int main(int argc, char *argv[]) {
   if (argc > 2) {
     REF_GRID ref_grid;
     REF_INT pass;
-    REF_BOOL all_done;
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "get metric");
@@ -78,7 +77,6 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
 
     for (pass = 0; pass < 5; pass++) {
-      RSS(ref_adapt_parameter(ref_grid, &all_done), "param");
       RSS(ref_collapse_pass(ref_grid), "col pass");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
 

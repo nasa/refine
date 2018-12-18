@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
   { /* adapt twod */
     REF_GRID ref_grid;
     REF_INT i, passes;
+    REF_BOOL all_done = REF_FALSE;
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up grid");
     ref_grid_twod(ref_grid) = REF_TRUE;
@@ -86,7 +87,7 @@ int main(int argc, char *argv[]) {
 
     passes = 5;
     for (i = 0; i < passes; i++) {
-      RSS(ref_adapt_pass(ref_grid), "pass");
+      RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
       RSS(ref_migrate_to_balance(ref_grid), "balance");
     }
 
