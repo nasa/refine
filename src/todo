@@ -17,11 +17,6 @@ layer insert
  cavity recover tet face
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
-swap in 3D, classic implementation
-  gem
-  equator
-  continuous
-
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
   eliminate short edges and sliver deletion
@@ -36,6 +31,11 @@ cavity operator in 2D/3D
     max ghost
     deactivate collisions
     migrate
+
+swap in 3D, classic implementation? cavity?
+  gem
+  equator
+  continuous
 
 acceptance test that checks interp error for functions
 clean up ref_acceptance uses without a flag
