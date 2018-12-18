@@ -300,7 +300,7 @@ REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -415,16 +415,7 @@ REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid) {
-  if (ref_grid_twod(ref_grid)) {
-    RSS(ref_adapt_twod_pass(ref_grid), "pass");
-  } else {
-    RSS(ref_adapt_threed_pass(ref_grid), "pass");
-  }
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
   REF_INT ngeom;
   REF_INT pass;
 
@@ -500,7 +491,7 @@ REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
   REF_INT pass;
 
   if (ref_grid_adapt(ref_grid, watch_param))
@@ -530,3 +521,13 @@ REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_adapt_pass(REF_GRID ref_grid) {
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_adapt_twod_pass(ref_grid), "pass");
+  } else {
+    RSS(ref_adapt_threed_pass(ref_grid), "pass");
+  }
+  return REF_SUCCESS;
+}
+

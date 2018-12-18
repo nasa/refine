@@ -56,10 +56,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original);
 REF_STATUS ref_adapt_free(REF_ADAPT ref_adapt);
 
 REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done);
-REF_STATUS ref_adapt_tattle(REF_GRID ref_grid);
 REF_STATUS ref_adapt_pass(REF_GRID ref_grid);
-REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid);
-REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 
