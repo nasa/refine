@@ -61,25 +61,59 @@ REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_ncell_below_quality(REF_NODE ref_node,
-                                                 REF_CELL ref_cell,
-                                                 REF_DBL min_quality,
-                                                 REF_INT *ncell) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell_local;
+static REF_STATUS ref_gather_cell_below_quality(
+    REF_GRID ref_grid, REF_CELL ref_cell, REF_DBL min_quality,
+    REF_INT *nnode_global, REF_INT *ncell_global, REF_INT **l2c) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node, part, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnode, ncell;
+  REF_INT proc, offset, *counts;
   REF_DBL quality;
 
-  ncell_local = 0;
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  (*nnode_global) = 0;
+  (*ncell_global) = 0;
+  nnode = 0;
+  ncell = 0;
+
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-        quality < min_quality)
-      ncell_local++;
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+      if (quality < min_quality) {
+        ncell++;
+        for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+          if (ref_node_owned(ref_node, nodes[node]) &&
+              (REF_EMPTY == (*l2c)[nodes[node]])) {
+            (*l2c)[nodes[node]] = nnode;
+            nnode++;
+          }
+        }
+      }
+    }
   }
 
-  RSS(ref_mpi_sum(ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE), "sum");
-  RSS(ref_mpi_bcast(ref_mpi, ncell, 1, REF_INT_TYPE), "bcast");
+  (*ncell_global) = ncell;
+  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_INT_TYPE), "allsum");
+
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
+  offset = 0;
+  for (proc = 0; proc < ref_mpi_rank(ref_mpi); proc++) {
+    offset += counts[proc];
+  }
+  each_ref_mpi_part(ref_mpi, proc) { (*nnode_global) += counts[proc]; }
+  ref_free(counts);
+
+  for (node = 0; node < ref_node_max(ref_node); node++) {
+    if (REF_EMPTY != (*l2c)[node]) {
+      (*l2c)[node] += offset;
+    }
+  }
+
+  RSS(ref_node_ghost_int(ref_node, (*l2c)), "xfer");
 
   return REF_SUCCESS;
 }
@@ -262,28 +296,34 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
 static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
                                               REF_CELL ref_cell,
-                                              REF_DBL min_quality, FILE *file) {
+                                              REF_INT ncell_expected,
+                                              REF_INT *l2c, REF_DBL min_quality,
+                                              FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT size_per = ref_cell_size_per(ref_cell);
   REF_INT ncell;
   REF_INT *c2n;
-  REF_INT proc;
+  REF_INT part, proc, ncell_actual;
   REF_DBL quality;
+
+  ncell_actual = 0;
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-          quality < min_quality) {
-        for (node = 0; node < node_per; node++) {
-          nodes[node] = ref_node_global(ref_node, nodes[node]);
-          nodes[node]++;
-          fprintf(file, " %d", nodes[node]);
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+        if (quality < min_quality) {
+          for (node = 0; node < node_per; node++) {
+            nodes[node] = l2c[nodes[node]];
+            nodes[node]++;
+            fprintf(file, " %d", nodes[node]);
+          }
+          ncell_actual++;
+          fprintf(file, "\n");
         }
-        fprintf(file, "\n");
       }
     }
   }
@@ -291,48 +331,49 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
-      if (ncell > 0) {
-        ref_malloc(c2n, ncell * size_per, REF_INT);
-        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, proc),
-            "recv c2n");
-        for (cell = 0; cell < ncell; cell++) {
-          for (node = 0; node < node_per; node++) {
-            c2n[node + size_per * cell]++;
-            fprintf(file, " %d", c2n[node + size_per * cell]);
-          }
-          fprintf(file, "\n");
+      ref_malloc(c2n, ncell * node_per, REF_INT);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
+          "recv c2n");
+      for (cell = 0; cell < ncell; cell++) {
+        for (node = 0; node < node_per; node++) {
+          c2n[node + node_per * cell]++;
+          fprintf(file, " %d", c2n[node + node_per * cell]);
         }
-        ref_free(c2n);
+        fprintf(file, "\n");
       }
+      ncell_actual++;
+      ref_free(c2n);
     }
   } else {
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-          quality < min_quality)
-        ncell++;
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+        if (quality < min_quality) ncell++;
+      }
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    if (ncell > 0) {
-      ref_malloc(c2n, ncell * size_per, REF_INT);
-      ncell = 0;
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ncell = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
         RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-        if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
-            quality < min_quality) {
+        if (quality < min_quality) {
           for (node = 0; node < node_per; node++)
-            c2n[node + size_per * ncell] =
-                ref_node_global(ref_node, nodes[node]);
-          for (node = node_per; node < size_per; node++)
-            c2n[node + size_per * ncell] = nodes[node];
+            c2n[node + node_per * ncell] = l2c[nodes[node]];
           ncell++;
         }
       }
-      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
-          "send c2n");
-      ref_free(c2n);
     }
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
+        "send c2n");
+    ref_free(c2n);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(ncell_expected, ncell_actual, "cell count mismatch");
   }
 
   return REF_SUCCESS;
@@ -437,39 +478,37 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
                           ref_gather->grid_file),
       "t");
+  ref_free(l2c);
 
   if (ref_gather_low_quality_zone(ref_gather)) {
-    REF_INT ntet;
     REF_DBL min_quality = 0.10;
-    RSS(ref_gather_ncell_below_quality(ref_node, ref_grid_tet(ref_grid),
-                                       min_quality, &ntet),
-        "ntri");
+    RSS(ref_gather_cell_below_quality(ref_grid, ref_grid_tet(ref_grid),
+                                      min_quality, &nnode, &ncell, &l2c),
+        "cell below");
 
-    if (ref_grid_once(ref_grid)) {
-      if (NULL == zone_title) {
-        fprintf(ref_gather->grid_file,
-                "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, "
-                "zonetype=%s, solutiontime=%f\n",
-                nnode, MAX(1, ntet), "point", "fetetrahedron",
-                ref_gather->time);
-      } else {
-        fprintf(ref_gather->grid_file,
-                "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, "
-                "zonetype=%s, solutiontime=%f\n",
-                zone_title, nnode, MAX(1, ntet), "point", "fetetrahedron",
-                ref_gather->time);
+    if (node > 0 && ncell) {
+      if (ref_grid_once(ref_grid)) {
+        if (NULL == zone_title) {
+          fprintf(ref_gather->grid_file,
+                  "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, "
+                  "zonetype=%s, solutiontime=%f\n",
+                  nnode, ncell, "point", "fetetrahedron", ref_gather->time);
+        } else {
+          fprintf(ref_gather->grid_file,
+                  "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, "
+                  "zonetype=%s, solutiontime=%f\n",
+                  zone_title, nnode, ncell, "point", "fetetrahedron",
+                  ref_gather->time);
+        }
       }
-    }
-    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 2, scalar,
-                                 ref_gather->grid_file),
-        "nodes");
-    if (0 == ntet) {
-      if (ref_grid_once(ref_grid)) fprintf(ref_gather->grid_file, " 1 1 1 1\n");
-    } else {
-      RSS(ref_gather_cell_quality_tec(ref_node, ref_grid_tet(ref_grid),
-                                      min_quality, ref_gather->grid_file),
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 2, scalar,
+                                   ref_gather->grid_file),
+          "nodes");
+      RSS(ref_gather_cell_quality_tec(ref_node, ref_grid_tet(ref_grid), ncell,
+                                      l2c, min_quality, ref_gather->grid_file),
           "qtet");
     }
+    ref_free(l2c);
   }
 
   if (ref_grid_once(ref_grid)) {
@@ -478,7 +517,6 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   }
 
   ref_free(scalar);
-  ref_free(l2c);
 
   return REF_SUCCESS;
 }

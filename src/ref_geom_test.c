@@ -189,6 +189,7 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
+    ref_gather_low_quality_zone(ref_grid_gather(ref_grid)) = REF_TRUE;
     RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
