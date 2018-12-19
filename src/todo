@@ -19,6 +19,8 @@ layer insert
 
 cavity operator in 2D/3D
   add node and grid into REF_CAVITY_STRUCT
+    ref_cavity_form_ball
+    ref_cavity_form_split_edge
   eliminate short edges and sliver deletion
   2D cavity operator for surf geom edges
   cavity operator parallel
