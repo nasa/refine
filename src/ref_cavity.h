@@ -40,7 +40,6 @@ BEGIN_C_DECLORATION
 
 struct REF_CAVITY_STRUCT {
   REF_CAVITY_STATE state;
-  REF_INT node_per;
   REF_INT n;
   REF_INT max;
   REF_INT blank;
@@ -49,16 +48,15 @@ struct REF_CAVITY_STRUCT {
   REF_BOOL debug;
 };
 
-REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity, REF_INT node_per);
+REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
 REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_n(ref_cavity) ((ref_cavity)->n)
-#define ref_cavity_node_per(ref_cavity) ((ref_cavity)->node_per)
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
 
 #define ref_cavity_f2n(ref_cavity, node, cavity) \
-  ((ref_cavity)->f2n[(node) + ref_cavity_node_per(ref_cavity) * (cavity)])
+  ((ref_cavity)->f2n[(node) + 3 * (cavity)])
 
 #define ref_cavity_max(ref_cavity) ((ref_cavity)->max)
 #define ref_cavity_blank(ref_cavity) ((ref_cavity)->blank)
@@ -74,9 +72,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
   for ((face) = 0; (face) < ref_cavity_max(ref_cavity); (face)++) \
     if (ref_cavity_valid(ref_cavity, face))
 
-#define each_ref_cavity_face_node(ref_cavity, face_node)               \
-  for ((face_node) = 0; (face_node) < ref_cavity_node_per(ref_cavity); \
-       (face_node)++)
+#define each_ref_cavity_face_node(ref_cavity, face_node) \
+  for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
 REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes);
 REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,

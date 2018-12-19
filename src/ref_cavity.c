@@ -32,7 +32,7 @@
 
 #include "ref_dict.h"
 
-REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr, REF_INT node_per) {
+REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;
   REF_INT face;
 
@@ -40,15 +40,12 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr, REF_INT node_per) {
   ref_cavity = (*ref_cavity_ptr);
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
-  ref_cavity_node_per(ref_cavity) = node_per;
 
   ref_cavity_n(ref_cavity) = 0;
 
   ref_cavity_max(ref_cavity) = 10;
 
-  ref_malloc_init(ref_cavity->f2n,
-                  ref_cavity_max(ref_cavity) * ref_cavity_node_per(ref_cavity),
-                  REF_INT, 0);
+  ref_malloc_init(ref_cavity->f2n, ref_cavity_max(ref_cavity) * 3, REF_INT, 0);
   for (face = 0; face < ref_cavity_max(ref_cavity); face++) {
     ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
     ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
@@ -74,12 +71,11 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   REF_INT face, node;
   if (NULL == (void *)ref_cavity) return REF_NULL;
-  printf("node_per = %d n = %d max = %d blank = %d\n",
-         ref_cavity_node_per(ref_cavity), ref_cavity_n(ref_cavity),
+  printf("n = %d max = %d blank = %d\n", ref_cavity_n(ref_cavity),
          ref_cavity_max(ref_cavity), ref_cavity_blank(ref_cavity));
   for (face = 0; face < ref_cavity_max(ref_cavity); face++) {
     printf(" f2n[%d] = ", face);
-    for (node = 0; node < ref_cavity_node_per(ref_cavity); node++)
+    for (node = 0; node < 3; node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, node, face));
     printf("\n");
   }
@@ -113,9 +109,7 @@ REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes) {
     chunk = MAX(100, (REF_INT)(1.5 * (REF_DBL)orig));
     ref_cavity_max(ref_cavity) = orig + chunk;
 
-    ref_realloc(ref_cavity->f2n,
-                ref_cavity_node_per(ref_cavity) * ref_cavity_max(ref_cavity),
-                REF_INT);
+    ref_realloc(ref_cavity->f2n, 3 * ref_cavity_max(ref_cavity), REF_INT);
 
     for (face = orig; face < ref_cavity_max(ref_cavity); face++) {
       ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
@@ -127,7 +121,7 @@ REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes) {
 
   face = ref_cavity_blank(ref_cavity);
   ref_cavity_blank(ref_cavity) = ref_cavity_f2n(ref_cavity, 1, face);
-  for (node = 0; node < ref_cavity_node_per(ref_cavity); node++)
+  for (node = 0; node < 3; node++)
     ref_cavity_f2n(ref_cavity, node, face) = nodes[node];
 
   ref_cavity_n(ref_cavity)++;
@@ -141,49 +135,32 @@ REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,
 
   *found_face = REF_EMPTY;
 
-  if (2 == ref_cavity_node_per(ref_cavity)) {
-    each_ref_cavity_valid_face(ref_cavity, face) {
-      if (nodes[0] == ref_cavity_f2n(ref_cavity, 0, face) &&
-          nodes[1] == ref_cavity_f2n(ref_cavity, 1, face)) {
-        *found_face = face;
-        *reversed = REF_FALSE;
-        return REF_SUCCESS;
-      }
-      if (nodes[1] == ref_cavity_f2n(ref_cavity, 0, face) &&
-          nodes[0] == ref_cavity_f2n(ref_cavity, 1, face)) {
-        *found_face = face;
-        *reversed = REF_TRUE;
-        return REF_SUCCESS;
-      }
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    if ((nodes[0] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[1] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[2] == ref_cavity_f2n(ref_cavity, 2, face)) ||
+        (nodes[1] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[2] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[0] == ref_cavity_f2n(ref_cavity, 2, face)) ||
+        (nodes[2] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[0] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[1] == ref_cavity_f2n(ref_cavity, 2, face))) {
+      *found_face = face;
+      *reversed = REF_FALSE;
+      return REF_SUCCESS;
     }
-  } else {
-    each_ref_cavity_valid_face(ref_cavity, face) {
-      if ((nodes[0] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[1] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[2] == ref_cavity_f2n(ref_cavity, 2, face)) ||
-          (nodes[1] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[2] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[0] == ref_cavity_f2n(ref_cavity, 2, face)) ||
-          (nodes[2] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[0] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[1] == ref_cavity_f2n(ref_cavity, 2, face))) {
-        *found_face = face;
-        *reversed = REF_FALSE;
-        return REF_SUCCESS;
-      }
-      if ((nodes[2] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[1] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[0] == ref_cavity_f2n(ref_cavity, 2, face)) ||
-          (nodes[1] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[0] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[2] == ref_cavity_f2n(ref_cavity, 2, face)) ||
-          (nodes[0] == ref_cavity_f2n(ref_cavity, 0, face) &&
-           nodes[2] == ref_cavity_f2n(ref_cavity, 1, face) &&
-           nodes[1] == ref_cavity_f2n(ref_cavity, 2, face))) {
-        *found_face = face;
-        *reversed = REF_TRUE;
-        return REF_SUCCESS;
-      }
+    if ((nodes[2] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[1] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[0] == ref_cavity_f2n(ref_cavity, 2, face)) ||
+        (nodes[1] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[0] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[2] == ref_cavity_f2n(ref_cavity, 2, face)) ||
+        (nodes[0] == ref_cavity_f2n(ref_cavity, 0, face) &&
+         nodes[2] == ref_cavity_f2n(ref_cavity, 1, face) &&
+         nodes[1] == ref_cavity_f2n(ref_cavity, 2, face))) {
+      *found_face = face;
+      *reversed = REF_TRUE;
+      return REF_SUCCESS;
     }
   }
 
@@ -420,20 +397,10 @@ REF_STATUS ref_cavity_add_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                REF_INT node) {
   REF_INT item, cell;
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
-        RSS(ref_cavity_add_tri(ref_cavity, ref_grid, cell), "insert");
-      }
-      break;
-    case (3):
-      each_ref_cell_having_node(ref_grid_tet(ref_grid), node, item, cell) {
-        RSS(ref_cavity_add_tet(ref_cavity, ref_grid, cell), "insert");
-      }
-      break;
-    default:
-      THROW("add_ball unknown node_per");
+  each_ref_cell_having_node(ref_grid_tet(ref_grid), node, item, cell) {
+    RSS(ref_cavity_add_tet(ref_cavity, ref_grid, cell), "insert");
   }
+
   return REF_SUCCESS;
 }
 
@@ -442,21 +409,11 @@ REF_STATUS ref_cavity_add_edge(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT cell, ncell;
   REF_INT cell_to_add[50];
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      RSS(REF_IMPLEMENT, "twod");
-      break;
-    case (3):
-      RSS(ref_cell_list_with2(ref_grid_tet(ref_grid), node0, node1, 50, &ncell,
-                              cell_to_add),
-          "get list");
-      for (cell = 0; cell < ncell; cell++) {
-        RSS(ref_cavity_add_tet(ref_cavity, ref_grid, cell_to_add[cell]),
-            "insert");
-      }
-      break;
-    default:
-      THROW("add_ball unknown node_per");
+  RSS(ref_cell_list_with2(ref_grid_tet(ref_grid), node0, node1, 50, &ncell,
+                          cell_to_add),
+      "get list");
+  for (cell = 0; cell < ncell; cell++) {
+    RSS(ref_cavity_add_tet(ref_cavity, ref_grid, cell_to_add[cell]), "insert");
   }
   return REF_SUCCESS;
 }
@@ -466,77 +423,50 @@ REF_STATUS ref_cavity_split_edge(REF_CAVITY ref_cavity, REF_INT node0,
   REF_INT face;
   REF_INT node, nodes[3];
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      RSS(REF_IMPLEMENT, "twod");
-      break;
-    case (3):
-      each_ref_cavity_valid_face(ref_cavity, face) {
-        each_ref_cavity_face_node(ref_cavity, node) nodes[node] =
-            ref_cavity_f2n(ref_cavity, node, face);
-        if ((node0 == nodes[1] && node1 == nodes[2]) ||
-            (node1 == nodes[1] && node0 == nodes[2])) {
-          ref_cavity_f2n(ref_cavity, 1, face) = new_node;
-          nodes[2] = new_node;
-          RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 0");
-          continue;
-        }
-        if ((node0 == nodes[0] && node1 == nodes[2]) ||
-            (node1 == nodes[0] && node0 == nodes[2])) {
-          ref_cavity_f2n(ref_cavity, 0, face) = new_node;
-          nodes[2] = new_node;
-          RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 1");
-          continue;
-        }
-        if ((node0 == nodes[0] && node1 == nodes[1]) ||
-            (node1 == nodes[0] && node0 == nodes[1])) {
-          ref_cavity_f2n(ref_cavity, 0, face) = new_node;
-          nodes[1] = new_node;
-          RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 2");
-          continue;
-        }
-      }
-      break;
-    default:
-      THROW("add_ball unknown node_per");
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    each_ref_cavity_face_node(ref_cavity, node) nodes[node] =
+        ref_cavity_f2n(ref_cavity, node, face);
+    if ((node0 == nodes[1] && node1 == nodes[2]) ||
+        (node1 == nodes[1] && node0 == nodes[2])) {
+      ref_cavity_f2n(ref_cavity, 1, face) = new_node;
+      nodes[2] = new_node;
+      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 0");
+      continue;
+    }
+    if ((node0 == nodes[0] && node1 == nodes[2]) ||
+        (node1 == nodes[0] && node0 == nodes[2])) {
+      ref_cavity_f2n(ref_cavity, 0, face) = new_node;
+      nodes[2] = new_node;
+      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 1");
+      continue;
+    }
+    if ((node0 == nodes[0] && node1 == nodes[1]) ||
+        (node1 == nodes[0] && node0 == nodes[1])) {
+      ref_cavity_f2n(ref_cavity, 0, face) = new_node;
+      nodes[1] = new_node;
+      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 2");
+      continue;
+    }
   }
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_NODE ref_node,
                               REF_INT node, REF_INT face, REF_BOOL *visible) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL normal[3];
   REF_DBL volume;
 
   *visible = REF_FALSE;
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-      nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-      nodes[2] = node;
+  nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+  nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+  nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+  nodes[3] = node;
 
-      RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
+  RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
 
-      if ((ref_node_xyz(ref_node, 1, nodes[0]) > 0.5 && normal[1] >= 0.0) ||
-          (ref_node_xyz(ref_node, 1, nodes[0]) < 0.5 && normal[1] <= 0.0))
-        return REF_SUCCESS;
-      break;
-    case (3):
-      nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-      nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-      nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-      nodes[3] = node;
-
-      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
-
-      if (volume <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
-
-      break;
-    default:
-      THROW("unknown node_per");
-  }
+  if (volume <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
 
   *visible = REF_TRUE;
 
@@ -574,9 +504,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
       if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
           node == ref_cavity_f2n(ref_cavity, 1, face))
         continue;
-      if (3 == ref_cavity_node_per(ref_cavity) &&
-          node == ref_cavity_f2n(ref_cavity, 2, face))
-        continue;
+      if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
 
       RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid), node, face,
                              &visible),
@@ -622,9 +550,7 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
       if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
           node == ref_cavity_f2n(ref_cavity, 1, face))
         continue;
-      if (3 == ref_cavity_node_per(ref_cavity) &&
-          node == ref_cavity_f2n(ref_cavity, 2, face))
-        continue;
+      if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
 
       RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid), node, face,
                              &visible),
@@ -650,7 +576,6 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                    REF_INT face) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT ncell, cells[2];
   REF_INT face_node, face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
   REF_INT tet0, tet1;
@@ -664,111 +589,60 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     }
   }
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      RSS(ref_cell_list_with2(
-              ref_grid_tri(ref_grid), ref_cavity_f2n(ref_cavity, 0, face),
-              ref_cavity_f2n(ref_cavity, 1, face), 2, &ncell, cells),
-          "more than two");
-      if (0 == ncell) THROW("cavity triangle missing");
-      if (1 == ncell) return REF_INVALID; /* boundary */
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), cells[0], &have_cell0),
-          "cell0");
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), cells[1], &have_cell1),
-          "cell1");
-      if (have_cell0 == have_cell1) THROW("cavity same state");
-      if (have_cell0)
-        RSS(ref_cavity_add_tri(ref_cavity, ref_grid, cells[1]), "add c1");
-      if (have_cell1)
-        RSS(ref_cavity_add_tri(ref_cavity, ref_grid, cells[0]), "add c0");
-      break;
-    case (3):
-      face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-      face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-      face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-      face_nodes[3] = face_nodes[0];
-      RSB(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
-          "found too many tets with face_nodes", {
-            printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
-                   face_nodes[1], face_nodes[2], face_nodes[3]);
-            ref_cavity_tec(ref_cavity, ref_grid,
-                           ref_cavity_f2n(ref_cavity, 0, face),
-                           "ref_cavity_error_too_many_tet.tec");
-          });
-      if (REF_EMPTY == tet0) THROW("cavity tets missing");
-      if (REF_EMPTY == tet1) {
-        REF_INT tri;
-        RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
-            "verify boundary face");
-        ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-        return REF_SUCCESS;
-      }
-
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
-          "cell0");
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
-          "cell1");
-      if (have_cell0 == have_cell1) THROW("cavity same state");
-      if (have_cell0)
-        RSS(ref_cavity_add_tet(ref_cavity, ref_grid, tet1), "add c1");
-      if (have_cell1)
-        RSS(ref_cavity_add_tet(ref_cavity, ref_grid, tet0), "add c0");
-      break;
-    default:
-      THROW("enlarge unknown node_per");
+  face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+  face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+  face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+  face_nodes[3] = face_nodes[0];
+  RSB(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
+      "found too many tets with face_nodes", {
+        printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
+               face_nodes[1], face_nodes[2], face_nodes[3]);
+        ref_cavity_tec(ref_cavity, ref_grid,
+                       ref_cavity_f2n(ref_cavity, 0, face),
+                       "ref_cavity_error_too_many_tet.tec");
+      });
+  if (REF_EMPTY == tet0) THROW("cavity tets missing");
+  if (REF_EMPTY == tet1) {
+    REF_INT tri;
+    RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
+        "verify boundary face");
+    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+    return REF_SUCCESS;
   }
+
+  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
+      "cell0");
+  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
+      "cell1");
+  if (have_cell0 == have_cell1) THROW("cavity same state");
+  if (have_cell0) RSS(ref_cavity_add_tet(ref_cavity, ref_grid, tet1), "add c1");
+  if (have_cell1) RSS(ref_cavity_add_tet(ref_cavity, ref_grid, tet0), "add c0");
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                   REF_INT face) {
-  REF_INT ncell, cells[2];
   REF_INT face_nodes[4];
   REF_BOOL have_cell0, have_cell1;
   REF_INT tet0, tet1;
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      RSS(ref_cell_list_with2(
-              ref_grid_tri(ref_grid), ref_cavity_f2n(ref_cavity, 0, face),
-              ref_cavity_f2n(ref_cavity, 1, face), 2, &ncell, cells),
-          "more than two");
-      if (0 == ncell) THROW("cavity triangle missing");
-      /* boundary is allowed, use the interior tri */
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), cells[0], &have_cell0),
-          "cell0");
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), cells[1], &have_cell1),
-          "cell1");
-      if (have_cell0 == have_cell1) THROW("cavity same state");
-      if (!have_cell0)
-        RSS(ref_cavity_rm_tri(ref_cavity, ref_grid, cells[1]), "rm c1");
-      if (!have_cell1)
-        RSS(ref_cavity_rm_tri(ref_cavity, ref_grid, cells[0]), "rm c0");
-      break;
-    case (3):
-      face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-      face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-      face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-      face_nodes[3] = face_nodes[0];
-      RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
-          "unable to find tets with face");
-      if (REF_EMPTY == tet0) THROW("cavity tets missing");
-      /* boundary is allowed, use the interior tet */
+  face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+  face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+  face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+  face_nodes[3] = face_nodes[0];
+  RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
+      "unable to find tets with face");
+  if (REF_EMPTY == tet0) THROW("cavity tets missing");
+  /* boundary is allowed, use the interior tet */
 
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
-          "cell0");
-      RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
-          "cell1");
-      if (have_cell0 == have_cell1) THROW("cavity same state");
-      if (!have_cell0)
-        RSS(ref_cavity_rm_tet(ref_cavity, ref_grid, tet1), "add c1");
-      if (!have_cell1)
-        RSS(ref_cavity_rm_tet(ref_cavity, ref_grid, tet0), "add c0");
-      break;
-    default:
-      THROW("shrink unknown node_per");
-  }
+  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
+      "cell0");
+  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
+      "cell1");
+  if (have_cell0 == have_cell1) THROW("cavity same state");
+  if (!have_cell0) RSS(ref_cavity_rm_tet(ref_cavity, ref_grid, tet1), "add c1");
+  if (!have_cell1) RSS(ref_cavity_rm_tet(ref_cavity, ref_grid, tet0), "add c0");
 
   return REF_SUCCESS;
 }
@@ -784,18 +658,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   char *zonetype;
   FILE *f;
 
-  switch (ref_cavity_node_per(ref_cavity)) {
-    case (2):
-      ref_cell = ref_grid_tri(ref_grid);
-      zonetype = "fetriangle";
-      break;
-    case (3):
-      ref_cell = ref_grid_tet(ref_grid);
-      zonetype = "fetetrahedron";
-      break;
-    default:
-      THROW("tec unknown node_per");
-  }
+  ref_cell = ref_grid_tet(ref_grid);
+  zonetype = "fetetrahedron";
 
   f = fopen(filename, "w");
   if (NULL == (void *)f) printf("unable to open %s\n", filename);
@@ -890,7 +754,6 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face, face_node;
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  if (2 == ref_cavity_node_per(ref_cavity)) ref_cell = ref_grid_tri(ref_grid);
 
   *local = REF_FALSE;
 
@@ -934,18 +797,8 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   total_quality = 0.0;
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
-    switch (ref_cavity_node_per(ref_cavity)) {
-      case (2):
-        RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "cell");
-        RSS(ref_node_tri_quality(ref_node, nodes, &quality), "new qual");
-        break;
-      case (3):
-        RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
-        RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
-        break;
-      default:
-        THROW("change unknown node_per");
-    }
+    RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
     n++;
     total_quality += quality;
     min_quality = MIN(min_quality, quality);
@@ -969,17 +822,8 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     if (skip) continue;
     each_ref_cavity_face_node(ref_cavity, face_node) nodes[face_node] =
         ref_cavity_f2n(ref_cavity, face_node, face);
-    nodes[ref_cavity_node_per(ref_cavity)] = node;
-    switch (ref_cavity_node_per(ref_cavity)) {
-      case (2):
-        RSS(ref_node_tri_quality(ref_node, nodes, &quality), "new qual");
-        break;
-      case (3):
-        RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
-        break;
-      default:
-        THROW("change unknown node_per");
-    }
+    nodes[3] = node;
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
     n++;
     total_quality += quality;
     min_quality = MIN(min_quality, quality);
@@ -1005,28 +849,16 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
-    switch (ref_cavity_node_per(ref_cavity)) {
-      case (2):
-        RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "cell");
-        break;
-      case (3):
-        RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
-        break;
-      default:
-        THROW("change unknown node_per");
-    }
+    RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
     printf("old %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3]);
   }
 
   each_ref_cavity_valid_face(ref_cavity, face) {
     if (node == ref_cavity_f2n(ref_cavity, 0, face)) continue;
     if (node == ref_cavity_f2n(ref_cavity, 1, face)) continue;
-    if (2 < ref_cavity_node_per(ref_cavity) &&
-        node == ref_cavity_f2n(ref_cavity, 2, face))
-      continue;
+    if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
     printf("new ");
-    for (face_node = 0; face_node < ref_cavity_node_per(ref_cavity);
-         face_node++)
+    for (face_node = 0; face_node < 3; face_node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, face_node, face));
     printf(" %d ", node);
     printf("\n");
