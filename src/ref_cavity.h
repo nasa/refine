@@ -40,6 +40,8 @@ BEGIN_C_DECLORATION
 
 struct REF_CAVITY_STRUCT {
   REF_CAVITY_STATE state;
+  REF_GRID ref_grid;
+  REF_INT node;
   REF_INT n;
   REF_INT max;
   REF_INT blank;
@@ -54,6 +56,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_n(ref_cavity) ((ref_cavity)->n)
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
+#define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
+#define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
 
 #define ref_cavity_f2n(ref_cavity, node, cavity) \
   ((ref_cavity)->f2n[(node) + 3 * (cavity)])
@@ -86,6 +90,8 @@ REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                   REF_INT node);
 
+REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                 REF_INT node);
 REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                 REF_INT node);
 REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,

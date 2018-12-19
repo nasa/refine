@@ -41,6 +41,8 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
 
+  ref_cavity_grid(ref_cavity) = (REF_GRID)NULL;
+  ref_cavity_node(ref_cavity) = REF_EMPTY;
   ref_cavity_n(ref_cavity) = 0;
 
   ref_cavity_max(ref_cavity) = 10;
@@ -254,9 +256,17 @@ REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                 REF_INT node) {
+  ref_cavity_grid(ref_cavity) = ref_grid;
+  ref_cavity_node(ref_cavity) = node;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                 REF_INT node) {
   REF_INT item, cell;
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
   each_ref_cell_having_node(ref_grid_tet(ref_grid), node, item, cell) {
     RSS(ref_cavity_add_tet(ref_cavity, ref_grid, cell), "insert");
@@ -272,6 +282,7 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT cell_to_add[50];
   REF_INT face;
   REF_INT node, nodes[3];
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
 
   RSS(ref_cell_list_with2(ref_grid_tet(ref_grid), node0, node1, 50, &ncell,
                           cell_to_add),
