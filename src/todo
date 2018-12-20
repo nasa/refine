@@ -12,6 +12,8 @@ tess
 C2S
  how/when to fail fast?
 
+change the default seg per radian to 2
+
 layer insert
  cavity recover triangle side
  cavity recover tet face
