@@ -103,6 +103,21 @@ Where,
 The output is two numbers: the characteristic edge length
 (number of vertices raised to the -1/3 power) and the interpolation error norm.
 
+# Field Interpolation
+The fields in a .solb file paired with a donor mesh can be interpolated to
+a receptor mesh. This utility can be executed in serial or parallel.
+```
+./build/src/ref_interp_test --field donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+```
+Where,
+ - `donor-mesh.meshb` is the donor mesh in binary AFLR (.lb8.ugrid,.b8.ugrid) or libMeshb (.meshb) format
+ - `donor-field.solb` is the donor field(s) in libMeshb format
+ - `receptor-mesh.ext` is the receptor mesh in binary AFLR (.lb8.ugrid,.b8.ugrid) or libMeshb (.meshb) format
+ - `receptor-field.solb` is the receptor field(s) in libMeshb format
+
+The output is two numbers: the characteristic edge length
+(number of vertices raised to the -1/3 power) and the interpolation error norm.
+
 # Grid Adaptation
 ```
 ./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -x output.meshb
