@@ -109,12 +109,9 @@ REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
 REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 
-REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                            REF_BOOL *local);
-REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                             REF_INT node, REF_BOOL *improved);
-REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                           REF_INT node);
+REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
+REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved);
+REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity);
 
 END_C_DECLORATION
 

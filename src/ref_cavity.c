@@ -356,7 +356,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
   /* make sure all cell nodes to be replaced are owned */
-  RSS(ref_cavity_local(ref_cavity, ref_grid, &local), "locality");
+  RSS(ref_cavity_local(ref_cavity, &local), "locality");
   if (!local) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
     return REF_SUCCESS;
@@ -393,8 +393,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     printf(" enlarge final %d tets %d faces\n",
            ref_list_n(ref_cavity_list(ref_cavity)), ref_cavity_n(ref_cavity));
 
-  if (ref_cavity_debug(ref_cavity))
-    RSS(ref_cavity_topo(ref_cavity, ref_grid, node), "topo");
+  if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
@@ -610,13 +609,12 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                            REF_BOOL *local) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
+  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT face, face_node;
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
 
   *local = REF_FALSE;
 
@@ -645,9 +643,10 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                             REF_INT node, REF_BOOL *improved) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved) {
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
+  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_quality, total_quality;
@@ -660,7 +659,7 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   total_quality = 0.0;
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
-    RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
     n++;
     total_quality += quality;
@@ -705,14 +704,15 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                           REF_INT node) {
+REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
+  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT item, cell, face, face_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
-    RSS(ref_cell_nodes(ref_grid_tet(ref_grid), cell, nodes), "cell");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     printf("old %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3]);
   }
 
