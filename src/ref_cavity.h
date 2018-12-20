@@ -95,12 +95,10 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                       REF_INT node0, REF_INT node1,
                                       REF_INT new_node);
 
-REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_NODE ref_node,
-                              REF_INT node, REF_INT face, REF_BOOL *visible);
-REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                      REF_INT node);
-REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node);
+REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
+                              REF_BOOL *visible);
+REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity);
+REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face);
 REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_INT face);

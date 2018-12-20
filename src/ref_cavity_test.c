@@ -239,16 +239,14 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 1, node) = 0.2;
       ref_node_xyz(ref_node, 2, node) = 0.3;
       face = 0;
-      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible),
-          "viz");
+      RSS(ref_cavity_visible(ref_cavity, face, &visible), "viz");
       REIS(REF_TRUE, visible, "vis");
 
       ref_node_xyz(ref_node, 0, node) = 1.0;
       ref_node_xyz(ref_node, 1, node) = 1.0;
       ref_node_xyz(ref_node, 2, node) = 1.0;
       face = 0;
-      RSS(ref_cavity_visible(ref_cavity, ref_node, node, face, &visible),
-          "viz");
+      RSS(ref_cavity_visible(ref_cavity, face, &visible), "viz");
       REIS(REF_FALSE, visible, "vis");
 
       RSS(ref_cavity_free(ref_cavity), "free");
@@ -328,7 +326,7 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node) = 0.5;
     RSS(ref_cavity_create(&ref_cavity), "create");
     RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
-    RSS(ref_cavity_enlarge_visible(ref_cavity, ref_grid, node), "insert first");
+    RSS(ref_cavity_enlarge_visible(ref_cavity), "insert first");
     REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
          "enlarge not successful");
     RSS(ref_cavity_replace_tet(ref_cavity), "free");
@@ -352,7 +350,7 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 0, node) = -0.5;
     RSS(ref_cavity_create(&ref_cavity), "create");
     RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node), "insert first");
-    RSS(ref_cavity_enlarge_visible(ref_cavity, ref_grid, node), "enlarge");
+    RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
     REIS(REF_CAVITY_BOUNDARY_CONSTRAINED, ref_cavity_state(ref_cavity),
          "enlarge wrong state");
     RSS(ref_cavity_free(ref_cavity), "free");

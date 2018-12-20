@@ -155,8 +155,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                                      ref_edge_e2n(ref_edge, 0, edge),
                                      ref_edge_e2n(ref_edge, 1, edge), new_node),
           "form edge split cav");
-      RSS(ref_cavity_enlarge_visible(ref_cavity, ref_grid, new_node),
-          "enlarge");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
         valid_cavity = REF_TRUE;
       }
@@ -195,8 +194,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     if (valid_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
-      RSS(ref_cavity_enlarge_visible(ref_cavity, ref_grid, new_node),
-          "cav enlarge");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "cav enlarge");
       REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
            "enlarge not successful");
       RSS(ref_cavity_replace_tet(ref_cavity), "cav replace");

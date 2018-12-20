@@ -318,8 +318,9 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_NODE ref_node,
-                              REF_INT node, REF_INT face, REF_BOOL *visible) {
+REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
+                              REF_BOOL *visible) {
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume;
 
@@ -328,7 +329,7 @@ REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_NODE ref_node,
   nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
   nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
   nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-  nodes[3] = node;
+  nodes[3] = ref_cavity_node(ref_cavity);
 
   RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
 
@@ -339,15 +340,15 @@ REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                      REF_INT node) {
+REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
+  REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT face;
   REF_BOOL local;
   REF_BOOL visible;
   REF_BOOL keep_growing;
 
-  RAS(ref_node_owned(ref_grid_node(ref_grid), node),
-      "cavity part must own node");
+  RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge start %d tets %d faces\n",
@@ -372,9 +373,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
         continue;
       if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
 
-      RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid), node, face,
-                             &visible),
-          "free");
+      RSS(ref_cavity_visible(ref_cavity, face, &visible), "free");
       if (!visible) {
         RSS(ref_cavity_enlarge_face(ref_cavity, face), "enlarge face");
         if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) {
@@ -399,8 +398,8 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node) {
+REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity) {
+  REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT face;
   REF_BOOL visible;
   REF_BOOL keep_growing;
@@ -416,9 +415,7 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity, REF_GRID ref_grid,
         continue;
       if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
 
-      RSS(ref_cavity_visible(ref_cavity, ref_grid_node(ref_grid), node, face,
-                             &visible),
-          "free");
+      RSS(ref_cavity_visible(ref_cavity, face, &visible), "free");
       if (!visible) {
         status = ref_cavity_shrink_face(ref_cavity, face);
         RXS(status, REF_INVALID, "shrink face");
