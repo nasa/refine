@@ -725,3 +725,19 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality;
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
+    if (quality < 0.01) {
+      printf("cell %d qual %f\n", cell, quality);
+    }
+  }
+
+  return REF_SUCCESS;
+}

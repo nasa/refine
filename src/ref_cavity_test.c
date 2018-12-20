@@ -48,10 +48,45 @@
 #include "ref_twod.h"
 #include "ref_validation.h"
 
+#include "ref_histogram.h"
+#include "ref_part.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  if (argc > 2) {
+    REF_GRID ref_grid;
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]),
+        "load egads geom");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load geom");
+    ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
+    /* RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "get metric"); */
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "metric");
+
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
+
+    RSS(ref_cavity_pass(ref_grid), "smooth pass");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt cav");
+
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   { /* add same face 3, raise error */
     REF_CAVITY ref_cavity;

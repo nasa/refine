@@ -109,6 +109,8 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
 REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved);
 REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity);
 
+REF_STATUS ref_cavity_pass(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_CAVITY_H */
