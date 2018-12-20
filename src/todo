@@ -14,6 +14,7 @@ C2S
  acceptance test merge build
 
 change the default seg per radian to 2
+change use mixed_space_gradation in ref_metric_constrain_curvature
 
 ref_interp_test --entropy
   ei   = p/(( gamma - my_1 )*rho)
