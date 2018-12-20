@@ -11,8 +11,14 @@ tess
 
 C2S
  how/when to fail fast?
+ acceptance test merge build
 
 change the default seg per radian to 2
+
+ref_interp_test --entropy
+  ei   = p/(( gamma - my_1 )*rho)
+  et   = rho*( ei + my_haf*(u*u + v*v + w*w))
+  h    = (et + p)/rho
 
 layer insert
  cavity recover triangle side
