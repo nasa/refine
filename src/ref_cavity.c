@@ -731,11 +731,18 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
+  REF_BOOL improved;
+  REF_CAVITY ref_cavity;
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
     if (quality < 0.01) {
       printf("cell %d qual %f\n", cell, quality);
+      RSS(ref_cavity_create(&ref_cavity), "create");
+      RSS(ref_cavity_form_empty(ref_cavity, ref_grid, nodes[0]), "cavity tet");
+      RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
+      RSS(ref_cavity_change(ref_cavity, &improved), "free");
+      RSS(ref_cavity_free(ref_cavity), "free");
     }
   }
 
