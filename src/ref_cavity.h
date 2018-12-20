@@ -83,12 +83,9 @@ REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes);
 REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,
                            REF_INT *found_face, REF_BOOL *reversed);
 
-REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                              REF_INT tet);
-REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                             REF_INT tet);
-REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                  REF_INT node);
+REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
+REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet);
+REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                  REF_INT node);
@@ -110,8 +107,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                   REF_INT face);
 
-REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                          REF_INT node, const char *filename);
+REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 
 REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                             REF_BOOL *local);

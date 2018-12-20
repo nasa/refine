@@ -199,8 +199,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
           "cav enlarge");
       REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
            "enlarge not successful");
-      RSS(ref_cavity_replace_tet(ref_cavity, ref_grid, new_node),
-          "cav replace");
+      RSS(ref_cavity_replace_tet(ref_cavity), "cav replace");
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
     }
