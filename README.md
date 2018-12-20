@@ -115,8 +115,7 @@ Where,
  - `receptor-mesh.ext` is the receptor mesh in binary AFLR (.lb8.ugrid,.b8.ugrid) or libMeshb (.meshb) format
  - `receptor-field.solb` is the receptor field(s) in libMeshb format
 
-The output is two numbers: the characteristic edge length
-(number of vertices raised to the -1/3 power) and the interpolation error norm.
+The output is `receptor-field.solb`.
 
 # Grid Adaptation
 ```
