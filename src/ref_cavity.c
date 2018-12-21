@@ -747,7 +747,8 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL quality, min_del, min_add;
+  REF_DBL quality, min_del, min_add, best;
+  REF_INT best_edge;
   REF_CAVITY ref_cavity;
   REF_INT other, cell_edge;
 
@@ -755,6 +756,8 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
     if (quality < 0.1) {
       printf("cell %d qual %f\n", cell, quality);
+      best_edge = REF_EMPTY;
+      best = -2.0;
       each_ref_cell_cell_edge(ref_cell, cell_edge) {
         RSS(ref_cavity_create(&ref_cavity), "create");
         other = 0;
@@ -767,14 +770,29 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
             "cavity gem");
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-        if (min_add - min_del > 0.01 && min_add > 0.1) {
-          printf("cavity accepted\n");
-          RSS(ref_cavity_replace_tet(ref_cavity), "replace");
-          RSS(ref_cavity_free(ref_cavity), "free");
-          break;
-        } else {
-          RSS(ref_cavity_free(ref_cavity), "free");
+        if (min_add - min_del > 0.0001) {
+          if (best < min_add) {
+            best = min_add;
+            best_edge = cell_edge;
+          }
         }
+        RSS(ref_cavity_free(ref_cavity), "free");
+      }
+      if (REF_EMPTY != best_edge) {
+        RSS(ref_cavity_create(&ref_cavity), "create");
+        other = 0;
+        if (other == ref_cell_e2n_gen(ref_cell, 0, best_edge)) other++;
+        if (other == ref_cell_e2n_gen(ref_cell, 1, best_edge)) other++;
+        RSS(ref_cavity_form_gem(ref_cavity, ref_grid,
+                                nodes[ref_cell_e2n_gen(ref_cell, 0, best_edge)],
+                                nodes[ref_cell_e2n_gen(ref_cell, 1, best_edge)],
+                                nodes[other]),
+            "cavity gem");
+        RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
+        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
+        printf("cavity accepted %f -> %f\n", min_del, min_add);
+        RSS(ref_cavity_replace_tet(ref_cavity), "replace");
+        RSS(ref_cavity_free(ref_cavity), "free");
       }
     }
   }
