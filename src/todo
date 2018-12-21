@@ -10,8 +10,8 @@ tess
  edge chord height warning/constraint?
 
 C2S
- how/when to fail fast?
  acceptance test merge build
+ how/when to fail fast?
 
 change the default seg per radian to 2
 change use mixed_space_gradation in ref_metric_constrain_curvature
@@ -27,26 +27,18 @@ layer insert
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
 cavity operator in 2D/3D
-  add node and grid into REF_CAVITY_STRUCT
+  + add node and grid into REF_CAVITY_STRUCT
     + ref_cavity_form_ball and ref_cavity_form_split_edge
+  eliminate sliver
+  full post checks for edge-metric ratio
   extract skip face with node
-  eliminate short edges and sliver deletion
+  check cell boundary face topo for added tets
+  eliminate short edges
+  topo checks for tri replacment
+  store triangle replacement too (triangle sides?)
   2D cavity operator for surf geom edges
-  cavity operator parallel
-    with an array of cavity made from para edge on geom
-    enlarge returns complete, same part request, or boundary
-    replace completed cavities
-    deactivate cavity constrained by boundaries
-    new part empty
-    apply cavity requests
-    max ghost
-    deactivate collisions
-    migrate
-
-swap in 3D, classic implementation? cavity?
-  gem
-  equator
-  continuous
+  classic swap implementation?
+  cavity operator parallel?
 
 acceptance test that checks interp error for functions
 clean up ref_acceptance uses without a flag
