@@ -273,9 +273,8 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_edge_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                    REF_INT node0, REF_INT node1,
-                                    REF_INT node) {
+REF_STATUS ref_cavity_form_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                               REF_INT node0, REF_INT node1, REF_INT node) {
   REF_INT cell, ncell;
   REF_INT cell_to_add[50];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
