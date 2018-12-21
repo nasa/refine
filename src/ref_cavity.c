@@ -749,23 +749,33 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_del, min_add;
   REF_CAVITY ref_cavity;
+  REF_INT other, cell_edge;
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
     if (quality < 0.1) {
       printf("cell %d qual %f\n", cell, quality);
-      RSS(ref_cavity_create(&ref_cavity), "create");
-      RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[0], nodes[1],
-                              nodes[2]),
-          "cavity gem");
-      RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
-      RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-      if (min_add - min_del > 0.01 && min_add > 0.1) {
-        printf("cavity accepted\n");
-        RSS(ref_cavity_replace_tet(ref_cavity), "replace");
-        continue;
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        RSS(ref_cavity_create(&ref_cavity), "create");
+        other = 0;
+        if (other == ref_cell_e2n_gen(ref_cell, 0, cell_edge)) other++;
+        if (other == ref_cell_e2n_gen(ref_cell, 1, cell_edge)) other++;
+        RSS(ref_cavity_form_gem(ref_cavity, ref_grid,
+                                nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)],
+                                nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)],
+                                nodes[other]),
+            "cavity gem");
+        RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
+        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
+        if (min_add - min_del > 0.01 && min_add > 0.1) {
+          printf("cavity accepted\n");
+          RSS(ref_cavity_replace_tet(ref_cavity), "replace");
+          RSS(ref_cavity_free(ref_cavity), "free");
+          break;
+        } else {
+          RSS(ref_cavity_free(ref_cavity), "free");
+        }
       }
-      RSS(ref_cavity_free(ref_cavity), "free");
     }
   }
 
