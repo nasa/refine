@@ -59,6 +59,7 @@
 #include "ref_geom.h"
 
 #include "ref_clump.h"
+#include "ref_matrix.h"
 
 /*
 ./test.sh ref_metric && ./ref_metric_test \
@@ -78,6 +79,7 @@ int main(int argc, char *argv[]) {
   REF_INT kexact_pos = REF_EMPTY;
   REF_INT complexity_pos = REF_EMPTY;
   REF_INT gradation_pos = REF_EMPTY;
+  REF_INT cloud_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -101,6 +103,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--complexity", &complexity_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--gradation", &gradation_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--cloud", &gradation_pos), REF_NOT_FOUND,
       "arg search");
 
   if (curve_limit_pos != REF_EMPTY) {
@@ -408,6 +412,51 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
       printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (cloud_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL h, m[6], d[12];
+    REF_INT node;
+    FILE *file;
+    char filename[] = "ref_metric_cloud.dat";
+
+    REIS(1, cloud_pos,
+         "required args: --cloud grid.ext input-metric.solb"
+         "output-metric.solb");
+    REIS(4, argc,
+         "required args: --cloud grid.ext input-metric.solb"
+         "output-metric.solb");
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    if (ref_mpi_once(ref_mpi)) printf("reading metric %s\n", argv[3]);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
+        "unable to load metric in position 3");
+
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      RSS(ref_matrix_diag_m(m, d), "diag");
+      h = MAX(ref_matrix_eig(d, 0), ref_matrix_eig(d, 1));
+      h = MAX(h, ref_matrix_eig(d, 2));
+      h = 1.0 / sqrt(h);
+      printf("%e %e %e %e\n", ref_node_xyz(ref_node, 0, node),
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 0, node),
+             h);
+    }
+
+    fclose(file);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
