@@ -748,7 +748,6 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
   REF_BOOL improved;
-  REF_INT global, new_node;
   REF_CAVITY ref_cavity;
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -756,17 +755,9 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
     if (quality < 0.01) {
       printf("cell %d qual %f\n", cell, quality);
       RSS(ref_cavity_create(&ref_cavity), "create");
-      RSS(ref_node_next_global(ref_node, &global), "next global");
-      RSS(ref_node_add(ref_node, global, &new_node), "new node");
-      RSS(ref_node_interpolate_face(
-              ref_node, ref_cell_f2n(ref_cell, 0, 0, cell),
-              ref_cell_f2n(ref_cell, 1, 0, cell),
-              ref_cell_f2n(ref_cell, 2, 0, cell), new_node),
-          "new node");
-
-      RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "cavity tet");
-      RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
-      RSS(ref_cavity_enlarge_face(ref_cavity, 0), "enlarge face");
+      RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[0], nodes[1],
+                              nodes[2]),
+          "cavity gem");
       RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
       RSS(ref_cavity_change(ref_cavity, &improved), "free");
       RSS(ref_cavity_free(ref_cavity), "free");
