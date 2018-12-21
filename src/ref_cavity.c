@@ -655,7 +655,8 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved) {
+REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
+                             REF_DBL *min_add) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
@@ -664,8 +665,10 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   REF_DBL quality, min_quality, total_quality;
   REF_INT face, face_node, n, n_del, n_add;
   REF_BOOL skip;
-  REF_DBL min_del, min_add;
-  *improved = REF_FALSE;
+
+  *min_del = -2.0;
+  *min_add = -2.0;
+
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
@@ -680,7 +683,7 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   if (REF_FALSE && n > 0)
     printf("- min %12.8f avg %12.8f n %d\n", min_quality,
            total_quality / ((REF_DBL)n), n);
-  min_del = min_quality;
+  *min_del = min_quality;
   n_del = n;
 
   n = 0;
@@ -705,13 +708,11 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   if (REF_FALSE && n > 0)
     printf("+ min %12.8f avg %12.8f n %d\n", min_quality,
            total_quality / ((REF_DBL)n), n);
-  min_add = min_quality;
+  *min_add = min_quality;
   n_add = n;
 
-  printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n", min_add, min_del,
-         min_add - min_del, n_add, n_del);
-
-  if (min_add > min_del) *improved = REF_TRUE;
+  printf(" min %12.8f <- %12.8f diff %12.8f n %d <- %d\n", *min_add, *min_del,
+         *min_add - *min_del, n_add, n_del);
 
   return REF_SUCCESS;
 }
@@ -746,20 +747,24 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL quality;
-  REF_BOOL improved;
+  REF_DBL quality, min_del, min_add;
   REF_CAVITY ref_cavity;
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    if (quality < 0.01) {
+    if (quality < 0.1) {
       printf("cell %d qual %f\n", cell, quality);
       RSS(ref_cavity_create(&ref_cavity), "create");
       RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[0], nodes[1],
                               nodes[2]),
           "cavity gem");
       RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
-      RSS(ref_cavity_change(ref_cavity, &improved), "free");
+      RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
+      if (min_add - min_del > 0.01 && min_add > 0.1) {
+        printf("cavity accepted\n");
+        RSS(ref_cavity_replace_tet(ref_cavity), "replace");
+        continue;
+      }
       RSS(ref_cavity_free(ref_cavity), "free");
     }
   }
