@@ -1221,9 +1221,8 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   REF_DBL current_complexity;
   REF_INT ldim;
   REF_INT var, dir;
-  REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
-
-  if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
+  REF_RECON_RECONSTRUCTION recon = REF_RECON_KEXACT;
+  REF_INT gradation;
 
   ldim = 4 * nequations;
 
@@ -1258,13 +1257,28 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     ref_free(grad_lam);
     ref_free(lam);
   }
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      metric[1 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 1.0;
+      metric[4 + 6 * node] = 0.0;
+    }
+  }
 
   /* local scaling */
+  if (ref_grid_twod(ref_grid)) dimension = 2;
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
     if (ABS(det) > 1.0e-15) {
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
+    }
+  }
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      metric[1 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 1.0;
+      metric[4 + 6 * node] = 0.0;
     }
   }
 
@@ -1273,9 +1287,28 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     return REF_DIV_ZERO;
   }
   each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < 6; i++)
-      metric[i + 6 * node] *=
-          pow(target_complexity / current_complexity, 2.0 / 3.0);
+    if (ref_grid_twod(ref_grid)) {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *= target_complexity / current_complexity;
+      }
+    } else {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *=
+            pow(target_complexity / current_complexity, 2.0 / 3.0);
+      }
+    }
+  }
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      metric[1 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 1.0;
+      metric[4 + 6 * node] = 0.0;
+    }
+  }
+
+  for (gradation = 0; gradation < 10; gradation++) {
+    RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
+        "gradation");
   }
 
   return REF_SUCCESS;
