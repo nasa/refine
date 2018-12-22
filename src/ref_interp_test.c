@@ -92,6 +92,7 @@ int main(int argc, char *argv[]) {
   REF_INT mach_pos = REF_EMPTY;
   REF_INT cust_pos = REF_EMPTY;
   REF_INT entropy_pos = REF_EMPTY;
+  REF_INT entropyadj_pos = REF_EMPTY;
   REF_INT heat_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
@@ -109,6 +110,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--cust", &cust_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--entropy", &entropy_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--entropyadj", &entropyadj_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--heat", &heat_pos), REF_NOT_FOUND,
       "arg search");
@@ -365,13 +368,80 @@ int main(int argc, char *argv[]) {
       REF_DBL gamma = 1.4;
       rho = field[0 + ldim * node];
       p = field[4 + ldim * node];
-      /* entropy */
       entropy[node] = log(p * gamma / pow(rho, gamma));
     }
 
     RSS(ref_gather_scalar(ref_grid, 1, entropy, argv[4]), "export entropy");
 
     ref_free(entropy);
+    ref_free(field);
+    RSS(ref_grid_free(ref_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != entropyadj_pos) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *output;
+    REF_INT ldim, odim, node;
+    REIS(1, entropyadj_pos,
+         "required args: --entropyadj grid.ext solution.solb entropy.solb\n");
+    if (5 > argc) {
+      printf(
+          "required args: --entropyadj grid.ext solution.solb entropy.solb\n");
+      return REF_FAILURE;
+    }
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "part grid in position 2");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+        "unable to load field in position 3");
+
+    odim = 20;
+    ref_malloc(output, odim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, p, s, e;
+      REF_DBL gamma = 1.4;
+      rho = field[0 + ldim * node];
+      u = field[1 + ldim * node];
+      v = field[2 + ldim * node];
+      w = field[3 + ldim * node];
+      p = field[4 + ldim * node];
+      /* entropy adjoint. Is pressure the right nondimensionalization? */
+      s = log(p / pow(rho, gamma));
+      output[0 + odim * node] =
+          (gamma - s) / (gamma - 1.0) - 0.5 * rho * (u * u + v * v + w * w) / p;
+      output[1 + odim * node] = rho * u / p;
+      output[2 + odim * node] = rho * v / p;
+      output[3 + odim * node] = rho * w / p;
+      output[4 + odim * node] = -u / p;
+
+      e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
+
+      output[0 + 5 + odim * node] = rho * u;
+      output[1 + 5 + odim * node] = rho * u * u + p;
+      output[2 + 5 + odim * node] = rho * u * v;
+      output[3 + 5 + odim * node] = rho * u * w;
+      output[4 + 5 + odim * node] = u * (e + p);
+
+      output[0 + 10 + odim * node] = rho * v;
+      output[1 + 10 + odim * node] = rho * v * u;
+      output[2 + 10 + odim * node] = rho * v * v + p;
+      output[3 + 10 + odim * node] = rho * v * w;
+      output[4 + 10 + odim * node] = v * (e + p);
+
+      output[0 + 15 + odim * node] = rho * w;
+      output[1 + 15 + odim * node] = rho * w * u;
+      output[2 + 15 + odim * node] = rho * w * v;
+      output[3 + 15 + odim * node] = rho * w * w + p;
+      output[4 + 15 + odim * node] = w * (e + p);
+    }
+
+    RSS(ref_gather_scalar(ref_grid, odim, output, argv[4]), "export output");
+
+    ref_free(output);
     ref_free(field);
     RSS(ref_grid_free(ref_grid), "free");
 
