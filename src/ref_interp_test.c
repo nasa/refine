@@ -91,6 +91,7 @@ int main(int argc, char *argv[]) {
   REF_INT field_pos = REF_EMPTY;
   REF_INT mach_pos = REF_EMPTY;
   REF_INT cust_pos = REF_EMPTY;
+  REF_INT entropy_pos = REF_EMPTY;
   REF_INT heat_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
@@ -106,6 +107,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--mach", &mach_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--cust", &cust_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--entropy", &entropy_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--heat", &heat_pos), REF_NOT_FOUND,
       "arg search");
@@ -325,12 +328,50 @@ int main(int argc, char *argv[]) {
       w = field[3 + ldim * node];
       p = field[4 + ldim * node];
       temp = gamma * p / rho;
+      /* scaled mach and density */
       cust[node] = sqrt((u * u + v * v + w * w) / temp) - 0.2 * rho;
     }
 
     RSS(ref_gather_scalar(ref_grid, 1, cust, argv[4]), "export cust");
 
     ref_free(cust);
+    ref_free(field);
+    RSS(ref_grid_free(ref_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != entropy_pos) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *entropy;
+    REF_INT ldim, node;
+    REIS(1, entropy_pos,
+         "required args: --entropy grid.ext solution.solb entropy.solb\n");
+    if (5 > argc) {
+      printf("required args: --entropy grid.ext solution.solb entropy.solb\n");
+      return REF_FAILURE;
+    }
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "part grid in position 2");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+        "unable to load field in position 3");
+
+    ref_malloc(entropy, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, p;
+      REF_DBL gamma = 1.4;
+      rho = field[0 + ldim * node];
+      p = field[4 + ldim * node];
+      /* entropy */
+      entropy[node] = log(p * gamma / pow(rho, gamma));
+    }
+
+    RSS(ref_gather_scalar(ref_grid, 1, entropy, argv[4]), "export entropy");
+
+    ref_free(entropy);
     ref_free(field);
     RSS(ref_grid_free(ref_grid), "free");
 
