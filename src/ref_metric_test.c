@@ -427,10 +427,8 @@ int main(int argc, char *argv[]) {
     FILE *file;
     char filename[] = "ref_metric_cloud.dat";
 
-    REIS(1, cloud_pos,
-         "required args: --cloud grid.ext input-metric.solb");
-    REIS(4, argc,
-         "required args: --cloud grid.ext input-metric.solb");
+    REIS(1, cloud_pos, "required args: --cloud grid.ext input-metric.solb");
+    REIS(4, argc, "required args: --cloud grid.ext input-metric.solb");
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load grid in position 2");
@@ -450,8 +448,8 @@ int main(int argc, char *argv[]) {
       h = MAX(h, ref_matrix_eig(d, 2));
       h = 1.0 / sqrt(h);
       fprintf(file, "%e %e %e %e\n", ref_node_xyz(ref_node, 0, node),
-             ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node),
-             h);
+              ref_node_xyz(ref_node, 1, node), ref_node_xyz(ref_node, 2, node),
+              h);
     }
 
     fclose(file);
