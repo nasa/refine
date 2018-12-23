@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
 
-  if (1 < argc) {
+  if (2 == argc) {
     REF_GRID import_grid;
 
     ref_mpi_stopwatch_start(ref_mpi);
@@ -68,6 +68,28 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_by_extension(import_grid, "ref_gather_test.b8.ugrid"),
         "gather");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "b8.ugrid");
+
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+
+    return 0;
+  }
+
+  if (4 == argc) {
+    REF_GRID import_grid;
+    REF_INT ldim;
+    REF_DBL *field;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read grid");
+    RSS(ref_part_scalar(ref_grid_node(import_grid), &ldim, &field, argv[2]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read field");
+    RSS(ref_gather_scalar_tec(import_grid, ldim, field, NULL, argv[3]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "write tec");
 
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
