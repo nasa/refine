@@ -773,7 +773,8 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
             "cavity gem");
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-        if (min_add - min_del > 0.0001) {
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity) &&
+            min_add - min_del > 0.0001) {
           if (best < min_add) {
             best = min_add;
             best_other = other;
