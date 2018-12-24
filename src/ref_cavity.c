@@ -748,45 +748,46 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_del, min_add, best;
-  REF_INT best_edge;
+  REF_INT best_other;
   REF_CAVITY ref_cavity;
-  REF_INT other, cell_edge;
+  REF_INT n0, n1, n2;
+  REF_INT other;
+  REF_INT others[12][3] = {
+      {0, 1, 2}, {0, 1, 3}, {0, 2, 1}, {0, 2, 3}, {0, 3, 1}, {0, 3, 2},
+      {1, 2, 0}, {1, 2, 3}, {1, 3, 0}, {1, 3, 2}, {2, 3, 0}, {2, 3, 1},
+  };
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
     if (quality < 0.1) {
       printf("cell %d qual %f\n", cell, quality);
-      best_edge = REF_EMPTY;
+      best_other = REF_EMPTY;
       best = -2.0;
-      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      for (other = 0; other < 12; other++) {
         RSS(ref_cavity_create(&ref_cavity), "create");
-        other = 0;
-        if (other == ref_cell_e2n_gen(ref_cell, 0, cell_edge)) other++;
-        if (other == ref_cell_e2n_gen(ref_cell, 1, cell_edge)) other++;
-        RSS(ref_cavity_form_gem(ref_cavity, ref_grid,
-                                nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)],
-                                nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)],
-                                nodes[other]),
+        n0 = others[other][0];
+        n1 = others[other][1];
+        n2 = others[other][2];
+        RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
+                                nodes[n2]),
             "cavity gem");
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
         if (min_add - min_del > 0.0001) {
           if (best < min_add) {
             best = min_add;
-            best_edge = cell_edge;
+            best_other = other;
           }
         }
         RSS(ref_cavity_free(ref_cavity), "free");
       }
-      if (REF_EMPTY != best_edge) {
+      if (REF_EMPTY != best_other) {
         RSS(ref_cavity_create(&ref_cavity), "create");
-        other = 0;
-        if (other == ref_cell_e2n_gen(ref_cell, 0, best_edge)) other++;
-        if (other == ref_cell_e2n_gen(ref_cell, 1, best_edge)) other++;
-        RSS(ref_cavity_form_gem(ref_cavity, ref_grid,
-                                nodes[ref_cell_e2n_gen(ref_cell, 0, best_edge)],
-                                nodes[ref_cell_e2n_gen(ref_cell, 1, best_edge)],
-                                nodes[other]),
+        n0 = others[best_other][0];
+        n1 = others[best_other][1];
+        n2 = others[best_other][2];
+        RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
+                                nodes[n2]),
             "cavity gem");
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
