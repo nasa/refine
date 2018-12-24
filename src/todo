@@ -19,6 +19,8 @@ change use mixed_space_gradation in ref_metric_constrain_curvature
 
 cavity operator in 2D/3D
   implement more in cavity
+  + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
+  ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
   tri and geom handling
   + add node and grid into REF_CAVITY_STRUCT
     + ref_cavity_form_ball and ref_cavity_form_split_edge
