@@ -34,6 +34,8 @@ layer insert
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
 
 cavity operator in 2D/3D
+  implement more in cavity
+  tri and geom handling
   + add node and grid into REF_CAVITY_STRUCT
     + ref_cavity_form_ball and ref_cavity_form_split_edge
   eliminate sliver
