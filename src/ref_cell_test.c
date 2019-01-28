@@ -30,6 +30,9 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
+#include "ref_fixture.h"
+#include "ref_grid.h"
+
 #include "ref_malloc.h"
 #include "ref_math.h"
 
@@ -1078,6 +1081,27 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_cell_free(ref_cell), "cleanup");
     RSS(ref_node_free(ref_node), "cleanup");
+  }
+
+  { /* gem local? */
+    REF_GRID ref_grid;
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
+
+    if (ref_cell_valid(ref_grid_tet(ref_grid), 0)) {
+      node0 = 0;
+      node1 = 1;
+      RSS(ref_cell_local_gem(ref_grid_tet(ref_grid), ref_grid_node(ref_grid),
+                             node0, node1, &allowed),
+          "split");
+
+      REIS(!ref_mpi_para(ref_grid_mpi(ref_grid)), allowed,
+           "local split allowed?");
+    }
+
+    RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   if (4 <= ref_mpi_n(ref_mpi)) { /* cell ghost */

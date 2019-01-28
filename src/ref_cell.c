@@ -713,6 +713,32 @@ REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
+                              REF_INT node0, REF_INT node1, REF_BOOL *local) {
+  REF_INT item, cell, search_node, test_node;
+
+  *local = REF_FALSE;
+
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    for (search_node = 0; search_node < ref_cell_node_per(ref_cell);
+         search_node++) {
+      if (node1 == ref_cell_c2n(ref_cell, search_node, cell)) {
+        for (test_node = 0; test_node < ref_cell_node_per(ref_cell);
+             test_node++) {
+          if (!ref_node_owned(ref_node,
+                              ref_cell_c2n(ref_cell, test_node, cell))) {
+            return REF_SUCCESS;
+          }
+        }
+      }
+    }
+  }
+
+  *local = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes) {
   REF_INT temp;
   REIS(4, nnode, "only implemented for tets");
