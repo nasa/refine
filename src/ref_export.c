@@ -180,6 +180,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     RSS(ref_export_b8_ugrid(ref_grid, filename), "b8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
+    RSS(ref_export_poly(ref_grid, filename), "ploy export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
     RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
@@ -1062,6 +1064,130 @@ REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename) {
   RSS(ref_edge_tec_ratio(ref_edge, viz_file), "viz parts as scalar");
 
   RSS(ref_edge_free(ref_edge), "free edge");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+  REF_NODE ref_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT *o2n, *n2o;
+  REF_INT nnode, ntri;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per, cell;
+  REF_INT dim, attr, mark;
+  ref_node = ref_grid_node(ref_grid);
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  /* Part 1 - node list */
+  nnode = ref_node_n(ref_node);
+  dim = 3;
+  attr = 0;
+  mark = 0;
+  fprintf(file, "%d  %d  %d  %d\n", nnode, dim, attr, mark);
+
+  RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
+
+  for (node = 0; node < ref_node_n(ref_node); node++)
+    fprintf(file, "%d  %.16e  %.16e  %.16e\n", node,
+            ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]),
+            ref_node_xyz(ref_node, 2, n2o[node]));
+
+  /* Part 2 - facet list */
+  ref_cell = ref_grid_tri(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  ntri = ref_cell_n(ref_cell);
+  mark = 1;
+  fprintf(file, "%d  %d\n", ntri, mark);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    fprintf(file, "1 0 1\n%d  %d %d %d  %d\n", node_per, o2n[nodes[0]],
+            o2n[nodes[1]], o2n[nodes[2]], nodes[3]);
+  }
+
+  /* Part 3 hole - list */
+  /* create one hole point for each convex edge,
+     expect right hand triangle to point into domain */
+  {
+    REF_INT i, nhole, node0, node1, node2;
+    REF_INT ncell, cell_list[2], other_cell, tet_nodes[4];
+    REF_DBL volume, center[3];
+    nhole = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      for (node2 = 0; node2 < 3; node2++) {
+        node0 = node2 + 1;
+        node1 = node2 + 2;
+        if (node0 > 2) node0 -= 3;
+        if (node1 > 2) node1 -= 3;
+        node0 = nodes[node0];
+        node1 = nodes[node1];
+        node2 = nodes[node2];
+        RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
+            "with 2");
+        REIS(2, ncell, "two expected");
+        other_cell = cell_list[0] + cell_list[1] - cell;
+        if (other_cell < cell) continue;
+        tet_nodes[0] = nodes[0];
+        tet_nodes[1] = nodes[1];
+        tet_nodes[2] = nodes[2];
+        tet_nodes[3] = ref_cell_c2n(ref_cell, 0, other_cell) +
+                       ref_cell_c2n(ref_cell, 1, other_cell) +
+                       ref_cell_c2n(ref_cell, 2, other_cell) - node0 - node1;
+        RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "tet vol");
+        if (volume < -1.0e-12) nhole += 1;
+      }
+    }
+    fprintf(file, "%d\n", nhole);
+    nhole = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      for (node2 = 0; node2 < 3; node2++) {
+        node0 = node2 + 1;
+        node1 = node2 + 2;
+        if (node0 > 2) node0 -= 3;
+        if (node1 > 2) node1 -= 3;
+        node0 = nodes[node0];
+        node1 = nodes[node1];
+        node2 = nodes[node2];
+        RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
+            "with 2");
+        REIS(2, ncell, "two expected");
+        other_cell = cell_list[0] + cell_list[1] - cell;
+        if (other_cell < cell) continue;
+        tet_nodes[0] = nodes[0];
+        tet_nodes[1] = nodes[1];
+        tet_nodes[2] = nodes[2];
+        tet_nodes[3] = ref_cell_c2n(ref_cell, 0, other_cell) +
+                       ref_cell_c2n(ref_cell, 1, other_cell) +
+                       ref_cell_c2n(ref_cell, 2, other_cell) - node0 - node1;
+        RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "tet vol");
+        if (volume < -1.0e-12) {
+          for (i = 0; i < 3; i++) {
+            center[i] = 0.25 * (ref_node_xyz(ref_node, i, tet_nodes[0]) +
+                                ref_node_xyz(ref_node, i, tet_nodes[1]) +
+                                ref_node_xyz(ref_node, i, tet_nodes[2]) +
+                                ref_node_xyz(ref_node, i, tet_nodes[3]));
+          }
+          fprintf(file, "%d  %.16e  %.16e  %.16e\n", nhole, center[0],
+                  center[1], center[2]);
+          nhole += 1;
+        }
+      }
+    }
+  }
+
+  /* Part 4 - region attributes list */
+  fprintf(file, "0\n"); /* no regions */
+
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }

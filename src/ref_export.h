@@ -56,6 +56,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
                                          const char *root_filename);
 REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename);
 
+REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename);
