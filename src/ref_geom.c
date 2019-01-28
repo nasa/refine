@@ -2336,7 +2336,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   char *ugrid_name = "ref_geom_test.ugrid";
-  char *smesh_name = "ref_geom_test.smesh";
+  char *poly_name = "ref_geom_test.poly";
   char *node_name = "ref_geom_test.1.node";
   char *ele_name = "ref_geom_test.1.ele";
   char command[1024];
@@ -2357,9 +2357,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec"),
       "dbg surf");
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
-  RSS(ref_export_smesh(ref_grid, smesh_name), "smesh");
-  sprintf(command, "tetgen -pYq2.0/10zV %s < /dev/null > %s.out", smesh_name,
-          smesh_name);
+  RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
+  sprintf(command, "tetgen -pYq2.0/10zV %s < /dev/null > %s.out", poly_name,
+          poly_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
