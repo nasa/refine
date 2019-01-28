@@ -78,8 +78,7 @@ REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
   for (i = 0; i < 3; i++) {
     thermal_conductivity = -mu / (pr * (gamma - 1.0));
     /* t = gamma * p / rho quotient rule */
-    dtdx = gamma *
-              (grad[i + 3 * 4] * rho - p * grad[i + 3 * 0]) / rho / rho;
+    dtdx = gamma * (grad[i + 3 * 4] * rho - p * grad[i + 3 * 0]) / rho / rho;
     qdot[i] = thermal_conductivity * dtdx;
   }
 
