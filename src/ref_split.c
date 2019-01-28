@@ -172,9 +172,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_split_edge_local_tets(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                  ref_edge_e2n(ref_edge, 1, edge),
-                                  &allowed_local),
+    RSS(ref_cell_local_gem(ref_cell, ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), &allowed_local),
         "local tet");
     if (!allowed_local) {
       if (span_parts) {
@@ -424,35 +423,6 @@ REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       "hex");
 
   *allowed = (!pyr_side && !pri_side && !hex_side);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_split_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT item, cell, search_node, test_node;
-
-  *allowed = REF_FALSE;
-
-  ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_having_node(ref_cell, node0, item, cell) {
-    for (search_node = 0; search_node < ref_cell_node_per(ref_cell);
-         search_node++) {
-      if (node1 == ref_cell_c2n(ref_cell, search_node, cell)) {
-        for (test_node = 0; test_node < ref_cell_node_per(ref_cell);
-             test_node++) {
-          if (!ref_node_owned(ref_node,
-                              ref_cell_c2n(ref_cell, test_node, cell))) {
-            return REF_SUCCESS;
-          }
-        }
-      }
-    }
-  }
-
-  *allowed = REF_TRUE;
 
   return REF_SUCCESS;
 }
@@ -730,7 +700,8 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_split_edge_local_prisms(ref_grid, node0, node1, &allowed),
+    RSS(ref_cell_local_gem(ref_grid_pri(ref_grid), ref_node, node0, node1,
+                           &allowed),
         "local pri");
     if (!allowed) {
       ref_node_age(ref_node, node0)++;
@@ -889,36 +860,6 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_local_prisms(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT item, cell, search_node, test_node;
-
-  *allowed = REF_FALSE;
-
-  ref_cell = ref_grid_pri(ref_grid);
-  each_ref_cell_having_node(ref_cell, node0, item, cell) {
-    for (search_node = 0; search_node < ref_cell_node_per(ref_cell);
-         search_node++) {
-      if (node1 == ref_cell_c2n(ref_cell, search_node, cell)) {
-        for (test_node = 0; test_node < ref_cell_node_per(ref_cell);
-             test_node++) {
-          if (ref_mpi_rank(ref_grid_mpi(ref_grid)) !=
-              ref_node_part(ref_node,
-                            ref_cell_c2n(ref_cell, test_node, cell))) {
-            return REF_SUCCESS;
-          }
-        }
-      }
-    }
-  }
-
-  *allowed = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
                                        REF_INT node1, REF_INT new_node,
                                        REF_BOOL *allowed) {
@@ -1059,8 +1000,9 @@ REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
         "mixed");
     if (!allowed) continue;
 
-    RSS(ref_split_edge_local_tets(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                  ref_edge_e2n(ref_edge, 1, edge), &allowed),
+    RSS(ref_cell_local_gem(ref_grid_tet(ref_grid), ref_node,
+                           ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "local tet");
     if (!allowed) continue;
 

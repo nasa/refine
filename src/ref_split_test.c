@@ -209,41 +209,6 @@ int main(void) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  { /* split local allowed? */
-    REF_GRID ref_grid;
-    REF_INT node0, node1;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_split_edge_local_tets(ref_grid, node0, node1, &allowed), "split");
-
-    REIS(REF_TRUE, allowed, "local split allowed?");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* split partition border allowed? */
-    REF_GRID ref_grid;
-    REF_INT node0, node1;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
-
-    ref_node_part(ref_grid_node(ref_grid), 2) =
-        ref_node_part(ref_grid_node(ref_grid), 2) + 1;
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_split_edge_local_tets(ref_grid, node0, node1, &allowed), "split");
-
-    REIS(REF_FALSE, allowed, "ghost split allowed?");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
   { /* no split, close enough */
     REF_GRID ref_grid;
 
@@ -357,41 +322,6 @@ int main(void) {
     /*
     ref_export_by_extension( ref_grid, "splitpri.tec" );
     */
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* split local allowed? */
-    REF_GRID ref_grid;
-    REF_INT node0, node1;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_split_edge_local_prisms(ref_grid, node0, node1, &allowed), "split");
-
-    REIS(REF_TRUE, allowed, "local split allowed?");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* split border allowed? */
-    REF_GRID ref_grid;
-    REF_INT node0, node1;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-
-    ref_node_part(ref_grid_node(ref_grid), 2) =
-        ref_node_part(ref_grid_node(ref_grid), 2) + 1;
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_split_edge_local_prisms(ref_grid, node0, node1, &allowed), "split");
-
-    REIS(REF_FALSE, allowed, "local split allowed?");
 
     RSS(ref_grid_free(ref_grid), "free grid");
   }

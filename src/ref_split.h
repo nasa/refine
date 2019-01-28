@@ -35,9 +35,6 @@ REF_STATUS ref_split_face(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed);
 
-REF_STATUS ref_split_edge_local_tets(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed);
-
 REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_INT new_node,
                                       REF_BOOL *allowed);
@@ -57,9 +54,6 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 REF_STATUS ref_split_opposite_edge(REF_GRID ref_grid, REF_INT node0,
                                    REF_INT node1, REF_INT *node2,
                                    REF_INT *node3);
-
-REF_STATUS ref_split_edge_local_prisms(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_BOOL *allowed);
 
 REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
                                        REF_INT node1, REF_INT new_node,
