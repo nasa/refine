@@ -39,6 +39,7 @@ libref2_a_SOURCES = \
 	ref_mpi.c \
 	ref_node.c \
 	ref_part.c \
+	ref_phys.c \
 	ref_recon.c \
 	ref_search.c \
 	ref_shard.c \
@@ -60,7 +61,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_list.h ref_layer.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
-	ref_node.h ref_part.h ref_recon.h \
+	ref_node.h ref_part.h ref_phys.h ref_recon.h \
 	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h 
 
@@ -277,6 +278,11 @@ TESTS += ref_part_test
 noinst_PROGRAMS += ref_part_test
 ref_part_test_SOURCES = ref_part_test.c
 ref_part_test_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
+
+TESTS += ref_phys_test
+noinst_PROGRAMS += ref_phys_test
+ref_phys_test_SOURCES = ref_phys_test.c
+ref_phys_test_LDADD = libref2.a -lm
 
 TESTS += ref_recon_test
 noinst_PROGRAMS += ref_recon_test
