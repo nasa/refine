@@ -63,19 +63,20 @@ REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
 
   sutherland_temp = sutherland_constant / reference_temp;
   mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+  mu = mach / re * mu;
 
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
-      tau[i][j] = mach / re * mu * (grad[j + 3 * (1 + i)] + grad[i + 3 * (1 + j)]);
+      tau[i][j] = mu * (grad[j + 3 * (1 + i)] + grad[i + 3 * (1 + j)]);
     }
     for (k = 0; k < 3; k++) {
-      tau[i][i] += mach / re * (-2.0 / 3.0) * mu * grad[k + 3 * (1 + k)];
+      tau[i][i] += (-2.0 / 3.0) * mu * grad[k + 3 * (1 + k)];
     }
   }
 
   for (i = 0; i < 3; i++) {
     /* t = gamma * p / rho quotient rule */
-    qdot[i] = -mach * mu / (re * pr * (gamma - 1.0)) * gamma *
+    qdot[i] = -mu / (pr * (gamma - 1.0)) * gamma *
               (grad[i + 3 * 4] * rho - p * grad[i + 3 * 0]) / rho / rho;
   }
 
