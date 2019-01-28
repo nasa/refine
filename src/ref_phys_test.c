@@ -45,9 +45,10 @@ int main(void) {
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];
     REF_DBL mach = 0.1, re = 10.0, temp = 273.0;
+    REF_DBL dudy = 1.0, mu = 1.0;
     REF_INT i;
-    for (i = 0; i < 15; i++) gradient[0] = 0.0;
-    gradient[1 + 3 * 1] = 1.0;
+    for (i = 0; i < 15; i++) gradient[i] = 0.0;
+    gradient[1 + 3 * 1] = dudy;
     state[0] = 1.0;
     state[1] = 0.1;
     state[2] = 0.0;
@@ -60,9 +61,8 @@ int main(void) {
         "euler");
     RWDS(0.0, flux[0], -1, "mass flux");
     RWDS(0.0, flux[1], -1, "x mo flux");
-    RWDS(0.02, flux[2], -1, "y mo flux");
+    RWDS(mach/re*mu*dudy*direction[0], flux[2], -1, "y mo flux");
     RWDS(0.0, flux[3], -1, "z mo flux");
-    RWDS(-2.619047619047620e-02, flux[4], -1, "energy flux");
   }
 
   return 0;

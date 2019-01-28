@@ -44,7 +44,7 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
 }
 
 REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
-                            REF_DBL re, REF_DBL temp, REF_DBL *dir,
+                            REF_DBL re, REF_DBL reference_temp, REF_DBL *dir,
                             REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, t;
   REF_DBL gamma = 1.4;
@@ -61,22 +61,22 @@ REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
   p = state[4];
   t = gamma * p / rho;
 
-  sutherland_temp = sutherland_constant / temp;
+  sutherland_temp = sutherland_constant / reference_temp;
   mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
 
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
-      tau[i][j] = mach / re * mu * (grad[j + 3 * 1 + i] + grad[i + 3 * 1 + j]);
+      tau[i][j] = mach / re * mu * (grad[j + 3 * (1 + i)] + grad[i + 3 * (1 + j)]);
     }
     for (k = 0; k < 3; k++) {
-      tau[i][i] += mach / re * (-2.0 / 3.0) * mu * grad[k + 3 * 1 + k];
+      tau[i][i] += mach / re * (-2.0 / 3.0) * mu * grad[k + 3 * (1 + k)];
     }
   }
 
   for (i = 0; i < 3; i++) {
     /* t = gamma * p / rho quotient rule */
     qdot[i] = -mach * mu / (re * pr * (gamma - 1.0)) * gamma *
-              (grad[i + 3 * 5] * rho - p * grad[1 + 3 * 0]) / rho / rho;
+              (grad[i + 3 * 4] * rho - p * grad[i + 3 * 0]) / rho / rho;
   }
 
   flux[0] = 0.0;
