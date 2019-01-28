@@ -3,8 +3,19 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
+viscous metric construction
+  opt-goal with viscous fluxes
+  ref_phys_test extraction from ref_interp
+
 tess
+ turn off surf bit after volume is filled
+ split egads surface tess, surface adaptation, and volume fill
+ volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
+ + tetgen poly format with voids
+ tetgen poly format jaxa standard model
+ add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
+ try gmsh
  anisotropic feature size, edge length tangent, dist to other edge normal?
  feature size accross thin shell geoemtry, i.e., cusp trailing edge
  near-tree to drive split for grid size gradation of JSM
@@ -16,11 +27,13 @@ C2S
 
 change the default seg per radian to 2
 change use mixed_space_gradation in ref_metric_constrain_curvature
+report threshold means
 
 cavity operator in 2D/3D
   implement more in cavity
   + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
   ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
+  use lexigraph comparison
   tri and geom handling
   + add node and grid into REF_CAVITY_STRUCT
     + ref_cavity_form_ball and ref_cavity_form_split_edge
@@ -57,8 +70,6 @@ ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 start geode support?
-PW isotropic spacing
-  http://pointclouds.org/documentation/tutorials/pcd_file_format.php
 
 continuous metric interpolation
  pair and store interp at startup
@@ -188,8 +199,6 @@ ooooooooooooooooo
 
 throw when global node not found on import or export
 
-merge ref_split_edge_local_tets ref_split_edge_local_prism
-  to ref_split_edge_local_cell
 merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   to ref_smooth_local_cell_about
 merge ref_collapse_face_local_*
@@ -205,6 +214,12 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ PW isotropic spacing
+  + http://pointclouds.org/documentation/tutorials/pcd_file_format.php
+
++ merge ref_split_edge_local_tets ref_split_edge_local_prism
+   + ref_cell_local_gem
 
 + evaluate enthalpy as multiscale field: density/temp behavor through shock
 + ref_interp_test --entropy multiscale field

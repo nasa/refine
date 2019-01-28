@@ -1,4 +1,6 @@
 
+- swap in 3D via cavity operator
+- tetgen shell uses poly format to allow voids
 - tetgen called with q2.0/10 to create coarser initial grids without slivers
 - termination recommendation based on one percent edge-metric ratio limit change
 - edge-metric ratio post floor more aggresive once ceiling drops below 3
