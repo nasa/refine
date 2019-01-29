@@ -680,6 +680,21 @@ static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                 const char *filename) {
+  FILE *file;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
+
 /*
                            2
                         ./   \
@@ -1386,6 +1401,8 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_import_surf(ref_grid_ptr, ref_mpi, filename), "surf failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
     RSS(ref_import_fgrid(ref_grid_ptr, ref_mpi, filename), "fgrid failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".su2") == 0) {
+    RSS(ref_import_su2(ref_grid_ptr, ref_mpi, filename), "su2 failed");
   } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
     RSS(ref_import_msh(ref_grid_ptr, ref_mpi, filename), "msh failed");
   } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
