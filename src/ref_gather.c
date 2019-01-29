@@ -43,6 +43,7 @@ REF_STATUS ref_gather_create(REF_GATHER *ref_gather_ptr) {
   ref_gather->time = 0.0;
 
   ref_gather->low_quality_zone = REF_FALSE;
+  ref_gather->min_quality = 0.1;
 
   return REF_SUCCESS;
 }
@@ -481,9 +482,10 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   ref_free(l2c);
 
   if (ref_gather_low_quality_zone(ref_gather)) {
-    REF_DBL min_quality = 0.10;
+
     RSS(ref_gather_cell_below_quality(ref_grid, ref_grid_tet(ref_grid),
-                                      min_quality, &nnode, &ncell, &l2c),
+                                      ref_gather->min_quality, &nnode, &ncell,
+                                      &l2c),
         "cell below");
 
     if (node > 0 && ncell) {
@@ -505,7 +507,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                                    ref_gather->grid_file),
           "nodes");
       RSS(ref_gather_cell_quality_tec(ref_node, ref_grid_tet(ref_grid), ncell,
-                                      l2c, min_quality, ref_gather->grid_file),
+                                      l2c, ref_gather->min_quality,
+                                      ref_gather->grid_file),
           "qtet");
     }
     ref_free(l2c);

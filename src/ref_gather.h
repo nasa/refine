@@ -40,6 +40,7 @@ struct REF_GATHER_STRUCT {
   FILE *hist_file;
   REF_DBL time;
   REF_BOOL low_quality_zone;
+  REF_DBL min_quality;
 };
 
 #define ref_gather_low_quality_zone(ref_gather) ((ref_gather)->low_quality_zone)
