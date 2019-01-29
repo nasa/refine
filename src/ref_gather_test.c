@@ -98,6 +98,29 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (3 == argc) {
+    REF_GRID import_grid;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read grid");
+    RSS(ref_part_metric(ref_grid_node(import_grid), argv[2]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read metric");
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(import_grid),
+                                           REF_TRUE),
+        "movie on");
+    ref_gather_low_quality_zone(ref_grid_gather(import_grid)) = REF_TRUE;
+    RSS(ref_gather_tec_movie_frame(import_grid, "triage"), "movie frame");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "movie frame");
+
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+
+    return 0;
+  }
+
   { /* gather prism lb8 */
     REF_GRID ref_grid;
 
