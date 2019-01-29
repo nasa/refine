@@ -104,8 +104,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read grid");
-    RSS(ref_part_metric(ref_grid_node(import_grid), argv[2]),
-        "field");
+    RSS(ref_part_metric(ref_grid_node(import_grid), argv[2]), "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read metric");
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(import_grid),
                                            REF_TRUE),

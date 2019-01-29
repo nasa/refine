@@ -482,7 +482,6 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   ref_free(l2c);
 
   if (ref_gather_low_quality_zone(ref_gather)) {
-
     RSS(ref_gather_cell_below_quality(ref_grid, ref_grid_tet(ref_grid),
                                       ref_gather->min_quality, &nnode, &ncell,
                                       &l2c),
