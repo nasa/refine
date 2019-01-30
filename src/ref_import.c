@@ -682,12 +682,18 @@ static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
 static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
   FILE *file;
   char line[1024];
   char *location;
   REF_INT ndime, npoin, nelem, nmark;
+  REF_DBL x, y, z;
+  REF_INT node, new_node;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
+  ref_grid = (*ref_grid_ptr);
+  ref_node = ref_grid_node(ref_grid);
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -704,6 +710,14 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL != strstr(line, "NPOIN")) {
       npoin = atoi(location + 1);
       printf("NPOIN %d\n", npoin);
+      for (node = 0; node < npoin; node++) {
+        RAS(line == fgets(line, 1024, file), "unable to read point xyz line");
+        REIS(3, sscanf(line, "%lf %lf %lf", &x, &y, &z), "parse xyz");
+        RSS(ref_node_add(ref_node, node, &new_node), "add node");
+        ref_node_xyz(ref_node, 0, new_node) = x;
+        ref_node_xyz(ref_node, 1, new_node) = y;
+        ref_node_xyz(ref_node, 2, new_node) = z;
+      }
     }
     if (NULL != strstr(line, "NELEM")) {
       nelem = atoi(location + 1);
