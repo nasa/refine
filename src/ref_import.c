@@ -834,13 +834,29 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         for (cell = 0; cell < ncell; cell++) {
           RAS(line == fgets(line, 1024, file), "unable to read marker line");
           REIS(1, sscanf(line, "%d", &cell_type), "parse marker element type");
-          REIS(5, cell_type, "VTK_TRIANGLE expected");
-          REIS(4,
-               sscanf(line, "%d %d %d %d", &cell_type, &(nodes[0]), &(nodes[1]),
-                      &(nodes[2])),
-               "parse marker element");
-          nodes[3] = faceid;
-          RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell), "tri");
+          switch (cell_type) {
+            case VTK_TRIANGLE:
+              REIS(4,
+                   sscanf(line, "%d %d %d %d", &cell_type, &(nodes[0]),
+                          &(nodes[1]), &(nodes[2])),
+                   "parse marker element");
+              nodes[3] = faceid;
+              RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
+                  "tri");
+              break;
+            case VTK_QUAD:
+              REIS(5,
+                   sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
+                          &(nodes[1]), &(nodes[2]), &(nodes[3])),
+                   "parse marker element");
+              nodes[4] = faceid;
+              RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
+                  "tri");
+              break;
+            default:
+              printf("cell_type = %d\n", cell_type);
+              THROW("unknown SU2/VTK MARKER ELEM type");
+          }
         }
       }
     }
