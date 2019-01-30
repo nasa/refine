@@ -690,7 +690,8 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT ndime, npoin, nelem, nmark;
   REF_DBL x, y, z;
   REF_INT node, new_node;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER], cell, new_cell, cell_type;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], ncell, cell, new_cell, cell_type;
+  REF_INT faceid;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -737,6 +738,28 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL != strstr(line, "NMARK")) {
       nmark = atoi(location + 1);
       printf("NMARK %d\n", nmark);
+      for (faceid = 1; faceid <= nmark; faceid++) {
+        RAS(line == fgets(line, 1024, file), "unable to read marker tag");
+        printf("%d: %s", faceid, line);
+        RAS(NULL != strstr(line, "MARKER_TAG"), "MARKER_TAG not found");
+        RAS(line == fgets(line, 1024, file), "unable to read marker elems");
+        RAS(NULL != strstr(line, "MARKER_ELEMS"), "MARKER_ELEMS not found");
+        location = strchr(line, '=');
+        RNS(location, "MARKER_ELEMS missing =");
+        ncell = atoi(location + 1);
+        printf("%d: %s", ncell, line);
+        for (cell = 0; cell < ncell; cell++) {
+          RAS(line == fgets(line, 1024, file), "unable to read marker line");
+          REIS(1, sscanf(line, "%d", &cell_type), "parse marker element type");
+          REIS(5, cell_type, "VTK_TRIANGLE expected");
+          REIS(4,
+               sscanf(line, "%d %d %d %d", &cell_type, &(nodes[0]), &(nodes[1]),
+                      &(nodes[2])),
+               "parse marker element");
+          nodes[3] = faceid;
+          RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell), "tri");
+        }
+      }
     }
   }
 
