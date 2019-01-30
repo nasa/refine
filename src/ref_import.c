@@ -690,6 +690,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT ndime, npoin, nelem, nmark;
   REF_DBL x, y, z;
   REF_INT node, new_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER], cell, new_cell, cell_type;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -722,6 +723,16 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL != strstr(line, "NELEM")) {
       nelem = atoi(location + 1);
       printf("NELEM %d\n", nelem);
+      for (cell = 0; cell < nelem; cell++) {
+        RAS(line == fgets(line, 1024, file), "unable to read element line");
+        REIS(1, sscanf(line, "%d", &cell_type), "parse element type");
+        REIS(10, cell_type, "VTK_TETRA expected");
+        REIS(5,
+             sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
+                    &(nodes[1]), &(nodes[2]), &(nodes[3])),
+             "parse element");
+        RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
+      }
     }
     if (NULL != strstr(line, "NMARK")) {
       nmark = atoi(location + 1);
