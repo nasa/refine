@@ -727,12 +727,18 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       for (cell = 0; cell < nelem; cell++) {
         RAS(line == fgets(line, 1024, file), "unable to read element line");
         REIS(1, sscanf(line, "%d", &cell_type), "parse element type");
-        REIS(10, cell_type, "VTK_TETRA expected");
-        REIS(5,
-             sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
-                    &(nodes[1]), &(nodes[2]), &(nodes[3])),
-             "parse element");
-        RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
+        switch (cell_type) {
+          case 10: /* VTK_TETRA */
+            REIS(5,
+                 sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2]), &(nodes[3])),
+                 "parse element");
+            RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
+            break;
+          default:
+            printf("cell_type = %d\n", cell_type);
+            THROW("unknown SU2/VTK ELEM type");
+        }
       }
     }
     if (NULL != strstr(line, "NMARK")) {
