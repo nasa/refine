@@ -26,6 +26,66 @@
 #include "ref_endian.h"
 #include "ref_malloc.h"
 
+#define VTK_TRIANGLE (5)
+#define VTK_QUAD (9)
+#define VTK_TETRA (10)
+#define VTK_HEXAHEDRON (12)
+#define VTK_WEDGE (13)
+#define VTK_PYRAMID (14)
+
+/*
+3-4 UGRID
+| |\
+| | 2
+| |/
+0-1
+2-3 VTK
+| |\
+| | 4
+| |/
+1-0
+ */
+
+#define VTK_PYRAMID_TO_UGRID(vtk_nodes) \
+  {                                     \
+    REF_INT ugrid_nodes[5];             \
+    ugrid_nodes[0] = (vtk_nodes)[1];    \
+    ugrid_nodes[1] = (vtk_nodes)[0];    \
+    ugrid_nodes[2] = (vtk_nodes)[4];    \
+    ugrid_nodes[3] = (vtk_nodes)[2];    \
+    ugrid_nodes[4] = (vtk_nodes)[3];    \
+    (vtk_nodes)[0] = ugrid_nodes[0];    \
+    (vtk_nodes)[1] = ugrid_nodes[1];    \
+    (vtk_nodes)[2] = ugrid_nodes[2];    \
+    (vtk_nodes)[3] = ugrid_nodes[3];    \
+    (vtk_nodes)[4] = ugrid_nodes[4];    \
+  }
+
+/*
+ /3-/0
+5-+-2| UGRID
+ \4-\1
+ /4-/1
+5-+-2| VTK
+ \3-\0
+*/
+#define VTK_WEDGE_TO_UGRID(vtk_nodes) \
+  {                                   \
+    REF_INT ugrid_nodes[6];           \
+    ugrid_nodes[0] = (vtk_nodes)[1];  \
+    ugrid_nodes[1] = (vtk_nodes)[0];  \
+    ugrid_nodes[2] = (vtk_nodes)[2];  \
+    ugrid_nodes[3] = (vtk_nodes)[4];  \
+    ugrid_nodes[4] = (vtk_nodes)[3];  \
+    ugrid_nodes[5] = (vtk_nodes)[5];  \
+    (vtk_nodes)[0] = ugrid_nodes[0];  \
+    (vtk_nodes)[1] = ugrid_nodes[1];  \
+    (vtk_nodes)[2] = ugrid_nodes[2];  \
+    (vtk_nodes)[3] = ugrid_nodes[3];  \
+    (vtk_nodes)[4] = ugrid_nodes[4];  \
+    (vtk_nodes)[5] = ugrid_nodes[5];  \
+  }
+
 REF_STATUS ref_import_examine_header(const char *filename) {
   FILE *file;
   int i4, i4_swapped;
@@ -728,12 +788,27 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         RAS(line == fgets(line, 1024, file), "unable to read element line");
         REIS(1, sscanf(line, "%d", &cell_type), "parse element type");
         switch (cell_type) {
-          case 10: /* VTK_TETRA */
+          case VTK_TETRA:
             REIS(5,
                  sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
                         &(nodes[1]), &(nodes[2]), &(nodes[3])),
                  "parse element");
             RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
+            break;
+          case VTK_WEDGE:
+            REIS(7,
+                 sscanf(line, "%d %d %d %d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4]),
+                        &(nodes[5])),
+                 "parse element");
+            RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "tri");
+            break;
+          case VTK_PYRAMID:
+            REIS(6,
+                 sscanf(line, "%d %d %d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4])),
+                 "parse element");
+            RSS(ref_cell_add(ref_grid_pyr(ref_grid), nodes, &new_cell), "pyr");
             break;
           default:
             printf("cell_type = %d\n", cell_type);
