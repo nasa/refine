@@ -683,12 +683,25 @@ static REF_STATUS ref_import_r8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
   FILE *file;
+  char line[1024];
+  char *location;
+  REF_INT dim;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
+
+  while (!feof(file)) {
+    if (line != fgets(line, 1024, file)) return REF_SUCCESS;
+    location = strchr(line, '=');
+    if (NULL == location) continue;
+    if (NULL != strstr(line, "NDIME")) {
+      dim = atoi(location + 1);
+      printf("dim %d\n", dim);
+    }
+  }
 
   fclose(file);
 
