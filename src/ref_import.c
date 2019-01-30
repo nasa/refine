@@ -685,7 +685,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   char line[1024];
   char *location;
-  REF_INT dim;
+  REF_INT ndime, npoin, nelem, nmark;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
 
@@ -698,8 +698,20 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     location = strchr(line, '=');
     if (NULL == location) continue;
     if (NULL != strstr(line, "NDIME")) {
-      dim = atoi(location + 1);
-      printf("dim %d\n", dim);
+      ndime = atoi(location + 1);
+      printf("NDIME %d\n", ndime);
+    }
+    if (NULL != strstr(line, "NPOIN")) {
+      npoin = atoi(location + 1);
+      printf("NPOIN %d\n", npoin);
+    }
+    if (NULL != strstr(line, "NELEM")) {
+      nelem = atoi(location + 1);
+      printf("NELEM %d\n", nelem);
+    }
+    if (NULL != strstr(line, "NMARK")) {
+      nmark = atoi(location + 1);
+      printf("NMARK %d\n", nmark);
     }
   }
 
