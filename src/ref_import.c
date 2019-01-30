@@ -801,6 +801,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                         &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4]),
                         &(nodes[5])),
                  "parse element");
+            VTK_WEDGE_TO_UGRID(nodes);
             RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "tri");
             break;
           case VTK_PYRAMID:
@@ -808,6 +809,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                  sscanf(line, "%d %d %d %d %d %d", &cell_type, &(nodes[0]),
                         &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4])),
                  "parse element");
+            VTK_PYRAMID_TO_UGRID(nodes);
             RSS(ref_cell_add(ref_grid_pyr(ref_grid), nodes, &new_cell), "pyr");
             break;
           default:
