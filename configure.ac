@@ -131,6 +131,8 @@ then
   AC_CHECK_FILE([$with_zoltan/lib/libzoltan.dylib],
                 [zoltan_dylib_path=$with_zoltan/lib],[zoltan_dylib_path='no'])
   AC_CHECK_FILE([$with_zoltan/lib/libzoltan.dll],
+                [zoltan_libdll_path=$with_zoltan/lib],[zoltan_libdll_path='no'])
+  AC_CHECK_FILE([$with_zoltan/lib/zoltan.dll],
                 [zoltan_dll_path=$with_zoltan/lib],[zoltan_dll_path='no'])
 
   if test "$zoltan_h_path" != 'no'
@@ -152,6 +154,10 @@ then
   if test "$zoltan_dylib_path" != 'no'
   then
       zoltan_ldadd="-Wl,-rpath,${zoltan_dylib_path} -L${zoltan_dylib_path} -lzoltan"
+  fi
+  if test "$zoltan_libdll_path" != 'no'
+  then
+      zoltan_ldadd="-L${zoltan_libdll_path} -lzoltan"
   fi
   if test "$zoltan_dll_path" != 'no'
   then
@@ -190,6 +196,9 @@ then
                 [parmetis_dylib_path=$with_parmetis/lib],
 		[parmetis_dylib_path='no'])
   AC_CHECK_FILE([$with_parmetis/lib/libparmetis.dll],
+                [parmetis_libdll_path=$with_parmetis/lib],
+		[parmetis_libdll_path='no'])
+  AC_CHECK_FILE([$with_parmetis/lib/parmetis.dll],
                 [parmetis_dll_path=$with_parmetis/lib],
 		[parmetis_dll_path='no'])
 
@@ -207,6 +216,9 @@ then
                 [metis_dylib_path=$with_metis/lib],
 		[metis_dylib_path='no'])
   AC_CHECK_FILE([$with_metis/lib/libmetis.dll],
+                [metis_libdll_path=$with_metis/lib],
+		[metis_libdll_path='no'])
+  AC_CHECK_FILE([$with_metis/lib/metis.dll],
                 [metis_dll_path=$with_metis/lib],
 		[metis_dll_path='no'])
 
@@ -229,6 +241,10 @@ then
   if test "$metis_dylib_path" != 'no'
   then
       metis_ldadd="-Wl,-rpath,${metis_dylib_path} -L${metis_dylib_path} -lmetis"
+  fi
+  if test "$metis_libdll_path" != 'no'
+  then
+      metis_ldadd="-L${metis_libdll_path} -lmetis"
   fi
   if test "$metis_dll_path" != 'no'
   then
@@ -258,6 +274,10 @@ then
   if test "$parmetis_dylib_path" != 'no'
   then
       parmetis_ldadd="-Wl,-rpath,${parmetis_dylib_path} -L${parmetis_dylib_path} -lparmetis ${metis_ldadd}"
+  fi
+  if test "$parmetis_libdll_path" != 'no'
+  then
+      parmetis_ldadd="-L${parmetis_libdll_path} -lparmetis ${metis_ldadd}"
   fi
   if test "$parmetis_dll_path" != 'no'
   then
@@ -303,6 +323,8 @@ then
   AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
                 [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
   AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
+                [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/${egads_lib_root}.dll],
                 [egads_dll_path=$with_egads/lib],[egads_dll_path='no'])
 
   if test "$egads_h_path" != 'no'
@@ -330,6 +352,10 @@ then
   then
       egads_ldadd="-Wl,-rpath,${egads_dylib_path} -L${egads_dylib_path} -l${egads_lib_root}"
   fi
+  if test "$egads_libdll_path" != 'no'
+  then
+      egads_ldadd="-L${egads_libdll_path} -l${egads_lib_root}"
+  fi
   if test "$egads_dll_path" != 'no'
   then
       egads_ldadd="-L${egads_dll_path} -l${egads_lib_root}"
@@ -356,6 +382,8 @@ then
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.dylib],
                 [opencascade_dylib_path=$with_OpenCASCADE/lib],[opencascade_dylib_path='no'])
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.dll],
+                [opencascade_libdll_path=$with_OpenCASCADE/lib],[opencascade_libdll_path='no'])
+  AC_CHECK_FILE([$with_OpenCASCADE/lib/TKernel.dll],
                 [opencascade_dll_path=$with_OpenCASCADE/lib],[opencascade_dll_path='no'])
 
   opencascade_ldadd=""
@@ -370,6 +398,10 @@ then
   if test "$opencascade_dylib_path" != 'no'
   then
       opencascade_ldadd="-Wl,-rpath,${opencascade_dylib_path} -L${opencascade_dylib_path}"
+  fi
+  if test "$opencascade_libdll_path" != 'no'
+  then
+      opencascade_ldadd="-L${opencascade_libdll_path}"
   fi
   if test "$opencascade_dll_path" != 'no'
   then
