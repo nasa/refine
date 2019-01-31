@@ -110,7 +110,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_CELL ref_cell;
   REF_INT cell, ncell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL det, complexity;
+  REF_DBL det, max_det, complexity, min_metric_vol;
   REF_DBL quality, min_quality;
   REF_DBL normdev, min_normdev;
   REF_DBL volume, min_volume, max_volume;
@@ -136,6 +136,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   min_quality = 1.0;
   min_volume = 1.0e100;
   max_volume = -1.0e100;
+  max_det = -1.0;
   complexity = 0.0;
   ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -169,6 +170,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {
         RSS(ref_node_metric_get(ref_node, nodes[cell_node], m), "get");
         RSS(ref_matrix_det_m(m, &det), "det");
+        max_det = MAX(max_det, det);
         complexity +=
             sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
       }
@@ -177,14 +179,18 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     if (part == ref_mpi_rank(ref_mpi)) ncell++;
   }
   quality = min_quality;
-  RSS(ref_mpi_min(ref_mpi, &quality, &min_quality, REF_DBL_TYPE), "min");
-  RSS(ref_mpi_bcast(ref_mpi, &quality, 1, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_min(ref_mpi, &quality, &min_quality, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &quality, 1, REF_DBL_TYPE), "mbast");
   volume = min_volume;
   RSS(ref_mpi_min(ref_mpi, &volume, &min_volume, REF_DBL_TYPE), "mpi min");
-  RSS(ref_mpi_bcast(ref_mpi, &min_volume, 1, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_volume, 1, REF_DBL_TYPE), "bcast");
   volume = max_volume;
   RSS(ref_mpi_max(ref_mpi, &volume, &max_volume, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &max_volume, 1, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &max_volume, 1, REF_DBL_TYPE), "bcast");
+  det = max_det;
+  RSS(ref_mpi_max(ref_mpi, &det, &max_det, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_det, 1, REF_DBL_TYPE), "bcast");
+  min_metric_vol = 1.0 / sqrt(max_det);
 
   RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
   RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "cell int sum");
@@ -263,6 +269,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
 
+  ref_node->min_volume = MIN(1.0e-15, 0.01 * min_metric_vol);
+
   old_min_ratio = ref_adapt->post_min_ratio;
   old_max_ratio = ref_adapt->post_max_ratio;
 
@@ -293,9 +301,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_normdev);
-    printf("nnode %10d complexity %12.1f ratio %5.2f\nvolume range %e %e ",
-           nnode, complexity, nodes_per_complexity, max_volume, min_volume);
-    printf("ncell %10d\n", ncell);
+    printf("nnode %10d ncell %10d complexity %12.1f ratio %5.2f\n", nnode,
+           ncell, complexity, nodes_per_complexity);
+    printf("volume range %e %e metric %e floor %e\n", max_volume, min_volume,
+           min_metric_vol, ref_node->min_volume);
   }
 
   return REF_SUCCESS;
