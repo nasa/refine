@@ -170,7 +170,10 @@ performance
  freeze regions
   unfreeze when areas need help
   zero partition cost
- implemetnt INRIA space filling curve native partitioner
+ implement native partitioner
+  recursive bisection (age awareness?)
+  INRIA space filling curve
+  diffusion
  
 viz
  ellipsoid metric or something cheaper
