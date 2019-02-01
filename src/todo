@@ -160,6 +160,7 @@ robustness and metric conformity
   minmax optimize uv
 
 performance
+ fine grain stopwatch for ref_migrate, ref_interp, ref_subdiv, face mov
  profile
  node smooth after node, cell, and, adj are compact
    metric exact after split
