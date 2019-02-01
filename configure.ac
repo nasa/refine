@@ -132,8 +132,8 @@ then
                 [zoltan_dylib_path=$with_zoltan/lib],[zoltan_dylib_path='no'])
   AC_CHECK_FILE([$with_zoltan/lib/libzoltan.dll],
                 [zoltan_libdll_path=$with_zoltan/lib],[zoltan_libdll_path='no'])
-  AC_CHECK_FILE([$with_zoltan/lib/zoltan.dll],
-                [zoltan_dll_path=$with_zoltan/lib],[zoltan_dll_path='no'])
+  AC_CHECK_FILE([$with_zoltan/bin/zoltan.dll],
+                [zoltan_dll_path=$with_zoltan/bin],[zoltan_dll_path='no'])
 
   if test "$zoltan_h_path" != 'no'
   then
@@ -198,8 +198,8 @@ then
   AC_CHECK_FILE([$with_parmetis/lib/libparmetis.dll],
                 [parmetis_libdll_path=$with_parmetis/lib],
 		[parmetis_libdll_path='no'])
-  AC_CHECK_FILE([$with_parmetis/lib/parmetis.dll],
-                [parmetis_dll_path=$with_parmetis/lib],
+  AC_CHECK_FILE([$with_parmetis/bin/parmetis.dll],
+                [parmetis_dll_path=$with_parmetis/bin],
 		[parmetis_dll_path='no'])
 
   AC_CHECK_FILE([$with_metis/include/metis.h],
@@ -218,8 +218,8 @@ then
   AC_CHECK_FILE([$with_metis/lib/libmetis.dll],
                 [metis_libdll_path=$with_metis/lib],
 		[metis_libdll_path='no'])
-  AC_CHECK_FILE([$with_metis/lib/metis.dll],
-                [metis_dll_path=$with_metis/lib],
+  AC_CHECK_FILE([$with_metis/bin/metis.dll],
+                [metis_dll_path=$with_metis/bin],
 		[metis_dll_path='no'])
 
   if test "$metis_h_path" != 'no'
@@ -324,8 +324,8 @@ then
                 [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
   AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
                 [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/${egads_lib_root}.dll],
-                [egads_dll_path=$with_egads/lib],[egads_dll_path='no'])
+  AC_CHECK_FILE([$with_egads/bin/${egads_lib_root}.dll],
+                [egads_dll_path=$with_egads/bin],[egads_dll_path='no'])
 
   if test "$egads_h_path" != 'no'
   then
@@ -383,8 +383,8 @@ then
                 [opencascade_dylib_path=$with_OpenCASCADE/lib],[opencascade_dylib_path='no'])
   AC_CHECK_FILE([$with_OpenCASCADE/lib/libTKernel.dll],
                 [opencascade_libdll_path=$with_OpenCASCADE/lib],[opencascade_libdll_path='no'])
-  AC_CHECK_FILE([$with_OpenCASCADE/lib/TKernel.dll],
-                [opencascade_dll_path=$with_OpenCASCADE/lib],[opencascade_dll_path='no'])
+  AC_CHECK_FILE([$with_OpenCASCADE/bin/TKernel.dll],
+                [opencascade_dll_path=$with_OpenCASCADE/bin],[opencascade_dll_path='no'])
 
   opencascade_ldadd=""
   if test "$opencascade_a_path" != 'no'
