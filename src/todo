@@ -161,6 +161,7 @@ robustness and metric conformity
 
 performance
  fine grain stopwatch for ref_migrate, ref_interp, ref_subdiv, face mov
+ replace ref_subdiv with extra load balance?
  profile
  node smooth after node, cell, and, adj are compact
    metric exact after split
