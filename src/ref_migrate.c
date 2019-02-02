@@ -1059,10 +1059,13 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   each_ref_node_valid_node(ref_node, node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       need_to_keep = REF_FALSE;
-      each_ref_grid_ref_cell(ref_grid, group, ref_cell) need_to_keep =
-          (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
+      each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+        need_to_keep =
+            (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
+      }
       if (!need_to_keep) {
-        RSS(ref_node_remove_without_global(ref_node, node), "remove");
+        RSS(ref_node_remove_without_global_invalidates_sorted(ref_node, node),
+            "remove");
         RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm geom");
       }
     }
