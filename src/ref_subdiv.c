@@ -541,7 +541,7 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
                nsweeps);
     }
 
-    RUS(100, nsweeps, "too many sweeps, stop inf loop");
+    RUS(200, nsweeps, "too many sweeps, stop inf loop");
 
     RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
   }
