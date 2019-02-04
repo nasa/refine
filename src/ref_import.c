@@ -1203,7 +1203,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT nnode, node, new_node;
   REF_INT ntri, tri, nedge, edge, ncell, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-  REF_INT n0, n1, n2, n3, n4, n5, id;
+  REF_INT n0, n1, n2, n3, n4, n5, n6, n7, id;
   REF_INT geom_keyword, type, i, geom, ngeom;
   REF_DBL param[2];
   REF_INT cad_data_keyword;
@@ -1498,6 +1498,44 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       nodes[4] = n4;
       nodes[5] = n5;
       RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "pri");
+    }
+    REIS(next_position, ftello(file), "end location");
+  }
+
+  RSS(ref_import_meshb_jump(file, version, key_pos, 10, &available,
+                            &next_position),
+      "jump");
+  if (3 == dim && available) {
+    REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
+    if (verbose) printf("nnex %d\n", ncell);
+
+    for (cell = 0; cell < ncell; cell++) {
+      REIS(1, fread(&(n0), sizeof(n0), 1, file), "hex n0");
+      REIS(1, fread(&(n1), sizeof(n1), 1, file), "hex n1");
+      REIS(1, fread(&(n2), sizeof(n2), 1, file), "hex n2");
+      REIS(1, fread(&(n3), sizeof(n3), 1, file), "hex n3");
+      REIS(1, fread(&(n4), sizeof(n4), 1, file), "hex n4");
+      REIS(1, fread(&(n5), sizeof(n5), 1, file), "hex n5");
+      REIS(1, fread(&(n6), sizeof(n6), 1, file), "hex n6");
+      REIS(1, fread(&(n7), sizeof(n7), 1, file), "hex n7");
+      REIS(1, fread(&(id), sizeof(id), 1, file), "hex id");
+      n0--;
+      n1--;
+      n2--;
+      n3--;
+      n4--;
+      n5--;
+      n6--;
+      n7--;
+      nodes[0] = n0;
+      nodes[1] = n1;
+      nodes[2] = n2;
+      nodes[3] = n3;
+      nodes[4] = n4;
+      nodes[5] = n5;
+      nodes[6] = n6;
+      nodes[7] = n7;
+      RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "hex");
     }
     REIS(next_position, ftello(file), "end location");
   }
