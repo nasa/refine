@@ -30,6 +30,8 @@
 #include "ref_malloc.h"
 #include "ref_part.h"
 
+#include "ref_recon.h"
+
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
 
@@ -44,6 +46,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL mach, re, temperature;
     REF_DBL *primitive_dual, *dual_flux;
+    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+    REF_DBL *prim, *grad, *onegrad;
     REF_INT ldim;
     REF_INT node, i, dir;
     REF_DBL direction[3], state[5], flux[5], gradient[15];
@@ -68,12 +72,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
+    ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
     printf("reading primitive_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
     REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
-    ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     printf("copy dual\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -106,13 +111,31 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    printf("Laminar flux MISSING GRADIENT\n");
+    printf("reconstruct gradient\n");
+    ref_malloc(grad, 15 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(prim, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(onegrad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    for (i = 0; i < 5; i++) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        prim[node] = primitive_dual[i + 10 * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, prim, onegrad, recon), "grad_lam");
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (dir = 0; dir < 3; dir++) {
+          grad[dir + 3 * i + 15 * node] = onegrad[dir + 3 * node];
+        }
+      }
+    }
+    ref_free(onegrad);
+    ref_free(prim);
+
+    printf("Laminar flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         state[i] = primitive_dual[i + 10 * node];
       }
       for (i = 0; i < 15; i++) {
-        gradient[i] = 0;
+        gradient[i] = grad[i + 15 * node];
       }
       for (dir = 0; dir < 3; dir++) {
         direction[0] = 0;
@@ -127,12 +150,15 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+    ref_free(grad) ref_free(primitive_dual)
 
-    printf("writing dual_flux %s\n", argv[5]);
+        printf("writing dual_flux %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[5]),
         "export dual_flux");
 
-    RSS(ref_grid_free(ref_grid), "free");
+    ref_free(dual_flux)
+
+        RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
