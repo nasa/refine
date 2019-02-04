@@ -45,6 +45,8 @@ int main(int argc, char *argv[]) {
     REF_DBL mach, re, temperature;
     REF_DBL *primitive_dual, *dual_flux;
     REF_INT ldim;
+    REF_INT node, i, dir;
+    REF_DBL direction[3], state[5], flux[5], gradient[15];
 
     REIS(1, laminar_flux_pos,
          "required args: --laminar-flux grid.meshb primitive_dual.solb Mach Re "
@@ -72,6 +74,59 @@ int main(int argc, char *argv[]) {
         "unable to load primitive_dual in position 3");
     REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    printf("copy dual\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 5; i++) {
+        dual_flux[i + 20 * node] = primitive_dual[5 + i + 10 * node];
+      }
+    }
+
+    printf("zero flux\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 15; i++) {
+        dual_flux[5 + i + 20 * node] = 0.0;
+      }
+    }
+
+    printf("Euler flux\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 5; i++) {
+        state[i] = primitive_dual[i + 10 * node];
+      }
+      for (dir = 0; dir < 3; dir++) {
+        direction[0] = 0;
+        direction[1] = 0;
+        direction[2] = 0;
+        direction[dir] = 1;
+        RSS(ref_phys_euler(state, direction, flux), "euler");
+        for (i = 0; i < 5; i++) {
+          dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
+        }
+      }
+    }
+
+    printf("Laminar flux MISSING GRADIENT\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 5; i++) {
+        state[i] = primitive_dual[i + 10 * node];
+      }
+      for (i = 0; i < 15; i++) {
+        gradient[i] = 0;
+      }
+      for (dir = 0; dir < 3; dir++) {
+        direction[0] = 0;
+        direction[1] = 0;
+        direction[2] = 0;
+        direction[dir] = 1;
+        RSS(ref_phys_laminar(state, gradient, mach, re, temperature, direction,
+                             flux),
+            "laminar");
+        for (i = 0; i < 5; i++) {
+          dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
+        }
+      }
+    }
 
     printf("writing dual_flux %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[5]),
@@ -123,7 +178,7 @@ int main(int argc, char *argv[]) {
     direction[1] = 0.0;
     direction[2] = 0.0;
     RSS(ref_phys_laminar(state, gradient, mach, re, temp, direction, flux),
-        "euler");
+        "laminar");
     RWDS(0.0, flux[0], -1, "mass flux");
     RWDS(0.0, flux[1], -1, "x mo flux");
     RWDS(mach / re * mu * dudy * direction[0], flux[2], -1, "y mo flux");
@@ -155,7 +210,7 @@ int main(int argc, char *argv[]) {
     direction[1] = 1.0;
     direction[2] = 0.0;
     RSS(ref_phys_laminar(state, gradient, mach, re, temp, direction, flux),
-        "euler");
+        "laminar");
     RWDS(0.0, flux[0], -1, "mass flux");
     RWDS(0.0, flux[1], -1, "x mo flux");
     RWDS(mach / re * mu * (4.0 / 3.0) * dvdy * direction[1], flux[2], -1,
