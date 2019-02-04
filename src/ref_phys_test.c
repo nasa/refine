@@ -54,13 +54,11 @@ int main(int argc, char *argv[]) {
 
     REIS(1, laminar_flux_pos,
          "required args: --laminar-flux grid.meshb primitive_dual.solb Mach Re "
-         "T_K"
-         "dual_flux.solb");
+         "Temperature(Kelvin) dual_flux.solb");
     if (8 > argc) {
       printf(
           "required args: --laminar-flux grid.meshb primitive_dual.solb Mach "
-          "Re T_K"
-          "dual_flux.solb\n");
+          "Re Temperature(Kelvin) dual_flux.solb\n");
       return REF_FAILURE;
     }
     mach = atof(argv[4]);
