@@ -150,8 +150,8 @@ int main(int argc, char *argv[]) {
     }
     ref_free(grad) ref_free(primitive_dual)
 
-        printf("writing dual_flux %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[5]),
+        printf("writing dual_flux %s\n", argv[7]);
+    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
         "export dual_flux");
 
     ref_free(dual_flux)
