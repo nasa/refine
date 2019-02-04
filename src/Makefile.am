@@ -282,7 +282,7 @@ ref_part_test_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ld
 TESTS += ref_phys_test
 noinst_PROGRAMS += ref_phys_test
 ref_phys_test_SOURCES = ref_phys_test.c
-ref_phys_test_LDADD = libref2.a -lm
+ref_phys_test_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 TESTS += ref_recon_test
 noinst_PROGRAMS += ref_recon_test

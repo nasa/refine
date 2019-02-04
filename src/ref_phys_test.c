@@ -21,7 +21,68 @@
 
 #include "ref_phys.h"
 
-int main(void) {
+#include "ref_args.h"
+#include "ref_mpi.h"
+
+#include "ref_grid.h"
+
+#include "ref_gather.h"
+#include "ref_malloc.h"
+#include "ref_part.h"
+
+int main(int argc, char *argv[]) {
+  REF_INT laminar_flux_pos = REF_EMPTY;
+
+  REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
+  RSS(ref_mpi_create(&ref_mpi), "create");
+
+  RXS(ref_args_find(argc, argv, "--laminar-flux", &laminar_flux_pos),
+      REF_NOT_FOUND, "arg search");
+
+  if (laminar_flux_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL mach, re, temperature;
+    REF_DBL *primitive_dual, *dual_flux;
+    REF_INT ldim;
+
+    REIS(1, laminar_flux_pos,
+         "required args: --laminar-flux grid.meshb primitive_dual.solb Mach Re "
+         "T_K"
+         "dual_flux.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --laminar-flux grid.meshb primitive_dual.solb Mach "
+          "Re T_K"
+          "dual_flux.solb\n");
+      return REF_FAILURE;
+    }
+    mach = atof(argv[4]);
+    re = atof(argv[5]);
+    temperature = atof(argv[6]);
+    printf("Reference Mach %f Re %e temperature %f\n", mach, re, temperature);
+
+    printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    printf("reading primitive_dual %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
+                        argv[3]),
+        "unable to load primitive_dual in position 3");
+    REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
+    ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    printf("writing dual_flux %s\n", argv[5]);
+    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[5]),
+        "export dual_flux");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   { /* x-Euler flux */
     REF_DBL state[5], direction[3];
     REF_DBL flux[5];
