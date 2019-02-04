@@ -259,6 +259,31 @@ REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_delta_box_node(REF_NODE ref_node) {
+  REF_INT node;
+  REF_DBL m[6], m_int[6], m_target[6];
+  REF_DBL dist = 2, h = 0.01;
+  each_ref_node_valid_node(ref_node, node) {
+    if (-dist < ref_node_xyz(ref_node, 0, node) &&
+        ref_node_xyz(ref_node, 0, node) < dist &&
+        -dist < ref_node_xyz(ref_node, 1, node) &&
+        ref_node_xyz(ref_node, 1, node) < dist &&
+        -dist < ref_node_xyz(ref_node, 2, node) &&
+        ref_node_xyz(ref_node, 2, node) < dist) {
+      RSS(ref_node_metric_get(ref_node, node, m), "get");
+      m_target[0] = 1.0 / (h * h);
+      m_target[1] = 0;
+      m_target[2] = 0;
+      m_target[3] = 1.0 / (h * h);
+      m_target[4] = 0;
+      m_target[5] = 1.0 / (h * h);
+      RSS(ref_matrix_intersect(m_target, m, m_int), "intersect");
+      RSS(ref_node_metric_set(ref_node, node, m_int), "set node met");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
                                        REF_GRID parent_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
