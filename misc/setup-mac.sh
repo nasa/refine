@@ -59,3 +59,17 @@ mkdir -p zoltan
     ) \
     || exit
 
+mkdir -p both
+( cd both && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
+    --with-zoltan=${zoltan_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CC=mpicc \
+    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    ) \
+    || exit
+

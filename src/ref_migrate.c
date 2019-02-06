@@ -384,7 +384,7 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
+REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -572,7 +572,7 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
+REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
