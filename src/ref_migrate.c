@@ -393,8 +393,8 @@ REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -577,9 +577,12 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
   }
-#else
-#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+  return REF_SUCCESS;
+}
+#endif
 
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -731,11 +734,25 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
   }
-#else
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-#endif
+
+  return REF_SUCCESS;
+}
 #endif
 
+REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+  RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
+#else
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+  RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+#else
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    ref_node_part(ref_node, node) = 0;
+#endif
+#endif
   return REF_SUCCESS;
 }
 
