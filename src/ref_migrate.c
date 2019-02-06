@@ -197,6 +197,48 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
+  REF_GRID ref_grid = ref_migrate_grid(ref_migrate);
+  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT keep, lose;
+
+  each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
+    if (ref_node_global(ref_node, nodes[0]) <
+        ref_node_global(ref_node, nodes[3])) {
+      keep = nodes[0];
+      lose = nodes[3];
+    } else {
+      keep = nodes[3];
+      lose = nodes[0];
+    }
+    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "0-3");
+
+    if (ref_node_global(ref_node, nodes[1]) <
+        ref_node_global(ref_node, nodes[4])) {
+      keep = nodes[1];
+      lose = nodes[4];
+    } else {
+      keep = nodes[4];
+      lose = nodes[1];
+    }
+    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "1-4");
+
+    if (ref_node_global(ref_node, nodes[2]) <
+        ref_node_global(ref_node, nodes[5])) {
+      keep = nodes[2];
+      lose = nodes[5];
+    } else {
+      keep = nodes[5];
+      lose = nodes[2];
+    }
+    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "2-5");
+  }
+
+  return REF_SUCCESS;
+}
+
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 
 static int ref_migrate_local_n(void *void_ref_migrate, int *ierr) {
@@ -321,48 +363,6 @@ static void ref_migrate_edge_list(void *void_ref_migrate, int global_dim,
         (float)(ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1);
     degree++;
   }
-}
-
-static REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
-  REF_GRID ref_grid = ref_migrate_grid(ref_migrate);
-  REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT keep, lose;
-
-  each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
-    if (ref_node_global(ref_node, nodes[0]) <
-        ref_node_global(ref_node, nodes[3])) {
-      keep = nodes[0];
-      lose = nodes[3];
-    } else {
-      keep = nodes[3];
-      lose = nodes[0];
-    }
-    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "0-3");
-
-    if (ref_node_global(ref_node, nodes[1]) <
-        ref_node_global(ref_node, nodes[4])) {
-      keep = nodes[1];
-      lose = nodes[4];
-    } else {
-      keep = nodes[4];
-      lose = nodes[1];
-    }
-    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "1-4");
-
-    if (ref_node_global(ref_node, nodes[2]) <
-        ref_node_global(ref_node, nodes[5])) {
-      keep = nodes[2];
-      lose = nodes[5];
-    } else {
-      keep = nodes[5];
-      lose = nodes[2];
-    }
-    RSS(ref_migrate_2d_agglomeration_keep(ref_migrate, keep, lose), "2-5");
-  }
-
-  return REF_SUCCESS;
 }
 
 #endif

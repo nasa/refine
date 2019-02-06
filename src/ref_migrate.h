@@ -73,6 +73,7 @@ REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate);
 
 REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
                                              REF_INT keep, REF_INT lose);
+REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate);
 
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
 
