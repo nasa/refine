@@ -385,301 +385,296 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
   }
 }
 REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
-  {
-    REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-    REF_NODE ref_node = ref_grid_node(ref_grid);
-    REF_MIGRATE ref_migrate;
-    int partitions_have_changed;
-    int global_id_dimension, local_id_dimension;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MIGRATE ref_migrate;
+  int partitions_have_changed;
+  int global_id_dimension, local_id_dimension;
 
-    int import_n;
-    ZOLTAN_ID_PTR import_global, import_local;
-    int *import_proc, *import_part;
+  int import_n;
+  ZOLTAN_ID_PTR import_global, import_local;
+  int *import_proc, *import_part;
 
-    int export_n;
-    ZOLTAN_ID_PTR export_global, export_local;
-    int *export_proc, *export_part;
+  int export_n;
+  ZOLTAN_ID_PTR export_global, export_local;
+  int *export_proc, *export_part;
 
-    float ver;
+  float ver;
 
-    REF_INT node, item, local, global, part;
+  REF_INT node, item, local, global, part;
 
-    REF_INT *migrate_part;
-    REF_INT *node_part;
+  REF_INT *migrate_part;
+  REF_INT *node_part;
 
-    REF_INT *a_next;
-    REF_INT *a_parts, *b_parts;
-    REF_INT *a_size, *b_size;
-    REF_INT a_total, b_total;
+  REF_INT *a_next;
+  REF_INT *a_parts, *b_parts;
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
 
-    struct Zoltan_Struct *zz;
+  struct Zoltan_Struct *zz;
 
-    RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
+  RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
-    if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-    RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
+  RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
 
-    if (ref_grid_twod(ref_grid)) {
-      RSS(ref_migrate_2d_agglomeration(ref_migrate), "2d agglom");
-    }
-
-    { /* zoltan does not use argc and argv when MPI_Initialized
-         must be protected */
-      char **empty_argument = NULL;
-      if (!ref_mpi_para(ref_mpi))
-        THROW("Zoltan_Initialize must have actual arguments for seq");
-      REIS(ZOLTAN_OK, Zoltan_Initialize(0, empty_argument, &ver),
-           "Zoltan is angry");
-    }
-    zz = Zoltan_Create((*((MPI_Comm *)(ref_mpi->comm))));
-
-    /* General parameters */
-
-    Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
-    Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
-    Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
-
-    switch (ref_migrate_method(ref_migrate)) {
-      case REF_MIGRATE_GRAPH:
-        Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
-        break;
-      case REF_MIGRATE_RCB:
-        Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
-        break;
-      default:
-        RSS(REF_IMPLEMENT, "ref_migrate_method");
-        break;
-    }
-
-    Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
-
-    Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
-
-    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_zoltan_local_n, (void *)ref_migrate);
-    Zoltan_Set_Obj_List_Fn(zz, ref_migrate_zoltan_local_ids,
-                           (void *)ref_migrate);
-    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_zoltan_geom_dimensionality,
-                           (void *)ref_migrate);
-    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_zoltan_geom, (void *)ref_migrate);
-
-    Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_zoltan_num_edges,
-                            (void *)ref_migrate);
-    Zoltan_Set_Edge_List_Fn(zz, ref_migrate_zoltan_edge_list,
-                            (void *)ref_migrate);
-
-    REIS(ZOLTAN_OK,
-         Zoltan_LB_Partition(zz, &partitions_have_changed, &global_id_dimension,
-                             &local_id_dimension, &import_n, &import_global,
-                             &import_local, &import_proc, &import_part,
-                             &export_n, &export_global, &export_local,
-                             &export_proc, &export_part),
-         "Zoltan is angry");
-
-    ref_malloc_init(migrate_part, ref_migrate_max(ref_node), REF_INT,
-                    REF_EMPTY);
-    ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-
-    for (node = 0; node < export_n; node++)
-      migrate_part[export_local[node]] = export_part[node];
-
-    ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
-    ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
-
-    each_ref_migrate_node(ref_migrate, node) {
-      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
-                                      node, item, global) {
-        part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
-        if (ref_mpi_rank(ref_mpi) != part) {
-          a_size[part]++;
-        } else {
-          RSS(ref_node_local(ref_node, global, &local), "g2l");
-          node_part[local] = migrate_part[node];
-        }
-      }
-    }
-
-    RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
-        "alltoall sizes");
-
-    a_total = 0;
-    each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-    ref_malloc(a_parts, 2 * a_total, REF_INT);
-
-    b_total = 0;
-    each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-    ref_malloc(b_parts, 2 * b_total, REF_INT);
-
-    ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
-    a_next[0] = 0;
-    each_ref_mpi_worker(ref_mpi, part) {
-      a_next[part] = a_next[part - 1] + a_size[part - 1];
-    }
-
-    each_ref_migrate_node(ref_migrate, node) {
-      each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
-                                      node, item, global) {
-        part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
-        if (ref_mpi_rank(ref_mpi) != part) {
-          a_parts[0 + 2 * a_next[part]] = global;
-          a_parts[1 + 2 * a_next[part]] = migrate_part[node];
-          a_next[part]++;
-        }
-      }
-    }
-
-    RSS(ref_mpi_alltoallv(ref_mpi, a_parts, a_size, b_parts, b_size, 2,
-                          REF_INT_TYPE),
-        "alltoallv parts");
-
-    for (node = 0; node < b_total; node++) {
-      global = b_parts[0 + 2 * node];
-      part = b_parts[1 + 2 * node];
-      RSS(ref_node_local(ref_node, global, &local), "g2l");
-      node_part[local] = part;
-    }
-
-    free(a_next);
-    free(b_parts);
-    free(a_parts);
-    free(b_size);
-    free(a_size);
-
-    RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
-
-    for (node = 0; node < ref_node_max(ref_node); node++)
-      ref_node_part(ref_node, node) = node_part[node];
-
-    ref_free(node_part);
-    ref_free(migrate_part);
-
-    REIS(ZOLTAN_OK,
-         Zoltan_LB_Free_Part(&import_local, &import_global, &import_proc,
-                             &import_part),
-         "Zoltan is angry");
-
-    REIS(ZOLTAN_OK,
-         Zoltan_LB_Free_Part(&export_local, &export_global, &export_proc,
-                             &export_part),
-         "Zoltan is angry");
-
-    Zoltan_Destroy(&zz);
-
-    RSS(ref_migrate_free(ref_migrate), "free migrate");
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_migrate_2d_agglomeration(ref_migrate), "2d agglom");
   }
+
+  { /* zoltan does not use argc and argv when MPI_Initialized
+       must be protected */
+    char **empty_argument = NULL;
+    if (!ref_mpi_para(ref_mpi))
+      THROW("Zoltan_Initialize must have actual arguments for seq");
+    REIS(ZOLTAN_OK, Zoltan_Initialize(0, empty_argument, &ver),
+         "Zoltan is angry");
+  }
+  zz = Zoltan_Create((*((MPI_Comm *)(ref_mpi->comm))));
+
+  /* General parameters */
+
+  Zoltan_Set_Param(zz, "DEBUG_LEVEL", "0");
+  Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
+  Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
+
+  switch (ref_migrate_method(ref_migrate)) {
+    case REF_MIGRATE_GRAPH:
+      Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
+      break;
+    case REF_MIGRATE_RCB:
+      Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "ref_migrate_method");
+      break;
+  }
+
+  Zoltan_Set_Param(zz, "OBJ_WEIGHT_DIM", "1");
+
+  Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
+
+  Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_zoltan_local_n, (void *)ref_migrate);
+  Zoltan_Set_Obj_List_Fn(zz, ref_migrate_zoltan_local_ids, (void *)ref_migrate);
+  Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_zoltan_geom_dimensionality,
+                         (void *)ref_migrate);
+  Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_zoltan_geom, (void *)ref_migrate);
+
+  Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_zoltan_num_edges,
+                          (void *)ref_migrate);
+  Zoltan_Set_Edge_List_Fn(zz, ref_migrate_zoltan_edge_list,
+                          (void *)ref_migrate);
+
+  REIS(ZOLTAN_OK,
+       Zoltan_LB_Partition(zz, &partitions_have_changed, &global_id_dimension,
+                           &local_id_dimension, &import_n, &import_global,
+                           &import_local, &import_proc, &import_part, &export_n,
+                           &export_global, &export_local, &export_proc,
+                           &export_part),
+       "Zoltan is angry");
+
+  ref_malloc_init(migrate_part, ref_migrate_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  for (node = 0; node < export_n; node++)
+    migrate_part[export_local[node]] = export_part[node];
+
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  each_ref_migrate_node(ref_migrate, node) {
+    each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+                                    node, item, global) {
+      part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
+      if (ref_mpi_rank(ref_mpi) != part) {
+        a_size[part]++;
+      } else {
+        RSS(ref_node_local(ref_node, global, &local), "g2l");
+        node_part[local] = migrate_part[node];
+      }
+    }
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+      "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
+  ref_malloc(a_parts, 2 * a_total, REF_INT);
+
+  b_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
+  ref_malloc(b_parts, 2 * b_total, REF_INT);
+
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
+
+  each_ref_migrate_node(ref_migrate, node) {
+    each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
+                                    node, item, global) {
+      part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
+      if (ref_mpi_rank(ref_mpi) != part) {
+        a_parts[0 + 2 * a_next[part]] = global;
+        a_parts[1 + 2 * a_next[part]] = migrate_part[node];
+        a_next[part]++;
+      }
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_parts, a_size, b_parts, b_size, 2,
+                        REF_INT_TYPE),
+      "alltoallv parts");
+
+  for (node = 0; node < b_total; node++) {
+    global = b_parts[0 + 2 * node];
+    part = b_parts[1 + 2 * node];
+    RSS(ref_node_local(ref_node, global, &local), "g2l");
+    node_part[local] = part;
+  }
+
+  free(a_next);
+  free(b_parts);
+  free(a_parts);
+  free(b_size);
+  free(a_size);
+
+  RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
+
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    ref_node_part(ref_node, node) = node_part[node];
+
+  ref_free(node_part);
+  ref_free(migrate_part);
+
+  REIS(ZOLTAN_OK,
+       Zoltan_LB_Free_Part(&import_local, &import_global, &import_proc,
+                           &import_part),
+       "Zoltan is angry");
+
+  REIS(ZOLTAN_OK,
+       Zoltan_LB_Free_Part(&export_local, &export_global, &export_proc,
+                           &export_part),
+       "Zoltan is angry");
+
+  Zoltan_Destroy(&zz);
+
+  RSS(ref_migrate_free(ref_migrate), "free migrate");
+
   return REF_SUCCESS;
 }
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
 REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
-  {
-    REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-    REF_NODE ref_node = ref_grid_node(ref_grid);
-    REF_MIGRATE ref_migrate;
-    PARM_INT *vtxdist;
-    PARM_INT *xadj, *xadjncy, *adjwgt;
-    PARM_REAL *tpwgts, *ubvec;
-    PARM_INT wgtflag[] = {1};
-    PARM_INT numflag[] = {0};
-    PARM_INT ncon[] = {1};
-    PARM_INT nparts[1];
-    PARM_INT edgecut[1];
-    PARM_INT options[] = {1, 0, 42};
-    PARM_INT *part;
-    MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MIGRATE ref_migrate;
+  PARM_INT *vtxdist;
+  PARM_INT *xadj, *xadjncy, *adjwgt;
+  PARM_REAL *tpwgts, *ubvec;
+  PARM_INT wgtflag[] = {1};
+  PARM_INT numflag[] = {0};
+  PARM_INT ncon[] = {1};
+  PARM_INT nparts[1];
+  PARM_INT edgecut[1];
+  PARM_INT options[] = {1, 0, 42};
+  PARM_INT *part;
+  MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
 
-    REF_INT node, n, proc, *partition_size, *implied, shift, degree;
-    REF_INT item, ref;
-    REF_INT *node_part;
+  REF_INT node, n, proc, *partition_size, *implied, shift, degree;
+  REF_INT item, ref;
+  REF_INT *node_part;
 
-    nparts[0] = ref_mpi_n(ref_mpi);
+  nparts[0] = ref_mpi_n(ref_mpi);
 
-    RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
+  RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
 
-    if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
-    RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
+  RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
 
-    /* skip agglomeration stuff */
+  /* skip agglomeration stuff */
 
-    n = 0;
-    each_ref_migrate_node(ref_migrate, node) { n++; }
+  n = 0;
+  each_ref_migrate_node(ref_migrate, node) { n++; }
 
-    ref_malloc(partition_size, ref_mpi_n(ref_mpi), REF_INT);
-    RSS(ref_mpi_allgather(ref_mpi, &n, partition_size, REF_INT_TYPE),
-        "gather size of each part");
+  ref_malloc(partition_size, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &n, partition_size, REF_INT_TYPE),
+      "gather size of each part");
 
-    ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
-    ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
-    ref_malloc(xadj, n + 1, PARM_INT);
+  ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
+  ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
+  ref_malloc(xadj, n + 1, PARM_INT);
 
-    vtxdist[0] = 0;
-    each_ref_mpi_part(ref_mpi, proc) {
-      vtxdist[proc + 1] = vtxdist[proc] + partition_size[proc];
+  vtxdist[0] = 0;
+  each_ref_mpi_part(ref_mpi, proc) {
+    vtxdist[proc + 1] = vtxdist[proc] + partition_size[proc];
+  }
+
+  shift = vtxdist[ref_mpi_rank(ref_mpi)];
+  n = 0;
+  xadj[0] = 0;
+  each_ref_migrate_node(ref_migrate, node) {
+    implied[node] = shift + n;
+    RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
+    xadj[n + 1] = xadj[n] + degree;
+    n++;
+  }
+  RSS(ref_node_ghost_int(ref_node, implied), "implied ghosts");
+
+  ref_malloc(xadjncy, xadj[n], PARM_INT);
+  ref_malloc(adjwgt, xadj[n], PARM_INT);
+
+  n = 0;
+  each_ref_migrate_node(ref_migrate, node) {
+    degree = 0;
+    each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
+                                    ref) {
+      xadjncy[xadj[n] + degree] = implied[ref];
+      adjwgt[xadj[n] + degree] =
+          ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1;
+      degree++;
     }
+    n++;
+  }
 
-    shift = vtxdist[ref_mpi_rank(ref_mpi)];
-    n = 0;
-    xadj[0] = 0;
-    each_ref_migrate_node(ref_migrate, node) {
-      implied[node] = shift + n;
-      RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
-      xadj[n + 1] = xadj[n] + degree;
-      n++;
+  ref_malloc_init(tpwgts, ref_mpi_n(ref_mpi), PARM_REAL,
+                  1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
+  ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
+  ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
+
+  if (REF_FALSE) {
+    FILE *f;
+    char name[1024];
+    REF_INT i;
+    sprintf(name, "par-%d-%d.adj", ref_mpi_n(ref_mpi), ref_mpi_rank(ref_mpi));
+    f = fopen(name, "w");
+    if (NULL == (void *)f) printf("unable to open %s\n", name);
+    RNS(name, "unable to open file");
+
+    for (i = 0; i < ref_mpi_n(ref_mpi) + 1; i++) {
+      fprintf(f, "%d: vtxdist[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
+              vtxdist[i]);
     }
-    RSS(ref_node_ghost_int(ref_node, implied), "implied ghosts");
-
-    ref_malloc(xadjncy, xadj[n], PARM_INT);
-    ref_malloc(adjwgt, xadj[n], PARM_INT);
-
-    n = 0;
-    each_ref_migrate_node(ref_migrate, node) {
-      degree = 0;
-      each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
-                                      ref) {
-        xadjncy[xadj[n] + degree] = implied[ref];
-        adjwgt[xadj[n] + degree] =
-            ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1;
-        degree++;
-      }
-      n++;
+    for (i = 0; i < n + 1; i++) {
+      fprintf(f, "%d: xadj[%d] = %d\n", ref_mpi_rank(ref_mpi), i, xadj[i]);
     }
-
-    ref_malloc_init(tpwgts, ref_mpi_n(ref_mpi), PARM_REAL,
-                    1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
-    ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
-    ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
-
-    if (REF_FALSE) {
-      FILE *f;
-      char name[1024];
-      REF_INT i;
-      sprintf(name, "par-%d-%d.adj", ref_mpi_n(ref_mpi), ref_mpi_rank(ref_mpi));
-      f = fopen(name, "w");
-      if (NULL == (void *)f) printf("unable to open %s\n", name);
-      RNS(name, "unable to open file");
-
-      for (i = 0; i < ref_mpi_n(ref_mpi) + 1; i++) {
-        fprintf(f, "%d: vtxdist[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
-                vtxdist[i]);
-      }
-      for (i = 0; i < n + 1; i++) {
-        fprintf(f, "%d: xadj[%d] = %d\n", ref_mpi_rank(ref_mpi), i, xadj[i]);
-      }
-      for (i = 0; i < xadj[n]; i++) {
-        fprintf(f, "%d: xadjncy[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
-                xadjncy[i]);
-      }
-      for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
-        fprintf(f, "%d: tpwgts[%d] = %f\n", ref_mpi_rank(ref_mpi), i,
-                tpwgts[i]);
-      }
-      for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
-        fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
-      }
-      fclose(f);
+    for (i = 0; i < xadj[n]; i++) {
+      fprintf(f, "%d: xadjncy[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
+              xadjncy[i]);
     }
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+      fprintf(f, "%d: tpwgts[%d] = %f\n", ref_mpi_rank(ref_mpi), i, tpwgts[i]);
+    }
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+      fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
+    }
+    fclose(f);
+  }
 
 #if PARMETIS_MAJOR_VERSION == 3
     REIS(METIS_OK,
@@ -688,11 +683,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
                               tpwgts, ubvec, options, edgecut, part, &comm),
          "ParMETIS 3 is not o.k.";
 #else
-    REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
-                              options, edgecut, part, &comm),
-         "ParMETIS 4 is not o.k.");
+  REIS(METIS_OK,
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                            wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
+                            options, edgecut, part, &comm),
+       "ParMETIS 4 is not o.k.");
 #endif
 
     /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
@@ -700,8 +695,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
     n = 0;
     each_ref_migrate_node(ref_migrate, node) {
-      node_part[node] = part[n];
-      n++;
+    node_part[node] = part[n];
+    n++;
     }
 
     /* skip agglomeration stuff */
@@ -723,7 +718,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_free(partition_size);
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
-  }
 
   return REF_SUCCESS;
 }
