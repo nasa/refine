@@ -1237,17 +1237,23 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
 
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_INT nequations, REF_DBL *solution,
+                               REF_RECON_RECONSTRUCTION reconstruction,
+                               REF_INT p_norm, REF_DBL gradation,
                                REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
-  REF_INT dimension = 3;
-  REF_INT p_norm = 1;
+  REF_INT dimension;
   REF_DBL det, exponent;
-  REF_DBL current_complexity;
+  REF_DBL current_complexity, complexity_scale;
   REF_INT ldim;
-  REF_INT var, dir;
-  REF_RECON_RECONSTRUCTION recon = REF_RECON_KEXACT;
-  REF_INT gradation;
+  REF_INT var, dir, relaxations;
+
+  dimension = 3;
+  complexity_scale = 2.0 / 3.0;
+  if (ref_grid_twod(ref_grid)) {
+    dimension = 2;
+    complexity_scale = 1.0;
+  }
 
   ldim = 4 * nequations;
 
@@ -1264,13 +1270,14 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = solution[var + 5 + ldim * node];
     }
-    RSS(ref_recon_gradient(ref_grid, lam, grad_lam, recon), "grad_lam");
+    RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction),
+        "grad_lam");
 
     for (dir = 0; dir < 3; dir++) {
       each_ref_node_valid_node(ref_node, node) {
         flux[node] = solution[var + nequations * dir + ldim * node];
       }
-      RSS(ref_recon_hessian(ref_grid, flux, hess_flux, recon), "l2");
+      RSS(ref_recon_hessian(ref_grid, flux, hess_flux, reconstruction), "hess");
       each_ref_node_valid_node(ref_node, node) {
         for (i = 0; i < 6; i++)
           metric[i + 6 * node] +=
@@ -1307,33 +1314,37 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     }
   }
 
-  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
-  if (!ref_math_divisible(target_complexity, current_complexity)) {
-    return REF_DIV_ZERO;
-  }
-  each_ref_node_valid_node(ref_node, node) {
-    if (ref_grid_twod(ref_grid)) {
-      for (i = 0; i < 6; i++) {
-        metric[i + 6 * node] *= target_complexity / current_complexity;
-      }
-    } else {
+  /* global scaling and gradation limiting */
+  for (relaxations = 0; relaxations < 10; relaxations++) {
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] *=
-            pow(target_complexity / current_complexity, 2.0 / 3.0);
+            pow(target_complexity / current_complexity, complexity_scale);
+      }
+      if (ref_grid_twod(ref_grid)) {
+        metric[1 + 6 * node] = 0.0;
+        metric[3 + 6 * node] = 1.0;
+        metric[4 + 6 * node] = 0.0;
       }
     }
-  }
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      metric[1 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = 1.0;
-      metric[4 + 6 * node] = 0.0;
+    if (gradation < 1.0) {
+      RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
+          "gradation");
+    } else {
+      RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+          "gradation");
     }
-  }
-
-  for (gradation = 0; gradation < 10; gradation++) {
-    RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
-        "gradation");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        metric[1 + 6 * node] = 0.0;
+        metric[3 + 6 * node] = 1.0;
+        metric[4 + 6 * node] = 0.0;
+      }
+    }
   }
 
   return REF_SUCCESS;

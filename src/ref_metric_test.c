@@ -302,21 +302,29 @@ int main(int argc, char *argv[]) {
   if (opt_goal_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *metric;
-    REF_DBL complexity;
+    REF_INT p;
+    REF_DBL gradation, complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
 
     REIS(1, opt_goal_pos,
-         "required args: --opt-goal grid.meshb solution.solb complexity "
-         "output-metric.solb");
+         "required args: --opt-goal grid.meshb solution.solb complexity p "
+         "gradation output-metric.solb");
     if (6 > argc) {
       printf(
-          "required args: --opt-goal grid.meshb solution.solb complexity "
-          "output-metric.solb\n");
+          "required args: --opt-goal grid.meshb solution.solb complexity p "
+          "gradation output-metric.solb\n");
       return REF_FAILURE;
     }
-    complexity = atof(argv[4]);
-
-    printf("complexity %f\n", complexity);
+    p = atoi(argv[4]);
+    gradation = atof(argv[5]);
+    complexity = atof(argv[6]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
 
     printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
@@ -351,14 +359,15 @@ int main(int argc, char *argv[]) {
         "scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, complexity),
+    RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, reconstruction, p,
+                            gradation, complexity),
         "opt goal");
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
     ref_free(scalar);
 
-    printf("writing metric %s\n", argv[5]);
-    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
+    printf("writing metric %s\n", argv[7]);
+    RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
