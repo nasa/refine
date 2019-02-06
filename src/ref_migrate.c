@@ -581,7 +581,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_INT ncon[] = {1};
   PARM_INT nparts[1];
   PARM_INT edgecut[1];
-  PARM_INT options[] = {1, 0, 42};
+  PARM_INT options[] = {1, 111, 42};
   PARM_INT *part;
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
 
