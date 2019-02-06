@@ -239,8 +239,31 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
+  RSS(ref_migrate_new_part(ref_grid), "new part");
+  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
+  RSS(ref_migrate_single_part(ref_grid), "new part");
+  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    ref_node_part(ref_node, node) = 0;
+
+  return REF_SUCCESS;
+}
+
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 static int ref_migrate_zoltan_local_n(void *void_ref_migrate, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   int node, n;
@@ -252,7 +275,6 @@ static int ref_migrate_zoltan_local_n(void *void_ref_migrate, int *ierr) {
 
   return n;
 }
-
 static void ref_migrate_zoltan_local_ids(void *void_ref_migrate, int global_dim,
                                          int local_dim, ZOLTAN_ID_PTR global,
                                          ZOLTAN_ID_PTR local, int wgt_dim,
@@ -276,14 +298,12 @@ static void ref_migrate_zoltan_local_ids(void *void_ref_migrate, int global_dim,
     n++;
   }
 }
-
 static int ref_migrate_zoltan_geom_dimensionality(void *void_ref_migrate,
                                                   int *ierr) {
   SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
   *ierr = 0;
   return 3;
 }
-
 static void ref_migrate_zoltan_geom(void *void_ref_migrate, int global_dim,
                                     int local_dim, int nnode,
                                     ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
@@ -312,7 +332,6 @@ static void ref_migrate_zoltan_geom(void *void_ref_migrate, int global_dim,
     xyz[2 + 3 * node] = ref_migrate_xyz(ref_migrate, 2, local[node]);
   }
 }
-
 static int ref_migrate_zoltan_num_edges(void *void_ref_migrate, int global_dim,
                                         int local_dim, ZOLTAN_ID_PTR global,
                                         ZOLTAN_ID_PTR local, int *ierr) {
@@ -333,7 +352,6 @@ static int ref_migrate_zoltan_num_edges(void *void_ref_migrate, int global_dim,
 
   return degree;
 }
-
 static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
                                          int local_dim, ZOLTAN_ID_PTR global,
                                          ZOLTAN_ID_PTR local,
@@ -366,34 +384,6 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-
-#endif
-
-REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
-  RSS(ref_migrate_new_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
-  RSS(ref_migrate_single_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = 0;
-
-  return REF_SUCCESS;
-}
-
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   {
     REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
