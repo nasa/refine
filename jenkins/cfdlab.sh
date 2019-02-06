@@ -36,6 +36,7 @@ opencascade_path="${module_path}/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
 
+parmetis_dir=${root_dir}/_refine-parmetis-egadslite
 zoltan_dir=${root_dir}/_refine-zoltan-egadslite
 egads_dir=${root_dir}/_refine-egads-full
 strict_dir=${root_dir}/_refine-strict
@@ -125,9 +126,66 @@ trap - EXIT
 
 date
 
+mkdir -p ${parmetis_dir}
+cd ${parmetis_dir}
+
+LOG=${root_dir}/log.parmetis-configure
+trap "cat $LOG" EXIT
+${source_dir}/configure \
+    --prefix=${parmetis_dir} \
+    --with-parmetis=${parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
+    CC=mpicc \
+    FC=mpif90  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.parmetis-make
+trap "cat $LOG" EXIT
+env TMPDIR=${PWD} make -j 8  > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.parmetis-make-install
+trap "cat $LOG" EXIT
+make install > $LOG 2>&1
+trap - EXIT
+
+date
+
 LOG=${root_dir}/log.zoltan-unit
 trap "cat $LOG" EXIT
 cd ${zoltan_dir}/src
+echo para-unit > $LOG 2>&1
+mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_interp_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_metric_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_mpi_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_node_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_part_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_migrate_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_cavity_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_elast_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_recon_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_metric_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_mpi_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_node_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_part_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_migrate_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_cavity_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_elast_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_recon_test >> $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.parmetis-unit
+trap "cat $LOG" EXIT
+cd ${parmetis_dir}/src
 echo para-unit > $LOG 2>&1
 mpiexec -np 2 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_edge_test >> $LOG 2>&1
