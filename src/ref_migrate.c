@@ -241,7 +241,7 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
 
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 
-static int ref_migrate_local_n(void *void_ref_migrate, int *ierr) {
+static int ref_migrate_zoltan_local_n(void *void_ref_migrate, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   int node, n;
 
@@ -253,10 +253,10 @@ static int ref_migrate_local_n(void *void_ref_migrate, int *ierr) {
   return n;
 }
 
-static void ref_migrate_local_ids(void *void_ref_migrate, int global_dim,
-                                  int local_dim, ZOLTAN_ID_PTR global,
-                                  ZOLTAN_ID_PTR local, int wgt_dim,
-                                  float *obj_wgts, int *ierr) {
+static void ref_migrate_zoltan_local_ids(void *void_ref_migrate, int global_dim,
+                                         int local_dim, ZOLTAN_ID_PTR global,
+                                         ZOLTAN_ID_PTR local, int wgt_dim,
+                                         float *obj_wgts, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   REF_INT node, n;
 
@@ -277,16 +277,17 @@ static void ref_migrate_local_ids(void *void_ref_migrate, int global_dim,
   }
 }
 
-static int ref_migrate_geom_dimensionality(void *void_ref_migrate, int *ierr) {
+static int ref_migrate_zoltan_geom_dimensionality(void *void_ref_migrate,
+                                                  int *ierr) {
   SUPRESS_UNUSED_COMPILER_WARNING(void_ref_migrate);
   *ierr = 0;
   return 3;
 }
 
-static void ref_migrate_geom(void *void_ref_migrate, int global_dim,
-                             int local_dim, int nnode, ZOLTAN_ID_PTR global,
-                             ZOLTAN_ID_PTR local, int xyz_dim, double *xyz,
-                             int *ierr) {
+static void ref_migrate_zoltan_geom(void *void_ref_migrate, int global_dim,
+                                    int local_dim, int nnode,
+                                    ZOLTAN_ID_PTR global, ZOLTAN_ID_PTR local,
+                                    int xyz_dim, double *xyz, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   REF_INT node;
 
@@ -312,9 +313,9 @@ static void ref_migrate_geom(void *void_ref_migrate, int global_dim,
   }
 }
 
-static int ref_migrate_num_edges(void *void_ref_migrate, int global_dim,
-                                 int local_dim, ZOLTAN_ID_PTR global,
-                                 ZOLTAN_ID_PTR local, int *ierr) {
+static int ref_migrate_zoltan_num_edges(void *void_ref_migrate, int global_dim,
+                                        int local_dim, ZOLTAN_ID_PTR global,
+                                        ZOLTAN_ID_PTR local, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   REF_INT node, degree;
 
@@ -333,11 +334,12 @@ static int ref_migrate_num_edges(void *void_ref_migrate, int global_dim,
   return degree;
 }
 
-static void ref_migrate_edge_list(void *void_ref_migrate, int global_dim,
-                                  int local_dim, ZOLTAN_ID_PTR global,
-                                  ZOLTAN_ID_PTR local,
-                                  ZOLTAN_ID_PTR conn_global, int *conn_part,
-                                  int weight_dim, float *weight, int *ierr) {
+static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
+                                         int local_dim, ZOLTAN_ID_PTR global,
+                                         ZOLTAN_ID_PTR local,
+                                         ZOLTAN_ID_PTR conn_global,
+                                         int *conn_part, int weight_dim,
+                                         float *weight, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_INT node, item, ref, degree;
@@ -464,14 +466,17 @@ REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 
     Zoltan_Set_Param(zz, "EDGE_WEIGHT_DIM", "1");
 
-    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_local_n, (void *)ref_migrate);
-    Zoltan_Set_Obj_List_Fn(zz, ref_migrate_local_ids, (void *)ref_migrate);
-    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_geom_dimensionality,
+    Zoltan_Set_Num_Obj_Fn(zz, ref_migrate_zoltan_local_n, (void *)ref_migrate);
+    Zoltan_Set_Obj_List_Fn(zz, ref_migrate_zoltan_local_ids,
                            (void *)ref_migrate);
-    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_geom, (void *)ref_migrate);
+    Zoltan_Set_Num_Geom_Fn(zz, ref_migrate_zoltan_geom_dimensionality,
+                           (void *)ref_migrate);
+    Zoltan_Set_Geom_Multi_Fn(zz, ref_migrate_zoltan_geom, (void *)ref_migrate);
 
-    Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_num_edges, (void *)ref_migrate);
-    Zoltan_Set_Edge_List_Fn(zz, ref_migrate_edge_list, (void *)ref_migrate);
+    Zoltan_Set_Num_Edges_Fn(zz, ref_migrate_zoltan_num_edges,
+                            (void *)ref_migrate);
+    Zoltan_Set_Edge_List_Fn(zz, ref_migrate_zoltan_edge_list,
+                            (void *)ref_migrate);
 
     REIS(ZOLTAN_OK,
          Zoltan_LB_Partition(zz, &partitions_have_changed, &global_id_dimension,
