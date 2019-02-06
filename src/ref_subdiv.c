@@ -534,7 +534,7 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
       }
     }
 
-    if (nsweeps > 50) {
+    if (nsweeps > 5) {
       RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
       if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
         printf(" %d edges marked after %d unmark relaxations\n", nmark,
