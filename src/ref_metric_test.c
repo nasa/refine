@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+  ref_mpi_stopwatch_start(ref_mpi);
 
   RXS(ref_args_find(argc, argv, "--fixed-point", &fixed_point_pos),
       REF_NOT_FOUND, "arg search");
@@ -179,16 +180,19 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(1, ldim, "expected one scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
                       complexity),
         "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     if (hmin > 0.0 || hmax > 0.0) {
       RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
                                            complexity),
@@ -203,6 +207,7 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
