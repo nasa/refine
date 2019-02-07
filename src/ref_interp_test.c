@@ -231,14 +231,17 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
+    if (ref_mpi_once(ref_mpi)) printf("read/part old grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&old_grid, ref_mpi, argv[2]),
-        "part old grid in position 2");
+        "read/part old grid in position 2");
+    if (ref_mpi_once(ref_mpi)) printf("read/part old field %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_field, argv[3]),
-        "unable to load old scalar field in position 3");
+        "read/part old scalar field in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("read/part new grid %s\n", argv[4]);
     RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
-        "part candidate grid in position 4");
+        "read/part new grid in position 4");
     if (ref_mpi_once(ref_mpi)) {
-      printf("%d leading dim from %d nodes to %d nodes\n", ldim,
+      printf("%d leading dim from %d old nodes to %d new nodes\n", ldim,
              ref_node_n_global(ref_grid_node(old_grid)),
              ref_node_n_global(ref_grid_node(new_grid)));
     }
@@ -251,8 +254,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_scalar(ref_interp, ldim, old_field, new_field),
         "interp scalar");
 
+    if (ref_mpi_once(ref_mpi)) printf("write/gather new field %s\n", argv[5]);
     RSS(ref_gather_scalar(new_grid, ldim, new_field, argv[5]),
-        "export new field");
+        "write/gather new field");
 
     ref_free(new_field);
     RSS(ref_interp_free(ref_interp), "interp free");
