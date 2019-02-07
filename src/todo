@@ -3,22 +3,20 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
-viscous metric construction
-  opt-goal with viscous fluxes
-  ref_phys_test extraction from ref_interp
+ref_phys_test extraction from ref_interp
 
 tess
+ protect surface folds and high curvature
  turn off surf bit after volume is filled
  split egads surface tess, surface adaptation, and volume fill
  volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
- + tetgen poly format with voids
  tetgen poly format jaxa standard model
  add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
  try gmsh
  anisotropic feature size, edge length tangent, dist to other edge normal?
  feature size accross thin shell geoemtry, i.e., cusp trailing edge
- near-tree to drive split for grid size gradation of JSM
+ near-tree to drive split for grid size gradation of this shells
  edge chord height warning/constraint?
 
 C2S
@@ -59,7 +57,7 @@ metric construction
   extract global complexity scaling
   refactor ref_metric_lp_scale_hessian
   gradation at higher level (with switch)
-recon
+ref_recon
   twod l2projection
 
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
@@ -134,6 +132,7 @@ egads recon
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 robustness and metric conformity
+ add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
  process complete criteria (early termination when no more likely progress)
  smarter adapt parameters
@@ -220,6 +219,9 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ viscous metric construction
+  + opt-goal with viscous fluxes
+
 + PW isotropic spacing
   + http://pointclouds.org/documentation/tutorials/pcd_file_format.php
 
@@ -242,6 +244,7 @@ mixed element in refine/two
   + mixed space gradation surf with aflr3 positive volume
   + cad node feature size length of incident cad edge
   + cad edge feature size distance to nonadjacent edge, i.e., om6 trailing edge
+  + tetgen poly format with voids
 
 + version 3 .meshb
 
