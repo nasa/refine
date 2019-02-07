@@ -113,10 +113,12 @@ int main(int argc, char *argv[]) {
         } else {
           RSS(ref_import_by_extension(&ref_grid, ref_mpi, optarg), "import");
         }
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
         break;
       case 'g':
         RNS(ref_grid, "input grid must be loaded before geom");
         RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), optarg), "ld e");
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load egads");
         break;
       case 'r':
         RNS(ref_grid, "input grid must be loaded before geom");
@@ -126,6 +128,7 @@ int main(int argc, char *argv[]) {
       case 'm':
         RSS(ref_part_metric(ref_grid_node(ref_grid), optarg), "part m");
         curvature_metric = REF_FALSE;
+        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load metric");
         break;
       case 'o':
         snprintf(output_project, 1004, "%s", optarg);
@@ -166,7 +169,6 @@ int main(int argc, char *argv[]) {
   }
 
   RNS(ref_grid, "input grid required");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read inputs");
 
   ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
   ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
@@ -180,6 +182,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom assoc");
   }
 
   if (ref_geom_curvature_unlimited(ref_grid_geom(ref_grid))) {
@@ -190,9 +193,11 @@ int main(int argc, char *argv[]) {
 
   if (curvature_metric) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature metric");
   } else {
     RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
     ref_grid_background(ref_grid) = background_grid;
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "cache metric");
   }
 
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid),
@@ -202,12 +207,12 @@ int main(int argc, char *argv[]) {
   RSS(ref_validation_cell_volume(ref_grid), "vol");
   RSS(ref_histogram_quality(ref_grid), "gram");
   RSS(ref_histogram_ratio(ref_grid), "gram");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
 
   if (curvature_constraint) {
-    if (ref_mpi_once(ref_mpi)) printf("constrain curvature\n");
     RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "crv const");
     RSS(ref_validation_cell_volume(ref_grid), "vol");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "crv const");
   }
   if (sanitize_metric) {
     if (ref_mpi_once(ref_mpi)) printf("sanitizing metric\n");
@@ -215,6 +220,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
   }
 
   RSS(ref_migrate_to_balance(ref_grid), "balance");
@@ -247,6 +253,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "balance");
     RSS(ref_grid_pack(ref_grid), "pack");
