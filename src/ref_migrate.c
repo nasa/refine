@@ -260,6 +260,7 @@ REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = 0;
 
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "single part");
   return REF_SUCCESS;
 }
 
@@ -418,6 +419,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "zoltan init");
 
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_migrate_2d_agglomeration(ref_migrate), "2d agglom");
@@ -473,6 +475,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
                            &export_global, &export_local, &export_proc,
                            &export_part),
        "Zoltan is angry");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "zoltan part");
 
   ref_malloc_init(migrate_part, ref_migrate_max(ref_node), REF_INT, REF_EMPTY);
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
@@ -563,6 +566,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   Zoltan_Destroy(&zz);
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
 }
@@ -596,6 +600,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis init");
 
   /* skip agglomeration stuff */
 
@@ -647,6 +652,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis graph");
+
   if (REF_FALSE) {
     FILE *f;
     char name[1024];
@@ -674,6 +681,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
       fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
     }
     fclose(f);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis dump");
   }
 
 #if PARMETIS_MAJOR_VERSION == 3
@@ -691,6 +699,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 #endif
 
     /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis part");
 
     ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
     n = 0;
@@ -718,6 +727,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_free(partition_size);
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
 }
@@ -1053,14 +1063,17 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_migrate_shufflin_node(ref_node), "send out nodes");
   RSS(ref_migrate_shufflin_geom(ref_grid), "geom");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle node");
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "cell");
   }
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle cell");
 
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_edg(ref_grid)), "edg");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_tri(ref_grid)), "tri");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_qua(ref_grid)), "qua");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle bound");
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
@@ -1080,6 +1093,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
   RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle ghost");
 
   return REF_SUCCESS;
 }
