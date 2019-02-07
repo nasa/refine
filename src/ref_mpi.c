@@ -199,13 +199,13 @@ REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message) {
   RSS(ref_mpi_min(ref_mpi, &before_barrier, &first, REF_DBL_TYPE), "min");
   RSS(ref_mpi_min(ref_mpi, &after_barrier, &last, REF_DBL_TYPE), "max");
   if (ref_mpi_once(ref_mpi)) {
-    printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n", elapsed, last,
+    printf("%9.4f: %10.6f (%10.6f) %6.2f%% %s\n", elapsed, last,
            first, (last > 0.0 ? first / last * 100.0 : 100.0), message);
     fflush(stdout);
   }
   RSS(ref_mpi_stopwatch_start(ref_mpi), "restart");
 #else
-  printf("%9.4f: %16.12f (%16.12f) %6.2f%% load balance %s\n",
+  printf("%9.4f: %10.6f (%10.6f) %6.2f%% %s\n",
          (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->first_time,
          (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
          (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
