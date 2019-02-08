@@ -123,9 +123,7 @@ int main(int argc, char *argv[]) {
     }
 
     RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
-    RSS(ref_migrate_new_part(import_grid), "create");
-
-    RSS(ref_migrate_shufflin(import_grid), "shufflin");
+    RSS(ref_migrate_to_balance(import_grid), "create");
 
     RSS(ref_grid_free(import_grid), "free");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
@@ -184,16 +182,14 @@ int main(int argc, char *argv[]) {
 
     ref_mpi_stopwatch_start(ref_mpi);
     RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "read");
+    ref_mpi_stopwatch_stop(ref_mpi, "read/part grid");
 
-    RSS(ref_migrate_new_part(import_grid), "new part");
-    ref_mpi_stopwatch_stop(ref_mpi, "new part");
-
-    RSS(ref_migrate_shufflin(import_grid), "shufflin");
-    ref_mpi_stopwatch_stop(ref_mpi, "shufflin");
+    RSS(ref_migrate_to_balance(import_grid), "new part");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance parts");
 
     RSS(ref_gather_tec_part(import_grid, "ref_migrate_test_world.tec"),
         "part_viz");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather ref_migrate_test_world.tec");
 
     RSS(ref_grid_free(import_grid), "free");
   }
