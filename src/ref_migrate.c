@@ -683,11 +683,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
 #if PARMETIS_MAJOR_VERSION == 3
-    REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL,
-                              adjwgt, wgtflag, numflag, ncon, nparts,
-                              tpwgts, ubvec, options, edgecut, part, &comm),
-         "ParMETIS 3 is not o.k.";
+  REIS(METIS_OK,
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                            wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
+                            options, edgecut, part, &comm),
+       "ParMETIS 3 is not o.k.");
 #else
   REIS(METIS_OK,
        ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
@@ -696,36 +696,36 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
        "ParMETIS 4 is not o.k.");
 #endif
 
-    /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis part");
+  /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis part");
 
-    ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-    n = 0;
-    each_ref_migrate_node(ref_migrate, node) {
+  ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  n = 0;
+  each_ref_migrate_node(ref_migrate, node) {
     node_part[node] = part[n];
     n++;
-    }
+  }
 
-    /* skip agglomeration stuff */
+  /* skip agglomeration stuff */
 
-    RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
+  RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
 
-    for (node = 0; node < ref_node_max(ref_node); node++)
-      ref_node_part(ref_node, node) = node_part[node];
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    ref_node_part(ref_node, node) = node_part[node];
 
-    ref_free(node_part);
-    ref_free(part);
-    ref_free(ubvec);
-    ref_free(tpwgts);
-    ref_free(adjwgt);
-    ref_free(xadjncy);
-    ref_free(xadj);
-    ref_free(implied);
-    ref_free(vtxdist);
-    ref_free(partition_size);
+  ref_free(node_part);
+  ref_free(part);
+  ref_free(ubvec);
+  ref_free(tpwgts);
+  ref_free(adjwgt);
+  ref_free(xadjncy);
+  ref_free(xadj);
+  ref_free(implied);
+  ref_free(vtxdist);
+  ref_free(partition_size);
 
-    RSS(ref_migrate_free(ref_migrate), "free migrate");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
+  RSS(ref_migrate_free(ref_migrate), "free migrate");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
 }
