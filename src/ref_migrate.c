@@ -239,21 +239,7 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
-  RSS(ref_migrate_new_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
-  RSS(ref_migrate_single_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
 
@@ -385,7 +371,7 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -733,7 +719,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 }
 #endif
 
-REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
   RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
 #else
@@ -962,7 +948,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1050,7 +1036,7 @@ REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1097,3 +1083,18 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
+  RSS(ref_migrate_new_part(ref_grid), "new part");
+  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
+  RSS(ref_migrate_single_part(ref_grid), "new part");
+  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
+
+  return REF_SUCCESS;
+}
+
