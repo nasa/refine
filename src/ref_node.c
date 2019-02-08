@@ -636,6 +636,12 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node) {
+  RSS(ref_node_localize_ghost_int(ref_node, (ref_node->age)),
+      "localize ghost age");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_local(REF_NODE ref_node, REF_INT global, REF_INT *local) {
   REF_INT location;
 
