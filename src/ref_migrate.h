@@ -40,6 +40,7 @@ struct REF_MIGRATE_STRUCT {
   REF_INT *global;
   REF_DBL *xyz;
   REF_DBL *weight;
+  REF_INT *age;
   REF_INT method;
 };
 
@@ -61,6 +62,7 @@ struct REF_MIGRATE_STRUCT {
 #define ref_migrate_xyz(ref_migrate, ixyz, node) \
   ((ref_migrate)->xyz[(ixyz) + 3 * (node)])
 #define ref_migrate_weight(ref_migrate, node) ((ref_migrate)->weight[(node)])
+#define ref_migrate_age(ref_migrate, node) ((ref_migrate)->age[(node)])
 
 #define each_ref_migrate_node(ref_migrate, node)                    \
   for ((node) = 0; (node) < ref_migrate_max(ref_migrate); (node)++) \

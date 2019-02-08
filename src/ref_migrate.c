@@ -76,9 +76,10 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
                   REF_EMPTY);
   ref_malloc(ref_migrate->xyz, 3 * ref_migrate_max(ref_migrate), REF_DBL);
   ref_malloc(ref_migrate->weight, ref_migrate_max(ref_migrate), REF_DBL);
+  ref_malloc(ref_migrate->age, ref_migrate_max(ref_migrate), REF_INT);
 
   each_ref_node_valid_node(ref_node, node) {
-    if (ref_mpi_rank(ref_node_mpi(ref_node)) == ref_node_part(ref_node, node)) {
+    if (ref_node_owned(ref_node, node)) {
       ref_migrate_global(ref_migrate, node) = ref_node_global(ref_node, node);
       RSS(ref_adj_add(ref_migrate_parent_global(ref_migrate), node,
                       ref_node_global(ref_node, node)),
@@ -90,8 +91,11 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
       ref_migrate_xyz(ref_migrate, 1, node) = ref_node_xyz(ref_node, 1, node);
       ref_migrate_xyz(ref_migrate, 2, node) = ref_node_xyz(ref_node, 2, node);
       ref_migrate_weight(ref_migrate, node) = 1.0;
+      ref_migrate_age(ref_migrate, node) = ref_node_age(ref_node, node);
     }
   }
+  RSS(ref_node_ghost_int(ref_node, (ref_migrate->age)),
+      "ghost age for edge weights");
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
@@ -115,13 +119,15 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
 REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
   if (NULL == (void *)ref_migrate) return REF_NULL;
 
+  ref_free(ref_migrate->age);
+  ref_free(ref_migrate->weight);
+  ref_free(ref_migrate->xyz);
+  ref_free(ref_migrate->global);
+
   RSS(ref_adj_free(ref_migrate_conn(ref_migrate)), "free adj");
   RSS(ref_adj_free(ref_migrate_parent_part(ref_migrate)), "free adj");
   RSS(ref_adj_free(ref_migrate_parent_global(ref_migrate)), "free adj");
 
-  ref_free(ref_migrate->global);
-  ref_free(ref_migrate->xyz);
-  ref_free(ref_migrate->weight);
   ref_free(ref_migrate);
 
   return REF_SUCCESS;
@@ -187,6 +193,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
 
   ref_migrate_xyz(ref_migrate, 1, keep) = 0.5;
   ref_migrate_weight(ref_migrate, keep) = 2.0;
+  /* collect age in general case */
   RSS(ref_adj_add(ref_migrate_parent_global(ref_migrate), keep,
                   ref_node_global(ref_node, lose)),
       "add");
@@ -369,8 +376,8 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
                                   ref) {
     conn_global[degree] = ref_node_global(ref_node, ref);
     conn_part[degree] = ref_node_part(ref_node, ref);
-    weight[degree] =
-        (float)(ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1);
+    weight[degree] = (float)ref_migrate_age(ref_migrate, node) +
+                     (float)ref_migrate_age(ref_migrate, ref) + 1.0;
     degree++;
   }
 }
@@ -631,8 +638,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                     ref) {
       xadjncy[xadj[n] + degree] = implied[ref];
-      adjwgt[xadj[n] + degree] =
-          ref_node_age(ref_node, node) + ref_node_age(ref_node, ref) + 1;
+      adjwgt[xadj[n] + degree] = ref_migrate_age(ref_migrate, node) +
+                                 ref_migrate_age(ref_migrate, ref) + 1;
       degree++;
     }
     n++;
@@ -1102,4 +1109,3 @@ REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-
