@@ -16,6 +16,7 @@
  * permissions and limitations under the License.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -582,13 +583,14 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_INT ncon[] = {1};
   PARM_INT nparts[1];
   PARM_INT edgecut[1];
-  PARM_INT options[] = {1, 111, 42};
+  PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
   PARM_INT *part;
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
 
   REF_INT node, n, proc, *partition_size, *implied, shift, degree;
   REF_INT item, ref;
   REF_INT *node_part;
+  REF_INT min_part, max_part, try_for_valid_part;
 
   nparts[0] = ref_mpi_n(ref_mpi);
 
@@ -682,22 +684,57 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_mpi_stopwatch_stop(ref_mpi, "parmetis dump");
   }
 
+  min_part = 0;
+  for (try_for_valid_part = 0; try_for_valid_part < 10 && 0 == min_part;
+       try_for_valid_part++) {
+    if (min_part > 0) break;
+    each_ref_mpi_part(ref_mpi, proc) {
+      ubvec[proc] = 1.0 + 0.01 * pow(2, try_for_valid_part);
+    }
+
 #if PARMETIS_MAJOR_VERSION == 3
-  REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                            wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
-                            options, edgecut, part, &comm),
-       "ParMETIS 3 is not o.k.");
+    REIS(METIS_OK,
+         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
+                              options, edgecut, part, &comm),
+         "ParMETIS 3 is not o.k.");
 #else
-  REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                            wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
-                            options, edgecut, part, &comm),
-       "ParMETIS 4 is not o.k.");
+    REIS(METIS_OK,
+         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
+                              options, edgecut, part, &comm),
+         "ParMETIS 4 is not o.k.");
 #endif
 
-  /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
-  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+    each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
+    n = 0;
+    each_ref_migrate_node(ref_migrate, node) {
+      partition_size[part[n]] += 1;
+      n++;
+    }
+    RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi),
+                       REF_INT_TYPE),
+        "allsum");
+
+    min_part = ref_node_n_global(ref_node);
+    max_part = 0;
+    each_ref_mpi_part(ref_mpi, proc) {
+      min_part = MIN(min_part, partition_size[proc]);
+      max_part = MAX(max_part, partition_size[proc]);
+    }
+
+    if (ref_mpi_once(ref_mpi)) {
+      printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
+             (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+                 (REF_DBL)ref_mpi_n(ref_mpi),
+             ubvec[0], ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi),
+             min_part, max_part);
+    }
+
+    /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
+    ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+  }
+  RAS(min_part > 0, "zero min part after multiple tries");
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   n = 0;
@@ -709,22 +746,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   /* skip agglomeration stuff */
 
   RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
-
-  each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
-  each_ref_migrate_node(ref_migrate, node) {
-    partition_size[node_part[node]] += 1;
-  }
-  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
-      "allsum");
-  if (ref_mpi_once(ref_mpi)) {
-    each_ref_mpi_part(ref_mpi, proc) {
-      printf("%6d: %6.2f %d\n", proc,
-             100.0 * (REF_DBL)partition_size[proc] /
-                 (REF_DBL)ref_node_n_global(ref_node) *
-                 (REF_DBL)ref_mpi_n(ref_mpi),
-             partition_size[proc]);
-    }
-  }
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = node_part[node];
