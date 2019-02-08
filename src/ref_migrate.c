@@ -598,7 +598,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis init");
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis init");
 
   /* skip agglomeration stuff */
 
@@ -650,7 +650,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis graph");
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
   if (REF_FALSE) {
     FILE *f;
@@ -679,7 +679,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
       fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
     }
     fclose(f);
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis dump");
+    ref_mpi_stopwatch_stop(ref_mpi, "parmetis dump");
   }
 
 #if PARMETIS_MAJOR_VERSION == 3
@@ -697,7 +697,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 #endif
 
   /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "parmetis part");
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   n = 0;
@@ -709,6 +709,22 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   /* skip agglomeration stuff */
 
   RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
+
+  each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
+  each_ref_migrate_node(ref_migrate, node) {
+    partition_size[node_part[node]] += 1;
+  }
+  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
+      "allsum");
+  if (ref_mpi_once(ref_mpi)) {
+    each_ref_mpi_part(ref_mpi, proc) {
+      printf("%6d: %6.2f %d\n", proc,
+             100.0 * (REF_DBL)partition_size[proc] /
+                 (REF_DBL)ref_node_n_global(ref_node) *
+                 (REF_DBL)ref_mpi_n(ref_mpi),
+             partition_size[proc]);
+    }
+  }
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = node_part[node];
