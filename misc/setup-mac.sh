@@ -4,14 +4,18 @@ set -x
 
 ./bootstrap
 
+gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
+
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-6gpgaz4xpcw73nqwhup5wkq45m5xehb2"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE-6.8.1"
-gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
+
+# production spack packages
 parmetis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/parmetis-4.0.3-xasrm372i7dgoygsou7f2m7pqppyubmd"
 metis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/metis-5.1.0-nugla3v2bdfmvp5ajz67ypecdymm6wmv"
-
-# set DYLD_LIBRARY_PATH for libzoltan.dylib
+# debug assert build
+parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/build/Darwin-x86_64"
+metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/build/Darwin-x86_64"
 
 mkdir -p strict
 ( cd strict && \
