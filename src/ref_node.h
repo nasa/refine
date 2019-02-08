@@ -134,6 +134,7 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o);
 REF_STATUS ref_node_ghost_real(REF_NODE ref_node);
 REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar);
 REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector, REF_INT ldim);
+REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar);
 
 REF_STATUS ref_node_edge_twod(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                               REF_BOOL *twod);
