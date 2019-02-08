@@ -268,31 +268,40 @@ int main(int argc, char *argv[]) {
   if (strcmp(output_project, "") != 0) {
     if (!ref_grid_twod(ref_grid)) {
       snprintf(output_filename, 1024, "%s.meshb", output_project);
+      if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
       RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather meshb");
     } else {
       /* single core, not mixed element, 2D */
       if (!ref_mpi_para(ref_mpi) && 0 == ref_cell_n(ref_grid_hex(ref_grid))) {
         snprintf(output_filename, 1024, "%s.meshb", output_project);
+        if (ref_mpi_once(ref_mpi))
+          printf("export 2D meshb %s\n", output_filename);
         RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
         ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather 2D meshb");
       }
     }
     snprintf(output_filename, 1024, "%s.b8.ugrid", output_project);
+    if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "b8.ugrid");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "gather b8.ugrid");
 
     snprintf(output_filename, 1024, "%s-final-metric.solb", output_project);
+    if (ref_mpi_once(ref_mpi))
+      printf("write/gather metric %s\n", output_filename);
     RSS(ref_gather_metric(ref_grid, output_filename), "met met");
     if (!ref_mpi_para(ref_mpi)) {
       snprintf(output_filename, 1024, "%s_surf.tec", output_project);
+      if (ref_mpi_once(ref_mpi)) printf("export surf %s\n", output_filename);
       RSS(ref_export_tec_surf(ref_grid, output_filename), "surf tec");
       snprintf(output_filename, 1024, "%s_geom.tec", output_project);
+      if (ref_mpi_once(ref_mpi)) printf("export geom %s\n", output_filename);
       RSS(ref_geom_tec(ref_grid, output_filename), "geom tec");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tec");
     }
     if (debug_verbose && !ref_grid_twod(ref_grid) && !ref_mpi_para(ref_mpi)) {
-      snprintf(output_filename, 1024, "%s_metric_ellipse.tec", output_project);
+      if (ref_mpi_once(ref_mpi))
+        printf("export tec metric ellipse %s\n", output_project);
       RSS(ref_export_tec_metric_ellipse(ref_grid, output_project), "al");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "ellipse");
     }
@@ -302,8 +311,10 @@ int main(int argc, char *argv[]) {
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
+        if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", argv[opt + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
       } else {
+        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
       }
     }
@@ -311,6 +322,8 @@ int main(int argc, char *argv[]) {
 
   if (NULL != background_grid) RSS(ref_grid_free(background_grid), "free");
   if (NULL != ref_grid) RSS(ref_grid_free(ref_grid), "free");
+
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "done.");
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
