@@ -178,6 +178,13 @@ int main(int argc, char *argv[]) {
                        REF_GEOM_FACE, &ngeom),
       "count ngeom");
   if (ngeom > 0) {
+    if (!ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      if (ref_mpi_once(ref_mpi)) {
+        printf("geometry association found, but EGADS not loaded.\n");
+        printf("please provide the '-g project.egads' argument.\n");
+      }
+      THROW("geometry association without EGADS");
+    }
     curvature_constraint = REF_TRUE;
     RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
