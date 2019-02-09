@@ -687,10 +687,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   min_part = 0;
   for (try_for_valid_part = 0; try_for_valid_part < 10 && 0 == min_part;
        try_for_valid_part++) {
-    if (min_part > 0) break;
     each_ref_mpi_part(ref_mpi, proc) {
       ubvec[proc] = 1.0 + 0.01 * pow(2, try_for_valid_part);
+      ubvec[proc] = 1.01;
     }
+    options[2] += try_for_valid_part;
 
 #if PARMETIS_MAJOR_VERSION == 3
     REIS(METIS_OK,
@@ -724,6 +725,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     }
 
     if (ref_mpi_once(ref_mpi)) {
+      if (0<try_for_valid_part) printf("try %d ");
       printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
              (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
                  (REF_DBL)ref_mpi_n(ref_mpi),
