@@ -590,7 +590,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT node, n, proc, *partition_size, *implied, shift, degree;
   REF_INT item, ref;
   REF_INT *node_part;
-  REF_INT min_part, max_part, try_for_valid_part;
+  REF_INT min_part, max_part;
 
   nparts = ref_mpi_n(ref_mpi);
 
@@ -647,7 +647,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  ref_malloc_init(tpwgts, ncon*ref_mpi_n(ref_mpi), PARM_REAL,
+  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
                   1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
@@ -684,54 +684,46 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_mpi_stopwatch_stop(ref_mpi, "parmetis dump");
   }
 
-  min_part = 0;
-  for (try_for_valid_part = 0; try_for_valid_part < 1 && 0 == min_part;
-       try_for_valid_part++) {
-    options[2] += try_for_valid_part;
-
 #if PARMETIS_MAJOR_VERSION == 3
-    REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                              &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
-                              options, &edgecut, part, &comm),
-         "ParMETIS 3 is not o.k.");
+  REIS(METIS_OK,
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                            options, &edgecut, part, &comm),
+       "ParMETIS 3 is not o.k.");
 #else
-    REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                              &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
-                              options, &edgecut, part, &comm),
-         "ParMETIS 4 is not o.k.");
+  REIS(METIS_OK,
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
+                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                            options, &edgecut, part, &comm),
+       "ParMETIS 4 is not o.k.");
 #endif
 
-    each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
-    n = 0;
-    each_ref_migrate_node(ref_migrate, node) {
-      partition_size[part[n]] += 1;
-      n++;
-    }
-    RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi),
-                       REF_INT_TYPE),
-        "allsum");
-
-    min_part = ref_node_n_global(ref_node);
-    max_part = 0;
-    each_ref_mpi_part(ref_mpi, proc) {
-      min_part = MIN(min_part, partition_size[proc]);
-      max_part = MAX(max_part, partition_size[proc]);
-    }
-
-    if (ref_mpi_once(ref_mpi)) {
-      if (0 < try_for_valid_part) printf("try %d ", try_for_valid_part);
-      printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
-             (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-                 (REF_DBL)ref_mpi_n(ref_mpi),
-             ubvec[0], ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi),
-             min_part, max_part);
-    }
-
-    /* printf("%d: edgecut= %d\n",ref_mpi_rank(ref_mpi),edgecut[0]); */
-    ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+  each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
+  n = 0;
+  each_ref_migrate_node(ref_migrate, node) {
+    partition_size[part[n]] += 1;
+    n++;
   }
+  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
+      "allsum");
+
+  min_part = ref_node_n_global(ref_node);
+  max_part = 0;
+  each_ref_mpi_part(ref_mpi, proc) {
+    min_part = MIN(min_part, partition_size[proc]);
+    max_part = MAX(max_part, partition_size[proc]);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
+           (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+               (REF_DBL)ref_mpi_n(ref_mpi),
+           ubvec[0], ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
+           max_part);
+  }
+
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+
   RAS(min_part > 0, "zero min part after multiple tries");
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
