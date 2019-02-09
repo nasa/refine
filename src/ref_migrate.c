@@ -725,7 +725,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     }
 
     if (ref_mpi_once(ref_mpi)) {
-      if (0<try_for_valid_part) printf("try %d ");
+      if (0<try_for_valid_part) printf("try %d ", try_for_valid_part);
       printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
              (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
                  (REF_DBL)ref_mpi_n(ref_mpi),
