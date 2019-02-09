@@ -648,7 +648,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   ref_malloc_init(tpwgts, ncon*ref_mpi_n(ref_mpi), PARM_REAL,
-                  1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
+                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
