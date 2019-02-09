@@ -578,11 +578,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_INT *vtxdist;
   PARM_INT *xadj, *xadjncy, *adjwgt;
   PARM_REAL *tpwgts, *ubvec;
-  PARM_INT wgtflag[] = {1};
-  PARM_INT numflag[] = {0};
-  PARM_INT ncon[] = {2};
-  PARM_INT nparts[1];
-  PARM_INT edgecut[1];
+  PARM_INT wgtflag = 1;
+  PARM_INT numflag = 0;
+  PARM_INT ncon = 2;
+  PARM_INT nparts;
+  PARM_INT edgecut;
   PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
   PARM_INT *part;
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
@@ -592,7 +592,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT *node_part;
   REF_INT min_part, max_part, try_for_valid_part;
 
-  nparts[0] = ref_mpi_n(ref_mpi);
+  nparts = ref_mpi_n(ref_mpi);
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
@@ -647,9 +647,9 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  ref_malloc_init(tpwgts, ncon[0]*ref_mpi_n(ref_mpi), PARM_REAL,
+  ref_malloc_init(tpwgts, ncon*ref_mpi_n(ref_mpi), PARM_REAL,
                   1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
-  ref_malloc_init(ubvec, ncon[0], PARM_REAL, 1.01);
+  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
@@ -677,7 +677,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
       fprintf(f, "%d: tpwgts[%d] = %f\n", ref_mpi_rank(ref_mpi), i, tpwgts[i]);
     }
-    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
+    for (i = 0; i < ncon; i++) {
       fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
     }
     fclose(f);
@@ -692,14 +692,14 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 #if PARMETIS_MAJOR_VERSION == 3
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
-                              options, edgecut, part, &comm),
+                              &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                              options, &edgecut, part, &comm),
          "ParMETIS 3 is not o.k.");
 #else
     REIS(METIS_OK,
          ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                              wgtflag, numflag, ncon, nparts, tpwgts, ubvec,
-                              options, edgecut, part, &comm),
+                              &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                              options, &edgecut, part, &comm),
          "ParMETIS 4 is not o.k.");
 #endif
 
