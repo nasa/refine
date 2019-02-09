@@ -580,7 +580,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT wgtflag[] = {1};
   PARM_INT numflag[] = {0};
-  PARM_INT ncon[] = {1};
+  PARM_INT ncon[] = {2};
   PARM_INT nparts[1];
   PARM_INT edgecut[1];
   PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
@@ -647,9 +647,9 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  ref_malloc_init(tpwgts, ref_mpi_n(ref_mpi), PARM_REAL,
+  ref_malloc_init(tpwgts, ncon[0]*ref_mpi_n(ref_mpi), PARM_REAL,
                   1.0 / (REF_DBL)ref_mpi_n(ref_mpi));
-  ref_malloc_init(ubvec, ref_mpi_n(ref_mpi), PARM_REAL, 1.01);
+  ref_malloc_init(ubvec, ncon[0], PARM_REAL, 1.01);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
@@ -687,10 +687,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   min_part = 0;
   for (try_for_valid_part = 0; try_for_valid_part < 1 && 0 == min_part;
        try_for_valid_part++) {
-    each_ref_mpi_part(ref_mpi, proc) {
-      ubvec[proc] = 1.0 + 0.01 * pow(2, try_for_valid_part);
-      ubvec[proc] = 1.01;
-    }
     options[2] += try_for_valid_part;
 
 #if PARMETIS_MAJOR_VERSION == 3
