@@ -405,9 +405,10 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
       if (!visible) {
         RSS(ref_cavity_enlarge_face(ref_cavity, face), "enlarge face");
         if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) {
-          if (ref_cavity_debug(ref_cavity))
+          if (ref_cavity_debug(ref_cavity)) {
             RSS(ref_cavity_tec(ref_cavity, "enlarge.tec"),
                 "tec for enlarge_face fail");
+          }
           return REF_SUCCESS;
         }
         keep_growing = REF_TRUE;
@@ -463,14 +464,14 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity) {
 REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT face_node, face_nodes[4];
+  REF_INT face_node, face_nodes[4], node;
   REF_BOOL have_cell0, have_cell1;
   REF_INT tet0, tet1;
 
   /* make sure all face nodes are owned */
   each_ref_cavity_face_node(ref_cavity, face_node) {
-    if (!ref_node_owned(ref_node,
-                        ref_cavity_f2n(ref_cavity, face_node, face))) {
+    node = ref_cavity_f2n(ref_cavity, face_node, face);
+    if (!ref_node_owned(ref_node, node)) {
       ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
       return REF_SUCCESS;
     }
