@@ -397,9 +397,9 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
     each_ref_cavity_valid_face(ref_cavity, face) {
       /* skip a face attached to node */
       if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
-          node == ref_cavity_f2n(ref_cavity, 1, face))
+          node == ref_cavity_f2n(ref_cavity, 1, face) ||
+          node == ref_cavity_f2n(ref_cavity, 2, face))
         continue;
-      if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
 
       RSS(ref_cavity_visible(ref_cavity, face, &visible), "free");
       if (!visible) {
