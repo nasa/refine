@@ -571,6 +571,51 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                        PARM_INT *xadj, PARM_INT *xadjncy) {
+  REF_INT *count, *first, *off;
+  REF_INT i, n, proc, node0, node1;
+  n = vtxdist[ref_mpi_n(ref_mpi)];
+  ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
+  ref_malloc_init(first, n + 1, REF_INT, REF_EMPTY);
+  each_ref_mpi_part(ref_mpi, proc) {
+    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+    printf("(%d:vcount[%d]=%d)", ref_mpi_rank(ref_mpi), proc, count[proc]);
+  }
+  printf("\n");
+  RSS(ref_mpi_allgatherv(ref_mpi, &(xadj[1]), count, &(first[1]), REF_INT_TYPE),
+      "gather adj");
+  first[0] = 0;
+  each_ref_mpi_part(ref_mpi, proc) {
+    for (i = vtxdist[proc] + 1; i <= vtxdist[proc + 1]; i++) {
+      first[i] += first[vtxdist[proc]];
+    }
+  }
+  ref_malloc_init(off, first[n], REF_INT, REF_EMPTY);
+  each_ref_mpi_part(ref_mpi, proc) {
+    count[proc] = first[vtxdist[proc + 1]] - first[vtxdist[proc]];
+    printf("(%d:acount[%d]=%d)", ref_mpi_rank(ref_mpi), proc, count[proc]);
+  }
+  printf("\n");
+  RSS(ref_mpi_allgatherv(ref_mpi, xadjncy, count, off, REF_INT_TYPE),
+      "gather adj");
+
+  for (node0 = 0; node0 < n; node0++) {
+    for (i = first[node0]; i < first[node0 + 1]; i++) {
+      node1 = off[i];
+      if (node0 == node1) {
+        printf("edge %d %d\n", node0, node1);
+        THROW("diag in off");
+      }
+    }
+  }
+
+  ref_free(off);
+  ref_free(first);
+  ref_free(count);
+
+  return REF_SUCCESS;
+}
 REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -591,6 +636,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT item, ref;
   REF_INT *node_part;
   REF_INT min_part, max_part;
+  REF_BOOL check_inputs = REF_FALSE;
 
   nparts = ref_mpi_n(ref_mpi);
 
@@ -647,6 +693,10 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
       degree++;
     }
     n++;
+  }
+
+  if (check_inputs) {
+    RSS(ref_migrate_parmetis_checker(ref_mpi, vtxdist, xadj, xadjncy), "check");
   }
 
   ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
