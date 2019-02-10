@@ -626,6 +626,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   each_ref_migrate_node(ref_migrate, node) {
     implied[node] = shift + n;
     RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
+    RAS(0 < degree, "hanging node island, zero degree");
     xadj[n + 1] = xadj[n] + degree;
     n++;
   }
