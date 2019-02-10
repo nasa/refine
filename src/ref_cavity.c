@@ -644,6 +644,9 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
   REF_INT face, face_node, node;
 
   *local = REF_FALSE;
+  if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+    return REF_SUCCESS;
+  }
 
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
