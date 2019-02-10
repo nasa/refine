@@ -317,8 +317,9 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   each_ref_cavity_valid_face(ref_cavity, face) {
-    each_ref_cavity_face_node(ref_cavity, node) nodes[node] =
-        ref_cavity_f2n(ref_cavity, node, face);
+    each_ref_cavity_face_node(ref_cavity, node) {
+      nodes[node] = ref_cavity_f2n(ref_cavity, node, face);
+    }
     if ((node0 == nodes[1] && node1 == nodes[2]) ||
         (node1 == nodes[1] && node0 == nodes[2])) {
       ref_cavity_f2n(ref_cavity, 1, face) = new_node;
@@ -560,8 +561,9 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
     RSS(ref_dict_store(face_dict, cell, 0), "store");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    each_ref_cell_cell_node(ref_cell, cell_node)
-        RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+    }
   }
 
   fprintf(
@@ -594,10 +596,11 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   RSS(ref_dict_store(node_dict, node, 0), "store");
   each_ref_cavity_valid_face(ref_cavity, face) {
     RSS(ref_dict_store(face_dict, face, 0), "store");
-    each_ref_cavity_face_node(ref_cavity, face_node)
-        RSS(ref_dict_store(node_dict,
-                           ref_cavity_f2n(ref_cavity, face_node, face), 0),
-            "store");
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      RSS(ref_dict_store(node_dict, ref_cavity_f2n(ref_cavity, face_node, face),
+                         0),
+          "store");
+    }
   }
 
   fprintf(
@@ -637,28 +640,29 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT face, face_node;
+  REF_INT face, face_node, node;
 
   *local = REF_FALSE;
 
   each_ref_list_item(ref_cavity_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    each_ref_cell_cell_node(
-        ref_cell, cell_node) if (!ref_node_owned(ref_node, nodes[cell_node])) {
-      *local = REF_FALSE;
-      return REF_SUCCESS;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      if (!ref_node_owned(ref_node, nodes[cell_node])) {
+        *local = REF_FALSE;
+        return REF_SUCCESS;
+      }
     }
   }
 
   each_ref_cavity_valid_face(ref_cavity, face) {
-    each_ref_cavity_face_node(
-        ref_cavity,
-        face_node) if (!ref_node_owned(ref_node,
-                                       ref_cavity_f2n(ref_cavity, face_node,
-                                                      face))) {
-      *local = REF_FALSE;
-      return REF_SUCCESS;
+    ; /* semi to force format */
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      node = ref_cavity_f2n(ref_cavity, face_node, face);
+      if (!ref_node_owned(ref_node, node)) {
+        *local = REF_FALSE;
+        return REF_SUCCESS;
+      }
     }
   }
 
@@ -703,13 +707,15 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   each_ref_cavity_valid_face(ref_cavity, face) {
     skip = REF_FALSE;
     /* skip a collapsed triangle that in on the boundary of cavity */
-    each_ref_cavity_face_node(
-        ref_cavity,
-        face_node) if (node == ref_cavity_f2n(ref_cavity, face_node, face))
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      if (node == ref_cavity_f2n(ref_cavity, face_node, face)) {
         skip = REF_TRUE;
+      }
+    }
     if (skip) continue;
-    each_ref_cavity_face_node(ref_cavity, face_node) nodes[face_node] =
-        ref_cavity_f2n(ref_cavity, face_node, face);
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      nodes[face_node] = ref_cavity_f2n(ref_cavity, face_node, face);
+    }
     nodes[3] = node;
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
     n++;
