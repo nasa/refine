@@ -574,15 +574,13 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                         PARM_INT *xadj, PARM_INT *xadjncy) {
   REF_INT *count, *first, *off;
-  REF_INT i, n, proc, node0, node1;
+  REF_INT i, n, proc, node0, node1, j, hits;
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
   ref_malloc_init(first, n + 1, REF_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = vtxdist[proc + 1] - vtxdist[proc];
-    printf("(%d:vcount[%d]=%d)", ref_mpi_rank(ref_mpi), proc, count[proc]);
   }
-  printf("\n");
   RSS(ref_mpi_allgatherv(ref_mpi, &(xadj[1]), count, &(first[1]), REF_INT_TYPE),
       "gather adj");
   first[0] = 0;
@@ -594,9 +592,7 @@ REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_malloc_init(off, first[n], REF_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = first[vtxdist[proc + 1]] - first[vtxdist[proc]];
-    printf("(%d:acount[%d]=%d)", ref_mpi_rank(ref_mpi), proc, count[proc]);
   }
-  printf("\n");
   RSS(ref_mpi_allgatherv(ref_mpi, xadjncy, count, off, REF_INT_TYPE),
       "gather adj");
 
@@ -607,6 +603,13 @@ REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
         printf("edge %d %d\n", node0, node1);
         THROW("diag in off");
       }
+      hits = 0;
+      for (j = first[node1]; j < first[node1 + 1]; j++) {
+        if (node0 == off[j]) {
+          hits++;
+        }
+      }
+      REIS(1, hits, "expect edge twice");
     }
   }
 
