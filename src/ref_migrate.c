@@ -576,11 +576,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
   PARM_INT *vtxdist;
-  PARM_INT *xadj, *xadjncy, *adjwgt;
+  PARM_INT *xadj, *xadjncy, *adjwgt, *vwgt;
   PARM_REAL *tpwgts, *ubvec;
-  PARM_INT wgtflag = 1;
+  PARM_INT wgtflag = 3;
   PARM_INT numflag = 0;
-  PARM_INT ncon = 2;
+  PARM_INT ncon = 1;
   PARM_INT nparts;
   PARM_INT edgecut;
   PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
@@ -633,6 +633,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   ref_malloc(xadjncy, xadj[n], PARM_INT);
   ref_malloc(adjwgt, xadj[n], PARM_INT);
+  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
@@ -686,15 +687,15 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
 #if PARMETIS_MAJOR_VERSION == 3
   REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
-                            options, &edgecut, part, &comm),
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
+                            &numflag, &ncon, &nparts, tpwgts, ubvec, options,
+                            &edgecut, part, &comm),
        "ParMETIS 3 is not o.k.");
 #else
   REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, (PARM_INT *)NULL, adjwgt,
-                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
-                            options, &edgecut, part, &comm),
+       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
+                            &numflag, &ncon, &nparts, tpwgts, ubvec, options,
+                            &edgecut, part, &comm),
        "ParMETIS 4 is not o.k.");
 #endif
 
@@ -744,6 +745,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_free(part);
   ref_free(ubvec);
   ref_free(tpwgts);
+  ref_free(vwgt);
   ref_free(adjwgt);
   ref_free(xadjncy);
   ref_free(xadj);
