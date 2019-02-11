@@ -572,40 +572,42 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
 REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                        PARM_INT *xadj, PARM_INT *xadjncy) {
-  REF_INT *count, *first, *off;
+                                        PARM_INT *xadjdist,
+                                        PARM_INT *xadjncydist) {
+  PARM_INT *count, *xadj, *xadjncy;
   REF_INT i, n, proc, node0, node1, j, hits;
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
-  ref_malloc_init(first, n + 1, REF_INT, REF_EMPTY);
+  ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = vtxdist[proc + 1] - vtxdist[proc];
   }
-  RSS(ref_mpi_allgatherv(ref_mpi, &(xadj[1]), count, &(first[1]), REF_INT_TYPE),
+  RSS(ref_mpi_allgatherv(ref_mpi, &(xadjdist[1]), count, &(xadj[1]),
+                         REF_INT_TYPE),
       "gather adj");
-  first[0] = 0;
+  xadj[0] = 0;
   each_ref_mpi_part(ref_mpi, proc) {
     for (i = vtxdist[proc] + 1; i <= vtxdist[proc + 1]; i++) {
-      first[i] += first[vtxdist[proc]];
+      xadj[i] += xadj[vtxdist[proc]];
     }
   }
-  ref_malloc_init(off, first[n], REF_INT, REF_EMPTY);
+  ref_malloc_init(xadjncy, xadj[n], REF_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = first[vtxdist[proc + 1]] - first[vtxdist[proc]];
+    count[proc] = xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]];
   }
-  RSS(ref_mpi_allgatherv(ref_mpi, xadjncy, count, off, REF_INT_TYPE),
+  RSS(ref_mpi_allgatherv(ref_mpi, xadjncydist, count, xadjncy, REF_INT_TYPE),
       "gather adj");
 
   for (node0 = 0; node0 < n; node0++) {
-    for (i = first[node0]; i < first[node0 + 1]; i++) {
-      node1 = off[i];
+    for (i = xadj[node0]; i < xadj[node0 + 1]; i++) {
+      node1 = xadjncy[i];
       if (node0 == node1) {
         printf("edge %d %d\n", node0, node1);
-        THROW("diag in off");
+        THROW("diag in xadjncy");
       }
       hits = 0;
-      for (j = first[node1]; j < first[node1 + 1]; j++) {
-        if (node0 == off[j]) {
+      for (j = xadj[node1]; j < xadj[node1 + 1]; j++) {
+        if (node0 == xadjncy[j]) {
           hits++;
         }
       }
@@ -613,8 +615,8 @@ REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
     }
   }
 
-  ref_free(off);
-  ref_free(first);
+  ref_free(xadjncy);
+  ref_free(xadj);
   ref_free(count);
 
   return REF_SUCCESS;
