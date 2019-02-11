@@ -46,7 +46,7 @@ chmod g+x ${MODULE_DEST}/bin/*_test
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
 #%Module#
-proc ModulesHelp { } { puts stderr "$PACKAGE $VERSION $HEFSS" }
+proc ModulesHelp { } { puts stderr "$PACKAGE $VERSION" }
 
 set sys      [uname sysname]
 set modname  [module-info name]
