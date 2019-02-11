@@ -716,7 +716,8 @@ REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
 }
 REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                        PARM_INT *xadjdist, PARM_INT *adjncydist,
-                                       PARM_INT *adjwgtdist) {
+                                       PARM_INT *adjwgtdist,
+                                       PARM_INT *partdist) {
   REF_INT newproc, ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
   REF_INT nsend, nrecv, *source, *newdeg;
@@ -799,6 +800,37 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   RSS(ref_mpi_join_comm(split_mpi), "join comm");
   RSS(ref_mpi_free(split_mpi), "free split comm");
 
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) { /* recv */
+    /* scatter part */
+    nsend = 0;
+    first = 0;
+    if (ref_mpi_rank(ref_mpi) < newproc) { /* sending */
+      n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
+      n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
+      nsend = MAX(0, n1 - n0);
+      if (nsend > 0) {
+        first = n0 - vtx[ref_mpi_rank(ref_mpi)];
+      } else {
+        first = 0;
+      }
+    }
+    if (nsend > 0) {
+      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(part[first]), &nrecv,
+                            &source, (void **)&newdeg, REF_INT_TYPE),
+          "concat part with send");
+    } else {
+      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, NULL, &nrecv,
+                            &source, (void **)&newdeg, REF_INT_TYPE),
+          "concat part no (NULL) send");
+    }
+    if (ref_mpi_rank(ref_mpi) == proc) {
+      REIS(nold, nrecv, "newdeg xadj size mismatch");
+      for (i = 0; i < nrecv; i++) partdist[i] = newdeg[i];
+    }
+    ref_free(source);
+    ref_free(newdeg);
+  }
+
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
 
   ref_free(part);
@@ -878,7 +910,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (0 > ref_node_n_global(ref_node)) {
-    RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt),
+    RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt,
+                                    part),
         "subset");
   }
 
