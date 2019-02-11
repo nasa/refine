@@ -78,6 +78,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
 REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate);
 
 REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell);
+REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid);
 
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
 REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid);

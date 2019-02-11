@@ -1281,7 +1281,7 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
+REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
