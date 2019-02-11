@@ -571,9 +571,9 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-REF_STATUS ref_migrate_metis_part(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                  PARM_INT *xadjdist, PARM_INT *xadjncydist,
-                                  PARM_INT *adjwgtdist, PARM_INT *partdist) {
+REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                     PARM_INT *xadjdist, PARM_INT *xadjncydist,
+                                     PARM_INT *adjwgtdist, PARM_INT *partdist) {
   PARM_INT n, *count, *xadj, *xadjncy, *adjwgt, *part;
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
@@ -670,12 +670,12 @@ REF_STATUS ref_migrate_metis_part(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_MIGRATE ref_migrate;
-  PARM_INT *vtxdist;
-  PARM_INT *xadj, *xadjncy, *adjwgt, *vwgt;
+REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                        PARM_INT *xadjdist,
+                                        PARM_INT *xadjncydist,
+                                        PARM_INT *adjwgtdist,
+                                        PARM_INT *partdist) {
+  PARM_INT *vwgt;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT wgtflag = 3;
   PARM_INT numflag = 0;
@@ -683,15 +683,41 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_INT nparts;
   PARM_INT edgecut;
   PARM_INT options[] = {1, 0 /* PARMETIS_DBGLVL_PROGRESS */, 42};
-  PARM_INT *part;
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
+  REF_INT n, proc;
+
+  nparts = ref_mpi_n(ref_mpi);
+  proc = ref_mpi_rank(ref_mpi);
+  n = vtxdist[proc + 1] - vtxdist[proc];
+  ncon = 1;
+  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
+  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
+                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
+  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
+
+  REIS(METIS_OK,
+       ParMETIS_V3_PartKway(vtxdist, xadjdist, xadjncydist, vwgt, adjwgtdist,
+                            &wgtflag, &numflag, &ncon, &nparts, tpwgts, ubvec,
+                            options, &edgecut, partdist, &comm),
+       "ParMETIS is not o.k.");
+
+  ref_free(ubvec);
+  ref_free(tpwgts);
+  ref_free(vwgt);
+  return REF_SUCCESS;
+}
+REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MIGRATE ref_migrate;
+  PARM_INT *vtxdist;
+  PARM_INT *xadj, *xadjncy, *adjwgt;
+  PARM_INT *part;
 
   REF_INT node, n, proc, *partition_size, *implied, shift, degree;
   REF_INT item, ref;
   REF_INT *node_part;
   REF_INT min_part, max_part;
-
-  nparts = ref_mpi_n(ref_mpi);
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
@@ -751,26 +777,15 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
   if (REF_FALSE && 50000000 > ref_node_n_global(ref_node)) {
-    RSS(ref_migrate_metis_part(ref_mpi, vtxdist, xadj, xadjncy, adjwgt, part),
-        "check");
+    RSS(ref_migrate_metis_wrapper(ref_mpi, vtxdist, xadj, xadjncy, adjwgt,
+                                  part),
+        "metis wrapper");
 
     ref_mpi_stopwatch_stop(ref_mpi, "metis part");
   } else {
-    ncon = 1;
-    ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
-    ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
-                    1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
-    ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
-
-    REIS(METIS_OK,
-         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
-                              &numflag, &ncon, &nparts, tpwgts, ubvec, options,
-                              &edgecut, part, &comm),
-         "ParMETIS is not o.k.");
-
-    ref_free(ubvec);
-    ref_free(tpwgts);
-    ref_free(vwgt);
+    RSS(ref_migrate_parmetis_wrapper(ref_mpi, vtxdist, xadj, xadjncy, adjwgt,
+                                     part),
+        "parmetis wrapper");
 
     ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
   }
