@@ -770,6 +770,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
                           &source, (void **)&newdeg, REF_INT_TYPE),
         "concat deg");
     if (ref_mpi_rank(ref_mpi) == proc) {
+      REIS(nnew, nrecv, "newdeg xadj size mismatch");
       xadj[0] = 0;
       for (i = 0; i < nnew; i++) xadj[i + 1] = xadj[i] + newdeg[i];
     }
