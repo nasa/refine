@@ -714,18 +714,20 @@ REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(vwgt);
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                       PARM_INT *xadjdist, PARM_INT *adjncydist,
+REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
+                                       PARM_INT *vtxdist, PARM_INT *xadjdist,
+                                       PARM_INT *adjncydist,
                                        PARM_INT *adjwgtdist,
                                        PARM_INT *partdist) {
-  REF_INT newproc, ntotal;
+  REF_INT ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
   REF_INT nsend, nrecv, *source, *newdeg;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *deg;
   REF_MPI split_mpi;
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
-  newproc = MIN(2, ref_mpi_n(ref_mpi));
+  RAS(0 < newproc || newproc <= ref_mpi_n(ref_mpi),
+      "newproc negative or larger then nproc");
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
   for (proc = 0; proc < newproc; proc++) {
     vtx[proc] = ref_part_first(ntotal, newproc, proc);
@@ -853,6 +855,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT item, ref;
   REF_INT *node_part;
   REF_INT min_part, max_part;
+  REF_INT newpart;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
@@ -909,25 +912,25 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  if (0 > ref_node_n_global(ref_node)) {
-    RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt,
-                                    part),
-        "subset");
-  }
-
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
-  if (1000000 > ref_node_n_global(ref_node)) {
+  newpart = ref_node_n_global(ref_node) / 500000;
+  newpart = MIN(MAX(1, newpart), ref_mpi_n(ref_mpi));
+
+  if (1 == newpart) {
     RSS(ref_migrate_metis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
         "metis wrapper");
-
     ref_mpi_stopwatch_stop(ref_mpi, "metis part");
-  } else {
+  } else if (ref_mpi_n(ref_mpi) == newpart) {
     RSS(ref_migrate_parmetis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt,
                                      part),
         "parmetis wrapper");
-
-    ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+    ref_mpi_stopwatch_stop(ref_mpi, "parmetis all part");
+  } else {
+    RSS(ref_migrate_parmetis_subset(ref_mpi, newpart, vtxdist, xadj, adjncy,
+                                    adjwgt, part),
+        "subset");
+    ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
   }
   each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
   n = 0;
@@ -946,9 +949,10 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("balance %6.3f part target %d size min %d max %d \n",
+    printf("balance %6.3f on %d of %d target %d size min %d max %d\n",
            (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
                (REF_DBL)ref_mpi_n(ref_mpi),
+           newpart, ref_mpi_n(ref_mpi),
            ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
            max_part);
   }
