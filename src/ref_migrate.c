@@ -895,7 +895,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
-  if (REF_FALSE && 50000000 > ref_node_n_global(ref_node)) {
+  if (1000000 > ref_node_n_global(ref_node)) {
     RSS(ref_migrate_metis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
         "metis wrapper");
 
