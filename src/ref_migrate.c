@@ -639,7 +639,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT item, ref;
   REF_INT *node_part;
   REF_INT min_part, max_part;
-  REF_BOOL check_inputs = REF_FALSE;
+  REF_BOOL check_inputs = REF_TRUE;
 
   nparts = ref_mpi_n(ref_mpi);
 
@@ -708,36 +708,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
-
-  if (REF_FALSE) {
-    FILE *f;
-    char name[1024];
-    REF_INT i;
-    sprintf(name, "par-%d-%d.adj", ref_mpi_n(ref_mpi), ref_mpi_rank(ref_mpi));
-    f = fopen(name, "w");
-    if (NULL == (void *)f) printf("unable to open %s\n", name);
-    RNS(name, "unable to open file");
-
-    for (i = 0; i < ref_mpi_n(ref_mpi) + 1; i++) {
-      fprintf(f, "%d: vtxdist[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
-              vtxdist[i]);
-    }
-    for (i = 0; i < n + 1; i++) {
-      fprintf(f, "%d: xadj[%d] = %d\n", ref_mpi_rank(ref_mpi), i, xadj[i]);
-    }
-    for (i = 0; i < xadj[n]; i++) {
-      fprintf(f, "%d: xadjncy[%d] = %d\n", ref_mpi_rank(ref_mpi), i,
-              xadjncy[i]);
-    }
-    for (i = 0; i < ref_mpi_n(ref_mpi); i++) {
-      fprintf(f, "%d: tpwgts[%d] = %f\n", ref_mpi_rank(ref_mpi), i, tpwgts[i]);
-    }
-    for (i = 0; i < ncon; i++) {
-      fprintf(f, "%d: ubvec[%d] = %f\n", ref_mpi_rank(ref_mpi), i, ubvec[i]);
-    }
-    fclose(f);
-    ref_mpi_stopwatch_stop(ref_mpi, "parmetis dump");
-  }
 
 #if PARMETIS_MAJOR_VERSION == 3
   REIS(METIS_OK,
