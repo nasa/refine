@@ -720,8 +720,9 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   REF_INT newproc, ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
   REF_INT nsend, nrecv, *source, *newdeg;
-  PARM_INT *vtx, *xadj, *adjncy, *adjwgt;
+  PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *deg;
+  REF_MPI split_mpi;
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
   newproc = MIN(2, ref_mpi_n(ref_mpi));
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
@@ -799,6 +800,19 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
     ref_free(source);
   }
 
+  RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, newproc), "split comm");
+  part = NULL;
+  if (ref_mpi_rank(ref_mpi) < newproc) {
+    ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
+    RSS(ref_migrate_parmetis_wrapper(split_mpi, vtxdist, xadj, adjncy, adjwgt,
+                                     part),
+        "parmetis wrapper");
+  }
+  RSS(ref_mpi_join_comm(split_mpi), "join comm");
+
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
+
+  ref_free(part);
   ref_free(adjwgt);
   ref_free(adjncy);
   ref_free(xadj);
@@ -874,7 +888,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  if (20000 > ref_node_n_global(ref_node)) {
+  if (0 > ref_node_n_global(ref_node)) {
     RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt),
         "subset");
   }
