@@ -124,6 +124,28 @@ REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi_ptr,
+                              REF_INT n) {
+#ifdef HAVE_MPI
+  MPI_Comm split_comm;
+  int color, rank;
+  rank = ref_mpi_rank(ref_mpi);
+  if (rank < n) {
+    color = 0;
+  } else {
+    color = 1;
+  }
+  MPI_Comm_split(ref_mpi_comm(ref_mpi), color, rank, &split_comm);
+  RSS(ref_mpi_create_from_comm(split_mpi_ptr, &split_comm), "split comm");
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
+  RSS(ref_mpi_create_from_comm(split_mpi_ptr, NULL), "create from NULL comm");
+  SUPRESS_UNUSED_COMPILER_WARNING(n);
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi) {
 #ifdef HAVE_MPI
   MPI_Comm_free(&ref_mpi_comm(split_mpi));

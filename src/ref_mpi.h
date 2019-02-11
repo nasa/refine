@@ -55,6 +55,7 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi, void *comm);
 REF_STATUS ref_mpi_create(REF_MPI *ref_mpi);
 
 REF_STATUS ref_mpi_half_comm(REF_MPI ref_mpi, REF_MPI *split_mpi);
+REF_STATUS ref_mpi_front_comm(REF_MPI ref_mpi, REF_MPI *split_mpi, REF_INT n);
 REF_STATUS ref_mpi_join_comm(REF_MPI split_mpi);
 
 REF_STATUS ref_mpi_free(REF_MPI ref_mpi);
