@@ -726,7 +726,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
   PARM_INT *deg;
   REF_MPI split_mpi;
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
-  RAS(0 < newproc || newproc <= ref_mpi_n(ref_mpi),
+  RAS(0 < newproc && newproc <= ref_mpi_n(ref_mpi),
       "newproc negative or larger then nproc");
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
   for (proc = 0; proc < newproc; proc++) {
