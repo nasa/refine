@@ -797,6 +797,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
         "parmetis wrapper");
   }
   RSS(ref_mpi_join_comm(split_mpi), "join comm");
+  RSS(ref_mpi_free(split_mpi), "free split comm");
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
 
