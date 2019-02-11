@@ -9,6 +9,8 @@ zoltan_path="/u/mpark/local/pkgs/Zoltan_v3.82/gcc_6.2.0-mpt-2.18a108"
 parmetis_path="/u/mpark/local/pkgs/parmetis-4.0.3/build/Linux-x86_64"
 egads_path="${module_path}/ESP/114/EngSketchPad"
 
+opt_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.16-intel_2017.2.174"
+
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 
 mkdir -p strict
