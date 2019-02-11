@@ -736,18 +736,6 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   for (i = 0; i < nold; i++) {
     deg[i] = xadjdist[i + 1] - xadjdist[i];
   }
-  if (ref_mpi_once(ref_mpi)) {
-    printf("vtx old");
-    for (proc = 0; proc <= ref_mpi_n(ref_mpi); proc++) {
-      printf(" %6d", vtxdist[proc]);
-    }
-    printf("\n");
-    printf("vtx new");
-    for (proc = 0; proc <= newproc; proc++) {
-      printf(" %6d", vtx[proc]);
-    }
-    printf("\n");
-  }
   xadj = NULL;
   adjncy = NULL;
   adjwgt = NULL;
@@ -764,8 +752,6 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
     } else {
       first = 0;
     }
-    printf("dest %2d from %d send range %d %d total %d first %d\n", proc,
-           ref_mpi_rank(ref_mpi), n0, n1, nsend, first);
     RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(deg[first]), &nrecv,
                           &source, (void **)&newdeg, REF_INT_TYPE),
         "concat deg");
