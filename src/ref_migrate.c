@@ -678,21 +678,6 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist) {
-  REF_INT newproc, ntotal;
-  REF_INT proc;
-  PARM_INT *vtx;
-  ntotal = vtxdist[ref_mpi_n(ref_mpi)];
-  newproc = MIN(4, ref_mpi_n(ref_mpi));
-  ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
-  for (proc = 0; proc < newproc; proc++) {
-    vtx[proc] = ref_part_first(ntotal, newproc, proc);
-  }
-  vtx[newproc] = ntotal;
-
-  ref_free(vtx);
-  return REF_SUCCESS;
-}
 REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                         PARM_INT *xadjdist,
                                         PARM_INT *xadjncydist,
@@ -727,6 +712,29 @@ REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(ubvec);
   ref_free(tpwgts);
   ref_free(vwgt);
+  return REF_SUCCESS;
+}
+REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                       PARM_INT *xadjdist) {
+  REF_INT newproc, ntotal;
+  REF_INT proc, nold, i;
+  PARM_INT *vtx;
+  PARM_INT *deg;
+  ntotal = vtxdist[ref_mpi_n(ref_mpi)];
+  newproc = MIN(2, ref_mpi_n(ref_mpi));
+  ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
+  for (proc = 0; proc < newproc; proc++) {
+    vtx[proc] = ref_part_first(ntotal, newproc, proc);
+  }
+  vtx[newproc] = ntotal;
+  nold = vtxdist[1 + ref_mpi_rank(ref_mpi)] - vtxdist[ref_mpi_rank(ref_mpi)];
+  ref_malloc_init(deg, nold, PARM_INT, 0);
+  for (i = 0; i < nold; i++) {
+    deg[i] = xadjdist[i + 1] - xadjdist[i];
+  }
+
+  ref_free(deg);
+  ref_free(vtx);
   return REF_SUCCESS;
 }
 REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
@@ -796,6 +804,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     }
     n++;
   }
+
+  RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj), "subset");
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
