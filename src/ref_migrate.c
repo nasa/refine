@@ -819,8 +819,8 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
                             &source, (void **)&newdeg, REF_INT_TYPE),
           "concat part with send");
     } else {
-      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, NULL, &nrecv,
-                            &source, (void **)&newdeg, REF_INT_TYPE),
+      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, NULL, &nrecv, &source,
+                            (void **)&newdeg, REF_INT_TYPE),
           "concat part no (NULL) send");
     }
     if (ref_mpi_rank(ref_mpi) == proc) {
