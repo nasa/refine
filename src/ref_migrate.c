@@ -628,11 +628,14 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_malloc_init(part, n, REF_INT, REF_EMPTY);
 
   ncon = 1;
-  vwgt = NULL;
   vsize = NULL;
   nparts = ref_mpi_n(ref_mpi);
-  tpwgts = NULL;
-  ubvec = NULL;
+
+  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
+  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
+                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
+  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.001);
+
   METIS_SetDefaultOptions(options);
   options[METIS_OPTION_NUMBERING] = 0;
   options[METIS_OPTION_SEED] = 42;
@@ -643,6 +646,10 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
                              &nparts, tpwgts, ubvec, options, &objval, part),
          "METIS is not o.k.");
   }
+
+  ref_free(ubvec);
+  ref_free(tpwgts);
+  ref_free(vwgt);
 
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = vtxdist[proc + 1] - vtxdist[proc];
