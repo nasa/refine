@@ -270,6 +270,8 @@ REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
   tag = ref_mpi_n(ref_mpi) * dest + ref_mpi_rank(ref_mpi);
 
   MPI_Send(data, n, datatype, dest, tag, ref_mpi_comm(ref_mpi));
+
+  return REF_SUCCESS;
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
@@ -278,8 +280,6 @@ REF_STATUS ref_mpi_send(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
   SUPRESS_UNUSED_COMPILER_WARNING(dest);
   return REF_IMPLEMENT;
 #endif
-
-  return REF_SUCCESS;
 }
 
 REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
@@ -294,6 +294,8 @@ REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
   tag = ref_mpi_n(ref_mpi) * ref_mpi_rank(ref_mpi) + source;
 
   MPI_Recv(data, n, datatype, source, tag, ref_mpi_comm(ref_mpi), &status);
+
+  return REF_SUCCESS;
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(data);
@@ -302,8 +304,6 @@ REF_STATUS ref_mpi_recv(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type,
   SUPRESS_UNUSED_COMPILER_WARNING(source);
   return REF_IMPLEMENT;
 #endif
-
-  return REF_SUCCESS;
 }
 
 REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
@@ -374,6 +374,7 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
   free(recv_size_n);
   free(send_size_n);
 
+  return REF_SUCCESS;
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_mpi);
   SUPRESS_UNUSED_COMPILER_WARNING(send);
@@ -384,8 +385,6 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
   SUPRESS_UNUSED_COMPILER_WARNING(type);
   return REF_IMPLEMENT;
 #endif
-
-  return REF_SUCCESS;
 }
 
 REF_STATUS ref_mpi_min(REF_MPI ref_mpi, void *input, void *output,
