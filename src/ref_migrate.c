@@ -571,11 +571,15 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                        PARM_INT *xadjdist,
-                                        PARM_INT *xadjncydist) {
-  PARM_INT *count, *xadj, *xadjncy;
-  REF_INT i, n, proc, node0, node1, j, hits;
+REF_STATUS ref_migrate_metis_part(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                  PARM_INT *xadjdist, PARM_INT *xadjncydist,
+                                  PARM_INT *adjwgtdist, PARM_INT *partdist) {
+  PARM_INT n, *count, *xadj, *xadjncy, *adjwgt, *part;
+  PARM_INT *vwgt, *vsize, nparts, ncon, objval;
+  PARM_REAL *tpwgts, *ubvec;
+  PARM_INT options[METIS_NOPTIONS];
+  REF_INT i, proc, node0, node1, j, hits;
+  REF_BOOL check_graph = REF_FALSE;
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
   ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
@@ -592,29 +596,71 @@ REF_STATUS ref_migrate_parmetis_checker(REF_MPI ref_mpi, PARM_INT *vtxdist,
     }
   }
   ref_malloc_init(xadjncy, xadj[n], REF_INT, REF_EMPTY);
+  ref_malloc_init(adjwgt, xadj[n], REF_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]];
   }
   RSS(ref_mpi_allgatherv(ref_mpi, xadjncydist, count, xadjncy, REF_INT_TYPE),
-      "gather adj");
+      "gather xadjncy");
+  RSS(ref_mpi_allgatherv(ref_mpi, adjwgtdist, count, adjwgt, REF_INT_TYPE),
+      "gather adjwgt");
 
-  for (node0 = 0; node0 < n; node0++) {
-    for (i = xadj[node0]; i < xadj[node0 + 1]; i++) {
-      node1 = xadjncy[i];
-      if (node0 == node1) {
-        printf("edge %d %d\n", node0, node1);
-        THROW("diag in xadjncy");
-      }
-      hits = 0;
-      for (j = xadj[node1]; j < xadj[node1 + 1]; j++) {
-        if (node0 == xadjncy[j]) {
-          hits++;
+  if (check_graph) {
+    for (node0 = 0; node0 < n; node0++) {
+      for (i = xadj[node0]; i < xadj[node0 + 1]; i++) {
+        node1 = xadjncy[i];
+        if (node0 == node1) {
+          printf("edge %d %d\n", node0, node1);
+          THROW("diag in xadjncy");
         }
+        hits = 0;
+        for (j = xadj[node1]; j < xadj[node1 + 1]; j++) {
+          if (node0 == xadjncy[j]) {
+            hits++;
+            REIS(adjwgt[i], adjwgt[j], "adj weights different");
+          }
+        }
+        REIS(1, hits, "expect edge twice");
       }
-      REIS(1, hits, "expect edge twice");
     }
   }
 
+  ref_malloc_init(part, n, REF_INT, REF_EMPTY);
+
+  ncon = 1;
+  vwgt = NULL;
+  vsize = NULL;
+  nparts = ref_mpi_n(ref_mpi);
+  tpwgts = NULL;
+  ubvec = NULL;
+  METIS_SetDefaultOptions(options);
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(METIS_OK,
+         METIS_PartGraphKway(&n, &ncon, xadj, xadjncy, vwgt, vsize, adjwgt,
+                             &nparts, tpwgts, ubvec, options, &objval, part),
+         "METIS is not o.k.");
+  }
+
+  each_ref_mpi_part(ref_mpi, proc) {
+    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+  }
+  if (ref_mpi_once(ref_mpi)) {
+    for (i = 0; i < vtxdist[1]; i++) {
+      partdist[i] = part[i];
+    }
+    each_ref_mpi_worker(ref_mpi, proc) {
+      RSS(ref_mpi_send(ref_mpi, &(part[vtxdist[proc]]), count[proc],
+                       REF_INT_TYPE, proc),
+          "send part");
+    }
+  } else {
+    proc = ref_mpi_rank(ref_mpi);
+    RSS(ref_mpi_recv(ref_mpi, partdist, count[proc], REF_INT_TYPE, 0),
+        "recv part");
+  }
+
+  ref_free(part);
+  ref_free(adjwgt);
   ref_free(xadjncy);
   ref_free(xadj);
   ref_free(count);
@@ -630,7 +676,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT wgtflag = 3;
   PARM_INT numflag = 0;
-  PARM_INT ncon = 1;
+  PARM_INT ncon;
   PARM_INT nparts;
   PARM_INT edgecut;
   PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
@@ -641,7 +687,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   REF_INT item, ref;
   REF_INT *node_part;
   REF_INT min_part, max_part;
-  REF_BOOL check_inputs = REF_TRUE;
 
   nparts = ref_mpi_n(ref_mpi);
 
@@ -665,6 +710,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
   ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
   ref_malloc(xadj, n + 1, PARM_INT);
+  ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
   vtxdist[0] = 0;
   each_ref_mpi_part(ref_mpi, proc) {
@@ -685,7 +731,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   ref_malloc(xadjncy, xadj[n], PARM_INT);
   ref_malloc(adjwgt, xadj[n], PARM_INT);
-  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
@@ -700,31 +745,28 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     n++;
   }
 
-  if (check_inputs) {
-    RSS(ref_migrate_parmetis_checker(ref_mpi, vtxdist, xadj, xadjncy), "check");
-  }
-
-  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
-                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
-  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
-  ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
-
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
-#if PARMETIS_MAJOR_VERSION == 3
-  REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
-                            &numflag, &ncon, &nparts, tpwgts, ubvec, options,
-                            &edgecut, part, &comm),
-       "ParMETIS 3 is not o.k.");
-#else
-  REIS(METIS_OK,
-       ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
-                            &numflag, &ncon, &nparts, tpwgts, ubvec, options,
-                            &edgecut, part, &comm),
-       "ParMETIS 4 is not o.k.");
-#endif
+  if (REF_FALSE && 50000000 > ref_node_n_global(ref_node)) {
+    RSS(ref_migrate_metis_part(ref_mpi, vtxdist, xadj, xadjncy, adjwgt, part),
+        "check");
+  } else {
+    ncon = 1;
+    ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
+    ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
+                    1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
+    ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
 
+    REIS(METIS_OK,
+         ParMETIS_V3_PartKway(vtxdist, xadj, xadjncy, vwgt, adjwgt, &wgtflag,
+                              &numflag, &ncon, &nparts, tpwgts, ubvec, options,
+                              &edgecut, part, &comm),
+         "ParMETIS is not o.k.");
+
+    ref_free(ubvec);
+    ref_free(tpwgts);
+    ref_free(vwgt);
+  }
   each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
@@ -742,10 +784,10 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("balance %6.3f target %6.3f part target %d size min %d max %d \n",
+    printf("balance %6.3f part target %d size min %d max %d \n",
            (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
                (REF_DBL)ref_mpi_n(ref_mpi),
-           ubvec[0], ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
+           ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
            max_part);
   }
 
@@ -768,12 +810,10 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_node_part(ref_node, node) = node_part[node];
 
   ref_free(node_part);
-  ref_free(part);
-  ref_free(ubvec);
-  ref_free(tpwgts);
-  ref_free(vwgt);
+
   ref_free(adjwgt);
   ref_free(xadjncy);
+  ref_free(part);
   ref_free(xadj);
   ref_free(implied);
   ref_free(vtxdist);
