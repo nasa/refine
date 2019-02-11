@@ -32,6 +32,8 @@ cd       _build_$VERSION
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
  --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
+ --with-metis=${MODULE_ROOT}/${PARMETIS} \
+ --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
  --with-EGADS=${MODULE_ROOT}/${ESP}/lib \
  --enable-lite \
  CC=icc \
