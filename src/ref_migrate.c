@@ -634,6 +634,9 @@ REF_STATUS ref_migrate_metis_part(REF_MPI ref_mpi, PARM_INT *vtxdist,
   tpwgts = NULL;
   ubvec = NULL;
   METIS_SetDefaultOptions(options);
+  options[METIS_OPTION_NUMBERING] = 0;
+  options[METIS_OPTION_SEED] = 42;
+  /* options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN; */
   if (ref_mpi_once(ref_mpi)) {
     REIS(METIS_OK,
          METIS_PartGraphKway(&n, &ncon, xadj, xadjncy, vwgt, vsize, adjwgt,
@@ -679,7 +682,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   PARM_INT ncon;
   PARM_INT nparts;
   PARM_INT edgecut;
-  PARM_INT options[] = {1, PARMETIS_DBGLVL_PROGRESS, 42};
+  PARM_INT options[] = {1, 0 /* PARMETIS_DBGLVL_PROGRESS */, 42};
   PARM_INT *part;
   MPI_Comm comm = (*((MPI_Comm *)(ref_mpi->comm)));
 
