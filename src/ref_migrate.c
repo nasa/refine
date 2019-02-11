@@ -806,7 +806,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   part = NULL;
   if (ref_mpi_rank(ref_mpi) < newproc) {
     ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
-    RSS(ref_migrate_parmetis_wrapper(split_mpi, vtxdist, xadj, adjncy, adjwgt,
+    RSS(ref_migrate_parmetis_wrapper(split_mpi, vtx, xadj, adjncy, adjwgt,
                                      part),
         "parmetis wrapper");
   }
