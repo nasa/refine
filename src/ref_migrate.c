@@ -715,11 +715,12 @@ REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   return REF_SUCCESS;
 }
 REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                       PARM_INT *xadjdist) {
+                                       PARM_INT *xadjdist, PARM_INT *adjncydist,
+                                       PARM_INT *adjwgtdist) {
   REF_INT newproc, ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
   REF_INT nsend, nrecv, *source, *newdeg;
-  PARM_INT *vtx, *xadj;
+  PARM_INT *vtx, *xadj, *adjncy, *adjwgt;
   PARM_INT *deg;
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
   newproc = MIN(2, ref_mpi_n(ref_mpi));
@@ -747,14 +748,21 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
     printf("\n");
   }
   xadj = NULL;
+  adjncy = NULL;
+  adjwgt = NULL;
   if (ref_mpi_rank(ref_mpi) < newproc) {
     ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
   }
   for (proc = 0; proc < newproc; proc++) {
+    /* gather xadj */
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
     nsend = MAX(0, n1 - n0);
-    first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
+    if (nsend > 0) {
+      first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
+    } else {
+      first = 0;
+    }
     printf("dest %2d from %d send range %d %d total %d first %d\n", proc,
            ref_mpi_rank(ref_mpi), n0, n1, nsend, first);
     RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(deg[first]), &nrecv,
@@ -766,8 +774,34 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
     }
     ref_free(source);
     ref_free(newdeg);
+    /* gather adjncy and adjwgt */
+    if (nsend > 0) {
+      nsend = xadjdist[first + nsend] - xadjdist[first];
+      first = xadjdist[first];
+    }
+    RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(adjncydist[first]),
+                          &nrecv, &source, (void **)&newdeg, REF_INT_TYPE),
+        "concat deg");
+    if (ref_mpi_rank(ref_mpi) == proc) {
+      adjncy = newdeg;
+    } else {
+      ref_free(newdeg);
+    }
+    ref_free(source);
+    RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(adjwgtdist[first]),
+                          &nrecv, &source, (void **)&newdeg, REF_INT_TYPE),
+        "concat deg");
+    if (ref_mpi_rank(ref_mpi) == proc) {
+      adjwgt = newdeg;
+    } else {
+      ref_free(newdeg);
+    }
+    ref_free(source);
   }
 
+  ref_free(adjwgt);
+  ref_free(adjncy);
+  ref_free(xadj);
   ref_free(deg);
   ref_free(vtx);
   return REF_SUCCESS;
@@ -841,7 +875,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (20000 > ref_node_n_global(ref_node)) {
-    RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj), "subset");
+    RSS(ref_migrate_parmetis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt),
+        "subset");
   }
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
