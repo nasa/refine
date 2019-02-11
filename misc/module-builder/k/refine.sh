@@ -28,7 +28,7 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
- --with-EGADS=${MODULE_ROOT}/${ESP}/lib \
+ --with-EGADS=${MODULE_ROOT}/${ESP} \
  CC=icc \
  CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
 
