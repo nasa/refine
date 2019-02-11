@@ -750,6 +750,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   if (REF_FALSE && 50000000 > ref_node_n_global(ref_node)) {
     RSS(ref_migrate_metis_part(ref_mpi, vtxdist, xadj, xadjncy, adjwgt, part),
         "check");
+
+    ref_mpi_stopwatch_stop(ref_mpi, "metis part");
   } else {
     ncon = 1;
     ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
@@ -766,6 +768,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     ref_free(ubvec);
     ref_free(tpwgts);
     ref_free(vwgt);
+
+    ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
   }
   each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
   n = 0;
@@ -791,9 +795,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
            max_part);
   }
 
-  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
-
-  RAS(min_part > 0, "zero min part after multiple tries");
+  RAS(min_part > 0, "zero min part");
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   n = 0;
