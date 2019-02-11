@@ -53,6 +53,7 @@
 #include "ref_sort.h"
 
 #include "ref_export.h"
+#include "ref_part.h"
 
 REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
   REF_MIGRATE ref_migrate;
@@ -675,6 +676,21 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(xadj);
   ref_free(count);
 
+  return REF_SUCCESS;
+}
+REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist) {
+  REF_INT newproc, ntotal;
+  REF_INT proc;
+  PARM_INT *vtx;
+  ntotal = vtxdist[ref_mpi_n(ref_mpi)];
+  newproc = MIN(4, ref_mpi_n(ref_mpi));
+  ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
+  for (proc = 0; proc < newproc; proc++) {
+    vtx[proc] = ref_part_first(ntotal, newproc, proc);
+  }
+  vtx[newproc] = ntotal;
+
+  ref_free(vtx);
   return REF_SUCCESS;
 }
 REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
