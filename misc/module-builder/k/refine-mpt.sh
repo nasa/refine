@@ -34,7 +34,7 @@ cd       _build_$VERSION
  --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
  --with-metis=${MODULE_ROOT}/${PARMETIS} \
  --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
- --with-EGADS=${MODULE_ROOT}/${ESP} \
+ --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
  --enable-lite \
  CC=icc \
  CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
