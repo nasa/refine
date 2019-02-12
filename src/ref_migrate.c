@@ -933,6 +933,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
+    RAS(0 <= part[n] && part[n] < ref_mpi_n(ref_mpi), "part out of range");
     partition_size[part[n]] += 1;
     n++;
   }
