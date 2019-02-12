@@ -383,7 +383,7 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
+REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -572,9 +572,11 @@ static REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                     PARM_INT *xadjdist, PARM_INT *adjncydist,
-                                     PARM_INT *adjwgtdist, PARM_INT *partdist) {
+static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                            PARM_INT *xadjdist,
+                                            PARM_INT *adjncydist,
+                                            PARM_INT *adjwgtdist,
+                                            PARM_INT *partdist) {
   PARM_INT n, *count, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
@@ -679,11 +681,9 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                        PARM_INT *xadjdist,
-                                        PARM_INT *adjncydist,
-                                        PARM_INT *adjwgtdist,
-                                        PARM_INT *partdist) {
+static REF_STATUS ref_migrate_parmetis_wrapper(
+    REF_MPI ref_mpi, PARM_INT *vtxdist, PARM_INT *xadjdist,
+    PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   PARM_INT *vwgt;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT wgtflag = 3;
@@ -715,11 +715,9 @@ REF_STATUS ref_migrate_parmetis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(vwgt);
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
-                                       PARM_INT *vtxdist, PARM_INT *xadjdist,
-                                       PARM_INT *adjncydist,
-                                       PARM_INT *adjwgtdist,
-                                       PARM_INT *partdist) {
+static REF_STATUS ref_migrate_parmetis_subset(
+    REF_MPI ref_mpi, REF_INT newproc, PARM_INT *vtxdist, PARM_INT *xadjdist,
+    PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   REF_INT ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
   REF_INT nsend, nrecv, *source, *newdeg;
@@ -984,11 +982,11 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 #endif
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-  RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
-#else
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
   RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+#else
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+  RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
 #else
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
