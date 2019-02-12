@@ -833,8 +833,6 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
     ref_free(newdeg);
   }
 
-  ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
-
   ref_free(part);
   ref_free(adjwgt);
   ref_free(adjncy);
