@@ -640,6 +640,7 @@ REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   METIS_SetDefaultOptions(options);
   options[METIS_OPTION_NUMBERING] = 0;
   options[METIS_OPTION_SEED] = 42;
+  options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB; /* zero part less likely */
   /* options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN; */
   if (ref_mpi_once(ref_mpi)) {
     REIS(METIS_OK,
