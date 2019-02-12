@@ -913,18 +913,13 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis graph");
 
-  newpart = ref_node_n_global(ref_node) / 500000;
-  newpart = MIN(MAX(1, newpart), ref_mpi_n(ref_mpi));
+  newpart = ref_mpi_n(ref_mpi);
+  if (ref_node_n_global(ref_node) < 1000000) newpart = 1;
 
   if (1 == newpart) {
     RSS(ref_migrate_metis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
         "metis wrapper");
     ref_mpi_stopwatch_stop(ref_mpi, "metis part");
-  } else if (ref_mpi_n(ref_mpi) == newpart) {
-    RSS(ref_migrate_parmetis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt,
-                                     part),
-        "parmetis wrapper");
-    ref_mpi_stopwatch_stop(ref_mpi, "parmetis all part");
   } else {
     RSS(ref_migrate_parmetis_subset(ref_mpi, newpart, vtxdist, xadj, adjncy,
                                     adjwgt, part),
