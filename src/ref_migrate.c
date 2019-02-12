@@ -791,6 +791,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
     }
     ref_free(source);
   }
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset");
 
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, newproc), "split comm");
   part = NULL;
@@ -802,6 +803,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
   }
   RSS(ref_mpi_join_comm(split_mpi), "join comm");
   RSS(ref_mpi_free(split_mpi), "free split comm");
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
 
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) { /* recv */
     /* scatter part */
@@ -833,6 +835,7 @@ REF_STATUS ref_migrate_parmetis_subset(REF_MPI ref_mpi, REF_INT newproc,
     ref_free(source);
     ref_free(newdeg);
   }
+  ref_mpi_stopwatch_stop(ref_mpi, "subset part");
 
   ref_free(part);
   ref_free(adjwgt);
@@ -862,7 +865,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
   RSS(ref_migrate_create(&ref_migrate, ref_grid), "create migrate");
-  ref_mpi_stopwatch_stop(ref_mpi, "parmetis init");
 
   /* skip agglomeration stuff */
 
@@ -924,7 +926,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     RSS(ref_migrate_parmetis_subset(ref_mpi, newpart, vtxdist, xadj, adjncy,
                                     adjwgt, part),
         "subset");
-    ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset part");
   }
   each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
   n = 0;
@@ -950,7 +951,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
            newpart, ref_mpi_n(ref_mpi),
            ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
            max_part);
-    if (0 == min_part) printf("  zero vertex parts detected\n");
   }
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
@@ -978,7 +978,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   ref_free(partition_size);
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
 }
@@ -1314,17 +1313,14 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_migrate_shufflin_node(ref_node), "send out nodes");
   RSS(ref_migrate_shufflin_geom(ref_grid), "geom");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle node");
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_migrate_shufflin_cell(ref_node, ref_cell), "cell");
   }
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle cell");
 
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_edg(ref_grid)), "edg");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_tri(ref_grid)), "tri");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_qua(ref_grid)), "qua");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle bound");
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
@@ -1344,7 +1340,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 
   RSS(ref_node_ghost_real(ref_node), "ghost real");
   RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "ghost geom");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle ghost");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shuffle");
 
   return REF_SUCCESS;
 }
