@@ -218,6 +218,9 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ call parmetis on subset of procs (also avoids zero part input)
++ use metis on <1M nodes
+
 + change the default seg per radian to 2
 
 + viscous metric construction
