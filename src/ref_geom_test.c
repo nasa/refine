@@ -83,7 +83,6 @@ static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
 
   ref_grid_surf(ref_grid) = REF_TRUE;
-  ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
   ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
   ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
   ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
@@ -181,7 +180,6 @@ int main(int argc, char *argv[]) {
       RSS(ref_part_metric(ref_grid_node(ref_grid), argv[4]), "part m");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part metric");
     } else {
-      ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature metric");
     }

@@ -64,7 +64,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]),
         "load egads geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load geom");
-    ref_geom_segments_per_radian_of_curvature(ref_grid_geom(ref_grid)) = 2.0;
     /* RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "get metric"); */
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "metric");

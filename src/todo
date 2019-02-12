@@ -23,7 +23,6 @@ C2S
  acceptance test merge build
  how/when to fail fast?
 
-change the default seg per radian to 2
 change use mixed_space_gradation in ref_metric_constrain_curvature
 report threshold means
 
@@ -218,6 +217,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ change the default seg per radian to 2
 
 + viscous metric construction
   + opt-goal with viscous fluxes

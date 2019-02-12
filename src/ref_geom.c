@@ -79,7 +79,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   RSS(ref_geom_initialize(ref_geom), "init geom list");
 
   ref_geom->uv_area_sign = NULL;
-  ref_geom->segments_per_radian_of_curvature = 10.0;
+  ref_geom->segments_per_radian_of_curvature = 2.0;
 
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
