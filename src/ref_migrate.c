@@ -955,9 +955,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
            newpart, ref_mpi_n(ref_mpi),
            ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
            max_part);
+    if (0 == max_part) printf("  zero vertex parts detected\n");
   }
-
-  RAS(min_part > 0, "zero min part");
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
   n = 0;
