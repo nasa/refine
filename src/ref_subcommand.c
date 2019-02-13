@@ -37,9 +37,12 @@ static void bootstrap_help(const char *name) {
     printf("\n");
 }
 
-static REF_STATUS bootstrap(int argc, char *argv[]) {
+static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1004];
+  if (ref_mpi_para(ref_mpi)){
+    RSS(REF_IMPLEMENT, "ref boostrap is no parallel");
+  }
   if (argc<3) goto shutdown;
   end_of_string = strlen(argv[2]);
   if (7>end_of_string ||
@@ -47,7 +50,7 @@ static REF_STATUS bootstrap(int argc, char *argv[]) {
     goto shutdown;
   strncpy(argv[2], project, end_of_string - 7);
   project[end_of_string - 7] = '\0';
-
+  
   return REF_SUCCESS;
   shutdown:
   bootstrap_help(argv[0]);
@@ -76,7 +79,7 @@ int main(int argc, char *argv[]) {
 
   if (strncmp(argv[1], "b", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(bootstrap(argc, argv), "bootstrap");
+      RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     }else{
       bootstrap_help(argv[0]);
       goto shutdown;
