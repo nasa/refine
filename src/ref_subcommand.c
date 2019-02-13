@@ -32,7 +32,7 @@ static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
   printf("\n");
   printf("These are common ref commands:\n");
-  printf("  boostrap Create initial grid from EGADS file\n");
+  printf("  bootstrap Create initial grid from EGADS file\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads\n", name);
@@ -44,15 +44,15 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   char project[1004];
   REF_GRID ref_grid = NULL;
   if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref boostrap is no parallel");
+    RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
   }
   if (argc < 3) goto shutdown;
   end_of_string = strlen(argv[2]);
   if (7 > end_of_string ||
       strncmp(&(argv[2][end_of_string - 6]), ".egads", 6) != 0)
     goto shutdown;
-  strncpy(project, argv[2], end_of_string - 7);
-  project[end_of_string - 7] = '\0';
+  strncpy(project, argv[2], end_of_string - 6);
+  project[end_of_string - 6] = '\0';
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
