@@ -226,9 +226,8 @@ int main(int argc, char *argv[]) {
   if (tess_pos != REF_EMPTY || tetgen_pos != REF_EMPTY) { /* egads to grid */
     REF_GRID ref_grid;
     REF_INT node;
-    REF_DBL params[3];
+    REF_DBL params[3], suggestion[3];
     REF_BOOL aflr_over_tetgen = REF_TRUE;
-    double size;
 
     if (tess_pos != REF_EMPTY) {
       REIS(1, tess_pos,
@@ -260,9 +259,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
 
     RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
-    RSS(ref_geom_egads_diagonal(ref_grid_geom(ref_grid), &size), "bbox diag");
-    printf("suggested params %f %f %f, size %e\n", 0.25 * size, 0.001 * size,
-           15.0, size);
+    RSS(ref_geom_egads_suggest_tess_params(ref_grid, suggestion),
+        "suggest params");
+    printf("suggested params %f %f %f\n", suggestion[0], suggestion[1],
+           suggestion[2]);
     printf("   actual params %f %f %f\n", params[0], params[1], params[2]);
     RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_test_tess.meshb"),

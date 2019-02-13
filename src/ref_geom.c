@@ -2782,6 +2782,21 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_egads_suggest_tess_params(REF_GRID ref_grid,
+                                              REF_DBL *params) {
+  REF_DBL size;
+  RSS(ref_geom_egads_diagonal(ref_grid_geom(ref_grid), &size), "bbox diag");
+  params[0] = 0.25 * size;
+  params[1] = 0.001 * size;
+  params[2] = 15.0;
+  return REF_SUCCESS;
+}
+
+/* maximum length of an EDGE segment or triangle side (in physical space) */
+/* curvature-based value that looks locally at the deviation between
+   the centroid of the discrete object and the underlying geometry */
+/* maximum interior dihedral angle (in degrees) */
+
 REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 #ifdef HAVE_EGADS
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2799,17 +2814,6 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   double verts[3];
 
   solid = (ego)(ref_geom->solid);
-
-  /* maximum length of an EDGE segment or triangle side (in physical space) */
-  /* curvature-based value that looks locally at the deviation between
-     the centroid of the discrete object and the underlying geometry */
-  /* maximum interior dihedral angle (in degrees) */
-
-  /* unlimited override to make coarse init grids
-     params[0] = 1.0;
-     params[1] = 1.0;
-     params[2] = 180.0;
-  */
 
   REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
   REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
