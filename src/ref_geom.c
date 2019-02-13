@@ -2789,7 +2789,6 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, new_cell;
   REF_DBL param[2];
-  double size;
   ego geom;
   ego solid, tess;
   int tess_status, nvert;
@@ -2801,10 +2800,6 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
 
   solid = (ego)(ref_geom->solid);
 
-  RSS(ref_geom_egads_diagonal(ref_geom, &size), "bbox diag");
-  printf("suggested params %f %f %f, size %e\n", 0.25 * size, 0.001 * size,
-         15.0, size);
-  printf("   actual params %f %f %f\n", params[0], params[1], params[2]);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
