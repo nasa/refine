@@ -14,12 +14,13 @@ module load openmpi_1.10.2_intel_2017
 module load intel.2017.2.174
 module load git # for git describe
 
+module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
+module load tetgen
 # should not be necessary with rpath (rpath works with gcc, not intel)
-# module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
 # module load ESP/113
 
 module use --append /usr/local/pkgs-geolab/Modules/modulefiles
-module add geolab_64 AFLR3/current
+module load geolab_64 AFLR3/current
 
 module load valgrind_3.13.0
 
@@ -355,6 +356,12 @@ LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
 time ./accept-hemisphere-uniform-para.sh ${zoltan_dir} > $LOG 2>&1
+trap - EXIT
+
+LOG=${root_dir}/log.accept-sphere-cube-tetgen
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/sphere-cube/tetgen
+time ./accept-sphere-cube-init.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-u5
