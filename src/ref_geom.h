@@ -249,6 +249,8 @@ REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
 
 REF_STATUS ref_geom_face_match(REF_GRID ref_grid);
 
+REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_GEOM_H */

@@ -46,36 +46,6 @@
 #include "ref_args.h"
 #include "ref_math.h"
 
-static REF_STATUS ref_geom_tri_status(REF_GRID ref_grid) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], id;
-  REF_DBL min_normdev, min_area, max_area, min_uv_area, max_uv_area;
-  REF_DBL normdev, area, uv_area, area_sign;
-
-  min_normdev = 2.0;
-  min_area = 1.0e100;
-  max_area = -1.0e100;
-  min_uv_area = 1.0e100;
-  max_uv_area = -1.0e100;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
-    min_normdev = MIN(min_normdev, normdev);
-    RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &area), "vol");
-    min_area = MIN(min_area, area);
-    max_area = MAX(max_area, area);
-    id = nodes[ref_cell_node_per(ref_cell)];
-    RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
-    RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area), "uv area");
-    uv_area *= area_sign;
-    min_uv_area = MIN(min_uv_area, uv_area);
-    max_uv_area = MAX(max_uv_area, uv_area);
-  }
-  printf("normdev %f area %.5e  %.5e uv area  %.5e  %.5e\n", min_normdev,
-         min_area, max_area, min_uv_area, max_uv_area);
-
-  return REF_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT recon_pos = REF_EMPTY;
@@ -238,7 +208,7 @@ int main(int argc, char *argv[]) {
         "meshb export");
     RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
 
-    RSS(ref_geom_tri_status(ref_grid), "tri status");
+    RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
     printf("verify topo\n");
     RSS(ref_geom_verify_topo(ref_grid), "original params");
     printf("verify param\n");
@@ -252,7 +222,7 @@ int main(int argc, char *argv[]) {
 
     if (REF_EMPTY != surf_pos) {
       RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
-      RSS(ref_geom_tri_status(ref_grid), "tri status");
+      RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
       printf("verify topo\n");
       RSS(ref_geom_verify_topo(ref_grid), "original params");
       printf("verify param\n");
