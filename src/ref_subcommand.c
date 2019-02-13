@@ -80,6 +80,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
   printf("verify param\n");
   RSS(ref_geom_verify_param(ref_grid), "adapt params");
+  sprintf(filename, "%s-adapt-geom.tec", project);
+  RSS(ref_geom_tec(ref_grid, filename), "geom export");
+  sprintf(filename, "%s-adapt-surf.tec", project);
+  RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+  sprintf(filename, "%s-adapt-surf.meshb", project);
+  printf("export %s\n", filename);
+  RSS(ref_export_by_extension(ref_grid, filename), "surf export");
 
   RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
 
