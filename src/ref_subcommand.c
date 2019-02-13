@@ -29,16 +29,22 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 
+#include "ref_import.h"
 #include "ref_export.h"
 
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
   printf("\n");
-  printf("These are common ref commands:\n");
+  printf("ref commands:\n");
   printf("  bootstrap Create initial grid from EGADS file\n");
+  printf("  fill      Fill a surface shell mesh with a volume.\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads\n", name);
+  printf("\n");
+}
+static void fill_help(const char *name) {
+  printf("usage: \n %s fill surface.meshb volume.meshb\n", name);
   printf("\n");
 }
 
@@ -102,6 +108,34 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_file;
+  char *in_file;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref fill is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+  out_file = argv[3];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+
+  printf("export %s\n", out_file);
+  RSS(ref_export_by_extension(ref_grid, out_file), "vol export");
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  fill_help(argv[0]);
+  return REF_FAILURE;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
@@ -127,6 +161,13 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       bootstrap_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "f", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(fill(ref_mpi, argc, argv), "fill");
+    } else {
+      fill_help(argv[0]);
       goto shutdown;
     }
   } else {
