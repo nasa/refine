@@ -237,12 +237,6 @@ cd ${source_dir}/acceptance/2d/mixed
 time ./accept-2d-mixed.sh ${strict_dir} > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-linear-one
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/linear/one
-time ./accept-3d-one.sh ${strict_dir} > $LOG 2>&1
-trap - EXIT
-
 LOG=${root_dir}/log.accept-3d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
