@@ -2906,6 +2906,7 @@ REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params) {
   }
 
   RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps");
+  ref_grid_surf(ref_grid) = REF_TRUE;
 
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
