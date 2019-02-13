@@ -2,6 +2,7 @@
 configure metis only, not parmetis
 make partitioner, partitioner algorithm available at run time
 speed up parmetis subset
+test with zoltan and parmetis configured
 
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
