@@ -74,6 +74,10 @@ endif # BUILD_MPI
 
 bin_PROGRAMS =
 
+bin_PROGRAMS += ref
+ref_SOURCES = ref_subcommand.c
+ref_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
+
 bin_PROGRAMS += ref_driver
 ref_driver_SOURCES = ref_driver.c
 ref_driver_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
