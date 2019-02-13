@@ -29,6 +29,8 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 
+#include "ref_export.h"
+
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
   printf("\n");
@@ -42,7 +44,8 @@ static void bootstrap_help(const char *name) {
 
 static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
-  char project[1004];
+  char project[1000];
+  char filename[1024];
   REF_GRID ref_grid = NULL;
   REF_DBL params[3];
 
@@ -63,6 +66,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   printf("initial tessellation\n");
   RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
   RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+  sprintf(filename, "%s-init.meshb", project);
+  RSS(ref_export_by_extension(ref_grid, filename), "tess export");
+  sprintf(filename, "%s-init-geom.tec", project);
+  RSS(ref_geom_tec(ref_grid, filename), "geom export");
+  sprintf(filename, "%s-init-surf.tec", project);
+  RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
 
   RSS(ref_grid_free(ref_grid), "create");
 
