@@ -23,36 +23,36 @@
 
 #include "ref_defs.h"
 
-#include "ref_mpi.h"
 #include "ref_args.h"
+#include "ref_mpi.h"
 
 static void usage(const char *name) {
-    printf("usage: \n %s [--help] <command> [<args>]\n", name);
-    printf("\n");
-    printf("These are common ref commands:\n");
-    printf("  boostrap Create initial grid from EGADS file\n");
+  printf("usage: \n %s [--help] <command> [<args>]\n", name);
+  printf("\n");
+  printf("These are common ref commands:\n");
+  printf("  boostrap Create initial grid from EGADS file\n");
 }
 static void bootstrap_help(const char *name) {
-    printf("usage: \n %s boostrap project.egads\n", name);
-    printf("\n");
+  printf("usage: \n %s boostrap project.egads\n", name);
+  printf("\n");
 }
 
 static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1004];
-  if (ref_mpi_para(ref_mpi)){
+  if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref boostrap is no parallel");
   }
-  if (argc<3) goto shutdown;
+  if (argc < 3) goto shutdown;
   end_of_string = strlen(argv[2]);
-  if (7>end_of_string ||
+  if (7 > end_of_string ||
       strncmp(&(argv[2][end_of_string - 6]), ".egads", 6) != 0)
     goto shutdown;
   strncpy(argv[2], project, end_of_string - 7);
   project[end_of_string - 7] = '\0';
-  
+
   return REF_SUCCESS;
-  shutdown:
+shutdown:
   bootstrap_help(argv[0]);
   return REF_FAILURE;
 }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
   if (strncmp(argv[1], "b", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
-    }else{
+    } else {
       bootstrap_help(argv[0]);
       goto shutdown;
     }
@@ -89,9 +89,8 @@ int main(int argc, char *argv[]) {
     goto shutdown;
   }
 
-
   ref_mpi_stopwatch_stop(ref_mpi, "done.");
- shutdown:
+shutdown:
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
