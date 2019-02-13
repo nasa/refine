@@ -50,12 +50,6 @@ lib_LIBRARIES += libFAUXGeom.a
 libFAUXGeom_a_CFLAGS = @SDKheader@
 libFAUXGeom_a_SOURCES = FAKEGeom.h FAUXGeom.c FAKEGeomExtras.c
 
-bin_PROGRAMS =
-
-bin_PROGRAMS += refine-px
-refine_px_SOURCES = refine_px.c
-refine_px_LDADD = librefine.a libFAUXGeom.a -lm
-
 noinst_PROGRAMS =
 
 noinst_PROGRAMS += refine-faux-test
