@@ -94,9 +94,9 @@ bin_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
 ref_acceptance_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ @mpi_ldadd@ -lm
 
-bin_PROGRAMS += ref_bamg
-ref_bamg_SOURCES = ref_bamg.c
-ref_bamg_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
+bin_PROGRAMS += ref_bamg_wrapper
+ref_bamg_wrapper_SOURCES = ref_bamg_wrapper.c
+ref_bamg_wrapper_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_bamg_emulator
 ref_bamg_emulator_SOURCES = ref_bamg_emulator.c
