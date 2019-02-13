@@ -109,6 +109,8 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_EDGE ref_edge;
 
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync globals");
+
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
   RSS(ref_edge_rcm(ref_edge, &o2n, &n2o), "compact");
   RSS(ref_edge_free(ref_edge), "free edge");
