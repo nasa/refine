@@ -63,6 +63,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
   RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+
   printf("initial tessellation\n");
   RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
   RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
@@ -72,6 +73,19 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+
+  RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
+  RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
+  printf("verify topo\n");
+  RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
+  printf("verify param\n");
+  RSS(ref_geom_verify_param(ref_grid), "adapt params");
+
+  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+
+  sprintf(filename, "%s-vol.meshb", project);
+  printf("export %s\n", filename);
+  RSS(ref_export_by_extension(ref_grid, filename), "vol export");
 
   RSS(ref_grid_free(ref_grid), "create");
 
