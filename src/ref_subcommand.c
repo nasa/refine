@@ -26,6 +26,7 @@
 #include "ref_args.h"
 #include "ref_mpi.h"
 
+#include "ref_geom.h"
 #include "ref_grid.h"
 
 static void usage(const char *name) {
@@ -43,6 +44,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1004];
   REF_GRID ref_grid = NULL;
+  REF_DBL params[3];
+
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
   }
@@ -57,6 +60,9 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
   RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  printf("initial tessellation\n");
+  RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
+  RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
 
   RSS(ref_grid_free(ref_grid), "create");
 
