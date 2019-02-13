@@ -2439,6 +2439,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
 
   fclose(file);
 
+  ref_grid_surf(ref_grid) = REF_FALSE;
+
   return REF_SUCCESS;
 }
 
@@ -2543,6 +2545,8 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   REIS(0, system_status, "aflr failed");
 
   RSS(ref_import_ugrid_tets(ref_grid, volume_ugrid_name), "tets only");
+
+  ref_grid_surf(ref_grid) = REF_FALSE;
 
   return REF_SUCCESS;
 }
