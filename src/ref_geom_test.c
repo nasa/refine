@@ -76,33 +76,6 @@ static REF_STATUS ref_geom_tri_status(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
-  REF_BOOL all_done = REF_FALSE;
-  int passes = 15, pass;
-
-  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-
-  RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
-      "show time");
-
-  for (pass = 0; !all_done && pass < passes; pass++) {
-    if (ref_grid_once(ref_grid))
-      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
-             ref_mpi_n(ref_grid_mpi(ref_grid)));
-    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
-    RSS(ref_grid_pack(ref_grid), "pack");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
-  }
-
-  return REF_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT recon_pos = REF_EMPTY;
@@ -278,7 +251,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "original params");
 
     if (REF_EMPTY != surf_pos) {
-      RSS(ref_geom_surf_adapt(ref_grid), "adapt surface before volume");
+      RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
       RSS(ref_geom_tri_status(ref_grid), "tri status");
       printf("verify topo\n");
       RSS(ref_geom_verify_topo(ref_grid), "original params");

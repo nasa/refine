@@ -37,6 +37,8 @@
 #include "ref_node.h"
 
 #include "ref_gather.h"
+#include "ref_histogram.h"
+#include "ref_metric.h"
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   REF_ADAPT ref_adapt;
@@ -560,5 +562,31 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   } else {
     RSS(ref_adapt_threed_pass(ref_grid, all_done), "3D pass");
   }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid) {
+  REF_BOOL all_done = REF_FALSE;
+  int passes = 15, pass;
+
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
+
+  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+
+  for (pass = 0; !all_done && pass < passes; pass++) {
+    if (ref_grid_once(ref_grid))
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+             ref_mpi_n(ref_grid_mpi(ref_grid)));
+    RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
+  }
+
   return REF_SUCCESS;
 }
