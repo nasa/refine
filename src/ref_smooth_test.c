@@ -363,7 +363,6 @@ int main(int argc, char *argv[]) {
           "load egads geom");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load geom");
     }
-    ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
 
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "gram");

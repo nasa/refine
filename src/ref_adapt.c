@@ -51,7 +51,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
 
-  ref_adapt->collapse_per_pass = 1;
+  ref_adapt->collapse_per_pass = 5;
   ref_adapt->collapse_ratio = 1.0 / (sqrt(2.0) * overshoot);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
 
@@ -62,8 +62,8 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->post_min_ratio = 1.0e-3;
   ref_adapt->post_max_ratio = 3.0;
 
-  ref_adapt->instrument = REF_FALSE;
-  ref_adapt->watch_param = REF_FALSE;
+  ref_adapt->instrument = REF_TRUE;
+  ref_adapt->watch_param = REF_TRUE;
 
   return REF_SUCCESS;
 }

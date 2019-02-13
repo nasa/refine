@@ -82,9 +82,6 @@ static REF_STATUS ref_geom_surf_adapt(REF_GRID ref_grid) {
 
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
 
-  ref_grid_adapt(ref_grid, watch_param) = REF_TRUE;
-  ref_grid_adapt(ref_grid, instrument) = REF_TRUE; /* timing datails */
-  ref_grid_adapt(ref_grid, collapse_per_pass) = 5; /* timing datails */
   RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
       "show time");
 
