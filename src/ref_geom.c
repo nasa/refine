@@ -3901,4 +3901,3 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
-
