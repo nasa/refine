@@ -115,7 +115,7 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   if (REF_EMPTY != seg) {
     if (reversed) { /* two segs with opposite orientation destroy each other */
       if (NULL != ref_grid) {
-        /* boundary tri can not be modified until bounday cavity implemented */
+        /* changing CAD edg would violate topology */
         RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
                           &cell),
             REF_NOT_FOUND, "search for boundary edg");
@@ -520,6 +520,97 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
+                                 REF_BOOL *conforming) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normdev;
+  REF_DBL sign_uv_area, uv_area;
+
+  *conforming = REF_FALSE;
+
+  nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+  nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+  nodes[2] = ref_cavity_node(ref_cavity);
+  nodes[3] = ref_cavity_faceid(ref_cavity);
+
+  RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+  RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+  uv_area *= sign_uv_area;
+
+  if (uv_area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
+
+  RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
+
+  if (normdev <= 0.5) return REF_SUCCESS;
+
+  *conforming = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_INT seg;
+  REF_BOOL local;
+  REF_BOOL conforming;
+  REF_BOOL keep_growing;
+
+  RAS(ref_node_owned(ref_node, node), "cavity part must own node");
+
+  if (ref_cavity_debug(ref_cavity))
+    printf(" enlarge start %d tris %d segs\n",
+           ref_list_n(ref_cavity_tri_list(ref_cavity)),
+           ref_cavity_nseg(ref_cavity));
+
+  if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+
+  /* make sure all cell nodes to be replaced are owned */
+  RSS(ref_cavity_local(ref_cavity, &local), "locality");
+  if (!local) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  keep_growing = REF_TRUE;
+  while (keep_growing) {
+    keep_growing = REF_FALSE;
+    each_ref_cavity_valid_seg(ref_cavity, seg) {
+      /* skip a seg attached to node */
+      if (node == ref_cavity_s2n(ref_cavity, 0, seg) ||
+          node == ref_cavity_s2n(ref_cavity, 1, seg))
+        continue;
+
+      RSS(ref_cavity_conforming(ref_cavity, seg, &conforming), "free");
+      if (!conforming) {
+        RSS(ref_cavity_enlarge_seg(ref_cavity, seg), "enlarge seg");
+        if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) {
+          if (ref_cavity_debug(ref_cavity)) {
+            RSS(ref_cavity_tec(ref_cavity, "enlarge.tec"),
+                "tec for enlarge_seg fail");
+          }
+          return REF_SUCCESS;
+        }
+        keep_growing = REF_TRUE;
+      }
+    }
+  }
+
+  if (ref_cavity_debug(ref_cavity))
+    printf(" enlarge final %d tris %d segs\n",
+           ref_list_n(ref_cavity_tri_list(ref_cavity)),
+           ref_cavity_nseg(ref_cavity));
+
+  if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
+
+  ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
                               REF_BOOL *visible) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
@@ -637,12 +728,63 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT cell, seg_node, node, seg_nodes[2];
+  REF_BOOL have_cell0, have_cell1;
+  REF_INT ntri, tri_list[2];
+
+  RAS(ref_cavity_valid_seg(ref_cavity, seg), "invalid seg");
+
+  /* make sure all seg nodes are owned */
+  each_ref_cavity_seg_node(ref_cavity, seg_node) {
+    node = ref_cavity_s2n(ref_cavity, seg_node, seg);
+    if (!ref_node_owned(ref_node, node)) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
+
+  seg_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+  seg_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+
+  RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), seg_nodes,
+                    &cell),
+      REF_NOT_FOUND, "search for boundary edg");
+  if (REF_EMPTY != cell) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_cell_list_with2(
+          ref_grid_tri(ref_grid), ref_cavity_s2n(ref_cavity, 0, seg),
+          ref_cavity_s2n(ref_cavity, 1, seg), 2, &ntri, tri_list),
+      "tri with2");
+  REIS(2, ntri, "cavity segment does not have two tri");
+  /* changing CAD edg would violate topology */
+
+  RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri_list[0],
+                        &have_cell0),
+      "cell0");
+  RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri_list[1],
+                        &have_cell1),
+      "cell1");
+  if (have_cell0 == have_cell1) THROW("cavity same seg-tri state");
+  if (have_cell0) RSS(ref_cavity_add_tri(ref_cavity, tri_list[1]), "add c1");
+  if (have_cell1) RSS(ref_cavity_add_tri(ref_cavity, tri_list[0]), "add c0");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT face_node, face_nodes[4], node;
   REF_BOOL have_cell0, have_cell1;
   REF_INT tet0, tet1;
+
+  RAS(ref_cavity_valid_face(ref_cavity, face), "invalid face");
 
   /* make sure all face nodes are owned */
   each_ref_cavity_face_node(ref_cavity, face_node) {
@@ -1087,6 +1229,7 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
         ref_cavity_debug(ref_cavity) = REF_TRUE;
         RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "insert ball");
         RSS(ref_cavity_add_tri(ref_cavity, tri_cell), "insert tri");
+        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
         RSS(ref_cavity_normdev(ref_cavity), "normdev tri");
         RSS(ref_cavity_free(ref_cavity), "free");
       }
