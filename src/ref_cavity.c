@@ -93,7 +93,7 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
   REF_INT orig, chunk;
   REF_BOOL reversed;
 
-  RXS(ref_cavity_find(ref_cavity, nodes, &face, &reversed), REF_NOT_FOUND,
+  RXS(ref_cavity_find_face(ref_cavity, nodes, &face, &reversed), REF_NOT_FOUND,
       "find existing");
 
   if (REF_EMPTY != face) {
@@ -144,8 +144,8 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,
-                           REF_INT *found_face, REF_BOOL *reversed) {
+REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                REF_INT *found_face, REF_BOOL *reversed) {
   REF_INT face;
 
   *found_face = REF_EMPTY;

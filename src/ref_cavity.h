@@ -80,8 +80,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
-REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,
-                           REF_INT *found_face, REF_BOOL *reversed);
+REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
+                                REF_INT *found_face, REF_BOOL *reversed);
 
 REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
 REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet);
