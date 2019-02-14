@@ -830,7 +830,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
+REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   RSS(ref_cavity_swap_tet_pass(ref_grid), "cavity swap pass");
   return REF_SUCCESS;
 }
