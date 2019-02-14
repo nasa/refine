@@ -25,6 +25,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_fixture_tri_surf_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+
 REF_STATUS ref_fixture_tet_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_tet2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
