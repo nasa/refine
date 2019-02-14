@@ -147,7 +147,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
 REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
                              REF_DBL *min_add);
-REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity);
+REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved);
 REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_pass(REF_GRID ref_grid);

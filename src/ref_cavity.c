@@ -1057,17 +1057,20 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
+REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL normdev, min_normdev;
+  REF_DBL normdev, min_normdev, old_normdev;
   REF_DBL sign_uv_area, uv_area, min_uv_area;
   REF_INT seg, seg_node;
   REF_BOOL skip;
+
+  *improved = REF_TRUE;
 
   min_normdev = 2.0;
   min_uv_area = 1.0e100;
@@ -1081,6 +1084,8 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
     uv_area *= sign_uv_area;
     min_uv_area = MIN(min_uv_area, uv_area);
   }
+  old_normdev = min_normdev;
+
   if (ref_cavity_debug(ref_cavity))
     printf("- min %12.8f %12.8f\n", min_normdev, min_uv_area);
 
@@ -1109,6 +1114,9 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
   }
   if (ref_cavity_debug(ref_cavity))
     printf("+ min %12.8f %12.8f\n", min_normdev, min_uv_area);
+
+  *improved = (min_uv_area > ref_node_min_volume(ref_node) &&
+               min_normdev > old_normdev);
 
   return REF_SUCCESS;
 }
@@ -1213,6 +1221,7 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   REF_INT i, tri_cell;
   REF_DBL normdev;
   REF_CAVITY ref_cavity;
+  REF_BOOL improved;
 
   if (!ref_grid_surf(ref_grid)) return REF_SUCCESS;
 
@@ -1230,7 +1239,10 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
         RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "insert ball");
         RSS(ref_cavity_add_tri(ref_cavity, tri_cell), "insert tri");
         RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
-        RSS(ref_cavity_normdev(ref_cavity), "normdev tri");
+        RSS(ref_cavity_normdev(ref_cavity, &improved), "normdev tri");
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity) && improved) {
+          RSS(ref_cavity_replace_tri(ref_cavity), "replace tri");
+        }
         RSS(ref_cavity_free(ref_cavity), "free");
       }
     }
