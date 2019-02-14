@@ -29,8 +29,8 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 
-#include "ref_import.h"
 #include "ref_export.h"
+#include "ref_import.h"
 
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
@@ -38,6 +38,7 @@ static void usage(const char *name) {
   printf("ref commands:\n");
   printf("  bootstrap Create initial grid from EGADS file\n");
   printf("  fill      Fill a surface shell mesh with a volume.\n");
+  printf("  location  Report the locations of verticies in the mesh.\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads\n", name);
@@ -45,6 +46,11 @@ static void bootstrap_help(const char *name) {
 }
 static void fill_help(const char *name) {
   printf("usage: \n %s fill surface.meshb volume.meshb\n", name);
+  printf("\n");
+}
+static void location_help(const char *name) {
+  printf("usage: \n %s location input.meshb node_index node_index ...\n", name);
+  printf("  node_index is zero-based\n");
   printf("\n");
 }
 
@@ -136,6 +142,36 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_file;
+  REF_INT pos, global, local;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref location is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  for (pos = 3; pos < argc; pos++) {
+    global = atoi(argv[pos]);
+    printf("global index %d\n", global);
+    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
+        "global node_index not found");
+    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
+  }
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  location_help(argv[0]);
+  return REF_FAILURE;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
@@ -168,6 +204,13 @@ int main(int argc, char *argv[]) {
       RSS(fill(ref_mpi, argc, argv), "fill");
     } else {
       fill_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "l", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(location(ref_mpi, argc, argv), "location");
+    } else {
+      location_help(argv[0]);
       goto shutdown;
     }
   } else {
