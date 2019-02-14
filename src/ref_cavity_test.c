@@ -268,11 +268,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tri_surf_grid(&ref_grid, ref_mpi), "pri");
 
     /* for parallel, skip test for part with no tets */
-    if (ref_cell_valid(ref_grid_tet(ref_grid), 0)) {
+    if (ref_cell_valid(ref_grid_tri(ref_grid), 0)) {
       RSS(ref_cavity_create(&ref_cavity), "create");
       RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "form empty");
 
+      REIS(REF_EMPTY, ref_cavity_faceid(ref_cavity), "init empty");
       RSS(ref_cavity_add_tri(ref_cavity, 0), "insert first");
+      REIS(10, ref_cavity_faceid(ref_cavity), "remember faceid");
 
       nodes[0] = 1;
       nodes[1] = 2;
@@ -480,6 +482,29 @@ int main(int argc, char *argv[]) {
       REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
       RSS(ref_cavity_replace_tet(ref_cavity), "replace");
+    }
+
+    RSS(ref_cavity_free(ref_cavity), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* replace surf tri */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "pri");
+    RSS(ref_cavity_create(&ref_cavity), "create");
+
+    if (!ref_mpi_para(ref_mpi)) {
+      RSS(ref_cavity_form_empty(ref_cavity, ref_grid, 0), "insert ball");
+      RSS(ref_cavity_add_tri(ref_cavity, 0), "insert tri");
+
+      REIS(0, ref_cavity_nface(ref_cavity), "n");
+      REIS(0, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
+      REIS(3, ref_cavity_nseg(ref_cavity), "n");
+      REIS(1, ref_list_n(ref_cavity_tri_list(ref_cavity)), "l");
+
+      RSS(ref_cavity_replace_tri(ref_cavity), "replace");
     }
 
     RSS(ref_cavity_free(ref_cavity), "free");
