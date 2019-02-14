@@ -1,6 +1,6 @@
 
-configure metis only, not parmetis
-make partitioner, partitioner algorithm available at run time
+configure with metis only, when parmetis not provided
+make partitioner and partitioner algorithm available at run time
 speed up parmetis subset
 test with zoltan and parmetis configured
 
