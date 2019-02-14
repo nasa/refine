@@ -824,7 +824,6 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     ks = MAX(ks, curvature_ratio * kr);
     /* cross the tangent vectors to get the (inward or outward) normal */
     ref_math_cross_product(r, s, n);
-    node = ref_geom_node(ref_geom, geom);
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
     hr = hmax;
     if (1.0 / rlimit < kr) hr = drad / kr;
@@ -839,6 +838,38 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     hn = MIN(hn, norm_ratio * hs);
     ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
     /* form and intersect with previous */
+    node = ref_geom_node(ref_geom, geom);
+    RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
+    for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
+    RSS(ref_matrix_intersect(previous_metric, curvature_metric,
+                             &(metric[6 * node])),
+        "intersect to update metric");
+  }
+
+  each_ref_geom_edge(ref_geom, geom) {
+    RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+    /* ignore sign, curvature is 1 / radius */
+    kr = ABS(kr);
+    hr = hmax;
+    if (1.0 / rlimit < kr) hr = drad / kr;
+
+    ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
+    ref_matrix_vec(diagonal_system, 1, 0) = 0.0;
+    ref_matrix_vec(diagonal_system, 2, 0) = 0.0;
+    ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+
+    ref_matrix_vec(diagonal_system, 0, 1) = 0.0;
+    ref_matrix_vec(diagonal_system, 1, 1) = 1.0;
+    ref_matrix_vec(diagonal_system, 2, 1) = 0.0;
+    ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
+
+    ref_matrix_vec(diagonal_system, 0, 1) = 0.0;
+    ref_matrix_vec(diagonal_system, 1, 1) = 0.0;
+    ref_matrix_vec(diagonal_system, 2, 1) = 1.0;
+    ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
+
+    /* form and intersect with previous */
+    node = ref_geom_node(ref_geom, geom);
     RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
     for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
     RSS(ref_matrix_intersect(previous_metric, curvature_metric,
