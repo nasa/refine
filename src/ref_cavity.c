@@ -765,7 +765,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
+static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -827,5 +827,10 @@ REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
     }
   }
 
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
+  RSS(ref_cavity_swap_tet_pass(ref_grid), "cavity swap pass");
   return REF_SUCCESS;
 }
