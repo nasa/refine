@@ -87,7 +87,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes) {
+REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_INT node, face, cell;
   REF_INT orig, chunk;
@@ -204,7 +204,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
       }
     }
-    RSS(ref_cavity_insert(ref_cavity, face_nodes), "tet side");
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
   }
 
   return REF_SUCCESS;
@@ -222,7 +222,7 @@ REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet) {
     face_nodes[0] = ref_cell_f2n(ref_cell, 1, cell_face, tet);
     face_nodes[1] = ref_cell_f2n(ref_cell, 0, cell_face, tet);
     face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, tet);
-    RSS(ref_cavity_insert(ref_cavity, face_nodes), "tet side");
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
   }
 
   return REF_SUCCESS;
@@ -326,21 +326,21 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
         (node1 == nodes[1] && node0 == nodes[2])) {
       ref_cavity_f2n(ref_cavity, 1, face) = new_node;
       nodes[2] = new_node;
-      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 0");
+      RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert edge 0");
       continue;
     }
     if ((node0 == nodes[0] && node1 == nodes[2]) ||
         (node1 == nodes[0] && node0 == nodes[2])) {
       ref_cavity_f2n(ref_cavity, 0, face) = new_node;
       nodes[2] = new_node;
-      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 1");
+      RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert edge 1");
       continue;
     }
     if ((node0 == nodes[0] && node1 == nodes[1]) ||
         (node1 == nodes[0] && node0 == nodes[1])) {
       ref_cavity_f2n(ref_cavity, 0, face) = new_node;
       nodes[1] = new_node;
-      RSS(ref_cavity_insert(ref_cavity, nodes), "insert edge 2");
+      RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert edge 2");
       continue;
     }
   }

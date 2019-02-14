@@ -79,7 +79,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define each_ref_cavity_face_node(ref_cavity, face_node) \
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
-REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes);
+REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
 REF_STATUS ref_cavity_find(REF_CAVITY ref_cavity, REF_INT *nodes,
                            REF_INT *found_face, REF_BOOL *reversed);
 

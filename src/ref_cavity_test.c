@@ -96,18 +96,21 @@ int main(int argc, char *argv[]) {
     nodes[0] = 1;
     nodes[1] = 2;
     nodes[2] = 3;
-    RSS(ref_cavity_insert(ref_cavity, nodes), "insert first");
-    REIS(REF_INVALID, ref_cavity_insert(ref_cavity, nodes), "insert second");
+    RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert first");
+    REIS(REF_INVALID, ref_cavity_insert_face(ref_cavity, nodes),
+         "insert second");
 
     nodes[0] = 2;
     nodes[1] = 3;
     nodes[2] = 1;
-    REIS(REF_INVALID, ref_cavity_insert(ref_cavity, nodes), "insert second");
+    REIS(REF_INVALID, ref_cavity_insert_face(ref_cavity, nodes),
+         "insert second");
 
     nodes[0] = 3;
     nodes[1] = 1;
     nodes[2] = 2;
-    REIS(REF_INVALID, ref_cavity_insert(ref_cavity, nodes), "insert second");
+    REIS(REF_INVALID, ref_cavity_insert_face(ref_cavity, nodes),
+         "insert second");
 
     RSS(ref_cavity_free(ref_cavity), "free");
   }
@@ -120,11 +123,11 @@ int main(int argc, char *argv[]) {
     nodes[0] = 1;
     nodes[1] = 2;
     nodes[2] = 3;
-    RSS(ref_cavity_insert(ref_cavity, nodes), "insert first");
+    RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert first");
     nodes[0] = 1;
     nodes[1] = 3;
     nodes[2] = 2;
-    RSS(ref_cavity_insert(ref_cavity, nodes), "insert opposite");
+    RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert opposite");
 
     REIS(0, ref_cavity_nface(ref_cavity), "cancel");
 
@@ -141,7 +144,7 @@ int main(int argc, char *argv[]) {
     nodes[0] = 1;
     nodes[1] = 2;
     nodes[2] = 3;
-    RSS(ref_cavity_insert(ref_cavity, nodes), "insert first");
+    RSS(ref_cavity_insert_face(ref_cavity, nodes), "insert first");
 
     nodes[0] = 1;
     nodes[1] = 2;
