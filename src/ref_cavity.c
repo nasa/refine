@@ -830,7 +830,32 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_INT node0, node1, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell;
+  REF_INT edge_tri[2];
+  REF_INT i, tri_cell;
+  REF_DBL normdev;
+
+  if (!ref_grid_surf(ref_grid)) return REF_SUCCESS;
+
+  each_ref_cell_valid_cell_with_nodes(edg, cell, nodes) {
+    node0 = nodes[0];
+    node1 = nodes[1];
+    RSS(ref_cell_list_with2(tri, node0, node1, 2, &ncell, edge_tri), "tris");
+    for (i = 0; i < ncell; i++) {
+      tri_cell = edge_tri[i];
+      RSS(ref_cell_nodes(tri, tri_cell, nodes), "cell nodes");
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   RSS(ref_cavity_swap_tet_pass(ref_grid), "cavity swap pass");
+  RSS(ref_cavity_surf_geom_edge_pass(ref_grid), "cavity geom edge");
   return REF_SUCCESS;
 }
