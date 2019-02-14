@@ -627,6 +627,7 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
       }
     }
   }
+  ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
 
   ref_malloc_init(part, n, REF_INT, REF_EMPTY);
 
