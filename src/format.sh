@@ -3,8 +3,7 @@
 set -e
 set -u
 
-
-if [ "$1" = "-g" ] ; then
+if [ $# -eq 0 ] ; then
     for filename in `git diff --name-only` ; do
 	if [[ "$filename" == *.c ]] || [[ "$filename" == *.h ]] ; then
 	    echo $filename
@@ -14,7 +13,7 @@ if [ "$1" = "-g" ] ; then
     exit 0
 fi
 
-if [ $# -eq 0 ] ; then
+if [ "$1" = "--all" ] ; then
     for filename in `ls *.h *.c` ; do
 	$0 ${filename}
     done
