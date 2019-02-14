@@ -1936,6 +1936,40 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
+REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                   REF_DBL *radius, REF_DBL *normal){
+#ifdef HAVE_EGADS
+  double curvature[4];
+  ego *edges;
+  ego object;
+  int edgeid;
+  double t;
+  RNS(ref_geom->edges, "edges not loaded");
+  edgeid = ref_geom_id(ref_geom, geom);
+  edges = (ego *)(ref_geom->edges);
+  object = edges[edgeid - 1];
+  RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+  t = ref_geom_param(ref_geom, 0, geom);
+
+  REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
+  *radius = curvature[0];
+  normal[0] = curvature[1];
+  normal[1] = curvature[2];
+  normal[2] = curvature[3];
+  return REF_SUCCESS;
+#else
+  printf("curvature 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *radius = 0.0;
+  normal[0] = 1.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
                                    REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
 #ifdef HAVE_EGADS
