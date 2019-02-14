@@ -57,9 +57,9 @@ REF_STATUS ref_fixture_tri_surf_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
       ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 1.0, 0.0, 0.0);
+    add_that_node(2, 0.0, 1.0, 0.0);
     local[3] = global[3];
     RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
   }

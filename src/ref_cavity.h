@@ -50,6 +50,7 @@ struct REF_CAVITY_STRUCT {
   REF_INT maxface;
   REF_INT blankface;
   REF_INT *f2n;
+  REF_LIST tri_list;
   REF_LIST tet_list;
   REF_BOOL debug;
 };
@@ -74,6 +75,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_f2n(ref_cavity, node, cavity) \
   ((ref_cavity)->f2n[(node) + 3 * (cavity)])
 
+#define ref_cavity_tri_list(ref_cavity) ((ref_cavity)->tri_list)
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
@@ -105,6 +107,8 @@ REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
 REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
                                 REF_INT *found_face, REF_BOOL *reversed);
+
+REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri);
 
 REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
 REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet);

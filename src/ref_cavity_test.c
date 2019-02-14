@@ -258,6 +258,41 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* add tri */
+    REF_GRID ref_grid;
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[2];
+    REF_INT seg;
+    REF_BOOL reversed;
+
+    RSS(ref_fixture_tri_surf_grid(&ref_grid, ref_mpi), "pri");
+
+    /* for parallel, skip test for part with no tets */
+    if (ref_cell_valid(ref_grid_tet(ref_grid), 0)) {
+      RSS(ref_cavity_create(&ref_cavity), "create");
+      RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "form empty");
+
+      RSS(ref_cavity_add_tri(ref_cavity, 0), "insert first");
+
+      nodes[0] = 1;
+      nodes[1] = 2;
+      RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "opp 0");
+      REIS(REF_FALSE, reversed, "not rev");
+      nodes[0] = 2;
+      nodes[1] = 0;
+      RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "op 1");
+      REIS(REF_FALSE, reversed, "not rev");
+      nodes[0] = 0;
+      nodes[1] = 1;
+      RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "opp 2");
+      REIS(REF_FALSE, reversed, "not rev");
+
+      RSS(ref_cavity_free(ref_cavity), "free");
+    }
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* insert tet node */
     REF_GRID ref_grid;
     REF_NODE ref_node;
