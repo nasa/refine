@@ -43,17 +43,18 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
   ref_cavity_grid(ref_cavity) = (REF_GRID)NULL;
   ref_cavity_node(ref_cavity) = REF_EMPTY;
-  ref_cavity_n(ref_cavity) = 0;
+  ref_cavity_nface(ref_cavity) = 0;
 
-  ref_cavity_max(ref_cavity) = 10;
+  ref_cavity_maxface(ref_cavity) = 10;
 
-  ref_malloc_init(ref_cavity->f2n, ref_cavity_max(ref_cavity) * 3, REF_INT, 0);
-  for (face = 0; face < ref_cavity_max(ref_cavity); face++) {
+  ref_malloc_init(ref_cavity->f2n, ref_cavity_maxface(ref_cavity) * 3, REF_INT,
+                  0);
+  for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
     ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
     ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
   }
-  ref_cavity_f2n(ref_cavity, 1, ref_cavity_max(ref_cavity) - 1) = REF_EMPTY;
-  ref_cavity_blank(ref_cavity) = 0;
+  ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
+  ref_cavity_blankface(ref_cavity) = 0;
 
   RSS(ref_list_create(&(ref_cavity->tet_list)), "add list");
 
@@ -73,9 +74,10 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   REF_INT face, node;
   if (NULL == (void *)ref_cavity) return REF_NULL;
-  printf("n = %d max = %d blank = %d\n", ref_cavity_n(ref_cavity),
-         ref_cavity_max(ref_cavity), ref_cavity_blank(ref_cavity));
-  for (face = 0; face < ref_cavity_max(ref_cavity); face++) {
+  printf("nface = %d maxface = %d blankface = %d\n",
+         ref_cavity_nface(ref_cavity), ref_cavity_maxface(ref_cavity),
+         ref_cavity_blankface(ref_cavity));
+  for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
     printf(" f2n[%d] = ", face);
     for (node = 0; node < 3; node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, node, face));
@@ -107,9 +109,9 @@ REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes) {
         }
       }
       ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
-      ref_cavity_f2n(ref_cavity, 1, face) = ref_cavity_blank(ref_cavity);
-      ref_cavity_blank(ref_cavity) = face;
-      ref_cavity_n(ref_cavity)--;
+      ref_cavity_f2n(ref_cavity, 1, face) = ref_cavity_blankface(ref_cavity);
+      ref_cavity_blankface(ref_cavity) = face;
+      ref_cavity_nface(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same face twice */
       return REF_INVALID;
@@ -117,27 +119,27 @@ REF_STATUS ref_cavity_insert(REF_CAVITY ref_cavity, REF_INT *nodes) {
   }
 
   /* if I need to grow my array of faces */
-  if (REF_EMPTY == ref_cavity_blank(ref_cavity)) {
-    orig = ref_cavity_max(ref_cavity);
+  if (REF_EMPTY == ref_cavity_blankface(ref_cavity)) {
+    orig = ref_cavity_maxface(ref_cavity);
     chunk = MAX(100, (REF_INT)(1.5 * (REF_DBL)orig));
-    ref_cavity_max(ref_cavity) = orig + chunk;
+    ref_cavity_maxface(ref_cavity) = orig + chunk;
 
-    ref_realloc(ref_cavity->f2n, 3 * ref_cavity_max(ref_cavity), REF_INT);
+    ref_realloc(ref_cavity->f2n, 3 * ref_cavity_maxface(ref_cavity), REF_INT);
 
-    for (face = orig; face < ref_cavity_max(ref_cavity); face++) {
+    for (face = orig; face < ref_cavity_maxface(ref_cavity); face++) {
       ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
       ref_cavity_f2n(ref_cavity, 1, face) = face + 1;
     }
-    ref_cavity_f2n(ref_cavity, 1, (ref_cavity->max) - 1) = REF_EMPTY;
-    ref_cavity_blank(ref_cavity) = orig;
+    ref_cavity_f2n(ref_cavity, 1, (ref_cavity->maxface) - 1) = REF_EMPTY;
+    ref_cavity_blankface(ref_cavity) = orig;
   }
 
-  face = ref_cavity_blank(ref_cavity);
-  ref_cavity_blank(ref_cavity) = ref_cavity_f2n(ref_cavity, 1, face);
+  face = ref_cavity_blankface(ref_cavity);
+  ref_cavity_blankface(ref_cavity) = ref_cavity_f2n(ref_cavity, 1, face);
   for (node = 0; node < 3; node++)
     ref_cavity_f2n(ref_cavity, node, face) = nodes[node];
 
-  ref_cavity_n(ref_cavity)++;
+  ref_cavity_nface(ref_cavity)++;
 
   return REF_SUCCESS;
 }
@@ -381,7 +383,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge start %d tets %d faces\n",
            ref_list_n(ref_cavity_tet_list(ref_cavity)),
-           ref_cavity_n(ref_cavity));
+           ref_cavity_nface(ref_cavity));
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
@@ -420,7 +422,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge final %d tets %d faces\n",
            ref_list_n(ref_cavity_tet_list(ref_cavity)),
-           ref_cavity_n(ref_cavity));
+           ref_cavity_nface(ref_cavity));
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
 

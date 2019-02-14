@@ -42,9 +42,9 @@ struct REF_CAVITY_STRUCT {
   REF_CAVITY_STATE state;
   REF_GRID ref_grid;
   REF_INT node;
-  REF_INT n;
-  REF_INT max;
-  REF_INT blank;
+  REF_INT nface;
+  REF_INT maxface;
+  REF_INT blankface;
   REF_INT *f2n;
   REF_LIST tet_list;
   REF_BOOL debug;
@@ -54,7 +54,7 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
 REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
-#define ref_cavity_n(ref_cavity) ((ref_cavity)->n)
+#define ref_cavity_nface(ref_cavity) ((ref_cavity)->nface)
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
 #define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
@@ -62,18 +62,18 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_f2n(ref_cavity, node, cavity) \
   ((ref_cavity)->f2n[(node) + 3 * (cavity)])
 
-#define ref_cavity_max(ref_cavity) ((ref_cavity)->max)
-#define ref_cavity_blank(ref_cavity) ((ref_cavity)->blank)
+#define ref_cavity_maxface(ref_cavity) ((ref_cavity)->maxface)
+#define ref_cavity_blankface(ref_cavity) ((ref_cavity)->blankface)
 
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
-#define ref_cavity_valid(ref_cavity, face)               \
-  ((face) >= 0 && (face) < ref_cavity_max(ref_cavity) && \
+#define ref_cavity_valid(ref_cavity, face)                   \
+  ((face) >= 0 && (face) < ref_cavity_maxface(ref_cavity) && \
    REF_EMPTY != ref_cavity_f2n(ref_cavity, 0, face))
 
-#define each_ref_cavity_valid_face(ref_cavity, face)              \
-  for ((face) = 0; (face) < ref_cavity_max(ref_cavity); (face)++) \
+#define each_ref_cavity_valid_face(ref_cavity, face)                  \
+  for ((face) = 0; (face) < ref_cavity_maxface(ref_cavity); (face)++) \
     if (ref_cavity_valid(ref_cavity, face))
 
 #define each_ref_cavity_face_node(ref_cavity, face_node) \
