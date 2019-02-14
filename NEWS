@@ -1,4 +1,5 @@
 
+- curvature based metric includes isotropic geometry edge curvature
 - curvature based metric defaults to 2 segments per radian (28 degrees)
 - parmetis can be called on subset of processors (also avoids zero part input)
 - use metis on smaller grids

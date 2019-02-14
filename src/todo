@@ -30,7 +30,6 @@ C2S
  acceptance test merge build
  how/when to fail fast?
 
-change use mixed_space_gradation in ref_metric_constrain_curvature
 report threshold means
 
 cavity operator in 2D/3D
@@ -224,6 +223,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ use mixed_space_gradation in ref_metric_constrain_curvature
 
 + call parmetis on subset of procs (also avoids zero part input)
 + use metis on <1M nodes
