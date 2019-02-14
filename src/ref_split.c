@@ -504,7 +504,12 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
-  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_surf(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+  }
+
   RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
                           cell_to_split),
       "tets");
