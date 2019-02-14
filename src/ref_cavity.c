@@ -917,24 +917,33 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
 
 REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL normdev, min_normdev;
+  REF_DBL sign_uv_area, uv_area, min_uv_area;
   REF_INT seg, seg_node;
   REF_BOOL skip;
 
   min_normdev = 2.0;
+  min_uv_area = 1.0e100;
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
     min_normdev = MIN(min_normdev, normdev);
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+    uv_area *= sign_uv_area;
+    min_uv_area = MIN(min_uv_area, uv_area);
   }
-  if (ref_cavity_debug(ref_cavity)) printf("- min %12.8f\n", min_normdev);
+  if (ref_cavity_debug(ref_cavity))
+    printf("- min %12.8f %12.8f\n", min_normdev, min_uv_area);
 
   min_normdev = 2.0;
+  min_uv_area = 1.0e100;
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     skip = REF_FALSE;
     /* skip a collapsed triangle that in on the boundary of cavity */
@@ -951,8 +960,13 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
     nodes[3] = ref_cavity_faceid(ref_cavity);
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
     min_normdev = MIN(min_normdev, normdev);
+    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+    uv_area *= sign_uv_area;
+    min_uv_area = MIN(min_uv_area, uv_area);
   }
-  if (ref_cavity_debug(ref_cavity)) printf("+ min %12.8f\n", min_normdev);
+  if (ref_cavity_debug(ref_cavity))
+    printf("+ min %12.8f %12.8f\n", min_normdev, min_uv_area);
 
   return REF_SUCCESS;
 }
