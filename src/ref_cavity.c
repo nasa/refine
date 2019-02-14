@@ -915,6 +915,48 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_INT item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normdev, min_normdev;
+  REF_INT seg, seg_node;
+  REF_BOOL skip;
+
+  min_normdev = 2.0;
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
+    min_normdev = MIN(min_normdev, normdev);
+  }
+  if (ref_cavity_debug(ref_cavity)) printf("- min %12.8f\n", min_normdev);
+
+  min_normdev = 2.0;
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    skip = REF_FALSE;
+    /* skip a collapsed triangle that in on the boundary of cavity */
+    each_ref_cavity_seg_node(ref_cavity, seg_node) {
+      if (node == ref_cavity_s2n(ref_cavity, seg_node, seg)) {
+        skip = REF_TRUE;
+      }
+    }
+    if (skip) continue;
+    each_ref_cavity_seg_node(ref_cavity, seg_node) {
+      nodes[seg_node] = ref_cavity_s2n(ref_cavity, seg_node, seg);
+    }
+    nodes[2] = node;
+    nodes[3] = ref_cavity_faceid(ref_cavity);
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
+    min_normdev = MIN(min_normdev, normdev);
+  }
+  if (ref_cavity_debug(ref_cavity)) printf("+ min %12.8f\n", min_normdev);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
@@ -1027,9 +1069,11 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
       RSS(ref_cell_nodes(tri, tri_cell, nodes), "cell nodes");
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
       if (normdev < 0.5) {
-        if (REF_FALSE)
-          printf("edg %d tri %d dev %f\n", cell, tri_cell, normdev);
         RSS(ref_cavity_create(&ref_cavity), "create");
+        ref_cavity_debug(ref_cavity) = REF_TRUE;
+        RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "insert ball");
+        RSS(ref_cavity_add_tri(ref_cavity, tri_cell), "insert tri");
+        RSS(ref_cavity_normdev(ref_cavity), "normdev tri");
         RSS(ref_cavity_free(ref_cavity), "free");
       }
     }
