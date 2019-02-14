@@ -299,13 +299,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "form empty");
     RSS(ref_cavity_add_tet(ref_cavity, 0), "insert first tri");
     REIS(4, ref_cavity_n(ref_cavity), "n");
-    REIS(1, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+    REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
     RSS(ref_cavity_enlarge_face(ref_cavity, 0), "enl face 1");
     REIS(6, ref_cavity_n(ref_cavity), "n");
-    REIS(2, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+    REIS(2, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
     RSS(ref_cavity_shrink_face(ref_cavity, 5), "insert first tri");
     REIS(4, ref_cavity_n(ref_cavity), "n");
-    REIS(1, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+    REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
     RSS(ref_cavity_free(ref_cavity), "free");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
         "insert edge");
     REIS(6, ref_cavity_n(ref_cavity), "n");
-    REIS(1, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+    REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
     RSS(ref_grid_free(ref_grid), "free");
@@ -340,7 +340,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
         "insert edge");
     REIS(8, ref_cavity_n(ref_cavity), "n");
-    REIS(2, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+    REIS(2, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
     RSS(ref_grid_free(ref_grid), "free");
@@ -403,7 +403,7 @@ int main(int argc, char *argv[]) {
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, 0), "insert ball");
 
       REIS(4, ref_cavity_n(ref_cavity), "n");
-      REIS(1, ref_list_n(ref_cavity_list(ref_cavity)), "l");
+      REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
       RSS(ref_cavity_replace_tet(ref_cavity), "replace");
     }

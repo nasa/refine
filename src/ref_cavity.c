@@ -55,7 +55,7 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   ref_cavity_f2n(ref_cavity, 1, ref_cavity_max(ref_cavity) - 1) = REF_EMPTY;
   ref_cavity_blank(ref_cavity) = 0;
 
-  RSS(ref_list_create(&(ref_cavity->ref_list)), "add list");
+  RSS(ref_list_create(&(ref_cavity->tet_list)), "add list");
 
   ref_cavity->debug = REF_FALSE;
 
@@ -64,7 +64,7 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
 REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
   if (NULL == (void *)ref_cavity) return REF_NULL;
-  ref_list_free(ref_cavity->ref_list);
+  ref_list_free(ref_cavity->tet_list);
   ref_free(ref_cavity->f2n);
   ref_free(ref_cavity);
   return REF_SUCCESS;
@@ -81,7 +81,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
       printf(" %d ", ref_cavity_f2n(ref_cavity, node, face));
     printf("\n");
   }
-  RSS(ref_list_inspect(ref_cavity_list(ref_cavity)), "insp");
+  RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
   return REF_SUCCESS;
 }
 
@@ -189,11 +189,11 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
 
   RAS(ref_cell_valid(ref_cell, tet), "invalid tet");
 
-  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet, &already_have_it),
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet, &already_have_it),
       "have tet?");
   if (already_have_it) return REF_SUCCESS;
 
-  RSS(ref_list_push(ref_cavity_list(ref_cavity), tet), "save tet");
+  RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet), "save tet");
 
   each_ref_cell_cell_face(ref_cell, cell_face) {
     each_ref_cavity_face_node(ref_cavity, node) {
@@ -213,7 +213,7 @@ REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   REF_INT cell_face;
   REF_INT face_nodes[4];
 
-  RSS(ref_list_delete(ref_cavity_list(ref_cavity), tet), "dump tet");
+  RSS(ref_list_delete(ref_cavity_tet_list(ref_cavity), tet), "dump tet");
 
   each_ref_cell_cell_face(ref_cell, cell_face) {
     /* reverse face nodes orientation */
@@ -253,8 +253,8 @@ REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity) {
              volume);
   }
 
-  while (ref_list_n(ref_cavity_list(ref_cavity)) > 0) {
-    RSS(ref_list_pop(ref_cavity_list(ref_cavity), &cell), "list");
+  while (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0) {
+    RSS(ref_list_pop(ref_cavity_tet_list(ref_cavity), &cell), "list");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
     for (i = 0; i < 4; i++)
@@ -380,7 +380,8 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge start %d tets %d faces\n",
-           ref_list_n(ref_cavity_list(ref_cavity)), ref_cavity_n(ref_cavity));
+           ref_list_n(ref_cavity_tet_list(ref_cavity)),
+           ref_cavity_n(ref_cavity));
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
@@ -418,7 +419,8 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   if (ref_cavity_debug(ref_cavity))
     printf(" enlarge final %d tets %d faces\n",
-           ref_list_n(ref_cavity_list(ref_cavity)), ref_cavity_n(ref_cavity));
+           ref_list_n(ref_cavity_tet_list(ref_cavity)),
+           ref_cavity_n(ref_cavity));
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
 
@@ -496,9 +498,9 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
     return REF_SUCCESS;
   }
 
-  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0, &have_cell0),
       "cell0");
-  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet1, &have_cell1),
       "cell1");
   if (have_cell0 == have_cell1) THROW("cavity same state");
   if (have_cell0) RSS(ref_cavity_add_tet(ref_cavity, tet1), "add c1");
@@ -522,9 +524,9 @@ REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_INT face) {
   if (REF_EMPTY == tet0) THROW("cavity tets missing");
   /* boundary is allowed, use the interior tet */
 
-  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet0, &have_cell0),
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0, &have_cell0),
       "cell0");
-  RSS(ref_list_contains(ref_cavity_list(ref_cavity), tet1, &have_cell1),
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet1, &have_cell1),
       "cell1");
   if (have_cell0 == have_cell1) THROW("cavity same state");
   if (!have_cell0) RSS(ref_cavity_rm_tet(ref_cavity, tet1), "add c1");
@@ -558,8 +560,8 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   RSS(ref_dict_create(&node_dict), "create nodes");
   RSS(ref_dict_create(&face_dict), "create faces");
 
-  each_ref_list_item(ref_cavity_list(ref_cavity), item) {
-    cell = ref_list_value(ref_cavity_list(ref_cavity), item);
+  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_dict_store(face_dict, cell, 0), "store");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     each_ref_cell_cell_node(ref_cell, cell_node) {
@@ -648,8 +650,8 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
     return REF_SUCCESS;
   }
 
-  each_ref_list_item(ref_cavity_list(ref_cavity), item) {
-    cell = ref_list_value(ref_cavity_list(ref_cavity), item);
+  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     each_ref_cell_cell_node(ref_cell, cell_node) {
       if (!ref_node_owned(ref_node, nodes[cell_node])) {
@@ -691,8 +693,8 @@ REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
   n = 0;
   min_quality = 1.0;
   total_quality = 0.0;
-  each_ref_list_item(ref_cavity_list(ref_cavity), item) {
-    cell = ref_list_value(ref_cavity_list(ref_cavity), item);
+  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "new qual");
     n++;
@@ -745,8 +747,8 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   REF_INT item, cell, face, face_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  each_ref_list_item(ref_cavity_list(ref_cavity), item) {
-    cell = ref_list_value(ref_cavity_list(ref_cavity), item);
+  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
     printf("old %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3]);
   }

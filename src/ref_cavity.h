@@ -46,7 +46,7 @@ struct REF_CAVITY_STRUCT {
   REF_INT max;
   REF_INT blank;
   REF_INT *f2n;
-  REF_LIST ref_list;
+  REF_LIST tet_list;
   REF_BOOL debug;
 };
 
@@ -65,7 +65,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_max(ref_cavity) ((ref_cavity)->max)
 #define ref_cavity_blank(ref_cavity) ((ref_cavity)->blank)
 
-#define ref_cavity_list(ref_cavity) ((ref_cavity)->ref_list)
+#define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
 #define ref_cavity_valid(ref_cavity, face)               \
