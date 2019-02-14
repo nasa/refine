@@ -34,7 +34,7 @@
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;
-  REF_INT face;
+  REF_INT seg, face;
 
   ref_malloc(*ref_cavity_ptr, 1, REF_CAVITY_STRUCT);
   ref_cavity = (*ref_cavity_ptr);
@@ -43,8 +43,20 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
   ref_cavity_grid(ref_cavity) = (REF_GRID)NULL;
   ref_cavity_node(ref_cavity) = REF_EMPTY;
-  ref_cavity_nface(ref_cavity) = 0;
 
+  ref_cavity_nseg(ref_cavity) = 0;
+  ref_cavity_maxseg(ref_cavity) = 10;
+
+  ref_malloc_init(ref_cavity->s2n, ref_cavity_maxseg(ref_cavity) * 2, REF_INT,
+                  0);
+  for (seg = 0; seg < ref_cavity_maxseg(ref_cavity); seg++) {
+    ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+    ref_cavity_s2n(ref_cavity, 1, seg) = seg + 1;
+  }
+  ref_cavity_s2n(ref_cavity, 1, ref_cavity_maxseg(ref_cavity) - 1) = REF_EMPTY;
+  ref_cavity_blankseg(ref_cavity) = 0;
+
+  ref_cavity_nface(ref_cavity) = 0;
   ref_cavity_maxface(ref_cavity) = 10;
 
   ref_malloc_init(ref_cavity->f2n, ref_cavity_maxface(ref_cavity) * 3, REF_INT,
@@ -67,6 +79,7 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
   if (NULL == (void *)ref_cavity) return REF_NULL;
   ref_list_free(ref_cavity->tet_list);
   ref_free(ref_cavity->f2n);
+  ref_free(ref_cavity->s2n);
   ref_free(ref_cavity);
   return REF_SUCCESS;
 }
@@ -85,6 +98,87 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   }
   RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_INT node, seg, cell;
+  REF_INT orig, chunk;
+  REF_BOOL reversed;
+
+  RXS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), REF_NOT_FOUND,
+      "find existing");
+
+  if (REF_EMPTY != seg) {
+    if (reversed) { /* two segs with opposite orientation destroy each other */
+      if (NULL != ref_grid) {
+        /* boundary tri can not be modified until bounday cavity implemented */
+        RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
+                          &cell),
+            REF_NOT_FOUND, "search for boundary edg");
+        if (REF_EMPTY != cell) {
+          ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+          return REF_SUCCESS;
+        }
+      }
+      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+      ref_cavity_blankseg(ref_cavity) = seg;
+      ref_cavity_nseg(ref_cavity)--;
+      return REF_SUCCESS;
+    } else { /* can't happen, added same seg twice */
+      return REF_INVALID;
+    }
+  }
+
+  /* if I need to grow my array of segs */
+  if (REF_EMPTY == ref_cavity_blankseg(ref_cavity)) {
+    orig = ref_cavity_maxseg(ref_cavity);
+    chunk = MAX(100, (REF_INT)(1.5 * (REF_DBL)orig));
+    ref_cavity_maxseg(ref_cavity) = orig + chunk;
+
+    ref_realloc(ref_cavity->s2n, 2 * ref_cavity_maxseg(ref_cavity), REF_INT);
+
+    for (seg = orig; seg < ref_cavity_maxseg(ref_cavity); seg++) {
+      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+      ref_cavity_s2n(ref_cavity, 1, seg) = seg + 1;
+    }
+    ref_cavity_s2n(ref_cavity, 1, (ref_cavity->maxseg) - 1) = REF_EMPTY;
+    ref_cavity_blankseg(ref_cavity) = orig;
+  }
+
+  seg = ref_cavity_blankseg(ref_cavity);
+  ref_cavity_blankseg(ref_cavity) = ref_cavity_s2n(ref_cavity, 1, seg);
+  for (node = 0; node < 2; node++)
+    ref_cavity_s2n(ref_cavity, node, seg) = nodes[node];
+
+  ref_cavity_nseg(ref_cavity)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
+                               REF_INT *found_seg, REF_BOOL *reversed) {
+  REF_INT seg;
+
+  *found_seg = REF_EMPTY;
+
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    if ((nodes[0] == ref_cavity_s2n(ref_cavity, 0, seg) &&
+         nodes[1] == ref_cavity_s2n(ref_cavity, 1, seg))) {
+      *found_seg = seg;
+      *reversed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+    if ((nodes[1] == ref_cavity_s2n(ref_cavity, 0, seg) &&
+         nodes[0] == ref_cavity_s2n(ref_cavity, 1, seg))) {
+      *found_seg = seg;
+      *reversed = REF_TRUE;
+      return REF_SUCCESS;
+    }
+  }
+
+  return REF_NOT_FOUND;
 }
 
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {

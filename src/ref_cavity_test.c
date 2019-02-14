@@ -197,6 +197,39 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_free(ref_cavity), "free");
   }
 
+  { /* find seg */
+    REF_CAVITY ref_cavity;
+    REF_INT nodes[2];
+    REF_INT seg;
+    REF_BOOL reversed;
+
+    RSS(ref_cavity_create(&ref_cavity), "create");
+    nodes[0] = 1;
+    nodes[1] = 2;
+    RSS(ref_cavity_insert_seg(ref_cavity, nodes), "insert first");
+
+    nodes[0] = 1;
+    nodes[1] = 2;
+    RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "find same");
+    REIS(0, seg, "found");
+    REIS(REF_FALSE, reversed, "not rev");
+
+    nodes[0] = 2;
+    nodes[1] = 1;
+    RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed),
+        "find reversed");
+    REIS(0, seg, "found");
+    REIS(REF_TRUE, reversed, "not rev");
+
+    nodes[0] = 3;
+    nodes[1] = 4;
+    REIS(REF_NOT_FOUND, ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed),
+         "missing");
+    REIS(REF_EMPTY, seg, "found");
+
+    RSS(ref_cavity_free(ref_cavity), "free");
+  }
+
   { /* add tet */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
