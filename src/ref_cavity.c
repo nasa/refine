@@ -838,6 +838,7 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   REF_INT edge_tri[2];
   REF_INT i, tri_cell;
   REF_DBL normdev;
+  REF_CAVITY ref_cavity;
 
   if (!ref_grid_surf(ref_grid)) return REF_SUCCESS;
 
@@ -849,6 +850,12 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
       tri_cell = edge_tri[i];
       RSS(ref_cell_nodes(tri, tri_cell, nodes), "cell nodes");
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
+      if (normdev < 0.5) {
+        if (REF_FALSE)
+          printf("edg %d tri %d dev %f\n", cell, tri_cell, normdev);
+        RSS(ref_cavity_create(&ref_cavity), "create");
+        RSS(ref_cavity_free(ref_cavity), "free");
+      }
     }
   }
   return REF_SUCCESS;
