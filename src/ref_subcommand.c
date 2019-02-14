@@ -41,7 +41,9 @@ static void usage(const char *name) {
   printf("  location  Report the locations of verticies in the mesh.\n");
 }
 static void bootstrap_help(const char *name) {
-  printf("usage: \n %s boostrap project.egads\n", name);
+  printf("usage: \n %s boostrap project.egads [-t]\n", name);
+  printf("  -t  tecplot movie of surface curvature adaptation\n");
+  printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("\n");
 }
 static void fill_help(const char *name) {
@@ -60,6 +62,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   char filename[1024];
   REF_GRID ref_grid = NULL;
   REF_DBL params[3];
+  REF_INT t_pos = REF_EMPTY;
 
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
@@ -85,6 +88,11 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+
+  RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != t_pos)
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
 
   RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
   RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
