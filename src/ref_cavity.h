@@ -68,13 +68,13 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
-#define ref_cavity_valid(ref_cavity, face)                   \
+#define ref_cavity_valid_face(ref_cavity, face)              \
   ((face) >= 0 && (face) < ref_cavity_maxface(ref_cavity) && \
    REF_EMPTY != ref_cavity_f2n(ref_cavity, 0, face))
 
 #define each_ref_cavity_valid_face(ref_cavity, face)                  \
   for ((face) = 0; (face) < ref_cavity_maxface(ref_cavity); (face)++) \
-    if (ref_cavity_valid(ref_cavity, face))
+    if (ref_cavity_valid_face(ref_cavity, face))
 
 #define each_ref_cavity_face_node(ref_cavity, face_node) \
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
