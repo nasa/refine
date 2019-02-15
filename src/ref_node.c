@@ -426,6 +426,20 @@ REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_remove_invalidates_sorted(REF_NODE ref_node, REF_INT node) {
+  if (!ref_node_valid(ref_node, node)) return REF_INVALID;
+
+  RSS(ref_list_push(ref_node->unused_global_list, ref_node->global[node]),
+      "store unused global");
+
+  ref_node->global[node] = ref_node->blank;
+  ref_node->blank = index2next(node);
+
+  (ref_node->n)--;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_remove_without_global(REF_NODE ref_node, REF_INT node) {
   REF_INT location, sorted_node;
   if (!ref_node_valid(ref_node, node)) return REF_INVALID;

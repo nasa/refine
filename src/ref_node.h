@@ -124,6 +124,7 @@ REF_STATUS ref_node_add(REF_NODE ref_node, REF_INT global, REF_INT *node);
 REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n, REF_INT *global);
 
 REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node);
+REF_STATUS ref_node_remove_invalidates_sorted(REF_NODE ref_node, REF_INT node);
 REF_STATUS ref_node_remove_without_global(REF_NODE ref_node, REF_INT node);
 REF_STATUS ref_node_remove_without_global_invalidates_sorted(REF_NODE ref_node,
                                                              REF_INT node);

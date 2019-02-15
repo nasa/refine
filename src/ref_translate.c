@@ -181,13 +181,21 @@ int main(int argc, char *argv[]) {
       RSS(ref_cell_create(&ref_grid_pyr(ref_grid), 5, REF_FALSE), "pyr create");
       RSS(ref_cell_create(&ref_grid_pri(ref_grid), 6, REF_FALSE), "pri create");
       RSS(ref_cell_create(&ref_grid_hex(ref_grid), 8, REF_FALSE), "hex create");
+      ref_mpi_stopwatch_stop(ref_mpi, "dump vol cells");
       each_ref_node_valid_node(ref_node, node) {
         if (ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
             ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
             ref_cell_node_empty(ref_grid_edg(ref_grid), node)) {
-          RSS(ref_node_remove(ref_node, node), "rm node");
+          RSS(ref_node_remove_invalidates_sorted(ref_node, node), "rm node");
         }
       }
+      ref_mpi_stopwatch_stop(ref_mpi, "del nodes");
+      RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild");
+      ref_mpi_stopwatch_stop(ref_mpi, "rebuild nodes");
+      RSS(ref_node_synchronize_globals(ref_node), "sync, lazy delete globals");
+      ref_mpi_stopwatch_stop(ref_mpi, "sync nodes");
+      RSS(ref_grid_pack(ref_grid), "pack");
+      ref_mpi_stopwatch_stop(ref_mpi, "pack");
     }
     if (strcmp(argv[pos], "--compact-faceids") == 0) {
       printf("%d: --compact-faceids\n", pos);
