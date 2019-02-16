@@ -78,16 +78,19 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
   RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   printf("initial tessellation\n");
   RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
   RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+  ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init.meshb", project);
   RSS(ref_export_by_extension(ref_grid, filename), "tess export");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+  ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
 
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
