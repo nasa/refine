@@ -1,4 +1,6 @@
 
+extract/combine post adaptation operator checks and status
+
 register a subset of faces in gather movie
 
 configure with metis only, when parmetis not provided
