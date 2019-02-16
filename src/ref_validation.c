@@ -82,11 +82,13 @@ REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
         continue;
       RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
           "two tringles not found with two nodes", {
+            printf("cell_edge %d nodes %d %d\n", cell_edge, node0, node1);
             ref_node_location(ref_node, nodes[0]);
             ref_node_location(ref_node, nodes[1]);
             ref_node_location(ref_node, nodes[2]);
           });
       REIB(2, ncell, "two triangles expected", {
+        printf("cell_edge %d nodes %d %d\n", cell_edge, node0, node1);
         ref_node_location(ref_node, nodes[0]);
         ref_node_location(ref_node, nodes[1]);
         ref_node_location(ref_node, nodes[2]);
