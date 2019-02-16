@@ -26,7 +26,10 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_validation_unused_node(REF_GRID ref_grid);
+REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid);
 REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid);
+REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid);
+
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid);
 REF_STATUS ref_validation_cell_node(REF_GRID ref_grid);
 REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid);

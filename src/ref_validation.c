@@ -68,6 +68,35 @@ REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
+REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node0, node1, ncell, cell_list[2];
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
+        continue;
+      RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
+          "two tringles not found with two nodes", {
+            ref_node_location(ref_node, nodes[0]);
+            ref_node_location(ref_node, nodes[1]);
+            ref_node_location(ref_node, nodes[2]);
+          });
+      REIB(2, ncell, "two triangles expected", {
+        ref_node_location(ref_node, nodes[0]);
+        ref_node_location(ref_node, nodes[1]);
+        ref_node_location(ref_node, nodes[2]);
+      });
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_BOOL has_face;
@@ -106,6 +135,12 @@ REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
   }
 
   return (problem ? REF_FAILURE : REF_SUCCESS);
+}
+
+REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
+  RSS(ref_validation_boundary_face(ref_grid), "face");
+  RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
+  return REF_SUCCESS;
 }
 
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
