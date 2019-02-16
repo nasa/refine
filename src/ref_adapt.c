@@ -478,7 +478,8 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   if (ref_grid_surf(ref_grid)) {
     for (pass = 0; pass < 3; pass++) {
-      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
+      RSB(ref_swap_surf_pass(ref_grid), "swap pass",
+          { ref_gather_blocking_frame(ref_grid, "swap error"); });
       ref_gather_blocking_frame(ref_grid, "swap");
       if (ngeom > 0)
         RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");

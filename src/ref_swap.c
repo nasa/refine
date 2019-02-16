@@ -269,8 +269,11 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
-      "more then two");
+  RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two", {
+        ref_node_location(ref_grid_node(ref_grid), node0);
+        ref_node_location(ref_grid_node(ref_grid), node1);
+      });
 
   if (0 == ncell) { /* away from boundary */
     *allowed = REF_TRUE;
