@@ -29,7 +29,8 @@ typedef enum REF_CAVITY_STATES {
   /* 1 */ REF_CAVITY_VISIBLE,
   /* 2 */ REF_CAVITY_BOUNDARY_CONSTRAINED,
   /* 3 */ REF_CAVITY_PARTITION_CONSTRAINED,
-  /* 4 */ REF_CAVITY_STATUS_LAST
+  /* 4 */ REF_CAVITY_MANIFOLD_CONSTRAINED,
+  /* 5 */ REF_CAVITY_STATUS_LAST
 } REF_CAVITY_STATE;
 END_C_DECLORATION
 
@@ -128,6 +129,7 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                       REF_INT node0, REF_INT node1,
                                       REF_INT new_node);
 
+REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold);
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming);
 REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);

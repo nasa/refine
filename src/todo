@@ -1,9 +1,4 @@
 
-already existing triangle and edg with same faceid
-  cavity
-  + collapse
-  + swap
-
 fseeko on large 50M meshb
 
 subdiv unmark termination
@@ -244,6 +239,11 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ already existing triangle and edg with same faceid
+  + cavity
+  + collapse
+  + swap
 
 + edge spacing on jsm_case01_mm_box.egads box?
 + edge curvature constraint

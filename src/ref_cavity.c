@@ -520,6 +520,43 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
+  REF_INT seg;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL contains;
+
+  *manifold = REF_FALSE;
+
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    /* skip a seg attached to node */
+    if (node == ref_cavity_s2n(ref_cavity, 0, seg) ||
+        node == ref_cavity_s2n(ref_cavity, 1, seg))
+      continue;
+
+    nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+    nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+    nodes[2] = ref_cavity_node(ref_cavity);
+    nodes[3] = ref_cavity_faceid(ref_cavity);
+
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
+        "with manifold seach failed");
+    if (REF_EMPTY != cell) {
+      RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell, &contains),
+          "contains a plan to remove");
+      if (!contains) {
+        *manifold = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  *manifold = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
@@ -556,7 +593,7 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT seg;
   REF_BOOL local;
-  REF_BOOL conforming;
+  REF_BOOL conforming, manifold;
   REF_BOOL keep_growing;
 
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
@@ -597,6 +634,12 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
         keep_growing = REF_TRUE;
       }
     }
+  }
+
+  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
+  if (!manifold) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
   }
 
   if (ref_cavity_debug(ref_cavity))
