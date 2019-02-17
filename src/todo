@@ -1,6 +1,4 @@
 
-fseeko on large 50M meshb
-
 extract/combine post adaptation operator checks and status
 
 configure with metis only, when parmetis not provided
@@ -233,6 +231,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ fseeko on large 50M meshb (fun3d solb writer)
 
 + subdiv unmark termination
   + both edges when spanning part
