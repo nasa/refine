@@ -1278,7 +1278,6 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
       if (normdev < 0.5) {
         RSS(ref_cavity_create(&ref_cavity), "create");
-        ref_cavity_debug(ref_cavity) = REF_TRUE;
         RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "insert ball");
         RSS(ref_cavity_add_tri(ref_cavity, tri_cell), "insert tri");
         RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
