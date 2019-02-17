@@ -573,7 +573,6 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid) {
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
 
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-  RSS(ref_metric_delta_box_node(ref_grid), "delta");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
 
   for (pass = 0; !all_done && pass < passes; pass++) {
@@ -583,7 +582,6 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid) {
     RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-    RSS(ref_metric_delta_box_node(ref_grid), "delta");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
