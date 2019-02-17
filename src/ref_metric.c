@@ -884,10 +884,10 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     ref_matrix_vec(diagonal_system, 2, 1) = 0.0;
     ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
 
-    ref_matrix_vec(diagonal_system, 0, 1) = 0.0;
-    ref_matrix_vec(diagonal_system, 1, 1) = 0.0;
-    ref_matrix_vec(diagonal_system, 2, 1) = 1.0;
-    ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
+    ref_matrix_vec(diagonal_system, 0, 2) = 0.0;
+    ref_matrix_vec(diagonal_system, 1, 2) = 0.0;
+    ref_matrix_vec(diagonal_system, 2, 2) = 1.0;
+    ref_matrix_eig(diagonal_system, 2) = 1.0 / hr / hr;
 
     /* form and intersect with previous */
     node = ref_geom_node(ref_geom, geom);

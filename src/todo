@@ -245,6 +245,8 @@ mixed element in refine/two
 
 +++++++++++++++++
 
++ edge spacing on jsm_case01_mm_box.egads box?
+
 + use mixed_space_gradation in ref_metric_constrain_curvature
 
 + call parmetis on subset of procs (also avoids zero part input)
