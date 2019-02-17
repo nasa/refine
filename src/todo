@@ -1,6 +1,4 @@
 
-report locations of extremely long ratio edges?
-
 already existing triangle and edg with same faceid
   cavity
   collapse
@@ -16,8 +14,6 @@ subdiv unmark termination
     and during unmark
 
 extract/combine post adaptation operator checks and status
-
-register a subset of faces (plus neighbors?) in gather movie to reduce file size
 
 configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
@@ -202,8 +198,10 @@ performance
   INRIA space filling curve
   diffusion
  
-viz
+viz/debug/status
  ellipsoid metric or something cheaper
+ register faceid list (plus neighbors?) in gather movie to reduce file size
+ report locations of extremely long ratio edges?
 
 Marshall
  provide 2D api
