@@ -18,7 +18,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <inttypes.h>
 #include <string.h>
 
 #include "ref_import.h"
@@ -1148,7 +1147,10 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
   end_position = ftello(file);
   while (next_position <= end_position && 0 != next_position) {
     position = next_position;
-    REIB(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed", {
+    REIS(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed");
+    /*
+#include <inttypes.h>
+    , {
       printf("end_position = %jd\n", (intmax_t)end_position);
       printf("next_position = %jd\n", (intmax_t)next_position);
       for (keyword_code = 0; keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD;
@@ -1159,6 +1161,7 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
         }
       }
     });
+    */
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
     if (0 <= keyword_code && keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD) {
       key_pos[keyword_code] = position;
