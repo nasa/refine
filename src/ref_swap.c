@@ -302,6 +302,48 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                             REF_BOOL *allowed) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell;
+  REF_INT cell_to_swap[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
+  REF_INT new_cell;
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
+      "more then two");
+  REIS(2, ncell, "there should be two triangles for manifold");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+
+  nodes[0] = node0;
+  nodes[1] = node3;
+  nodes[2] = node2;
+  RXS(ref_cell_with(ref_cell, nodes, &new_cell), REF_NOT_FOUND,
+      "with node0 failed");
+  if (REF_EMPTY != new_cell) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  RXS(ref_cell_with(ref_cell, nodes, &new_cell), REF_NOT_FOUND,
+      "with node1 failed");
+  if (REF_EMPTY != new_cell) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                               REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -534,6 +576,8 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     /* skip mixed */
 
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
+    if (!allowed) continue;
+    RSS(ref_swap_manifold(ref_grid, node0, node1, &allowed), "manifold");
     if (!allowed) continue;
     RSS(ref_swap_geom_topo(ref_grid, node0, node1, &allowed), "topo");
     if (!allowed) continue;

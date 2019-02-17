@@ -2,7 +2,8 @@
 already existing triangle and edg with same faceid
   cavity
   collapse
-  swap
+  + swap
+  consistent naming for pre-condition function names and tasks
 
 fseeko on large 50M meshb
 
