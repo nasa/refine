@@ -1148,7 +1148,17 @@ REF_STATUS ref_import_meshb_header(const char *filename, REF_INT *version,
   end_position = ftello(file);
   while (next_position <= end_position && 0 != next_position) {
     position = next_position;
-    REIS(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed");
+    REIB(0, fseeko(file, position, SEEK_SET), "fseeko NEXT failed", {
+      printf("end_position = %jd\n", (intmax_t)end_position);
+      printf("next_position = %jd\n", (intmax_t)next_position);
+      for (keyword_code = 0; keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD;
+           keyword_code++) {
+        if (REF_EMPTY != key_pos[keyword_code]) {
+          printf("key_pos[%d] = %jd\n", keyword_code,
+                 (intmax_t)key_pos[keyword_code]);
+        }
+      }
+    });
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
     if (0 <= keyword_code && keyword_code < REF_IMPORT_MESHB_LAST_KEYWORD) {
       key_pos[keyword_code] = position;
