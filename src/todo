@@ -1,12 +1,6 @@
 
 fseeko on large 50M meshb
 
-subdiv unmark termination
-  consistent unmark scheme
-  ghost update
-    or during mark
-    and during unmark
-
 extract/combine post adaptation operator checks and status
 
 configure with metis only, when parmetis not provided
@@ -239,6 +233,9 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ subdiv unmark termination
+  + both edges when spanning part
 
 + already existing triangle and edg with same faceid
   + cavity
