@@ -246,6 +246,7 @@ mixed element in refine/two
 +++++++++++++++++
 
 + edge spacing on jsm_case01_mm_box.egads box?
++ edge curvature constraint
 
 + use mixed_space_gradation in ref_metric_constrain_curvature
 
