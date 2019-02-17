@@ -38,6 +38,9 @@ REF_STATUS ref_collapse_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1);
 REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_BOOL *allowed);
 
+REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed);
+
 REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1, REF_BOOL *allowed);
 

@@ -151,6 +151,10 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
         "col geom");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_manifold(ref_grid, node0, node1, &allowed),
+        "col manifold");
+    if (!allowed) continue;
+
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
@@ -304,6 +308,41 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
       *allowed = REF_TRUE;
       break;
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed) {
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node, new_cell;
+  REF_BOOL will_be_collapsed;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = node0;
+
+    RXS(ref_cell_with(ref_cell, nodes, &new_cell), REF_NOT_FOUND,
+        "with node0 failed");
+    if (REF_EMPTY != new_cell) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+  }
+
+  *allowed = REF_TRUE;
 
   return REF_SUCCESS;
 }

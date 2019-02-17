@@ -1,9 +1,8 @@
 
 already existing triangle and edg with same faceid
   cavity
-  collapse
+  + collapse
   + swap
-  consistent naming for pre-condition function names and tasks
 
 fseeko on large 50M meshb
 
@@ -84,6 +83,8 @@ ref_recon
   twod l2projection
 
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
+
+consistent naming for operation pre-condition function names and tasks
 
 acceptance test that checks interp error for functions
 clean up ref_acceptance uses without a flag
