@@ -1,7 +1,20 @@
 
+already existing triangle
+  cavity
+  collapse
+  swap
+
+fseeko on large 50M meshb
+
+subdiv unmark termination
+  consistent unmark scheme
+  ghost update
+    or during mark
+    and during unmark
+
 extract/combine post adaptation operator checks and status
 
-register a subset of faces in gather movie
+register a subset of faces (plus neighbors?) in gather movie to reduce file size
 
 configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
