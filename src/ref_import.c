@@ -1615,11 +1615,13 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   long i8, i8_swapped;
   int i;
 
-  printf(" -- 32bit ugrid header\n");
-
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
+
+  printf(" -- 32bit ugrid header\n");
+
+  rewind(file);
 
   for (i = 0; i < 8; i++) {
     RES(1, fread(&i4, sizeof(int), 1, file), "int");
