@@ -1670,7 +1670,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
     printf("%d keyword\n", keyword_code);
     RSS(meshb_pos(file, version, &next_position), "meshb pos");
     printf("%ld next position\n", (long)next_position);
-    if (0 != keyword_code) {
+    if (ftello(file) < end_position) {
       REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
       printf("%d first i4\n", i4);
     }
