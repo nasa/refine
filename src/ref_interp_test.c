@@ -289,9 +289,10 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "part grid");
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
         "unable to load field in position 3");
-
+    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
     ref_malloc(mach, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, p, temp;
@@ -304,8 +305,10 @@ int main(int argc, char *argv[]) {
       temp = gamma * p / rho;
       mach[node] = sqrt((u * u + v * v + w * w) / temp);
     }
+    ref_mpi_stopwatch_stop(ref_mpi, "mach");
 
     RSS(ref_gather_scalar(ref_grid, 1, mach, argv[4]), "export mach");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
     ref_free(mach);
     ref_free(field);
