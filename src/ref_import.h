@@ -26,8 +26,6 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_import_examine_header(const char *filename);
-
 REF_STATUS ref_import_by_extension(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                    const char *filename);
 
@@ -38,6 +36,8 @@ REF_STATUS ref_import_meshb_jump(FILE *file, REF_INT version,
                                  REF_FILEPOS *key_pos, REF_INT keyword,
                                  REF_BOOL *available,
                                  REF_FILEPOS *next_position);
+
+REF_STATUS ref_import_examine_header(const char *filename);
 
 END_C_DECLORATION
 

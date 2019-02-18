@@ -85,42 +85,6 @@
     (vtk_nodes)[5] = ugrid_nodes[5];  \
   }
 
-REF_STATUS ref_import_examine_header(const char *filename) {
-  FILE *file;
-  int i4, i4_swapped;
-  long i8, i8_swapped;
-  int i;
-
-  file = fopen(filename, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
-
-  for (i = 0; i < 8; i++) {
-    RES(1, fread(&i4, sizeof(int), 1, file), "int");
-    i4_swapped = i4;
-    SWAP_INT(i4_swapped);
-    printf(" %d: %d (%d swapped) ints\n", i, i4, i4_swapped);
-  }
-
-  printf(" --\n");
-
-  rewind(file);
-
-  for (i = 0; i < 3; i++) {
-    RES(1, fread(&i4, sizeof(int), 1, file), "int");
-  }
-  for (i = 3; i < 7; i++) {
-    RES(1, fread(&i8, sizeof(long), 1, file), "long");
-    i8_swapped = i8;
-    SWAP_INT(i8_swapped);
-    printf(" %d: %ld (%ld swapped) long\n", i, i8, i8_swapped);
-  }
-
-  fclose(file);
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_import_fgrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                    const char *filename) {
   REF_GRID ref_grid;
@@ -1641,5 +1605,76 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_grid_inward_boundary_orientation(*ref_grid_ptr),
       "inward boundary orientation");
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_import_examine_header(const char *filename) {
+  FILE *file;
+  REF_FILEPOS next_position, end_position;
+  int i4, i4_swapped, version, keyword_code;
+  long i8, i8_swapped;
+  int i;
+
+  printf(" -- 32bit ugrid header\n");
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  for (i = 0; i < 8; i++) {
+    RES(1, fread(&i4, sizeof(int), 1, file), "int");
+    i4_swapped = i4;
+    SWAP_INT(i4_swapped);
+    printf(" %d: %d (%d swapped) ints\n", i, i4, i4_swapped);
+  }
+
+  printf(" -- 64bit ugrid header\n");
+
+  rewind(file);
+
+  for (i = 0; i < 3; i++) {
+    RES(1, fread(&i4, sizeof(int), 1, file), "int");
+  }
+  for (i = 3; i < 7; i++) {
+    RES(1, fread(&i8, sizeof(long), 1, file), "long");
+    i8_swapped = i8;
+    SWAP_INT(i8_swapped);
+    printf(" %d: %ld (%ld swapped) long\n", i, i8, i8_swapped);
+  }
+
+  printf(" -- meshb/solb\n");
+
+  rewind(file);
+
+  printf("%d sizeof(REF_FILEPOS)\n", (REF_INT)sizeof(REF_FILEPOS));
+
+  REIS(0, fseeko(file, 0, SEEK_END), "fseeko END failed");
+  end_position = ftello(file);
+  printf("%ld end_position\n", (long)end_position);
+  rewind(file);
+
+  REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+  printf("%d meshb code\n", i4);
+  if (1 != i4) goto close_file_and_return;
+  REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+  printf("%d version\n", i4);
+  if (1 > i4 || i4 > 3) goto close_file_and_return;
+  version = i4;
+  next_position = ftello(file);
+  while (next_position <= end_position && 0 < next_position) {
+    REIS(0, fseeko(file, next_position, SEEK_SET), "fseeko NEXT failed");
+    printf("%ld current position\n", (long)next_position);
+    REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
+    printf("%d keyword\n", keyword_code);
+    RSS(meshb_pos(file, version, &next_position), "meshb pos");
+    printf("%ld next position\n", (long)next_position);
+    if (0 != keyword_code) {
+      REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+      printf("%d first i4\n", i4);
+    }
+  }
+
+close_file_and_return:
+  fclose(file);
   return REF_SUCCESS;
 }
