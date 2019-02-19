@@ -1,13 +1,10 @@
 
-K-gcc-mpich:
+build-and-test-on-cmb20:
   only:
     - master
     - merge_requests
   tags:
     - gitlab_runner
-  variables:
-    BUILD_TAG: "${CI_JOB_NAME}-${CI_JOB_ID}"
-    GIT_COMMIT: "${CI_COMMIT_SHA}"
   script: ./jenkins/cfdlab-wrapper.sh
   artifacts:
     paths:
