@@ -62,14 +62,21 @@ static REF_INT ref_subdiv_map(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
 
 REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
                                    REF_INT cell) {
-  REF_INT edge;
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell_node, edge;
 
   for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
     printf(" %d",
            ref_subdiv_mark(ref_subdiv,
                            ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)));
   }
-  printf(" cell %d rank %d\n", cell, ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)));
+  printf(" cell %d rank %d", cell, ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)));
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    printf(" %d",
+           ref_node_global(ref_node, ref_cell_c2n(ref_cell, cell_node, cell)));
+  }
+  printf("\n");
+
   return REF_SUCCESS;
 }
 
