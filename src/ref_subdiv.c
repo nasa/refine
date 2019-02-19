@@ -363,15 +363,15 @@ REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv) {
   REF_CELL ref_cell;
   REF_BOOL again;
 
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
+
   nsweeps = 0;
   again = REF_TRUE;
   while (again) {
     nsweeps++;
     again = REF_FALSE;
-
-    RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
-                           ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
-        "ghost mark");
 
     each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
         each_ref_cell_valid_cell(ref_cell, cell) {
@@ -399,6 +399,10 @@ REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv) {
           break;
       }
     }
+
+    RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                           ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+        "ghost mark");
 
     RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
   }
@@ -569,11 +573,6 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
-    /* most conservative, unmark if any ghosts unmarked */
-    RSS(ref_edge_ghost_min_int(ref_subdiv_edge(ref_subdiv),
-                               ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
-        "ghost mark");
-
     each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
         each_ref_cell_valid_cell(ref_cell, cell) {
       switch (ref_cell_node_per(ref_cell)) {
@@ -591,6 +590,11 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
           break;
       }
     }
+
+    /* most conservative, unmark if any ghosts unmarked */
+    RSS(ref_edge_ghost_min_int(ref_subdiv_edge(ref_subdiv),
+                               ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+        "ghost mark");
 
     if (nsweeps > 5) {
       RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
