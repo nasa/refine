@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* split stack in two */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* split stack in two */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     REF_NODE ref_node;
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* relax tet */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* relax tet */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* relax tet oppisite edges */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* relax tet oppisite edges */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -271,7 +271,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* unrelax 2 to 1, first two edge */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* unrelax 2 to 1, first two edge */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* unrelax 2 to 1, first and last edge */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* unrelax 2 to 1, first and last edge */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -309,7 +309,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* unrelax 2 to 1, last two edges */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* unrelax 2 to 1, last two edges */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
