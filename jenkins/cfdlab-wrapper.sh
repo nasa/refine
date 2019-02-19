@@ -20,7 +20,8 @@ cd ${build_directory_root} && \
     git clone ${git_url} && \
     cd refine && \
       pwd && \
-      git checkout '${GIT_COMMIT}'
+      git checkout '${GIT_COMMIT}' && \
+    ./jenkins/cfdlab.sh
 EOF
 
 # when merging:
@@ -28,34 +29,14 @@ EOF
 #      git merge '${gitlabTargetBranch}'
 
 
-ssh fun3d@${build_machine} <<EOF
-whoami && \
-cd ${build_directory_root} && \
-  cd ${BUILD_TAG} && \
-    cd refine && \
-      pwd && \
-      git status
-EOF
-
-ssh fun3d@${build_machine} <<EOF
-whoami && \
-cd ${build_directory_root} && \
-  cd ${BUILD_TAG} && \
-    cd refine && \
-      pwd && \
-      ./jenkins/cfdlab.sh
-EOF
-
-ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
-
 scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
 scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/refine-\*.tar.gz .
 
-ssh fun3d@${build_machine} <<EOF
- whoami && \
- cd ${build_directory_root}/${BUILD_TAG}/refine && \
-  ./jenkins/remove_old_builds.sh \
-   ${BUILD_NUMBER} \
-   "${build_directory_root}/jenkins-${JOB_NAME}"
-EOF
+#ssh fun3d@${build_machine} <<EOF
+# whoami && \
+# cd ${build_directory_root}/${BUILD_TAG}/refine && \
+#  ./jenkins/remove_old_builds.sh \
+#   ${BUILD_NUMBER} \
+#   "${build_directory_root}/jenkins-${JOB_NAME}"
+#EOF
 
