@@ -73,6 +73,26 @@ REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv, REF_INT global0,
+                                     REF_INT global1) {
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_CELL ref_cell;
+  REF_INT node0, node1;
+  REF_INT group, item, node, cell;
+
+  RXS(ref_node_local(ref_node, global0, &node0), REF_NOT_FOUND, "g2l0");
+  RXS(ref_node_local(ref_node, global1, &node1), REF_NOT_FOUND, "g2l1");
+  if (REF_EMPTY == node0 || REF_EMPTY == node0) return REF_SUCCESS;
+
+  each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+    each_ref_cell_having_node2(ref_cell, node0, node1, item, node, cell) {
+      RSS(ref_subdiv_inspect_cell(ref_subdiv, ref_cell, cell), "insp");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_subdiv_map_to_edge(REF_INT map) {
   REF_INT edge, bit;
 

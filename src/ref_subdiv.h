@@ -54,6 +54,8 @@ REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
 REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv);
 REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
                                    REF_INT cell);
+REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv, REF_INT global0,
+                                     REF_INT global1);
 
 REF_STATUS ref_subdiv_mark_n(REF_SUBDIV ref_subdiv, REF_INT *n);
 
