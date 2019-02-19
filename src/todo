@@ -1,6 +1,4 @@
 
-subdiv on 50M case
-
 protect surface folds and high curvature
 
 speed up parmetis subset
@@ -242,8 +240,10 @@ mixed element in refine/two
 + fseeko on large 50M meshb (fun3d solb writer)
 
 + subdiv unmark termination
-  + both edges when spanning part
+  + unmark local edge with unmark ghost edge
+  + removed both edges when spanning part
   + ref_edge_ghost_min_int unit test
+  + subdiv on 50M case
 
 + already existing triangle and edg with same faceid
   + cavity
