@@ -1,9 +1,29 @@
 
+protect surface folds and high curvature
+
+speed up parmetis subset
+
+profile start up (grid part)
+
+multiscale entropy and/or entropy adjoint (for heating)
+ref_interp_test nondimensionalization of entropy equation and entropy adjoint
+ref_phys_test extraction from ref_interp
+
+continuous metric interpolation
+ pair and store interp at startup
+ incremental interp for new
+ incremental interp for move
+ store new node assoc
+ seq cube test
+ store background in grid
+ load balance interp
+ allow interp asynchronously
+
+
 extract/combine post adaptation operator checks and status
 
 configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
-speed up parmetis subset
 test with zoltan and parmetis configured
 
 minimize duration of lazy global delete
@@ -12,10 +32,7 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
-ref_phys_test extraction from ref_interp
-
 tess
- protect surface folds and high curvature
  + turn off surf bit after volume is filled
  + split egads surface tess, surface adaptation, and volume fill
  volume fill: merge import grid, remove specialized readers
@@ -32,6 +49,13 @@ tess
 C2S
  acceptance test merge build
  how/when to fail fast?
+ update best practice multiscale in docs
+  gradation, reconstruction, parallel, field for speed regime
+
+create jenkins test
+- make check stack fuzz
+- acceptance: validate normal deviation (make metric big across cylinder)
+- enforce merge request
 
 report threshold means
 
@@ -55,11 +79,6 @@ cavity operator in 2D/3D
   2D cavity operator for surf geom edges that allows multiple edge types?
   cavity operator parallel?
 
-layer insert
- cavity recover triangle side
- cavity recover tet face
- remove tet walking from grid (ref_layer uses?) ref_interp one at time
-
 metric construction
   twod
   extract local lp scaling
@@ -69,26 +88,12 @@ metric construction
 ref_recon
   twod l2projection
 
-ref_interp_test nondimensionalization of entropy equation and entropy adjoint
-
 consistent naming for operation pre-condition function names and tasks
 
 acceptance test that checks interp error for functions
 clean up ref_acceptance uses without a flag
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
-
-start geode support?
-
-continuous metric interpolation
- pair and store interp at startup
- incremental interp for new
- incremental interp for move
- store new node assoc
- seq cube test
- store background in grid
- load balance interp
- allow interp asynchronously
 
 input means for all these parameters for optimizer setting
 smooth ordering
@@ -117,8 +122,7 @@ initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
-update best practice multiscale in docs
- gradation, reconstruction, parallel, field for speed regime
+start geode support?
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
@@ -127,18 +131,6 @@ ref_geom
  rename ref_geom to ref_egads?
  create native version of inverse evalute with guess
   use newton with discrete grid to constrain
-
-egads recon
- clean up method
- extract / refactor
- examine the t values to ensure it is monotonic
- take the smallest increment in t, right direction
- handle ONENODE edges (revolve cylinder)
- handle periodic + degen ( pencil, toward full "dragon")
- switch to EG_invEvaluateGuess
-   why is is not working for edges (initialized to right node t?)
-   why is is not working for faces near edges (start from faces interior)
-   revert on failure (wrap?)
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
@@ -201,16 +193,29 @@ validation:
 validaiton_all: turn on
 validation_face: make parallel
 validation_face: all triangles have one tet and tet has one neighbor
-
-create jenkins test
-- make check stack fuzz
-- acceptance: validate normal deviation (make metric big across cylinder)
-- enforce merge request
+euler number
 
 interp metric on curved surface
  interpolate in u,v,s
 
+layer insert
+ cavity recover triangle side
+ cavity recover tet face
+ remove tet walking from grid (ref_layer uses?) ref_interp one at time
+
 surrogate surface reconstruction when EGADS not available
+
+egads recon
+ clean up method
+ extract / refactor
+ examine the t values to ensure it is monotonic
+ take the smallest increment in t, right direction
+ handle ONENODE edges (revolve cylinder)
+ handle periodic + degen ( pencil, toward full "dragon")
+ switch to EG_invEvaluateGuess
+   why is is not working for edges (initialized to right node t?)
+   why is is not working for faces near edges (start from faces interior)
+   revert on failure (wrap?)
 
 ooooooooooooooooo
 
