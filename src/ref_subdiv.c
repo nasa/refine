@@ -526,11 +526,10 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
   REF_BOOL remark = REF_FALSE;
   REF_INT *oldmark;
 
-  if (remark) {
-    RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
-                           ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
-        "ghost mark");
-  }
+  /* make sure consistent before starting */
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
 
   nsweeps = 0;
   again = REF_TRUE;
@@ -544,8 +543,9 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
       for (i = 0; i < ref_edge_n(ref_subdiv_edge(ref_subdiv)); i++)
         oldmark[i] = ref_subdiv->mark[i];
     }
-    RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
-                           ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+    /* most conservative, unmark if any ghosts unmarked */
+    RSS(ref_edge_ghost_min_int(ref_subdiv_edge(ref_subdiv),
+                               ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
         "ghost mark");
     if (remark) {
       REF_INT i, part;
