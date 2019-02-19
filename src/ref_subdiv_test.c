@@ -172,9 +172,6 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
 
-    if (ref_mpi_para(ref_mpi))
-      RSS(ref_export_tec_part(ref_grid, "stack_orig"), "stack part");
-
     REIS(12, ref_node_n_global(ref_node), "start with 12");
 
     if (REF_SUCCESS == ref_node_local(ref_node, 0, &node0) &&
@@ -183,9 +180,6 @@ int main(int argc, char *argv[]) {
         RSS(ref_subdiv_mark_to_split(ref_subdiv, node0, node1), "mark edge");
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
-
-    if (ref_mpi_para(ref_mpi))
-      RSS(ref_export_tec_part(ref_grid, "stack_split"), "stack part");
 
     REIS(16, ref_node_n_global(ref_node), "where my nodes?");
 
@@ -434,8 +428,6 @@ int main(int argc, char *argv[]) {
       REIS(8, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
     }
 
-    /*    ref_export_tec(ref_grid,"pri4.tec");  */
-
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
@@ -668,8 +660,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_subdiv_mark_to_split(ref_subdiv, 2, 4), "mark edge 6");
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
-
-    /* ref_export_tec( ref_grid, "ref_subdiv_pyr6.tec"); */
 
     REIS(1, ref_cell_n(ref_grid_pyr(ref_grid)), "pyr");
     REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "tet");
