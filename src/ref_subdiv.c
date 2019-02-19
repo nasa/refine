@@ -523,6 +523,14 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
   REF_CELL ref_cell;
   REF_BOOL unmark_all;
   REF_BOOL again;
+  REF_BOOL remark = REF_FALSE;
+  REF_INT *oldmark;
+
+  if (remark) {
+    RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                           ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+        "ghost mark");
+  }
 
   nsweeps = 0;
   again = REF_TRUE;
@@ -530,9 +538,33 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
+    if (remark) {
+      REF_INT i;
+      ref_malloc(oldmark, ref_edge_n(ref_subdiv_edge(ref_subdiv)), REF_INT);
+      for (i = 0; i < ref_edge_n(ref_subdiv_edge(ref_subdiv)); i++)
+        oldmark[i] = ref_subdiv->mark[i];
+    }
     RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
                            ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
         "ghost mark");
+    if (remark) {
+      REF_INT i, part;
+      REF_BOOL owned;
+      REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+      REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
+      for (i = 0; i < ref_edge_n(ref_edge); i++) {
+        if (ref_subdiv->mark[i] > oldmark[i]) {
+          RSS(ref_edge_part(ref_edge, i, &part), "edge part");
+          owned = ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) == part;
+          printf("%d g %d %d o %d\n", ref_mpi_n(ref_subdiv_mpi(ref_subdiv)),
+                 ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, i)),
+                 ref_node_global(ref_node, ref_edge_e2n(ref_edge, 1, i)),
+                 owned);
+        }
+      }
+
+      ref_free(oldmark);
+    }
 
     each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
         each_ref_cell_valid_cell(ref_cell, cell) {
@@ -552,7 +584,7 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
       }
     }
 
-    if (nsweeps > 5) {
+    if (remark || nsweeps > 5) {
       RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
       if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
         printf(" %d edges marked after %d unmark relaxations\n", nmark,
