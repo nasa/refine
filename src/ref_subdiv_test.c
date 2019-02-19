@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* mark and relax prism*/
+  if (ref_mpi_n(ref_mpi) <= 6) { /* mark and relax prism */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* mark and relax prism*/
+  if (ref_mpi_n(ref_mpi) <= 6) { /* mark and relax prism */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
@@ -367,7 +367,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* new nodes */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* new prism nodes */
     REF_SUBDIV ref_subdiv;
     REF_NODE ref_node;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
@@ -388,7 +388,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* split prism in two */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in two */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
@@ -405,7 +405,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* split prism in two with bcs */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in two with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
@@ -424,7 +424,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  { /* split prism in four with bcs */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in four with bcs */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
