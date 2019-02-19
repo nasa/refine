@@ -41,7 +41,7 @@ whoami && \
 cd ${build_directory_root}/${BUILD_TAG}/refine && \
  ./jenkins/remove_old_builds.sh \
   ${CI_JOB_ID} \
-  "${build_directory}/${CI_JOB_NAME}"
+  "${build_directory_root}/${CI_JOB_NAME}"
 EOF
 trap - EXIT
 
