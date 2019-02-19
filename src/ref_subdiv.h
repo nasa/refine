@@ -52,6 +52,8 @@ REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
 #define ref_subdiv_node(ref_subdiv, edge) ((ref_subdiv)->node[edge])
 
 REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv);
+REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
+                                   REF_INT cell);
 
 REF_STATUS ref_subdiv_mark_n(REF_SUBDIV ref_subdiv, REF_INT *n);
 

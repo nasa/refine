@@ -55,14 +55,26 @@ static REF_INT ref_subdiv_map(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
         bit * ref_subdiv_mark(ref_subdiv,
                               ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell));
     bit *= 2;
-    /*
-    printf("edge %d bit %d mark %d map %d\n",edge,bit,
-           ref_subdiv_mark(ref_subdiv,ref_subdiv_c2e(ref_subdiv, ref_cell, edge,
-    cell)), map);
-    */
   }
 
   return map;
+}
+
+REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
+                                   REF_INT cell) {
+  REF_INT edge;
+
+  for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
+    printf("cell %d mark %d edge %2d c %2d %2d g %d %d\n", cell,
+           ref_subdiv_mark(ref_subdiv,
+                           ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)),
+           edge, ref_cell_e2n_gen(ref_cell, 0, edge),
+           ref_cell_e2n_gen(ref_cell, 1, edge),
+           ref_cell_e2n(ref_cell, 0, edge, cell),
+           ref_cell_e2n(ref_cell, 1, edge, cell));
+  }
+
+  return REF_SUCCESS;
 }
 
 static REF_STATUS ref_subdiv_map_to_edge(REF_INT map) {
