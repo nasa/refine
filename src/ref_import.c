@@ -1658,7 +1658,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
   printf("%d meshb code\n", i4);
   if (1 != i4) goto close_file_and_return;
-  REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+  REIS(1, fread((unsigned char *)&i4, 4, 1, file), "version");
   printf("%d version\n", i4);
   if (1 > i4 || i4 > 3) goto close_file_and_return;
   version = i4;
