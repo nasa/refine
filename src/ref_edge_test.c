@@ -150,6 +150,44 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* ref_edge_ghost_min_int */
+    REF_EDGE ref_edge;
+    REF_GRID ref_grid;
+    REF_INT edge, part, magic, nglobal;
+    REF_INT data[9] = {REF_EMPTY, REF_EMPTY, REF_EMPTY, REF_EMPTY, REF_EMPTY,
+                       REF_EMPTY, REF_EMPTY, REF_EMPTY, REF_EMPTY};
+
+    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "pri");
+    RSS(ref_edge_create(&ref_edge, ref_grid), "create");
+
+    nglobal = ref_node_n_global(ref_edge_node(ref_edge));
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      magic = MIN(ref_node_global(ref_edge_node(ref_edge),
+                                  ref_edge_e2n(ref_edge, 0, edge)),
+                  ref_node_global(ref_edge_node(ref_edge),
+                                  ref_edge_e2n(ref_edge, 1, edge)));
+      if (ref_mpi_rank(ref_mpi) == part) {
+        data[edge] = nglobal;
+      } else {
+        data[edge] = magic;
+      }
+    }
+
+    RSS(ref_edge_ghost_min_int(ref_edge, ref_mpi, data), "ghost");
+
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      magic = MIN(ref_node_global(ref_edge_node(ref_edge),
+                                  ref_edge_e2n(ref_edge, 0, edge)),
+                  ref_node_global(ref_edge_node(ref_edge),
+                                  ref_edge_e2n(ref_edge, 1, edge)));
+      RAS(magic == data[edge] || nglobal == data[edge], "not expected");
+    }
+
+    RSS(ref_edge_free(ref_edge), "edge");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* uniq */
     REF_EDGE ref_edge;
     REF_GRID ref_grid;

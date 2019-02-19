@@ -308,7 +308,7 @@ REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
     if (part != ref_mpi_rank(ref_mpi)) {
       a_edge[a_next[part]] = edge;
-      a_data[a_next[part]] = edge;
+      a_data[a_next[part]] = data[edge];
       a_nodes[0 + 2 * a_next[part]] =
           ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, edge));
       a_nodes[1 + 2 * a_next[part]] =

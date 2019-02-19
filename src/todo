@@ -1,5 +1,4 @@
 
-ref_edge_ghost_min_int unit test
 subdiv on 50M case
 
 protect surface folds and high curvature
@@ -244,6 +243,7 @@ mixed element in refine/two
 
 + subdiv unmark termination
   + both edges when spanning part
+  + ref_edge_ghost_min_int unit test
 
 + already existing triangle and edg with same faceid
   + cavity
