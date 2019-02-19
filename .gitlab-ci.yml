@@ -1,0 +1,14 @@
+
+build-and-test-on-cmb20:
+  only:
+    - master
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./jenkins/cfdlab-wrapper.sh
+  artifacts:
+    paths:
+      - "log.*"
+      - "refine-*.tar.gz"
+    expire_in: 1 week
+

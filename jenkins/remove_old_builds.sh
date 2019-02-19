@@ -4,22 +4,21 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-# ./remove_old_builds.sh ${BUILD_NUMBER} "path/to/build"
+if [[ $# -ne 2 ]]; then
+  echo "usage: $0 <build number> <path/to/build/prefix>"
+  exit 1
+fi
 
 BUILD_NUMBER=$1
 BUILD_PATH=$2
 
+BUILDS_TO_KEEP=10
 TARGET=${BUILD_NUMBER}
-let TARGET=TARGET-20 || true # ((0)) has a non zero exit code
-set +x
-while [ ${TARGET} -gt 0 ]; do
-    BUILD=${BUILD_PATH}-${TARGET}
-    ((TARGET=TARGET-1)) || true # ((0)) has a non zero exit code
-    if [ ! -d ${BUILD} ]; then 
-      continue
-    fi
-    chmod -R u+rwx ${BUILD} 2> /dev/null
-    rm -rf ${BUILD} 2> /dev/null
-done
-set -x
+let TARGET=TARGET-${BUILDS_TO_KEEP}
 
+for BUILD in ${BUILD_PATH}*; do
+  if [[ ${BUILD#${BUILD_PATH}-} -lt $TARGET ]]; then
+    chmod -R u+rwx ${BUILD}
+    rm -rf ${BUILD}
+  fi
+done
