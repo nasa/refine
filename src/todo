@@ -1,4 +1,7 @@
 
+ref_edge_ghost_min_int unit test
+subdiv on 50M case
+
 protect surface folds and high curvature
 
 speed up parmetis subset
