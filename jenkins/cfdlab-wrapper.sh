@@ -20,6 +20,7 @@ set -u
 
 ssh fun3d@${build_machine} <<EOF
 whoami && \
+mkdir -p ${build_directory_root} && \
 cd ${build_directory_root} && \
   mkdir -p ${BUILD_TAG} && \
   cd ${BUILD_TAG} && \
