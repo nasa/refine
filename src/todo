@@ -59,6 +59,7 @@ create jenkins test
 - make check stack fuzz
 - acceptance: validate normal deviation (make metric big across cylinder)
 - enforce merge request
+- acceptance test that checks interp error for functions
 
 report threshold means
 
@@ -93,15 +94,9 @@ ref_recon
 
 consistent naming for operation pre-condition function names and tasks
 
-acceptance test that checks interp error for functions
 clean up ref_acceptance uses without a flag
 ref_acceptance should use two dashes
 try https://doi.org/10.2514/6.2007-4186 analytic test cases
-
-input means for all these parameters for optimizer setting
-smooth ordering
-smooth verify improvement
-optimized 4th tet node placement
 
 integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
@@ -136,6 +131,11 @@ ref_geom
   use newton with discrete grid to constrain
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
+
+input means for all these parameters for optimizer setting
+smooth ordering
+smooth verify improvement
+optimized 4th tet node placement
 
 robustness and metric conformity
  add end-game or blend to end-game metric conformity strategy
