@@ -481,8 +481,51 @@ REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
+                                 REF_BOOL *again, REF_BOOL unmark_all) {
+  REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
+  REF_INT sum;
+
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 3, 4, 5,
+                                 unmark_all),
+      "face 0");
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 1, 2, 5,
+                                 unmark_all),
+      "face 1");
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 4, 2,
+                                 unmark_all),
+      "face 2");
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 1, 3,
+                                 unmark_all),
+      "face 3");
+
+  sum = ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 0, cell)) +
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 1, cell)) +
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 2, cell)) +
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 3, cell)) +
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 4, cell)) +
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, 5, cell));
+
+  if (2 == sum) {
+    RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell, again, 0, 5),
+        "edges 0-5");
+    RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell, again, 1, 4),
+        "edges 1-4");
+    RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell, again, 2, 3),
+        "edges 2-3");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
-  REF_INT group, cell, nsweeps, nmark, sum;
+  REF_INT group, cell, nsweeps, nmark;
   REF_CELL ref_cell;
   REF_BOOL unmark_all;
   REF_BOOL again;
@@ -505,43 +548,8 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
           /* prevents inf loop due to different faces conflicting edges */
           unmark_all = (25 < nsweeps);
 
-          RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, &again, 3,
-                                         4, 5, unmark_all),
-              "face 0");
-          RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, &again, 1,
-                                         2, 5, unmark_all),
-              "face 1");
-          RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, &again, 0,
-                                         4, 2, unmark_all),
-              "face 2");
-          RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, &again, 0,
-                                         1, 3, unmark_all),
-              "face 3");
-
-          sum = ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 0, cell)) +
-                ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 1, cell)) +
-                ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 2, cell)) +
-                ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 3, cell)) +
-                ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 4, cell)) +
-                ref_subdiv_mark(ref_subdiv,
-                                ref_subdiv_c2e(ref_subdiv, ref_cell, 5, cell));
-
-          if (2 == sum) {
-            RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell,
-                                               &again, 0, 5),
-                "edges 0-5");
-            RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell,
-                                               &again, 1, 4),
-                "edges 1-4");
-            RSS(ref_subdiv_unmark_tet_opp_edge(ref_subdiv, ref_cell, cell,
-                                               &again, 2, 3),
-                "edges 2-3");
-          }
+          RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again, unmark_all),
+              "unmark tet");
 
           break;
         default:
