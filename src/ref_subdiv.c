@@ -380,24 +380,10 @@ REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv) {
 
 REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
                                         REF_INT e1) {
-  REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
-  REF_INT part0, part1;
   REF_INT e0min, e0max;
   REF_INT e1min, e1max;
-
-  /* unmark both when spans partitions */
-  RSS(ref_edge_part(ref_edge, e0, &part0), "edge0 part");
-  RSS(ref_edge_part(ref_edge, e1, &part1), "edge1 part");
-  if (part0 != ref_mpi_rank(ref_mpi) || part1 != ref_mpi_rank(ref_mpi)) {
-    ref_subdiv_mark(ref_subdiv, e0) = 0;
-    ref_subdiv_mark(ref_subdiv, e1) = 0;
-    if (ref_subdiv->debug)
-      printf("unmark both of two proc %d edges %d %d\n",
-             ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)), e0, e1);
-    return REF_SUCCESS;
-  }
 
   /* unmark the edge with the smallest edge globals */
   e0min = MIN(ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, e0)),
