@@ -289,8 +289,10 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_unmark_relax(ref_subdiv), "split");
 
-    REIS(0, ref_subdiv_mark(ref_subdiv, 5), "yet");
-    REIS(1, ref_subdiv_mark(ref_subdiv, 4), "yet");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(0, ref_subdiv_mark(ref_subdiv, 5), "yet");
+      REIS(1, ref_subdiv_mark(ref_subdiv, 4), "yet");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -369,10 +371,11 @@ int main(int argc, char *argv[]) {
     REIS(6, ref_node_n(ref_node), "6 node prism");
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(8, ref_node_n(ref_node), "two new nodes");
-
-    REIS(6, ref_subdiv_node(ref_subdiv, 0), "new 6");
-    REIS(7, ref_subdiv_node(ref_subdiv, 6), "new 6");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(8, ref_node_n(ref_node), "two new nodes");
+      REIS(6, ref_subdiv_node(ref_subdiv, 0), "new 6");
+      REIS(7, ref_subdiv_node(ref_subdiv, 6), "new 6");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -387,7 +390,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -402,11 +407,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
-
-    REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
-
-    REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
+      REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
+      REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -423,11 +428,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(4, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
-
-    REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
-
-    REIS(8, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
+      REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
+      REIS(8, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+    }
 
     /*    ref_export_tec(ref_grid,"pri4.tec");  */
 
@@ -444,9 +449,10 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two");
-
-    REIS(9, ref_node_n(ref_grid_node(ref_grid)), "9");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two");
+      REIS(9, ref_node_n(ref_grid_node(ref_grid)), "9");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -461,9 +467,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "two tet");
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "two tri");
-    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "two tet");
+      REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "two tri");
+      REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -478,9 +486,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "two tet");
-    REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "still one tri");
-    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_cell_n(ref_grid_tet(ref_grid)), "two tet");
+      REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "still one tri");
+      REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -496,9 +506,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
-    REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
-    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
+      REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+      REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -514,9 +526,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
+      REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+      REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -532,9 +546,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
+      REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+      REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -550,9 +566,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(4, ref_cell_n(ref_grid_tet(ref_grid)), "four tet");
+      REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+      REIS(1, ref_cell_n(ref_grid_edg(ref_grid)), "still one edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
@@ -568,9 +586,11 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
-    REIS(8, ref_cell_n(ref_grid_tet(ref_grid)), "eight tet");
-    REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(8, ref_cell_n(ref_grid_tet(ref_grid)), "eight tet");
+      REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+      REIS(2, ref_cell_n(ref_grid_edg(ref_grid)), "two edg");
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
