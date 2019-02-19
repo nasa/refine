@@ -92,6 +92,12 @@ struct REF_CELL_STRUCT {
 #define each_ref_cell_having_node(ref_cell, node, item, cell) \
   each_ref_adj_node_item_with_ref((ref_cell)->ref_adj, node, item, cell)
 
+#define each_ref_cell_having_node2(ref_cell, node0, node1, item, node, cell) \
+  each_ref_cell_having_node(                                                 \
+      ref_cell, node0, item,                                                 \
+      cell) for ((node) = 0; (node) < ref_cell_node_per(ref_cell);           \
+                 (node)++) if ((node1) == ref_cell_c2n(ref_cell, node, cell))
+
 #define each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) \
   for ((cell) = 0; (cell) < ref_cell_max(ref_cell); (cell)++)      \
     if (REF_SUCCESS == ref_cell_nodes(ref_cell, cell, nodes))
