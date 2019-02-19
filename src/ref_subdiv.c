@@ -455,8 +455,7 @@ REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
 
 REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
                                       REF_INT cell, REF_BOOL *again, REF_INT s0,
-                                      REF_INT s1, REF_INT s2,
-                                      REF_BOOL unmark_all) {
+                                      REF_INT s1, REF_INT s2) {
   REF_INT e0, e1, e2;
   e0 = ref_subdiv_c2e(ref_subdiv, ref_cell, s0, cell);
   e1 = ref_subdiv_c2e(ref_subdiv, ref_cell, s1, cell);
@@ -464,31 +463,16 @@ REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
   if (ref_subdiv_mark(ref_subdiv, e0) && ref_subdiv_mark(ref_subdiv, e1) &&
       !ref_subdiv_mark(ref_subdiv, e2)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e0, e1);
-    if (unmark_all) {
-      ref_subdiv_mark(ref_subdiv, e0) = 0;
-      ref_subdiv_mark(ref_subdiv, e1) = 0;
-      ref_subdiv_mark(ref_subdiv, e2) = 0;
-    }
     *again = REF_TRUE;
   }
   if (ref_subdiv_mark(ref_subdiv, e0) && !ref_subdiv_mark(ref_subdiv, e1) &&
       ref_subdiv_mark(ref_subdiv, e2)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e0, e2);
-    if (unmark_all) {
-      ref_subdiv_mark(ref_subdiv, e0) = 0;
-      ref_subdiv_mark(ref_subdiv, e1) = 0;
-      ref_subdiv_mark(ref_subdiv, e2) = 0;
-    }
     *again = REF_TRUE;
   }
   if (!ref_subdiv_mark(ref_subdiv, e0) && ref_subdiv_mark(ref_subdiv, e1) &&
       ref_subdiv_mark(ref_subdiv, e2)) {
     ref_subdiv_unmark_one_of_two(ref_subdiv, e1, e2);
-    if (unmark_all) {
-      ref_subdiv_mark(ref_subdiv, e0) = 0;
-      ref_subdiv_mark(ref_subdiv, e1) = 0;
-      ref_subdiv_mark(ref_subdiv, e2) = 0;
-    }
     *again = REF_TRUE;
   }
 
@@ -514,21 +498,17 @@ REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
 }
 
 REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
-                                 REF_BOOL *again, REF_BOOL unmark_all) {
+                                 REF_BOOL *again) {
   REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
   REF_INT sum;
 
-  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 3, 4, 5,
-                                 unmark_all),
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 3, 4, 5),
       "face 0");
-  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 1, 2, 5,
-                                 unmark_all),
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 1, 2, 5),
       "face 1");
-  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 4, 2,
-                                 unmark_all),
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 4, 2),
       "face 2");
-  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 1, 3,
-                                 unmark_all),
+  RSS(ref_subdiv_unmark_tet_face(ref_subdiv, ref_cell, cell, again, 0, 1, 3),
       "face 3");
 
   sum = ref_subdiv_mark(ref_subdiv,
@@ -559,7 +539,6 @@ REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
 REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
   REF_INT group, cell, nsweeps, nmark;
   REF_CELL ref_cell;
-  REF_BOOL unmark_all;
   REF_BOOL again;
 
   /* make sure consistent before starting */
@@ -578,11 +557,7 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
       switch (ref_cell_node_per(ref_cell)) {
         case 4:
 
-          /* prevents inf loop due to different faces conflicting edges */
-          unmark_all = (25 < nsweeps);
-
-          RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again, unmark_all),
-              "unmark tet");
+          RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again), "unmark tet");
 
           break;
         default:

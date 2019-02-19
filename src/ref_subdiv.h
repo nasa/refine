@@ -72,7 +72,7 @@ REF_STATUS ref_subdiv_mark_prism_sides(REF_SUBDIV ref_subdiv);
 REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv);
 
 REF_STATUS ref_subdiv_unmark_tet(REF_SUBDIV ref_subdiv, REF_INT cell,
-                                 REF_BOOL *again, REF_BOOL unmark_all);
+                                 REF_BOOL *again);
 REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv);
 
 REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv);

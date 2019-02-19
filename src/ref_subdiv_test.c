@@ -330,7 +330,6 @@ int main(int argc, char *argv[]) {
   if (ref_mpi_n(ref_mpi) <= 4) { /* unrelax para 0 2 */
     REF_SUBDIV ref_subdiv;
     REF_BOOL again = REF_FALSE;
-    REF_BOOL unmark_all = REF_FALSE;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv, 0, 1), "mark edge");
@@ -339,7 +338,7 @@ int main(int argc, char *argv[]) {
     REIS(1, ref_subdiv_mark(ref_subdiv, 0), "yet");
     REIS(1, ref_subdiv_mark(ref_subdiv, 2), "yet");
 
-    RSS(ref_subdiv_unmark_tet(ref_subdiv, 0, &again, unmark_all), "unmark");
+    RSS(ref_subdiv_unmark_tet(ref_subdiv, 0, &again), "unmark");
 
     REIS(1, ref_subdiv_mark(ref_subdiv, 0), "yet");
     REIS(0, ref_subdiv_mark(ref_subdiv, 2), "yet");
@@ -350,7 +349,6 @@ int main(int argc, char *argv[]) {
   if (ref_mpi_n(ref_mpi) <= 4) { /* unrelax para 0 5 */
     REF_SUBDIV ref_subdiv;
     REF_BOOL again = REF_FALSE;
-    REF_BOOL unmark_all = REF_FALSE;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 
     RSS(ref_subdiv_mark_to_split(ref_subdiv, 0, 1), "mark edge");
@@ -359,7 +357,7 @@ int main(int argc, char *argv[]) {
     REIS(1, ref_subdiv_mark(ref_subdiv, 0), "yet");
     REIS(1, ref_subdiv_mark(ref_subdiv, 5), "yet");
 
-    RSS(ref_subdiv_unmark_tet(ref_subdiv, 0, &again, unmark_all), "unmark");
+    RSS(ref_subdiv_unmark_tet(ref_subdiv, 0, &again), "unmark");
 
     REIS(1, ref_subdiv_mark(ref_subdiv, 0), "yet");
     REIS(0, ref_subdiv_mark(ref_subdiv, 5), "yet");
