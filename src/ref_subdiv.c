@@ -85,11 +85,18 @@ REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv, REF_INT global0,
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_CELL ref_cell;
   REF_INT node0, node1;
+  REF_INT edge, part;
   REF_INT group, item, node, cell;
 
   RXS(ref_node_local(ref_node, global0, &node0), REF_NOT_FOUND, "g2l0");
   RXS(ref_node_local(ref_node, global1, &node1), REF_NOT_FOUND, "g2l1");
-  if (REF_EMPTY == node0 || REF_EMPTY == node0) return REF_SUCCESS;
+  if (REF_EMPTY == node0 || REF_EMPTY == node1) return REF_SUCCESS;
+  RSS(ref_edge_with(ref_subdiv_edge(ref_subdiv), node0, node1, &edge), "with");
+  RSS(ref_edge_part(ref_subdiv_edge(ref_subdiv), edge, &part), "part");
+
+  printf(" mark %d edge %d rank %d part %d global %d %d\n",
+         ref_subdiv_mark(ref_subdiv, edge), edge,
+         ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)), part, global0, global1);
 
   each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
     each_ref_cell_having_node2(ref_cell, node0, node1, item, node, cell) {
