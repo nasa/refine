@@ -315,7 +315,7 @@ int main(int argc, char *argv[]) {
     REIS(1, opt_goal_pos,
          "required args: --opt-goal grid.meshb solution.solb complexity p "
          "gradation output-metric.solb");
-    if (6 > argc) {
+    if (8 > argc) {
       printf(
           "required args: --opt-goal grid.meshb solution.solb complexity p "
           "gradation output-metric.solb\n");
