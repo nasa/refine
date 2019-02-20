@@ -460,15 +460,12 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
 REF_STATUS ref_cavity_form_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                REF_INT node0, REF_INT node1, REF_INT node) {
-  REF_INT cell, ncell;
-  REF_INT cell_to_add[50];
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT item, cell_node, cell;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
-  RSS(ref_cell_list_with2(ref_grid_tet(ref_grid), node0, node1, 50, &ncell,
-                          cell_to_add),
-      "get list");
-  for (cell = 0; cell < ncell; cell++) {
-    RSS(ref_cavity_add_tet(ref_cavity, cell_to_add[cell]), "insert");
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
   }
 
   return REF_SUCCESS;
@@ -477,17 +474,14 @@ REF_STATUS ref_cavity_form_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                       REF_INT node0, REF_INT node1,
                                       REF_INT new_node) {
-  REF_INT cell, ncell;
-  REF_INT cell_to_add[50];
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT item, cell_node, cell;
   REF_INT face;
   REF_INT node, nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
 
-  RSS(ref_cell_list_with2(ref_grid_tet(ref_grid), node0, node1, 50, &ncell,
-                          cell_to_add),
-      "get list");
-  for (cell = 0; cell < ncell; cell++) {
-    RSS(ref_cavity_add_tet(ref_cavity, cell_to_add[cell]), "insert");
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
   }
 
   each_ref_cavity_valid_face(ref_cavity, face) {
