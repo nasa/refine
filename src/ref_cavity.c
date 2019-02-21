@@ -1192,7 +1192,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   REF_INT best_other;
   REF_CAVITY ref_cavity;
   REF_BOOL allowed;
-  REF_INT item, cell_node, degree;
+  REF_INT degree;
   REF_INT n0, n1, n2;
   REF_INT other;
   REF_INT others[12][3] = {
@@ -1213,11 +1213,8 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
                                &allowed),
             "split");
         if (allowed) {
-          degree = 0;
-          each_ref_cell_having_node2(ref_cell, nodes[n0], nodes[n1], item,
-                                     cell_node, cell) {
-            degree++;
-          }
+          RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
+              "edge degree");
           if (degree > 12) continue;
           RSS(ref_cavity_create(&ref_cavity), "create");
           RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
