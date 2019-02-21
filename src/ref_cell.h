@@ -161,6 +161,8 @@ REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell, REF_INT *nodes,
 
 REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell);
 
+REF_STATUS ref_cell_degree_with2(REF_CELL ref_cell, REF_INT node0,
+                                 REF_INT node1, REF_INT *degree);
 REF_STATUS ref_cell_list_with2(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
                                REF_INT max_cell, REF_INT *ncell,
                                REF_INT *cell_list);

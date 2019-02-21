@@ -748,6 +748,34 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_free(ref_cell), "cleanup");
   }
 
+  { /* degree of tets with two nodes */
+    REF_CELL ref_cell;
+    REF_INT cell, nodes[4];
+    REF_INT degree;
+
+    RSS(ref_tet(&ref_cell), "create");
+
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 3;
+    RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
+    nodes[0] = 0;
+    nodes[1] = 2;
+    nodes[2] = 1;
+    nodes[3] = 4;
+    RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
+
+    RSS(ref_cell_degree_with2(ref_cell, 3, 4, &degree), "degree 0");
+    REIS(0, degree, "zero edge");
+    RSS(ref_cell_degree_with2(ref_cell, 0, 3, &degree), "degree 1");
+    REIS(1, degree, "one edge");
+    RSS(ref_cell_degree_with2(ref_cell, 0, 1, &degree), "degree 2");
+    REIS(2, degree, "two edge");
+
+    RSS(ref_cell_free(ref_cell), "cleanup");
+  }
+
   { /* list of node */
     REF_CELL ref_cell;
     REF_INT cell, nodes[4];
