@@ -1,8 +1,6 @@
 
 protect surface folds and high curvature
 
-speed up parmetis subset
-
 profile start up (grid part)
 
 multiscale entropy and/or entropy adjoint (for heating)
@@ -261,6 +259,7 @@ mixed element in refine/two
 
 + call parmetis on subset of procs (also avoids zero part input)
 + use metis on <1M nodes
++ speed up parmetis subset
 
 + change the default seg per radian to 2
 
