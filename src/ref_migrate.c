@@ -773,8 +773,11 @@ static REF_STATUS ref_migrate_parmetis_subset(
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
     nsend = MAX(0, n1 - n0);
-    first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
-    send_size[proc] = xadjdist[first + nsend] - xadjdist[first];
+    send_size[proc] = 0;
+    if (0 < nsend) {
+      first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
+      send_size[proc] = xadjdist[first + nsend] - xadjdist[first];
+    }
   }
   RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
       "alltoall sizes");
