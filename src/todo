@@ -26,6 +26,8 @@ configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
 test with zoltan and parmetis configured
 
+squelch shape measure divide by zero warning
+
 minimize duration of lazy global delete
 
 check that post conditions are implemented completely for all ops
