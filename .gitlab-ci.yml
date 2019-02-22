@@ -1,7 +1,6 @@
 
 build-and-test-on-cmb20:
   only:
-    - master
     - merge_requests
   tags:
     - gitlab_runner
