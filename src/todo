@@ -34,6 +34,7 @@ check that post conditions are implemented completely for all ops
 
 tess
  high order geometry visualization
+ complexity for surface adaptation
  + turn off surf bit after volume is filled
  + split egads surface tess, surface adaptation, and volume fill
  volume fill: merge import grid, remove specialized readers
