@@ -785,7 +785,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     nrecv += recv_size[proc];
   }
-  REIS(nrecv, xadj[vtx[proc + 1]] - xadj[vtx[proc]], "verify total recv sizes");
+  REIS(nrecv, xadj[nnew], "verify total recv sizes");
   ref_malloc_init(adjncy, nrecv, PARM_INT, 0);
   ref_malloc_init(adjwgt, nrecv, PARM_INT, 0);
   RSS(ref_mpi_alltoallv(ref_mpi, adjncydist, send_size, adjncy, recv_size, 1,
