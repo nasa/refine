@@ -721,126 +721,112 @@ static REF_STATUS ref_migrate_parmetis_subset(
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
   REF_INT ntotal;
   REF_INT proc, nold, nnew, i, n0, n1, first;
-  REF_INT nsend, nrecv, *source, *newdeg;
+  REF_INT nsend, nrecv, *send_size, *recv_size;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT *deg;
+  PARM_INT *deg, *newdeg;
   REF_MPI split_mpi;
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
   RAS(0 < newproc && newproc <= ref_mpi_n(ref_mpi),
       "newproc negative or larger then nproc");
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
+  ref_malloc_init(send_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
+  ref_malloc_init(recv_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
+  /* use ref_part machinery to set the first global index on the subset parts */
   for (proc = 0; proc < newproc; proc++) {
     vtx[proc] = ref_part_first(ntotal, newproc, proc);
   }
   vtx[newproc] = ntotal;
-  nnew = vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)];
+  /* fill vtx with no global on remaining (unused) parts */
+  for (proc = newproc + 1; proc < ref_mpi_n(ref_mpi); proc++) {
+    vtx[proc] = vtx[newproc];
+  }
+  /* new and old vertex count for my rank */
   nold = vtxdist[1 + ref_mpi_rank(ref_mpi)] - vtxdist[ref_mpi_rank(ref_mpi)];
+  nnew = vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)];
+  ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
+  ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
   ref_malloc_init(deg, nold, PARM_INT, 0);
+  ref_malloc_init(newdeg, nnew, PARM_INT, 0);
   for (i = 0; i < nold; i++) {
     deg[i] = xadjdist[i + 1] - xadjdist[i];
   }
-  xadj = NULL;
-  adjncy = NULL;
-  adjwgt = NULL;
-  if (ref_mpi_rank(ref_mpi) < newproc) {
-    ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+    n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
+    n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
+    send_size[proc] = MAX(0, n1 - n0);
   }
-  for (proc = 0; proc < newproc; proc++) {
-    /* gather xadj */
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+    n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
+    n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
+    recv_size[proc] = MAX(0, n1 - n0);
+  }
+  RSS(ref_mpi_alltoallv(ref_mpi, deg, send_size, newdeg, recv_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv degree");
+  xadj[0] = 0;
+  for (i = 0; i < nnew; i++) {
+    xadj[i + 1] = xadj[i] + newdeg[i];
+  }
+  ref_free(newdeg);
+  ref_free(deg);
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
     nsend = MAX(0, n1 - n0);
-    if (nsend > 0) {
-      first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
-    } else {
-      first = 0;
-    }
-    RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(deg[first]), &nrecv,
-                          &source, (void **)&newdeg, REF_INT_TYPE),
-        "concat deg");
-    if (ref_mpi_rank(ref_mpi) == proc) {
-      REIS(nnew, nrecv, "newdeg xadj size mismatch");
-      xadj[0] = 0;
-      for (i = 0; i < nnew; i++) xadj[i + 1] = xadj[i] + newdeg[i];
-    }
-    ref_free(source);
-    ref_free(newdeg);
-    /* gather adjncy and adjwgt */
-    if (nsend > 0) {
-      nsend = xadjdist[first + nsend] - xadjdist[first];
-      first = xadjdist[first];
-    }
-    RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(adjncydist[first]),
-                          &nrecv, &source, (void **)&newdeg, REF_INT_TYPE),
-        "concat deg");
-    if (ref_mpi_rank(ref_mpi) == proc) {
-      REIS(xadj[nnew] - xadj[0], nrecv, "newdeg adjncy size mismatch");
-      adjncy = newdeg;
-    } else {
-      ref_free(newdeg);
-    }
-    ref_free(source);
-    RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(adjwgtdist[first]),
-                          &nrecv, &source, (void **)&newdeg, REF_INT_TYPE),
-        "concat deg");
-    if (ref_mpi_rank(ref_mpi) == proc) {
-      adjwgt = newdeg;
-    } else {
-      ref_free(newdeg);
-    }
-    ref_free(source);
+    first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
+    send_size[proc] = xadjdist[first + nsend] - xadjdist[first];
   }
+  RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
+      "alltoall sizes");
+  nrecv = 0;
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+    nrecv += recv_size[proc];
+  }
+  REIS(nrecv, xadj[vtx[proc + 1]] - xadj[vtx[proc]], "verify total recv sizes");
+  ref_malloc_init(adjncy, nrecv, PARM_INT, 0);
+  ref_malloc_init(adjwgt, nrecv, PARM_INT, 0);
+  RSS(ref_mpi_alltoallv(ref_mpi, adjncydist, send_size, adjncy, recv_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv adjncy");
+  RSS(ref_mpi_alltoallv(ref_mpi, adjwgtdist, send_size, adjwgt, recv_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv adjwgt");
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset");
 
+  /* split comm and call parmetis */
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, newproc), "split comm");
-  part = NULL;
   if (ref_mpi_rank(ref_mpi) < newproc) {
-    ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
     RSS(ref_migrate_parmetis_wrapper(split_mpi, vtx, xadj, adjncy, adjwgt,
                                      part),
         "parmetis wrapper");
   }
   RSS(ref_mpi_join_comm(split_mpi), "join comm");
   RSS(ref_mpi_free(split_mpi), "free split comm");
-  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
-
-  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) { /* recv */
-    /* scatter part */
-    nsend = 0;
-    first = 0;
-    if (ref_mpi_rank(ref_mpi) < newproc) { /* sending */
-      n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
-      n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
-      nsend = MAX(0, n1 - n0);
-      if (nsend > 0) {
-        first = n0 - vtx[ref_mpi_rank(ref_mpi)];
-      } else {
-        first = 0;
-      }
-    }
-    if (nsend > 0) {
-      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, (void *)&(part[first]), &nrecv,
-                            &source, (void **)&newdeg, REF_INT_TYPE),
-          "concat part with send");
-    } else {
-      RSS(ref_mpi_allconcat(ref_mpi, 1, nsend, NULL, &nrecv, &source,
-                            (void **)&newdeg, REF_INT_TYPE),
-          "concat part no (NULL) send");
-    }
-    if (ref_mpi_rank(ref_mpi) == proc) {
-      REIS(nold, nrecv, "newdeg xadj size mismatch");
-      for (i = 0; i < nrecv; i++) partdist[i] = newdeg[i];
-    }
-    ref_free(source);
-    ref_free(newdeg);
-  }
-  ref_mpi_stopwatch_stop(ref_mpi, "subset part");
-
-  ref_free(part);
   ref_free(adjwgt);
   ref_free(adjncy);
   ref_free(xadj);
-  ref_free(deg);
+  ref_mpi_stopwatch_stop(ref_mpi, "parmetis part");
+
+  /* return part to partdist */
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+    n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
+    n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
+    send_size[proc] = MAX(0, n1 - n0);
+  }
+  for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
+    n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
+    n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
+    recv_size[proc] = MAX(0, n1 - n0);
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, part, send_size, partdist, recv_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv adjwgt");
+  ref_mpi_stopwatch_stop(ref_mpi, "subset part");
+
+  ref_free(part);
+  ref_free(recv_size);
+  ref_free(send_size);
   ref_free(vtx);
   return REF_SUCCESS;
 }
