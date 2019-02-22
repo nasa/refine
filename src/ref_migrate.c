@@ -737,7 +737,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   }
   vtx[newproc] = ntotal;
   /* fill vtx with no global on remaining (unused) parts */
-  for (proc = newproc + 1; proc < ref_mpi_n(ref_mpi); proc++) {
+  for (proc = newproc + 1; proc <= ref_mpi_n(ref_mpi); proc++) {
     vtx[proc] = vtx[newproc];
   }
   /* new and old vertex count for my rank */
