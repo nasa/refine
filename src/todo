@@ -1,8 +1,6 @@
 
 protect surface folds and high curvature
 
-profile start up (grid part)
-
 multiscale entropy and/or entropy adjoint (for heating)
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
 ref_phys_test extraction from ref_interp
@@ -164,9 +162,10 @@ robustness and metric conformity
   minmax optimize uv
 
 performance
+ profile
+ profile start up (grid part)
  fine grain stopwatch for ref_migrate, ref_interp, ref_subdiv, face mov
  replace ref_subdiv with extra load balance?
- profile
  node smooth after node, cell, and, adj are compact
    metric exact after split
  make faster, more efficient
