@@ -264,9 +264,11 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   REF_INT node;
   REF_DBL m[6], m_int[6], m_target[6];
   REF_DBL radius, h;
+  REF_DBL factor = 1.0;
+  REF_DBL n[3], dot;
 
   each_ref_node_valid_node(ref_node, node) {
-    REF_DBL n[3], dot;
+    RSS(ref_node_metric_get(ref_node, node, m), "get");
     n[0] = 0.90631;
     n[1] = 0.42262;
     n[2] = 0.0;
@@ -275,21 +277,43 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
                   pow(ref_node_xyz(ref_node, 1, node) - dot * n[1], 2) +
                   pow(ref_node_xyz(ref_node, 2, node) - dot * n[2], 2));
     h = MIN(0.0003 + 0.002 * radius / (0.15 * 0.42262), 0.007);
-    if (0.1 < ref_node_xyz(ref_node, 2, node) ||
-        -0.1 > ref_node_xyz(ref_node, 2, node) ||
-        1.0 < ref_node_xyz(ref_node, 1, node) ||
-        -0.1 > ref_node_xyz(ref_node, 0, node))
-      h = 0.1 + ABS(ref_node_xyz(ref_node, 2, node)) / 5.0 +
-          ABS(ref_node_xyz(ref_node, 1, node)) / 5.0 +
-          ABS(ref_node_xyz(ref_node, 0, node)) / 5.0;
-    h *= 8.0;
-    RSS(ref_node_metric_get(ref_node, node, m), "get");
+    h *= factor;
     m_target[0] = 1.0 / (h * h);
     m_target[1] = 0;
     m_target[2] = 0;
     m_target[3] = 1.0 / (h * h);
     m_target[4] = 0;
     m_target[5] = 1.0 / (h * h);
+    if (ref_node_xyz(ref_node, 0, node) > 1.1) {
+      REF_DBL ht, s, hx;
+      ht = 0.007;
+      s = (ref_node_xyz(ref_node, 0, node) - 1.1) / 3.9;
+      s = MIN(1.0, MAX(0.0, s));
+      hx = ht * (1.0 - s) + 10 * ht * s;
+      hx *= factor;
+      ht *= factor;
+      m_target[0] = 1.0 / (hx * hx);
+      m_target[1] = 0;
+      m_target[2] = 0;
+      m_target[3] = 1.0 / (ht * ht);
+      m_target[4] = 0;
+      m_target[5] = 1.0 / (ht * ht);
+    }
+    if (0.1 < ref_node_xyz(ref_node, 2, node) ||
+        -0.1 > ref_node_xyz(ref_node, 2, node) ||
+        1.0 < ref_node_xyz(ref_node, 1, node) ||
+        -0.1 > ref_node_xyz(ref_node, 0, node)) {
+      h = 0.1 + ABS(ref_node_xyz(ref_node, 2, node)) / 5.0 +
+          ABS(ref_node_xyz(ref_node, 1, node)) / 5.0 +
+          ABS(ref_node_xyz(ref_node, 0, node)) / 5.0;
+      h *= factor;
+      m_target[0] = 1.0 / (h * h);
+      m_target[1] = 0;
+      m_target[2] = 0;
+      m_target[3] = 1.0 / (h * h);
+      m_target[4] = 0;
+      m_target[5] = 1.0 / (h * h);
+    }
     RSS(ref_matrix_intersect(m_target, m, m_int), "intersect");
     RSS(ref_node_metric_set(ref_node, node, m_int), "set node met");
   }
