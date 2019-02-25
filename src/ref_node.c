@@ -1224,8 +1224,8 @@ REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
     /* 36/3^(1/3) */
     *quality = 24.9610058766228 * num / denom;
   } else {
-    printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
-           __FILE__, __LINE__, __func__, volume, min_det, num, denom);
+    /* printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+       __FILE__, __LINE__, __func__, volume, min_det, num, denom); */
     *quality = -1.0;
   }
 
@@ -1294,8 +1294,8 @@ REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
       d_quality[i] = 24.9610058766228 * (d_num[i] * denom - num * d_denom[i]) /
                      denom / denom;
   } else {
-    printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
-           __FILE__, __LINE__, __func__, volume, min_det, num, denom);
+    /* printf("%s: %d: %s: div zero vol %.18e min_det %.18e (%.18e / %.18e)\n",
+       __FILE__, __LINE__, __func__, volume, min_det, num, denom); */
     *quality = -1.0;
     for (i = 0; i < 3; i++) d_quality[i] = 0.0;
   }
@@ -1383,8 +1383,8 @@ REF_STATUS ref_node_tet_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
     d_quality[2] =
         24.9610058766228 * (d_num[2] * l2 - num * d_l2[2]) / (l2 * l2);
   } else {
-    printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n", __FILE__,
-           __LINE__, __func__, volume, num, l2);
+    /* printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n", __FILE__,
+       __LINE__, __func__, volume, num, l2); */
     *quality = -1.0;
     d_quality[0] = 0.0;
     d_quality[1] = 0.0;
@@ -1469,8 +1469,8 @@ REF_STATUS ref_node_tet_jac_quality(REF_NODE ref_node, REF_INT *nodes,
     /* 36/3^(1/3) */
     *quality = 24.9610058766228 * num / l2;
   } else {
-    printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n", __FILE__,
-           __LINE__, __func__, volume, num, l2);
+    /* printf("%s: %d: %s: div zero vol %.18e (%.18e / %.18e)\n", __FILE__,
+       __LINE__, __func__, volume, num, l2); */
     *quality = -1.0;
   }
 
@@ -1534,8 +1534,8 @@ static REF_STATUS ref_node_tri_epic_quality(REF_NODE ref_node, REF_INT *nodes,
   if (ref_math_divisible(num, denom)) {
     *quality = 4.0 / sqrt(3.0) * 3 * num / denom;
   } else {
-    printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
-           __FILE__, __LINE__, __func__, area, min_det, num, denom);
+    /* printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
+       __FILE__, __LINE__, __func__, area, min_det, num, denom); */
     *quality = -1.0;
   }
 
@@ -1576,8 +1576,8 @@ static REF_STATUS ref_node_tri_jac_quality(REF_NODE ref_node, REF_INT *nodes,
   if (ref_math_divisible(a, l2)) {
     *quality = 4.0 * sqrt(3.0) * (a / l2);
   } else {
-    printf("%s: %d: %s: div zero area %.18e l2 %.18e\n", __FILE__, __LINE__,
-           __func__, a, l2);
+    /* printf("%s: %d: %s: div zero area %.18e l2 %.18e\n", __FILE__, __LINE__,
+       __func__, a, l2); */
     *quality = -1.0;
   }
 
@@ -1652,8 +1652,8 @@ static REF_STATUS ref_node_tri_epic_dquality_dnode0(REF_NODE ref_node,
       d_quality[i] = 4.0 / sqrt(3.0) * 3 *
                      (d_num[i] * denom - num * d_denom[i]) / denom / denom;
   } else {
-    printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
-           __FILE__, __LINE__, __func__, area, min_det, num, denom);
+    /* printf("%s: %d: %s: div zero area %.18e min_det %.18e (%.18e / %.18e)\n",
+       __FILE__, __LINE__, __func__, area, min_det, num, denom); */
     *quality = -1.0;
     for (i = 0; i < 3; i++) d_quality[i] = 0.0;
   }
@@ -1733,8 +1733,8 @@ REF_STATUS ref_node_tri_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
     for (j = 0; j < 3; j++)
       d_quality[j] = 4.0 * sqrt(3.0) * (da[j] * l2 - a * dl2[j]) / l2 / l2;
   } else {
-    printf("%s: %d: %s: div zero area %.18e l2 %.18e\n", __FILE__, __LINE__,
-           __func__, a, l2);
+    /* printf("%s: %d: %s: div zero area %.18e l2 %.18e\n", __FILE__, __LINE__,
+       __func__, a, l2); */
     *quality = -1.0;
   }
 
@@ -2297,7 +2297,7 @@ REF_STATUS ref_node_tri_projection(REF_NODE ref_node, REF_INT *nodes,
   } else {
     *projection = 0.0;
     printf("%s: %d: %s: div zero vol %.18e area %.18e\n", __FILE__, __LINE__,
-           __func__, vol, area);
+       __func__, vol, area);
     return REF_DIV_ZERO;
   }
 
@@ -2327,7 +2327,7 @@ REF_STATUS ref_node_dist_to_edge(REF_NODE ref_node, REF_INT *nodes,
   } else {
     *distance = 0.0;
     printf("%s: %d: %s: div zero dis %.18e len %.18e\n", __FILE__, __LINE__,
-           __func__, dis, len);
+       __func__, dis, len);
     return REF_DIV_ZERO;
   }
 
