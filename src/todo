@@ -21,6 +21,7 @@ extract/combine post adaptation operator checks and status
 configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
 test with zoltan and parmetis configured
+64bit metis/parmetis?
 
 squelch shape measure divide by zero warning
 
