@@ -81,5 +81,29 @@ int main(void) {
     REIS(REF_FALSE, ref_math_divisible(1.0e40, 1.0e-40), "1e20/1e-20");
   }
 
+  { /* addable overflow protection */
+    REIS(REF_TRUE, ref_math_int_addable(0, 0), "0 + 0");
+    REIS(REF_TRUE, ref_math_int_addable(2, 5), "2 + 5");
+    REIS(REF_TRUE, ref_math_int_addable(-10, -20), "-10 + -20");
+    REIS(REF_TRUE, ref_math_int_addable(10, -20), "10 + -20");
+    REIS(REF_FALSE, ref_math_int_addable(2147483640, 2147483641),
+         "add two INT_MAX - eps");
+    REIS(REF_FALSE, ref_math_int_addable(-2147483640, -2147483641),
+         "add two -(INT_MAX - eps)");
+  }
+
+  { /* multipliable overflow */
+    REIS(REF_TRUE, ref_math_int_multipliable(0, 0), "0 * 0");
+    REIS(REF_TRUE, ref_math_int_multipliable(3, 7), "3 * 7");
+    REIS(REF_TRUE, ref_math_int_multipliable(5, -10), "5 * -10");
+    REIS(REF_TRUE, ref_math_int_multipliable(-5, -10), "-5 * -10");
+    REIS(REF_FALSE, ref_math_int_multipliable(47000, 47000),
+         "multiply two ++ eps + sqrt(INT_MAX)");
+    REIS(REF_FALSE, ref_math_int_multipliable(47000, -47000),
+         "multiply two +- eps + sqrt(INT_MAX)");
+    REIS(REF_FALSE, ref_math_int_multipliable(-47000, -47000),
+         "multiply two -- eps + sqrt(INT_MAX)");
+  }
+
   return 0;
 }
