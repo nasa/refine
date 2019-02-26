@@ -237,6 +237,40 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_INT geom, id, type, node;
+      REF_DBL xyz[3];
+      REF_DBL kr, r[3];
+      REF_DBL tol;
+      REF_DBL drad, hmax, rlimit, hr;
+
+      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
+      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      hmax *= 0.1;          /* normal spacing and max tangential spacing */
+      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+
+      each_ref_geom_edge(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        type = ref_geom_type(ref_geom, geom);
+        id = ref_geom_id(ref_geom, geom);
+        xyz[0] = ref_node_xyz(ref_node, 0, node);
+        xyz[1] = ref_node_xyz(ref_node, 1, node);
+        xyz[2] = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+        kr = ABS(kr);
+        hr = hmax;
+        if (1.0 / rlimit < kr) hr = drad / kr;
+
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        if (hr < tol) {
+          printf("type %d id %d node %d xyz %f %f %f edge hr %e tol %e\n", type,
+                 id, node, xyz[0], xyz[1], xyz[2], hr, tol);
+        }
+      }
+    }
+
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
