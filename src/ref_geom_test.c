@@ -265,7 +265,7 @@ int main(int argc, char *argv[]) {
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;
 
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "edge tol");
         if (hr < 100.0 * tol) {
           printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
                  xyz[0], xyz[1], xyz[2], hr, tol);
