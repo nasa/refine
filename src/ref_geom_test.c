@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
   REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
   REF_INT surf_pos = REF_EMPTY;
-  REF_INT triage_pos = REF_EMPTY;
+  REF_INT conforming_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
 
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--triage", &triage_pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--conforming", &conforming_pos), REF_NOT_FOUND,
       "arg search");
 
   if (face_pos != REF_EMPTY) {
@@ -101,14 +101,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (triage_pos != REF_EMPTY) {
+  if (conforming_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     if (4 > argc) {
-      printf("required args: --triage grid.ext geom.egads [metric.solb]");
+      printf("required args: --conforming grid.ext geom.egads [metric.solb]");
       return REF_FAILURE;
     }
-    REIS(1, triage_pos,
-         "required args: --triage grid.ext geom.egads [metric.solb]");
+    REIS(1, conforming_pos,
+         "required args: --conforming grid.ext geom.egads [metric.solb]");
     printf("grid source %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
     ref_gather_low_quality_zone(ref_grid_gather(ref_grid)) = REF_TRUE;
-    RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame");
+    RSS(ref_gather_tec_movie_frame(ref_grid, "conforming"), "movie frame");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
