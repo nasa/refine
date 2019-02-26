@@ -214,6 +214,7 @@ int main(int argc, char *argv[]) {
       printf("%d face id %e tolerance\n%d face id %e tolerance\n", min_id,
              min_tol, max_id, max_tol);
     }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "report tol");
 
     {
       REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -236,6 +237,7 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "feature size");
 
     {
       REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -270,6 +272,7 @@ int main(int argc, char *argv[]) {
         }
       }
     }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
