@@ -80,6 +80,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
+  ref_geom->tolerance_protection = 100.0;
 
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
@@ -142,6 +143,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
+  ref_geom->tolerance_protection = original->tolerance_protection;
 
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++)
     for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)

@@ -65,6 +65,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL *param;
   REF_DBL *uv_area_sign;
   REF_DBL segments_per_radian_of_curvature;
+  REF_DBL tolerance_protection;
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   void *context;
@@ -106,6 +107,8 @@ struct REF_GEOM_STRUCT {
   ((ref_geom)->segments_per_radian_of_curvature)
 #define ref_geom_curvature_unlimited(ref_geom) \
   (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
+#define ref_geom_tolerance_protection(ref_geom) \
+  ((ref_geom)->tolerance_protection)
 
 #define each_ref_type(refx_geom, type) for ((type) = 0; (type) < 3; (type)++)
 #define each_ref_descr(ref_geom, item) \

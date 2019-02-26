@@ -266,7 +266,7 @@ int main(int argc, char *argv[]) {
         if (1.0 / rlimit < kr) hr = drad / kr;
 
         RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "edge tol");
-        if (hr < 100.0 * tol) {
+        if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
                  xyz[0], xyz[1], xyz[2], hr, tol);
         }
@@ -304,7 +304,8 @@ int main(int argc, char *argv[]) {
         if (1.0 / rlimit < ks) hs = drad / ks;
 
         RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
-        if (hr < 100.0 * tol || hs < 100.0 * tol) {
+        if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
+            hs < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f hr %.3e hs %.3e tol %.3e\n", id,
                  node, xyz[0], xyz[1], xyz[2], hr, hs, tol);
         }
