@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
           max_tol = tol;
         }
       }
-      printf("%d edge id %e tolerance\n%d edge id %e tolerance\n", min_id,
+      printf("%d node id %e tolerance\n%d node id %e tolerance\n", min_id,
              min_tol, max_id, max_tol);
 
       min_id = REF_EMPTY;
