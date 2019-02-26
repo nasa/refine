@@ -272,7 +272,45 @@ int main(int argc, char *argv[]) {
         }
       }
     }
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "edge curvature");
+
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_INT geom, id, type, node;
+      REF_DBL xyz[3];
+      REF_DBL kr, r[3], ks, s[3];
+      REF_DBL tol;
+      REF_DBL drad, hmax, rlimit, hr, hs;
+
+      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
+      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      hmax *= 0.1;          /* normal spacing and max tangential spacing */
+      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+
+      each_ref_geom_face(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        type = ref_geom_type(ref_geom, geom);
+        id = ref_geom_id(ref_geom, geom);
+        xyz[0] = ref_node_xyz(ref_node, 0, node);
+        xyz[1] = ref_node_xyz(ref_node, 1, node);
+        xyz[2] = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+        kr = ABS(kr);
+        hr = hmax;
+        if (1.0 / rlimit < kr) hr = drad / kr;
+        ks = ABS(ks);
+        hs = hmax;
+        if (1.0 / rlimit < ks) hs = drad / ks;
+
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        if (hr < 10.0 * tol || hs < 10.0 * tol) {
+          printf("id %d node %d xyz %f %f %f hr %.3e hs %.3e tol %.3e\n", id,
+                 node, xyz[0], xyz[1], xyz[2], hr, hs, tol);
+        }
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "face curvature");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
