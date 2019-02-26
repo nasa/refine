@@ -42,6 +42,7 @@ typedef enum REF_GEOM_SURFACES {
 #define REF_GEOM_NODE (0)
 #define REF_GEOM_EDGE (1)
 #define REF_GEOM_FACE (2)
+#define REF_GEOM_SOLID (3)
 
 #define REF_GEOM_DESCR_SIZE (5)
 #define REF_GEOM_DESCR_TYPE (0)
@@ -221,6 +222,8 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
 REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
                                  REF_DBL *length);
+REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                              REF_DBL *tolerance);
 
 REF_STATUS ref_geom_egads_suggest_tess_params(REF_GRID ref_grid,
                                               REF_DBL *params);
