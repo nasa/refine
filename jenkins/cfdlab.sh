@@ -340,10 +340,10 @@ cd ${source_dir}/acceptance/om6/recon
 time ./accept-om6-recon.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
-LOG=${root_dir}/log.accept-om6-surf
+LOG=${root_dir}/log.accept-om6-bootstrap
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/om6/surf
-time ./accept-om6-surf-adapt.sh ${egads_dir} > $LOG 2>&1
+cd ${source_dir}/acceptance/om6/bootstrap
+time ./accept-om6-bootstrap.sh ${egads_dir} > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.accept-revolve-pencil-curve
