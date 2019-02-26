@@ -151,6 +151,25 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
     RSS(ref_geom_verify_param(ref_grid), "verify param");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "verify param");
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_DBL tol;
+      REF_INT id = REF_EMPTY;
+      RSS(ref_geom_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
+      printf("%e solid tolerance\n", tol);
+      each_ref_geom_node_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "solid tol");
+        printf("%e %d node id tolerance\n", tol, id);
+      }
+      each_ref_geom_edge_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "solid tol");
+        printf("%e %d edge id tolerance\n", tol, id);
+      }
+      each_ref_geom_face_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "solid tol");
+        printf("%e %d face id tolerance\n", tol, id);
+      }
+    }
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;

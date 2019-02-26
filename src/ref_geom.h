@@ -134,6 +134,15 @@ struct REF_GEOM_STRUCT {
 #define each_ref_geom_having_node(ref_geom, node, item, geom) \
   each_ref_adj_node_item_with_ref((ref_geom)->ref_adj, node, item, geom)
 
+#define each_ref_geom_node_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nnode; (id)++)
+
+#define each_ref_geom_edge_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nedge; (id)++)
+
+#define each_ref_geom_face_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nface; (id)++)
+
 REF_STATUS ref_geom_create(REF_GEOM *ref_geom);
 REF_STATUS ref_geom_initialize(REF_GEOM ref_geom);
 REF_STATUS ref_geom_free(REF_GEOM ref_geom);
