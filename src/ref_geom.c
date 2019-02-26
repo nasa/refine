@@ -1944,6 +1944,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   ego object;
   int edgeid;
   double t;
+  REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
   RNS(ref_geom->edges, "edges not loaded");
   edgeid = ref_geom_id(ref_geom, geom);
   edges = (ego *)(ref_geom->edges);
@@ -1979,6 +1980,7 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
   int egads_status;
   int faceid;
   double uv[2];
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
   RNS(ref_geom->faces, "faces not loaded");
   faceid = ref_geom_id(ref_geom, geom);
   faces = (ego *)(ref_geom->faces);
