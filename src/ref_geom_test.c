@@ -155,20 +155,64 @@ int main(int argc, char *argv[]) {
       REF_GEOM ref_geom = ref_grid_geom(ref_grid);
       REF_DBL tol;
       REF_INT id = REF_EMPTY;
+      REF_INT min_id, max_id;
+      REF_DBL min_tol, max_tol;
       RSS(ref_geom_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
       printf("%e solid tolerance\n", tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
       each_ref_geom_node_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "solid tol");
-        printf("%e %d node id tolerance\n", tol, id);
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
       }
+      printf("%d edge id %e tolerance\n%d edge id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
       each_ref_geom_edge_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "solid tol");
-        printf("%e %d edge id tolerance\n", tol, id);
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
       }
+      printf("%d edge id %e tolerance\n%d edge id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
       each_ref_geom_face_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "solid tol");
-        printf("%e %d face id tolerance\n", tol, id);
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
       }
+      printf("%d face id %e tolerance\n%d face id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
     }
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
