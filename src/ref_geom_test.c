@@ -232,8 +232,8 @@ int main(int argc, char *argv[]) {
         RSS(ref_geom_feature_size(ref_geom, node, xyz, &h), "get feature size");
         RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
         if (h < tol) {
-          printf("type %d id %d node %d xyz %f %f %f h %e tol %e\n", type, id,
-                 node, xyz[0], xyz[1], xyz[2], h, tol);
+          printf("type %d id %d node %d xyz %f %f %f h %.3e tol %.3e\n", type,
+                 id, node, xyz[0], xyz[1], xyz[2], h, tol);
         }
       }
     }
@@ -267,8 +267,8 @@ int main(int argc, char *argv[]) {
 
         RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < tol) {
-          printf("type %d id %d node %d xyz %f %f %f edge hr %e tol %e\n", type,
-                 id, node, xyz[0], xyz[1], xyz[2], hr, tol);
+          printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
+                 xyz[0], xyz[1], xyz[2], hr, tol);
         }
       }
     }
