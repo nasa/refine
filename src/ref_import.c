@@ -1668,12 +1668,67 @@ REF_STATUS ref_import_examine_header(const char *filename) {
     REIS(0, fseeko(file, next_position, SEEK_SET), "fseeko NEXT failed");
     printf("%ld current position\n", (long)next_position);
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
-    printf("%d keyword\n", keyword_code);
+    printf("%d keyword", keyword_code);
+    switch (keyword_code) {
+      case 3:
+        printf(" dimension\n");
+        break;
+      case 4:
+        printf(" vertex\n");
+        break;
+      case 5:
+        printf(" edge\n");
+        break;
+      case 6:
+        printf(" triangle\n");
+        break;
+      case 7:
+        printf(" quad\n");
+        break;
+      case 8:
+        printf(" tetrahedra\n");
+        break;
+      case 9:
+        printf(" prism\n");
+        break;
+      case 10:
+        printf(" hex\n");
+        break;
+      case 49:
+        printf(" pyramid\n");
+        break;
+      case 40:
+        printf(" geom node assoc\n");
+        break;
+      case 41:
+        printf(" geom edge assoc\n");
+        break;
+      case 42:
+        printf(" geom face assoc\n");
+        break;
+      case 62:
+        printf(" soluton at vertices\n");
+        break;
+      case 126:
+        printf(" CAD data\n");
+        break;
+      default:
+        printf("\n");
+    }
     RSS(meshb_pos(file, version, &next_position), "meshb pos");
-    printf("%ld next position\n", (long)next_position);
+    printf("%ld next position", (long)next_position);
+    if (next_position > 0) {
+      printf(" %ld size\n", (long)(next_position - ftello(file)));
+    } else {
+      printf("\n");
+    }
     if (ftello(file) < end_position) {
       REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
       printf("%d first i4\n", i4);
+    }
+    if (ftello(file) < end_position) {
+      REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+      printf("%d second i4\n", i4);
     }
   }
 
