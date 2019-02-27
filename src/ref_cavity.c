@@ -32,6 +32,8 @@
 
 #include "ref_dict.h"
 
+#include "ref_export.h"
+
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;
   REF_INT seg, face;
@@ -1269,7 +1271,21 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   each_ref_cell_valid_cell_with_nodes(edg, cell, nodes) {
     node0 = nodes[0];
     node1 = nodes[1];
-    RSS(ref_cell_list_with2(tri, node0, node1, 2, &ncell, edge_tri), "tris");
+    RSB(ref_cell_list_with2(tri, node0, node1, 2, &ncell, edge_tri), "tris", {
+      REF_DBL xyz_phys[3];
+      REF_INT local;
+      local = node0;
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      printf(" %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      local = node1;
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      printf(" %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      ref_export_tec_surf(ref_grid, "ref_cavity_surf_geom_edge_pass.tec");
+    });
     for (i = 0; i < ncell; i++) {
       tri_cell = edge_tri[i];
       RSS(ref_cell_nodes(tri, tri_cell, nodes), "cell nodes");
