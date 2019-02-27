@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-set -x
+set -e
 set -u
+
+module load gcc_6.2.0
+
+set -x
 
 jobs=${1:-}
 
