@@ -80,6 +80,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
+  ref_geom->tolerance_protection = 100.0;
 
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
@@ -142,6 +143,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
+  ref_geom->tolerance_protection = original->tolerance_protection;
 
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++)
     for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)
@@ -1944,6 +1946,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   ego object;
   int edgeid;
   double t;
+  REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
   RNS(ref_geom->edges, "edges not loaded");
   edgeid = ref_geom_id(ref_geom, geom);
   edges = (ego *)(ref_geom->edges);
@@ -1979,6 +1982,7 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
   int egads_status;
   int faceid;
   double uv[2];
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
   RNS(ref_geom->faces, "faces not loaded");
   faceid = ref_geom_id(ref_geom, geom);
   faces = (ego *)(ref_geom->faces);
@@ -2816,6 +2820,48 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
   RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
   SUPRESS_UNUSED_COMPILER_WARNING(node);
   SUPRESS_UNUSED_COMPILER_WARNING(xyz);
+#endif
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                              REF_DBL *tolerance) {
+#ifdef HAVE_EGADS
+  ego object, *objects;
+  double tol;
+
+  switch (type) {
+    case REF_GEOM_NODE:
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      objects = (ego *)(ref_geom->nodes);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_EDGE:
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      objects = (ego *)(ref_geom->edges);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_FACE:
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      objects = (ego *)(ref_geom->faces);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_SOLID:
+      object = (ego)(ref_geom->solid);
+      break;
+    default:
+      printf("ref_geom type %d unknown\n", type);
+      RSS(REF_IMPLEMENT, "unknown surface type");
+  }
+
+  REIS(EGADS_SUCCESS, EG_getTolerance(object, &tol), "EG tolerance");
+  *tolerance = tol;
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  *tolerance = -1.0;
 #endif
   return REF_SUCCESS;
 }

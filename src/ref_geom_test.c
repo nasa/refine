@@ -54,6 +54,7 @@ int main(int argc, char *argv[]) {
   REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
   REF_INT surf_pos = REF_EMPTY;
+  REF_INT conforming_pos = REF_EMPTY;
   REF_INT triage_pos = REF_EMPTY;
 
   RSS(ref_mpi_create(&ref_mpi), "create");
@@ -69,6 +70,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--conforming", &conforming_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--triage", &triage_pos), REF_NOT_FOUND,
       "arg search");
@@ -101,14 +104,14 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (triage_pos != REF_EMPTY) {
+  if (conforming_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     if (4 > argc) {
-      printf("required args: --triage grid.ext geom.egads [metric.solb]");
+      printf("required args: --conforming grid.ext geom.egads [metric.solb]");
       return REF_FAILURE;
     }
-    REIS(1, triage_pos,
-         "required args: --triage grid.ext geom.egads [metric.solb]");
+    REIS(1, conforming_pos,
+         "required args: --conforming grid.ext geom.egads [metric.solb]");
     printf("grid source %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
@@ -125,8 +128,191 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
     ref_gather_low_quality_zone(ref_grid_gather(ref_grid)) = REF_TRUE;
-    RSS(ref_gather_tec_movie_frame(ref_grid, "triage"), "movie frame");
+    RSS(ref_gather_tec_movie_frame(ref_grid, "conforming"), "movie frame");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    return 0;
+  }
+
+  if (triage_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    if (4 > argc) {
+      printf("required args: --triage grid.ext geom.egads");
+      return REF_FAILURE;
+    }
+    REIS(1, triage_pos, "required args: --triage grid.ext geom.egads");
+    printf("grid source %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+    RSS(ref_geom_verify_param(ref_grid), "verify param");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "verify param");
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_DBL tol;
+      REF_INT id = REF_EMPTY;
+      REF_INT min_id, max_id;
+      REF_DBL min_tol, max_tol;
+      RSS(ref_geom_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
+      printf("%e solid tolerance\n", tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
+      each_ref_geom_node_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
+      }
+      printf("%d node id %e tolerance\n%d node id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
+      each_ref_geom_edge_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
+      }
+      printf("%d edge id %e tolerance\n%d edge id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
+
+      min_id = REF_EMPTY;
+      max_id = REF_EMPTY;
+      min_tol = -1.0;
+      max_tol = -1.0;
+      each_ref_geom_face_id(ref_geom, id) {
+        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
+        if (REF_EMPTY == min_id || tol < min_tol) {
+          min_id = id;
+          min_tol = tol;
+        }
+        if (REF_EMPTY == max_id || tol > max_tol) {
+          max_id = id;
+          max_tol = tol;
+        }
+      }
+      printf("%d face id %e tolerance\n%d face id %e tolerance\n", min_id,
+             min_tol, max_id, max_tol);
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "report tol");
+
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_INT geom, id, type, node;
+      REF_DBL xyz[3];
+      REF_DBL h, tol;
+      each_ref_geom(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        type = ref_geom_type(ref_geom, geom);
+        id = ref_geom_id(ref_geom, geom);
+        xyz[0] = ref_node_xyz(ref_node, 0, node);
+        xyz[1] = ref_node_xyz(ref_node, 1, node);
+        xyz[2] = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_geom_feature_size(ref_geom, node, xyz, &h), "get feature size");
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        if (h < tol) {
+          printf("type %d id %d node %d xyz %f %f %f h %.3e tol %.3e\n", type,
+                 id, node, xyz[0], xyz[1], xyz[2], h, tol);
+        }
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "feature size");
+
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_INT geom, id, type, node;
+      REF_DBL xyz[3];
+      REF_DBL kr, r[3];
+      REF_DBL tol;
+      REF_DBL drad, hmax, rlimit, hr;
+
+      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
+      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      hmax *= 0.1;          /* normal spacing and max tangential spacing */
+      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+
+      each_ref_geom_edge(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        type = ref_geom_type(ref_geom, geom);
+        id = ref_geom_id(ref_geom, geom);
+        xyz[0] = ref_node_xyz(ref_node, 0, node);
+        xyz[1] = ref_node_xyz(ref_node, 1, node);
+        xyz[2] = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+        kr = ABS(kr);
+        hr = hmax;
+        if (1.0 / rlimit < kr) hr = drad / kr;
+
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "edge tol");
+        if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
+          printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
+                 xyz[0], xyz[1], xyz[2], hr, tol);
+        }
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "edge curvature");
+
+    {
+      REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+      REF_NODE ref_node = ref_grid_node(ref_grid);
+      REF_INT geom, id, type, node;
+      REF_DBL xyz[3];
+      REF_DBL kr, r[3], ks, s[3];
+      REF_DBL tol;
+      REF_DBL drad, hmax, rlimit, hr, hs;
+
+      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
+      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      hmax *= 0.1;          /* normal spacing and max tangential spacing */
+      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+
+      each_ref_geom_face(ref_geom, geom) {
+        node = ref_geom_node(ref_geom, geom);
+        type = ref_geom_type(ref_geom, geom);
+        id = ref_geom_id(ref_geom, geom);
+        xyz[0] = ref_node_xyz(ref_node, 0, node);
+        xyz[1] = ref_node_xyz(ref_node, 1, node);
+        xyz[2] = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+        kr = ABS(kr);
+        hr = hmax;
+        if (1.0 / rlimit < kr) hr = drad / kr;
+        ks = ABS(ks);
+        hs = hmax;
+        if (1.0 / rlimit < ks) hs = drad / ks;
+
+        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
+            hs < ref_geom_tolerance_protection(ref_geom) * tol) {
+          printf("id %d node %d xyz %f %f %f hr %.3e hs %.3e tol %.3e\n", id,
+                 node, xyz[0], xyz[1], xyz[2], hr, hs, tol);
+        }
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "face curvature");
+
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;

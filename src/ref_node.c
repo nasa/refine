@@ -2297,7 +2297,7 @@ REF_STATUS ref_node_tri_projection(REF_NODE ref_node, REF_INT *nodes,
   } else {
     *projection = 0.0;
     printf("%s: %d: %s: div zero vol %.18e area %.18e\n", __FILE__, __LINE__,
-       __func__, vol, area);
+           __func__, vol, area);
     return REF_DIV_ZERO;
   }
 
@@ -2327,7 +2327,7 @@ REF_STATUS ref_node_dist_to_edge(REF_NODE ref_node, REF_INT *nodes,
   } else {
     *distance = 0.0;
     printf("%s: %d: %s: div zero dis %.18e len %.18e\n", __FILE__, __LINE__,
-       __func__, dis, len);
+           __func__, dis, len);
     return REF_DIV_ZERO;
   }
 

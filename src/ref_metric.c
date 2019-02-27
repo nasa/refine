@@ -819,7 +819,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL drad;
   REF_DBL hmax;
   REF_DBL rlimit;
-  REF_DBL h, hr, hs, hn;
+  REF_DBL h, hr, hs, hn, tol;
   REF_DBL curvature_ratio, norm_ratio;
   REF_DBL xyz[3];
 
@@ -860,15 +860,23 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     /* limit the aspect ratio of the metric by reducing the larest radius */
     kr = MAX(kr, curvature_ratio * ks);
     ks = MAX(ks, curvature_ratio * kr);
+    hr = hmax;
+    if (1.0 / rlimit < kr) hr = drad / kr;
+    hs = hmax;
+    if (1.0 / rlimit < ks) hs = drad / ks;
+
+    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                           ref_geom_id(ref_geom, geom), &tol),
+        "edge tol");
+    if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
+        hs < ref_geom_tolerance_protection(ref_geom) * tol)
+      continue;
+
     /* cross the tangent vectors to get the (inward or outward) normal */
     ref_math_cross_product(r, s, n);
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
-    hr = hmax;
-    if (1.0 / rlimit < kr) hr = drad / kr;
     ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
-    hs = hmax;
-    if (1.0 / rlimit < ks) hs = drad / ks;
     ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
     hn = hmax;
@@ -890,6 +898,11 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     kr = ABS(kr);
     hr = hmax;
     if (1.0 / rlimit < kr) hr = drad / kr;
+
+    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                           ref_geom_id(ref_geom, geom), &tol),
+        "edge tol");
+    if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
 
     ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
     ref_matrix_vec(diagonal_system, 1, 0) = 0.0;

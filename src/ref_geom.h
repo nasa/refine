@@ -42,6 +42,7 @@ typedef enum REF_GEOM_SURFACES {
 #define REF_GEOM_NODE (0)
 #define REF_GEOM_EDGE (1)
 #define REF_GEOM_FACE (2)
+#define REF_GEOM_SOLID (3)
 
 #define REF_GEOM_DESCR_SIZE (5)
 #define REF_GEOM_DESCR_TYPE (0)
@@ -64,6 +65,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL *param;
   REF_DBL *uv_area_sign;
   REF_DBL segments_per_radian_of_curvature;
+  REF_DBL tolerance_protection;
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   void *context;
@@ -105,6 +107,8 @@ struct REF_GEOM_STRUCT {
   ((ref_geom)->segments_per_radian_of_curvature)
 #define ref_geom_curvature_unlimited(ref_geom) \
   (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
+#define ref_geom_tolerance_protection(ref_geom) \
+  ((ref_geom)->tolerance_protection)
 
 #define each_ref_type(refx_geom, type) for ((type) = 0; (type) < 3; (type)++)
 #define each_ref_descr(ref_geom, item) \
@@ -132,6 +136,15 @@ struct REF_GEOM_STRUCT {
 
 #define each_ref_geom_having_node(ref_geom, node, item, geom) \
   each_ref_adj_node_item_with_ref((ref_geom)->ref_adj, node, item, geom)
+
+#define each_ref_geom_node_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nnode; (id)++)
+
+#define each_ref_geom_edge_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nedge; (id)++)
+
+#define each_ref_geom_face_id(ref_geom, id) \
+  for ((id) = 1; (id) <= (ref_geom)->nface; (id)++)
 
 REF_STATUS ref_geom_create(REF_GEOM *ref_geom);
 REF_STATUS ref_geom_initialize(REF_GEOM ref_geom);
@@ -221,6 +234,8 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
 REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
                                  REF_DBL *length);
+REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                              REF_DBL *tolerance);
 
 REF_STATUS ref_geom_egads_suggest_tess_params(REF_GRID ref_grid,
                                               REF_DBL *params);

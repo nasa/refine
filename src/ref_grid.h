@@ -95,6 +95,14 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
        0 != ref_cell_n(ref_grid_hex(ref_grd))))  \
     ref_grid_twod(ref_grd) = REF_TRUE;
 
+#define ref_grid_guess_surf_status(ref_grd)     \
+  if (0 == ref_cell_n(ref_grid_tet(ref_grd)) && \
+      0 == ref_cell_n(ref_grid_pyr(ref_grd)) && \
+      0 == ref_cell_n(ref_grid_pri(ref_grd)) && \
+      0 == ref_cell_n(ref_grid_hex(ref_grd)) && \
+      0 != ref_cell_n(ref_grid_tri(ref_grd)))   \
+    ref_grid_surf(ref_grd) = REF_TRUE;
+
 REF_STATUS ref_grid_inspect(REF_GRID ref_grid);
 REF_STATUS ref_grid_tattle(REF_GRID ref_grid, REF_INT node);
 
