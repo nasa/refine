@@ -30,6 +30,7 @@ END_C_DECLORATION
 #include "ref_cell.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
+#include "ref_interp.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
 
@@ -49,7 +50,7 @@ struct REF_GRID_STRUCT {
   REF_GATHER gather;
   REF_ADAPT adapt;
 
-  REF_GRID background;
+  REF_INTERP interp;
 
   REF_BOOL twod;
   REF_BOOL surf;
@@ -59,6 +60,7 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_grid_free(REF_GRID ref_grid);
 
 REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid, REF_GRID original);
+REF_STATUS ref_grid_cache_background(REF_GRID ref_grid);
 REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 
 #define ref_grid_mpi(ref_grid) ((ref_grid)->mpi)
@@ -79,7 +81,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_geom(ref_grid) ((ref_grid)->geom)
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
 #define ref_grid_adapt(ref_grid, param) (((ref_grid)->adapt)->param)
-#define ref_grid_background(ref_grid) ((ref_grid)->background)
+#define ref_grid_interp(ref_grid) ((ref_grid)->interp)
 
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 #define ref_grid_surf(ref_grid) ((ref_grid)->surf)
