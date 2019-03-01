@@ -56,6 +56,7 @@ REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node) {
   ref_node_xyz(ref_node, 0, node) += dl * d[0];
   ref_node_xyz(ref_node, 1, node) += dl * d[1];
   ref_node_xyz(ref_node, 2, node) += dl * d[2];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
@@ -511,6 +512,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
     if (allowed) {
       RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
@@ -534,6 +536,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   return REF_SUCCESS;
 }
@@ -617,6 +620,7 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
@@ -633,6 +637,7 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   return REF_SUCCESS;
 }
@@ -855,6 +860,7 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
@@ -868,6 +874,7 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   return REF_SUCCESS;
 }
@@ -1445,6 +1452,7 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
     ref_node_xyz(ref_node, 0, node) = xyz[0] + alpha * dir[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1] + alpha * dir[1];
     ref_node_xyz(ref_node, 2, node) = xyz[2] + alpha * dir[2];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "rep");
     requirement = 0.9 * alpha * m0 + quals[worst];
@@ -1460,6 +1468,7 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
       ref_node_xyz(ref_node, 0, node) = xyz[0] + alpha * dir[0];
       ref_node_xyz(ref_node, 1, node) = xyz[1] + alpha * dir[1];
       ref_node_xyz(ref_node, 2, node) = xyz[2] + alpha * dir[2];
+      RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
       break;
     }
     if (quality > requirement || alpha < 1.0e-12) break;
@@ -1473,6 +1482,7 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
     ref_node_xyz(ref_node, 2, node) = xyz[2];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     *complete = REF_TRUE;
   }
 
