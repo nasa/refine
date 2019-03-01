@@ -27,8 +27,6 @@
 #include "ref_grid.h"
 #include "ref_node.h"
 
-#include "ref_interp.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
