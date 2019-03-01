@@ -959,7 +959,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
 
   ref_grid = ref_interp_to_grid(ref_interp);
   ref_node = ref_grid_node(ref_grid);
-  if (new_node < ref_interp_max(ref_interp)) {
+  if (new_node >= ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(ref_node)), "resize");
   }
 
