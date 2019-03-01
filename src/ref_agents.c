@@ -141,6 +141,16 @@ REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
+                              REF_INT id) {
+  ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
+  ref_agent_part(ref_agents, id) = part;
+  ref_agent_seed(ref_agents, id) = seed;
+  ref_agent_step(ref_agents, id) = 0;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
                            REF_INT seed, REF_DBL *xyz, REF_INT *id_ptr) {
   REF_INT i, id;
