@@ -38,6 +38,7 @@ struct REF_INTERP_STRUCT {
   REF_GRID from_grid;
   REF_GRID to_grid;
   REF_BOOL instrument;
+  REF_BOOL continuously;
   REF_INT n_walk;
   REF_INT n_terminated;
   REF_INT walk_steps;
@@ -58,9 +59,12 @@ struct REF_INTERP_STRUCT {
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
+#define ref_interp_cell(ref_interp, node) ((ref_interp)->cell[(node)])
+#define ref_interp_part(ref_interp, node) ((ref_interp)->part[(node)])
 #define ref_interp_bary(ref_interp, j, node) \
   ((ref_interp)->bary[(j) + 4 * (node)])
 #define ref_interp_max(ref_interp) ((ref_interp)->max)
+#define ref_interp_continuously(ref_interp) ((ref_interp)->continuously)
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);

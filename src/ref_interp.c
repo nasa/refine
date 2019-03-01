@@ -83,6 +83,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_interp_mpi(ref_interp) = ref_grid_mpi(ref_interp_from_grid(ref_interp));
 
   ref_interp->instrument = REF_FALSE;
+  ref_interp->continuously = REF_FALSE;
   ref_interp->n_walk = 0;
   ref_interp->n_terminated = 0;
   ref_interp->walk_steps = 0;
