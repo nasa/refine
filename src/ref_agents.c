@@ -142,10 +142,11 @@ REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
 }
 
 REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
-                           REF_INT seed, REF_DBL *xyz) {
+                           REF_INT seed, REF_DBL *xyz, REF_INT *id_ptr) {
   REF_INT i, id;
 
   RSS(ref_agents_new(ref_agents, &id), "new");
+  *id_ptr = id;
 
   ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
   ref_agent_home(ref_agents, id) = ref_mpi_rank(ref_agents->ref_mpi);
