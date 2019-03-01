@@ -74,6 +74,11 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
                                  REF_DBL *scalar, const char **scalar_names,
                                  const char *filename);
 
+REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
+                                          REF_DBL *scalar,
+                                          const char **scalar_names,
+                                          const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_GATHER_H */

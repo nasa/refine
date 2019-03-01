@@ -1712,6 +1712,9 @@ REF_STATUS ref_import_examine_header(const char *filename) {
       case 126:
         printf(" CAD data\n");
         break;
+      case 54:
+        printf(" END\n");
+        break;
       default:
         printf("\n");
     }
