@@ -54,6 +54,15 @@ BEGIN_C_DECLORATION
                (n) * sizeof(ptr_type)));                                     \
   }
 
+#define ref_realloc_init(ptr, from, to, ptr_type, initial_value) \
+  {                                                              \
+    REF_INT ref_realloc_init_i;                                  \
+    ref_realloc(ptr, to, ptr_type);                              \
+    for (ref_realloc_init_i = (from); ref_realloc_init_i < (to); \
+         ref_realloc_init_i++)                                   \
+      (ptr)[ref_realloc_init_i] = (initial_value);               \
+  }
+
 #define ref_free(ptr) \
   if (NULL != (ptr)) free((ptr));
 
