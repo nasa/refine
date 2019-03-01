@@ -90,6 +90,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_interp->n_geom_fail = 0;
   ref_interp->n_tree = 0;
   ref_interp->tree_cells = 0;
+  ref_interp_max(ref_interp) = max;
   ref_malloc_init(ref_interp->agent_hired, max, REF_BOOL, REF_FALSE);
   ref_malloc_init(ref_interp->cell, max, REF_INT, REF_EMPTY);
   ref_malloc_init(ref_interp->part, max, REF_INT, REF_EMPTY);
@@ -898,6 +899,8 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
+
+  RAS(node < ref_interp_max(ref_interp), "more nodes added, resize");
 
   /* no starting guess, skip */
   if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;

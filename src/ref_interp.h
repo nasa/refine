@@ -45,6 +45,7 @@ struct REF_INTERP_STRUCT {
   REF_INT n_geom_fail;
   REF_INT n_tree;
   REF_INT tree_cells;
+  REF_INT max;
   REF_BOOL *agent_hired;
   REF_INT *cell;
   REF_INT *part;
@@ -59,6 +60,7 @@ struct REF_INTERP_STRUCT {
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
 #define ref_interp_bary(ref_interp, j, node) \
   ((ref_interp)->bary[(j) + 4 * (node)])
+#define ref_interp_max(ref_interp) ((ref_interp)->max)
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
