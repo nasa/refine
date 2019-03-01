@@ -105,6 +105,19 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
+  REF_INT old = ref_interp_max(ref_interp);
+
+  ref_realloc_init(ref_interp->agent_hired, old, max, REF_BOOL, REF_FALSE);
+  ref_realloc_init(ref_interp->cell, old, max, REF_INT, REF_EMPTY);
+  ref_realloc_init(ref_interp->part, old, max, REF_INT, REF_EMPTY);
+  ref_realloc(ref_interp->bary, 4 * max, REF_DBL);
+
+  ref_interp_max(ref_interp) = max;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
                                       REF_GRID to_grid) {
   REF_INTERP ref_interp;
@@ -900,7 +913,7 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
 
-  RAS(node < ref_interp_max(ref_interp), "more nodes added, resize");
+  RAS(node < ref_interp_max(ref_interp), "more nodes added, should move only");
 
   /* no starting guess, skip */
   if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
