@@ -898,7 +898,9 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
-  RUS(REF_EMPTY, ref_interp->cell[node], "not previously located");
+
+  /* no starting guess, skip */
+  if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
 
   ref_grid = ref_interp_to_grid(ref_interp);
   ref_node = ref_grid_node(ref_grid);
