@@ -112,8 +112,10 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
   REF_INT node;
   RSS(ref_grid_deep_copy(&from_grid, to_grid), "import");
   RSS(ref_interp_create(ref_interp_ptr, from_grid, to_grid), "create");
-  ref_interp = *ref_interp_ptr;
 
+  if (ref_grid_twod(to_grid) || ref_grid_surf(to_grid)) return REF_SUCCESS;
+
+  ref_interp = *ref_interp_ptr;
   to_node = ref_grid_node(to_grid);
 
   each_ref_node_valid_node(to_node, node) {
