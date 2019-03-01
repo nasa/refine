@@ -103,10 +103,8 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
 }
 
 REF_STATUS ref_grid_cache_background(REF_GRID ref_grid) {
-  REF_GRID background_grid;
   RAS(NULL == ref_grid_interp(ref_grid), "expected NULL interp, called twice?");
-  RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
-  RSS(ref_interp_create(&ref_grid_interp(ref_grid), background_grid, ref_grid),
+  RSS(ref_interp_create_identity(&ref_grid_interp(ref_grid), ref_grid),
       "make interp");
 
   return REF_SUCCESS;

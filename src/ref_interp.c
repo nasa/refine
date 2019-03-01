@@ -65,6 +65,15 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
+                                      REF_GRID to_grid) {
+  REF_GRID from_grid;
+  RSS(ref_grid_deep_copy(&from_grid, to_grid), "import");
+  RSS(ref_interp_create(ref_interp_ptr, from_grid, to_grid), "create");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_free(REF_INTERP ref_interp) {
   if (NULL == (void *)ref_interp) return REF_NULL;
   ref_list_free(ref_interp->visualize);
