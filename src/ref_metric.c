@@ -398,6 +398,33 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_INT new_node) {
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+
+  /* skip null interp */
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+
+  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
+    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate_node not para");
+
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_metric_interpolate_node_twod(ref_grid, new_node),
+        "interp node twod");
+    return REF_SUCCESS;
+  }
+
+  RAS(!ref_grid_surf(ref_grid), "does not expect surf");
+  RAS(!ref_cell_node_empty(ref_grid_tet(ref_grid), node0), "expects tets");
+
+  RSS(ref_interp_locate_between(ref_grid_interp(ref_grid), node0, node1,
+                                new_node),
+      "interp");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
                                               REF_GRID parent_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
