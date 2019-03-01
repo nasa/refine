@@ -321,9 +321,9 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
-                                       REF_GRID parent_grid) {
+REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GRID parent_grid;
   REF_NODE parent_node;
   REF_INT tri, ixyz, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -332,8 +332,13 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
   REF_DBL log_parent_m[3][6];
   REF_DBL log_interpolated_m[6];
 
-  /* skip null parent */
-  if (NULL == parent_grid) return REF_SUCCESS;
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+
+  /* skip null interp */
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+
+  parent_grid = ref_interp_from_grid(ref_grid_interp(ref_grid));
   parent_node = ref_grid_node(parent_grid);
 
   if (ref_mpi_para(ref_grid_mpi(ref_grid)))

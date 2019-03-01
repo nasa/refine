@@ -513,13 +513,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
     RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
     if (allowed) {
-      if (!ref_mpi_para(ref_grid_mpi(ref_grid)) &&
-          NULL != ref_grid_interp(ref_grid)) {
-        RSS(ref_metric_interpolate_node(
-                ref_grid, node,
-                ref_interp_from_grid(ref_grid_interp(ref_grid))),
-            "interp node");
-      }
+      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
@@ -531,13 +525,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
             "opp");
         ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
         ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        if (!ref_mpi_para(ref_grid_mpi(ref_grid)) &&
-            NULL != ref_grid_interp(ref_grid)) {
-          RSS(ref_metric_interpolate_node(
-                  ref_grid, opposite,
-                  ref_interp_from_grid(ref_grid_interp(ref_grid))),
-              "interp opposite");
-        }
+        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
