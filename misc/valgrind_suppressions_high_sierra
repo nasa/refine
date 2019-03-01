@@ -55,3 +55,14 @@
    ...
    fun:NXCreateMapTableFromZone
 }
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:__parsefloat_buf
+   fun:__svfscanf_l
+   fun:fscanf
+   ...
+}

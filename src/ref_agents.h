@@ -98,8 +98,10 @@ REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
                              const char *context);
 REF_STATUS ref_agents_population(REF_AGENTS ref_agents, const char *context);
 
+REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
+                              REF_INT id);
 REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
-                           REF_INT seed, REF_DBL *xyz);
+                           REF_INT seed, REF_DBL *xyz, REF_INT *id);
 REF_STATUS ref_agents_remove(REF_AGENTS ref_agents, REF_INT id);
 REF_STATUS ref_agents_pop(REF_AGENTS ref_agents, REF_INT *node, REF_INT *part,
                           REF_INT *seed, REF_DBL *xyz);

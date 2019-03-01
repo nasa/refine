@@ -81,7 +81,6 @@ static void echo_argv(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid = NULL;
-  REF_GRID background_grid = NULL;
   int opt;
   int passes = 15, pass;
   REF_BOOL tecplot_movie = REF_FALSE;
@@ -89,6 +88,7 @@ int main(int argc, char *argv[]) {
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
+  REF_BOOL continuous_interpolation = REF_FALSE;
   char output_project[1004];
   char output_filename[1024];
   REF_INT ngeom;
@@ -105,7 +105,7 @@ int main(int argc, char *argv[]) {
     echo_argv(argc, argv);
   }
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:s:ltd")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:s:ltdc")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -144,6 +144,9 @@ int main(int argc, char *argv[]) {
       case 't':
         tecplot_movie = REF_TRUE;
         break;
+      case 'c':
+        continuous_interpolation = REF_TRUE;
+        break;
       case 'd':
         debug_verbose = REF_TRUE;
         ref_mpi->debug = REF_TRUE;
@@ -164,6 +167,7 @@ int main(int argc, char *argv[]) {
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
+        printf("       [-c] continuous metric interpolation\n");
         return 1;
     }
   }
@@ -198,8 +202,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
   } else {
-    RSS(ref_grid_deep_copy(&background_grid, ref_grid), "import");
-    ref_grid_background(ref_grid) = background_grid;
+    RSS(ref_grid_cache_background(ref_grid), "cache");
+    ref_interp_continuously(ref_grid_interp(ref_grid)) =
+        continuous_interpolation;
     ref_mpi_stopwatch_stop(ref_mpi, "cache metric");
   }
 
@@ -240,8 +245,10 @@ int main(int argc, char *argv[]) {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       ref_mpi_stopwatch_stop(ref_mpi, "curvature");
     }
-    if (NULL != background_grid) {
-      RSS(ref_metric_interpolate(ref_grid, background_grid), "interp");
+    if (NULL != ref_grid_interp(ref_grid)) {
+      RSS(ref_metric_interpolate(
+              ref_grid, ref_interp_from_grid(ref_grid_interp(ref_grid))),
+          "interp");
       ref_mpi_stopwatch_stop(ref_mpi, "interp");
     }
     if (curvature_constraint) {
@@ -323,7 +330,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  if (NULL != background_grid) RSS(ref_grid_free(background_grid), "free");
   if (NULL != ref_grid) RSS(ref_grid_free(ref_grid), "free");
 
   ref_mpi_stopwatch_stop(ref_mpi, "done.");

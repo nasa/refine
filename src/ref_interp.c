@@ -30,6 +30,45 @@
 
 #define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
 
+#define ref_interp_bary_inside(ref_interp, bary)                             \
+  ((bary)[0] >= (ref_interp)->inside && (bary)[1] >= (ref_interp)->inside && \
+   (bary)[2] >= (ref_interp)->inside && (bary)[3] >= (ref_interp)->inside)
+
+static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
+                                                        REF_INT node,
+                                                        REF_DBL *xyz,
+                                                        REF_INT *cell,
+                                                        REF_DBL *bary) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, candidate, best_candidate;
+  REF_DBL current_bary[4];
+  REF_DBL best_bary, min_bary;
+
+  best_candidate = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_cell_having_node(ref_cell, node, item, candidate) {
+    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+    RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
+        "bary");
+    min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                   MIN(current_bary[2], current_bary[3]));
+    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+      best_candidate = candidate;
+      best_bary = min_bary;
+    }
+  }
+
+  RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+  *cell = best_candidate;
+  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+  RSS(ref_node_bary4(ref_node, nodes, xyz, bary), "bary");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
                              REF_GRID to_grid) {
   REF_INTERP ref_interp;
@@ -44,6 +83,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_interp_mpi(ref_interp) = ref_grid_mpi(ref_interp_from_grid(ref_interp));
 
   ref_interp->instrument = REF_FALSE;
+  ref_interp->continuously = REF_FALSE;
   ref_interp->n_walk = 0;
   ref_interp->n_terminated = 0;
   ref_interp->walk_steps = 0;
@@ -51,6 +91,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_interp->n_geom_fail = 0;
   ref_interp->n_tree = 0;
   ref_interp->tree_cells = 0;
+  ref_interp_max(ref_interp) = max;
   ref_malloc_init(ref_interp->agent_hired, max, REF_BOOL, REF_FALSE);
   ref_malloc_init(ref_interp->cell, max, REF_INT, REF_EMPTY);
   ref_malloc_init(ref_interp->part, max, REF_INT, REF_EMPTY);
@@ -61,6 +102,49 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   RSS(ref_agents_create(&(ref_interp->ref_agents), ref_interp_mpi(ref_interp)),
       "add agents");
   RSS(ref_list_create(&(ref_interp->visualize)), "add list");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
+  REF_INT old = ref_interp_max(ref_interp);
+
+  ref_realloc_init(ref_interp->agent_hired, old, max, REF_BOOL, REF_FALSE);
+  ref_realloc_init(ref_interp->cell, old, max, REF_INT, REF_EMPTY);
+  ref_realloc_init(ref_interp->part, old, max, REF_INT, REF_EMPTY);
+  ref_realloc(ref_interp->bary, 4 * max, REF_DBL);
+
+  ref_interp_max(ref_interp) = max;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
+                                      REF_GRID to_grid) {
+  REF_INTERP ref_interp;
+  REF_GRID from_grid;
+  REF_NODE to_node;
+  REF_INT node;
+  RSS(ref_grid_deep_copy(&from_grid, to_grid), "import");
+  RSS(ref_interp_create(ref_interp_ptr, from_grid, to_grid), "create");
+
+  if (ref_grid_twod(to_grid) || ref_grid_surf(to_grid)) return REF_SUCCESS;
+
+  ref_interp = *ref_interp_ptr;
+  to_node = ref_grid_node(to_grid);
+
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      REIS(REF_EMPTY, ref_interp->cell[node], "identity already found?");
+      RSS(ref_interp_exhaustive_tet_around_node(
+              from_grid, node, ref_node_xyz_ptr(to_node, node),
+              &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
+          "tet around node");
+      ref_interp->part[node] = ref_mpi_rank(ref_grid_mpi(from_grid));
+      RAS(ref_interp_bary_inside(ref_interp, &(ref_interp->bary[4 * node])),
+          "no inside tet for matched grid node");
+    }
+  }
 
   return REF_SUCCESS;
 }
@@ -123,39 +207,6 @@ REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
   best_bary = -999.0;
   each_ref_list_item(ref_list, item) {
     candidate = ref_list_value(ref_list, item);
-    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
-    RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
-        "bary");
-    min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                   MIN(current_bary[2], current_bary[3]));
-    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
-      best_candidate = candidate;
-      best_bary = min_bary;
-    }
-  }
-
-  RUS(REF_EMPTY, best_candidate, "failed to find cell");
-
-  *cell = best_candidate;
-  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
-  RSS(ref_node_bary4(ref_node, nodes, xyz, bary), "bary");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
-                                                 REF_INT node, REF_DBL *xyz,
-                                                 REF_INT *cell, REF_DBL *bary) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT item, candidate, best_candidate;
-  REF_DBL current_bary[4];
-  REF_DBL best_bary, min_bary;
-
-  best_candidate = REF_EMPTY;
-  best_bary = -999.0;
-  each_ref_cell_having_node(ref_cell, node, item, candidate) {
     RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
     RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
         "bary");
@@ -253,8 +304,7 @@ REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
       RSS(ref_agents_tattle(ref_agents, id, "many steps"), "tat");
     }
 
-    if (bary[0] >= ref_interp->inside && bary[1] >= ref_interp->inside &&
-        bary[2] >= ref_interp->inside && bary[3] >= ref_interp->inside) {
+    if (ref_interp_bary_inside(ref_interp, bary)) {
       ref_agent_mode(ref_agents, id) = REF_AGENT_ENCLOSING;
       for (i = 0; i < 4; i++) ref_agent_bary(ref_agents, i, id) = bary[i];
       return REF_SUCCESS;
@@ -343,15 +393,14 @@ REF_STATUS ref_interp_push_onto_queue(REF_INTERP ref_interp, REF_INT node) {
         ref_interp->agent_hired[other] = REF_TRUE;
         RSS(ref_agents_push(ref_agents, other, ref_interp->part[node],
                             ref_interp->cell[node],
-                            ref_node_xyz_ptr(ref_node, other)),
+                            ref_node_xyz_ptr(ref_node, other), &id),
             "enque");
       }
     } else { /* add ghost seeding via REF_AGENT_SUGGESTION mode */
       RSS(ref_agents_push(ref_agents, other, ref_interp->part[node],
                           ref_interp->cell[node],
-                          ref_node_xyz_ptr(ref_node, other)),
+                          ref_node_xyz_ptr(ref_node, other), &id),
           "enque");
-      id = ref_agents->last;
       ref_agent_mode(ref_agents, id) = REF_AGENT_SUGGESTION;
       ref_agent_home(ref_agents, id) = ref_node_part(ref_node, other);
       ref_agent_node(ref_agents, id) = ref_node_global(ref_node, other);
@@ -854,6 +903,100 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   RSS(ref_interp_tree(ref_interp), "tree");
   if (ref_interp->instrument)
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_AGENTS ref_agents;
+  REF_INT i, id;
+  RNS(ref_interp, "ref_interp NULL");
+
+  RAS(node < ref_interp_max(ref_interp), "more nodes added, should move only");
+
+  /* no starting guess, skip */
+  if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
+
+  ref_grid = ref_interp_to_grid(ref_interp);
+  ref_node = ref_grid_node(ref_grid);
+  ref_agents = ref_interp->ref_agents;
+  REIS(0, ref_agents_n(ref_agents), "did not expect active agents");
+
+  ref_interp->agent_hired[node] = REF_TRUE;
+  RSS(ref_agents_push(ref_agents, node, ref_interp->part[node],
+                      ref_interp->cell[node], ref_node_xyz_ptr(ref_node, node),
+                      &id),
+      "requeue");
+  REIS(REF_AGENT_WALKING, ref_agent_mode(ref_agents, id), "should be walking");
+  RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+  if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
+    ref_interp->cell[node] = ref_agent_seed(ref_agents, id);
+    ref_interp->part[node] = ref_agent_part(ref_agents, id);
+    for (i = 0; i < 4; i++)
+      ref_interp->bary[i + 4 * node] = ref_agent_bary(ref_agents, i, id);
+    (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
+    (ref_interp->n_walk)++;
+  } else {
+    /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
+    /* what for parallel REF_AGENT_HOP_PART */
+    ref_interp->cell[node] = REF_EMPTY;
+  }
+  ref_interp->agent_hired[node] = REF_FALSE; /* dismissed */
+  RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
+                                     REF_INT node1, REF_INT new_node) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_AGENTS ref_agents;
+  REF_INT i, id;
+  RNS(ref_interp, "ref_interp NULL");
+
+  ref_grid = ref_interp_to_grid(ref_interp);
+  ref_node = ref_grid_node(ref_grid);
+  if (new_node >= ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, ref_node_max(ref_node)), "resize");
+  }
+
+  /* no starting guess, skip */
+  if (REF_EMPTY == ref_interp->cell[node0] ||
+      REF_EMPTY == ref_interp->cell[node1])
+    return REF_SUCCESS;
+
+  ref_agents = ref_interp->ref_agents;
+  REIS(0, ref_agents_n(ref_agents), "did not expect active agents");
+
+  ref_interp->agent_hired[new_node] = REF_TRUE;
+  RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
+                      ref_interp->cell[node0],
+                      ref_node_xyz_ptr(ref_node, node0), &id),
+      "requeue");
+  RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+  if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
+    RSS(ref_agents_restart(ref_agents, ref_interp->part[node1],
+                           ref_interp->cell[node1], id),
+        "restart");
+    RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+  }
+  if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
+    ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
+    ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
+    for (i = 0; i < 4; i++)
+      ref_interp->bary[i + 4 * new_node] = ref_agent_bary(ref_agents, i, id);
+    (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
+    (ref_interp->n_walk)++;
+  } else {
+    /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
+    /* what for parallel REF_AGENT_HOP_PART */
+    ref_interp->cell[new_node] = REF_EMPTY;
+  }
+  ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+  RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
 
   return REF_SUCCESS;
 }

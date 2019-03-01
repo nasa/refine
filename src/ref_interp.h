@@ -38,6 +38,7 @@ struct REF_INTERP_STRUCT {
   REF_GRID from_grid;
   REF_GRID to_grid;
   REF_BOOL instrument;
+  REF_BOOL continuously;
   REF_INT n_walk;
   REF_INT n_terminated;
   REF_INT walk_steps;
@@ -45,6 +46,7 @@ struct REF_INTERP_STRUCT {
   REF_INT n_geom_fail;
   REF_INT n_tree;
   REF_INT tree_cells;
+  REF_INT max;
   REF_BOOL *agent_hired;
   REF_INT *cell;
   REF_INT *part;
@@ -57,15 +59,24 @@ struct REF_INTERP_STRUCT {
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
+#define ref_interp_cell(ref_interp, node) ((ref_interp)->cell[(node)])
+#define ref_interp_part(ref_interp, node) ((ref_interp)->part[(node)])
 #define ref_interp_bary(ref_interp, j, node) \
   ((ref_interp)->bary[(j) + 4 * (node)])
+#define ref_interp_max(ref_interp) ((ref_interp)->max)
+#define ref_interp_continuously(ref_interp) ((ref_interp)->continuously)
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
+REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
+                                      REF_GRID ref_grid);
 
 REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
+REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
+REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
+                                     REF_INT node1, REF_INT new_node);
 
 REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
                              REF_DBL *from_scalar, REF_DBL *to_scalar);

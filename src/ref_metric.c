@@ -321,9 +321,10 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
-                                       REF_GRID parent_grid) {
+static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
+                                                   REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GRID parent_grid;
   REF_NODE parent_node;
   REF_INT tri, ixyz, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -332,12 +333,14 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
   REF_DBL log_parent_m[3][6];
   REF_DBL log_interpolated_m[6];
 
-  /* skip null parent */
-  if (NULL == parent_grid) return REF_SUCCESS;
-  parent_node = ref_grid_node(parent_grid);
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
 
-  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
-    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate_node not para");
+  /* skip null interp */
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+
+  parent_grid = ref_interp_from_grid(ref_grid_interp(ref_grid));
+  parent_node = ref_grid_node(parent_grid);
 
   if (!ref_grid_twod(ref_grid))
     RSS(REF_IMPLEMENT, "ref_metric_interpolate_node only implemented for twod");
@@ -370,6 +373,114 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node,
   }
   RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
       "log(interpM)");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
+  REF_INTERP ref_interp;
+  REF_GRID from_grid;
+  REF_NODE from_node;
+  REF_DBL log_parent_m[4][6], log_m[6];
+  REF_INT ibary, im;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+  ref_interp = ref_grid_interp(ref_grid);
+  from_grid = ref_interp_from_grid(ref_interp);
+  from_node = ref_grid_node(from_grid);
+
+  if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
+
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
+    return REF_SUCCESS;
+  }
+
+  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
+
+  if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) return REF_SUCCESS;
+  RSS(ref_interp_locate_node(ref_interp, node), "locate");
+
+  /* location unsuccessful */
+  if (REF_EMPTY == ref_interp_cell(ref_interp, node)) return REF_SUCCESS;
+
+  RSS(ref_cell_nodes(ref_grid_tet(from_grid), ref_interp_cell(ref_interp, node),
+                     nodes),
+      "node needs to be localized");
+  for (ibary = 0; ibary < 4; ibary++)
+    RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
+        "log(parentM)");
+  for (im = 0; im < 6; im++) log_m[im] = 0.0;
+  for (im = 0; im < 6; im++) {
+    for (ibary = 0; ibary < 4; ibary++) {
+      log_m[im] +=
+          ref_interp_bary(ref_interp, ibary, node) * log_parent_m[ibary][im];
+    }
+  }
+  RSS(ref_node_metric_set_log(ref_grid_node(ref_grid), node, log_m),
+      "set interp log met");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_INT new_node) {
+  REF_INTERP ref_interp;
+  REF_GRID from_grid;
+  REF_NODE from_node;
+  REF_DBL log_parent_m[4][6], log_m[6];
+  REF_INT ibary, im;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+
+  /* skip null interp */
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+  ref_interp = ref_grid_interp(ref_grid);
+  from_grid = ref_interp_from_grid(ref_interp);
+  from_node = ref_grid_node(from_grid);
+
+  if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
+
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_metric_interpolate_node_twod(ref_grid, new_node),
+        "interp node twod");
+    return REF_SUCCESS;
+  }
+
+  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
+
+  if (ref_cell_node_empty(ref_grid_tet(ref_grid), node0) ||
+      ref_cell_node_empty(ref_grid_tet(ref_grid), node1))
+    return REF_SUCCESS;
+
+  RSS(ref_interp_locate_between(ref_interp, node0, node1, new_node), "locate");
+
+  /* location unsuccessful */
+  if (REF_EMPTY == ref_interp_cell(ref_interp, new_node)) return REF_SUCCESS;
+
+  RSS(ref_cell_nodes(ref_grid_tet(from_grid),
+                     ref_interp_cell(ref_interp, new_node), nodes),
+      "new_node needs to be localized");
+  for (ibary = 0; ibary < 4; ibary++)
+    RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
+        "log(parentM)");
+  for (im = 0; im < 6; im++) log_m[im] = 0.0;
+  for (im = 0; im < 6; im++) {
+    for (ibary = 0; ibary < 4; ibary++) {
+      log_m[im] += ref_interp_bary(ref_interp, ibary, new_node) *
+                   log_parent_m[ibary][im];
+    }
+  }
+  RSS(ref_node_metric_set_log(ref_grid_node(ref_grid), new_node, log_m),
+      "set interp log met");
 
   return REF_SUCCESS;
 }
