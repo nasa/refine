@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       ref_mpi_stopwatch_stop(ref_mpi, "curvature");
     }
-    if (NULL != ref_interp_from_grid(ref_grid_interp(ref_grid))) {
+    if (NULL != ref_grid_interp(ref_grid)) {
       RSS(ref_metric_interpolate(
               ref_grid, ref_interp_from_grid(ref_grid_interp(ref_grid))),
           "interp");
