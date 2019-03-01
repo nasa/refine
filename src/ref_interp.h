@@ -71,6 +71,8 @@ REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
+REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
+                                     REF_INT node1, REF_INT new_node);
 
 REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
                              REF_DBL *from_scalar, REF_DBL *to_scalar);
