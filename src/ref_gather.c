@@ -1399,7 +1399,6 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
   }
   printf("%s: %d: %s %s\n", __FILE__, __LINE__,
          "input file name extension unknown", filename);
-  RSS(REF_FAILURE, "unknown file extension");
   return REF_FAILURE;
 }
 
@@ -1551,4 +1550,28 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   if (ref_grid_once(ref_grid)) fclose(file);
 
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
+                                          REF_DBL *scalar,
+                                          const char **scalar_names,
+                                          const char *filename) {
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if (strcmp(&filename[end_of_string - 4], ".tec") == 0 ||
+      strcmp(&filename[end_of_string - 4], ".dat") == 0 ||
+      strcmp(&filename[end_of_string - 2], ".t") == 0) {
+    RSS(ref_gather_scalar_tec(ref_grid, ldim, scalar, scalar_names, filename),
+        "scalar tec");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 5], ".solb") == 0) {
+    RSS(ref_gather_scalar(ref_grid, ldim, scalar, filename), "scalar solb");
+    return REF_SUCCESS;
+  }
+  printf("%s: %d: %s %s\n", __FILE__, __LINE__,
+         "input file name extension unknown", filename);
+  return REF_FAILURE;
 }
