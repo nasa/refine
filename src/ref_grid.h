@@ -125,8 +125,6 @@ REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
 
 REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid);
 
-REF_STATUS ref_grid_identity_interp_guess(REF_GRID ref_grid);
-
 REF_STATUS ref_grid_enclosing_tri(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tri,
                                   REF_DBL *bary);
 REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
