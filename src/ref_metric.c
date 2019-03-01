@@ -321,7 +321,8 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
+static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
+                                                   REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GRID parent_grid;
   REF_NODE parent_node;
@@ -340,9 +341,6 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
 
   parent_grid = ref_interp_from_grid(ref_grid_interp(ref_grid));
   parent_node = ref_grid_node(parent_grid);
-
-  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
-    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate_node not para");
 
   if (!ref_grid_twod(ref_grid))
     RSS(REF_IMPLEMENT, "ref_metric_interpolate_node only implemented for twod");
@@ -375,6 +373,27 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   }
   RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
       "log(interpM)");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
+  /* skip if parallel at this point */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+
+  /* skip null interp */
+  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
+
+  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
+    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate_node not para");
+
+  if (ref_grid_twod(ref_grid)) {
+    RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
+    return REF_SUCCESS;
+  }
+
+  RAS(!ref_grid_surf(ref_grid), "does not expect surf");
+  RAS(!ref_cell_node_empty(ref_grid_tet(ref_grid), node), "expects tets");
 
   return REF_SUCCESS;
 }
