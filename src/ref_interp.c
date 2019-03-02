@@ -69,6 +69,42 @@ static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
+                                             REF_DBL *center, REF_DBL *radius) {
+  REF_INT i;
+  for (i = 0; i < 3; i++)
+    center[i] = 0.25 * (ref_node_xyz(ref_node, i, nodes[0]) +
+                        ref_node_xyz(ref_node, i, nodes[1]) +
+                        ref_node_xyz(ref_node, i, nodes[2]) +
+                        ref_node_xyz(ref_node, i, nodes[3]));
+  *radius = 0.0;
+  for (i = 0; i < 4; i++)
+    *radius = MAX(
+        *radius, sqrt(pow(ref_node_xyz(ref_node, 0, nodes[i]) - center[0], 2) +
+                      pow(ref_node_xyz(ref_node, 1, nodes[i]) - center[1], 2) +
+                      pow(ref_node_xyz(ref_node, 2, nodes[i]) - center[2], 2)));
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL center[3], radius;
+  REF_SEARCH ref_search;
+
+  RSS(ref_search_create(&ref_search, ref_cell_n(from_tet)), "create search");
+  ref_interp_search(ref_interp) = ref_search;
+
+  each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
+    RSS(ref_interp_bounding_sphere(from_node, nodes, center, &radius), "b");
+    RSS(ref_search_insert(ref_search, cell, center, 2.0 * radius), "ins");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
                              REF_GRID to_grid) {
   REF_INTERP ref_interp;
@@ -102,6 +138,8 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   RSS(ref_agents_create(&(ref_interp->ref_agents), ref_interp_mpi(ref_interp)),
       "add agents");
   RSS(ref_list_create(&(ref_interp->visualize)), "add list");
+
+  RSS(ref_interp_create_search(ref_interp), "fill search");
 
   return REF_SUCCESS;
 }
@@ -151,6 +189,7 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
 
 REF_STATUS ref_interp_free(REF_INTERP ref_interp) {
   if (NULL == (void *)ref_interp) return REF_NULL;
+  ref_search_free(ref_interp->ref_search);
   ref_list_free(ref_interp->visualize);
   ref_agents_free(ref_interp->ref_agents);
   ref_free(ref_interp->bary);
@@ -697,23 +736,6 @@ REF_STATUS ref_interp_geom_nodes(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
-                                      REF_DBL *center, REF_DBL *radius) {
-  REF_INT i;
-  for (i = 0; i < 3; i++)
-    center[i] = 0.25 * (ref_node_xyz(ref_node, i, nodes[0]) +
-                        ref_node_xyz(ref_node, i, nodes[1]) +
-                        ref_node_xyz(ref_node, i, nodes[2]) +
-                        ref_node_xyz(ref_node, i, nodes[3]));
-  *radius = 0.0;
-  for (i = 0; i < 4; i++)
-    *radius = MAX(
-        *radius, sqrt(pow(ref_node_xyz(ref_node, 0, nodes[i]) - center[0], 2) +
-                      pow(ref_node_xyz(ref_node, 1, nodes[i]) - center[1], 2) +
-                      pow(ref_node_xyz(ref_node, 2, nodes[i]) - center[2], 2)));
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
@@ -721,13 +743,12 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tet = ref_grid_tet(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_SEARCH ref_search;
-  REF_INT node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL center[3], radius;
+  REF_SEARCH ref_search = ref_interp_search(ref_interp);
   REF_DBL bary[4];
   REF_LIST ref_list;
   REF_DBL fuzz = 1.0e-12;
-  REF_INT *best_node, *best_cell, *from_proc;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node, *best_node, *best_cell, *from_proc;
   REF_DBL *best_bary;
   REF_INT ntarget;
   REF_DBL *local_xyz, *global_xyz;
@@ -741,11 +762,6 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   REF_INT i, item;
 
   RSS(ref_list_create(&ref_list), "create list");
-  RSS(ref_search_create(&ref_search, ref_cell_n(from_tet)), "mk sr");
-  each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
-    RSS(ref_interp_bounding_sphere(from_node, nodes, center, &radius), "b");
-    RSS(ref_search_insert(ref_search, cell, center, 2.0 * radius), "ins");
-  }
 
   ntarget = 0;
   each_ref_node_valid_node(to_node, node) {
@@ -874,7 +890,6 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   ref_free(local_xyz);
   ref_free(local_node);
 
-  RSS(ref_search_free(ref_search), "free list");
   RSS(ref_list_free(ref_list), "free list");
 
   each_ref_node_valid_node(to_node, node) {
