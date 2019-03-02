@@ -163,6 +163,8 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
   REF_GRID from_grid;
   REF_NODE to_node;
   REF_INT node;
+  REF_DBL max_error;
+
   RSS(ref_grid_deep_copy(&from_grid, to_grid), "import");
   RSS(ref_interp_create(ref_interp_ptr, from_grid, to_grid), "create");
 
@@ -182,6 +184,11 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
       RAS(ref_interp_bary_inside(ref_interp, &(ref_interp->bary[4 * node])),
           "no inside tet for matched grid node");
     }
+  }
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(to_grid)) && max_error > 1.0e-12) {
+    printf("warning %e max error\n", max_error);
   }
 
   return REF_SUCCESS;
