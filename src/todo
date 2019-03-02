@@ -6,12 +6,15 @@ ref_interp_test nondimensionalization of entropy equation and entropy adjoint
 ref_phys_test extraction from ref_interp
 
 continuous metric interpolation
- pair and store interp at startup
- incremental interp for new
- incremental interp for move
- store new node assoc
+ + pair and store interp at startup
+ + incremental interp for new
+ + incremental interp for move
+ tree for boundary
+ fill in located at end of pass
+ + store new node assoc
  seq cube test
- store background in grid
+ + store background in grid
+ parallel interp
  load balance interp
  allow interp asynchronously
 
