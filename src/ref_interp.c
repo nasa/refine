@@ -993,6 +993,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   if (new_node >= ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(ref_node)), "resize");
   }
+  ref_interp->cell[new_node] = REF_EMPTY; /* initialize new_node locate */
 
   /* no starting guess, skip */
   if (REF_EMPTY == ref_interp->cell[node0] ||
