@@ -19,6 +19,8 @@ continuous metric interpolation
  allow interp asynchronously
 
 
+interp should never extrapolate
+
 extract/combine post adaptation operator checks and status
 
 configure with metis only, when parmetis not provided
