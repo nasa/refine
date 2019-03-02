@@ -32,6 +32,7 @@ BEGIN_C_DECLORATION
 
 struct REF_ADAPT_STRUCT {
   REF_INT split_per_pass;
+  REF_BOOL split_ratio_growth;
   REF_DBL split_ratio;
   REF_DBL split_quality_absolute;
   REF_DBL split_quality_relative;
