@@ -49,6 +49,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt = *ref_adapt_ptr;
 
   ref_adapt->split_per_pass = 1;
+  ref_adapt->split_ratio_growth = REF_FALSE;
   ref_adapt->split_ratio = sqrt(2.0) * overshoot;
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
@@ -78,6 +79,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt = *ref_adapt_ptr;
 
   ref_adapt->split_per_pass = original->split_per_pass;
+  ref_adapt->split_ratio_growth = original->split_ratio_growth;
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
@@ -275,6 +277,13 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   old_min_ratio = ref_adapt->post_min_ratio;
   old_max_ratio = ref_adapt->post_max_ratio;
+
+  /* allow edge growth when interpolating metric continuously */
+  ref_adapt->split_ratio_growth = REF_FALSE;
+  if (NULL != ref_grid_interp(ref_grid)) {
+    ref_adapt->split_ratio_growth =
+        ref_interp_continuously(ref_grid_interp(ref_grid));
+  }
 
   /* bound ratio to current range */
   ref_adapt->post_min_ratio = MIN(min_ratio, ref_adapt->collapse_ratio);
