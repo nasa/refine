@@ -923,7 +923,6 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
 }
 
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
-  REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_AGENTS ref_agents;
   REF_INT i, id;
@@ -934,8 +933,7 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   /* no starting guess, skip */
   if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
 
-  ref_grid = ref_interp_to_grid(ref_interp);
-  ref_node = ref_grid_node(ref_grid);
+  ref_node = ref_grid_node(ref_interp_to_grid(ref_interp));
   ref_agents = ref_interp->ref_agents;
   REIS(0, ref_agents_n(ref_agents), "did not expect active agents");
 
@@ -960,6 +958,24 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   }
   ref_interp->agent_hired[node] = REF_FALSE; /* dismissed */
   RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+
+  if (REF_EMPTY == ref_interp->cell[node]) {
+    REF_LIST ref_list;
+    REF_DBL fuzz = 1.0e-12;
+
+    RSS(ref_list_create(&ref_list), "create list");
+    RSS(ref_search_touching(ref_interp_search(ref_interp), ref_list,
+                            ref_node_xyz_ptr(ref_node, node), fuzz),
+        "tch");
+    if (ref_list_n(ref_list) > 0) {
+      RSS(ref_interp_enclosing_tet_in_list(
+              ref_interp_from_grid(ref_interp), ref_list,
+              ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
+              &(ref_interp->bary[4 * node])),
+          "best in list");
+    }
+    RSS(ref_list_free(ref_list), "free list");
+  }
 
   return REF_SUCCESS;
 }
@@ -1012,6 +1028,24 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   }
   ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
   RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+
+  if (REF_EMPTY == ref_interp->cell[new_node]) {
+    REF_LIST ref_list;
+    REF_DBL fuzz = 1.0e-12;
+
+    RSS(ref_list_create(&ref_list), "create list");
+    RSS(ref_search_touching(ref_interp_search(ref_interp), ref_list,
+                            ref_node_xyz_ptr(ref_node, new_node), fuzz),
+        "tch");
+    if (ref_list_n(ref_list) > 0) {
+      RSS(ref_interp_enclosing_tet_in_list(
+              ref_interp_from_grid(ref_interp), ref_list,
+              ref_node_xyz_ptr(ref_node, new_node),
+              &(ref_interp->cell[new_node]), &(ref_interp->bary[4 * new_node])),
+          "best in list");
+    }
+    RSS(ref_list_free(ref_list), "free list");
+  }
 
   return REF_SUCCESS;
 }
