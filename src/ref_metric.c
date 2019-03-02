@@ -654,6 +654,26 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
+  REF_INTERP ref_interp = ref_grid_interp(to_grid);
+  REF_GRID from_grid;
+  REF_INT node;
+
+  if (NULL == ref_interp) return REF_SUCCESS;
+  from_grid = ref_interp_from_grid(ref_interp);
+
+  if (!ref_interp_continuously(ref_interp)) {
+    RSS(ref_metric_interpolate(to_grid, from_grid), "interp");
+    return REF_SUCCESS;
+  }
+
+  each_ref_node_valid_node(ref_grid_node(to_grid), node) {
+    RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
                                              REF_DBL r) {
   REF_NODE ref_node = ref_grid_node(ref_grid);

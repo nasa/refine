@@ -243,13 +243,10 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_mpi, "curvature");
-    }
-    if (NULL != ref_grid_interp(ref_grid)) {
-      RSS(ref_metric_interpolate(
-              ref_grid, ref_interp_from_grid(ref_grid_interp(ref_grid))),
-          "interp");
-      ref_mpi_stopwatch_stop(ref_mpi, "interp");
+      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+    } else {
+      RSS(ref_metric_synchronize(ref_grid), "sync with background");
+      ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     }
     if (curvature_constraint) {
       RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
