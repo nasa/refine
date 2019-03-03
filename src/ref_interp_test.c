@@ -543,6 +543,7 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_INTERP ref_interp;
     REF_INT node0, node1, new_node, global;
+    REF_DBL max_error;
     RSS(ref_fixture_tet2_grid(&ref_grid, ref_mpi), "2 tet fixture");
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_grid_cache_background(ref_grid), "cache");
@@ -558,6 +559,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_locate_between(ref_interp, node0, node1, new_node),
         "locate");
     RUS(REF_EMPTY, ref_interp_cell(ref_interp, new_node), "not located");
+    RSS(ref_interp_max_error(ref_interp, &max_error), "err");
+    RGDS(1.0e-15, max_error, "large interp error");
     ref_grid_free(ref_grid);
   }
 

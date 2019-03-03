@@ -1135,7 +1135,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   ref_interp->agent_hired[new_node] = REF_TRUE;
   RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
                       ref_interp->cell[node0],
-                      ref_node_xyz_ptr(ref_node, node0), &id),
+                      ref_node_xyz_ptr(ref_node, new_node), &id),
       "requeue");
   RSS(ref_interp_walk_agent(ref_interp, id), "walking");
   if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
