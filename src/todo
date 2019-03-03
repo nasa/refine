@@ -15,6 +15,7 @@ continuous metric interpolation
  + seq cube-cylinder test
  + store background in grid
  + default for seq
+ cache curvature_metric
  parallel interp
  load balance interp
  allow interp asynchronously
