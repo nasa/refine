@@ -269,6 +269,15 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node) {
+  if (NULL == ref_interp) return REF_SUCCESS;
+  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
+  REIS(REF_FALSE, ref_interp->agent_hired[node], "remove node agent hired");
+  RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "remove node no located");
+  ref_interp->cell[node] = REF_EMPTY;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_exhaustive_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
                                                REF_INT *cell, REF_DBL *bary) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
