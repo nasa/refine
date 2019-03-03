@@ -394,7 +394,6 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   from_node = ref_grid_node(from_grid);
 
   if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
 
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
@@ -447,7 +446,6 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   from_node = ref_grid_node(from_grid);
 
   if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
 
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_interpolate_node_twod(ref_grid, new_node),
