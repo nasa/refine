@@ -38,6 +38,6 @@ adapt_cycle para02 para03 10 4
 adapt_cycle para03 para04 15 4
 
 cat para04.status
-../../../check.rb para04.status 0.25 2.5
+../../../check.rb para04.status 0.25 3.0
 
 exit

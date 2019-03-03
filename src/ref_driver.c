@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
-  REF_BOOL continuous_interpolation = REF_FALSE;
+  REF_BOOL continuous_interpolation = REF_TRUE;
   char output_project[1004];
   char output_filename[1024];
   REF_INT ngeom;
@@ -145,7 +145,7 @@ int main(int argc, char *argv[]) {
         tecplot_movie = REF_TRUE;
         break;
       case 'c':
-        continuous_interpolation = REF_TRUE;
+        continuous_interpolation = REF_FALSE;
         break;
       case 'd':
         debug_verbose = REF_TRUE;
@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
-        printf("       [-c] continuous metric interpolation\n");
+        printf("       [-c] deactivate continuous metric interpolation\n");
         return 1;
     }
   }
@@ -204,7 +204,8 @@ int main(int argc, char *argv[]) {
   } else {
     RSS(ref_grid_cache_background(ref_grid), "cache");
     ref_interp_continuously(ref_grid_interp(ref_grid)) =
-        continuous_interpolation;
+        !ref_mpi_para(ref_mpi) && !ref_grid_twod(ref_grid) &&
+        !ref_grid_surf(ref_grid) && continuous_interpolation;
     ref_mpi_stopwatch_stop(ref_mpi, "cache metric");
   }
 

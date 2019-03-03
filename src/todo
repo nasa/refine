@@ -9,15 +9,17 @@ continuous metric interpolation
  + pair and store interp at startup
  + incremental interp for new
  + incremental interp for move
- tree for boundary
- fill in located at end of pass
+ + tree for boundary
  + store new node assoc
- seq cube test
+ + seq cube test
+ + seq cube-cylinder test
  + store background in grid
+ + default for seq
+ cache curvature_metric
  parallel interp
  load balance interp
  allow interp asynchronously
-
+ fill in located at end of pass
 
 interp should never extrapolate
 
