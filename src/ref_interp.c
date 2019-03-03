@@ -390,6 +390,59 @@ static REF_STATUS ref_update_agent_seed(REF_INTERP ref_interp, REF_INT id,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
+  REF_INT i, j, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL xyz[3], error;
+  if (NULL == ref_interp) {
+    printf("NULL interp %d\n", node);
+    return REF_SUCCESS;
+  }
+  if (node >= ref_interp_max(ref_interp)) {
+    printf("max %d too samll for %d\n", ref_interp_max(ref_interp), node);
+    return REF_SUCCESS;
+  }
+  if (REF_EMPTY == ref_interp->cell[node]) {
+    printf("empty cell %d\n", node);
+    return REF_SUCCESS;
+  }
+  printf("cell %d part %d node %d\n", ref_interp->cell[node],
+         ref_interp->part[node], node);
+  printf("bary %f %f %f %f\n", ref_interp->bary[0 + 4 * node],
+         ref_interp->bary[1 + 4 * node], ref_interp->bary[2 + 4 * node],
+         ref_interp->bary[3 + 4 * node]);
+  printf("target %f %f %f\n",
+         ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 0, node),
+         ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 1, node),
+         ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 2, node));
+  RSS(ref_cell_nodes(ref_grid_tet(ref_interp_from_grid(ref_interp)),
+                     ref_interp->cell[node], nodes),
+      "node needs to be localized");
+
+  for (i = 0; i < 3; i++) xyz[i] = 0.0;
+  for (j = 0; j < 4; j++) {
+    for (i = 0; i < 3; i++) {
+      xyz[i] += ref_interp->bary[j + 4 * node] *
+                ref_node_xyz(ref_grid_node(ref_interp_from_grid(ref_interp)), i,
+                             nodes[j]);
+    }
+  }
+
+  error =
+      pow(xyz[0] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                0, node),
+          2) +
+      pow(xyz[1] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                1, node),
+          2) +
+      pow(xyz[2] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                2, node),
+          2);
+  error = sqrt(error);
+  printf("interp %f %f %f error %e\n", xyz[0], xyz[1], xyz[2], error);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
   REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
