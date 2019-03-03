@@ -188,7 +188,7 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
   if (ref_mpi_once(ref_grid_mpi(to_grid)) && max_error > 1.0e-12) {
-    printf("warning %e max error\n", max_error);
+    printf("warning %e max error for identity background grid\n", max_error);
   }
 
   return REF_SUCCESS;
@@ -211,6 +211,7 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
   REF_INT *int_copy;
   REF_DBL *dbl_copy;
   REF_INT i, node, n, max;
+  REF_DBL max_error;
 
   if (NULL == ref_interp) return REF_SUCCESS;
   n = ref_node_n(ref_grid_node(ref_interp_to_grid(ref_interp)));
@@ -257,6 +258,12 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
     }
   }
   ref_free(dbl_copy);
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(ref_interp_to_grid(ref_interp))) &&
+      max_error > 1.0e-12) {
+    printf("warning %e max error after pack\n", max_error);
+  }
 
   return REF_SUCCESS;
 }
