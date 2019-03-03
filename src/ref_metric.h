@@ -46,6 +46,7 @@ REF_STATUS ref_metric_circle_node(REF_NODE ref_node);
 REF_STATUS ref_metric_twod_node(REF_NODE ref_node);
 REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid);
 
+REF_STATUS ref_metric_synchronize(REF_GRID ref_grid);
 REF_STATUS ref_metric_interpolate(REF_GRID ref_grid, REF_GRID parent);
 REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,

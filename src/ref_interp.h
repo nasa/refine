@@ -31,6 +31,7 @@ END_C_DECLORATION
 #include "ref_grid.h"
 #include "ref_list.h"
 #include "ref_mpi.h"
+#include "ref_search.h"
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
@@ -55,6 +56,7 @@ struct REF_INTERP_STRUCT {
   REF_DBL bound;
   REF_AGENTS ref_agents;
   REF_LIST visualize;
+  REF_SEARCH ref_search;
 };
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
@@ -65,6 +67,7 @@ struct REF_INTERP_STRUCT {
   ((ref_interp)->bary[(j) + 4 * (node)])
 #define ref_interp_max(ref_interp) ((ref_interp)->max)
 #define ref_interp_continuously(ref_interp) ((ref_interp)->continuously)
+#define ref_interp_search(ref_interp) ((ref_interp)->ref_search)
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
@@ -73,6 +76,11 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
 
 REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
+REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o);
+
+REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node);
+
+REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node);
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
 REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,

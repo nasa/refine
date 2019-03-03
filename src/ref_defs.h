@@ -165,6 +165,19 @@ typedef int REF_STATUS;
     }                                                                    \
   }
 
+#define RGDS(a, b, msg)                                                      \
+  {                                                                          \
+    REF_DBL ref_private_status_rgds_ad, ref_private_status_rgds_bd;          \
+    ref_private_status_rgds_ad = (a);                                        \
+    ref_private_status_rgds_bd = (b);                                        \
+    if (ref_private_status_rgds_ad < ref_private_status_rgds_bd) {           \
+      printf("%s: %d: %s: %s\nexpected %.16e > %.16e\n", __FILE__, __LINE__, \
+             __func__, (msg), ref_private_status_rgds_ad,                    \
+             ref_private_status_rgds_bd);                                    \
+      return REF_FAILURE;                                                    \
+    }                                                                        \
+  }
+
 #define RWDS(a, b, tol, msg)                                                  \
   {                                                                           \
     REF_DBL ref_private_status_rwds_ad, ref_private_status_rwds_bd;           \

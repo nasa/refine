@@ -394,7 +394,6 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   from_node = ref_grid_node(from_grid);
 
   if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
 
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
@@ -447,7 +446,6 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   from_node = ref_grid_node(from_grid);
 
   if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) return REF_SUCCESS;
 
   if (ref_grid_twod(ref_grid)) {
     RSS(ref_metric_interpolate_node_twod(ref_grid, new_node),
@@ -650,6 +648,26 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   ref_free(recept_log_m);
 
   RSS(ref_interp_free(ref_interp), "interp free");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
+  REF_INTERP ref_interp = ref_grid_interp(to_grid);
+  REF_GRID from_grid;
+  REF_INT node;
+
+  if (NULL == ref_interp) return REF_SUCCESS;
+  from_grid = ref_interp_from_grid(ref_interp);
+
+  if (!ref_interp_continuously(ref_interp)) {
+    RSS(ref_metric_interpolate(to_grid, from_grid), "interp");
+    return REF_SUCCESS;
+  }
+
+  each_ref_node_valid_node(ref_grid_node(to_grid), node) {
+    RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+  }
 
   return REF_SUCCESS;
 }

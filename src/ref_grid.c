@@ -131,6 +131,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   RSS(ref_cell_pack(ref_grid_qua(ref_grid), o2n), "pack qua");
 
   RSS(ref_geom_pack(ref_grid_geom(ref_grid), o2n), "pack geom");
+  RSS(ref_interp_pack(ref_grid_interp(ref_grid), n2o), "pack interp");
 
   ref_free(n2o);
   ref_free(o2n);

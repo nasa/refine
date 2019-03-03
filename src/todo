@@ -19,6 +19,10 @@ continuous metric interpolation
  allow interp asynchronously
 
 
+interp should never extrapolate
+
+reduce use of ref_cell_list_with2 for each_ref_cell_having_node2
+
 extract/combine post adaptation operator checks and status
 
 configure with metis only, when parmetis not provided
