@@ -248,12 +248,12 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
 
   ref_malloc(dbl_copy, 4 * max, REF_DBL);
   for (node = 0; node < max; node++) {
-    for (i = i; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
       dbl_copy[i + 4 * node] = ref_interp->bary[i + 4 * node];
     }
   }
   for (node = 0; node < n; node++) {
-    for (i = i; i < 4; i++) {
+    for (i = 0; i < 4; i++) {
       ref_interp->bary[i + 4 * node] = dbl_copy[i + 4 * n2o[node]];
     }
   }
