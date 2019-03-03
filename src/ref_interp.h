@@ -76,6 +76,8 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
 
 REF_STATUS ref_interp_free(REF_INTERP ref_interp);
 
+REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o);
+
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
 REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,

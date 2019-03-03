@@ -207,6 +207,68 @@ REF_STATUS ref_interp_free(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
+  REF_BOOL *bool_copy;
+  REF_INT *int_copy;
+  REF_DBL *dbl_copy;
+  REF_INT i, node, n, max;
+
+  if (NULL == ref_interp) return REF_SUCCESS;
+  n = ref_node_n(ref_grid_node(ref_interp_to_grid(ref_interp)));
+  max = ref_interp_max(ref_interp);
+  if (n > max) {
+    RSS(ref_interp_resize(ref_interp, max), "match node max");
+  }
+
+  ref_malloc(bool_copy, max, REF_BOOL);
+  for (node = 0; node < max; node++) {
+    bool_copy[node] = ref_interp->agent_hired[node];
+  }
+  for (node = 0; node < n; node++) {
+    ref_interp->agent_hired[node] = bool_copy[n2o[node]];
+  }
+  for (node = n; node < max; node++) {
+    ref_interp->agent_hired[node] = REF_FALSE;
+  }
+  ref_free(bool_copy);
+
+  ref_malloc(int_copy, max, REF_INT);
+  for (node = 0; node < max; node++) {
+    int_copy[node] = ref_interp->cell[node];
+  }
+  for (node = 0; node < n; node++) {
+    ref_interp->cell[node] = int_copy[n2o[node]];
+  }
+  for (node = n; node < max; node++) {
+    ref_interp->cell[node] = REF_EMPTY;
+  }
+  for (node = 0; node < max; node++) {
+    int_copy[node] = ref_interp->part[node];
+  }
+  for (node = 0; node < n; node++) {
+    ref_interp->part[node] = int_copy[n2o[node]];
+  }
+  for (node = n; node < max; node++) {
+    ref_interp->part[node] = REF_EMPTY;
+  }
+  ref_free(int_copy);
+
+  ref_malloc(dbl_copy, 4 * max, REF_DBL);
+  for (node = 0; node < max; node++) {
+    for (i = i; i < 4; i++) {
+      dbl_copy[i + 4 * node] = ref_interp->bary[i + 4 * node];
+    }
+  }
+  for (node = 0; node < n; node++) {
+    for (i = i; i < 4; i++) {
+      ref_interp->bary[i + 4 * node] = dbl_copy[i + 4 * n2o[node]];
+    }
+  }
+  ref_free(dbl_copy);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_exhaustive_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
                                                REF_INT *cell, REF_DBL *bary) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
