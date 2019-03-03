@@ -538,6 +538,29 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_teardown(ref_interp), "teardown");
   }
 
+  if (!ref_mpi_para(ref_mpi)) { /* locate between tet2 */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INTERP ref_interp;
+    REF_INT node0, node1, new_node, global;
+    RSS(ref_fixture_tet2_grid(&ref_grid, ref_mpi), "2 tet fixture");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_grid_cache_background(ref_grid), "cache");
+    ref_interp = ref_grid_interp(ref_grid);
+    ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
+    node0 = 0;
+    node1 = 4;
+    RSS(ref_node_next_global(ref_node, &global), "next global");
+    RSS(ref_node_add(ref_node, global, &new_node), "new node");
+
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),
+        "interp new node");
+    RSS(ref_interp_locate_between(ref_interp, node0, node1, new_node),
+        "locate");
+    RUS(REF_EMPTY, ref_interp_cell(ref_interp, new_node), "not located");
+    ref_grid_free(ref_grid);
+  }
+
   { /* bricks */
     REF_GRID from, to;
     char file[] = "ref_interp_test.meshb";
