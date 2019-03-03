@@ -208,7 +208,6 @@ REF_STATUS ref_interp_free(REF_INTERP ref_interp) {
 }
 
 REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
-  REF_BOOL *bool_copy;
   REF_INT *int_copy;
   REF_DBL *dbl_copy;
   REF_INT i, node, n, max;
@@ -219,18 +218,11 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
   if (n > max) {
     RSS(ref_interp_resize(ref_interp, max), "match node max");
   }
+  REIS(0, ref_agents_n(ref_interp->ref_agents), "can't pack active agents");
 
-  ref_malloc(bool_copy, max, REF_BOOL);
   for (node = 0; node < max; node++) {
-    bool_copy[node] = ref_interp->agent_hired[node];
+    REIS(REF_FALSE, ref_interp->agent_hired[node], "can't pack hired agents");
   }
-  for (node = 0; node < n; node++) {
-    ref_interp->agent_hired[node] = bool_copy[n2o[node]];
-  }
-  for (node = n; node < max; node++) {
-    ref_interp->agent_hired[node] = REF_FALSE;
-  }
-  ref_free(bool_copy);
 
   ref_malloc(int_copy, max, REF_INT);
   for (node = 0; node < max; node++) {
