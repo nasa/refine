@@ -1374,20 +1374,25 @@ REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
              ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node) +
              ref_node_xyz(ref_node, 2, node) * ref_node_xyz(ref_node, 2, node));
 
-    smin = 0.3;
-    smax = 0.7;
-    emin = -15.0;
+    smin = 0.2;
+    smax = 0.6;
+    emin = -4.0;
     emax = -1.0;
 
     s = r / rmax;
-    exponent = emin;
+
+    t = MIN(s / smin, 1.0);
+    exponent = -15.0 * (1.0 - t) + emin * t;
+
     if (smin < s && s < smax) {
       t = (s - smin) / (smax - smin);
       exponent = (emin) * (1.0 - t) + (emax) * (t);
     }
+
     if (smax <= s) {
       exponent = emax;
     }
+
     hmin = rmax * pow(10.0, exponent);
 
     if (ref_math_divisible(1.0, hmin * hmin)) {

@@ -140,6 +140,45 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (buffer_pos == 1) {
+    REF_GRID ref_grid;
+    REF_DBL complexity, *metric;
+    REIS(6, argc,
+         "required args: --buffer grid.ext input-metric.solb complexity "
+         "output-metric.solb");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading metric %s\n", argv[3]);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
+        "unable to load parent metric in position 3");
+    ref_mpi_stopwatch_stop(ref_mpi, "read metric");
+
+    complexity = atof(argv[4]);
+    if (ref_mpi_once(ref_mpi))
+      printf("buffering at complexity %f\n", complexity);
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "set node");
+    RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+        "buffer at complexity");
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
+    RSS(ref_gather_metric(ref_grid, argv[5]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   if (lp_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *metric;
