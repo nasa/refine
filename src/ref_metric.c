@@ -1348,6 +1348,82 @@ REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL diag_system[12];
+  REF_DBL eig;
+  REF_INT node;
+  REF_DBL r, rmax, exponent, hmin, s, t, smin, smax, emin, emax;
+
+  rmax = 0.0;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node) +
+             ref_node_xyz(ref_node, 2, node) * ref_node_xyz(ref_node, 2, node));
+    rmax = MAX(rmax, r);
+  }
+  r = rmax;
+  RSS(ref_mpi_max(ref_mpi, &r, &rmax, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &rmax, 1, REF_DBL_TYPE), "bcast");
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
+
+    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node) +
+             ref_node_xyz(ref_node, 2, node) * ref_node_xyz(ref_node, 2, node));
+
+    smin = 0.3;
+    smax = 0.7;
+    emin = -15.0;
+    emax = -1.0;
+
+    s = r / rmax;
+    exponent = emin;
+    if (smin < s && s < smax) {
+      t = (s - smin) / (smax - smin);
+      exponent = (emin) * (1.0 - t) + (emax) * (t);
+    }
+    if (smax <= s) {
+      exponent = emax;
+    }
+    hmin = rmax * pow(10.0, exponent);
+
+    if (ref_math_divisible(1.0, hmin * hmin)) {
+      eig = 1.0 / (hmin * hmin);
+      ref_matrix_eig(diag_system, 0) = MIN(ref_matrix_eig(diag_system, 0), eig);
+      ref_matrix_eig(diag_system, 1) = MIN(ref_matrix_eig(diag_system, 1), eig);
+      ref_matrix_eig(diag_system, 2) = MIN(ref_matrix_eig(diag_system, 2), eig);
+    }
+
+    RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform m");
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                           REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node, relaxations;
+  REF_DBL current_complexity;
+
+  /* global scaling and buffer */
+  for (relaxations = 0; relaxations < 10; relaxations++) {
+    RSS(ref_metric_buffer(metric, ref_grid), "buffer");
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+          pow(target_complexity / current_complexity, 2.0 / 3.0);
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation,
