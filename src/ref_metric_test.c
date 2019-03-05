@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
+  REF_INT buffer_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
   REF_INT complexity_pos = REF_EMPTY;
   REF_INT gradation_pos = REF_EMPTY;
@@ -100,6 +101,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--hmax", &hmax_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--buffer", &buffer_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--complexity", &complexity_pos), REF_NOT_FOUND,
       "arg search");
@@ -175,6 +178,7 @@ int main(int argc, char *argv[]) {
       printf("complexity %f\n", complexity);
       printf("reconstruction %d\n", (int)reconstruction);
       printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
+      printf("buffer %d (negative is inactive)\n", buffer_pos);
     }
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
@@ -193,6 +197,10 @@ int main(int argc, char *argv[]) {
                       complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    if (REF_EMPTY != buffer_pos) {
+      RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+          "buffer at complexity");
+    }
     if (hmin > 0.0 || hmax > 0.0) {
       RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
                                            complexity),
