@@ -155,6 +155,8 @@ REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n);
 
 REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj);
 REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_faces);
+REF_STATUS ref_geom_face_nedge(REF_GEOM ref_geom, REF_INT faceid,
+                               REF_INT *nedge);
 REF_STATUS ref_geom_face_surface(REF_GEOM ref_geom, REF_INT faceid,
                                  REF_GEOM_SURFACE *surface);
 REF_STATUS ref_geom_recon(REF_GRID ref_grid);
