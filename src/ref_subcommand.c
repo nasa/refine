@@ -91,7 +91,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   sprintf(filename, "%s-init-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
-
+  printf("verify topo\n");
+  RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
+  printf("verify param\n");
+  RSS(ref_geom_verify_param(ref_grid), "adapt params");
+  ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
+  
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -103,7 +108,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
   printf("verify param\n");
   RSS(ref_geom_verify_param(ref_grid), "adapt params");
-  ref_mpi_stopwatch_stop(ref_mpi, "verification");
+  ref_mpi_stopwatch_stop(ref_mpi, "surf verification");
   sprintf(filename, "%s-adapt-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-adapt-surf.tec", project);
