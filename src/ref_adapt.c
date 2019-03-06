@@ -25,6 +25,7 @@
 #include "ref_edge.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_mpi.h"
 
 #include "ref_cavity.h"
@@ -175,8 +176,20 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         RSS(ref_node_metric_get(ref_node, nodes[cell_node], m), "get");
         RSS(ref_matrix_det_m(m, &det), "det");
         max_det = MAX(max_det, det);
-        complexity +=
-            sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+        if (ref_grid_surf(ref_grid)) {
+          REF_DBL area, normal[3], normal_projection;
+          RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &area), "vol");
+          RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, normal),
+              "norm");
+          RSS(ref_math_normalize(normal), "normalize");
+          normal_projection = ref_matrix_vt_m_v(m, normal);
+          complexity += sqrt(det / normal_projection) * area /
+                        ((REF_DBL)ref_cell_node_per(ref_cell));
+
+        } else {
+          complexity +=
+              sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+        }
       }
     }
     RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "owner");
