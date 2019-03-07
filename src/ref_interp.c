@@ -181,8 +181,13 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
               &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
           "tet around node");
       ref_interp->part[node] = ref_mpi_rank(ref_grid_mpi(from_grid));
-      RAS(ref_interp_bary_inside(ref_interp, &(ref_interp->bary[4 * node])),
-          "no inside tet for matched grid node");
+      RAB(ref_interp_bary_inside(ref_interp, &(ref_interp->bary[4 * node])),
+          "no inside tet for matched grid node", {
+            printf("bary %e %e %e %e\n", ref_interp->bary[0 + 4 * node],
+                   ref_interp->bary[1 + 4 * node],
+                   ref_interp->bary[2 + 4 * node],
+                   ref_interp->bary[3 + 4 * node]);
+          });
     }
   }
 
