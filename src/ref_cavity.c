@@ -508,6 +508,52 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                     REF_INT node) {
+  REF_INT item, cell;
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+
+  each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
+    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
+                                           REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_INT new_node) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell_node, cell;
+  REF_INT seg;
+  REF_INT node, nodes[3];
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
+
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
+  }
+
+  /* should seg remain along edges (jump in faceid)?
+     ok because new_node segments ignored,
+     but should be cleaned up for face too */
+
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    each_ref_cavity_seg_node(ref_cavity, node) {
+      nodes[node] = ref_cavity_s2n(ref_cavity, node, seg);
+    }
+    nodes[2] = ref_cavity_s2n(ref_cavity, 2, seg);
+    if ((node0 == nodes[0] && node1 == nodes[1]) ||
+        (node1 == nodes[0] && node0 == nodes[1])) {
+      ref_cavity_s2n(ref_cavity, 0, seg) = new_node;
+      nodes[1] = new_node;
+      RSS(ref_cavity_insert_seg(ref_cavity, nodes), "insert edge 1");
+      continue;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
