@@ -90,10 +90,11 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
 
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   REF_INT face, node;
+  REF_INT item, cell, i, nodes[REF_CELL_MAX_SIZE_PER];
   if (NULL == (void *)ref_cavity) return REF_NULL;
-  printf("nface = %d maxface = %d blankface = %d\n",
-         ref_cavity_nface(ref_cavity), ref_cavity_maxface(ref_cavity),
-         ref_cavity_blankface(ref_cavity));
+  printf("node %d\nnface = %d maxface = %d blankface = %d\n",
+         ref_cavity_node(ref_cavity), ref_cavity_nface(ref_cavity),
+         ref_cavity_maxface(ref_cavity), ref_cavity_blankface(ref_cavity));
   for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
     printf(" f2n[%d] = ", face);
     for (node = 0; node < 3; node++)
@@ -101,6 +102,22 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
     printf("\n");
   }
   RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
+  printf("nseg = %d maxseg = %d blankseg = %d\n", ref_cavity_nseg(ref_cavity),
+         ref_cavity_maxseg(ref_cavity), ref_cavity_blankseg(ref_cavity));
+  for (face = 0; face < ref_cavity_maxseg(ref_cavity); face++) {
+    printf(" s2n[%d] = ", face);
+    for (node = 0; node < 3; node++)
+      printf(" %d ", ref_cavity_s2n(ref_cavity, node, face));
+    printf("\n");
+  }
+  RSS(ref_list_inspect(ref_cavity_tri_list(ref_cavity)), "insp");
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_cell_nodes(ref_grid_tri(ref_cavity_grid(ref_cavity)), cell, nodes),
+        "cell");
+    for (i = 0; i < 4; i++) printf(" %d", nodes[i]);
+    printf("\n");
+  }
   return REF_SUCCESS;
 }
 
