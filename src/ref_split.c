@@ -126,11 +126,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                    ref_edge_e2n(ref_edge, 1, edge), new_node,
                                    &allowed_tri_quality),
         "edge tri qual");
-    if (!allowed_tri_quality) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
-    }
 
     valid_cavity = REF_FALSE;
     if (!allowed_tri_quality && geom_support) {
