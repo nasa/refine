@@ -26,6 +26,6 @@ ${two}/ref_metric_test \
     onera-m6-sharp-te01-final-metric.solb \
     > vol-adapt.status
 
-../../check.rb vol-adapt.status 0.075 3.0
+../../check.rb vol-adapt.status 0.075 3.3
 
 

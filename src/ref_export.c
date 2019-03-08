@@ -182,7 +182,7 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
-    RSS(ref_export_poly(ref_grid, filename), "ploy export failed");
+    RSS(ref_export_poly(ref_grid, filename), "poly export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
     RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
@@ -1116,68 +1116,59 @@ REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
   /* create one hole point for each convex edge,
      expect right hand triangle to point into domain */
   {
-    REF_INT i, nhole, node0, node1, node2;
-    REF_INT ncell, cell_list[2], other_cell, tet_nodes[4];
-    REF_DBL volume, center[3];
+    REF_INT faceid, min_faceid, max_faceid;
+    REF_INT nhole, largest_triangle;
+    REF_DBL area, max_area, normal[3], offset, center[3], hole[3];
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
     nhole = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      for (node2 = 0; node2 < 3; node2++) {
-        node0 = node2 + 1;
-        node1 = node2 + 2;
-        if (node0 > 2) node0 -= 3;
-        if (node1 > 2) node1 -= 3;
-        node0 = nodes[node0];
-        node1 = nodes[node1];
-        node2 = nodes[node2];
-        RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
-            "with 2");
-        REIS(2, ncell, "two expected");
-        other_cell = cell_list[0] + cell_list[1] - cell;
-        if (other_cell < cell) continue;
-        tet_nodes[0] = nodes[0];
-        tet_nodes[1] = nodes[1];
-        tet_nodes[2] = nodes[2];
-        tet_nodes[3] = ref_cell_c2n(ref_cell, 0, other_cell) +
-                       ref_cell_c2n(ref_cell, 1, other_cell) +
-                       ref_cell_c2n(ref_cell, 2, other_cell) - node0 - node1;
-        RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "tet vol");
-        if (volume < -1.0e-12) nhole += 1;
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      max_area = -1.0;
+      largest_triangle = REF_EMPTY;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+          if (area > max_area) {
+            max_area = area;
+            largest_triangle = cell;
+          }
+        }
+      }
+      RUS(REF_EMPTY, largest_triangle, "no largest triangle");
+      RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
+      RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
+      RSS(ref_math_normalize(normal), "norm");
+      offset = 1.0e-4 * sqrt(area);
+      if (offset > 1.0e-12) {
+        nhole += 1;
       }
     }
     fprintf(file, "%d\n", nhole);
     nhole = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      for (node2 = 0; node2 < 3; node2++) {
-        node0 = node2 + 1;
-        node1 = node2 + 2;
-        if (node0 > 2) node0 -= 3;
-        if (node1 > 2) node1 -= 3;
-        node0 = nodes[node0];
-        node1 = nodes[node1];
-        node2 = nodes[node2];
-        RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
-            "with 2");
-        REIS(2, ncell, "two expected");
-        other_cell = cell_list[0] + cell_list[1] - cell;
-        if (other_cell < cell) continue;
-        tet_nodes[0] = nodes[0];
-        tet_nodes[1] = nodes[1];
-        tet_nodes[2] = nodes[2];
-        tet_nodes[3] = ref_cell_c2n(ref_cell, 0, other_cell) +
-                       ref_cell_c2n(ref_cell, 1, other_cell) +
-                       ref_cell_c2n(ref_cell, 2, other_cell) - node0 - node1;
-        RSS(ref_node_tet_vol(ref_node, tet_nodes, &volume), "tet vol");
-        if (volume < -1.0e-12) {
-          for (i = 0; i < 3; i++) {
-            center[i] = 0.25 * (ref_node_xyz(ref_node, i, tet_nodes[0]) +
-                                ref_node_xyz(ref_node, i, tet_nodes[1]) +
-                                ref_node_xyz(ref_node, i, tet_nodes[2]) +
-                                ref_node_xyz(ref_node, i, tet_nodes[3]));
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
+      max_area = -1.0;
+      largest_triangle = REF_EMPTY;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (nodes[node_per] == faceid) {
+          RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+          if (area > max_area) {
+            max_area = area;
+            largest_triangle = cell;
           }
-          fprintf(file, "%d  %.16e  %.16e  %.16e\n", nhole, center[0],
-                  center[1], center[2]);
-          nhole += 1;
         }
+      }
+      RUS(REF_EMPTY, largest_triangle, "no largest triangle");
+      RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
+      RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
+      RSS(ref_math_normalize(normal), "norm");
+      offset = 1.0e-4 * sqrt(area);
+      if (offset > 1.0e-12) {
+        RSS(ref_node_tri_centroid(ref_node, nodes, center), "center");
+        hole[0] = center[0] - offset * normal[0];
+        hole[1] = center[1] - offset * normal[1];
+        hole[2] = center[2] - offset * normal[2];
+        fprintf(file, "%d  %.16e  %.16e  %.16e\n", nhole, hole[0], hole[1],
+                hole[2]);
+        nhole += 1;
       }
     }
   }
