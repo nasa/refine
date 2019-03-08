@@ -69,7 +69,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_maxseg(ref_cavity) ((ref_cavity)->maxseg)
 #define ref_cavity_blankseg(ref_cavity) ((ref_cavity)->blankseg)
 #define ref_cavity_s2n(ref_cavity, node, cavity) \
-  ((ref_cavity)->s2n[(node) + 2 * (cavity)])
+  ((ref_cavity)->s2n[(node) + 3 * (cavity)])
 
 #define ref_cavity_nface(ref_cavity) ((ref_cavity)->nface)
 #define ref_cavity_maxface(ref_cavity) ((ref_cavity)->maxface)
@@ -80,7 +80,6 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_tri_list(ref_cavity) ((ref_cavity)->tri_list)
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 
-#define ref_cavity_faceid(ref_cavity) ((ref_cavity)->faceid)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
 #define ref_cavity_valid_seg(ref_cavity, seg)             \
