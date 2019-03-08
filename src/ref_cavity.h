@@ -69,7 +69,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_maxseg(ref_cavity) ((ref_cavity)->maxseg)
 #define ref_cavity_blankseg(ref_cavity) ((ref_cavity)->blankseg)
 #define ref_cavity_s2n(ref_cavity, node, cavity) \
-  ((ref_cavity)->s2n[(node) + 2 * (cavity)])
+  ((ref_cavity)->s2n[(node) + 3 * (cavity)])
 
 #define ref_cavity_nface(ref_cavity) ((ref_cavity)->nface)
 #define ref_cavity_maxface(ref_cavity) ((ref_cavity)->maxface)
@@ -80,7 +80,6 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_tri_list(ref_cavity) ((ref_cavity)->tri_list)
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 
-#define ref_cavity_faceid(ref_cavity) ((ref_cavity)->faceid)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
 #define ref_cavity_valid_seg(ref_cavity, seg)             \
@@ -106,6 +105,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
 REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes);
+REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg);
 REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
                                REF_INT *found_seg, REF_BOOL *reversed);
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
@@ -128,6 +128,11 @@ REF_STATUS ref_cavity_form_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                       REF_INT node0, REF_INT node1,
                                       REF_INT new_node);
+REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                     REF_INT node);
+REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
+                                           REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_INT new_node);
 
 REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold);
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,

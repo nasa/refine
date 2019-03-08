@@ -49,7 +49,7 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   ref_cavity_nseg(ref_cavity) = 0;
   ref_cavity_maxseg(ref_cavity) = 10;
 
-  ref_malloc_init(ref_cavity->s2n, ref_cavity_maxseg(ref_cavity) * 2, REF_INT,
+  ref_malloc_init(ref_cavity->s2n, ref_cavity_maxseg(ref_cavity) * 3, REF_INT,
                   0);
   for (seg = 0; seg < ref_cavity_maxseg(ref_cavity); seg++) {
     ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
@@ -73,7 +73,6 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   RSS(ref_list_create(&(ref_cavity->tri_list)), "tri list");
   RSS(ref_list_create(&(ref_cavity->tet_list)), "tet list");
 
-  ref_cavity->faceid = REF_EMPTY;
   ref_cavity->debug = REF_FALSE;
 
   return REF_SUCCESS;
@@ -91,10 +90,11 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity) {
 
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   REF_INT face, node;
+  REF_INT item, cell, i, nodes[REF_CELL_MAX_SIZE_PER];
   if (NULL == (void *)ref_cavity) return REF_NULL;
-  printf("nface = %d maxface = %d blankface = %d\n",
-         ref_cavity_nface(ref_cavity), ref_cavity_maxface(ref_cavity),
-         ref_cavity_blankface(ref_cavity));
+  printf("node %d\nnface = %d maxface = %d blankface = %d\n",
+         ref_cavity_node(ref_cavity), ref_cavity_nface(ref_cavity),
+         ref_cavity_maxface(ref_cavity), ref_cavity_blankface(ref_cavity));
   for (face = 0; face < ref_cavity_maxface(ref_cavity); face++) {
     printf(" f2n[%d] = ", face);
     for (node = 0; node < 3; node++)
@@ -102,6 +102,22 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
     printf("\n");
   }
   RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
+  printf("nseg = %d maxseg = %d blankseg = %d\n", ref_cavity_nseg(ref_cavity),
+         ref_cavity_maxseg(ref_cavity), ref_cavity_blankseg(ref_cavity));
+  for (face = 0; face < ref_cavity_maxseg(ref_cavity); face++) {
+    printf(" s2n[%d] = ", face);
+    for (node = 0; node < 3; node++)
+      printf(" %d ", ref_cavity_s2n(ref_cavity, node, face));
+    printf("\n");
+  }
+  RSS(ref_list_inspect(ref_cavity_tri_list(ref_cavity)), "insp");
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_cell_nodes(ref_grid_tri(ref_cavity_grid(ref_cavity)), cell, nodes),
+        "cell");
+    for (i = 0; i < 4; i++) printf(" %d", nodes[i]);
+    printf("\n");
+  }
   return REF_SUCCESS;
 }
 
@@ -116,20 +132,19 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
 
   if (REF_EMPTY != seg) {
     if (reversed) { /* two segs with opposite orientation destroy each other */
+      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+      ref_cavity_blankseg(ref_cavity) = seg;
+      ref_cavity_nseg(ref_cavity)--;
       if (NULL != ref_grid) {
-        /* changing CAD edg would violate topology */
+        /* changing CAD edg would violate topology, but allowed during setup */
         RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
                           &cell),
             REF_NOT_FOUND, "search for boundary edg");
         if (REF_EMPTY != cell) {
           ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-          return REF_SUCCESS;
         }
       }
-      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
-      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
-      ref_cavity_blankseg(ref_cavity) = seg;
-      ref_cavity_nseg(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same seg twice */
       return REF_INVALID;
@@ -142,7 +157,7 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
     chunk = MAX(100, (REF_INT)(1.5 * (REF_DBL)orig));
     ref_cavity_maxseg(ref_cavity) = orig + chunk;
 
-    ref_realloc(ref_cavity->s2n, 2 * ref_cavity_maxseg(ref_cavity), REF_INT);
+    ref_realloc(ref_cavity->s2n, 3 * ref_cavity_maxseg(ref_cavity), REF_INT);
 
     for (seg = orig; seg < ref_cavity_maxseg(ref_cavity); seg++) {
       ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
@@ -156,8 +171,20 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   ref_cavity_blankseg(ref_cavity) = ref_cavity_s2n(ref_cavity, 1, seg);
   for (node = 0; node < 2; node++)
     ref_cavity_s2n(ref_cavity, node, seg) = nodes[node];
+  ref_cavity_s2n(ref_cavity, 2, seg) = nodes[2]; /* faceid */
 
   ref_cavity_nseg(ref_cavity)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg) {
+  RAS(ref_cavity_valid_seg(ref_cavity, seg), "not valid seg");
+
+  ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+  ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+  ref_cavity_blankseg(ref_cavity) = seg;
+  ref_cavity_nseg(ref_cavity)--;
 
   return REF_SUCCESS;
 }
@@ -285,7 +312,7 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT cell_edge, node;
-  REF_INT seg_nodes[2];
+  REF_INT seg_nodes[3];
   REF_INT already_have_it;
 
   RAS(ref_cell_valid(ref_cell, tri), "invalid tri");
@@ -293,15 +320,6 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri, &already_have_it),
       "have tri?");
   if (already_have_it) return REF_SUCCESS;
-
-  if (REF_EMPTY == ref_cavity_faceid(ref_cavity)) {
-    ref_cavity_faceid(ref_cavity) =
-        ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), tri);
-  } else {
-    REIS(ref_cavity_faceid(ref_cavity),
-         ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), tri),
-         "add tri faceid does not match previous");
-  }
 
   RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), tri), "save tri");
 
@@ -312,6 +330,7 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
       }
     }
+    seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), tri);
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
   }
 
@@ -335,7 +354,7 @@ REF_STATUS ref_cavity_replace_tri(REF_CAVITY ref_cavity) {
     nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
     nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
     nodes[2] = ref_cavity_node(ref_cavity);
-    nodes[3] = ref_cavity_faceid(ref_cavity);
+    nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
     if (nodes[2] == nodes[0] || nodes[2] == nodes[1])
       continue; /* attached seg */
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
@@ -516,6 +535,46 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                     REF_INT node) {
+  REF_INT item, cell;
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+
+  each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
+    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
+  }
+
+  /* may have encountered an edge during startup */
+  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
+                                           REF_GRID ref_grid, REF_INT node0,
+                                           REF_INT node1, REF_INT new_node) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell_node, cell;
+
+  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
+
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
+  }
+
+  /* may have encountered an edge during startup */
+  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+  }
+
+  REIB(4, ref_cavity_nseg(ref_cavity), "expect 4 seg for surf edge split",
+       { ref_cavity_inspect(ref_cavity); });
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
@@ -534,7 +593,7 @@ REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
     nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
     nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
     nodes[2] = ref_cavity_node(ref_cavity);
-    nodes[3] = ref_cavity_faceid(ref_cavity);
+    nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
 
     RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
         "with manifold seach failed");
@@ -567,7 +626,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
   nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
   nodes[2] = ref_cavity_node(ref_cavity);
-  nodes[3] = ref_cavity_faceid(ref_cavity);
+  nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
 
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
   RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
@@ -595,7 +654,7 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
   if (ref_cavity_debug(ref_cavity))
-    printf(" enlarge start %d tris %d segs\n",
+    printf(" conforming start %d tris %d segs\n",
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
@@ -632,18 +691,19 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
     }
   }
 
-  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
-  if (!manifold) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
-    return REF_SUCCESS;
-  }
-
   if (ref_cavity_debug(ref_cavity))
-    printf(" enlarge final %d tris %d segs\n",
+    printf(" conforming final %d tris %d segs\n",
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
+
+  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
+  if (!manifold) {
+    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
@@ -770,7 +830,9 @@ REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity) {
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT cell, seg_node, node, seg_nodes[2];
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT cell, seg_node, node, seg_nodes[3];
   REF_BOOL have_cell0, have_cell1;
   REF_INT ntri, tri_list[2];
 
@@ -787,21 +849,27 @@ REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
 
   seg_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
   seg_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+  seg_nodes[2] = ref_cavity_s2n(ref_cavity, 2, seg);
 
-  RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), seg_nodes,
-                    &cell),
-      REF_NOT_FOUND, "search for boundary edg");
+  /* changing CAD edg would violate topology */
+  RXS(ref_cell_with(edg, seg_nodes, &cell), REF_NOT_FOUND,
+      "search for boundary edg");
   if (REF_EMPTY != cell) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
     return REF_SUCCESS;
   }
 
-  RSS(ref_cell_list_with2(
-          ref_grid_tri(ref_grid), ref_cavity_s2n(ref_cavity, 0, seg),
-          ref_cavity_s2n(ref_cavity, 1, seg), 2, &ntri, tri_list),
+  RSS(ref_cell_list_with2(tri, ref_cavity_s2n(ref_cavity, 0, seg),
+                          ref_cavity_s2n(ref_cavity, 1, seg), 2, &ntri,
+                          tri_list),
       "tri with2");
   REIS(2, ntri, "cavity segment does not have two tri");
-  /* changing CAD edg would violate topology */
+
+  /* changing faceid would violate topology */
+  REIS(seg_nodes[2], ref_cell_c2n(tri, ref_cell_node_per(tri), tri_list[0]),
+       "do not swap faceids");
+  REIS(seg_nodes[2], ref_cell_c2n(tri, ref_cell_node_per(tri), tri_list[1]),
+       "do not swap faceids");
 
   RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri_list[0],
                         &have_cell0),
@@ -895,14 +963,13 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_DICT node_dict, face_dict;
   REF_CELL ref_cell;
-  REF_INT face, face_node;
+  REF_INT face, face_node, seg, seg_node;
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
   char *zonetype;
   FILE *f;
 
-  ref_cell = ref_grid_tet(ref_grid);
   zonetype = "fetetrahedron";
 
   f = fopen(filename, "w");
@@ -915,6 +982,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   RSS(ref_dict_create(&node_dict), "create nodes");
   RSS(ref_dict_create(&face_dict), "create faces");
 
+  ref_cell = ref_grid_tet(ref_grid);
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_dict_store(face_dict, cell, 0), "store");
@@ -924,27 +992,29 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
     }
   }
 
-  fprintf(
-      f, "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
-  for (item = 0; item < ref_dict_n(node_dict); item++) {
-    local = ref_dict_key(node_dict, item);
-    xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
-    xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
-    xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-    fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-  }
-
-  for (item = 0; item < ref_dict_n(face_dict); item++) {
-    cell = ref_dict_key(face_dict, item);
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
-      fprintf(f, " %d", local + 1);
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
     }
-    fprintf(f, "\n");
-  }
 
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      cell = ref_dict_key(face_dict, item);
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
   RSS(ref_dict_free(face_dict), "free tris");
   RSS(ref_dict_free(node_dict), "free nodes");
 
@@ -961,33 +1031,119 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
     }
   }
 
-  fprintf(
-      f, "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
-  for (item = 0; item < ref_dict_n(node_dict); item++) {
-    local = ref_dict_key(node_dict, item);
-    xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
-    xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
-    xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-    fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-  }
-
-  for (item = 0; item < ref_dict_n(face_dict); item++) {
-    face = ref_dict_key(face_dict, item);
-    RSS(ref_dict_location(node_dict, node, &local), "center node");
-    fprintf(f, " %d", local + 1);
-    each_ref_cavity_face_node(ref_cavity, face_node) {
-      RSS(ref_dict_location(
-              node_dict, ref_cavity_f2n(ref_cavity, face_node, face), &local),
-          "ret");
-      fprintf(f, " %d", local + 1);
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
     }
-    fprintf(f, "\n");
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      face = ref_dict_key(face_dict, item);
+      RSS(ref_dict_location(node_dict, node, &local), "center node");
+      fprintf(f, " %d", local + 1);
+      each_ref_cavity_face_node(ref_cavity, face_node) {
+        RSS(ref_dict_location(
+                node_dict, ref_cavity_f2n(ref_cavity, face_node, face), &local),
+            "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
   }
 
   RSS(ref_dict_free(face_dict), "free face");
   RSS(ref_dict_free(node_dict), "free nodes");
 
+  zonetype = "fetriangle";
+
+  RSS(ref_dict_create(&node_dict), "create nodes");
+  RSS(ref_dict_create(&face_dict), "create faces");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_dict_store(face_dict, cell, 0), "store");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+    }
+  }
+
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      cell = ref_dict_key(face_dict, item);
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
+  RSS(ref_dict_free(face_dict), "free tris");
+  RSS(ref_dict_free(node_dict), "free nodes");
+
+  RSS(ref_dict_create(&node_dict), "create nodes");
+  RSS(ref_dict_create(&face_dict), "create faces");
+
+  RSS(ref_dict_store(node_dict, node, 0), "store");
+  each_ref_cavity_valid_seg(ref_cavity, face) {
+    RSS(ref_dict_store(face_dict, face, 0), "store");
+    each_ref_cavity_seg_node(ref_cavity, seg_node) {
+      RSS(ref_dict_store(node_dict, ref_cavity_s2n(ref_cavity, seg_node, face),
+                         0),
+          "store");
+    }
+  }
+
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      seg = ref_dict_key(face_dict, item);
+      RSS(ref_dict_location(node_dict, node, &local), "center node");
+      fprintf(f, " %d", local + 1);
+      each_ref_cavity_seg_node(ref_cavity, seg_node) {
+        RSS(ref_dict_location(
+                node_dict, ref_cavity_s2n(ref_cavity, seg_node, seg), &local),
+            "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
+
+  RSS(ref_dict_free(face_dict), "free face");
+  RSS(ref_dict_free(node_dict), "free nodes");
   fclose(f);
 
   return REF_SUCCESS;
@@ -1143,7 +1299,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
       nodes[seg_node] = ref_cavity_s2n(ref_cavity, seg_node, seg);
     }
     nodes[2] = node;
-    nodes[3] = ref_cavity_faceid(ref_cavity);
+    nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
     min_normdev = MIN(min_normdev, normdev);
     RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");

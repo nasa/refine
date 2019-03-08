@@ -489,7 +489,11 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt cav");
 
   for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
-    RSS(ref_split_pass(ref_grid), "split pass");
+    if (ref_grid_surf(ref_grid)) {
+      RSS(ref_split_surf_pass(ref_grid), "split surfpass");
+    } else {
+      RSS(ref_split_pass(ref_grid), "split pass");
+    }
     ref_gather_blocking_frame(ref_grid, "split");
     if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))

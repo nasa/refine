@@ -199,23 +199,28 @@ int main(int argc, char *argv[]) {
 
   { /* find seg */
     REF_CAVITY ref_cavity;
-    REF_INT nodes[2];
+    REF_INT nodes[3];
+    REF_INT faceid = 10;
     REF_INT seg;
     REF_BOOL reversed;
 
     RSS(ref_cavity_create(&ref_cavity), "create");
     nodes[0] = 1;
     nodes[1] = 2;
+    nodes[2] = faceid;
     RSS(ref_cavity_insert_seg(ref_cavity, nodes), "insert first");
 
     nodes[0] = 1;
     nodes[1] = 2;
+    nodes[2] = faceid;
     RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "find same");
     REIS(0, seg, "found");
+    REIS(faceid, ref_cavity_s2n(ref_cavity, 2, seg), "faceid");
     REIS(REF_FALSE, reversed, "not rev");
 
     nodes[0] = 2;
     nodes[1] = 1;
+    nodes[2] = faceid;
     RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed),
         "find reversed");
     REIS(0, seg, "found");
@@ -223,6 +228,7 @@ int main(int argc, char *argv[]) {
 
     nodes[0] = 3;
     nodes[1] = 4;
+    nodes[2] = faceid;
     REIS(REF_NOT_FOUND, ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed),
          "missing");
     REIS(REF_EMPTY, seg, "found");
@@ -261,7 +267,8 @@ int main(int argc, char *argv[]) {
   { /* add tri */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
-    REF_INT nodes[2];
+    REF_INT nodes[3];
+    REF_INT faceid = 10;
     REF_INT seg;
     REF_BOOL reversed;
 
@@ -272,20 +279,21 @@ int main(int argc, char *argv[]) {
       RSS(ref_cavity_create(&ref_cavity), "create");
       RSS(ref_cavity_form_empty(ref_cavity, ref_grid, REF_EMPTY), "form empty");
 
-      REIS(REF_EMPTY, ref_cavity_faceid(ref_cavity), "init empty");
       RSS(ref_cavity_add_tri(ref_cavity, 0), "insert first");
-      REIS(10, ref_cavity_faceid(ref_cavity), "remember faceid");
 
       nodes[0] = 1;
       nodes[1] = 2;
+      nodes[2] = faceid;
       RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "opp 0");
       REIS(REF_FALSE, reversed, "not rev");
       nodes[0] = 2;
       nodes[1] = 0;
+      nodes[2] = faceid;
       RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "op 1");
       REIS(REF_FALSE, reversed, "not rev");
       nodes[0] = 0;
       nodes[1] = 1;
+      nodes[2] = faceid;
       RSS(ref_cavity_find_seg(ref_cavity, nodes, &seg, &reversed), "opp 2");
       REIS(REF_FALSE, reversed, "not rev");
 
