@@ -132,20 +132,19 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
 
   if (REF_EMPTY != seg) {
     if (reversed) { /* two segs with opposite orientation destroy each other */
+      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+      ref_cavity_blankseg(ref_cavity) = seg;
+      ref_cavity_nseg(ref_cavity)--;
       if (NULL != ref_grid) {
-        /* changing CAD edg would violate topology */
+        /* changing CAD edg would violate topology, but allowed during setup */
         RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
                           &cell),
             REF_NOT_FOUND, "search for boundary edg");
         if (REF_EMPTY != cell) {
           ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-          return REF_SUCCESS;
         }
       }
-      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
-      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
-      ref_cavity_blankseg(ref_cavity) = seg;
-      ref_cavity_nseg(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same seg twice */
       return REF_INVALID;
@@ -545,6 +544,11 @@ REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
   }
 
+  /* may have encountered an edge during startup */
+  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+  }
+
   return REF_SUCCESS;
 }
 
@@ -553,31 +557,20 @@ REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
                                            REF_INT node1, REF_INT new_node) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell_node, cell;
-  REF_INT seg;
-  REF_INT node, nodes[3];
+
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
 
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
   }
 
-  /* should seg remain along edges (jump in faceid)?
-     ok because new_node segments ignored,
-     but should be cleaned up for face too */
-
-  each_ref_cavity_valid_seg(ref_cavity, seg) {
-    each_ref_cavity_seg_node(ref_cavity, node) {
-      nodes[node] = ref_cavity_s2n(ref_cavity, node, seg);
-    }
-    nodes[2] = ref_cavity_s2n(ref_cavity, 2, seg);
-    if ((node0 == nodes[0] && node1 == nodes[1]) ||
-        (node1 == nodes[0] && node0 == nodes[1])) {
-      ref_cavity_s2n(ref_cavity, 0, seg) = new_node;
-      nodes[1] = new_node;
-      RSS(ref_cavity_insert_seg(ref_cavity, nodes), "insert edge 1");
-      continue;
-    }
+  /* may have encountered an edge during startup */
+  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
   }
+
+  REIB(4, ref_cavity_nseg(ref_cavity), "expect 4 seg for surf edge split",
+       { ref_cavity_inspect(ref_cavity); });
 
   return REF_SUCCESS;
 }
