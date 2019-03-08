@@ -562,7 +562,7 @@ REF_STATUS ref_split_face(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
 REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed) {
-  REF_BOOL pyr_side, pri_side, hex_side;
+  REF_BOOL pyr_side, pri_side, hex_side, qua_side;
 
   RSS(ref_cell_has_side(ref_grid_pyr(ref_grid), node0, node1, &pyr_side),
       "pyr");
@@ -570,8 +570,10 @@ REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       "pri");
   RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),
       "hex");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+      "qua");
 
-  *allowed = (!pyr_side && !pri_side && !hex_side);
+  *allowed = (!pyr_side && !pri_side && !hex_side && !qua_side);
 
   return REF_SUCCESS;
 }
