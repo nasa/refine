@@ -941,14 +941,13 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_DICT node_dict, face_dict;
   REF_CELL ref_cell;
-  REF_INT face, face_node;
+  REF_INT face, face_node, seg, seg_node;
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
   char *zonetype;
   FILE *f;
 
-  ref_cell = ref_grid_tet(ref_grid);
   zonetype = "fetetrahedron";
 
   f = fopen(filename, "w");
@@ -961,6 +960,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   RSS(ref_dict_create(&node_dict), "create nodes");
   RSS(ref_dict_create(&face_dict), "create faces");
 
+  ref_cell = ref_grid_tet(ref_grid);
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_dict_store(face_dict, cell, 0), "store");
@@ -970,27 +970,29 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
     }
   }
 
-  fprintf(
-      f, "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
-  for (item = 0; item < ref_dict_n(node_dict); item++) {
-    local = ref_dict_key(node_dict, item);
-    xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
-    xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
-    xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-    fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-  }
-
-  for (item = 0; item < ref_dict_n(face_dict); item++) {
-    cell = ref_dict_key(face_dict, item);
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
-      fprintf(f, " %d", local + 1);
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
     }
-    fprintf(f, "\n");
-  }
 
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      cell = ref_dict_key(face_dict, item);
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
   RSS(ref_dict_free(face_dict), "free tris");
   RSS(ref_dict_free(node_dict), "free nodes");
 
@@ -1007,33 +1009,119 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
     }
   }
 
-  fprintf(
-      f, "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-      ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
-  for (item = 0; item < ref_dict_n(node_dict); item++) {
-    local = ref_dict_key(node_dict, item);
-    xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
-    xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
-    xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
-    fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-  }
-
-  for (item = 0; item < ref_dict_n(face_dict); item++) {
-    face = ref_dict_key(face_dict, item);
-    RSS(ref_dict_location(node_dict, node, &local), "center node");
-    fprintf(f, " %d", local + 1);
-    each_ref_cavity_face_node(ref_cavity, face_node) {
-      RSS(ref_dict_location(
-              node_dict, ref_cavity_f2n(ref_cavity, face_node, face), &local),
-          "ret");
-      fprintf(f, " %d", local + 1);
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
     }
-    fprintf(f, "\n");
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      face = ref_dict_key(face_dict, item);
+      RSS(ref_dict_location(node_dict, node, &local), "center node");
+      fprintf(f, " %d", local + 1);
+      each_ref_cavity_face_node(ref_cavity, face_node) {
+        RSS(ref_dict_location(
+                node_dict, ref_cavity_f2n(ref_cavity, face_node, face), &local),
+            "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
   }
 
   RSS(ref_dict_free(face_dict), "free face");
   RSS(ref_dict_free(node_dict), "free nodes");
 
+  zonetype = "fetriangle";
+
+  RSS(ref_dict_create(&node_dict), "create nodes");
+  RSS(ref_dict_create(&face_dict), "create faces");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_dict_store(face_dict, cell, 0), "store");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+    }
+  }
+
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      cell = ref_dict_key(face_dict, item);
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_dict_location(node_dict, nodes[cell_node], &local), "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
+  RSS(ref_dict_free(face_dict), "free tris");
+  RSS(ref_dict_free(node_dict), "free nodes");
+
+  RSS(ref_dict_create(&node_dict), "create nodes");
+  RSS(ref_dict_create(&face_dict), "create faces");
+
+  RSS(ref_dict_store(node_dict, node, 0), "store");
+  each_ref_cavity_valid_seg(ref_cavity, face) {
+    RSS(ref_dict_store(face_dict, face, 0), "store");
+    each_ref_cavity_seg_node(ref_cavity, seg_node) {
+      RSS(ref_dict_store(node_dict, ref_cavity_s2n(ref_cavity, seg_node, face),
+                         0),
+          "store");
+    }
+  }
+
+  if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
+    fprintf(
+        f,
+        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    for (item = 0; item < ref_dict_n(node_dict); item++) {
+      local = ref_dict_key(node_dict, item);
+      xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
+      xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
+      xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
+      fprintf(f, " %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+    }
+
+    for (item = 0; item < ref_dict_n(face_dict); item++) {
+      seg = ref_dict_key(face_dict, item);
+      RSS(ref_dict_location(node_dict, node, &local), "center node");
+      fprintf(f, " %d", local + 1);
+      each_ref_cavity_seg_node(ref_cavity, seg_node) {
+        RSS(ref_dict_location(
+                node_dict, ref_cavity_s2n(ref_cavity, seg_node, seg), &local),
+            "ret");
+        fprintf(f, " %d", local + 1);
+      }
+      fprintf(f, "\n");
+    }
+  }
+
+  RSS(ref_dict_free(face_dict), "free face");
+  RSS(ref_dict_free(node_dict), "free nodes");
   fclose(f);
 
   return REF_SUCCESS;
