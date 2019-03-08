@@ -162,6 +162,17 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg) {
+  RAS(ref_cavity_valid_seg(ref_cavity, seg), "not valid seg");
+
+  ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+  ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+  ref_cavity_blankseg(ref_cavity) = seg;
+  ref_cavity_nseg(ref_cavity)--;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
                                REF_INT *found_seg, REF_BOOL *reversed) {
   REF_INT seg;

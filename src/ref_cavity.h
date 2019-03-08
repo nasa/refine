@@ -105,6 +105,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
 REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes);
+REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg);
 REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
                                REF_INT *found_seg, REF_BOOL *reversed);
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
