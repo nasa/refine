@@ -182,7 +182,7 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
-    RSS(ref_export_poly(ref_grid, filename), "ploy export failed");
+    RSS(ref_export_poly(ref_grid, filename), "poly export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
     RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
