@@ -661,7 +661,7 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
   if (ref_cavity_debug(ref_cavity))
-    printf(" enlarge start %d tris %d segs\n",
+    printf(" conforming start %d tris %d segs\n",
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
@@ -698,18 +698,19 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
     }
   }
 
-  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
-  if (!manifold) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
-    return REF_SUCCESS;
-  }
-
   if (ref_cavity_debug(ref_cavity))
-    printf(" enlarge final %d tris %d segs\n",
+    printf(" conforming final %d tris %d segs\n",
            ref_list_n(ref_cavity_tri_list(ref_cavity)),
            ref_cavity_nseg(ref_cavity));
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
+
+  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
+  if (!manifold) {
+    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
