@@ -632,7 +632,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
   uv_area *= sign_uv_area;
 
-  if (uv_area <= ref_node_min_volume(ref_node)) return REF_SUCCESS;
+  if (uv_area <= ref_node_min_uv_area(ref_node)) return REF_SUCCESS;
 
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
 
@@ -1310,7 +1310,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   if (ref_cavity_debug(ref_cavity))
     printf("+ min %12.8f %12.8f\n", min_normdev, min_uv_area);
 
-  *improved = (min_uv_area > ref_node_min_volume(ref_node) &&
+  *improved = (min_uv_area > ref_node_min_uv_area(ref_node) &&
                min_normdev > old_normdev);
 
   return REF_SUCCESS;
