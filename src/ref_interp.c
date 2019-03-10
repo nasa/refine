@@ -45,18 +45,21 @@ static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
+  REF_STATUS status;
 
   best_candidate = REF_EMPTY;
   best_bary = -999.0;
   each_ref_cell_having_node(ref_cell, node, item, candidate) {
     RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
-    RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
-        "bary");
-    min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                   MIN(current_bary[2], current_bary[3]));
-    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
-      best_candidate = candidate;
-      best_bary = min_bary;
+    status = ref_node_bary4(ref_node, nodes, xyz, current_bary);
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                     MIN(current_bary[2], current_bary[3]));
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
     }
   }
 
@@ -283,18 +286,21 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
   REF_INT candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
+  REF_STATUS status;
 
   best_candidate = REF_EMPTY;
   best_bary = -999.0;
   each_ref_cell_valid_cell(ref_cell, candidate) {
     RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
-    RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
-        "bary");
-    min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                   MIN(current_bary[2], current_bary[3]));
-    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
-      best_candidate = candidate;
-      best_bary = min_bary;
+    status = ref_node_bary4(ref_node, nodes, xyz, current_bary);
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                     MIN(current_bary[2], current_bary[3]));
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
     }
   }
 
@@ -316,19 +322,23 @@ REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
   REF_DBL best_bary, min_bary;
+  REF_STATUS status;
 
   best_candidate = REF_EMPTY;
   best_bary = -999.0;
   each_ref_list_item(ref_list, item) {
     candidate = ref_list_value(ref_list, item);
     RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
-    RXS(ref_node_bary4(ref_node, nodes, xyz, current_bary), REF_DIV_ZERO,
-        "bary");
-    min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                   MIN(current_bary[2], current_bary[3]));
-    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
-      best_candidate = candidate;
-      best_bary = min_bary;
+    status = ref_node_bary4(ref_node, nodes, xyz, current_bary);
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                     MIN(current_bary[2], current_bary[3]));
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
     }
   }
 
