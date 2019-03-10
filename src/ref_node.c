@@ -2256,15 +2256,17 @@ REF_STATUS ref_node_bary4(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
   } else {
     REF_INT i, smallest;
     REF_DBL volume;
+    printf("%s: %d: %s: div zero\ntot %.18e\nbary %.18e %.18e\n%.18e %.18e\n",
+           __FILE__, __LINE__, __func__, total, bary[0], bary[1], bary[2],
+           bary[3]);
     smallest = 0;
     for (i = 1; i < 4; i++)
       if (bary[i] < bary[smallest]) smallest = i;
     for (i = 0; i < 4; i++) bary[i] = 0.0;
     bary[smallest] = -1.0;
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "bary vol chk");
-    printf("%s: %d: %s: div zero tot %.18e %.18e vol %.18e %.18e %.18e %.18e\n",
-           __FILE__, __LINE__, __func__, total, volume, bary[0], bary[1],
-           bary[2], bary[3]);
+    printf("vol %.18e modified bary\n%.18e %.18e\n%.18e %.18e\n", volume,
+           bary[0], bary[1], bary[2], bary[3]);
     return REF_DIV_ZERO;
   }
 
