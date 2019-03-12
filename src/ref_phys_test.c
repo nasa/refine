@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "ref_phys.h"
 
@@ -315,6 +316,35 @@ int main(int argc, char *argv[]) {
     RWDS(mach / re *
              (mu * (4.0 / 3.0) * dvdy * state[2] + thermal_conductivity * dtdy),
          flux[4], -1, "energy flux");
+  }
+  { /* convert Spalart-Allmaras turbulence working variable to eddy viscosity */
+    REF_DBL turb, rho, nu, mut_sa;
+    REF_DBL chi, fv1;
+    REF_DBL cv1 = 7.1;
+    turb = -1.0;
+    rho = 1.0;
+    nu = 1.0;
+    RSS(ref_phys_mut_sa(turb, rho, nu, &mut_sa), "eddy viscosity from SA turb");
+    RWDS(0.0, mut_sa, -1, "negative SA turb");
+
+    turb = 1.0;
+    rho = 1.0;
+    nu = 1.0;
+    chi = turb / nu;
+    fv1 = pow(chi, 3) / (pow(chi, 3) + pow(cv1, 3));
+    RSS(ref_phys_mut_sa(turb, rho, nu, &mut_sa), "eddy viscosity from SA turb");
+    RWDS(rho * turb * fv1, mut_sa, -1, "negative SA turb");
+
+    turb = 0.0;
+    rho = 1.0;
+    nu = 1.0;
+    RSS(ref_phys_mut_sa(turb, rho, nu, &mut_sa), "eddy viscosity from SA turb");
+    RWDS(0, mut_sa, -1, "negative SA turb");
+
+    turb = 1.e100;
+    rho = 1.0;
+    nu = 1.e-100;
+    REIS(REF_DIV_ZERO, ref_phys_mut_sa(turb, rho, nu, &mut_sa), "eddy viscosity from SA turb");
   }
 
   return 0;
