@@ -44,10 +44,9 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
-                            REF_DBL re, REF_DBL reference_temp, REF_DBL *dir,
-                            REF_DBL *flux) {
-  REF_DBL rho, u, v, w, p, mu, t;
+REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb, REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
+                            REF_DBL *dir, REF_DBL *flux) {
+  REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
   REF_DBL sutherland_constant = 198.6;
   REF_DBL sutherland_temp;
@@ -66,6 +65,9 @@ REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
   sutherland_temp = sutherland_constant / reference_temp;
   mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
   mu = mach / re * mu;
+
+  RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+  mu += mu_t;
 
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
