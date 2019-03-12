@@ -791,6 +791,7 @@ int main(int argc, char *argv[]) {
       RWDS(0.0, dist2, -1.0, "interp scalar xyz not matching");
     }
 
+    RSS(ref_interp_free(ref_interp), "free");
     ref_free(to_scalar);
     ref_free(from_scalar);
     RSS(ref_grid_free(to), "free");

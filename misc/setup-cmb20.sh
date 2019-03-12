@@ -53,11 +53,12 @@ mkdir -p zoltan
     ) \
     || exit
 
-mkdir -p profile
-( cd profile && \
+mkdir -p sanitize
+( cd sanitize && \
     ../configure \
     --prefix=`pwd` \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -pg' \
+    CFLAGS='-fsanitize=address -ggdb -g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    LDFLAGS='-fsanitize=address' \
     ) \
     || exit
 

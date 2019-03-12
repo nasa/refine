@@ -356,5 +356,8 @@ int main(int argc, char *argv[]) {
          "eddy viscosity from SA turb");
   }
 
+  RSS(ref_mpi_free(ref_mpi), "mpi free");
+  RSS(ref_mpi_stop(), "stop");
+
   return 0;
 }
