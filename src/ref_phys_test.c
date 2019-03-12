@@ -16,9 +16,9 @@
  * permissions and limitations under the License.
  */
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include "ref_phys.h"
 
@@ -43,8 +43,8 @@ int main(int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--laminar-flux", &laminar_flux_pos),
       REF_NOT_FOUND, "arg search");
-  RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos),
-      REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
+      "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
@@ -145,8 +145,8 @@ int main(int argc, char *argv[]) {
         direction[1] = 0;
         direction[2] = 0;
         direction[dir] = 1;
-        RSS(ref_phys_viscous(state, gradient, turb, mach, re, temperature, direction,
-                             flux),
+        RSS(ref_phys_viscous(state, gradient, turb, mach, re, temperature,
+                             direction, flux),
             "laminar");
         for (i = 0; i < 5; i++) {
           dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
 
     ref_free(dual_flux);
 
-        RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
@@ -175,9 +175,12 @@ int main(int argc, char *argv[]) {
     REF_DBL direction[3], state[5], flux[5];
 
     REIS(1, euler_flux_pos,
-         "required args: --euler-flux grid.meshb primitive_dual.solb dual_flux.solb");
+         "required args: --euler-flux grid.meshb primitive_dual.solb "
+         "dual_flux.solb");
     if (5 > argc) {
-      printf("required args: --euler-flux grid.meshb primitive_dual.solb dual_flux.solb\n");
+      printf(
+          "required args: --euler-flux grid.meshb primitive_dual.solb "
+          "dual_flux.solb\n");
       return REF_FAILURE;
     }
 
@@ -230,7 +233,7 @@ int main(int argc, char *argv[]) {
 
     ref_free(dual_flux);
 
-      RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
@@ -276,7 +279,8 @@ int main(int argc, char *argv[]) {
     direction[0] = 1.0;
     direction[1] = 0.0;
     direction[2] = 0.0;
-    RSS(ref_phys_viscous(state, gradient, turb, mach, re, temp, direction, flux),
+    RSS(ref_phys_viscous(state, gradient, turb, mach, re, temp, direction,
+                         flux),
         "laminar");
     RWDS(0.0, flux[0], -1, "mass flux");
     RWDS(0.0, flux[1], -1, "x mo flux");
@@ -309,7 +313,8 @@ int main(int argc, char *argv[]) {
     direction[0] = 0.0;
     direction[1] = 1.0;
     direction[2] = 0.0;
-    RSS(ref_phys_viscous(state, gradient, turb, mach, re, temp, direction, flux),
+    RSS(ref_phys_viscous(state, gradient, turb, mach, re, temp, direction,
+                         flux),
         "laminar");
     RWDS(0.0, flux[0], -1, "mass flux");
     RWDS(0.0, flux[1], -1, "x mo flux");
@@ -347,7 +352,8 @@ int main(int argc, char *argv[]) {
     turb = 1.e100;
     rho = 1.0;
     nu = 1.e-100;
-    REIS(REF_DIV_ZERO, ref_phys_mut_sa(turb, rho, nu, &mut_sa), "eddy viscosity from SA turb");
+    REIS(REF_DIV_ZERO, ref_phys_mut_sa(turb, rho, nu, &mut_sa),
+         "eddy viscosity from SA turb");
   }
 
   return 0;
