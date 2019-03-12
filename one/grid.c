@@ -2676,7 +2676,7 @@ Grid *gridWriteTecplotCellGeom(Grid *grid, int *nodes, double *scalar,
 			       char *filename)
 {
   int i;
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
 
   if (NULL == grid->tecplotGeomFile) {
     if (NULL == filename) {
@@ -2713,7 +2713,7 @@ Grid *gridWriteTecplotNodeOrbit(Grid *grid, int node, char *filename )
 {
   AdjIterator it;
   int i, cell, nodes[4];
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
 
   if ( !gridValidNode(grid, node) ) return NULL;
 
@@ -2760,7 +2760,7 @@ Grid *gridWriteTecplotNodeOrbit(Grid *grid, int node, char *filename )
 Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
 {
   int i, last;
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
 
   if (grid != gridEquator(grid, n0, n1 )) return NULL;
 
@@ -2805,7 +2805,7 @@ Grid *gridWriteTecplotEquator(Grid *grid, int n0, int n1, char *filename )
 Grid *gridWriteTecplotEquatorFaces(Grid *grid, int n0, int n1, char *filename )
 {
   int i;
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
 
   if (grid != gridEquator(grid, n0, n1 )) return NULL;
 
@@ -6082,7 +6082,7 @@ Grid *gridFreezeLinesNodes(Grid *grid)
 Grid *gridReportLinesLocation(Grid *grid)
 {
   int line, index, node;
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
   Lines *lines;
 
   lines = gridLines(grid);
@@ -6105,7 +6105,7 @@ Grid *gridReportLinesLocation(Grid *grid)
 int gridMirrorNodeAboutY0(Grid *grid, int node, int origGlobal, int mirrorAux )
 {
   int newNode;
-  double xyz[3];
+  double xyz[3] = {0.0,0.0,0.0};
   double map[6];
   int aux;
   double Y0;

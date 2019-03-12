@@ -560,7 +560,7 @@ GridMove *gridmoveApplyDisplacements(GridMove *gm)
 {
   Grid *grid = gridmoveGrid(gm);
   int node;
-  double xyz[3], displacement[3];
+  double xyz[3], displacement[3] = {0.0, 0.0, 0.0};
 
   for ( node=0 ; node<gridMaxNode(grid) ; node++ ) {
     if ( gridNodeLocal(grid,node) && 
