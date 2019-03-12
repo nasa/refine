@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
     printf("copy dual\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
-        dual_flux[i + 20 * node] = primitive_dual[5 + i + 10 * node];
+        dual_flux[i + 20 * node] = primitive_dual[ldim / 2 + i + ldim * node];
       }
     }
 
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     printf("Euler flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
-        state[i] = primitive_dual[i + 10 * node];
+        state[i] = primitive_dual[i + ldim * node];
       }
       for (dir = 0; dir < 3; dir++) {
         direction[0] = 0;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(onegrad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     for (i = 0; i < 5; i++) {
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        prim[node] = primitive_dual[i + 10 * node];
+        prim[node] = primitive_dual[i + ldim * node];
       }
       RSS(ref_recon_gradient(ref_grid, prim, onegrad, recon), "grad_lam");
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -135,7 +135,12 @@ int main(int argc, char *argv[]) {
     printf("Laminar flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
-        state[i] = primitive_dual[i + 10 * node];
+        state[i] = primitive_dual[i + ldim * node];
+      }
+      if (6 == ldim) {
+        turb = primitive_dual[5 + ldim * node];
+      } else {
+        turb = -1.0; /* laminar */
       }
       for (i = 0; i < 15; i++) {
         gradient[i] = grad[i + 15 * node];
@@ -153,9 +158,10 @@ int main(int argc, char *argv[]) {
         }
       }
     }
-    ref_free(grad) ref_free(primitive_dual)
+    ref_free(grad);
+    ref_free(primitive_dual);
 
-        printf("writing dual_flux %s\n", argv[7]);
+    printf("writing dual_flux %s\n", argv[7]);
     RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
         "export dual_flux");
 
@@ -325,7 +331,8 @@ int main(int argc, char *argv[]) {
              (mu * (4.0 / 3.0) * dvdy * state[2] + thermal_conductivity * dtdy),
          flux[4], -1, "energy flux");
   }
-  { /* convert Spalart-Allmaras turbulence working variable to eddy viscosity */
+  { /* convert Spalart-Allmaras turbulence working variable to eddy viscosity
+     */
     REF_DBL turb, rho, nu, mut_sa;
     REF_DBL chi, fv1;
     REF_DBL cv1 = 7.1;
