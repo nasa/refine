@@ -19,6 +19,7 @@
 #include <math.h>
 
 #include "ref_phys.h"
+#include "ref_math.h"
 
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
@@ -90,5 +91,20 @@ REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *grad, REF_DBL mach,
             dir[1] * (u * tau[1][0] + v * tau[1][1] + w * tau[1][2] - qdot[1]) +
             dir[2] * (u * tau[2][0] + v * tau[2][1] + w * tau[2][2] - qdot[2]);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu, REF_DBL *mut_sa) {
+  if (turb > 0.0 && rho > 0.0 && nu > 0.0) {
+    REF_DBL chi, chi3, fv1;
+    REF_DBL cv1 = 7.1;
+    if( ! ref_math_divisible(turb, nu)) return REF_DIV_ZERO;
+    chi = turb / nu;
+    chi3 = pow(chi, 3);
+    fv1 = chi3 / (chi3 + pow(cv1, 3));
+    *mut_sa = rho * turb * fv1;
+  } else {
+    *mut_sa = 0.0;
+  }
   return REF_SUCCESS;
 }

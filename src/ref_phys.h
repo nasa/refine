@@ -29,6 +29,7 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux);
 REF_STATUS ref_phys_laminar(REF_DBL *state, REF_DBL *gradient, REF_DBL mach,
                             REF_DBL re, REF_DBL temp, REF_DBL *direction,
                             REF_DBL *flux);
+REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu, REF_DBL *mut_sa);
 
 END_C_DECLORATION
 
