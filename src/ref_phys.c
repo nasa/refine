@@ -18,8 +18,8 @@
 
 #include <math.h>
 
-#include "ref_phys.h"
 #include "ref_math.h"
+#include "ref_phys.h"
 
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
@@ -44,13 +44,15 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb, REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
+REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
+                            REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
                             REF_DBL *dir, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
   REF_DBL sutherland_constant = 198.6;
   REF_DBL sutherland_temp;
   REF_DBL pr = 0.72;
+  REF_DBL turbulent_pr = 0.90;
   REF_DBL tau[3][3], qdot[3];
   REF_INT i, j, k;
   REF_DBL thermal_conductivity, dtdx;
@@ -67,6 +69,8 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb, REF_DBL
   mu = mach / re * mu;
 
   RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+  thermal_conductivity =
+      -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
   mu += mu_t;
 
   for (i = 0; i < 3; i++) {
@@ -79,7 +83,6 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb, REF_DBL
   }
 
   for (i = 0; i < 3; i++) {
-    thermal_conductivity = -mu / (pr * (gamma - 1.0));
     /* t = gamma * p / rho quotient rule */
     dtdx = gamma * (grad[i + 3 * 4] * rho - p * grad[i + 3 * 0]) / rho / rho;
     qdot[i] = thermal_conductivity * dtdx;
@@ -96,11 +99,12 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb, REF_DBL
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu, REF_DBL *mut_sa) {
+REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
+                           REF_DBL *mut_sa) {
   if (turb > 0.0 && rho > 0.0 && nu > 0.0) {
     REF_DBL chi, chi3, fv1;
     REF_DBL cv1 = 7.1;
-    if( ! ref_math_divisible(turb, nu)) return REF_DIV_ZERO;
+    if (!ref_math_divisible(turb, nu)) return REF_DIV_ZERO;
     chi = turb / nu;
     chi3 = pow(chi, 3);
     fv1 = chi3 / (chi3 + pow(cv1, 3));

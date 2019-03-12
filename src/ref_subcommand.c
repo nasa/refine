@@ -96,7 +96,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   printf("verify param\n");
   RSS(ref_geom_verify_param(ref_grid), "adapt params");
   ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
-  
+
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
