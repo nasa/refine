@@ -101,3 +101,7 @@ set(REF_TWO_SRC
 )
 
 add_executable(ref_phys_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_phys_test.c)
+
+if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+  target_compile_options(ref_phys_test PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
+endif()
