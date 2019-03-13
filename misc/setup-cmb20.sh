@@ -53,6 +53,8 @@ mkdir -p zoltan
     ) \
     || exit
 
+exit
+
 mkdir -p sanitize
 ( cd sanitize && \
     ../configure \
