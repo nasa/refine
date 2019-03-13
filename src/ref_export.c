@@ -374,8 +374,8 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
       RSS(ref_dict_store(ref_dict, nodes[2], REF_EMPTY), "mark tri");
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
-    RSS(ref_grid_edge_tag_nodes(ref_grid, boundary_tag, &nnode, &nedge, &g2l,
-                                &l2g),
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
+                               &g2l, &l2g),
         "extract this edge");
 
     fprintf(file,
@@ -390,12 +390,13 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
               ref_node_xyz(ref_node, 2, l2g[node]));
 
     ref_cell = ref_grid_edg(ref_grid);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (boundary_tag == nodes[2]) {
-      for (node = 0; node < 2; node++) {
-        fprintf(file, " %d", g2l[nodes[node]] + 1);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[2]) {
+        for (node = 0; node < 2; node++) {
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        }
+        fprintf(file, "\n");
       }
-      fprintf(file, "\n");
     }
 
     ref_free(l2g);
@@ -432,8 +433,8 @@ REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
       RSS(ref_dict_store(ref_dict, nodes[4], REF_EMPTY), "mark qua");
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
-    RSS(ref_grid_boundary_tag_nodes(ref_grid, boundary_tag, &nnode, &nface,
-                                    &g2l, &l2g),
+    RSS(ref_grid_tri_qua_id_nodes(ref_grid, boundary_tag, &nnode, &nface, &g2l,
+                                  &l2g),
         "extract this boundary");
 
     fprintf(file,
@@ -2773,8 +2774,8 @@ REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file) {
       RSS(ref_dict_store(ref_dict, nodes[3], REF_EMPTY), "mark tri");
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
-    RSS(ref_grid_boundary_tag_nodes(ref_grid, boundary_tag, &nnode, &nface,
-                                    &g2l, &l2g),
+    RSS(ref_grid_tri_qua_id_nodes(ref_grid, boundary_tag, &nnode, &nface, &g2l,
+                                  &l2g),
         "extract this boundary");
 
     REIS(1, fwrite(&zonemarker, sizeof(float), 1, file), "zonemarker");

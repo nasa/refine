@@ -46,6 +46,7 @@ struct REF_CELL_STRUCT {
 };
 
 #define ref_cell_last_node_is_an_id(ref_cell) ((ref_cell)->last_node_is_an_id)
+#define ref_cell_id_index(ref_cell) ((ref_cell)->node_per)
 
 #define ref_cell_size_per(ref_cell) ((ref_cell)->size_per)
 #define ref_cell_node_per(ref_cell) ((ref_cell)->node_per)

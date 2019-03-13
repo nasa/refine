@@ -116,14 +116,18 @@ REF_STATUS ref_grid_face_with(REF_GRID ref_grid, REF_INT node_per,
 REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
                                   REF_BOOL *has_face);
 
-REF_STATUS ref_grid_boundary_tag_nodes(REF_GRID ref_grid, REF_INT boundary_tag,
-                                       REF_INT *nnode, REF_INT *nface,
-                                       REF_INT **g2l, REF_INT **l2g);
-REF_STATUS ref_grid_edge_tag_nodes(REF_GRID ref_grid, REF_INT edge_tag,
-                                   REF_INT *nnode, REF_INT *nedge,
-                                   REF_INT **g2l, REF_INT **l2g);
-REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                               REF_INT *nnode, REF_INT *ncell, REF_INT **l2c);
+REF_STATUS ref_grid_tri_qua_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
+                                     REF_INT *nnode, REF_INT *ncell,
+                                     REF_INT **g2l, REF_INT **l2g);
+REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                                  REF_INT cell_tag, REF_INT *nnode,
+                                  REF_INT *ncell, REF_INT **g2l, REF_INT **l2g);
+REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                                       REF_INT *nnode, REF_INT *ncell,
+                                       REF_INT **l2c);
+REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                                          REF_INT cell_id, REF_INT *nnode,
+                                          REF_INT *ncell, REF_INT **l2c);
 
 REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid);
 

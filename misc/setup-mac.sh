@@ -51,6 +51,8 @@ mkdir -p parmetis
     ) \
     || exit
 
+exit
+
 mkdir -p zoltan
 ( cd zoltan && \
     ../configure \
