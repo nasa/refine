@@ -374,8 +374,8 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
       RSS(ref_dict_store(ref_dict, nodes[2], REF_EMPTY), "mark tri");
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
-    RSS(ref_grid_edge_tag_nodes(ref_grid, boundary_tag, &nnode, &nedge, &g2l,
-                                &l2g),
+    RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
+                               &g2l, &l2g),
         "extract this edge");
 
     fprintf(file,
