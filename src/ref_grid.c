@@ -367,7 +367,7 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                        REF_INT *ncell_global, REF_INT **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
-  REF_INT cell, node, part;
+  REF_INT cell, node, cell_node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
   REF_INT proc, offset, *counts;
@@ -387,10 +387,10 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     if (ref_mpi_rank(ref_mpi) == part) {
       ncell++;
     }
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (ref_node_owned(ref_node, nodes[node]) &&
-          (REF_EMPTY == (*l2c)[nodes[node]])) {
-        (*l2c)[nodes[node]] = nnode;
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      if (ref_node_owned(ref_node, nodes[cell_node]) &&
+          (REF_EMPTY == (*l2c)[nodes[cell_node]])) {
+        (*l2c)[nodes[cell_node]] = nnode;
         nnode++;
       }
     }
