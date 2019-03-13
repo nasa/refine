@@ -430,7 +430,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
 
   if (ref_grid_once(ref_grid)) {
     if (NULL == (void *)(ref_gather->grid_file)) {
@@ -532,7 +533,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1518,7 +1520,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
   if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
@@ -1533,7 +1536,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   ref_free(l2c);
 
   ref_cell = ref_grid_tet(ref_grid);
-  RSS(ref_grid_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c), "l2c");
+  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
+      "l2c");
   if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,

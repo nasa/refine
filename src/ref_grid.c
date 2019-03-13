@@ -362,9 +362,9 @@ REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_grid_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                               REF_INT *nnode_global, REF_INT *ncell_global,
-                               REF_INT **l2c) {
+REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
+                                       REF_INT *nnode_global,
+                                       REF_INT *ncell_global, REF_INT **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
   REF_INT cell, node, part;
