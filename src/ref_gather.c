@@ -295,6 +295,87 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
+                                         REF_INT cell_id,
+                                         REF_INT ncell_expected, REF_INT *l2c,
+                                         FILE *file) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT cell, node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node_per = ref_cell_node_per(ref_cell);
+  REF_INT *c2n, ncell;
+  REF_INT proc, part;
+  REF_INT ncell_actual;
+
+  ncell_actual = 0;
+
+  if (ref_mpi_once(ref_mpi)) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (cell_id == nodes[ref_cell_id_index(ref_cell)]) {
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part) {
+          for (node = 0; node < node_per; node++) {
+            nodes[node] = l2c[nodes[node]];
+            nodes[node]++;
+            fprintf(file, " %d", nodes[node]);
+          }
+          ncell_actual++;
+          fprintf(file, "\n");
+        }
+      }
+    }
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    each_ref_mpi_worker(ref_mpi, proc) {
+      RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
+      ref_malloc(c2n, ncell * node_per, REF_INT);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
+          "recv c2n");
+      for (cell = 0; cell < ncell; cell++) {
+        for (node = 0; node < node_per; node++) {
+          c2n[node + node_per * cell]++;
+          fprintf(file, " %d", c2n[node + node_per * cell]);
+        }
+        ncell_actual++;
+        fprintf(file, "\n");
+      }
+      ref_free(c2n);
+    }
+  } else {
+    ncell = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (cell_id == nodes[ref_cell_id_index(ref_cell)]) {
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part) ncell++;
+      }
+    }
+    RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
+    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ncell = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (cell_id == nodes[ref_cell_id_index(ref_cell)]) {
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part) {
+          for (node = 0; node < node_per; node++)
+            c2n[node + node_per * ncell] = l2c[nodes[node]];
+          ncell++;
+        }
+      }
+    }
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
+        "send c2n");
+
+    ref_free(c2n);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    REIS(ncell_expected, ncell_actual, "cell count mismatch");
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
                                               REF_CELL ref_cell,
                                               REF_INT ncell_expected,
@@ -1501,7 +1582,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   FILE *file;
   REF_INT i;
   REF_INT nnode, ncell, *l2c;
-
+  REF_INT min_faceid, max_faceid, cell_id;
   file = NULL;
   if (ref_grid_once(ref_grid)) {
     file = fopen(filename, "w");
@@ -1519,21 +1600,27 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
-      "l2c");
-  if (nnode > 0 && ncell > 0) {
-    if (ref_grid_once(ref_grid)) {
-      fprintf(file,
-              "zone t=\"tri\", nodes=%d, elements=%d, datapacking=%s, "
-              "zonetype=%s\n",
-              nnode, ncell, "point", "fetriangle");
+  RSS(ref_geom_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+
+  for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
+    ref_cell = ref_grid_tri(ref_grid);
+    RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, cell_id, &nnode,
+                                       &ncell, &l2c),
+        "l2c");
+    if (nnode > 0 && ncell > 0) {
+      if (ref_grid_once(ref_grid)) {
+        fprintf(file,
+                "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, "
+                "zonetype=%s\n",
+                cell_id, nnode, ncell, "point", "fetriangle");
+      }
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+          "nodes");
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+          "t");
     }
-    RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
-        "nodes");
-    RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c, file), "t");
+    ref_free(l2c);
   }
-  ref_free(l2c);
 
   ref_cell = ref_grid_tet(ref_grid);
   RSS(ref_grid_compact_cell_nodes(ref_grid, ref_cell, &nnode, &ncell, &l2c),
