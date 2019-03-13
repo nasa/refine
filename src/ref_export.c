@@ -390,12 +390,13 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
               ref_node_xyz(ref_node, 2, l2g[node]));
 
     ref_cell = ref_grid_edg(ref_grid);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (boundary_tag == nodes[2]) {
-      for (node = 0; node < 2; node++) {
-        fprintf(file, " %d", g2l[nodes[node]] + 1);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[2]) {
+        for (node = 0; node < 2; node++) {
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        }
+        fprintf(file, "\n");
       }
-      fprintf(file, "\n");
     }
 
     ref_free(l2g);
