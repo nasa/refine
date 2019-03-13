@@ -100,8 +100,8 @@ int main(void) {
   { /* unique nodes of one tri */
     REF_GRID ref_grid;
     REF_CELL ref_cell;
-    REF_INT cell, nodes[4];
-    REF_INT nnode, nface, *g2l, *l2g;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT nnode, ncell, *g2l, *l2g;
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_cell = ref_grid_tri(ref_grid);
@@ -112,9 +112,9 @@ int main(void) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
 
-    RSS(ref_grid_boundary_tag_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
+    RSS(ref_grid_tri_qua_id_nodes(ref_grid, 10, &nnode, &ncell, &g2l, &l2g),
         "no list");
-    REIS(1, nface, "mis count");
+    REIS(1, ncell, "mis count");
     REIS(3, nnode, "mis count");
     REIS(5, l2g[0], "not in list");
     REIS(6, l2g[1], "not in list");
@@ -129,8 +129,8 @@ int main(void) {
   { /* unique nodes of two tri */
     REF_GRID ref_grid;
     REF_CELL ref_cell;
-    REF_INT cell, nodes[4];
-    REF_INT nnode, nface, *g2l, *l2g;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT nnode, ncell, *g2l, *l2g;
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
     ref_cell = ref_grid_tri(ref_grid);
@@ -146,9 +146,9 @@ int main(void) {
     nodes[3] = 10;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
 
-    RSS(ref_grid_boundary_tag_nodes(ref_grid, 10, &nnode, &nface, &g2l, &l2g),
+    RSS(ref_grid_tri_qua_id_nodes(ref_grid, 10, &nnode, &ncell, &g2l, &l2g),
         "no list");
-    REIS(2, nface, "mis count");
+    REIS(2, ncell, "mis count");
     REIS(4, nnode, "mis count");
     REIS(5, l2g[0], "not in list");
     REIS(6, l2g[1], "not in list");
