@@ -81,7 +81,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
-    REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
+    RAS(10 == ldim || 12 == ldim,
+        "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
 
     printf("copy dual\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
