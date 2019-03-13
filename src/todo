@@ -23,9 +23,11 @@ continuous metric interpolation
 
 interp should never extrapolate
 
-reduce use of ref_cell_list_with2 for each_ref_cell_having_node2
+reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
 extract/combine post adaptation operator checks and status
+
+extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 
 configure with metis only, when parmetis not provided
 make partitioner and partitioner algorithm available at run time
@@ -60,25 +62,27 @@ C2S
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
 
-create jenkins test
+improve CI test
 - make check stack fuzz
-- acceptance: validate normal deviation (make metric big across cylinder)
-- enforce merge request
-- acceptance test that checks interp error for functions
+- acceptance
+  - validate normal deviation (make metric big across cylinder)
+  - checks interp error for functions
+  - C2S bootstrap
 
 report threshold means
 
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   implement more in cavity
-  check cell boundary face topo for added tets
-  topo checks for tri replacment
   merge tet and surf-only tri logic for 3D surface and volume
+  check cell boundary face topo for added tets
   + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
   + ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
   use lexigraph comparison
+  + topo checks for tri replacment
   + store triangle replacement too (triangle sides?)
   + tri and geom handling
+  + use faceid to center cavity on edge and span faces
   + add node and grid into REF_CAVITY_STRUCT
     + ref_cavity_form_ball and ref_cavity_form_split_edge
   eliminate sliver
