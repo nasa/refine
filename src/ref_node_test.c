@@ -449,7 +449,7 @@ int main(int argc, char *argv[]) {
       data[ghost] = REF_EMPTY;
     }
 
-    RSS(ref_node_ghost_int(ref_node, data), "update ghosts");
+    RSS(ref_node_ghost_int(ref_node, data, 1), "update ghosts");
 
     global = ref_mpi_rank(ref_mpi);
     REIS(global, data[local], "local changed");

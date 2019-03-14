@@ -413,7 +413,7 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c)), "xfer");
+  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }
@@ -474,7 +474,7 @@ REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c)), "xfer");
+  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }

@@ -522,7 +522,7 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
         mark[tri_nodes[2]] = 0;
       }
     }
-  RSS(ref_node_ghost_int(ref_node, mark), "update ghost mark");
+  RSS(ref_node_ghost_int(ref_node, mark, 1), "update ghost mark");
 
   for (relaxation = 0; relaxation < keeping_n_layers; relaxation++) {
     for (node = 0; node < ref_node_max(ref_node); node++)
@@ -543,7 +543,7 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
       if (mark_copy[orig[5]] == REF_EMPTY && mark_copy[orig[2]] != REF_EMPTY)
         mark[orig[5]] = mark_copy[orig[2]] + 1;
     }
-    RSS(ref_node_ghost_int(ref_node, mark), "update ghost mark");
+    RSS(ref_node_ghost_int(ref_node, mark, 1), "update ghost mark");
   }
 
   each_ref_cell_valid_cell_with_nodes(pri, cell, orig) {

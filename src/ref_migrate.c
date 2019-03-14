@@ -96,7 +96,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
       ref_migrate_age(ref_migrate, node) = ref_node_age(ref_node, node);
     }
   }
-  RSS(ref_node_ghost_int(ref_node, (ref_migrate->age)),
+  RSS(ref_node_ghost_int(ref_node, (ref_migrate->age), 1),
       "ghost age for edge weights");
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
@@ -544,7 +544,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   free(b_size);
   free(a_size);
 
-  RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
+  RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = node_part[node];
@@ -883,7 +883,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
     xadj[n + 1] = xadj[n] + degree;
     n++;
   }
-  RSS(ref_node_ghost_int(ref_node, implied), "implied ghosts");
+  RSS(ref_node_ghost_int(ref_node, implied, 1), "implied ghosts");
 
   ref_malloc(adjncy, xadj[n], PARM_INT);
   ref_malloc(adjwgt, xadj[n], PARM_INT);
@@ -950,7 +950,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   /* skip agglomeration stuff */
 
-  RSS(ref_node_ghost_int(ref_node, node_part), "ghost part");
+  RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = node_part[node];

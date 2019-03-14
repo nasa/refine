@@ -592,7 +592,7 @@ REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
 
   RSS(ref_recon_mask_tri(ref_grid, replace), "mask");
 
-  RSS(ref_node_ghost_int(ref_node, replace), "update ghosts");
+  RSS(ref_node_ghost_int(ref_node, replace, 1), "update ghosts");
 
   for (pass = 0; pass < 10; pass++) {
     each_ref_node_valid_node(ref_node, node) {
@@ -616,7 +616,7 @@ REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
       }
     }
 
-    RSS(ref_node_ghost_int(ref_node, replace), "update ghosts");
+    RSS(ref_node_ghost_int(ref_node, replace, 1), "update ghosts");
     RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
 
     remain = 0;

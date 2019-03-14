@@ -502,7 +502,7 @@ REF_STATUS ref_elast_assemble(REF_ELAST ref_elast) {
   }
 
   /* to set ghost node bc's */
-  RSS(ref_node_ghost_int(ref_node, ref_elast->bc), "ghost bcs");
+  RSS(ref_node_ghost_int(ref_node, ref_elast->bc, 1), "ghost bcs");
   RSS(ref_node_ghost_dbl(ref_node, ref_elast->displacement, 3), "ghost disp");
 
   return REF_SUCCESS;
