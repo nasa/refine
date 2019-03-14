@@ -33,9 +33,40 @@
 
 #include "ref_recon.h"
 
+static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
+                                           REF_BOOL *replace, REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+  REF_INT first, last, i, node, bc;
+
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < ldim; i++) {
+      replace[i + ldim * node] = REF_FALSE;
+    }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        "dict bc");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      node = nodes[cell_node];
+      if (4000 == bc) {
+        first = ldim / 2 + 1; /* first momentum */
+        last = ldim / 2 + 4;  /* energy */
+        for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
+        if (12 == ldim) replace[i + ldim * node] = REF_TRUE; /* turb */
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
+  REF_INT mask_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -44,6 +75,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--laminar-flux", &laminar_flux_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--mask", &mask_pos), REF_NOT_FOUND,
       "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
@@ -246,6 +279,58 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  if (mask_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DICT ref_dict;
+    REF_BOOL *replace;
+    REF_DBL *primitive_dual;
+    REF_INT ldim;
+
+    REIS(1, mask_pos,
+         "required args: --mask grid.meshb grid.mapbc primitive_dual.solb "
+         "strong_replacement.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --mask grid.meshb grid.mapbc primitive_dual.solb "
+          "strong_replacemen.solb\n");
+      return REF_FAILURE;
+    }
+
+    printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    printf("reading bc map %s\n", argv[3]);
+    RSS(ref_dict_create(&ref_dict), "create");
+    RSS(ref_phys_read_mapbc(ref_dict, argv[3]),
+        "unable to mapbc in position 3");
+
+    printf("reading primitive_dual %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
+                        argv[4]),
+        "unable to load primitive_dual in position 3");
+    RAS(10 == ldim || 12 == ldim,
+        "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
+
+    ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+    RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict, replace, ldim), "mask");
+    RSS(ref_recon_extrapolate_zeroth(ref_grid, primitive_dual, replace, ldim),
+        "extrapolate zeroth order");
+    ref_free(replace);
+
+    printf("writing strong_replacement %s\n", argv[5]);
+    RSS(ref_gather_scalar(ref_grid, ldim, primitive_dual, argv[5]),
+        "export primitive_dual");
+
+    ref_free(primitive_dual);
+    RSS(ref_dict_free(ref_dict), "free");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   { /* x-Euler flux */
     REF_DBL state[5], direction[3];
     REF_DBL flux[5];
@@ -362,6 +447,39 @@ int main(int argc, char *argv[]) {
     nu = 1.e-100;
     REIS(REF_DIV_ZERO, ref_phys_mut_sa(turb, rho, nu, &mut_sa),
          "eddy viscosity from SA turb");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) {
+    char file[] = "ref_phys_test.mapbc";
+    FILE *f;
+    REF_DICT ref_dict;
+    REF_INT id, type;
+
+    f = fopen(file, "w");
+    fprintf(f, "3\n");
+    fprintf(f, "1 1000\n");
+    fprintf(f, "2    2000\n");
+    fprintf(f, "3  3000 nobody description stuff\n");
+    fprintf(f, "4 4000 ignored\n");
+    fclose(f);
+
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_read_mapbc(ref_dict, file), "read mapbc");
+
+    REIS(3, ref_dict_n(ref_dict), "lines");
+    id = 1;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(1000, type, "type");
+    id = 2;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(2000, type, "type");
+    id = 3;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(3000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+    REIS(0, remove(file), "test clean up");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
