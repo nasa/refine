@@ -609,7 +609,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, global), "ghost int");
+  RSS(ref_node_ghost_int(ref_node, global, 1), "ghost int");
 
   each_ref_node_valid_node(ref_node, node) {
     ref_node->global[node] = global[node];
@@ -711,15 +711,16 @@ REF_STATUS ref_node_ghost_real(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
+REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
+                              REF_INT ldim) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
   REF_INT *a_global, *b_global;
   REF_INT part, node;
   REF_INT *a_next;
-  REF_INT *a_scalar, *b_scalar;
-  REF_INT local;
+  REF_INT *a_vector, *b_vector;
+  REF_INT i, local;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -738,12 +739,12 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
   ref_malloc(a_global, a_total, REF_INT);
-  ref_malloc(a_scalar, a_total, REF_INT);
+  ref_malloc(a_vector, ldim * a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
   ref_malloc(b_global, b_total, REF_INT);
-  ref_malloc(b_scalar, b_total, REF_INT);
+  ref_malloc(b_vector, ldim * b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -765,22 +766,24 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
 
   for (node = 0; node < b_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
-    b_scalar[node] = scalar[local];
+    for (i = 0; i < ldim; i++)
+      b_vector[i + ldim * node] = vector[i + ldim * local];
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, b_scalar, b_size, a_scalar, a_size, 1,
+  RSS(ref_mpi_alltoallv(ref_mpi, b_vector, b_size, a_vector, a_size, ldim,
                         REF_INT_TYPE),
       "alltoallv global");
 
   for (node = 0; node < a_total; node++) {
     RSS(ref_node_local(ref_node, a_global[node], &local), "g2l");
-    scalar[local] = a_scalar[node];
+    for (i = 0; i < ldim; i++)
+      vector[i + ldim * local] = a_vector[i + ldim * node];
   }
 
   free(a_next);
-  free(b_scalar);
+  free(b_vector);
   free(b_global);
-  free(a_scalar);
+  free(a_vector);
   free(a_global);
   free(b_size);
   free(a_size);

@@ -114,7 +114,7 @@ static REF_STATUS ref_gather_cell_below_quality(
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c)), "xfer");
+  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }
