@@ -118,12 +118,15 @@ REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   FILE *file;
   REF_INT i, n, id, type;
+  char buffer[1024];
   file = fopen(mapbc_filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc_filename);
   RNS(file, "unable to open file");
   RES(1, fscanf(file, "%d", &n), "number of lines");
   for (i = 0; i < n; i++) {
-    RES(2, fscanf(file, "%d %d", &id, &type), "read line");
+    RES(1, fscanf(file, "%d", &id), "read id");
+    RES(1, fscanf(file, "%d", &type), "read type");
+    fgets(buffer, sizeof(buffer), file);
     RSS(ref_dict_store(ref_dict, id, type), "store");
   }
   fclose(file);
