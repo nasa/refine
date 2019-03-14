@@ -134,15 +134,17 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* multipass boundary averaging constant recon */
+  { /* zeroth order extrapolate boundary averaging constant recon */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *recon;
+    REF_BOOL *replace;
     REF_INT node;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
 
     ref_malloc(recon, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(replace, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_INT);
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       recon[0 + 6 * node] = 100.0;
@@ -152,8 +154,8 @@ int main(int argc, char *argv[]) {
       recon[4 + 6 * node] = 15.0;
       recon[5 + 6 * node] = 300.0;
     }
-
-    RSS(ref_recon_extrapolate_boundary_multipass(recon, ref_grid),
+    RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask");
+    RSS(ref_recon_extrapolate_zeroth(ref_grid, recon, replace, 6),
         "bound extrap");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
@@ -165,6 +167,7 @@ int main(int argc, char *argv[]) {
       RWDS(300.0, recon[5 + 6 * node], tol, "m33");
     }
 
+    ref_free(replace);
     ref_free(recon);
 
     RSS(ref_grid_free(ref_grid), "free");

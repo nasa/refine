@@ -564,65 +564,70 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace) {
+REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
+                              REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT node;
+  REF_INT i, node;
 
   each_ref_node_valid_node(ref_node, node) {
-    replace[node] = !ref_cell_node_empty(ref_cell, node);
+    for (i = 0; i < ldim; i++) {
+      replace[i + ldim * node] = !ref_cell_node_empty(ref_cell, node);
+    }
   }
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
-                                                    REF_GRID ref_grid) {
+REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
+                                        REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
   REF_INT node;
   REF_INT max_node = REF_RECON_MAX_DEGREE, nnode;
   REF_INT node_list[REF_RECON_MAX_DEGREE];
   REF_INT i, neighbor, nint;
-  REF_BOOL *replace;
   REF_INT pass, remain;
 
   if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
 
-  ref_malloc(replace, ref_node_max(ref_node), REF_BOOL);
-
-  RSS(ref_recon_mask_tri(ref_grid, replace), "mask");
-
-  RSS(ref_node_ghost_int(ref_node, replace, 1), "update ghosts");
+  RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
+  RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
 
   for (pass = 0; pass < 10; pass++) {
     each_ref_node_valid_node(ref_node, node) {
-      if (ref_node_owned(ref_node, node) && replace[node]) {
-        RXS(ref_cell_node_list_around(tets, node, max_node, &nnode, node_list),
-            REF_INCREASE_LIMIT, "unable to build neighbor list ");
-        nint = 0;
-        for (neighbor = 0; neighbor < nnode; neighbor++)
-          if (!replace[node_list[neighbor]]) nint++;
-        if (0 < nint) {
-          for (i = 0; i < 6; i++) recon[i + 6 * node] = 0.0;
-          for (neighbor = 0; neighbor < nnode; neighbor++)
-            if (!replace[node_list[neighbor]]) {
-              for (i = 0; i < 6; i++)
-                recon[i + 6 * node] += recon[i + 6 * node_list[neighbor]];
+      if (ref_node_owned(ref_node, node)) {
+        for (i = 0; i < ldim; i++) {
+          if (replace[i + ldim * node]) {
+            RXS(ref_cell_node_list_around(tets, node, max_node, &nnode,
+                                          node_list),
+                REF_INCREASE_LIMIT, "unable to build neighbor list ");
+            nint = 0;
+            for (neighbor = 0; neighbor < nnode; neighbor++)
+              if (!replace[i + ldim * node_list[neighbor]]) nint++;
+            if (0 < nint) {
+              recon[i + ldim * node] = 0.0;
+              for (neighbor = 0; neighbor < nnode; neighbor++)
+                if (!replace[i + ldim * node_list[neighbor]]) {
+                  recon[i + ldim * node] +=
+                      recon[i + ldim * node_list[neighbor]];
+                }
+              /* use Euclidean average, these are derivatives */
+              recon[i + ldim * node] /= (REF_DBL)nint;
+              replace[i + ldim * node] = REF_FALSE;
             }
-          /* use Euclidean average, these are derivatives */
-          for (i = 0; i < 6; i++) recon[i + 6 * node] /= (REF_DBL)nint;
-          replace[node] = REF_FALSE;
+          }
         }
       }
     }
 
-    RSS(ref_node_ghost_int(ref_node, replace, 1), "update ghosts");
-    RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
-
+    RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
+    RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
     remain = 0;
     each_ref_node_valid_node(ref_node, node) {
-      if (ref_node_owned(ref_node, node) && replace[node]) {
-        remain++;
+      if (ref_node_owned(ref_node, node)) {
+        for (i = 0; i < 6; i++) {
+          if (replace[i + ldim * node]) remain++;
+        }
       }
     }
     RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), &remain, 1, REF_INT_TYPE),
@@ -630,8 +635,6 @@ REF_STATUS ref_recon_extrapolate_boundary_multipass(REF_DBL *recon,
 
     if (0 == remain) break;
   }
-
-  ref_free(replace);
 
   REIS(0, remain, "untouched boundary nodes remain");
 
@@ -704,11 +707,16 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
 }
 REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                              REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon) {
+  REF_BOOL *replace;
+
   switch (recon) {
     case REF_RECON_L2PROJECTION:
       RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, hessian), "l2");
-      RSS(ref_recon_extrapolate_boundary_multipass(hessian, ref_grid),
+      ref_malloc(replace, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+      RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask");
+      RSS(ref_recon_extrapolate_zeroth(ref_grid, hessian, replace, 6),
           "bound extrap");
+      ref_free(replace);
       break;
     case REF_RECON_KEXACT:
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, NULL, hessian),
