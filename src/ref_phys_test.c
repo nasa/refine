@@ -251,6 +251,7 @@ int main(int argc, char *argv[]) {
 
   if (mask_pos != REF_EMPTY) {
     REF_GRID ref_grid;
+    REF_DICT ref_dict;
     REF_DBL *primitive_dual;
     REF_INT ldim;
 
@@ -268,6 +269,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
+    printf("reading bc map %s\n", argv[3]);
+    RSS(ref_dict_create(&ref_dict), "create");
+    RSS(ref_phys_read_mapbc(ref_dict, argv[3]),
+        "unable to mapbc in position 3");
+
     printf("reading primitive_dual %s\n", argv[4]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[4]),
@@ -280,6 +286,7 @@ int main(int argc, char *argv[]) {
         "export primitive_dual");
 
     ref_free(primitive_dual);
+    RSS(ref_dict_free(ref_dict), "free");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
