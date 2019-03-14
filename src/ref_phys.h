@@ -22,6 +22,7 @@
 #include <stdio.h>
 
 #include "ref_defs.h"
+#include "ref_dict.h"
 
 BEGIN_C_DECLORATION
 
@@ -31,6 +32,8 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL *dir, REF_DBL *flux);
 REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
                            REF_DBL *mut_sa);
+
+REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
 
 END_C_DECLORATION
 

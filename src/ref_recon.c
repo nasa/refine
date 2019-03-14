@@ -728,18 +728,3 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
 
   return REF_SUCCESS;
 }
-
-REF_STATUS ref_recon_read_mapbc(const char *mapbc_filename, REF_DICT ref_dict) {
-  FILE *file;
-  REF_INT i, n, id, type;
-  file = fopen(mapbc_filename, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", mapbc_filename);
-  RNS(file, "unable to open file");
-  RES(1, fscanf(file, "%d", &n), "number of lines");
-  for (i = 0; i < n; i++) {
-    RES(2, fscanf(file, "%d %d", &id, &type), "read line");
-    RSS(ref_dict_store(ref_dict, id, type), "store");
-  }
-  fclose(file);
-  return REF_SUCCESS;
-}

@@ -405,6 +405,39 @@ int main(int argc, char *argv[]) {
          "eddy viscosity from SA turb");
   }
 
+  if (!ref_mpi_para(ref_mpi)) {
+    char file[] = "ref_phys_test.mapbc";
+    FILE *f;
+    REF_DICT ref_dict;
+    REF_INT id, type;
+
+    f = fopen(file, "w");
+    fprintf(f, "3\n");
+    fprintf(f, "1 1000\n");
+    fprintf(f, "2    2000\n");
+    fprintf(f, "3  3000 nobody description stuff\n");
+    fprintf(f, "4 4000 ignored\n");
+    fclose(f);
+
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_read_mapbc(ref_dict, file), "read mapbc");
+
+    REIS(3, ref_dict_n(ref_dict), "lines");
+    id = 1;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(1000, type, "type");
+    id = 2;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(2000, type, "type");
+    id = 3;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(3000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

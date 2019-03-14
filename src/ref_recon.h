@@ -41,7 +41,6 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
 
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim);
-REF_STATUS ref_recon_read_mapbc(const char *mapbc_filename, REF_DICT ref_dict);
 
 /* for testing */
 REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
