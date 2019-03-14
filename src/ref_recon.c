@@ -737,7 +737,7 @@ REF_STATUS ref_recon_read_mapbc(const char *mapbc_filename, REF_DICT ref_dict) {
   RNS(file, "unable to open file");
   RES(1, fscanf(file, "%d", &n), "number of lines");
   for (i = 0; i < n; i++) {
-    RES(1, fscanf(file, "%d %d", &id, &type), "read line");
+    RES(2, fscanf(file, "%d %d", &id, &type), "read line");
     RSS(ref_dict_store(ref_dict, id, type), "store");
   }
   fclose(file);
