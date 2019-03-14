@@ -33,6 +33,36 @@
 
 #include "ref_recon.h"
 
+static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
+                                           REF_BOOL *replace, REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+  REF_INT first, last, i, node, bc;
+
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < ldim; i++) {
+      replace[i + ldim * node] = REF_FALSE;
+    }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        "dict bc");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      node = nodes[cell_node];
+      if (4000 == bc) {
+        first = ldim / 2 + 1; /* first momentum */
+        last = ldim / 2 + 4;  /* energy */
+        for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
+        if (12 == ldim) replace[i + ldim * node] = REF_TRUE; /* turb */
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
@@ -252,6 +282,7 @@ int main(int argc, char *argv[]) {
   if (mask_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DICT ref_dict;
+    REF_BOOL *replace;
     REF_DBL *primitive_dual;
     REF_INT ldim;
 
@@ -280,6 +311,12 @@ int main(int argc, char *argv[]) {
         "unable to load primitive_dual in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
+
+    ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+    RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict, replace, ldim), "mask");
+    RSS(ref_recon_extrapolate_zeroth(ref_grid, primitive_dual, replace, ldim),
+        "extrapolate zeroth order");
+    ref_free(replace);
 
     printf("writing strong_replacement %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, ldim, primitive_dual, argv[5]),
