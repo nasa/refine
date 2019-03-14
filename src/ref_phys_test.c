@@ -36,6 +36,7 @@
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
+  REF_INT mask_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -44,6 +45,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--laminar-flux", &laminar_flux_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--mask", &mask_pos), REF_NOT_FOUND,
       "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
@@ -239,6 +242,44 @@ int main(int argc, char *argv[]) {
         "export dual_flux");
 
     ref_free(dual_flux);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (mask_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *primitive_dual;
+    REF_INT ldim;
+
+    REIS(1, mask_pos,
+         "required args: --mask grid.meshb grid.mapbc primitive_dual.solb "
+         "strong_replacement.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --mask grid.meshb grid.mapbc primitive_dual.solb "
+          "strong_replacemen.solb\n");
+      return REF_FAILURE;
+    }
+
+    printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    printf("reading primitive_dual %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
+                        argv[4]),
+        "unable to load primitive_dual in position 3");
+    RAS(10 == ldim || 12 == ldim,
+        "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
+
+    printf("writing strong_replacement %s\n", argv[5]);
+    RSS(ref_gather_scalar(ref_grid, ldim, primitive_dual, argv[5]),
+        "export primitive_dual");
+
+    ref_free(primitive_dual);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
