@@ -18,7 +18,7 @@ else
 fi
 set -u
 
-ssh fun3d@${build_machine} <<EOF
+ssh -o LogLevel=error fun3d@${build_machine} <<EOF
 whoami && \
 mkdir -p ${build_directory_root} && \
 cd ${build_directory_root} && \
