@@ -1880,6 +1880,18 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* interpolate only bary */
+    REF_DBL orig_bary[4] = {1.0, 1.0, -0.5, -0.5};
+    REF_DBL clip_bary[4];
+
+    RSS(ref_node_clip_bary4(orig_bary, clip_bary), "clip");
+
+    RWDS(0.5, clip_bary[0], -1.0, "b 0");
+    RWDS(0.5, clip_bary[1], -1.0, "b 1");
+    RWDS(0.0, clip_bary[2], -1.0, "b 2");
+    RWDS(0.0, clip_bary[3], -1.0, "b 3");
+  }
+
   { /* signed tri projection */
     REF_NODE ref_node;
     REF_INT nodes[3], global;
