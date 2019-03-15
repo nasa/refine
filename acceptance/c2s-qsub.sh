@@ -4,7 +4,7 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 testname=c2s
-queue=k3
+queue=K3-route
 nprocs=16
 walltime=20
 
