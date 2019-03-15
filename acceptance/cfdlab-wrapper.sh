@@ -40,7 +40,7 @@ ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF
 whoami && \
 cd ${build_directory_root}/${BUILD_TAG}/refine && \
  ./acceptance/remove_old_builds.sh \
-  "${build_directory_root}/${CI_JOB_NAME}"
+  "${build_directory_root}"
 EOF
 trap - EXIT
 
