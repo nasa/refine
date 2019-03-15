@@ -104,36 +104,37 @@ int main(int argc, char *argv[]) {
     mach = atof(argv[4]);
     re = atof(argv[5]);
     temperature = atof(argv[6]);
-    printf("Reference Mach %f Re %e temperature %f\n", mach, re, temperature);
+    if (ref_mpi_once(ref_mpi))
+      printf("Reference Mach %f Re %e temperature %f\n", mach, re, temperature);
 
-    printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-    printf("reading primitive_dual %s\n", argv[3]);
+    if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
     RAS(10 == ldim || 12 == ldim,
         "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
 
-    printf("copy dual\n");
+    if (ref_mpi_once(ref_mpi)) printf("copy dual\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         dual_flux[i + 20 * node] = primitive_dual[ldim / 2 + i + ldim * node];
       }
     }
 
-    printf("zero flux\n");
+    if (ref_mpi_once(ref_mpi)) printf("zero flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 15; i++) {
         dual_flux[5 + i + 20 * node] = 0.0;
       }
     }
 
-    printf("Euler flux\n");
+    if (ref_mpi_once(ref_mpi)) printf("Euler flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         state[i] = primitive_dual[i + ldim * node];
@@ -150,7 +151,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    printf("reconstruct gradient\n");
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct gradient\n");
     ref_malloc(grad, 15 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(prim, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(onegrad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -168,7 +169,7 @@ int main(int argc, char *argv[]) {
     ref_free(onegrad);
     ref_free(prim);
 
-    printf("Laminar flux\n");
+    if (ref_mpi_once(ref_mpi)) printf("Laminar flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         state[i] = primitive_dual[i + ldim * node];
@@ -197,7 +198,7 @@ int main(int argc, char *argv[]) {
     ref_free(grad);
     ref_free(primitive_dual);
 
-    printf("writing dual_flux %s\n", argv[7]);
+    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[7]);
     RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
         "export dual_flux");
 
@@ -226,33 +227,33 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
-    printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
-    printf("reading primitive_dual %s\n", argv[3]);
+    if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
     REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
 
-    printf("copy dual\n");
+    if (ref_mpi_once(ref_mpi)) printf("copy dual\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         dual_flux[i + 20 * node] = primitive_dual[5 + i + 10 * node];
       }
     }
 
-    printf("zero flux\n");
+    if (ref_mpi_once(ref_mpi)) printf("zero flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 15; i++) {
         dual_flux[5 + i + 20 * node] = 0.0;
       }
     }
 
-    printf("Euler flux\n");
+    if (ref_mpi_once(ref_mpi)) printf("Euler flux\n");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 5; i++) {
         state[i] = primitive_dual[i + 10 * node];
@@ -269,7 +270,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    printf("writing dual_flux %s\n", argv[7]);
+    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[7]);
     RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
         "export dual_flux");
 
@@ -298,16 +299,16 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
-    printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
 
-    printf("reading bc map %s\n", argv[3]);
+    if (ref_mpi_once(ref_mpi)) printf("reading bc map %s\n", argv[3]);
     RSS(ref_dict_create(&ref_dict), "create");
     RSS(ref_phys_read_mapbc(ref_dict, argv[3]),
         "unable to mapbc in position 3");
 
-    printf("reading primitive_dual %s\n", argv[4]);
+    if (ref_mpi_once(ref_mpi)) printf("reading primitive_dual %s\n", argv[4]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[4]),
         "unable to load primitive_dual in position 3");
@@ -320,7 +321,8 @@ int main(int argc, char *argv[]) {
         "extrapolate zeroth order");
     ref_free(replace);
 
-    printf("writing strong_replacement %s\n", argv[5]);
+    if (ref_mpi_once(ref_mpi))
+      printf("writing strong_replacement %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, ldim, primitive_dual, argv[5]),
         "export primitive_dual");
 
