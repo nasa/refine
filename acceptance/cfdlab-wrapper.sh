@@ -29,7 +29,7 @@ cd ${build_directory_root} && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
-    ./jenkins/cfdlab.sh
+    ./acceptance/cfdlab.sh
 EOF
 
 scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
@@ -39,7 +39,7 @@ trap "cat cleanup.log" EXIT
 ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF
 whoami && \
 cd ${build_directory_root}/${BUILD_TAG}/refine && \
- ./jenkins/remove_old_builds.sh \
+ ./acceptance/remove_old_builds.sh \
   ${CI_JOB_ID} \
   "${build_directory_root}/${CI_JOB_NAME}"
 EOF

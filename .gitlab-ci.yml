@@ -4,7 +4,7 @@ build-and-test-on-cmb20:
     - merge_requests
   tags:
     - gitlab_runner
-  script: ./jenkins/cfdlab-wrapper.sh
+  script: ./acceptance/cfdlab-wrapper.sh
   artifacts:
     paths:
       - "log.*"
