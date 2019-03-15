@@ -27,6 +27,8 @@
 
 #include "ref_grid.h"
 
+#include "ref_export.h"
+#include "ref_fixture.h"
 #include "ref_gather.h"
 #include "ref_malloc.h"
 #include "ref_part.h"
@@ -292,7 +294,7 @@ int main(int argc, char *argv[]) {
     if (6 > argc) {
       printf(
           "required args: --mask grid.meshb grid.mapbc primitive_dual.solb "
-          "strong_replacemen.solb\n");
+          "strong_replacement.solb\n");
       return REF_FAILURE;
     }
 
@@ -508,6 +510,67 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_dict_free(ref_dict), "free");
     REIS(0, remove(file), "test clean up");
+  }
+
+  SKIP("fix adjoint mask") { /* brick zeroth */
+    REF_GRID ref_grid;
+    FILE *f;
+    REF_INT i, node, ldim;
+    REF_DBL *field;
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+      RSS(ref_export_by_extension(ref_grid, "ref_phys_test.meshb"), "export");
+      f = fopen("ref_phys_test.mapbc", "w");
+      fprintf(f, "6\n");
+      fprintf(f, "1 5000\n");
+      fprintf(f, "2 5000\n");
+      fprintf(f, "3 5000\n");
+      fprintf(f, "4 5000\n");
+      fprintf(f, "5 4000\n"); /* z = 0 */
+      fprintf(f, "6 5000\n");
+      fclose(f);
+      ref_malloc(field, 10 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        if (ref_node_xyz(ref_grid_node(ref_grid), 2, node) < 0.01) {
+          for (i = 0; i < 10; i++) field[i + 10 * node] = -1.0;
+        } else {
+          for (i = 0; i < 10; i++) field[i + 10 * node] = (REF_DBL)i;
+        }
+      }
+      RSS(ref_gather_scalar_by_extension(ref_grid, 10, field, NULL,
+                                         "ref_phys_test.solb"),
+          "gather");
+      ref_free(field);
+      RSS(ref_grid_free(ref_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, "ref_phys_test.meshb"),
+        "import");
+    REIS(
+        0,
+        system("./ref_phys_test --mask ref_phys_test.meshb ref_phys_test.mapbc "
+               "ref_phys_test.solb ref_phys_test_replace.solb\n"),
+        "mask");
+
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field,
+                        "ref_phys_test_replace.solb"),
+        "part field");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 5; i < 10; i++) {
+        RWDS((REF_DBL)i, field[i + 10 * node], -1.0, "not repalced");
+      }
+    }
+    if (0 && ref_mpi_once(ref_mpi)) {
+      REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
+      REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
+      REIS(0, remove("ref_phys_test.solb"), "solb clean up");
+      REIS(0, remove("ref_phys_test_replace.solb"), "solb clean up");
+    }
+
+    ref_free(field);
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
