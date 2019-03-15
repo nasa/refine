@@ -4,7 +4,7 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-if [[ $# -ne 2 ]]; then
+if [[ $# -ne 1 ]]; then
   echo "usage: $0 <path/to/build/prefix>"
   exit 1
 fi
