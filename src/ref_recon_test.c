@@ -137,9 +137,11 @@ int main(int argc, char *argv[]) {
   { /* zeroth order extrapolate boundary averaging constant recon */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
+    REF_CELL ref_cell;
     REF_DBL *recon;
     REF_BOOL *replace;
     REF_INT node;
+    REF_INT i, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
 
@@ -153,6 +155,12 @@ int main(int argc, char *argv[]) {
       recon[3 + 6 * node] = 200.0;
       recon[4 + 6 * node] = 15.0;
       recon[5 + 6 * node] = 300.0;
+    }
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        for (i = 0; i < 6; i++) recon[i + 6 * nodes[cell_node]] = 0.0;
+      }
     }
     RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask");
     RSS(ref_recon_extrapolate_zeroth(ref_grid, recon, replace, 6),
