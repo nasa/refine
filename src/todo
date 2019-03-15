@@ -21,8 +21,6 @@ continuous metric interpolation
  allow interp asynchronously
  fill in located at end of pass
 
-interp should never extrapolate
-
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
 extract/combine post adaptation operator checks and status
@@ -249,6 +247,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ interp should never extrapolate
 
 + squelch shape measure divide by zero warning
 

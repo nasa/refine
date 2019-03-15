@@ -381,7 +381,7 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   REF_INTERP ref_interp;
   REF_GRID from_grid;
   REF_NODE from_node;
-  REF_DBL log_parent_m[4][6], log_m[6];
+  REF_DBL log_parent_m[4][6], log_m[6], bary[4];
   REF_INT ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -411,14 +411,14 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_cell_nodes(ref_grid_tet(from_grid), ref_interp_cell(ref_interp, node),
                      nodes),
       "node needs to be localized");
+  RSS(ref_node_clip_bary4(&ref_interp_bary(ref_interp, 0, node), bary), "clip");
   for (ibary = 0; ibary < 4; ibary++)
     RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
         "log(parentM)");
   for (im = 0; im < 6; im++) log_m[im] = 0.0;
   for (im = 0; im < 6; im++) {
     for (ibary = 0; ibary < 4; ibary++) {
-      log_m[im] +=
-          ref_interp_bary(ref_interp, ibary, node) * log_parent_m[ibary][im];
+      log_m[im] += bary[ibary] * log_parent_m[ibary][im];
     }
   }
   RSS(ref_node_metric_set_log(ref_grid_node(ref_grid), node, log_m),
@@ -432,7 +432,7 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   REF_INTERP ref_interp;
   REF_GRID from_grid;
   REF_NODE from_node;
-  REF_DBL log_parent_m[4][6], log_m[6];
+  REF_DBL log_parent_m[4][6], log_m[6], bary[4];
   REF_INT ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -467,14 +467,16 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   RSS(ref_cell_nodes(ref_grid_tet(from_grid),
                      ref_interp_cell(ref_interp, new_node), nodes),
       "new_node needs to be localized");
+  RSS(ref_node_clip_bary4(&ref_interp_bary(ref_interp, 0, new_node), bary),
+      "clip");
+
   for (ibary = 0; ibary < 4; ibary++)
     RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
         "log(parentM)");
   for (im = 0; im < 6; im++) log_m[im] = 0.0;
   for (im = 0; im < 6; im++) {
     for (ibary = 0; ibary < 4; ibary++) {
-      log_m[im] += ref_interp_bary(ref_interp, ibary, new_node) *
-                   log_parent_m[ibary][im];
+      log_m[im] += bary[ibary] * log_parent_m[ibary][im];
     }
   }
   RSS(ref_node_metric_set_log(ref_grid_node(ref_grid), new_node, log_m),
@@ -579,9 +581,9 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   each_ref_node_valid_node(to_node, node) {
     if (ref_node_owned(to_node, node)) {
       RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
-      for (ibary = 0; ibary < 4; ibary++) {
-        recept_bary[ibary + 4 * n_recept] = ref_interp->bary[ibary + 4 * node];
-      }
+      RSS(ref_node_clip_bary4(&(ref_interp->bary[4 * node]),
+                              &(recept_bary[4 * n_recept])),
+          "clip");
       recept_proc[n_recept] = ref_interp->part[node];
       recept_cell[n_recept] = ref_interp->cell[node];
       recept_node[n_recept] = node;

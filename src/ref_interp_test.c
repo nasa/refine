@@ -734,7 +734,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(from), "free");
   }
 
-  { /* interp scalar for odd/even split bricks */
+  { /* interp scalar for odd/even split bricks, with curved boundary */
     REF_GRID from, to;
     char even[] = "ref_interp_test_even.meshb";
     char odd[] = "ref_interp_test_odd.meshb";
@@ -757,13 +757,13 @@ int main(int argc, char *argv[]) {
       RSS(ref_grid_free(ref_grid), "free");
     }
     RSS(ref_part_by_extension(&from, ref_mpi, even), "import");
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(from)), "shift");
     RSS(ref_part_by_extension(&to, ref_mpi, odd), "import");
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
     if (ref_mpi_once(ref_mpi)) {
       REIS(0, remove(even), "test clean up");
       REIS(0, remove(odd), "test clean up");
     }
-
-    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
 
     ref_malloc(from_scalar, 3 * ref_node_max(ref_grid_node(from)), REF_DBL);
     ref_malloc_init(to_scalar, 3 * ref_node_max(ref_grid_node(to)), REF_DBL,
@@ -788,7 +788,7 @@ int main(int argc, char *argv[]) {
             to_scalar[i + 3 * node] - ref_node_xyz(ref_grid_node(to), i, node),
             2);
       }
-      RWDS(0.0, dist2, -1.0, "interp scalar xyz not matching");
+      RWDS(0.0, dist2, 2.0e-3, "interp scalar xyz not matching");
     }
 
     RSS(ref_interp_free(ref_interp), "free");
