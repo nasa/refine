@@ -261,18 +261,6 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform/two
 ( ./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-( ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind-mpi
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-( ./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/linear010/two
@@ -378,6 +366,18 @@ cd ${source_dir}/acceptance/hemisphere/uniform
 trap - EXIT
 
 wait
+
+LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/uniform/two
+( ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1 || touch FAILED )
+trap - EXIT
+
+LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind-mpi
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-cylinder/uniform/two
+( ./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED )
+trap - EXIT
 
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
 
