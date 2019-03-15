@@ -69,8 +69,7 @@ trap - EXIT
 
 LOG=${root_dir}/log.strict-make-distcheck
 trap "cat $LOG" EXIT
-make distcheck > $LOG 2>&1
-cp refine-*.tar.gz ${root_dir}
+( make distcheck > $LOG 2>&1 && cp refine-*.tar.gz ${root_dir} || touch FAILED ) &
 trap - EXIT
 
 date
