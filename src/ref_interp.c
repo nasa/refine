@@ -1219,9 +1219,9 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   each_ref_node_valid_node(to_node, node) {
     if (ref_node_owned(to_node, node)) {
       RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
-      for (ibary = 0; ibary < 4; ibary++) {
-        recept_bary[ibary + 4 * n_recept] = ref_interp->bary[ibary + 4 * node];
-      }
+      RSS(ref_node_clip_bary4(&(ref_interp->bary[4 * node]),
+                              &(recept_bary[4 * n_recept])),
+          "clip");
       recept_proc[n_recept] = ref_interp->part[node];
       recept_cell[n_recept] = ref_interp->cell[node];
       recept_node[n_recept] = node;
