@@ -55,7 +55,7 @@ static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
         first = ldim / 2 + 1; /* first momentum */
         last = ldim / 2 + 4;  /* energy */
         for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
-        if (12 == ldim) replace[i + ldim * node] = REF_TRUE; /* turb */
+        if (12 == ldim) replace[11 + ldim * node] = REF_TRUE; /* turb */
       }
     }
   }

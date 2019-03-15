@@ -625,7 +625,7 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
     remain = 0;
     each_ref_node_valid_node(ref_node, node) {
       if (ref_node_owned(ref_node, node)) {
-        for (i = 0; i < 6; i++) {
+        for (i = 0; i < ldim; i++) {
           if (replace[i + ldim * node]) remain++;
         }
       }
