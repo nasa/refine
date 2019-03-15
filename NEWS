@@ -1,4 +1,8 @@
 
+- continuously interpolated metric from background grid for sequential
+- interpolation weights are clipped to prevent field and metric extrapolation
+- ref_gather_scalar_tec exports one triangle faceid per zone
+- surface adaptation cavity operator extended to edge splits
 - curvature constraints near model tolerence are ignored
 - curvature based metric includes isotropic geometry edge curvature
 - curvature based metric defaults to 2 segments per radian (28 degrees)
