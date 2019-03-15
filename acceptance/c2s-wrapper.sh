@@ -30,7 +30,7 @@ cd ${build_directory_root} && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
-      ./acceptance/c2s.sh
+      ./acceptance/c2s-qsub.sh
 EOF
 
 scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
