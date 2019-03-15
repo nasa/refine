@@ -363,19 +363,19 @@ wait
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
-( ./accept-3d-two-para.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-3d-two-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-( ./accept-cube-cylinder-polar-2-para.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-cube-cylinder-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
-( ./accept-hemisphere-uniform-para.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-hemisphere-uniform-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 wait
