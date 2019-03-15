@@ -4,21 +4,17 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-if [[ $# -ne 2 ]]; then
-  echo "usage: $0 <build number> <path/to/build/prefix>"
+if [[ $# -ne 1 ]]; then
+  echo "usage: $0 <path/to/build/prefix>"
   exit 1
 fi
 
-BUILD_NUMBER=$1
-BUILD_PATH=$2
+BUILD_PATH=$1
+DAYS_OLD=14
 
-BUILDS_TO_KEEP=10
-TARGET=${BUILD_NUMBER}
-let TARGET=TARGET-${BUILDS_TO_KEEP}
+find ${BUILD_PATH} -type d -mindepth 1 -maxdepth 1 -mtime +${DAYS_OLD} \
+     -exec chmod -R u+rwX {} \;
 
-for BUILD in ${BUILD_PATH}*; do
-  if [[ ${BUILD#${BUILD_PATH}-} -lt $TARGET ]]; then
-    chmod -R u+rwx ${BUILD}
-    rm -rf ${BUILD}
-  fi
-done
+find ${BUILD_PATH} -type d -mindepth 1 -maxdepth 1 -mtime +${DAYS_OLD} \
+     -exec rm -r {} \;
+
