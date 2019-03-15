@@ -512,7 +512,7 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  SKIP("fix adjoint mask") { /* brick zeroth */
+  { /* brick zeroth */
     REF_GRID ref_grid;
     FILE *f;
     REF_INT i, node, ldim;
@@ -550,7 +550,7 @@ int main(int argc, char *argv[]) {
     REIS(
         0,
         system("./ref_phys_test --mask ref_phys_test.meshb ref_phys_test.mapbc "
-               "ref_phys_test.solb ref_phys_test_replace.solb\n"),
+               "ref_phys_test.solb ref_phys_test_replace.solb > /dev/null"),
         "mask");
 
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field,
@@ -558,11 +558,11 @@ int main(int argc, char *argv[]) {
         "part field");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 5; i < 10; i++) {
+      for (i = 6; i < 10; i++) {
         RWDS((REF_DBL)i, field[i + 10 * node], -1.0, "not repalced");
       }
     }
-    if (0 && ref_mpi_once(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) {
       REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
       REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
       REIS(0, remove("ref_phys_test.solb"), "solb clean up");
