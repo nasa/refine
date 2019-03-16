@@ -39,7 +39,7 @@ mkdir -p parmetis
     ) \
     || exit 1
 
-export PATH=${PATH}:`pwd`/egads/src
+export PATH=`pwd`/egads/src:${PATH}
 
 cd ../acceptance
 
