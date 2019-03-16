@@ -6,12 +6,12 @@ set -u # Treat unset variables as error
 # Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
 
+module purge
 source acceptance/c2s-modules.sh
 
 set -x # echo
 
 log=`pwd`/../log-build.txt
-
 
 ./bootstrap > $log 2>&1
 mkdir -p egads
