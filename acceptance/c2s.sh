@@ -6,7 +6,7 @@ set -u # Treat unset variables as error
 # Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
 
-source acceptance/${testname}-modules.sh
+source acceptance/c2s-modules.sh
 
 set -x # echo
 
