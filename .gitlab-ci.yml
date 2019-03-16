@@ -19,7 +19,6 @@ c2s-acceptance-k:
   script: ./acceptance/c2s-wrapper.sh
   artifacts:
     paths:
-      - "log.*"
-      - "refine-*.tar.gz"
+      - "log-*"
     expire_in: 1 week
 
