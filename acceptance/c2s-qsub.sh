@@ -32,7 +32,7 @@ uname -mrn
 
 cd \$PBS_O_WORKDIR
 
-./acceptance/c2s.sh > \$BUILDLOG 2>&1
+./acceptance/c2s.sh > $BUILDLOG 2>&1
 
 EOF
 
