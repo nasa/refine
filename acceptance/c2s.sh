@@ -10,15 +10,18 @@ source acceptance/c2s-modules.sh
 
 set -x # echo
 
-./bootstrap
+log=`pwd`/../log-build.txt
+
+
+./bootstrap > $log 2>&1
 mkdir -p egads
 ( cd egads && \
     ../configure \
     --prefix=`pwd` \
     --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
-    CFLAGS="-g -O2" \
-    && make -j \
-    && make install \
+    CFLAGS="-g -O2" >> $log 2>&1 \
+    && make -j >> $log 2>&1 \
+    && make install >> $log 2>&1 \
     ) \
     || exit 1
 
@@ -32,7 +35,7 @@ log=`pwd`/../log-om6-geom-init-grid.txt
 
 wait
 
-find \$c2s -name FAILED
+find . -name FAILED
 
 echo -e \\n\
 # Build has failed if any failed cases have been reported
