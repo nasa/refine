@@ -39,5 +39,5 @@ find . -name FAILED
 
 echo -e \\n\
 # Build has failed if any failed cases have been reported
-exit `find \$c2s -name FAILED | wc -l`
+exit `find . -name FAILED | wc -l`
 
