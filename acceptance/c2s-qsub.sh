@@ -36,26 +36,5 @@ cd \$PBS_O_WORKDIR
 
 EOF
 
-tail_file(){
-  (
-  while [[ ! -f $1 ]]; do
-    sleep 1
-  done
-  tail -f -n +1 $1
-  ) &
-}
-
-rm -rf ${BUILDLOG}
-(qsub -V -Wblock=true ${testname}.pbs) &
-pid=$!
-
-set +x
-tail_file ${BUILDLOG}
-set -x
-
-# Capture test-suite error code, turn of exit-on-error
-set +e 
-wait ${pid}; exit_code=$?
-
-exit ${exit_code}
+qsub -V -Wblock=true ${testname}.pbs
 
