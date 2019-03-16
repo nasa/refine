@@ -11,3 +11,14 @@ build-and-test-on-cmb20:
       - "refine-*.tar.gz"
     expire_in: 1 week
 
+c2s-acceptance-k:
+  only:
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/c2s-wrapper.sh
+  artifacts:
+    paths:
+      - "log-*"
+    expire_in: 1 week
+
