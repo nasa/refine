@@ -1,15 +1,15 @@
 
-#build-and-test-on-cmb20:
-#  only:
-#    - merge_requests
-#  tags:
-#    - gitlab_runner
-#  script: ./acceptance/cfdlab-wrapper.sh
-#  artifacts:
-#    paths:
-#      - "log.*"
-#      - "refine-*.tar.gz"
-#    expire_in: 1 week
+build-and-test-on-cmb20:
+  only:
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/cfdlab-wrapper.sh
+  artifacts:
+    paths:
+      - "log.*"
+      - "refine-*.tar.gz"
+    expire_in: 1 week
 
 c2s-acceptance-k:
   only:
