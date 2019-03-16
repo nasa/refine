@@ -41,9 +41,9 @@ export PATH=${PATH}:`pwd`/egads/src
 
 cd ../acceptance
 
-dir=`pwd`/om6/geom
-log=`pwd`/../log-om6-geom-init-grid.txt
-(cd $dir && ./init-grid.sh  > $log 2>&1 || touch $dir/FAILED ) &
+dir=`pwd`/om6
+log=`pwd`/../log-om6-run.txt
+(cd $dir && ./run.sh  > $log 2>&1 || touch $dir/FAILED ) &
 
 dir=`pwd`/jsm-nac/geom
 log=`pwd`/../log-jsm-nac-geom-init-grid.txt
