@@ -8,8 +8,7 @@ queue=K3-route
 nprocs=16
 walltime=20
 
-BUILDLOG=$PWD/../log.build
-RUNLOG=$PWD/../log.runtest
+BUILDLOG=$PWD/../log-pbs-out.txt
 
 cat << EOF > ${testname}.pbs
 #PBS -S /bin/bash
@@ -28,45 +27,9 @@ set -o pipefail # ensure exit with pipe
 
 uname -mrn
 
-# Setup bash module environment
-. /usr/local/pkgs/modules/init/bash
-
-echo \$PBS_JOBID
-cat \$PBS_NODEFILE
-
 cd \$PBS_O_WORKDIR
-source acceptance/${testname}-modules.sh
 
-egads=\$PBS_O_WORKDIR/egads
-eagds_bin=\$PBS_O_WORKDIR/egads/bin
-c2s=\$PBS_O_WORKDIR/../C2S
-
-./bootstrap
-mkdir -p egads
-( cd egads && \
-    ../configure \
-    --prefix=\$egads \
-    --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
-    CFLAGS="-g -O2" \
-    && make -j \
-    && make install \
-    ) \
-    || exit 1
-
-export PATH=\$PATH:\$egads_bin
-
-cd \$c2s
-
-dir=turbulence_modeling_resource/3D/onera-m6/geometry
-(cd \$dir && ./init-grid.sh || touch \$dir/FAILED ) &
-
-wait
-
-find \$c2s -name FAILED
-
-echo -e \\n\
-# Build has failed if any failed cases have been reported
-exit `find \$c2s -name FAILED | wc -l`
+./c2s.sh
 
 EOF
 
@@ -79,13 +42,12 @@ tail_file(){
   ) &
 }
 
-rm -rf ${BUILDLOG} ${RUNLOG}
+rm -rf ${BUILDLOG}
 (qsub -V -Wblock=true ${testname}.pbs) &
 pid=$!
 
 set +x
 tail_file ${BUILDLOG}
-tail_file ${RUNLOG}
 set -x
 
 # Capture test-suite error code, turn of exit-on-error
@@ -93,3 +55,4 @@ set +e
 wait ${pid}; exit_code=$?
 
 exit ${exit_code}
+
