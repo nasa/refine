@@ -20,6 +20,7 @@ set -u
 
 ssh -o LogLevel=error fun3d@${build_machine} <<EOF
 whoami && \
+uname -n && \
 mkdir -p ${build_directory_root} && \
 cd ${build_directory_root} && \
   mkdir -p ${BUILD_TAG} && \
@@ -38,6 +39,7 @@ scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log-\* .
 trap "cat cleanup.log" EXIT
 ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF
 whoami && \
+uname -n && \
 cd ${build_directory_root}/${BUILD_TAG}/refine && \
  ./acceptance/remove_old_builds.sh \
   "${build_directory_root}"

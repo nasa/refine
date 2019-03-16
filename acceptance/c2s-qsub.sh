@@ -2,6 +2,9 @@
 
 set -e # exit on first error
 set -u # Treat unset variables as error
+set -x # echo
+
+uname -n
 
 testname=c2s
 queue=K3-route
@@ -29,7 +32,7 @@ uname -mrn
 
 cd \$PBS_O_WORKDIR
 
-./acceptance/c2s.sh > \$BUIDLOG 2>&1
+./acceptance/c2s.sh > \$BUILDLOG 2>&1
 
 EOF
 
