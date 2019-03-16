@@ -33,6 +33,10 @@ dir=`pwd`/om6/geom
 log=`pwd`/../log-om6-geom-init-grid.txt
 (cd $dir && ./init-grid.sh  > $log 2>&1 || touch $dir/FAILED ) &
 
+dir=`pwd`/jsm-nac/geom
+log=`pwd`/../log-jsm-nac-geom-init-grid.txt
+(cd $dir && ./nac-box.sh  > $log 2>&1 || touch $dir/FAILED ) &
+
 wait
 
 find . -name FAILED
