@@ -1587,14 +1587,14 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
     ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
     each_ref_node_valid_node(ref_node, node) {
-      lam[node] = solution[var + 5 + ldim * node];
+      lam[node] = solution[var + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction),
         "grad_lam");
 
     for (dir = 0; dir < 3; dir++) {
       each_ref_node_valid_node(ref_node, node) {
-        flux[node] = solution[var + nequations * dir + ldim * node];
+        flux[node] = solution[var + nequations * (1 + dir) + ldim * node];
       }
       RSS(ref_recon_hessian(ref_grid, flux, hess_flux, reconstruction), "hess");
       each_ref_node_valid_node(ref_node, node) {
