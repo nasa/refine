@@ -270,8 +270,8 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[7]);
-    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
+    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[4]);
+    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[4]),
         "export dual_flux");
 
     ref_free(dual_flux);
