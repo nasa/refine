@@ -215,6 +215,15 @@ typedef int REF_STATUS;
     }                     \
   }
 
+#define RUB(a, b, msg, block) \
+  {                           \
+    if ((a) == (b)) {         \
+      REF_WHERE(msg);         \
+      block;                  \
+      return REF_FAILURE;     \
+    }                         \
+  }
+
 #define RAS(a, msg)       \
   {                       \
     if (!(a)) {           \
