@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     max = ref_agents->max;
     for (node = 0; node < max; node++)
-      RSS(ref_agents_push(ref_agents, id, part, seed, xyz, &id), "add");
+      RSS(ref_agents_push(ref_agents, node, part, seed, xyz, &id), "add");
 
     RSS(ref_agents_remove(ref_agents, max - 1), "remove last agents");
 
@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
 
     max = ref_agents->max;
     for (node = 0; node < 30000; node++)
-      RSS(ref_agents_push(ref_agents, id, part, seed, xyz, &id), "add");
+      RSS(ref_agents_push(ref_agents, node, part, seed, xyz, &id), "add");
 
     RAS(max < ref_agents->max, "grow max");
 
