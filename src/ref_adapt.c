@@ -183,12 +183,17 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
               "norm");
           RSS(ref_math_normalize(normal), "normalize");
           normal_projection = ref_matrix_vt_m_v(m, normal);
-          complexity += sqrt(det / normal_projection) * area /
-                        ((REF_DBL)ref_cell_node_per(ref_cell));
-
+          if (ref_math_divisible(det, normal_projection)) {
+            if (det / normal_projection > 0.0) {
+              complexity += sqrt(det / normal_projection) * area /
+                            ((REF_DBL)ref_cell_node_per(ref_cell));
+            }
+          }
         } else {
-          complexity +=
-              sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+          if (det > 0.0) {
+            complexity +=
+                sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+          }
         }
       }
     }
@@ -207,6 +212,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   det = max_det;
   RSS(ref_mpi_max(ref_mpi, &det, &max_det, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &max_det, 1, REF_DBL_TYPE), "bcast");
+  RAS(ref_math_divisible(1.0, sqrt(max_det)), "can not invert sqrt(max_det)");
   min_metric_vol = 1.0 / sqrt(max_det);
 
   RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");

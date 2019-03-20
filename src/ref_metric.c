@@ -1492,7 +1492,7 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (det > 0) {
+    if (det > 0.0) {
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
@@ -1621,7 +1621,7 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (det > 0) {
+    if (det > 0.0) {
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
