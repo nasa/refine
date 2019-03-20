@@ -1562,7 +1562,7 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT dimension;
-  REF_DBL det, exponent;
+  REF_DBL det, exponent, min_non_zero_det;
   REF_DBL current_complexity, complexity_scale;
   REF_INT ldim;
   REF_INT var, dir, relaxations;
@@ -1616,12 +1616,27 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     }
   }
 
+  min_non_zero_det = 1.0e300;
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
+    if (det > 0.0) min_non_zero_det = MIN(det, min_non_zero_det);
+  }
+
   /* local scaling */
   if (ref_grid_twod(ref_grid)) dimension = 2;
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
     if (det > 0.0) {
+      for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
+    } else {
+      metric[0 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
+      RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "local min det scale");
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
