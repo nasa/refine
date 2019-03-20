@@ -1225,6 +1225,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_INT node;
     REF_DBL *scalar, *metric;
+    REF_DBL current_complexity;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1232,10 +1233,11 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       scalar[node] = 0.5;
     }
-    REIS(REF_DIV_ZERO,
-         ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
-                       1000.0),
-         "lp norm expected div zero");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
+                      1000.0),
+        "const metric");
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    RWDS(1000.0, current_complexity, -1.0, "complexity");
     ref_free(metric);
     ref_free(scalar);
 
