@@ -591,6 +591,9 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   REF_INT ixyz;
   REF_INT n_ids, ids[2];
   REF_BOOL allowed, geom_face;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
@@ -610,6 +613,12 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
 
   RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
 
@@ -620,11 +629,13 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
-    if ((tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+    if ((REF_SUCCESS == interp_status) &&
+        (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
@@ -633,6 +644,8 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
       }
     }
     backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
   }
 
   for (ixyz = 0; ixyz < 3; ixyz++)
@@ -842,6 +855,9 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
   /* can't handle boundaries yet */
   if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) ||
@@ -850,6 +866,12 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
 
   RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
 
@@ -860,16 +882,19 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
-    if ((quality > quality0) &&
+    if ((REF_SUCCESS == interp_status) && (quality > quality0) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
   }
 
   for (ixyz = 0; ixyz < 3; ixyz++)
@@ -1294,12 +1319,22 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
   REF_INT nactive;
   REF_DBL last_alpha, last_qual;
   REF_BOOL verbose = REF_FALSE;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
   *complete = REF_FALSE;
 
   xyz[0] = ref_node_xyz(ref_node, 0, node);
   xyz[1] = ref_node_xyz(ref_node, 1, node);
   xyz[2] = ref_node_xyz(ref_node, 2, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
+  interp_status = REF_SUCCESS;
 
   RSS(ref_adj_degree(ref_cell_adj(ref_cell), node, &degree), "deg");
 
@@ -1452,14 +1487,16 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
     ref_node_xyz(ref_node, 0, node) = xyz[0] + alpha * dir[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1] + alpha * dir[1];
     ref_node_xyz(ref_node, 2, node) = xyz[2] + alpha * dir[2];
-    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
 
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "rep");
     requirement = 0.9 * alpha * m0 + quals[worst];
     if (verbose)
       printf(" %d alpha %e min %f required %f actual %f\n", nactive, alpha,
              min_qual, requirement, quality);
-    if (reductions > 0 && quality < last_qual && quality > min_qual) {
+    if (REF_SUCCESS == interp_status && reductions > 0 && quality < last_qual &&
+        quality > min_qual) {
       if (verbose)
         printf("use last alpha %e min %f last_qual %f actual %f\n", last_alpha,
                min_qual, last_qual, quality);
@@ -1482,6 +1519,8 @@ REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
     ref_node_xyz(ref_node, 2, node) = xyz[2];
+    if (REF_SUCCESS != interp_status && REF_EMPTY != interp_guess)
+      ref_interp_cell(ref_interp, node) = interp_guess;
     RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     *complete = REF_TRUE;
   }
