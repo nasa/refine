@@ -358,6 +358,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gradation, complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
+    REF_DBL current_complexity, hmin, hmax;
 
     REIS(1, opt_goal_pos,
          "required args: --opt-goal grid.meshb solution.solb complexity p "
@@ -368,6 +369,16 @@ int main(int argc, char *argv[]) {
           "gradation output-metric.solb\n");
       return REF_FAILURE;
     }
+    hmin = -1.0;
+    hmax = -1.0;
+    if (REF_EMPTY != hmax_pos) {
+      if (hmax_pos >= argc - 1) {
+        printf("option missing value: --hmax max_edge_length\n");
+        return REF_FAILURE;
+      }
+      hmax = atof(argv[hmax_pos + 1]);
+    }
+
     p = atoi(argv[4]);
     gradation = atof(argv[5]);
     complexity = atof(argv[6]);
@@ -376,6 +387,7 @@ int main(int argc, char *argv[]) {
       printf("gradation %f\n", gradation);
       printf("complexity %f\n", complexity);
       printf("reconstruction %d\n", (int)reconstruction);
+      printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
     }
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
@@ -414,6 +426,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, reconstruction, p,
                             gradation, complexity),
         "opt goal");
+    if (hmin > 0.0 || hmax > 0.0) {
+      RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
+                                           complexity),
+          "limit at complexity");
+    }
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_mpi))
+      printf("actual complexity %e\n", current_complexity);
+
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
     ref_free(scalar);
