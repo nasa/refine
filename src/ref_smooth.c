@@ -842,6 +842,9 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
   /* can't handle boundaries yet */
   if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) ||
@@ -850,6 +853,12 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
 
   RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
 
@@ -860,16 +869,19 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
-    if ((quality > quality0) &&
+    if ((REF_SUCCESS == interp_status) && (quality > quality0) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
   }
 
   for (ixyz = 0; ixyz < 3; ixyz++)
