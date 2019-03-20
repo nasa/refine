@@ -1310,7 +1310,7 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {
         RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
-        if (ABS(det) > 1.0e-15) {
+        if (det > 0.0) {
           (*complexity) +=
               sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
         }
@@ -1492,7 +1492,7 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (ABS(det) > 1.0e-15) {
+    if (det > 0.0) {
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
@@ -1621,7 +1621,7 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (ABS(det) > 1.0e-15) {
+    if (det > 0.0) {
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
