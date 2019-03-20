@@ -1310,7 +1310,7 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {
         RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
-        if (ABS(det) > 1.0e-15) {
+        if (det > 0.0) {
           (*complexity) +=
               sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
         }
