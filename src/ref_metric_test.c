@@ -397,27 +397,6 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
-    if (23 == ldim) {
-      REF_NODE ref_node = ref_grid_node(ref_grid);
-      REF_DBL *sorted;
-      REF_INT node, closest_node, i;
-      REF_DBL distance, max_distance;
-      ref_malloc(sorted, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      max_distance = -1.0;
-      each_ref_node_valid_node(ref_node, node) {
-        RSS(ref_node_nearest_xyz(ref_node, &(scalar[23 * node]), &closest_node,
-                                 &distance),
-            "closest");
-        max_distance = MAX(max_distance, distance);
-        for (i = 0; i < 20; i++) {
-          sorted[i + 20 * closest_node] = scalar[3 + i + 23 * node];
-        }
-      }
-      printf("max dist %e\n", max_distance);
-      ldim = 20;
-      ref_free(scalar);
-      scalar = sorted;
-    }
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
     RSS(ref_export_tec_dbl(ref_grid, ldim, scalar, "ref_metric_opt_goal.tec"),
         "scalar");
