@@ -398,8 +398,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
-    RSS(ref_export_tec_dbl(ref_grid, ldim, scalar, "ref_metric_opt_goal.tec"),
-        "scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, reconstruction, p,
