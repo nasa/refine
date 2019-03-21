@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
+  REF_INT no_goal_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT buffer_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
@@ -97,6 +98,8 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--no-goal", &no_goal_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
@@ -397,30 +400,93 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
-    if (23 == ldim) {
-      REF_NODE ref_node = ref_grid_node(ref_grid);
-      REF_DBL *sorted;
-      REF_INT node, closest_node, i;
-      REF_DBL distance, max_distance;
-      ref_malloc(sorted, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      max_distance = -1.0;
-      each_ref_node_valid_node(ref_node, node) {
-        RSS(ref_node_nearest_xyz(ref_node, &(scalar[23 * node]), &closest_node,
-                                 &distance),
-            "closest");
-        max_distance = MAX(max_distance, distance);
-        for (i = 0; i < 20; i++) {
-          sorted[i + 20 * closest_node] = scalar[3 + i + 23 * node];
-        }
-      }
-      printf("max dist %e\n", max_distance);
-      ldim = 20;
-      ref_free(scalar);
-      scalar = sorted;
-    }
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
-    RSS(ref_export_tec_dbl(ref_grid, ldim, scalar, "ref_metric_opt_goal.tec"),
-        "scalar");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, reconstruction, p,
+                            gradation, complexity),
+        "opt goal");
+    if (hmin > 0.0 || hmax > 0.0) {
+      RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
+                                           complexity),
+          "limit at complexity");
+    }
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_mpi))
+      printf("actual complexity %e\n", current_complexity);
+
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_free(scalar);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
+    RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (no_goal_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *scalar, *metric;
+    REF_INT p;
+    REF_DBL gradation, complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+    REF_DBL current_complexity, hmin, hmax;
+    REF_INT i, node;
+
+    REIS(1, no_goal_pos,
+         "required args: --no-goal grid.meshb solution.solb complexity p "
+         "gradation output-metric.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --no-goal grid.meshb solution.solb complexity p "
+          "gradation output-metric.solb\n");
+      return REF_FAILURE;
+    }
+    hmin = -1.0;
+    hmax = -1.0;
+    if (REF_EMPTY != hmax_pos) {
+      if (hmax_pos >= argc - 1) {
+        printf("option missing value: --hmax max_edge_length\n");
+        return REF_FAILURE;
+      }
+      hmax = atof(argv[hmax_pos + 1]);
+    }
+
+    p = atoi(argv[4]);
+    gradation = atof(argv[5]);
+    complexity = atof(argv[6]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+      printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+        "unable to load scalar in position 3");
+    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
+
+    /* linear function evaluates to unit adjoint weights */
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 5; i++) {
+        scalar[i + 20 * node] = ref_node_xyz(ref_node, 0, node) +
+                                ref_node_xyz(ref_node, 1, node) +
+                                ref_node_xyz(ref_node, 2, node);
+      }
+    }
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_opt_goal(metric, ref_grid, 5, scalar, reconstruction, p,
