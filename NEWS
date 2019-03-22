@@ -1,9 +1,11 @@
 
+Thu, Mar 22, 2019 : Released Refine 1.8.22
+
 - continuously interpolated metric from background grid for sequential
 - interpolation weights are clipped to prevent field and metric extrapolation
 - ref_gather_scalar_tec exports one triangle faceid per zone
 - surface adaptation cavity operator extended to edge splits
-- curvature constraints near model tolerence are ignored
+- curvature constraints near model tolerance are ignored
 - curvature based metric includes isotropic geometry edge curvature
 - curvature based metric defaults to 2 segments per radian (28 degrees)
 - parmetis can be called on subset of processors (also avoids zero part input)
@@ -12,12 +14,12 @@
 - tetgen shell uses poly format to allow voids
 - tetgen called with q2.0/10 to create coarser initial grids without slivers
 - termination recommendation based on one percent edge-metric ratio limit change
-- edge-metric ratio post floor more aggresive once ceiling drops below 3
+- edge-metric ratio post floor more aggressive once ceiling drops below 3
 - ref_adapt_parameter is private method
 - ref_adapt_pass returns termination recommendation
 - curvature based metric includes geometry topology feature size
 - version 3 .meshb/.solb export for grids larger than 2 GBytes (10M vertex)
-- ref_driver RCM global node order per proc on export
+- ref_driver RCM global node order per processor on export
 - ref_grid_pack uses RCM ordering
 - ref_node_metric removed, use getters/setters, results in code speedup
 - ref_metric_unit_node removed, metric initialized to unity during ref_node_add
