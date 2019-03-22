@@ -83,6 +83,8 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid);
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
 REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid);
 
+REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z);
+
 END_C_DECLORATION
 
 #endif /* REF_MIGRATE_H */
