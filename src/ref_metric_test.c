@@ -381,6 +381,9 @@ int main(int argc, char *argv[]) {
       }
       hmax = atof(argv[hmax_pos + 1]);
     }
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
 
     p = atoi(argv[4]);
     gradation = atof(argv[5]);
@@ -456,6 +459,9 @@ int main(int argc, char *argv[]) {
         return REF_FAILURE;
       }
       hmax = atof(argv[hmax_pos + 1]);
+    }
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
     }
 
     p = atoi(argv[4]);
