@@ -346,15 +346,24 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
     REF_DBL cell_vol, flux_grad[3];
+    REF_DBL convergence_rate, exponent;
     REF_INT nsystem = 11;
 
     REIS(1, cont_res_pos,
-         "required args: --cont-res grid.meshb dual_flux.solb weight.solb");
-    if (5 > argc) {
+         "required args: --cont-res grid.meshb dual_flux.solb convergence_rate "
+         "weight.solb");
+    if (6 > argc) {
       printf(
-          "required args: --cont-res grid.meshb dual_flux.solb weight.solb\n");
+          "required args: --cont-res grid.meshb dual_flux.solb "
+          "convergence_rate exponent weight.solb\n");
       return REF_FAILURE;
     }
+
+    convergence_rate = atof(argv[4]);
+    exponent = 0.25;
+    if (convergence_rate > 0.0) exponent = 1.0 / convergence_rate;
+    if (ref_mpi_once(ref_mpi))
+      printf("convergence rate %f exponent %f\n", convergence_rate, exponent);
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
@@ -401,12 +410,13 @@ int main(int argc, char *argv[]) {
         weight[node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
       }
+      if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
     }
     if (ref_mpi_once(ref_mpi)) printf("writing system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
                                        "system.tec"),
         "export primitive_dual");
-    if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[4]);
+    if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 1, weight, argv[4]), "export weight");
 
     ref_free(weight);
