@@ -187,17 +187,17 @@ int main(int argc, char *argv[]) {
 
   if (wlp_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_DBL *scalar, *dual_flux, *metric;
+    REF_DBL *scalar, *weight, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-    REF_INT ldim;
+    REF_INT ldim, wdim;
     REIS(1, wlp_pos,
-         "required args: --wlp grid.meshb scalar.solb dual_flux.solb "
+         "required args: --wlp grid.meshb scalar.solb weight.solb "
          "p gradation complexity output-metric.solb");
     if (9 > argc) {
       printf(
-          "required args: --wlp grid.meshb scalar.solb dual_flux.solb "
+          "required args: --wlp grid.meshb scalar.solb weight.solb "
           "p gradation complexity output-metric.solb\n");
       return REF_FAILURE;
     }
@@ -237,13 +237,13 @@ int main(int argc, char *argv[]) {
     REIS(1, ldim, "expected one scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
-    if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[4]),
-        "unable to load scalar in position 3");
-    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
+    if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &wdim, &weight, argv[4]),
+        "unable to load weight in position 4");
+    REIS(1, wdim, "expected one weight");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+    RSS(ref_metric_lp(metric, ref_grid, scalar, weight, reconstruction, p,
                       gradation, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
@@ -261,7 +261,7 @@ int main(int argc, char *argv[]) {
       printf("actual complexity %e\n", current_complexity);
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
-    ref_free(dual_flux);
+    ref_free(weight);
     ref_free(scalar);
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
