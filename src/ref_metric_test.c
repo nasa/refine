@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
   REF_INT curve_limit_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
-  REF_INT dwr_lp_pos = REF_EMPTY;
+  REF_INT wlp_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--dwr-lp", &dwr_lp_pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--wlp", &wlp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
@@ -185,19 +185,19 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (dwr_lp_pos != REF_EMPTY) {
+  if (wlp_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *scalar, *dual_flux, *metric;
     REF_INT p;
     REF_DBL gradation, complexity, current_complexity, hmin, hmax;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
-    REIS(1, dwr_lp_pos,
-         "required args: --dwr-lp grid.meshb scalar.solb dual_flux.solb "
+    REIS(1, wlp_pos,
+         "required args: --wlp grid.meshb scalar.solb dual_flux.solb "
          "p gradation complexity output-metric.solb");
     if (9 > argc) {
       printf(
-          "required args: --dwr-lp grid.meshb scalar.solb dual_flux.solb "
+          "required args: --wlp grid.meshb scalar.solb dual_flux.solb "
           "p gradation complexity output-metric.solb\n");
       return REF_FAILURE;
     }
