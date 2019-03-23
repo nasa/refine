@@ -342,16 +342,17 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CELL ref_cell;
-    REF_DBL *dual_flux, *system, *flux;
+    REF_DBL *dual_flux, *system, *flux, *weight;
     REF_INT ldim;
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
     REF_DBL cell_vol, flux_grad[3];
     REF_INT nsystem = 11;
 
     REIS(1, cont_res_pos,
-         "required args: --cont-res grid.meshb dual_flux.solb");
-    if (4 > argc) {
-      printf("required args: --cont-res grid.meshb dual_flux.solb\n");
+         "required args: --cont-res grid.meshb dual_flux.solb weight.solb");
+    if (5 > argc) {
+      printf(
+          "required args: --cont-res grid.meshb dual_flux.solb weight.solb\n");
       return REF_FAILURE;
     }
 
@@ -366,7 +367,9 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 3");
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
 
-    ref_malloc(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc_init(weight, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+    ref_malloc_init(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
@@ -395,13 +398,18 @@ int main(int argc, char *argv[]) {
       for (equ = 0; equ < 5; equ++) {
         system[nsystem - 1 + nsystem * node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
+        weight[node] +=
+            ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
       }
     }
     if (ref_mpi_once(ref_mpi)) printf("writing system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
                                        "system.tec"),
         "export primitive_dual");
+    if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[4]);
+    RSS(ref_gather_scalar(ref_grid, 1, weight, argv[4]), "export weight");
 
+    ref_free(weight);
     ref_free(flux);
     ref_free(system);
     ref_free(dual_flux);
