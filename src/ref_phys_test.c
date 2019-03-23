@@ -417,7 +417,7 @@ int main(int argc, char *argv[]) {
                                        "system.tec"),
         "export primitive_dual");
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, 1, weight, argv[4]), "export weight");
+    RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
 
     ref_free(weight);
     ref_free(flux);
