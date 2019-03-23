@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
   REF_INT curve_limit_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
+  REF_INT dwr_lp_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
@@ -95,6 +96,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--parent", &parent_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--dwr-lp", &dwr_lp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
@@ -174,6 +177,95 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (dwr_lp_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *dual_flux, *metric;
+    REF_INT p;
+    REF_DBL gradation, complexity, current_complexity, hmin, hmax;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+    REIS(1, dwr_lp_pos,
+         "required args: --dwr-lp grid.meshb scalar.solb dual_flux.solb "
+         "p gradation complexity output-metric.solb");
+    if (9 > argc) {
+      printf(
+          "required args: --dwr-lp grid.meshb scalar.solb dual_flux.solb "
+          "p gradation complexity output-metric.solb\n");
+      return REF_FAILURE;
+    }
+    hmin = -1.0;
+    hmax = -1.0;
+    if (REF_EMPTY != hmax_pos) {
+      if (hmax_pos >= argc - 1) {
+        printf("option missing value: --hmax max_edge_length\n");
+        return REF_FAILURE;
+      }
+      hmax = atof(argv[hmax_pos + 1]);
+    }
+
+    p = atoi(argv[5]);
+    gradation = atof(argv[6]);
+    complexity = atof(argv[7]);
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+      printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
+      printf("buffer %d (negative is inactive)\n", buffer_pos);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+        "unable to load scalar in position 3");
+    REIS(1, ldim, "expected one scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[4]),
+        "unable to load scalar in position 3");
+    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
+                      complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    if (REF_EMPTY != buffer_pos) {
+      RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+          "buffer at complexity");
+    }
+    if (hmin > 0.0 || hmax > 0.0) {
+      RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
+                                           complexity),
+          "limit at complexity");
+    }
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (ref_mpi_once(ref_mpi))
+      printf("actual complexity %e\n", current_complexity);
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_free(dual_flux);
+    ref_free(scalar);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");
