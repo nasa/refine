@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
   REF_INT mask_pos = REF_EMPTY;
+  REF_INT cont_res_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -79,6 +80,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--mask", &mask_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--cont-res", &cont_res_pos), REF_NOT_FOUND,
       "arg search");
 
   if (laminar_flux_pos != REF_EMPTY) {
@@ -328,6 +331,88 @@ int main(int argc, char *argv[]) {
 
     ref_free(primitive_dual);
     RSS(ref_dict_free(ref_dict), "free");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (cont_res_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CELL ref_cell;
+    REF_DBL *dual_flux, *system, *flux, *weight;
+    REF_INT ldim;
+    REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL cell_vol, flux_grad[3];
+    REF_INT nsystem = 11;
+
+    REIS(1, cont_res_pos,
+         "required args: --cont-res grid.meshb dual_flux.solb weight.solb");
+    if (5 > argc) {
+      printf(
+          "required args: --cont-res grid.meshb dual_flux.solb weight.solb\n");
+      return REF_FAILURE;
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_tet(ref_grid);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
+        "unable to load scalar in position 3");
+    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
+
+    ref_malloc_init(weight, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+    ref_malloc_init(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0.0);
+
+    for (dir = 0; dir < 3; dir++) {
+      for (equ = 0; equ < 5; equ++) {
+        each_ref_node_valid_node(ref_node, node) {
+          flux[node] = dual_flux[equ + dir * 5 + 5 + ldim * node];
+        }
+        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+          RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            system[equ + nsystem * nodes[cell_node]] +=
+                0.25 * flux_grad[dir] * cell_vol;
+          }
+        }
+      }
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      for (equ = 0; equ < 5; equ++) {
+        system[equ + 5 + nsystem * node] = dual_flux[equ + ldim * node];
+      }
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      for (equ = 0; equ < 5; equ++) {
+        system[nsystem - 1 + nsystem * node] +=
+            ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
+        weight[node] +=
+            ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
+      }
+    }
+    if (ref_mpi_once(ref_mpi)) printf("writing system.tec\n");
+    RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
+                                       "system.tec"),
+        "export primitive_dual");
+    if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[4]);
+    RSS(ref_gather_scalar(ref_grid, 1, weight, argv[4]), "export weight");
+
+    ref_free(weight);
+    ref_free(flux);
+    ref_free(system);
+    ref_free(dual_flux);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
