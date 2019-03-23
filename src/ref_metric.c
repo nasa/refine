@@ -1457,21 +1457,23 @@ REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
+                         REF_DBL *weight,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation,
                          REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eignvalues based on grid size and solution jitter");
-  RSS(ref_metric_lp_scale_hessian(metric, ref_grid, p_norm, gradation,
+  RSS(ref_metric_lp_scale_hessian(metric, weight, ref_grid, p_norm, gradation,
                                   target_complexity),
       "lp norm");
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
-                                       REF_INT p_norm, REF_DBL gradation,
+REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_DBL *weight,
+                                       REF_GRID ref_grid, REF_INT p_norm,
+                                       REF_DBL gradation,
                                        REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
@@ -1501,6 +1503,14 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_GRID ref_grid,
       metric[1 + 6 * node] = 0.0;
       metric[3 + 6 * node] = 1.0;
       metric[4 + 6 * node] = 0.0;
+    }
+  }
+
+  if (NULL != weight) {
+    each_ref_node_valid_node(ref_node, node) {
+      if (weight[node] > 0.0) {
+        for (i = 0; i < 6; i++) metric[i + 6 * node] *= weight[node];
+      }
     }
   }
 

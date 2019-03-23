@@ -243,8 +243,8 @@ int main(int argc, char *argv[]) {
     REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                      complexity),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     if (REF_EMPTY != buffer_pos) {
@@ -327,8 +327,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_metric_lp(metric, ref_grid, scalar, reconstruction, p, gradation,
-                      complexity),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
         "lp norm");
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     if (REF_EMPTY != buffer_pos) {
@@ -422,7 +422,8 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    RSS(ref_metric_lp_scale_hessian(metric, ref_grid, p, gradation, complexity),
+    RSS(ref_metric_lp_scale_hessian(metric, NULL, ref_grid, p, gradation,
+                                    complexity),
         "lp norm scaling");
 
     if (hmin > 0.0 || hmax > 0.0) {
@@ -1376,8 +1377,8 @@ int main(int argc, char *argv[]) {
                      0.02 * pow(ref_node_xyz(ref_node, 1, node), 2) +
                      0.03 * pow(ref_node_xyz(ref_node, 2, node), 2);
     }
-    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
-                      1000.0),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, REF_RECON_L2PROJECTION, 2,
+                      1.5, 1000.0),
         "lp norm");
     ref_free(metric);
     ref_free(scalar);
@@ -1397,8 +1398,8 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       scalar[node] = 0.5;
     }
-    RSS(ref_metric_lp(metric, ref_grid, scalar, REF_RECON_L2PROJECTION, 2, 1.5,
-                      1000.0),
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, REF_RECON_L2PROJECTION, 2,
+                      1.5, 1000.0),
         "const metric");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     RWDS(1000.0, current_complexity, -1.0, "complexity");
