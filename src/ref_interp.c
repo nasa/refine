@@ -1569,3 +1569,33 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
   *error /= total_volume;
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
+                                       REF_DBL h2, REF_DBL f1, REF_DBL h1,
+                                       REF_DBL *rate) {
+  REF_DBL e12, e23, r12, r23;
+  REF_DBL beta, omega = 0.5;
+  REF_DBL p, last_p;
+  REF_INT i;
+  /*   AIAA JOURNAL Vol. 36, No. 5, May 1998
+       Verification of Codes and Calculations
+       Patrick J. Roache */
+  /*
+  f3 = a coarse grid numerical solution obtained with grid spacing h3
+  f2 = a medium grid numerical solution obtained with grid spacing h2
+  f1 = a fine grid numerical solution obtained with grid spacing h1
+  */
+  e12 = f1 - f2;
+  e23 = f2 - f3;
+  r12 = h2 / h1;
+  r23 = h3 / h2;
+  beta = ((r12 - 1.0) / (r23 - 1.0)) * (e23 / e12);
+  p = log(e23 / e12);
+  for (i = 0; i < 20; i++) {
+    last_p = p;
+    p = omega * p + (1.0 - omega) * log(beta) / log(r12);
+    if (ABS(p - last_p) < 0.0001) break;
+  }
+  *rate = p;
+  return REF_SUCCESS;
+}
