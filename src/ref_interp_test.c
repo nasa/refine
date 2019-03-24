@@ -830,6 +830,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* convergence rate */
+    REF_DBL f3 = 1.00, f2 = 0.50, f1 = 0.25; /* output */
+    REF_DBL h3 = 1.00, h2 = 0.50, h1 = 0.25; /* length scale */
+    REF_DBL rate;
+    RSS(ref_interp_convergence_rate(f3,h3,f2,h2,f1,h1,&rate), "conv rate");
+  }
+  
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
