@@ -129,10 +129,10 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  if (1 == argc) { /* part and migrate tet b8.ugrid, world comm */
-     REF_UINT x = 1048576;  // (2^21 >> 1)
-     REF_UINT y = 0;
-     REF_UINT z = 0;
+  if (1 == argc) {        /* part and migrate tet b8.ugrid, world comm */
+    REF_UINT x = 1048576; /* (2^21 >> 1) */
+    REF_UINT y = 0;
+    REF_UINT z = 0;
 
     REF_ULONG morton_id = ref_migrate_morton_id(x, y, z);
     REF_ULONG expected = (REF_ULONG)1 << 60;
