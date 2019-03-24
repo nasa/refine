@@ -98,7 +98,9 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
                                 REF_DBL *truth, REF_INT norm_power,
                                 REF_DBL *error);
 
-REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3,REF_DBL f2, REF_DBL h2,REF_DBL f1, REF_DBL h1, REF_DBL *rate);
+REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
+                                       REF_DBL h2, REF_DBL f1, REF_DBL h1,
+                                       REF_DBL *rate);
 END_C_DECLORATION
 
 #endif /* REF_INTERP_H */
