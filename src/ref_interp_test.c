@@ -87,6 +87,7 @@ static REF_STATUS ref_interp_shift_cube_interior(REF_NODE ref_node) {
 
 int main(int argc, char *argv[]) {
   REF_INT pair_pos = REF_EMPTY;
+  REF_INT rate_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
   REF_INT field_pos = REF_EMPTY;
   REF_INT mach_pos = REF_EMPTY;
@@ -101,6 +102,8 @@ int main(int argc, char *argv[]) {
   ref_mpi_stopwatch_start(ref_mpi);
 
   RXS(ref_args_find(argc, argv, "--pair", &pair_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--rate", &rate_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
       "arg search");
@@ -150,6 +153,103 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_free(ref_interp), "interp free");
     RSS(ref_grid_free(to), "free");
     RSS(ref_grid_free(from), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != rate_pos) {
+    REF_GRID grid3, grid2, grid1;
+    REF_DBL *solution3, *solution2, *solution1;
+    REF_DBL *f3, *f2, *f1, *rate;
+    REF_DBL h3, h2, h1;
+    REF_INTERP ref_interp;
+    REF_INT ldim, dim;
+    REF_INT i, node;
+    REIS(1, rate_pos,
+         "required args: --rate "
+         "coarse_grid.ext coarse_solution.solb "
+         "medium_grid.ext medium_solution.solb "
+         "fine_grid.ext fine_solution.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --rate "
+          "coarse_grid.ext coarse_solution.solb "
+          "medium_grid.ext medium_solution.solb "
+          "fine_grid.ext fine_solution.solb\n");
+      return REF_FAILURE;
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("coarse %s %s\n", argv[2], argv[3]);
+    RSS(ref_part_by_extension(&grid3, ref_mpi, argv[2]),
+        "part coarse_grid in position 2");
+    RSS(ref_part_scalar(ref_grid_node(grid3), &dim, &solution3, argv[3]),
+        "unable to load coarse_solution in position 3");
+    ldim = dim;
+
+    if (ref_mpi_once(ref_mpi)) printf("medium %s %s\n", argv[4], argv[5]);
+    RSS(ref_part_by_extension(&grid2, ref_mpi, argv[4]),
+        "part medium_grid in position 4");
+    RSS(ref_part_scalar(ref_grid_node(grid2), &dim, &solution2, argv[5]),
+        "unable to load medium_solution in position 5");
+    REIS(ldim, dim, "expected same ldim");
+
+    if (ref_mpi_once(ref_mpi)) printf("fine %s %s\n", argv[6], argv[7]);
+    RSS(ref_part_by_extension(&grid1, ref_mpi, argv[6]),
+        "part fine_grid in position 6");
+    RSS(ref_part_scalar(ref_grid_node(grid1), &dim, &solution1, argv[7]),
+        "unable to load fine_solution in position 7");
+    REIS(ldim, dim, "expected same ldim");
+
+    f3 = solution3;
+    ref_malloc(f2, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
+    ref_malloc(f1, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
+    ref_malloc(rate, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
+
+    if (ref_mpi_once(ref_mpi)) printf("interp medium to coarse\n");
+    RSS(ref_interp_create(&ref_interp, grid2, grid3), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_interp_scalar(ref_interp, ldim, solution2, f2), "interp scalar");
+    RSS(ref_interp_free(ref_interp), "interp free");
+
+    if (ref_mpi_once(ref_mpi)) printf("interp fine to coarse\n");
+    RSS(ref_interp_create(&ref_interp, grid1, grid3), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_interp_scalar(ref_interp, ldim, solution1, f1), "interp scalar");
+    RSS(ref_interp_free(ref_interp), "interp free");
+
+    h3 = pow((REF_DBL)ref_node_n_global(ref_grid_node(grid3)), -1.0 / 3.0);
+    h2 = pow((REF_DBL)ref_node_n_global(ref_grid_node(grid2)), -1.0 / 3.0);
+    h1 = pow((REF_DBL)ref_node_n_global(ref_grid_node(grid1)), -1.0 / 3.0);
+    h1 = h1 / h3;
+    h2 = h2 / h3;
+    h3 = 1.0;
+    if (ref_mpi_once(ref_mpi)) printf("h3 %f h2 %f h1 %f\n", h3, h2, h1);
+
+    each_ref_node_valid_node(ref_grid_node(grid3), node) {
+      for (i = 0; i < ldim; i++) {
+        RSS(ref_interp_convergence_rate(
+                h3, f3[i + ldim * node], h2, f2[i + ldim * node], h1,
+                f1[i + ldim * node], &(rate[i + ldim * node])),
+            "rate");
+      }
+    }
+
+    RSS(ref_gather_scalar_by_extension(grid3, ldim, rate, NULL,
+                                       "ref_interp_rate.tec"),
+        "gather");
+
+    ref_free(rate);
+    ref_free(f1);
+    ref_free(f2);
+
+    ref_free(solution1);
+    ref_grid_free(grid1);
+    ref_free(solution2);
+    ref_grid_free(grid2);
+    ref_free(solution3);
+    ref_grid_free(grid3);
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
