@@ -948,6 +948,15 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, rate, 0.0001, "first order");
   }
 
+  { /* first order convergence rate non-uniform */
+    REF_DBL f3 = 1.00, f2 = 0.89, f1 = 0.81;
+    REF_DBL h3 = 1.00, h2 = 0.89, h1 = 0.81;
+    REF_DBL rate;
+    RSS(ref_interp_convergence_rate(f3, h3, f2, h2, f1, h1, &rate),
+        "conv rate");
+    RWDS(1.0, rate, 0.0001, "first order");
+  }
+
   { /* second order convergence rate uniform */
     REF_DBL f3 = 1.00, f2 = 0.25, f1 = 0.0625;
     REF_DBL h3 = 1.00, h2 = 0.50, h1 = 0.25;
@@ -957,8 +966,7 @@ int main(int argc, char *argv[]) {
     RWDS(2.0, rate, 0.0001, "second order");
   }
 
-  SKIP_BLOCK(
-      "non uniform 2nd") { /* second order convergence rate non-uniform */
+  { /* second order convergence rate non-uniform */
     REF_DBL f3 = 1.00, f2 = 0.36, f1 = 0.25;
     REF_DBL h3 = 1.00, h2 = 0.60, h1 = 0.50;
     REF_DBL rate;
