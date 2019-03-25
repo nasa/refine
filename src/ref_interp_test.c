@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
   if (REF_EMPTY != rate_pos) {
     REF_GRID grid3, grid2, grid1;
     REF_DBL *solution3, *solution2, *solution1;
-    REF_DBL *f3, *f2, *f1, *rate;
+    REF_DBL *f3, *f2, *f1, *rate, *diff23, *diff12;
     REF_DBL h3, h2, h1;
     REF_INTERP ref_interp;
     REF_INT ldim, dim;
@@ -206,6 +206,8 @@ int main(int argc, char *argv[]) {
     ref_malloc(f2, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
     ref_malloc(f1, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
     ref_malloc(rate, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
+    ref_malloc(diff23, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
+    ref_malloc(diff12, ldim * ref_node_max(ref_grid_node(grid3)), REF_DBL);
 
     if (ref_mpi_once(ref_mpi)) printf("interp medium to coarse\n");
     RSS(ref_interp_create(&ref_interp, grid2, grid3), "make interp");
@@ -229,6 +231,13 @@ int main(int argc, char *argv[]) {
 
     each_ref_node_valid_node(ref_grid_node(grid3), node) {
       for (i = 0; i < ldim; i++) {
+        diff23[i + ldim * node] = f2[i + ldim * node] - f3[i + ldim * node];
+        diff12[i + ldim * node] = f1[i + ldim * node] - f2[i + ldim * node];
+      }
+    }
+
+    each_ref_node_valid_node(ref_grid_node(grid3), node) {
+      for (i = 0; i < ldim; i++) {
         RSS(ref_interp_convergence_rate(
                 f3[i + ldim * node], h3, f2[i + ldim * node], h2,
                 f1[i + ldim * node], h1, &(rate[i + ldim * node])),
@@ -236,10 +245,23 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    if (ref_mpi_once(ref_mpi)) printf("gather ref_interp_rate.tec (rate)\n");
     RSS(ref_gather_scalar_by_extension(grid3, ldim, rate, NULL,
                                        "ref_interp_rate.tec"),
         "gather");
+    if (ref_mpi_once(ref_mpi))
+      printf("gather ref_interp_diff23.tec (medium-coarse)\n");
+    RSS(ref_gather_scalar_by_extension(grid3, ldim, diff23, NULL,
+                                       "ref_interp_diff23.tec"),
+        "gather");
+    if (ref_mpi_once(ref_mpi))
+      printf("gather ref_interp_diff12.tec (fine-medium)\n");
+    RSS(ref_gather_scalar_by_extension(grid3, ldim, diff12, NULL,
+                                       "ref_interp_diff12.tec"),
+        "gather");
 
+    ref_free(diff23);
+    ref_free(diff12);
     ref_free(rate);
     ref_free(f1);
     ref_free(f2);
