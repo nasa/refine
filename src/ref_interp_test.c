@@ -230,8 +230,8 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(grid3), node) {
       for (i = 0; i < ldim; i++) {
         RSS(ref_interp_convergence_rate(
-                h3, f3[i + ldim * node], h2, f2[i + ldim * node], h1,
-                f1[i + ldim * node], &(rate[i + ldim * node])),
+                f3[i + ldim * node], h3, f2[i + ldim * node], h2,
+                f1[i + ldim * node], h1, &(rate[i + ldim * node])),
             "rate");
         printf("equ %d node %d s %f %f %f rate %f\n", i, node,
                f3[i + ldim * node], f2[i + ldim * node], f1[i + ldim * node],
