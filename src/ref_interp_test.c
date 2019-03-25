@@ -230,8 +230,8 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_grid_node(grid3), node) {
       for (i = 0; i < ldim; i++) {
         RSS(ref_interp_convergence_rate(
-                h3, f3[i + ldim * node], h2, f2[i + ldim * node], h1,
-                f1[i + ldim * node], &(rate[i + ldim * node])),
+                f3[i + ldim * node], h3, f2[i + ldim * node], h2,
+                f1[i + ldim * node], h1, &(rate[i + ldim * node])),
             "rate");
       }
     }
@@ -930,7 +930,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* first order convergence rate */
+  { /* first order convergence rate uniform */
     REF_DBL f3 = 1.00, f2 = 0.50, f1 = 0.25;
     REF_DBL h3 = 1.00, h2 = 0.50, h1 = 0.25;
     REF_DBL rate;
@@ -939,9 +939,28 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, rate, 0.0001, "first order");
   }
 
-  { /* second order convergence rate */
+  { /* first order convergence rate non-uniform */
+    REF_DBL f3 = 1.00, f2 = 0.60, f1 = 0.35;
+    REF_DBL h3 = 1.00, h2 = 0.60, h1 = 0.35;
+    REF_DBL rate;
+    RSS(ref_interp_convergence_rate(f3, h3, f2, h2, f1, h1, &rate),
+        "conv rate");
+    RWDS(1.0, rate, 0.0001, "first order");
+  }
+
+  { /* second order convergence rate uniform */
     REF_DBL f3 = 1.00, f2 = 0.25, f1 = 0.0625;
     REF_DBL h3 = 1.00, h2 = 0.50, h1 = 0.25;
+    REF_DBL rate;
+    RSS(ref_interp_convergence_rate(f3, h3, f2, h2, f1, h1, &rate),
+        "conv rate");
+    RWDS(2.0, rate, 0.0001, "second order");
+  }
+
+  SKIP_BLOCK(
+      "non uniform 2nd") { /* second order convergence rate non-uniform */
+    REF_DBL f3 = 1.00, f2 = 0.36, f1 = 0.25;
+    REF_DBL h3 = 1.00, h2 = 0.60, h1 = 0.50;
     REF_DBL rate;
     RSS(ref_interp_convergence_rate(f3, h3, f2, h2, f1, h1, &rate),
         "conv rate");
