@@ -944,8 +944,10 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
                                            &(global_xyz[3 * node]),
                                            &(best_cell[node]), bary),
           "best in list");
-      /* negative for min, until use max*/
-      best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
+      if (REF_EMPTY != best_cell[node]) {
+        /* negative for min, until use max*/
+        best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
+      }
     } else {
       best_cell[node] = REF_EMPTY;
     }
