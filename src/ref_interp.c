@@ -1595,7 +1595,7 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
   for (i = 0; i < 20; i++) {
     last_p = p;
     if (!ref_math_divisible(e23, e12)) return REF_SUCCESS;
-    beta = ((pow(r12,p) - 1.0) / (pow(r23,p) - 1.0)) * (e23 / e12);
+    beta = ((pow(r12, p) - 1.0) / (pow(r23, p) - 1.0)) * (e23 / e12);
     if (!ref_math_divisible(log(beta), log(r12))) return REF_SUCCESS;
     p = omega * p + (1.0 - omega) * log(beta) / log(r12);
     if (ABS(p - last_p) < 0.0001) break;
