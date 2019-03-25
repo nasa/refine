@@ -972,7 +972,7 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
       send_node[nsend] = best_node[node];
       send_cell[nsend] = best_cell[node];
       RSB(ref_cell_nodes(from_tet, best_cell[node], nodes), "cell", {
-        printf("global %d best cell %d best bary %e\n", bset_node[node],
+        printf("global %d best cell %d best bary %e\n", best_node[node],
                best_cell[node], best_bary[node]);
       });
       RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
