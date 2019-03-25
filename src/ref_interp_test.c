@@ -233,9 +233,6 @@ int main(int argc, char *argv[]) {
                 f3[i + ldim * node], h3, f2[i + ldim * node], h2,
                 f1[i + ldim * node], h1, &(rate[i + ldim * node])),
             "rate");
-        printf("equ %d node %d s %f %f %f rate %f\n", i, node,
-               f3[i + ldim * node], f2[i + ldim * node], f1[i + ldim * node],
-               rate[i + ldim * node]);
       }
     }
 
