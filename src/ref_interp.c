@@ -944,8 +944,10 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
                                            &(global_xyz[3 * node]),
                                            &(best_cell[node]), bary),
           "best in list");
-      /* negative for min, until use max*/
-      best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
+      if (REF_EMPTY != best_cell[node]) {
+        /* negative for min, until use max*/
+        best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
+      }
     } else {
       best_cell[node] = REF_EMPTY;
     }
@@ -971,7 +973,11 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
       send_proc[nsend] = source[node];
       send_node[nsend] = best_node[node];
       send_cell[nsend] = best_cell[node];
-      RSS(ref_cell_nodes(from_tet, best_cell[node], nodes), "cell");
+      RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
+          "cell should be set and valid", {
+            printf("global %d best cell %d best bary %e\n", best_node[node],
+                   best_cell[node], best_bary[node]);
+          });
       RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
                          &(send_bary[4 * nsend])),
           "bary");
@@ -1595,7 +1601,7 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
   for (i = 0; i < 20; i++) {
     last_p = p;
     if (!ref_math_divisible(e23, e12)) return REF_SUCCESS;
-    beta = ((pow(r12,p) - 1.0) / (pow(r23,p) - 1.0)) * (e23 / e12);
+    beta = ((pow(r12, p) - 1.0) / (pow(r23, p) - 1.0)) * (e23 / e12);
     if (!ref_math_divisible(log(beta), log(r12))) return REF_SUCCESS;
     p = omega * p + (1.0 - omega) * log(beta) / log(r12);
     if (ABS(p - last_p) < 0.0001) break;
