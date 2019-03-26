@@ -445,11 +445,12 @@ REF_STATUS ref_inflate_dthickness(REF_INT nlayers, REF_DBL first_thickness,
 
 REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
                               REF_DBL *origin) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL z0, z1;
+  REF_DBL z0, z1, z;
   REF_INT node;
   REF_BOOL first_time;
 
@@ -470,11 +471,17 @@ REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  z = z0;
+  RSS(ref_mpi_min(ref_mpi, &z, &z0, REF_DBL_TYPE), "min");
+  z = z1;
+  RSS(ref_mpi_max(ref_mpi, &z, &z1, REF_DBL_TYPE), "max");
+
   origin[0] = 0;
   origin[1] = 0;
   origin[2] = 0.5 * (z0 + z1);
 
-  printf("the z range is %f %f and origin %f\n", z0, z1, origin[2]);
+  if (ref_mpi_once(ref_mpi))
+    printf("the z range is %f %f and origin %f\n", z0, z1, origin[2]);
 
   return REF_SUCCESS;
 }
