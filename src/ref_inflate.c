@@ -19,9 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_inflate.h"
-
 #include "ref_cell.h"
+#include "ref_inflate.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 
@@ -160,8 +159,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         if (ref_node_owned(ref_node, node) && REF_EMPTY == o2n[node]) {
           RSS(ref_node_next_global(ref_node, &global), "global");
           RSS(ref_node_add(ref_node, global, &new_node), "add node");
-	  /* redundant */
-	  ref_node_part(ref_node, new_node) = ref_mpi_rank(ref_mpi);  
+          /* redundant */
+          ref_node_part(ref_node, new_node) = ref_mpi_rank(ref_mpi);
           o2n[node] = new_node;
         }
       }
@@ -172,9 +171,9 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
   ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-  
+
   /* fill ghost node globals */
-  for(node=0;node<o2n_max;node++) {
+  for (node = 0; node < o2n_max; node++) {
     if (REF_EMPTY != o2n[node]) {
       o2g[node] = ref_node_global(ref_node, node);
     }
@@ -185,7 +184,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
-  for(node=0;node<o2n_max;node++) {
+  for (node = 0; node < o2n_max; node++) {
     if (REF_EMPTY != o2g[node]) {
       /* returns node if already added */
       RSS(ref_node_add(ref_node, o2g[node], &new_node), "add node");
@@ -195,32 +194,33 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   }
 
   /* create offsets */
-  for(node=0;node<o2n_max;node++) {
-    if (ref_node_owned(ref_node, node)) 
-          if (REF_EMPTY != o2n[node]) {
-      new_node = o2n[node];
-      normal[0] = 0.0;
-      normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
-      normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
-      RSS(ref_math_normalize(normal), "make norm");
-      each_ref_cell_having_node(tri, node, item, ref) {
-        RSS(ref_cell_nodes(tri, ref, ref_nodes), "cell");
-        if (!ref_dict_has_key(faceids, ref_nodes[3])) continue;
-        RSS(ref_dict_location(faceids, ref_nodes[3], &i), "key loc");
-        dot = -ref_math_dot(normal, &(face_normal[3 * i]));
-        if (dot < 0.70 || dot > 1.01) {
-          /* printf("out-of-range dot %.15f\n",dot); */
-          problem_detected = REF_TRUE;
+  for (node = 0; node < o2n_max; node++) {
+    if (ref_node_valid(ref_node, node)) {
+      if (ref_node_owned(ref_node, node) && REF_EMPTY != o2n[node]) {
+        new_node = o2n[node];
+        normal[0] = 0.0;
+        normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
+        normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
+        RSS(ref_math_normalize(normal), "make norm");
+        each_ref_cell_having_node(tri, node, item, ref) {
+          RSS(ref_cell_nodes(tri, ref, ref_nodes), "cell");
+          if (!ref_dict_has_key(faceids, ref_nodes[3])) continue;
+          RSS(ref_dict_location(faceids, ref_nodes[3], &i), "key loc");
+          dot = -ref_math_dot(normal, &(face_normal[3 * i]));
+          if (dot < 0.70 || dot > 1.01) {
+            /* printf("out-of-range dot %.15f\n",dot); */
+            problem_detected = REF_TRUE;
+          }
+          normal[1] /= dot;
+          normal[2] /= dot;
         }
-        normal[1] /= dot;
-        normal[2] /= dot;
+        ref_node_xyz(ref_node, 0, new_node) =
+            xshift + ref_node_xyz(ref_node, 0, node);
+        ref_node_xyz(ref_node, 1, new_node) =
+            thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
+        ref_node_xyz(ref_node, 2, new_node) =
+            thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
       }
-      ref_node_xyz(ref_node, 0, new_node) =
-          xshift + ref_node_xyz(ref_node, 0, node);
-      ref_node_xyz(ref_node, 1, new_node) =
-          thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
-      ref_node_xyz(ref_node, 2, new_node) =
-          thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
     }
   }
 
