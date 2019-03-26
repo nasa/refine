@@ -99,6 +99,8 @@ int main(int argc, char *argv[]) {
   if (nlayers < 0) {
     nlayers = ABS(nlayers);
     extrude_radially = REF_TRUE;
+    RAS(!ref_mpi_para(ref_mpi),
+        "parallel requires positive nlayers, no extrude radially");
   }
   first_thickness = atof(argv[3]);
   total_thickness = atof(argv[4]);
