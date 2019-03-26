@@ -103,7 +103,9 @@ static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
 
   each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
     RSS(ref_interp_bounding_sphere(from_node, nodes, center, &radius), "b");
-    RSS(ref_search_insert(ref_search, cell, center, 2.0 * radius), "ins");
+    RSS(ref_search_insert(ref_search, cell, center,
+                          ref_interp_search_donor_scale(ref_interp) * radius),
+        "ins");
   }
 
   return REF_SUCCESS;
@@ -142,7 +144,8 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   RSS(ref_agents_create(&(ref_interp->ref_agents), ref_interp_mpi(ref_interp)),
       "add agents");
   RSS(ref_list_create(&(ref_interp->visualize)), "add list");
-
+  ref_interp_search_fuzz(ref_interp) = 1.0e-12;
+  ref_interp_search_donor_scale(ref_interp) = 2.0;
   RSS(ref_interp_create_search(ref_interp), "fill search");
 
   return REF_SUCCESS;
@@ -875,7 +878,8 @@ REF_STATUS ref_interp_geom_nodes(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
+static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
+                                  REF_BOOL *increase_fuzz) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
@@ -885,7 +889,6 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   REF_SEARCH ref_search = ref_interp_search(ref_interp);
   REF_DBL bary[4];
   REF_LIST ref_list;
-  REF_DBL fuzz = 1.0e-12;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, *best_node, *best_cell, *from_proc;
   REF_DBL *best_bary;
@@ -899,6 +902,8 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
   REF_INT i, item;
+
+  *increase_fuzz = REF_FALSE;
 
   RSS(ref_list_create(&ref_list), "create list");
 
@@ -937,7 +942,7 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
     best_cell[node] = REF_EMPTY;
     best_bary[node] = 1.0e20; /* negative for min, until use max*/
     RSS(ref_search_touching(ref_search, ref_list, &(global_xyz[3 * node]),
-                            fuzz),
+                            ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
       RSS(ref_interp_enclosing_tet_in_list(from_grid, ref_list,
@@ -973,14 +978,19 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
       send_proc[nsend] = source[node];
       send_node[nsend] = best_node[node];
       send_cell[nsend] = best_cell[node];
-      RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
-          "cell should be set and valid", {
-            printf("global %d best cell %d best bary %e\n", best_node[node],
-                   best_cell[node], best_bary[node]);
-          });
-      RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
-                         &(send_bary[4 * nsend])),
-          "bary");
+      if (REF_EMPTY != send_cell[nsend]) {
+        RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
+            "cell should be set and valid", {
+              printf("global %d best cell %d best bary %e\n", best_node[node],
+                     best_cell[node], best_bary[node]);
+            });
+        RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
+                           &(send_bary[4 * nsend])),
+            "bary");
+      } else {
+        *increase_fuzz =
+            REF_TRUE; /* candate not found, try again larger fuzz */
+      }
       nsend++;
     }
 
@@ -1007,11 +1017,16 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
     }
     ref_interp->cell[node] = recv_cell[item];
     ref_interp->part[node] = recv_proc[item];
-    for (i = 0; i < 4; i++)
-      ref_interp->bary[i + 4 * node] = recv_bary[i + 4 * item];
+    if (REF_EMPTY != recv_cell[item]) {
+      for (i = 0; i < 4; i++)
+        ref_interp->bary[i + 4 * node] = recv_bary[i + 4 * item];
+    } else {
+      (ref_interp->n_tree)--;
+    }
   }
 
   RSS(ref_mpi_allsum(ref_mpi, &(ref_interp->n_tree), 1, REF_INT_TYPE), "as");
+  RSS(ref_mpi_all_or(ref_mpi, increase_fuzz), "sync status");
 
   ref_free(recv_node);
   ref_free(recv_cell);
@@ -1037,10 +1052,12 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
 
   RSS(ref_list_free(ref_list), "free list");
 
-  each_ref_node_valid_node(to_node, node) {
-    if (!ref_node_owned(to_node, node) || REF_EMPTY != ref_interp->cell[node])
-      continue;
-    RUS(REF_EMPTY, ref_interp->cell[node], "node missed by tree");
+  if (!(*increase_fuzz)) {
+    each_ref_node_valid_node(to_node, node) {
+      if (!ref_node_owned(to_node, node) || REF_EMPTY != ref_interp->cell[node])
+        continue;
+      RUS(REF_EMPTY, ref_interp->cell[node], "node missed by tree");
+    }
   }
 
   return REF_SUCCESS;
@@ -1048,6 +1065,8 @@ REF_STATUS ref_interp_tree(REF_INTERP ref_interp) {
 
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_BOOL increase_fuzz;
+  REF_INT tries;
 
   if (ref_interp->instrument)
     RSS(ref_mpi_stopwatch_start(ref_mpi), "locate clock");
@@ -1060,9 +1079,17 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   if (ref_interp->instrument)
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "drain"), "locate clock");
 
-  RSS(ref_interp_tree(ref_interp), "tree");
-  if (ref_interp->instrument)
-    RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+  increase_fuzz = REF_FALSE;
+  for (tries = 0; tries < 12; tries++) {
+    if (increase_fuzz) ref_interp_search_fuzz(ref_interp) *= 10.0;
+    if (ref_mpi_once(ref_mpi))
+      printf("retry tree serach with %e fuzz\n",
+             ref_interp_search_fuzz(ref_interp));
+    RSS(ref_interp_tree(ref_interp, &increase_fuzz), "tree");
+    if (ref_interp->instrument)
+      RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+  }
+  REIS(REF_FALSE, increase_fuzz, "unable to grow fuzz to find tree candidate");
 
   return REF_SUCCESS;
 }
@@ -1106,11 +1133,11 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
 
   if (REF_EMPTY == ref_interp->cell[node]) {
     REF_LIST ref_list;
-    REF_DBL fuzz = 1.0e-12;
 
     RSS(ref_list_create(&ref_list), "create list");
     RSS(ref_search_touching(ref_interp_search(ref_interp), ref_list,
-                            ref_node_xyz_ptr(ref_node, node), fuzz),
+                            ref_node_xyz_ptr(ref_node, node),
+                            ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
       RSS(ref_interp_enclosing_tet_in_list(
@@ -1176,11 +1203,11 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
 
   if (REF_EMPTY == ref_interp->cell[new_node]) {
     REF_LIST ref_list;
-    REF_DBL fuzz = 1.0e-12;
 
     RSS(ref_list_create(&ref_list), "create list");
     RSS(ref_search_touching(ref_interp_search(ref_interp), ref_list,
-                            ref_node_xyz_ptr(ref_node, new_node), fuzz),
+                            ref_node_xyz_ptr(ref_node, new_node),
+                            ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
       RSS(ref_interp_enclosing_tet_in_list(

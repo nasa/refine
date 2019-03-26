@@ -56,6 +56,8 @@ struct REF_INTERP_STRUCT {
   REF_DBL bound;
   REF_AGENTS ref_agents;
   REF_LIST visualize;
+  REF_DBL search_fuzz;
+  REF_DBL search_donor_scale;
   REF_SEARCH ref_search;
 };
 
@@ -68,6 +70,9 @@ struct REF_INTERP_STRUCT {
 #define ref_interp_max(ref_interp) ((ref_interp)->max)
 #define ref_interp_continuously(ref_interp) ((ref_interp)->continuously)
 #define ref_interp_search(ref_interp) ((ref_interp)->ref_search)
+#define ref_interp_search_fuzz(ref_interp) ((ref_interp)->search_fuzz)
+#define ref_interp_search_donor_scale(ref_interp) \
+  ((ref_interp)->search_donor_scale)
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
