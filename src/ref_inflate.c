@@ -225,6 +225,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  RSS(ref_node_ghost_real(ref_node), "set new ghost node xyz");
+
   ref_free(face_normal);
 
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
