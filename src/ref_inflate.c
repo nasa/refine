@@ -237,7 +237,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         if (1 == ntri) {
           RSS(ref_cell_list_with2(qua, node0, node1, 2, &nquad, quads),
               "bad quad count");
-          if (1 != nquad) THROW("tri without quad");
+          REIS(1, nquad, "tri without quad");
           new_nodes[4] = ref_cell_c2n(qua, 4, quads[0]);
           new_nodes[0] = node0;
           new_nodes[1] = node1;
