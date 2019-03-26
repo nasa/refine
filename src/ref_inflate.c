@@ -63,6 +63,7 @@ REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
 REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
                             REF_DBL *origin, REF_DBL thickness,
                             REF_DBL xshift) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL qua = ref_grid_qua(ref_grid);
@@ -95,7 +96,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   ref_malloc(face_normal, 3 * ref_dict_n(faceids), REF_DBL);
 
-  /* determine each faceids normal */
+  /* determine each faceids normal, only needed if my part has a tri */
 
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
   ref_malloc_init(tmax, ref_dict_n(faceids), REF_DBL, -4.0 * ref_math_pi);
@@ -123,21 +124,26 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   if (debug) ref_dict_inspect(faceids);
 
   each_ref_dict_key_index(faceids, i) {
-    RUS(REF_EMPTY, imin[i], "imin");
-    RUS(REF_EMPTY, imax[i], "imax");
-    face_normal[0 + 3 * i] = 0.0;
-    face_normal[1 + 3 * i] = (ref_node_xyz(ref_node, 2, imax[i]) -
-                              ref_node_xyz(ref_node, 2, imin[i]));
-    face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
-                               ref_node_xyz(ref_node, 1, imin[i]));
-    if (debug)
-      printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f)\n", i,
-             ref_dict_key(faceids, i), tmin[i], tmax[i], face_normal[0 + 3 * i],
-             face_normal[1 + 3 * i], face_normal[2 + 3 * i]);
-    RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
-    if (debug)
-      printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
-             face_normal[2 + 3 * i]);
+    if (!ref_mpi_para(ref_mpi)) {
+      RUS(REF_EMPTY, imin[i], "imin");
+      RUS(REF_EMPTY, imax[i], "imax");
+    }
+    if (REF_EMPTY != imin[i] && REF_EMPTY != imax[i]) {
+      face_normal[0 + 3 * i] = 0.0;
+      face_normal[1 + 3 * i] = (ref_node_xyz(ref_node, 2, imax[i]) -
+                                ref_node_xyz(ref_node, 2, imin[i]));
+      face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
+                                 ref_node_xyz(ref_node, 1, imin[i]));
+      if (debug)
+        printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f)\n", i,
+               ref_dict_key(faceids, i), tmin[i], tmax[i],
+               face_normal[0 + 3 * i], face_normal[1 + 3 * i],
+               face_normal[2 + 3 * i]);
+      RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
+      if (debug)
+        printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
+               face_normal[2 + 3 * i]);
+    }
   }
 
   ref_free(tmax);
