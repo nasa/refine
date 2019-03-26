@@ -235,8 +235,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  RSS(ref_export_tec_surf(ref_grid, "inflated_boundary.tec"), "tec");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "surf");
   RSS(ref_gather_by_extension(ref_grid, "inflated.b8.ugrid"), "b8");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
 
