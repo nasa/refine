@@ -176,7 +176,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   /* fill ghost node globals */
   for (node = 0; node < o2n_max; node++) {
     if (REF_EMPTY != o2n[node]) {
-      o2g[node] = ref_node_global(ref_node, node);
+      o2g[node] = ref_node_global(ref_node, o2n[node]);
     }
   }
   RSS(ref_node_ghost_int(ref_node, o2g, 1), "update ghosts");
