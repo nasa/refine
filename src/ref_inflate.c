@@ -48,9 +48,10 @@ REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
 
   *min_dot = 1.0;
   for (node = 0; node < 3; node++) {
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++) {
       edge[i] = ref_node_xyz(ref_node, i, nodes[node + 3]) -
                 ref_node_xyz(ref_node, i, nodes[node]);
+    }
     RSS(ref_math_normalize(edge), "norm edge0");
     *min_dot = MIN(*min_dot, ref_math_dot(edge, bot_normal));
     *min_dot = MIN(*min_dot, ref_math_dot(edge, top_normal));
