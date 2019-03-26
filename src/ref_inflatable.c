@@ -244,5 +244,8 @@ int main(int argc, char *argv[]) {
   RSS(ref_grid_free(ref_grid), "free");
   RSS(ref_mpi_free(ref_mpi), "free");
 
+  ref_mpi_stopwatch_stop(ref_mpi, "done.");
+  RSS(ref_mpi_stop(), "stop");
+
   return 0;
 }
