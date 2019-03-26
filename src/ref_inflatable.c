@@ -86,11 +86,13 @@ int main(int argc, char *argv[]) {
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
-  ref_mpi_stopwatch_start(ref_grid_mpi(ref_grid));
+  ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf(" part %s\n", argv[1]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "part");
   } else {
+    if (ref_mpi_once(ref_mpi)) printf(" import %s\n", argv[1]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
   }
   ref_mpi_stopwatch_stop(ref_mpi, "read grid");
