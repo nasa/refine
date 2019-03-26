@@ -73,8 +73,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ntri, tris[2], nquad, quads[2];
   REF_INT tri_node;
-  REF_INT *o2n;
-  REF_INT global, new_node;
+  REF_INT *o2n, *o2g;
+  REF_INT global, new_node, node;
   REF_INT new_cell;
   REF_DBL min_dot;
 
@@ -93,6 +93,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_BOOL debug = REF_FALSE;
 
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   ref_malloc(face_normal, 3 * ref_dict_n(faceids), REF_DBL);
 
@@ -107,16 +108,16 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     if (ref_dict_has_key(faceids, nodes[3]))
       for (tri_node = 0; tri_node < 3; tri_node++) {
         RSS(ref_dict_location(faceids, nodes[3], &i), "key loc");
-        node0 = nodes[tri_node];
-        theta = atan2(ref_node_xyz(ref_node, 1, node0) - origin[1],
-                      ref_node_xyz(ref_node, 2, node0) - origin[2]);
+        node = nodes[tri_node];
+        theta = atan2(ref_node_xyz(ref_node, 1, node) - origin[1],
+                      ref_node_xyz(ref_node, 2, node) - origin[2]);
         if (tmin[i] > theta) {
           tmin[i] = theta;
-          imin[i] = node0;
+          imin[i] = node;
         }
         if (tmax[i] < theta) {
           tmax[i] = theta;
-          imax[i] = node0;
+          imax[i] = node;
         }
       }
   }
@@ -152,44 +153,63 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(imin);
 
   /* build list of node globals */
-  /* sync globals */
-  /* fill ghost node globals */
-  /* add nodes and create offsets */
-
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       for (tri_node = 0; tri_node < 3; tri_node++) {
-        node0 = nodes[tri_node];
-        if (REF_EMPTY == o2n[node0]) {
+        node = nodes[tri_node];
+        if (ref_node_owned(ref_node, node) && REF_EMPTY == o2n[node]) {
           RSS(ref_node_next_global(ref_node, &global), "global");
           RSS(ref_node_add(ref_node, global, &new_node), "add node");
-          o2n[node0] = new_node;
-
-          RAS(ref_node_valid(ref_node, node0), "inlvalid tri node");
-          normal[0] = 0.0;
-          normal[1] = ref_node_xyz(ref_node, 1, node0) - origin[1];
-          normal[2] = ref_node_xyz(ref_node, 2, node0) - origin[2];
-          RSS(ref_math_normalize(normal), "make norm");
-          each_ref_cell_having_node(tri, node0, item, ref) {
-            ref_cell_nodes(tri, ref, ref_nodes);
-            if (!ref_dict_has_key(faceids, ref_nodes[3])) continue;
-            RSS(ref_dict_location(faceids, ref_nodes[3], &i), "key loc");
-            dot = -ref_math_dot(normal, &(face_normal[3 * i]));
-            if (dot < 0.70 || dot > 1.01) {
-              /* printf("out-of-range dot %.15f\n",dot); */
-              problem_detected = REF_TRUE;
-            }
-            normal[1] /= dot;
-            normal[2] /= dot;
-          }
-          ref_node_xyz(ref_node, 0, new_node) =
-              xshift + ref_node_xyz(ref_node, 0, node0);
-          ref_node_xyz(ref_node, 1, new_node) =
-              thickness * normal[1] + ref_node_xyz(ref_node, 1, node0);
-          ref_node_xyz(ref_node, 2, new_node) =
-              thickness * normal[2] + ref_node_xyz(ref_node, 2, node0);
+          o2n[node] = new_node;
         }
       }
+    }
+  }
+
+  /* sync globals */
+  RSS(ref_node_shift_new_globals(ref_node), "shift glob");
+
+  /* fill ghost node globals */
+  each_ref_node_valid_node(ref_node, node) {
+    if (REF_EMPTY != o2n[node]) {
+      o2g[node] = ref_node_global(ref_node, node);
+    }
+  }
+  RSS(ref_node_ghost_int(ref_node, o2g, 1), "update ghosts");
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_node_owned(ref_node, node) && REF_EMPTY != o2g[node]) {
+      RSS(ref_node_add(ref_node, o2g[node], &new_node), "add node");
+      ref_node_part(ref_node, new_node) = ref_node_part(ref_node, node);
+      o2n[node] = new_node;
+    }
+  }
+
+  /* create offsets */
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node) && REF_EMPTY != o2n[node]) {
+      new_node = o2n[node];
+      normal[0] = 0.0;
+      normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
+      normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
+      RSS(ref_math_normalize(normal), "make norm");
+      each_ref_cell_having_node(tri, node, item, ref) {
+        RSS(ref_cell_nodes(tri, ref, ref_nodes), "cell");
+        if (!ref_dict_has_key(faceids, ref_nodes[3])) continue;
+        RSS(ref_dict_location(faceids, ref_nodes[3], &i), "key loc");
+        dot = -ref_math_dot(normal, &(face_normal[3 * i]));
+        if (dot < 0.70 || dot > 1.01) {
+          /* printf("out-of-range dot %.15f\n",dot); */
+          problem_detected = REF_TRUE;
+        }
+        normal[1] /= dot;
+        normal[2] /= dot;
+      }
+      ref_node_xyz(ref_node, 0, new_node) =
+          xshift + ref_node_xyz(ref_node, 0, node);
+      ref_node_xyz(ref_node, 1, new_node) =
+          thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
+      ref_node_xyz(ref_node, 2, new_node) =
+          thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
     }
   }
 
@@ -265,6 +285,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  ref_free(o2g);
   ref_free(o2n);
 
   if (problem_detected) {
