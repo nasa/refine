@@ -73,7 +73,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ntri, tris[2], nquad, quads[2];
   REF_INT tri_node;
-  REF_INT *o2n, *o2g;
+  REF_INT *o2n, *o2g, o2n_max;
   REF_INT global, new_node, node;
   REF_INT new_cell;
   REF_DBL min_dot;
@@ -91,9 +91,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_BOOL problem_detected = REF_FALSE;
 
   REF_BOOL debug = REF_FALSE;
-
-  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-  ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
   ref_malloc(face_normal, 3 * ref_dict_n(faceids), REF_DBL);
 
@@ -152,6 +149,9 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(imax);
   ref_free(imin);
 
+  o2n_max = ref_node_max(ref_node);
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
   /* build list of node globals */
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
@@ -160,6 +160,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         if (ref_node_owned(ref_node, node) && REF_EMPTY == o2n[node]) {
           RSS(ref_node_next_global(ref_node, &global), "global");
           RSS(ref_node_add(ref_node, global, &new_node), "add node");
+	  /* redundant */
+	  ref_node_part(ref_node, new_node) = ref_mpi_rank(ref_mpi);  
           o2n[node] = new_node;
         }
       }
@@ -169,15 +171,23 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   /* sync globals */
   RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
+  ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  
   /* fill ghost node globals */
-  each_ref_node_valid_node(ref_node, node) {
+  for(node=0;node<o2n_max;node++) {
     if (REF_EMPTY != o2n[node]) {
       o2g[node] = ref_node_global(ref_node, node);
     }
   }
   RSS(ref_node_ghost_int(ref_node, o2g, 1), "update ghosts");
-  each_ref_node_valid_node(ref_node, node) {
-    if (!ref_node_owned(ref_node, node) && REF_EMPTY != o2g[node]) {
+
+  ref_free(o2n);
+  o2n_max = ref_node_max(ref_node);
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  for(node=0;node<o2n_max;node++) {
+    if (REF_EMPTY != o2g[node]) {
+      /* returns node if already added */
       RSS(ref_node_add(ref_node, o2g[node], &new_node), "add node");
       ref_node_part(ref_node, new_node) = ref_node_part(ref_node, node);
       o2n[node] = new_node;
@@ -185,8 +195,9 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   }
 
   /* create offsets */
-  each_ref_node_valid_node(ref_node, node) {
-    if (ref_node_owned(ref_node, node) && REF_EMPTY != o2n[node]) {
+  for(node=0;node<o2n_max;node++) {
+    if (ref_node_owned(ref_node, node)) 
+          if (REF_EMPTY != o2n[node]) {
       new_node = o2n[node];
       normal[0] = 0.0;
       normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
