@@ -27,6 +27,7 @@
 
 #include "ref_export.h"
 #include "ref_import.h"
+#include "ref_part.h"
 
 #include "ref_adj.h"
 #include "ref_cell.h"
@@ -83,10 +84,16 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
-
-  RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "read grid");
   ref_mpi_stopwatch_start(ref_grid_mpi(ref_grid));
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "part");
+  } else {
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
+  }
+  ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
   nlayers = atoi(argv[2]);
   if (nlayers < 0) {
@@ -109,7 +116,7 @@ int main(int argc, char *argv[]) {
       THROW("--aoa requires radial extrusion, nlayers < 0");
     alpha_deg = atof(argv[aoa_pos + 1]);
     alpha_rad = ref_math_in_radians(alpha_deg);
-    printf(" --aoa %f deg\n", alpha_deg);
+    if (ref_mpi_once(ref_mpi)) printf(" --aoa %f deg\n", alpha_deg);
     last_face_arg = MIN(last_face_arg, aoa_pos);
   }
 
@@ -122,7 +129,8 @@ int main(int argc, char *argv[]) {
     origin[0] = atof(argv[origin_pos + 1]);
     origin[1] = atof(argv[origin_pos + 2]);
     origin[2] = atof(argv[origin_pos + 3]);
-    printf(" --origin %f %f %f\n", origin[0], origin[1], origin[2]);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --origin %f %f %f\n", origin[0], origin[1], origin[2]);
     last_face_arg = MIN(last_face_arg, origin_pos);
   }
 
@@ -134,7 +142,8 @@ int main(int argc, char *argv[]) {
     if (rotate_pos >= argc - 1) THROW("--rotate requires a value");
     rotate_deg = atof(argv[rotate_pos + 1]);
     rotate_rad = ref_math_in_radians(rotate_deg);
-    printf(" --rotate %f deg (%f rad)\n", rotate_deg, rotate_rad);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --rotate %f deg (%f rad)\n", rotate_deg, rotate_rad);
     last_face_arg = MIN(last_face_arg, rotate_pos);
 
     ref_node = ref_grid_node(ref_grid);
@@ -155,18 +164,18 @@ int main(int argc, char *argv[]) {
   if (REF_EMPTY != scale_pos) {
     if (scale_pos >= argc - 1) THROW("--scale requires a value");
     scale = atof(argv[scale_pos + 1]);
-    printf(" --scale %f\n", scale);
+    if (ref_mpi_once(ref_mpi)) printf(" --scale %f\n", scale);
     last_face_arg = MIN(last_face_arg, scale_pos);
   }
 
-  printf("faceids");
+  if (ref_mpi_once(ref_mpi)) printf("faceids");
   RSS(ref_dict_create(&faceids), "create");
   for (arg = 6; arg < last_face_arg; arg++) {
     faceid = atoi(argv[arg]);
     RSS(ref_dict_store(faceids, faceid, REF_EMPTY), "store");
-    printf(" %d", faceid);
+    if (ref_mpi_once(ref_mpi)) printf(" %d", faceid);
   }
-  printf("\n");
+  if (ref_mpi_once(ref_mpi)) printf("\n");
 
   if (first_thickness <= 0.0) {
     first_thickness = total_thickness / (REF_DBL)nlayers;
@@ -178,12 +187,14 @@ int main(int argc, char *argv[]) {
 
   mach_angle_rad = asin(1 / mach);
 
-  printf("inflating %d faces\n", ref_dict_n(faceids));
-  printf("mach %f mach angle %f rad %f deg\n", mach, mach_angle_rad,
-         ref_math_in_degrees(mach_angle_rad));
-  printf("first thickness %f\n", first_thickness);
-  printf("total thickness %f\n", total_thickness);
-  printf("rate %f\n", rate);
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflating %d faces\n", ref_dict_n(faceids));
+    printf("mach %f mach angle %f rad %f deg\n", mach, mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+  }
 
   if (REF_EMPTY == origin_pos)
     RSS(ref_inflate_origin(ref_grid, faceids, origin), "orig");
@@ -201,15 +212,17 @@ int main(int argc, char *argv[]) {
       RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
           "inflate");
     }
-    printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
-           layer + 1, nlayers, thickness, total,
-           ref_node_n(ref_grid_node(ref_grid)));
+    if (ref_mpi_once(ref_mpi))
+      printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
+             layer + 1, nlayers, thickness, total,
+             ref_node_n(ref_grid_node(ref_grid)));
   }
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
 
   if (REF_EMPTY != scale_pos) {
-    printf("scale grid after inflation by %f\n", scale);
+    if (ref_mpi_once(ref_mpi))
+      printf("scale grid after inflation by %f\n", scale);
     ref_node = ref_grid_node(ref_grid);
     each_ref_node_valid_node(ref_node, node) {
       ref_node_xyz(ref_node, 0, node) *= scale;
@@ -220,7 +233,7 @@ int main(int argc, char *argv[]) {
 
   RSS(ref_export_tec_surf(ref_grid, "inflated_boundary.tec"), "tec");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "surf");
-  RSS(ref_export_by_extension(ref_grid, "inflated.b8.ugrid"), "b8");
+  RSS(ref_gather_by_extension(ref_grid, "inflated.b8.ugrid"), "b8");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "export");
 
   RSS(ref_dict_free(faceids), "free");
