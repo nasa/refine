@@ -151,6 +151,11 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(imax);
   ref_free(imin);
 
+  /* build list of node globals */
+  /* sync globals */
+  /* fill ghost node globals */
+  /* add nodes and create offsets */
+
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       for (tri_node = 0; tri_node < 3; tri_node++) {
