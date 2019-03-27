@@ -210,17 +210,15 @@ int main(int argc, char *argv[]) {
     total = total + thickness;
     xshift = thickness / tan(mach_angle_rad);
     if (extrude_radially) {
-      if (ref_mpi_once(ref_mpi)) printf(" extrude radially %f\n", thickness);
       RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
                                mach_angle_rad, alpha_rad),
           "inflate");
     } else {
-      if (ref_mpi_once(ref_mpi)) printf(" extrude normal %f\n", thickness);
       RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
           "inflate");
     }
     if (ref_mpi_once(ref_mpi))
-      printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
+      printf("layer%5d of%5d thickness %10.3e total %10.3e %9d nodes\n",
              layer + 1, nlayers, thickness, total,
              ref_node_n(ref_grid_node(ref_grid)));
   }
