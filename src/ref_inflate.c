@@ -121,25 +121,14 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         node = nodes[tri_node];
         theta = atan2(ref_node_xyz(ref_node, 1, node) - origin[1],
                       ref_node_xyz(ref_node, 2, node) - origin[2]);
-        if (ABS(theta) > 0.999 * ref_math_pi) {
-          if (tmin[i] < -ref_math_pi) {
-            tmin[i] = -ref_math_pi;
-            imin[i] = node;
-          }
-          if (tmax[i] > ref_math_pi) {
-            tmax[i] = ref_math_pi;
-            imax[i] = node;
-          }
 
-        } else {
-          if (tmin[i] > theta) {
-            tmin[i] = theta;
-            imin[i] = node;
-          }
-          if (tmax[i] < theta) {
-            tmax[i] = theta;
-            imax[i] = node;
-          }
+        if (tmin[i] > theta) {
+          tmin[i] = theta;
+          imin[i] = node;
+        }
+        if (tmax[i] < theta) {
+          tmax[i] = theta;
+          imax[i] = node;
         }
       }
   }
