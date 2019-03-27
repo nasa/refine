@@ -220,10 +220,13 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
           if (!ref_dict_has_key(faceids, ref_nodes[3])) continue;
           RSS(ref_dict_location(faceids, ref_nodes[3], &i), "key loc");
           dot = -ref_math_dot(normal, &(face_normal[3 * i]));
+          RAS(face_normal[0 + 3 * i] > -0.1, "uninitialized face_normal");
           if (dot < 0.70 || dot > 1.01) {
             /* printf("out-of-range dot %.15f\n",dot); */
             problem_detected = REF_TRUE;
           }
+          RAS(ref_math_divisible(normal[1], dot), "normal[1] /= dot");
+          RAS(ref_math_divisible(normal[2], dot), "normal[2] /= dot");
           normal[1] /= dot;
           normal[2] /= dot;
         }
