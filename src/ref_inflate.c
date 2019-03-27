@@ -102,11 +102,12 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL problem_detected = REF_FALSE;
 
-  REF_BOOL debug = REF_FALSE;
+  REF_BOOL debug = ref_mpi_once(ref_mpi);
 
   ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
   /* determine each faceids normal, only needed if my part has a tri */
+  if (ref_mpi_once(ref_mpi)) printf("face theta range\n");
 
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
   ref_malloc_init(tmax, ref_dict_n(faceids), REF_DBL, -4.0 * ref_math_pi);
@@ -169,6 +170,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
                face_normal[2 + 3 * i]);
     }
   }
+
+  ref_mpi_stopwatch_stop(ref_mpi, "face normals");
 
   ref_free(tmax);
   ref_free(tmin);
@@ -273,6 +276,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   RSS(ref_node_ghost_real(ref_node), "set new ghost node xyz");
 
   ref_free(face_normal);
+
+  ref_mpi_stopwatch_stop(ref_mpi, "new nodes");
 
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
