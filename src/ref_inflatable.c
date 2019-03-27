@@ -198,6 +198,7 @@ int main(int argc, char *argv[]) {
     printf("first thickness %f\n", first_thickness);
     printf("total thickness %f\n", total_thickness);
     printf("rate %f\n", rate);
+    printf("extrusion %d\n", extrude_radially);
   }
 
   if (REF_EMPTY == origin_pos)
@@ -217,7 +218,7 @@ int main(int argc, char *argv[]) {
           "inflate");
     }
     if (ref_mpi_once(ref_mpi))
-      printf("layer%5d of%5d : thickness %15.8e total %15.8e :%9d nodes\n",
+      printf("layer%5d of%5d thickness %10.3e total %10.3e %9d nodes\n",
              layer + 1, nlayers, thickness, total,
              ref_node_n(ref_grid_node(ref_grid)));
   }

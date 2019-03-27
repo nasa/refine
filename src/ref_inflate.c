@@ -120,6 +120,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
         node = nodes[tri_node];
         theta = atan2(ref_node_xyz(ref_node, 1, node) - origin[1],
                       ref_node_xyz(ref_node, 2, node) - origin[2]);
+
         if (tmin[i] > theta) {
           tmin[i] = theta;
           imin[i] = node;
@@ -135,8 +136,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   each_ref_dict_key_index(faceids, i) {
     if (!ref_mpi_para(ref_mpi)) {
-      RUS(REF_EMPTY, imin[i], "imin");
-      RUS(REF_EMPTY, imax[i], "imax");
+      RUB(REF_EMPTY, imin[i], "imin",
+          { printf("empty %d: %d \n", i, ref_dict_key(faceids, i)); });
+      RUB(REF_EMPTY, imax[i], "imax",
+          { printf("empty %d: %d \n", i, ref_dict_key(faceids, i)); });
     }
     if (REF_EMPTY != imin[i] && REF_EMPTY != imax[i]) {
       face_normal[0 + 3 * i] = 0.0;
@@ -145,14 +148,14 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
                                  ref_node_xyz(ref_node, 1, imin[i]));
       if (debug)
-        printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f)\n", i,
-               ref_dict_key(faceids, i), tmin[i], tmax[i],
-               face_normal[0 + 3 * i], face_normal[1 + 3 * i],
-               face_normal[2 + 3 * i]);
-      RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
-      if (debug)
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
                face_normal[2 + 3 * i]);
+      RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
+      if (ref_mpi_once(ref_mpi))
+        printf("f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f\n",
+               ref_dict_key(faceids, i), face_normal[0 + 3 * i],
+               face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
+               ABS(tmin[i] - tmax[i]));
     }
   }
 
@@ -256,6 +259,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  if (problem_detected) printf("ERROR: new node normal\n");
+
   RSS(ref_node_ghost_real(ref_node), "set new ghost node xyz");
 
   ref_free(face_normal);
@@ -338,6 +343,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2n);
 
   if (problem_detected) {
+    printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
     THROW("problem detected, examine ref_inflate_problem.tec");
   }
