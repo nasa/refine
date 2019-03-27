@@ -160,10 +160,9 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
                                  ref_node_xyz(ref_node, 1, imin[i]));
       if (debug)
-        printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f) angle %f\n", i,
+        printf("faceid[%d]=%d t=(%f,%f) angle %f\n", i,
                ref_dict_key(faceids, i), tmin[i], tmax[i],
-               face_normal[0 + 3 * i], face_normal[1 + 3 * i],
-               face_normal[2 + 3 * i], ABS(tmin[i] - tmax[i]));
+               ABS(tmin[i] - tmax[i]));
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
       if (debug)
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
