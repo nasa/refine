@@ -160,10 +160,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
                                  ref_node_xyz(ref_node, 1, imin[i]));
       if (debug)
-        printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f)\n", i,
+        printf("faceid[%d]=%d t=(%f,%f)\nn=(%f,%f,%f) angle %f\n", i,
                ref_dict_key(faceids, i), tmin[i], tmax[i],
                face_normal[0 + 3 * i], face_normal[1 + 3 * i],
-               face_normal[2 + 3 * i]);
+               face_normal[2 + 3 * i], ABS(tmin[i] - tmax[i]));
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
       if (debug)
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
@@ -325,6 +325,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  ref_mpi_stopwatch_stop(ref_mpi, "new boundary");
+
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       new_nodes[0] = nodes[0];
@@ -344,6 +346,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
+  ref_mpi_stopwatch_stop(ref_mpi, "new prism");
+
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       nodes[0] = o2n[nodes[0]];
@@ -352,6 +356,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       RSS(ref_cell_replace_whole(tri, cell, nodes), "repl");
     }
   }
+
+  ref_mpi_stopwatch_stop(ref_mpi, "replace tri");
 
   ref_free(o2g);
   ref_free(o2n);
