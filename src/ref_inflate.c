@@ -555,8 +555,10 @@ REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
 
   z = z0;
   RSS(ref_mpi_min(ref_mpi, &z, &z0, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &z0, 1, REF_DBL_TYPE), "bmin");
   z = z1;
   RSS(ref_mpi_max(ref_mpi, &z, &z1, REF_DBL_TYPE), "max");
+  RSS(ref_mpi_bcast(ref_mpi, &z1, 1, REF_DBL_TYPE), "max");
 
   origin[0] = 0;
   origin[1] = 0;
