@@ -92,7 +92,7 @@ ref_axisymmetric_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ @mpi_ldadd@
 
 bin_PROGRAMS += ref_inflatable
 ref_inflatable_SOURCES = ref_inflatable.c
-ref_inflatable_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ @mpi_ldadd@ -lm
+ref_inflatable_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ $(partioner_ldadd) @mpi_ldadd@ -lm
 
 bin_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
