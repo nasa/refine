@@ -102,7 +102,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL problem_detected = REF_FALSE;
 
-  REF_BOOL debug = ref_mpi_once(ref_mpi);
+  REF_BOOL debug = REF_FALSE;
 
   ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
@@ -160,13 +160,15 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
                                  ref_node_xyz(ref_node, 1, imin[i]));
       if (debug)
-        printf("faceid[%d]=%d t=(%f,%f) angle %f\n", i,
-               ref_dict_key(faceids, i), tmin[i], tmax[i],
-               ABS(tmin[i] - tmax[i]));
-      RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
-      if (debug)
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
                face_normal[2 + 3 * i]);
+      RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
+      if (ref_mpi_once(ref_mpi))
+        printf(
+            "f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f\n",
+            ref_dict_key(faceids, i), face_normal[0 + 3 * i],
+            face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
+            ABS(tmin[i] - tmax[i]));
     }
   }
 
