@@ -164,11 +164,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
                face_normal[2 + 3 * i]);
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
       if (ref_mpi_once(ref_mpi))
-        printf(
-            "f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f\n",
-            ref_dict_key(faceids, i), face_normal[0 + 3 * i],
-            face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
-            ABS(tmin[i] - tmax[i]));
+        printf("f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f\n",
+               ref_dict_key(faceids, i), face_normal[0 + 3 * i],
+               face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
+               ABS(tmin[i] - tmax[i]));
     }
   }
 
