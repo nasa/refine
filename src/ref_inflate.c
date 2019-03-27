@@ -147,8 +147,10 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   each_ref_dict_key_index(faceids, i) {
     if (!ref_mpi_para(ref_mpi)) {
-      RUS(REF_EMPTY, imin[i], "imin");
-      RUS(REF_EMPTY, imax[i], "imax");
+      RUB(REF_EMPTY, imin[i], "imin",
+          { printf("empty %d: %d \n", i, ref_dict_key(faceids, i)); });
+      RUB(REF_EMPTY, imax[i], "imax",
+          { printf("empty %d: %d \n", i, ref_dict_key(faceids, i)); });
     }
     if (REF_EMPTY != imin[i] && REF_EMPTY != imax[i]) {
       face_normal[0 + 3 * i] = 0.0;
