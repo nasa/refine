@@ -226,13 +226,21 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
             problem_detected = REF_TRUE;
           }
           RAB(ref_math_divisible(normal[1], dot), "normal[1] /= dot", {
-            printf("norm %e dot %e\n", normal[1], dot);
-            printf("%d face norm %e %e %e\n", i, face_normal[0 + 3 * i],
+            printf("dot %e\n", dot);
+            printf(" xyz %f %f %f\n", ref_node_xyz(ref_node, 0, node),
+                   ref_node_xyz(ref_node, 1, node),
+                   ref_node_xyz(ref_node, 2, node));
+            printf(" norm %f %f %f\n", normal[0], normal[1], normal[2]);
+            printf("%d face norm %f %f %f\n", i, face_normal[0 + 3 * i],
                    face_normal[1 + 3 * i], face_normal[2 + 3 * i]);
           });
           RAB(ref_math_divisible(normal[2], dot), "normal[2] /= dot", {
-            printf("norm %e dot %e\n", normal[2], dot);
-            printf("%d face norm %e %e %e\n", i, face_normal[0 + 3 * i],
+            printf("dot %e\n", dot);
+            printf(" xyz %f %f %f\n", ref_node_xyz(ref_node, 0, node),
+                   ref_node_xyz(ref_node, 1, node),
+                   ref_node_xyz(ref_node, 2, node));
+            printf(" norm %f %f %f\n", normal[0], normal[1], normal[2]);
+            printf("%d face norm %f %f %f\n", i, face_normal[0 + 3 * i],
                    face_normal[1 + 3 * i], face_normal[2 + 3 * i]);
           });
           normal[1] /= dot;
