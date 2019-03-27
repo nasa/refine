@@ -100,5 +100,36 @@ int main() {
     RWDS(fd, dHdr, 1.0e-8, "not total");
   }
 
+  if (REF_FALSE) {
+    REF_DBL x, y;
+    x = 0.0001;
+    y = 1;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+    x = -0.0001;
+    y = 1;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+
+    x = 0.0001;
+    y = -1;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+    x = -0.0001;
+    y = -1;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+
+    x = 1;
+    y = 0.0001;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+    x = 1;
+    y = -0.0001;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+
+    x = -1;
+    y = 0.0001;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+    x = -1;
+    y = -0.0001;
+    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
+  }
+
   return 0;
 }
