@@ -104,7 +104,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL debug = REF_FALSE;
 
-  ref_malloc(face_normal, 3 * ref_dict_n(faceids), REF_DBL);
+  ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
   /* determine each faceids normal, only needed if my part has a tri */
 
