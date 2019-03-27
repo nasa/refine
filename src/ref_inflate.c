@@ -47,6 +47,15 @@ REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
   RSB(ref_math_normalize(top_normal), "norm top", {
     printf("%d %d %d %f %f %f\n", tri_nodes[0], tri_nodes[1], tri_nodes[2],
            top_normal[0], top_normal[1], top_normal[2]);
+    printf("%f %f %f\n", ref_node_xyz(ref_node, 0, tri_nodes[0]),
+           ref_node_xyz(ref_node, 1, tri_nodes[0]),
+           ref_node_xyz(ref_node, 2, tri_nodes[0]));
+    printf("%f %f %f\n", ref_node_xyz(ref_node, 0, tri_nodes[1]),
+           ref_node_xyz(ref_node, 1, tri_nodes[1]),
+           ref_node_xyz(ref_node, 2, tri_nodes[1]));
+    printf("%f %f %f\n", ref_node_xyz(ref_node, 0, tri_nodes[2]),
+           ref_node_xyz(ref_node, 1, tri_nodes[2]),
+           ref_node_xyz(ref_node, 2, tri_nodes[2]));
   });
 
   *min_dot = 1.0;
