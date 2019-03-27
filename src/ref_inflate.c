@@ -225,8 +225,16 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
             /* printf("out-of-range dot %.15f\n",dot); */
             problem_detected = REF_TRUE;
           }
-          RAS(ref_math_divisible(normal[1], dot), "normal[1] /= dot");
-          RAS(ref_math_divisible(normal[2], dot), "normal[2] /= dot");
+          RAB(ref_math_divisible(normal[1], dot), "normal[1] /= dot", {
+            printf("norm %e dot %e\n", normal[1], dot);
+            printf("%d face norm %e %e %e\n", i, face_normal[0 + 3 * i],
+                   face_normal[1 + 3 * i], face_normal[2 + 3 * i]);
+          });
+          RAB(ref_math_divisible(normal[2], dot), "normal[2] /= dot", {
+            printf("norm %e dot %e\n", normal[2], dot);
+            printf("%d face norm %e %e %e\n", i, face_normal[0 + 3 * i],
+                   face_normal[1 + 3 * i], face_normal[2 + 3 * i]);
+          });
           normal[1] /= dot;
           normal[2] /= dot;
         }
