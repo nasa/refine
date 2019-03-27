@@ -198,6 +198,7 @@ int main(int argc, char *argv[]) {
     printf("first thickness %f\n", first_thickness);
     printf("total thickness %f\n", total_thickness);
     printf("rate %f\n", rate);
+    printf("extrusion %d\n", extrude_radially);
   }
 
   if (REF_EMPTY == origin_pos)
@@ -209,10 +210,12 @@ int main(int argc, char *argv[]) {
     total = total + thickness;
     xshift = thickness / tan(mach_angle_rad);
     if (extrude_radially) {
+      if (ref_mpi_once(ref_mpi)) printf(" extrude radially %f\n", thickness);
       RSS(ref_inflate_radially(ref_grid, faceids, origin, thickness,
                                mach_angle_rad, alpha_rad),
           "inflate");
     } else {
+      if (ref_mpi_once(ref_mpi)) printf(" extrude normal %f\n", thickness);
       RSS(ref_inflate_face(ref_grid, faceids, origin, thickness, xshift),
           "inflate");
     }
