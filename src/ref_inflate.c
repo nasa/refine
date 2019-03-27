@@ -107,7 +107,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   ref_malloc_init(face_normal, 3 * ref_dict_n(faceids), REF_DBL, -1.0);
 
   /* determine each faceids normal, only needed if my part has a tri */
-  if (ref_mpi_once(ref_mpi)) printf("face theta range %f\n", thickness);
 
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
   ref_malloc_init(tmax, ref_dict_n(faceids), REF_DBL, -4.0 * ref_math_pi);
