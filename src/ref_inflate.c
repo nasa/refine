@@ -159,8 +159,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
-  ref_mpi_stopwatch_stop(ref_mpi, "face normals");
-
   ref_free(tmax);
   ref_free(tmin);
   ref_free(imax);
@@ -267,8 +265,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   ref_free(face_normal);
 
-  ref_mpi_stopwatch_stop(ref_mpi, "new nodes");
-
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       for (tri_side = 0; tri_side < 3; tri_side++) {
@@ -315,8 +311,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
-  ref_mpi_stopwatch_stop(ref_mpi, "new boundary");
-
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       new_nodes[0] = nodes[0];
@@ -336,8 +330,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
     }
   }
 
-  ref_mpi_stopwatch_stop(ref_mpi, "new prism");
-
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (ref_dict_has_key(faceids, nodes[3])) {
       nodes[0] = o2n[nodes[0]];
@@ -346,8 +338,6 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       RSS(ref_cell_replace_whole(tri, cell, nodes), "repl");
     }
   }
-
-  ref_mpi_stopwatch_stop(ref_mpi, "replace tri");
 
   ref_free(o2g);
   ref_free(o2n);
