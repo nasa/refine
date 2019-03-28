@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
     printf("first thickness %f\n", first_thickness);
     printf("total thickness %f\n", total_thickness);
     printf("rate %f\n", rate);
-    printf("layers %f\n", nlayers);
+    printf("layers %d\n", nlayers);
     printf("extrusion %d\n", extrude_radially);
   }
 
