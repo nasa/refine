@@ -361,22 +361,34 @@ trap - EXIT
 
 wait
 
+# 2 procs
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
 ( ./accept-3d-two-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+# 1-1-4-4 procs
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
 ( ./accept-cube-cylinder-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+# 4 procs
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
 ( ./accept-hemisphere-uniform-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+wait
+
+# 8 procs
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/normal
+( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 wait
