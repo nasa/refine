@@ -249,6 +249,8 @@ cd ${source_dir}/acceptance/3d/linear/two
 ( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
 LOG=${root_dir}/log.accept-cube-cylinder-gen-aflr3
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/gen/aflr3
@@ -278,6 +280,8 @@ trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/polar-1/two
 ( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
+
+sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-cube-sphere-uniform-two
 trap "cat $LOG" EXIT
@@ -309,6 +313,8 @@ cd ${source_dir}/acceptance/cone-cone/recon
 ( ./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
 LOG=${root_dir}/log.accept-om6-recon
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/om6/recon
@@ -339,24 +345,50 @@ cd ${source_dir}/acceptance/3d/u5
 ( ./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/normal
+( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/normal
+( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 wait
 
+# 2 procs
 LOG=${root_dir}/log.accept-3d-linear-two-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
 ( ./accept-3d-two-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+# 1-1-4-4 procs
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
 ( ./accept-cube-cylinder-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+# 4 procs
 LOG=${root_dir}/log.accept-hemisphere-uniform-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/hemisphere/uniform
 ( ./accept-hemisphere-uniform-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+wait
+
+# 8 procs
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/normal
+( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 wait

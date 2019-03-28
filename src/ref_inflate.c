@@ -354,16 +354,17 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
                                 REF_DBL *origin, REF_DBL thickness,
                                 REF_DBL mach_angle_rad, REF_DBL alpha_rad) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL qua = ref_grid_qua(ref_grid);
   REF_CELL pri = ref_grid_pri(ref_grid);
-  REF_INT cell, tri_side, node0, node1;
+  REF_INT cell, tri_side, node0, node1, node, o2n_max;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ntri, tris[2], nquad, quads[2];
   REF_INT tri_node;
-  REF_INT *o2n;
+  REF_INT *o2n, *o2g;
   REF_INT global, new_node;
   REF_INT new_cell;
   REF_DBL min_dot;
@@ -373,107 +374,155 @@ REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
 
   REF_BOOL problem_detected = REF_FALSE;
 
+  o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
 
-  each_ref_cell_valid_cell_with_nodes(
-      tri, cell,
-      nodes) if (ref_dict_has_key(faceids, nodes[3])) for (tri_node = 0;
-                                                           tri_node < 3;
-                                                           tri_node++) {
-    node0 = nodes[tri_node];
-    if (REF_EMPTY == o2n[node0]) {
-      RSS(ref_node_next_global(ref_node, &global), "global");
-      RSS(ref_node_add(ref_node, global, &new_node), "add node");
-      o2n[node0] = new_node;
-
-      RAS(ref_node_valid(ref_node, node0), "inlvalid tri node");
-      normal[0] = 0.0;
-      normal[1] = ref_node_xyz(ref_node, 1, node0) - origin[1];
-      normal[2] = ref_node_xyz(ref_node, 2, node0) - origin[2];
-      RSS(ref_math_normalize(normal), "make norm");
-      phi_rad = atan2(normal[1], normal[2]);
-      alpha_weighting = cos(phi_rad);
-      xshift = thickness / tan(mach_angle_rad + alpha_weighting * alpha_rad);
-      ref_node_xyz(ref_node, 0, new_node) =
-          xshift + ref_node_xyz(ref_node, 0, node0);
-      ref_node_xyz(ref_node, 1, new_node) =
-          thickness * normal[1] + ref_node_xyz(ref_node, 1, node0);
-      ref_node_xyz(ref_node, 2, new_node) =
-          thickness * normal[2] + ref_node_xyz(ref_node, 2, node0);
-    }
-  }
-
-  each_ref_cell_valid_cell_with_nodes(
-      tri, cell, nodes) if (ref_dict_has_key(faceids, nodes[3])) {
-    for (tri_side = 0; tri_side < 3; tri_side++) {
-      node0 = ref_cell_e2n(tri, 0, tri_side, cell);
-      node1 = ref_cell_e2n(tri, 1, tri_side, cell);
-      RSS(ref_cell_list_with2(tri, node0, node1, 2, &ntri, tris),
-          "bad tri count");
-      if (1 == ntri) {
-        RSS(ref_cell_list_with2(qua, node0, node1, 2, &nquad, quads),
-            "bad quad count");
-        if (1 != nquad) THROW("tri without quad");
-        new_nodes[4] = ref_cell_c2n(qua, 4, quads[0]);
-        new_nodes[0] = node0;
-        new_nodes[1] = node1;
-        new_nodes[2] = o2n[node1];
-        new_nodes[3] = o2n[node0];
-        RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-        continue;
-      }
-      if (ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
-          !ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
-        new_nodes[4] = ref_cell_c2n(tri, 3, tris[1]);
-        new_nodes[0] = node0;
-        new_nodes[1] = node1;
-        new_nodes[2] = o2n[node1];
-        new_nodes[3] = o2n[node0];
-        RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-        continue;
-      }
-      if (!ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
-          ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
-        new_nodes[4] = ref_cell_c2n(tri, 3, tris[0]);
-        new_nodes[0] = node0;
-        new_nodes[1] = node1;
-        new_nodes[2] = o2n[node1];
-        new_nodes[3] = o2n[node0];
-        RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-        continue;
+  /* build list of node globals */
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (ref_dict_has_key(faceids, nodes[3])) {
+      for (tri_node = 0; tri_node < 3; tri_node++) {
+        node = nodes[tri_node];
+        if (ref_node_owned(ref_node, node) && REF_EMPTY == o2n[node]) {
+          RSS(ref_node_next_global(ref_node, &global), "global");
+          RSS(ref_node_add(ref_node, global, &new_node), "add node");
+          /* redundant */
+          ref_node_part(ref_node, new_node) = ref_mpi_rank(ref_mpi);
+          o2n[node] = new_node;
+        }
       }
     }
   }
 
-  each_ref_cell_valid_cell_with_nodes(
-      tri, cell, nodes) if (ref_dict_has_key(faceids, nodes[3])) {
-    new_nodes[0] = nodes[0];
-    new_nodes[1] = nodes[2];
-    new_nodes[2] = nodes[1];
-    new_nodes[3] = o2n[nodes[0]];
-    new_nodes[4] = o2n[nodes[2]];
-    new_nodes[5] = o2n[nodes[1]];
+  /* sync globals */
+  RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
-    RSS(ref_inflate_pri_min_dot(ref_node, new_nodes, &min_dot), "md");
-    if (min_dot <= 0.0) {
-      printf("min_dot %f\n", min_dot);
-      problem_detected = REF_TRUE;
+  ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  /* fill ghost node globals */
+  for (node = 0; node < o2n_max; node++) {
+    if (REF_EMPTY != o2n[node]) {
+      o2g[node] = ref_node_global(ref_node, o2n[node]);
     }
+  }
+  RSS(ref_node_ghost_int(ref_node, o2g, 1), "update ghosts");
 
-    RSS(ref_cell_add(pri, new_nodes, &new_cell), "pri");
+  ref_free(o2n);
+  o2n_max = ref_node_max(ref_node);
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  for (node = 0; node < o2n_max; node++) {
+    if (REF_EMPTY != o2g[node]) {
+      /* returns node if already added */
+      RSS(ref_node_add(ref_node, o2g[node], &new_node), "add node");
+      ref_node_part(ref_node, new_node) = ref_node_part(ref_node, node);
+      o2n[node] = new_node;
+    }
   }
 
-  each_ref_cell_valid_cell_with_nodes(
-      tri, cell, nodes) if (ref_dict_has_key(faceids, nodes[3])) {
-    nodes[0] = o2n[nodes[0]];
-    nodes[1] = o2n[nodes[1]];
-    nodes[2] = o2n[nodes[2]];
-    RSS(ref_cell_replace_whole(tri, cell, nodes), "repl");
+  /* create offsets */
+  for (node = 0; node < o2n_max; node++) {
+    if (ref_node_valid(ref_node, node)) {
+      if (ref_node_owned(ref_node, node) && REF_EMPTY != o2n[node]) {
+        new_node = o2n[node];
+
+        normal[0] = 0.0;
+        normal[1] = ref_node_xyz(ref_node, 1, node) - origin[1];
+        normal[2] = ref_node_xyz(ref_node, 2, node) - origin[2];
+        RSS(ref_math_normalize(normal), "make norm");
+        phi_rad = atan2(normal[1], normal[2]);
+        alpha_weighting = cos(phi_rad);
+        xshift = thickness / tan(mach_angle_rad + alpha_weighting * alpha_rad);
+        ref_node_xyz(ref_node, 0, new_node) =
+            xshift + ref_node_xyz(ref_node, 0, node);
+        ref_node_xyz(ref_node, 1, new_node) =
+            thickness * normal[1] + ref_node_xyz(ref_node, 1, node);
+        ref_node_xyz(ref_node, 2, new_node) =
+            thickness * normal[2] + ref_node_xyz(ref_node, 2, node);
+      }
+    }
   }
 
+  RSS(ref_node_ghost_real(ref_node), "set new ghost node xyz");
+
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (ref_dict_has_key(faceids, nodes[3])) {
+      for (tri_side = 0; tri_side < 3; tri_side++) {
+        node0 = ref_cell_e2n(tri, 0, tri_side, cell);
+        node1 = ref_cell_e2n(tri, 1, tri_side, cell);
+        if (ref_node_owned(ref_node, node0) ||
+            ref_node_owned(ref_node, node1)) {
+          RSS(ref_cell_list_with2(tri, node0, node1, 2, &ntri, tris),
+              "bad tri count");
+          if (1 == ntri) {
+            RSS(ref_cell_list_with2(qua, node0, node1, 2, &nquad, quads),
+                "bad quad count");
+            if (1 != nquad) THROW("tri without quad");
+            new_nodes[4] = ref_cell_c2n(qua, 4, quads[0]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
+          if (ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
+              !ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
+            new_nodes[4] = ref_cell_c2n(tri, 3, tris[1]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
+          if (!ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
+              ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
+            new_nodes[4] = ref_cell_c2n(tri, 3, tris[0]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
+        }
+      }
+    }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (ref_dict_has_key(faceids, nodes[3])) {
+      new_nodes[0] = nodes[0];
+      new_nodes[1] = nodes[2];
+      new_nodes[2] = nodes[1];
+      new_nodes[3] = o2n[nodes[0]];
+      new_nodes[4] = o2n[nodes[2]];
+      new_nodes[5] = o2n[nodes[1]];
+
+      RSS(ref_inflate_pri_min_dot(ref_node, new_nodes, &min_dot), "md");
+      if (min_dot <= 0.0) {
+        printf("min_dot %f\n", min_dot);
+        problem_detected = REF_TRUE;
+      }
+
+      RSS(ref_cell_add(pri, new_nodes, &new_cell), "pri");
+    }
+  }
+
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (ref_dict_has_key(faceids, nodes[3])) {
+      nodes[0] = o2n[nodes[0]];
+      nodes[1] = o2n[nodes[1]];
+      nodes[2] = o2n[nodes[2]];
+      RSS(ref_cell_replace_whole(tri, cell, nodes), "repl");
+    }
+  }
+
+  ref_free(o2g);
   ref_free(o2n);
 
   if (problem_detected) {
+    printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
     THROW("problem detected, examine ref_inflate_problem.tec");
   }
