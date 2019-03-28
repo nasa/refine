@@ -74,6 +74,16 @@ int main() {
     RWDS(1.1469, rate, 1.0e-3, "growth");
   }
 
+  SKIP_BLOCK("intel compiler") {
+    REF_DBL H, h0, rate;
+    REF_INT n;
+    H = 0.1;
+    h0 = 0.01;
+    n = 10;
+    RSS(ref_inflate_rate(n, h0, H, &rate), "rate");
+    RWDS(1.0, rate, 1.0e-6, "growth");
+  }
+
   {
     REF_DBL H, h0, rate;
     REF_INT n;
