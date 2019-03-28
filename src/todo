@@ -1,9 +1,20 @@
 
 protect surface folds and high curvature
+ plot curvature
+ filter based on neighborhood
 
-multiscale entropy and/or entropy adjoint (for heating)
-ref_interp_test nondimensionalization of entropy equation and entropy adjoint
-ref_phys_test extraction from ref_interp
+multiscale weight
+ continuous galerkin residual
+ boundary residual integration or scaling
+ histogram median
+
+alternating RCB part
+ n-medians
+
+configure with metis only, when parmetis not provided
+make partitioner and partitioner algorithm available at run time
+test with zoltan and parmetis configured
+64bit metis/parmetis?
 
 continuous metric interpolation
  + pair and store interp at startup
@@ -27,11 +38,6 @@ extract/combine post adaptation operator checks and status
 
 extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 
-configure with metis only, when parmetis not provided
-make partitioner and partitioner algorithm available at run time
-test with zoltan and parmetis configured
-64bit metis/parmetis?
-
 minimize duration of lazy global delete
 
 check that post conditions are implemented completely for all ops
@@ -40,7 +46,7 @@ check that post conditions are implemented completely for all ops
 
 tess
  high order geometry visualization
- complexity for surface adaptation
+ + complexity for surface adaptation
  + turn off surf bit after volume is filled
  + split egads surface tess, surface adaptation, and volume fill
  volume fill: merge import grid, remove specialized readers
@@ -50,7 +56,7 @@ tess
  try gmsh
  + isotropic edge curvature
  anisotropic feature size, edge length tangent, dist to other edge normal?
- feature size accross thin shell geoemtry, i.e., cusp trailing edge
+ feature size accross thin shell geometry, i.e., cusp trailing edge
  near-tree to drive split for grid size gradation of this shells
  edge chord height warning/constraint?
 
@@ -59,6 +65,7 @@ C2S
  how/when to fail fast?
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
+ module deploys
 
 improve CI test
 - make check stack fuzz
@@ -98,6 +105,10 @@ metric construction
   gradation at higher level (with switch)
 ref_recon
   twod l2projection
+
+multiscale entropy and/or entropy adjoint (for heating)
+ref_interp_test nondimensionalization of entropy equation and entropy adjoint
+ref_phys_test extraction from ref_interp
 
 consistent naming for operation pre-condition function names and tasks
 
