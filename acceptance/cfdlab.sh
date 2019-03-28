@@ -345,6 +345,20 @@ cd ${source_dir}/acceptance/3d/u5
 ( ./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/acceptance/inflate/normal
+( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+LOG=${root_dir}/log.accept-inflate-normal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/acceptance/inflate/normal
+( ./inflate.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 wait
 
 LOG=${root_dir}/log.accept-3d-linear-two-para
