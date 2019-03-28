@@ -522,6 +522,7 @@ REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
   ref_free(o2n);
 
   if (problem_detected) {
+    printf("ERROR: inflated grid invalid, writing ref_inflate_problem.tec\n");
     RSS(ref_export_tec_surf(ref_grid, "ref_inflate_problem.tec"), "tec");
     THROW("problem detected, examine ref_inflate_problem.tec");
   }
