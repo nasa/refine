@@ -15,7 +15,7 @@ fi
 ${two}/ref_inflatable  \
     ../box.meshb \
     -10 \
-    0.01 \
+    0.005 \
     0.10 \
     1.68 \
     4 5 6
