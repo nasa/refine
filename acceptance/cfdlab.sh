@@ -249,6 +249,8 @@ cd ${source_dir}/acceptance/3d/linear/two
 ( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
 LOG=${root_dir}/log.accept-cube-cylinder-gen-aflr3
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/gen/aflr3
@@ -279,6 +281,8 @@ cd ${source_dir}/acceptance/3d/polar-1/two
 ( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+sleep 10 # allow some tests to complete before making more
+
 LOG=${root_dir}/log.accept-cube-sphere-uniform-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-sphere/uniform/two
@@ -308,6 +312,8 @@ trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cone-cone/recon
 ( ./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
+
+sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-om6-recon
 trap "cat $LOG" EXIT
