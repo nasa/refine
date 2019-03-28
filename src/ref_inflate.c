@@ -449,39 +449,42 @@ REF_STATUS ref_inflate_radially(REF_GRID ref_grid, REF_DICT faceids,
       for (tri_side = 0; tri_side < 3; tri_side++) {
         node0 = ref_cell_e2n(tri, 0, tri_side, cell);
         node1 = ref_cell_e2n(tri, 1, tri_side, cell);
-        RSS(ref_cell_list_with2(tri, node0, node1, 2, &ntri, tris),
-            "bad tri count");
-        if (1 == ntri) {
-          RSS(ref_cell_list_with2(qua, node0, node1, 2, &nquad, quads),
-              "bad quad count");
-          if (1 != nquad) THROW("tri without quad");
-          new_nodes[4] = ref_cell_c2n(qua, 4, quads[0]);
-          new_nodes[0] = node0;
-          new_nodes[1] = node1;
-          new_nodes[2] = o2n[node1];
-          new_nodes[3] = o2n[node0];
-          RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-          continue;
-        }
-        if (ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
-            !ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
-          new_nodes[4] = ref_cell_c2n(tri, 3, tris[1]);
-          new_nodes[0] = node0;
-          new_nodes[1] = node1;
-          new_nodes[2] = o2n[node1];
-          new_nodes[3] = o2n[node0];
-          RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-          continue;
-        }
-        if (!ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
-            ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
-          new_nodes[4] = ref_cell_c2n(tri, 3, tris[0]);
-          new_nodes[0] = node0;
-          new_nodes[1] = node1;
-          new_nodes[2] = o2n[node1];
-          new_nodes[3] = o2n[node0];
-          RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
-          continue;
+        if (ref_node_owned(ref_node, node0) ||
+            ref_node_owned(ref_node, node1)) {
+          RSS(ref_cell_list_with2(tri, node0, node1, 2, &ntri, tris),
+              "bad tri count");
+          if (1 == ntri) {
+            RSS(ref_cell_list_with2(qua, node0, node1, 2, &nquad, quads),
+                "bad quad count");
+            if (1 != nquad) THROW("tri without quad");
+            new_nodes[4] = ref_cell_c2n(qua, 4, quads[0]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
+          if (ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
+              !ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
+            new_nodes[4] = ref_cell_c2n(tri, 3, tris[1]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
+          if (!ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[0])) &&
+              ref_dict_has_key(faceids, ref_cell_c2n(tri, 3, tris[1]))) {
+            new_nodes[4] = ref_cell_c2n(tri, 3, tris[0]);
+            new_nodes[0] = node0;
+            new_nodes[1] = node1;
+            new_nodes[2] = o2n[node1];
+            new_nodes[3] = o2n[node0];
+            RSS(ref_cell_add(qua, new_nodes, &new_cell), "qua tri1");
+            continue;
+          }
         }
       }
     }
