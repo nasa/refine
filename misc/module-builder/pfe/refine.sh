@@ -10,8 +10,8 @@ else
 fi
 
 TOPDIR='../../..'
-PARMETIS="ParMETIS/${PARMETIS_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
-ZOLTAN="Zoltan/${ZOLTAN_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
+PARMETIS="ParMETIS/${PARMETIS_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
+ZOLTAN="Zoltan/${ZOLTAN_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
 ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
@@ -74,9 +74,17 @@ prepend-path PATH \$base/\$version/bin
 EOF
 
 echo Set group ownership and permssions
+chgrp ${GROUP}  ${MODULE_ROOT}
+chmod g+rX      ${MODULE_ROOT}
+chmod g-w,o-rwx ${MODULE_ROOT}
+
 chgrp -R ${GROUP}  ${MODULE_DEST}
 chmod -R g+rX      ${MODULE_DEST}
 chmod -R g-w,o-rwx ${MODULE_DEST}
+
+chgrp ${GROUP}  ${MODFILE_ROOT}
+chmod g+rX      ${MODFILE_ROOT}
+chmod g-w,o-rwx ${MODFILE_ROOT}
 
 chgrp -R ${GROUP}  ${MODFILE_DEST}
 chmod -R g+rX      ${MODFILE_DEST}

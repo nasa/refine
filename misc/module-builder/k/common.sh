@@ -11,6 +11,7 @@ ESP_VERSION='114'
 
 INTEL_MODULE="intel_${INTEL_VERSION}"
 MPT_MODULE="mpt-${MPT_VERSION}"
+ESP_MODULE="ESP/${ESP_VERSION}"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 

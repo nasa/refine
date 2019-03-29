@@ -1,6 +1,6 @@
 #! /bin/bash -xue
 
-PACKAGE='refine'
+PACKAGE='refine-MPT'
 VERSION="$(git describe --always --tag | tr -d '\n')"
 
 if [ $# -gt 0 ] ; then
@@ -10,14 +10,15 @@ else
 fi
 
 TOPDIR='../../..'
-PARMETIS="ParMETIS/${PARMETIS_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
-ZOLTAN="Zoltan/${ZOLTAN_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
+PARMETIS="ParMETIS/${PARMETIS_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
+ZOLTAN="Zoltan/${ZOLTAN_VERSION}_mpt-${MPT_VERSION}_ifort-${INTEL_VERSION}"
 ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
 module load ${INTEL_MODULE}
+module load ${MPT_MODULE}
 module list
 
 ( cd ${TOPDIR} && ./bootstrap )
@@ -28,10 +29,14 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
+ --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
+ --with-metis=${MODULE_ROOT}/${PARMETIS} \
+ --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
- --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-6.8.1 \
+ --enable-lite \
  CC=icc \
- CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
+ CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv' \
+ LIBS=-lmpi
 
  make -j 12 
  make install
@@ -56,7 +61,7 @@ set base    $MODULE_BASE
 set version $VERSION
 
 prereq ${INTEL_MODULE}
-prereq ${ESP_MODULE}
+prereq ${MPT_MODULE}
 
 set logr "/bin"
 
@@ -74,9 +79,17 @@ prepend-path PATH \$base/\$version/bin
 EOF
 
 echo Set group ownership and permssions
+chgrp ${GROUP}  ${MODULE_ROOT}
+chmod g+rX      ${MODULE_ROOT}
+chmod g-w,o-rwx ${MODULE_ROOT}
+
 chgrp -R ${GROUP}  ${MODULE_DEST}
 chmod -R g+rX      ${MODULE_DEST}
 chmod -R g-w,o-rwx ${MODULE_DEST}
+
+chgrp ${GROUP}  ${MODFILE_ROOT}
+chmod g+rX      ${MODFILE_ROOT}
+chmod g-w,o-rwx ${MODFILE_ROOT}
 
 chgrp -R ${GROUP}  ${MODFILE_DEST}
 chmod -R g+rX      ${MODFILE_DEST}
