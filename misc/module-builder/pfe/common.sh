@@ -11,6 +11,7 @@ ESP_VERSION='114'
 
 INTEL_MODULE="comp-intel/${INTEL_VERSION}"
 MPT_MODULE="mpi-hpe/mpt.${MPT_VERSION}"
+ESP_MODULE="ESP/${ESP_VERSION}"
 
 PREFIX="${HOME}/shared/${GROUP}"        # where everything is anchored
 
