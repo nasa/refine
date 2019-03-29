@@ -63,7 +63,7 @@ set base    $MODULE_BASE
 set version $VERSION
 
 prereq ${INTEL_MODULE}
-prereq requires ${MPT_MODULE}
+prereq ${MPT_MODULE}
 
 set logr "/bin"
 

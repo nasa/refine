@@ -55,6 +55,8 @@ set modmode  [module-info mode]
 set base    $MODULE_BASE
 set version $VERSION
 
+prereq ${INTEL_MODULE}
+
 set logr "/bin"
 
 if { \$modmode == "switch1" } {
