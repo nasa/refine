@@ -434,6 +434,7 @@ int main(int argc, char *argv[]) {
     REF_DBL cell_vol, flux_grad[3];
     REF_DBL convergence_rate, exponent, total;
     REF_INT nsystem, nequ;
+    REF_BOOL cell_centered_finite_volume;
 
     REIS(1, cont_res_pos,
          "required args: --cont-res grid.meshb dual_flux.solb convergence_rate "
@@ -471,18 +472,22 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
-    if (ref_mpi_once(ref_mpi)) printf("compute residual\n");
-    for (dir = 0; dir < 3; dir++) {
-      for (equ = 0; equ < nequ; equ++) {
-        each_ref_node_valid_node(ref_node, node) {
-          flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
-        }
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-          RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
-          each_ref_cell_cell_node(ref_cell, cell_node) {
-            system[equ + nsystem * nodes[cell_node]] +=
-                0.25 * flux_grad[dir] * cell_vol;
+    cell_centered_finite_volume = REF_TRUE;
+    if (ref_mpi_once(ref_mpi))
+      printf("compute residual %d\n", cell_centered_finite_volume);
+    if (cell_centered_finite_volume) {
+      for (dir = 0; dir < 3; dir++) {
+        for (equ = 0; equ < nequ; equ++) {
+          each_ref_node_valid_node(ref_node, node) {
+            flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
+          }
+          each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+            RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+            RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
+            each_ref_cell_cell_node(ref_cell, cell_node) {
+              system[equ + nsystem * nodes[cell_node]] +=
+                  0.25 * flux_grad[dir] * cell_vol;
+            }
           }
         }
       }
