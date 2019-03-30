@@ -68,6 +68,7 @@ static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
+  REF_INT convdiff_flux_pos = REF_EMPTY;
   REF_INT mask_pos = REF_EMPTY;
   REF_INT cont_res_pos = REF_EMPTY;
 
@@ -78,6 +79,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--laminar-flux", &laminar_flux_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--convdiff", &convdiff_flux_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--mask", &mask_pos), REF_NOT_FOUND,
       "arg search");
@@ -278,6 +281,68 @@ int main(int argc, char *argv[]) {
         "export dual_flux");
 
     ref_free(dual_flux);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (convdiff_flux_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *primitive, *dual, *dual_flux;
+    REF_INT ldim;
+    REF_INT node, i;
+
+    REIS(1, convdiff_flux_pos,
+         "required args: --convdiff-flux grid.meshb primitive.solb dual.solb "
+         "dual_flux.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --convdiff-flux grid.meshb primitive.solb dual.solb "
+          "dual_flux.solb\n");
+      return REF_FAILURE;
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    ref_malloc(dual_flux, 4 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading primitive %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive,
+                        argv[3]),
+        "unable to load primitive in position 3");
+    REIS(1, ldim, "expected 1 (s) primitive");
+
+        if (ref_mpi_once(ref_mpi)) printf("reading dual %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual,
+                        argv[4]),
+        "unable to load primitive in position 3");
+    REIS(1, ldim, "expected 1 (lambda) dual");
+
+    if (ref_mpi_once(ref_mpi)) printf("copy dual\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      i = 0;
+      dual_flux[i + 4 * node] = dual[i + 1 * node];
+    }
+    if (ref_mpi_once(ref_mpi)) printf("zero flux\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 1; i < 4; i++) {
+        dual_flux[i + 4 * node] = 0.0;
+      }
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("add convdiff flux\n");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[5]);
+    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[5]),
+        "export dual_flux");
+
+    ref_free(dual_flux);
+    ref_free(dual);
+    ref_free(primitive);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
