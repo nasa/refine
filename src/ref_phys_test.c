@@ -33,6 +33,7 @@
 #include "ref_malloc.h"
 #include "ref_part.h"
 
+#include "ref_math.h"
 #include "ref_recon.h"
 
 static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
@@ -431,7 +432,8 @@ int main(int argc, char *argv[]) {
     REF_DBL *dual_flux, *system, *flux, *weight;
     REF_INT ldim;
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL cell_vol, flux_grad[3];
+    REF_INT i, tri_nodes[3];
+    REF_DBL cell_vol, flux_grad[3], normal[3];
     REF_DBL convergence_rate, exponent, total;
     REF_INT nsystem, nequ;
     REF_BOOL cell_centered_finite_volume;
@@ -472,7 +474,7 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
-    cell_centered_finite_volume = REF_TRUE;
+    cell_centered_finite_volume = REF_FALSE;
     if (ref_mpi_once(ref_mpi))
       printf("compute residual %d\n", cell_centered_finite_volume);
     if (cell_centered_finite_volume) {
@@ -488,6 +490,25 @@ int main(int argc, char *argv[]) {
               system[equ + nsystem * nodes[cell_node]] +=
                   0.25 * flux_grad[dir] * cell_vol;
             }
+          }
+        }
+      }
+    } else {
+      for (equ = 0; equ < nequ; equ++) {
+        each_ref_node_valid_node(ref_node, node) {
+          flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
+        }
+        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+          RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            for (i = 0; i < 3; i++)
+              tri_nodes[i] = ref_cell_f2n(ref_cell, i, cell_node, cell);
+            RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "vol");
+            RSS(ref_math_normalize(normal), "normalize");
+            for (dir = 0; dir < 3; dir++)
+              system[equ + nsystem * nodes[cell_node]] +=
+                  0.25 * flux_grad[dir] * normal[dir] * cell_vol;
           }
         }
       }
