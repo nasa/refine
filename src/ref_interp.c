@@ -1081,13 +1081,16 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
 
   increase_fuzz = REF_FALSE;
   for (tries = 0; tries < 12; tries++) {
-    if (increase_fuzz) ref_interp_search_fuzz(ref_interp) *= 10.0;
-    if (ref_mpi_once(ref_mpi))
-      printf("retry tree serach with %e fuzz\n",
-             ref_interp_search_fuzz(ref_interp));
+    if (increase_fuzz) {
+      ref_interp_search_fuzz(ref_interp) *= 10.0;
+      if (ref_mpi_once(ref_mpi))
+	printf("retry tree search with %e fuzz\n",
+	       ref_interp_search_fuzz(ref_interp));
+    }
     RSS(ref_interp_tree(ref_interp, &increase_fuzz), "tree");
     if (ref_interp->instrument)
       RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+    if (!increase_fuzz) break;
   }
   REIS(REF_FALSE, increase_fuzz, "unable to grow fuzz to find tree candidate");
 
