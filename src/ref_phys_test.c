@@ -474,7 +474,7 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
-    cell_centered_finite_volume = REF_FALSE;
+    cell_centered_finite_volume = REF_TRUE;
     if (ref_mpi_once(ref_mpi))
       printf("compute residual %d\n", cell_centered_finite_volume);
     if (cell_centered_finite_volume) {
@@ -495,20 +495,23 @@ int main(int argc, char *argv[]) {
       }
     } else {
       for (equ = 0; equ < nequ; equ++) {
-        each_ref_node_valid_node(ref_node, node) {
-          flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
-        }
         each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
           RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-          RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
           each_ref_cell_cell_node(ref_cell, cell_node) {
             for (i = 0; i < 3; i++)
               tri_nodes[i] = ref_cell_f2n(ref_cell, i, cell_node, cell);
             RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "vol");
-            RSS(ref_math_normalize(normal), "normalize");
-            for (dir = 0; dir < 3; dir++)
-              system[equ + nsystem * nodes[cell_node]] +=
-                  0.25 * flux_grad[dir] * normal[dir] * cell_vol;
+            for (dir = 0; dir < 3; dir++) {
+              normal[dir] /= cell_vol;
+            }
+            for (i = 0; i < 4; i++) {
+              for (dir = 0; dir < 3; dir++) {
+                system[equ + nsystem * nodes[cell_node]] +=
+                    0.25 *
+                    dual_flux[equ + dir * nequ + nequ + ldim * nodes[i]] *
+                    normal[dir] * cell_vol;
+              }
+            }
           }
         }
       }
