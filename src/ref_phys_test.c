@@ -80,8 +80,8 @@ int main(int argc, char *argv[]) {
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--euler-flux", &euler_flux_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--convdiff", &convdiff_flux_pos), REF_NOT_FOUND,
-      "arg search");
+  RXS(ref_args_find(argc, argv, "--convdiff", &convdiff_flux_pos),
+      REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--mask", &mask_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--cont-res", &cont_res_pos), REF_NOT_FOUND,
@@ -311,14 +311,12 @@ int main(int argc, char *argv[]) {
     ref_malloc(dual_flux, 4 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
     if (ref_mpi_once(ref_mpi)) printf("reading primitive %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive,
-                        argv[3]),
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive, argv[3]),
         "unable to load primitive in position 3");
     REIS(1, ldim, "expected 1 (s) primitive");
 
-        if (ref_mpi_once(ref_mpi)) printf("reading dual %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual,
-                        argv[4]),
+    if (ref_mpi_once(ref_mpi)) printf("reading dual %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual, argv[4]),
         "unable to load primitive in position 3");
     REIS(1, ldim, "expected 1 (lambda) dual");
 
@@ -337,8 +335,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("add convdiff flux\n");
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[5]),
-        "export dual_flux");
+    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[5]), "export dual_flux");
 
     ref_free(dual_flux);
     ref_free(dual);
