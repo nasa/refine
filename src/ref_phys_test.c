@@ -433,7 +433,7 @@ int main(int argc, char *argv[]) {
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
     REF_DBL cell_vol, flux_grad[3];
     REF_DBL convergence_rate, exponent;
-    REF_INT nsystem = 11;
+    REF_INT nsystem, nequ;
 
     REIS(1, cont_res_pos,
          "required args: --cont-res grid.meshb dual_flux.solb convergence_rate "
@@ -460,18 +460,22 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
         "unable to load scalar in position 3");
-    REIS(20, ldim, "expected 20 (5*adj,5*xflux,5*yflux,5*zflux) scalar");
-
+    RAS(4 == ldim || 20 == ldim,
+        "expected 4 (adj,xflux,yflux,zflux) "
+        "or 20 (5*adj,5*xflux,5*yflux,5*zflux)");
+    nequ = ldim / 4;
+    nsystem = 1 + nequ + nequ;
     ref_malloc_init(weight, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
     ref_malloc_init(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
+    if (ref_mpi_once(ref_mpi)) printf("compute residual\n");
     for (dir = 0; dir < 3; dir++) {
-      for (equ = 0; equ < 5; equ++) {
+      for (equ = 0; equ < nequ; equ++) {
         each_ref_node_valid_node(ref_node, node) {
-          flux[node] = dual_flux[equ + dir * 5 + 5 + ldim * node];
+          flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
         }
         each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
           RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
@@ -484,21 +488,24 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    if (ref_mpi_once(ref_mpi)) printf("copy dual to system\n");
     each_ref_node_valid_node(ref_node, node) {
-      for (equ = 0; equ < 5; equ++) {
-        system[equ + 5 + nsystem * node] = dual_flux[equ + ldim * node];
+      for (equ = 0; equ < nequ; equ++) {
+        system[equ + nequ + nsystem * node] = dual_flux[equ + ldim * node];
       }
     }
+
+    if (ref_mpi_once(ref_mpi)) printf("compute weight\n");
     each_ref_node_valid_node(ref_node, node) {
-      for (equ = 0; equ < 5; equ++) {
+      for (equ = 0; equ < nequ; equ++) {
         system[nsystem - 1 + nsystem * node] +=
-            ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
+            ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
         weight[node] +=
-            ABS(dual_flux[equ + ldim * node] * system[equ + 6 * node]);
+            ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
       }
       if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
     }
-    if (ref_mpi_once(ref_mpi)) printf("writing system.tec\n");
+    if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
                                        "system.tec"),
         "export primitive_dual");
