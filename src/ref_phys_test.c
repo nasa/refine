@@ -434,7 +434,7 @@ int main(int argc, char *argv[]) {
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT i, tri_nodes[3];
     REF_DBL cell_vol, flux_grad[3], normal[3];
-    REF_DBL convergence_rate, exponent, total;
+    REF_DBL convergence_rate, exponent, total, l2res;
     REF_INT nsystem, nequ;
     REF_BOOL cell_centered_finite_volume;
 
@@ -523,17 +523,21 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("compute weight\n");
     total = 0;
+    l2res = 0;
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
         system[nsystem - 1 + nsystem * node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
         weight[node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
+        l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
       total += weight[node];
       if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
     }
     RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "sum total");
+    RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_INT_TYPE), "sum l2res");
+    if (ref_mpi_once(ref_mpi)) printf("L2 res %e\n", sqrt(l2res));
     if (ref_mpi_once(ref_mpi)) printf("total weight %e\n", total);
     if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
