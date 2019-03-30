@@ -115,6 +115,21 @@ REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
+                             REF_DBL *dir, REF_DBL *flux) {
+  REF_DBL velocity[3];
+
+  velocity[0] = 1.0;
+  velocity[1] = 1.0;
+  velocity[2] = 1.0;
+
+  flux[0] = ref_math_dot(dir, velocity) * state[0];
+
+  flux[0] -= diffusivity * ref_math_dot(dir, grad);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   FILE *file;
   REF_INT i, n, id, type;
