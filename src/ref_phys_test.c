@@ -291,18 +291,25 @@ int main(int argc, char *argv[]) {
   if (convdiff_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_DBL *primitive, *dual, *dual_flux;
+    REF_DBL *grad, flux[1], direction[3], diffusivity;
     REF_INT ldim;
-    REF_INT node, i;
+    REF_INT node, i, dir;
+    REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
 
     REIS(1, convdiff_flux_pos,
-         "required args: --convdiff-flux grid.meshb primitive.solb dual.solb "
+         "required args: --convdiff-flux grid.meshb primitive.solb "
+         "dual.solb diffusivity "
          "dual_flux.solb");
-    if (6 > argc) {
+    if (7 > argc) {
       printf(
-          "required args: --convdiff-flux grid.meshb primitive.solb dual.solb "
+          "required args: --convdiff-flux grid.meshb primitive.solb "
+          "dual.solb diffusivity "
           "dual_flux.solb\n");
       return REF_FAILURE;
     }
+
+    diffusivity = atof(argv[5]);
+    if (ref_mpi_once(ref_mpi)) printf("diffusivity %f\n", diffusivity);
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
@@ -332,11 +339,28 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct gradient\n");
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_recon_gradient(ref_grid, primitive, grad, recon), "grad_lam");
+
     if (ref_mpi_once(ref_mpi)) printf("add convdiff flux\n");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (dir = 0; dir < 3; dir++) {
+        direction[0] = 0;
+        direction[1] = 0;
+        direction[2] = 0;
+        direction[dir] = 1;
+        RSS(ref_phys_convdiff(&(primitive[node]), &(grad[3 * node]),
+                              diffusivity, direction, flux),
+            "convdiff");
+        dual_flux[1 + dir + 4 * node] += flux[0];
+      }
+    }
 
-    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[5]), "export dual_flux");
+    if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[6]);
+    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[6]), "export dual_flux");
 
+    ref_free(grad);
     ref_free(dual_flux);
     ref_free(dual);
     ref_free(primitive);
