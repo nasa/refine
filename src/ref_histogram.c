@@ -163,7 +163,8 @@ REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram, REF_GRID ref_grid,
   for (i = 0; i < ref_histogram_nbin(ref_histogram); i++)
     sum += ref_histogram_bin(ref_histogram, i);
 
-  printf("%7.3f %10.3e min %s\n", ref_histogram_min(ref_histogram),ref_histogram_min(ref_histogram), description);
+  printf("%7.3f %10.3e min %s\n", ref_histogram_min(ref_histogram),
+         ref_histogram_min(ref_histogram), description);
 
   for (i = 0; i < ref_histogram_nbin(ref_histogram); i++)
     if (ref_histogram_to_obs(i + 1) > ref_histogram_min(ref_histogram) &&
@@ -180,8 +181,8 @@ REF_STATUS ref_histogram_print(REF_HISTOGRAM ref_histogram, REF_GRID ref_grid,
       }
     }
 
-  printf("%7.3f %10.3e:%10d max %s\n", ref_histogram_max(ref_histogram), ref_histogram_max(ref_histogram), sum,
-         description);
+  printf("%7.3f %10.3e:%10d max %s\n", ref_histogram_max(ref_histogram),
+         ref_histogram_max(ref_histogram), sum, description);
   log_mean = ref_histogram_log_total(ref_histogram) / (REF_DBL)sum;
   printf("%18.10f mean %s\n", pow(2.0, log_mean), description);
 
@@ -511,6 +512,28 @@ REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid) {
 
   if (ref_grid_once(ref_grid))
     RSS(ref_histogram_tec(ref_histogram, "quality"), "tec");
+
+  RSS(ref_histogram_free(ref_histogram), "free gram");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid, REF_DBL *observations) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_HISTOGRAM ref_histogram;
+  REF_INT node;
+
+  RSS(ref_histogram_create(&ref_histogram), "create");
+  RSS(ref_histogram_resolution(ref_histogram, 288, 12.0), "res");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (observations[node] > 0.0)
+      RSS(ref_histogram_add(ref_histogram, observations[node]), "add");
+  }
+
+  RSS(ref_histogram_gather(ref_histogram, ref_grid_mpi(ref_grid)), "gather");
+
+  if (ref_grid_once(ref_grid))
+    RSS(ref_histogram_tec(ref_histogram, "node"), "tec");
 
   RSS(ref_histogram_free(ref_histogram), "free gram");
   return REF_SUCCESS;
