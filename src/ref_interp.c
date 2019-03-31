@@ -1084,8 +1084,8 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
     if (increase_fuzz) {
       ref_interp_search_fuzz(ref_interp) *= 10.0;
       if (ref_mpi_once(ref_mpi))
-	printf("retry tree search with %e fuzz\n",
-	       ref_interp_search_fuzz(ref_interp));
+        printf("retry tree search with %e fuzz\n",
+               ref_interp_search_fuzz(ref_interp));
     }
     RSS(ref_interp_tree(ref_interp, &increase_fuzz), "tree");
     if (ref_interp->instrument)

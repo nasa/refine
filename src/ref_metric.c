@@ -1510,7 +1510,8 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_DBL *weight,
   if (NULL != weight) {
     each_ref_node_valid_node(ref_node, node) {
       if (weight[node] > 0.0) {
-        for (i = 0; i < 6; i++) metric[i + 6 * node] /= (weight[node]*weight[node]);
+        for (i = 0; i < 6; i++)
+          metric[i + 6 * node] /= (weight[node] * weight[node]);
       }
     }
   }
