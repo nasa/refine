@@ -219,6 +219,10 @@ REF_STATUS ref_node_tet_grad(REF_NODE ref_node, REF_INT *nodes, REF_DBL *scalar,
 
 REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
+
+REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
+                              REF_INT position, REF_DBL *value);
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */

@@ -32,6 +32,10 @@ continuous metric interpolation
  allow interp asynchronously
  fill in located at end of pass
 
+split public/private ref_defs.h
+namespace ABS, MIN, MAX
+define REF_DBL_MIN, REF_DBL_MAX;
+
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
 extract/combine post adaptation operator checks and status
