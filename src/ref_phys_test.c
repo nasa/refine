@@ -529,19 +529,22 @@ int main(int argc, char *argv[]) {
     l2res = 0;
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
-        system[nsystem - 1 + nsystem * node] +=
-            ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
         weight[node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
         l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
+      /* weight in now length scale, convert to eigenvalue */
+      if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
       total += weight[node];
-      if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
+      system[nsystem - 1 + nsystem * node] = weight[node];
     }
     RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "sum total");
+    total /= (REF_DBL)ref_node_n_global(ref_node);
     RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_INT_TYPE), "sum l2res");
+    l2res /= (REF_DBL)ref_node_n_global(ref_node);
+    l2res = sqrt(l2res);
     if (ref_mpi_once(ref_mpi)) printf("L2 res %e\n", sqrt(l2res));
-    if (ref_mpi_once(ref_mpi)) printf("total weight %e\n", total);
+    if (ref_mpi_once(ref_mpi)) printf("L1 total h scale weight %e\n", total);
     if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
                                        "system.tec"),
