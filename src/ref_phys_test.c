@@ -535,8 +535,9 @@ int main(int argc, char *argv[]) {
             ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
         l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
+      /* weight in now length scale, convert to eigenvalue */
+      if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
       total += weight[node];
-      if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
     }
     RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "sum total");
     RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_INT_TYPE), "sum l2res");
