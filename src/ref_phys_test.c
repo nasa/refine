@@ -435,7 +435,8 @@ int main(int argc, char *argv[]) {
     REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
     REF_INT i, tri_nodes[3];
     REF_DBL cell_vol, flux_grad[3], normal[3];
-    REF_DBL convergence_rate, exponent, total, l2res, median;
+    REF_DBL convergence_rate, exponent, total, l2res;
+    REF_DBL min_weight, max_weight, median, minmax;
     REF_INT nsystem, nequ;
     REF_BOOL cell_centered_finite_volume;
 
@@ -528,6 +529,8 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("compute weight\n");
     total = 0;
     l2res = 0;
+    min_weight = 1.0e300;
+    max_weight = -1.0e300;
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
         weight[node] +=
@@ -543,17 +546,30 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       weight[node] /= median;
       total += weight[node];
+      min_weight = MIN(min_weight, weight[node]);
+      max_weight = MAX(max_weight, weight[node]);
       system[nsystem - 1 + nsystem * node] = weight[node];
     }
 
     RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "sum total");
     total /= (REF_DBL)ref_node_n_global(ref_node);
+
+    minmax = min_weight;
+    RSS(ref_mpi_min(ref_mpi, &minmax, &min_weight, REF_DBL_TYPE), "mpi min");
+    RSS(ref_mpi_bcast(ref_mpi, &min_weight, 1, REF_DBL_TYPE), "mbast");
+
+    minmax = max_weight;
+    RSS(ref_mpi_max(ref_mpi, &minmax, &max_weight, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &max_weight, 1, REF_DBL_TYPE), "mbast");
+
     RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_INT_TYPE), "sum l2res");
     l2res /= (REF_DBL)ref_node_n_global(ref_node);
     l2res = sqrt(l2res);
     if (ref_mpi_once(ref_mpi)) printf("median %e\n", median);
     if (ref_mpi_once(ref_mpi)) printf("L2 res %e\n", sqrt(l2res));
     if (ref_mpi_once(ref_mpi)) printf("L1 total h scale weight %e\n", total);
+    if (ref_mpi_once(ref_mpi))
+      printf("min max %e %e\n", min_weight, max_weight);
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
     if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
