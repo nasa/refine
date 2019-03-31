@@ -2498,8 +2498,8 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_INT position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_DBL *pack, *all_elements;
-  REF_INT *source, *order;
-  REF_INT node, nnode, ntotal;
+  REF_INT *all_source, *all_order;
+  REF_INT node, nnode, all_nnode;
 
   ref_malloc(pack, ref_node_n(ref_node), REF_DBL);
   nnode = 0;
@@ -2507,17 +2507,17 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
     pack[nnode] = elements[node];
     nnode++;
   }
-  RSS(ref_mpi_allconcat(ref_mpi, 1, nnode, (void *)(pack), &ntotal, &source,
-                        (void **)(&all_elements), REF_DBL_TYPE),
+  RSS(ref_mpi_allconcat(ref_mpi, 1, nnode, (void *)(pack), &all_nnode,
+                        &all_source, (void **)(&all_elements), REF_DBL_TYPE),
       "concat");
-  ref_malloc(order, ntotal, REF_INT);
+  ref_malloc(all_order, all_nnode, REF_INT);
 
-  RSS(ref_sort_heap_dbl(ntotal, all_elements, order), "heap");
+  RSS(ref_sort_heap_dbl(all_nnode, all_elements, all_order), "heap");
 
-  *value = all_elements[order[position]];
+  *value = all_elements[all_order[position]];
 
-  ref_free(order);
-  ref_free(source);
+  ref_free(all_order);
+  ref_free(all_source);
   ref_free(all_elements);
   ref_free(pack);
 
