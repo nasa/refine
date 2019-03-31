@@ -2497,17 +2497,26 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_INT position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_DBL *pack, *all_elements;
+  REF_DBL *pack, *sorted;
+  REF_INT *order;
+  REF_DBL *all_elements;
   REF_INT *all_source, *all_order;
   REF_INT node, nnode, all_nnode;
 
   ref_malloc(pack, ref_node_n(ref_node), REF_DBL);
+  ref_malloc(sorted, ref_node_n(ref_node), REF_DBL);
+  ref_malloc(order, ref_node_n(ref_node), REF_INT);
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
     pack[nnode] = elements[node];
     nnode++;
   }
-  RSS(ref_mpi_allconcat(ref_mpi, 1, nnode, (void *)(pack), &all_nnode,
+  RSS(ref_sort_heap_dbl(nnode, pack, order), "heap");
+  for (node = 0; node < nnode; node++) {
+    sorted[node] = pack[order[node]];
+  }
+
+  RSS(ref_mpi_allconcat(ref_mpi, 1, nnode, (void *)(sorted), &all_nnode,
                         &all_source, (void **)(&all_elements), REF_DBL_TYPE),
       "concat");
   ref_malloc(all_order, all_nnode, REF_INT);
@@ -2519,6 +2528,8 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
   ref_free(all_order);
   ref_free(all_source);
   ref_free(all_elements);
+  ref_free(order);
+  ref_free(sorted);
   ref_free(pack);
 
   return REF_SUCCESS;
