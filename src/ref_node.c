@@ -2493,3 +2493,71 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
   *distance = sqrt(*distance);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
+                              REF_INT position, REF_DBL *value) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_DBL *pack;
+  REF_INT *order;
+  REF_INT i, node, nnode;
+  REF_DBL pivot_high, pivot_low, pivot;
+  REF_INT position_high, position_low, n_lower_than_pivot, position_pivot;
+  REF_DBL largest = 1.0e300, smallest = -1.0e300;
+
+  ref_malloc(pack, ref_node_n(ref_node), REF_DBL);
+  ref_malloc(order, ref_node_n(ref_node), REF_INT);
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    pack[nnode] = elements[node];
+    nnode++;
+  }
+  RSS(ref_sort_heap_dbl(nnode, pack, order), "heap");
+
+  position_low = 0;
+  position_high = nnode - 1;
+  if (nnode > 0) {
+    pivot = pack[order[position_low]];
+    RSS(ref_mpi_min(ref_mpi, &pivot, &pivot_low, REF_DBL_TYPE), "min");
+    pivot = pack[order[position_high]];
+    RSS(ref_mpi_max(ref_mpi, &pivot, &pivot_high, REF_DBL_TYPE), "min");
+  } else {
+    pivot = largest;
+    RSS(ref_mpi_min(ref_mpi, &pivot, &pivot_low, REF_DBL_TYPE), "min");
+    pivot = smallest;
+    RSS(ref_mpi_max(ref_mpi, &pivot, &pivot_high, REF_DBL_TYPE), "min");
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &pivot_low, 1, REF_DBL_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_mpi, &pivot_high, 1, REF_DBL_TYPE), "bcast");
+
+  for (i = 0; i < 10; i++) {
+    pivot = 0.5 * (pivot_low + pivot_high);
+
+    n_lower_than_pivot = 0;
+    for (node = 0; node < nnode; node++) {
+      if (pack[order[n_lower_than_pivot]] > pivot) break;
+      n_lower_than_pivot++;
+    }
+    RSS(ref_mpi_sum(ref_mpi, &n_lower_than_pivot, &position_pivot, 1,
+                    REF_INT_TYPE),
+        "sum");
+    RSS(ref_mpi_bcast(ref_mpi, &position_pivot, 1, REF_INT_TYPE), "bcast");
+
+    if (ref_mpi_once(ref_mpi))
+      printf("%2i %f %d %d\n", i, pivot, position_pivot, position);
+
+    if (position_pivot > position) {
+      pivot_high = pivot;
+      position_high = n_lower_than_pivot;
+    } else {
+      pivot_low = pivot;
+      position_low = n_lower_than_pivot;
+    }
+  }
+
+  *value = pivot;
+
+  ref_free(order);
+  ref_free(pack);
+
+  return REF_SUCCESS;
+}
