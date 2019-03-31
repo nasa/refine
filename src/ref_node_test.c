@@ -2073,9 +2073,7 @@ int main(int argc, char *argv[]) {
     }
     position = ref_mpi_n(ref_mpi) + 1;
     RSS(ref_node_selection(ref_node, elements, position, &value), "median");
-    SKIP_BLOCK("selection WIP") {
-      RWDS(median, value, -1.0, "median expected");
-    }
+    RWDS(median, value, -1.0, "median expected");
     ref_free(elements);
     RSS(ref_node_free(ref_node), "node free");
   }
