@@ -4,7 +4,7 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-build_directory_root=/ssd/fun3d/gitlab-ci
+build_directory_root=/scratch/fun3d/gitlab-ci
 
 build_machine=cmb20
 ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true

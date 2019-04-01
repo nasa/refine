@@ -430,15 +430,12 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CELL ref_cell;
-    REF_DBL *dual_flux, *system, *flux, *weight;
+    REF_DBL *dual_flux, *system, *flux, *res, *weight;
     REF_INT ldim;
-    REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_INT i, tri_nodes[3];
-    REF_DBL cell_vol, flux_grad[3], normal[3];
+    REF_INT equ, dir, node;
     REF_DBL convergence_rate, exponent, total, l2res;
     REF_DBL min_weight, max_weight, median, minmax;
     REF_INT nsystem, nequ;
-    REF_BOOL cell_centered_finite_volume;
 
     REIS(1, cont_res_pos,
          "required args: --cont-res grid.meshb dual_flux.solb convergence_rate "
@@ -460,7 +457,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
     ref_node = ref_grid_node(ref_grid);
-    ref_cell = ref_grid_tet(ref_grid);
+    ref_cell = ref_grid_tri(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
@@ -472,50 +469,26 @@ int main(int argc, char *argv[]) {
     nsystem = 1 + nequ + nequ;
     ref_malloc_init(weight, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
-    ref_malloc_init(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    ref_malloc_init(flux, 3 * nequ * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0.0);
+    ref_malloc_init(res, nequ * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
-    cell_centered_finite_volume = REF_TRUE;
-    if (ref_mpi_once(ref_mpi))
-      printf("compute residual %d\n", cell_centered_finite_volume);
-    if (cell_centered_finite_volume) {
+    if (ref_mpi_once(ref_mpi)) printf("compute residual\n");
+    each_ref_node_valid_node(ref_node, node) {
       for (dir = 0; dir < 3; dir++) {
         for (equ = 0; equ < nequ; equ++) {
-          each_ref_node_valid_node(ref_node, node) {
-            flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
-          }
-          each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-            RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-            RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
-            each_ref_cell_cell_node(ref_cell, cell_node) {
-              system[equ + nsystem * nodes[cell_node]] +=
-                  0.25 * flux_grad[dir] * cell_vol;
-            }
-          }
+          flux[equ + dir * nequ + 3 * nequ * node] =
+              dual_flux[equ + dir * nequ + nequ + ldim * node];
         }
       }
-    } else {
+    }
+    RSS(ref_phys_cc_fv_embed(ref_grid, nequ, flux, res), "res");
+    each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-          each_ref_cell_cell_node(ref_cell, cell_node) {
-            for (i = 0; i < 3; i++)
-              tri_nodes[i] = ref_cell_f2n(ref_cell, i, cell_node, cell);
-            RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "vol");
-            for (dir = 0; dir < 3; dir++) {
-              normal[dir] /= cell_vol;
-            }
-            for (i = 0; i < 4; i++) {
-              for (dir = 0; dir < 3; dir++) {
-                system[equ + nsystem * nodes[cell_node]] +=
-                    0.25 *
-                    dual_flux[equ + dir * nequ + nequ + ldim * nodes[i]] *
-                    normal[dir] * cell_vol;
-              }
-            }
-          }
-        }
+        system[equ + nsystem * node] = res[equ + nequ * node];
       }
     }
 
@@ -535,8 +508,12 @@ int main(int argc, char *argv[]) {
       for (equ = 0; equ < nequ; equ++) {
         weight[node] +=
             ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
-        l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
+        if (ref_node_owned(ref_node, node))
+          l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
+      /* approximate boundary with double weight */
+      if (!ref_cell_node_empty(ref_cell, node))
+	weight[node] *= 2.0;
       /* weight in now length scale, convert to eigenvalue */
       if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
     }
@@ -545,13 +522,15 @@ int main(int argc, char *argv[]) {
         "parallel median selection");
     each_ref_node_valid_node(ref_node, node) {
       weight[node] /= median;
-      total += weight[node];
-      min_weight = MIN(min_weight, weight[node]);
-      max_weight = MAX(max_weight, weight[node]);
+      if (ref_node_owned(ref_node, node)) {
+        total += weight[node];
+        min_weight = MIN(min_weight, weight[node]);
+        max_weight = MAX(max_weight, weight[node]);
+      }
       system[nsystem - 1 + nsystem * node] = weight[node];
     }
 
-    RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "sum total");
+    RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_DBL_TYPE), "sum total");
     total /= (REF_DBL)ref_node_n_global(ref_node);
 
     minmax = min_weight;
@@ -562,14 +541,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_max(ref_mpi, &minmax, &max_weight, REF_DBL_TYPE), "mpi max");
     RSS(ref_mpi_bcast(ref_mpi, &max_weight, 1, REF_DBL_TYPE), "mbast");
 
-    RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_INT_TYPE), "sum l2res");
+    RSS(ref_mpi_allsum(ref_mpi, &l2res, 1, REF_DBL_TYPE), "sum l2res");
     l2res /= (REF_DBL)ref_node_n_global(ref_node);
     l2res = sqrt(l2res);
-    if (ref_mpi_once(ref_mpi)) printf("median %e\n", median);
-    if (ref_mpi_once(ref_mpi)) printf("L2 res %e\n", sqrt(l2res));
-    if (ref_mpi_once(ref_mpi)) printf("L1 total h scale weight %e\n", total);
-    if (ref_mpi_once(ref_mpi))
+    if (ref_mpi_once(ref_mpi)) {
+      printf("median %e\n", median);
+      printf("L2 res %e\n", l2res);
+      printf("L1 h scale weight %e\n", total);
       printf("min max %e %e\n", min_weight, max_weight);
+    }
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
     if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
@@ -581,6 +561,7 @@ int main(int argc, char *argv[]) {
 
     ref_free(weight);
     ref_free(flux);
+    ref_free(res);
     ref_free(system);
     ref_free(dual_flux);
 

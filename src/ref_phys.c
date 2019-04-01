@@ -18,8 +18,12 @@
 
 #include <math.h>
 
-#include "ref_math.h"
 #include "ref_phys.h"
+
+#include "ref_malloc.h"
+#include "ref_math.h"
+
+#include "ref_recon.h"
 
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
@@ -145,5 +149,162 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
     RSS(ref_dict_store(ref_dict, id, type), "store");
   }
   fclose(file);
+  return REF_SUCCESS;
+}
+
+/* continuous galerkin spike
+   for (equ = 0; equ < nequ; equ++) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        for (i = 0; i < 3; i++)
+          tri_nodes[i] = ref_cell_f2n(ref_cell, i, cell_node, cell);
+        RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "vol");
+        for (dir = 0; dir < 3; dir++) {
+          normal[dir] /= cell_vol;
+        }
+        for (i = 0; i < 4; i++) {
+          for (dir = 0; dir < 3; dir++) {
+            system[equ + nsystem * nodes[cell_node]] +=
+                0.25 *
+                dual_flux[equ + dir * nequ + nequ + ldim * nodes[i]] *
+                normal[dir] * cell_vol;
+          }
+        }
+      }
+    }
+  }
+*/
+
+REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
+                              REF_DBL *res) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT equ, dir, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL cell_vol, flux_grad[3];
+  REF_DBL tet_flux[4], *xyzs[4];
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      xyzs[cell_node] = ref_node_xyz_ptr(ref_node, nodes[cell_node]);
+    }
+    RSS(ref_node_xyz_vol(xyzs, &cell_vol), "vol");
+    for (dir = 0; dir < 3; dir++) {
+      for (equ = 0; equ < nequ; equ++) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          tet_flux[cell_node] =
+              flux[equ + dir * nequ + 3 * nequ * nodes[cell_node]];
+        }
+        RSS(ref_node_xyz_grad(xyzs, tet_flux, flux_grad), "grad");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          res[equ + nequ * nodes[cell_node]] +=
+              0.25 * flux_grad[dir] * cell_vol;
+        }
+      }
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, res, nequ), "ghost res");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
+                                REF_DBL *res) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT i, equ, dir, cell, cell_node, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL cell_vol, flux_grad[3];
+  REF_DBL tet_flux[4], *xyzs[4];
+  REF_DBL macro_flux[10], macro_xyz[10][3];
+  REF_INT m2n[8][4] = {{0, 4, 5, 6}, {1, 8, 7, 4}, {2, 7, 9, 6}, {3, 6, 9, 8},
+                       {4, 6, 9, 5}, {7, 8, 9, 4}, {7, 9, 5, 4}, {8, 6, 9, 4}};
+  REF_INT n0, n1, macro;
+  REF_RECON_RECONSTRUCTION recon = REF_RECON_L2PROJECTION;
+  REF_INT node;
+  REF_DBL sdot0, sdot1, *direqu, *fluxgrad;
+  REF_BOOL high_order = REF_TRUE;
+  /* macro node [edge]
+                                  3------9[5]--------2
+                                 / \              . /
+                                /   \          .   /
+                               /     \      .     /
+                              /       \  .       /
+                             /        .\        /
+                          6[2]   5[1]  8[4]   7[3]
+                           /    .        \    /
+                          /  .            \  /
+                         /.                \/
+                        0------4[0]--------1
+  */
+
+  ref_malloc(direqu, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(fluxgrad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  for (dir = 0; dir < 3; dir++) {
+    for (equ = 0; equ < nequ; equ++) {
+      each_ref_node_valid_node(ref_node, node) {
+        direqu[node] = flux[equ + dir * nequ + 3 * nequ * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, direqu, fluxgrad, recon), "grad");
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          for (i = 0; i < 3; i++) {
+            macro_xyz[cell_node][i] =
+                ref_node_xyz(ref_node, i, nodes[cell_node]);
+          }
+        }
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          n0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+          n1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+          for (i = 0; i < 3; i++) {
+            macro_xyz[4 + cell_edge][i] = 0.5 * (ref_node_xyz(ref_node, i, n0) +
+                                                 ref_node_xyz(ref_node, i, n1));
+          }
+        }
+
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          i = equ + dir * nequ + 3 * nequ * nodes[cell_node];
+          macro_flux[cell_node] = flux[i];
+        }
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          n0 = nodes[ref_cell_e2n_gen(ref_cell, 0, cell_edge)];
+          n1 = nodes[ref_cell_e2n_gen(ref_cell, 1, cell_edge)];
+          macro_flux[4 + cell_edge] =
+              0.5 * (flux[equ + dir * nequ + 3 * nequ * n0] +
+                     flux[equ + dir * nequ + 3 * nequ * n1]);
+          sdot0 = 0.0;
+          sdot1 = 0.0;
+          for (i = 0; i < 3; i++) {
+            sdot0 += (ref_node_xyz(ref_node, i, n1) -
+                      ref_node_xyz(ref_node, i, n0)) *
+                     fluxgrad[i + 3 * n0];
+            sdot1 += (ref_node_xyz(ref_node, i, n1) -
+                      ref_node_xyz(ref_node, i, n0)) *
+                     fluxgrad[i + 3 * n1];
+          }
+          if (high_order) macro_flux[4 + cell_edge] += 0.125 * (sdot0 - sdot1);
+        }
+        for (macro = 0; macro < 8; macro++) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            xyzs[cell_node] = macro_xyz[m2n[macro][cell_node]];
+            tet_flux[cell_node] = macro_flux[m2n[macro][cell_node]];
+          }
+          RSS(ref_node_xyz_vol(xyzs, &cell_vol), "vol");
+          RSS(ref_node_xyz_grad(xyzs, tet_flux, flux_grad), "grad");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            res[equ + nequ * nodes[cell_node]] +=
+                0.25 * flux_grad[dir] * cell_vol;
+          }
+        }
+      }
+    }
+  }
+
+  ref_free(fluxgrad);
+  ref_free(direqu);
+
+  RSS(ref_node_ghost_dbl(ref_node, res, nequ), "ghost res");
+
   return REF_SUCCESS;
 }

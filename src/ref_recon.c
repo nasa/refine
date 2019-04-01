@@ -58,7 +58,8 @@ static REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid,
     switch (ref_cell_node_per(ref_cell)) {
       case 4:
         RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-        RSS(ref_node_tet_grad(ref_node, nodes, scalar, cell_grad), "grad");
+        RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
+            "grad");
         for (cell_node = 0; cell_node < 4; cell_node++)
           for (i = 0; i < 3; i++)
             grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
