@@ -40,6 +40,8 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
 
 REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
                               REF_DBL *res);
+REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
+                                REF_DBL *res);
 
 END_C_DECLORATION
 
