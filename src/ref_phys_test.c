@@ -483,7 +483,7 @@ int main(int argc, char *argv[]) {
         }
       }
     }
-    RSS(ref_phys_cc_fv_res(ref_grid, nequ, flux, res), "res");
+    RSS(ref_phys_cc_fv_embed(ref_grid, nequ, flux, res), "res");
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
         system[equ + nsystem * node] = res[equ + nequ * node];
