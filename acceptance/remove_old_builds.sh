@@ -10,7 +10,7 @@ if [[ $# -ne 1 ]]; then
 fi
 
 BUILD_PATH=$1
-DAYS_OLD=14
+DAYS_OLD=7
 
 find ${BUILD_PATH} -type d -mindepth 1 -maxdepth 1 -mtime +${DAYS_OLD} \
      -exec chmod -R u+rwX {} \;
