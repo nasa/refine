@@ -429,6 +429,7 @@ int main(int argc, char *argv[]) {
   if (cont_res_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
+    REF_CELL ref_cell;
     REF_DBL *dual_flux, *system, *flux, *res, *weight;
     REF_INT ldim;
     REF_INT equ, dir, node;
@@ -456,6 +457,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
     ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_tri(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
@@ -509,6 +511,9 @@ int main(int argc, char *argv[]) {
         if (ref_node_owned(ref_node, node))
           l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
+      /* approximate boundary with double weight */
+      if (!ref_cell_node_empty(ref_cell, node))
+	weight[node] *= 2.0;
       /* weight in now length scale, convert to eigenvalue */
       if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
     }
