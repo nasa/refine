@@ -19,6 +19,7 @@
 #ifndef REF_MALLOC_H
 #define REF_MALLOC_H
 
+#include <stdlib.h>
 #include "ref_defs.h"
 
 BEGIN_C_DECLORATION
