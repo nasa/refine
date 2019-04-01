@@ -181,8 +181,8 @@ REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
   REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL cell_vol, flux_grad[3];
   REF_DBL *equ_flux;
-  ref_malloc(equ_flux, ref_node_max(ref_node), REF_DBL);
 
+  ref_malloc(equ_flux, ref_node_max(ref_node), REF_DBL);
   for (dir = 0; dir < 3; dir++) {
     for (equ = 0; equ < nequ; equ++) {
       each_ref_node_valid_node(ref_node, node) {
@@ -200,5 +200,8 @@ REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
     }
   }
   ref_free(equ_flux);
+
+  RSS(ref_node_ghost_dbl(ref_node, res, nequ), "ghost res");
+
   return REF_SUCCESS;
 }
