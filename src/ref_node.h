@@ -180,6 +180,7 @@ REF_STATUS ref_node_tri_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                         REF_DBL *quality,
                                         REF_DBL *dquality_dnode0);
 
+REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume);
 REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes, REF_DBL *volume);
 REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                     REF_DBL *vol, REF_DBL *dvol_dnode0);
@@ -214,6 +215,8 @@ REF_STATUS ref_node_dist_to_edge(REF_NODE ref_node, REF_INT *nodes,
 REF_STATUS ref_node_dist_to_tri(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                                 REF_DBL *distance);
 
+REF_STATUS ref_node_xyz_grad(REF_DBL *xyzs[4], REF_DBL *scalar,
+                             REF_DBL *gradient);
 REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *scalar, REF_DBL *gradient);
 

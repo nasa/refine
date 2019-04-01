@@ -854,6 +854,7 @@ int main(int argc, char *argv[]) {
   { /* tet volume */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
+    REF_DBL *xyzs[4];
     REF_DBL vol;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -877,12 +878,21 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[3]) = 1.0;
 
+    xyzs[0] = ref_node_xyz_ptr(ref_node, nodes[0]);
+    xyzs[1] = ref_node_xyz_ptr(ref_node, nodes[1]);
+    xyzs[2] = ref_node_xyz_ptr(ref_node, nodes[2]);
+    xyzs[3] = ref_node_xyz_ptr(ref_node, nodes[3]);
+
     RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
+    RWDS(1.0 / 6.0, vol, -1.0, "vol expected");
+    RSS(ref_node_xyz_vol(xyzs, &vol), "vol");
     RWDS(1.0 / 6.0, vol, -1.0, "vol expected");
 
     /* inverted tet is negative volume */
     ref_node_xyz(ref_node, 2, nodes[3]) = -1.0;
     RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
+    RWDS(-1.0 / 6.0, vol, -1.0, "vol expected");
+    RSS(ref_node_xyz_vol(xyzs, &vol), "vol");
     RWDS(-1.0 / 6.0, vol, -1.0, "vol expected");
 
     RSS(ref_node_free(ref_node), "free");
@@ -1443,6 +1453,7 @@ int main(int argc, char *argv[]) {
   { /* Regular Tetrahedron vol, quality, ratio */
     REF_NODE ref_node;
     REF_INT nodes[4], global;
+    REF_DBL *xyzs[4];
     REF_DBL qual, vol, ratio;
     REF_DBL a;
 
@@ -1475,6 +1486,11 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 1, nodes[3]) = 0.0;
     ref_node_xyz(ref_node, 2, nodes[3]) = 1.0 / 3.0 * sqrt(6.0) * a;
 
+    xyzs[0] = ref_node_xyz_ptr(ref_node, nodes[0]);
+    xyzs[1] = ref_node_xyz_ptr(ref_node, nodes[1]);
+    xyzs[2] = ref_node_xyz_ptr(ref_node, nodes[2]);
+    xyzs[3] = ref_node_xyz_ptr(ref_node, nodes[3]);
+
     ref_node->tet_quality = REF_NODE_EPIC_QUALITY;
     RSS(ref_node_tet_quality(ref_node, nodes, &qual), "q");
     RWDS(1.0, qual, -1.0, "qual expected");
@@ -1483,6 +1499,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, qual, -1.0, "qual expected");
 
     RSS(ref_node_tet_vol(ref_node, nodes, &vol), "vol");
+    RWDS(1.0 / 12.0 * sqrt(2.0), vol, -1.0, "vol expected");
+    RSS(ref_node_xyz_vol(xyzs, &vol), "vol");
     RWDS(1.0 / 12.0 * sqrt(2.0), vol, -1.0, "vol expected");
 
     RSS(ref_node_ratio(ref_node, nodes[2], nodes[3], &ratio), "ratio");
@@ -2004,6 +2022,7 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_INT nodes[4], global;
     REF_DBL grad[3], scalar[4];
+    REF_DBL *xyzs[4];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -2026,6 +2045,11 @@ int main(int argc, char *argv[]) {
     ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
     ref_node_xyz(ref_node, 2, nodes[3]) = 1.0;
 
+    xyzs[0] = ref_node_xyz_ptr(ref_node, nodes[0]);
+    xyzs[1] = ref_node_xyz_ptr(ref_node, nodes[1]);
+    xyzs[2] = ref_node_xyz_ptr(ref_node, nodes[2]);
+    xyzs[3] = ref_node_xyz_ptr(ref_node, nodes[3]);
+
     /* zero gradient */
     scalar[nodes[0]] = 0.0;
     scalar[nodes[1]] = 0.0;
@@ -2036,6 +2060,10 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, grad[0], -1.0, "gradx expected");
     RWDS(0.0, grad[1], -1.0, "grady expected");
     RWDS(0.0, grad[2], -1.0, "gradz expected");
+    RSS(ref_node_xyz_grad(xyzs, scalar, grad), "vol");
+    RWDS(0.0, grad[0], -1.0, "gradx expected");
+    RWDS(0.0, grad[1], -1.0, "grady expected");
+    RWDS(0.0, grad[2], -1.0, "gradz expected");
 
     /* 1-3-5 gradient */
     scalar[nodes[0]] = 0.0;
@@ -2043,6 +2071,10 @@ int main(int argc, char *argv[]) {
     scalar[nodes[2]] = 3.0;
     scalar[nodes[3]] = 5.0;
     RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, grad), "vol");
+    RWDS(1.0, grad[0], -1.0, "gradx expected");
+    RWDS(3.0, grad[1], -1.0, "grady expected");
+    RWDS(5.0, grad[2], -1.0, "gradz expected");
+    RSS(ref_node_xyz_grad(xyzs, scalar, grad), "vol");
     RWDS(1.0, grad[0], -1.0, "gradx expected");
     RWDS(3.0, grad[1], -1.0, "grady expected");
     RWDS(5.0, grad[2], -1.0, "gradz expected");

@@ -1944,6 +1944,29 @@ REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume) {
+  REF_DBL *a, *b, *c, *d;
+  REF_DBL m11, m12, m13;
+  REF_DBL det;
+
+  a = xyzs[0];
+  b = xyzs[1];
+  c = xyzs[2];
+  d = xyzs[3];
+
+  m11 = (a[0] - d[0]) *
+        ((b[1] - d[1]) * (c[2] - d[2]) - (c[1] - d[1]) * (b[2] - d[2]));
+  m12 = (a[1] - d[1]) *
+        ((b[0] - d[0]) * (c[2] - d[2]) - (c[0] - d[0]) * (b[2] - d[2]));
+  m13 = (a[2] - d[2]) *
+        ((b[0] - d[0]) * (c[1] - d[1]) - (c[0] - d[0]) * (b[1] - d[1]));
+  det = (m11 - m12 + m13);
+
+  *volume = -det / 6.0;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes,
                             REF_DBL *volume) {
   REF_DBL *a, *b, *c, *d;
@@ -2418,6 +2441,59 @@ REF_STATUS ref_node_dist_to_tri(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                pow(xyz[2] - ref_node_xyz(ref_node, 2, nodes[2]), 2);
   *distance = MIN(MIN(MIN(projection, edge_dist0), MIN(edge_dist1, edge_dist2)),
                   MIN(node_dist0, MIN(node_dist1, node_dist2)));
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_xyz_grad(REF_DBL *xyzs[4], REF_DBL *scalar,
+                             REF_DBL *gradient) {
+  REF_DBL vol, norm1[3], norm2[3], norm3[3];
+  REF_DBL *xyz0, *xyz1, *xyz2;
+
+  gradient[0] = 0.0;
+  gradient[1] = 0.0;
+  gradient[2] = 0.0;
+
+  RSS(ref_node_xyz_vol(xyzs, &vol), "vol");
+  vol *= -6.0;
+
+  xyz0 = xyzs[0];
+  xyz1 = xyzs[3];
+  xyz2 = xyzs[2];
+  RSS(ref_node_xyz_normal(xyz0, xyz1, xyz2, norm1), "vol");
+
+  xyz0 = xyzs[0];
+  xyz1 = xyzs[1];
+  xyz2 = xyzs[3];
+  RSS(ref_node_xyz_normal(xyz0, xyz1, xyz2, norm2), "vol");
+
+  xyz0 = xyzs[0];
+  xyz1 = xyzs[2];
+  xyz2 = xyzs[1];
+  RSS(ref_node_xyz_normal(xyz0, xyz1, xyz2, norm3), "vol");
+
+  gradient[0] = (scalar[1] - scalar[0]) * norm1[0] +
+                (scalar[2] - scalar[0]) * norm2[0] +
+                (scalar[3] - scalar[0]) * norm3[0];
+  gradient[1] = (scalar[1] - scalar[0]) * norm1[1] +
+                (scalar[2] - scalar[0]) * norm2[1] +
+                (scalar[3] - scalar[0]) * norm3[1];
+  gradient[2] = (scalar[1] - scalar[0]) * norm1[2] +
+                (scalar[2] - scalar[0]) * norm2[2] +
+                (scalar[3] - scalar[0]) * norm3[2];
+
+  if (ref_math_divisible(gradient[0], vol) &&
+      ref_math_divisible(gradient[1], vol) &&
+      ref_math_divisible(gradient[2], vol)) {
+    gradient[0] /= vol;
+    gradient[1] /= vol;
+    gradient[2] /= vol;
+  } else {
+    gradient[0] = 0.0;
+    gradient[1] = 0.0;
+    gradient[2] = 0.0;
+    return REF_DIV_ZERO;
+  }
 
   return REF_SUCCESS;
 }
