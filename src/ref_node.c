@@ -2508,8 +2508,10 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
   ref_malloc(order, ref_node_n(ref_node), REF_INT);
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    pack[nnode] = elements[node];
-    nnode++;
+    if (ref_node_owned(ref_node, node)) {
+      pack[nnode] = elements[node];
+      nnode++;
+    }
   }
   RSS(ref_sort_heap_dbl(nnode, pack, order), "heap");
   for (node = 0; node < nnode; node++) {
