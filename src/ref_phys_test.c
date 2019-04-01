@@ -429,16 +429,12 @@ int main(int argc, char *argv[]) {
   if (cont_res_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
-    REF_CELL ref_cell;
-    REF_DBL *dual_flux, *system, *flux, *weight;
+    REF_DBL *dual_flux, *system, *flux, *res, *weight;
     REF_INT ldim;
-    REF_INT equ, dir, node, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-    REF_INT i, tri_nodes[3];
-    REF_DBL cell_vol, flux_grad[3], normal[3];
+    REF_INT equ, dir, node;
     REF_DBL convergence_rate, exponent, total, l2res;
     REF_DBL min_weight, max_weight, median, minmax;
     REF_INT nsystem, nequ;
-    REF_BOOL cell_centered_finite_volume;
 
     REIS(1, cont_res_pos,
          "required args: --cont-res grid.meshb dual_flux.solb convergence_rate "
@@ -460,7 +456,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
     ref_node = ref_grid_node(ref_grid);
-    ref_cell = ref_grid_tet(ref_grid);
 
     if (ref_mpi_once(ref_mpi)) printf("reading dual flux %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &dual_flux, argv[3]),
@@ -472,50 +467,26 @@ int main(int argc, char *argv[]) {
     nsystem = 1 + nequ + nequ;
     ref_malloc_init(weight, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
-    ref_malloc_init(flux, ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    ref_malloc_init(flux, 3 * nequ * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0.0);
+    ref_malloc_init(res, nequ * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
-    cell_centered_finite_volume = REF_TRUE;
-    if (ref_mpi_once(ref_mpi))
-      printf("compute residual %d\n", cell_centered_finite_volume);
-    if (cell_centered_finite_volume) {
+    if (ref_mpi_once(ref_mpi)) printf("compute residual\n");
+    each_ref_node_valid_node(ref_node, node) {
       for (dir = 0; dir < 3; dir++) {
         for (equ = 0; equ < nequ; equ++) {
-          each_ref_node_valid_node(ref_node, node) {
-            flux[node] = dual_flux[equ + dir * nequ + nequ + ldim * node];
-          }
-          each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-            RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-            RSS(ref_node_tet_grad(ref_node, nodes, flux, flux_grad), "grad");
-            each_ref_cell_cell_node(ref_cell, cell_node) {
-              system[equ + nsystem * nodes[cell_node]] +=
-                  0.25 * flux_grad[dir] * cell_vol;
-            }
-          }
+          flux[equ + dir * nequ + 3 * nequ * node] =
+              dual_flux[equ + dir * nequ + nequ + ldim * node];
         }
       }
-    } else {
+    }
+    RSS(ref_phys_cc_fv_res(ref_grid, nequ, flux, res), "res");
+    each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-          each_ref_cell_cell_node(ref_cell, cell_node) {
-            for (i = 0; i < 3; i++)
-              tri_nodes[i] = ref_cell_f2n(ref_cell, i, cell_node, cell);
-            RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "vol");
-            for (dir = 0; dir < 3; dir++) {
-              normal[dir] /= cell_vol;
-            }
-            for (i = 0; i < 4; i++) {
-              for (dir = 0; dir < 3; dir++) {
-                system[equ + nsystem * nodes[cell_node]] +=
-                    0.25 *
-                    dual_flux[equ + dir * nequ + nequ + ldim * nodes[i]] *
-                    normal[dir] * cell_vol;
-              }
-            }
-          }
-        }
+        system[equ + nsystem * node] = res[equ + nequ * node];
       }
     }
 
@@ -581,6 +552,7 @@ int main(int argc, char *argv[]) {
 
     ref_free(weight);
     ref_free(flux);
+    ref_free(res);
     ref_free(system);
     ref_free(dual_flux);
 
