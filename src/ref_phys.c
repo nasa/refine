@@ -190,7 +190,8 @@ REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
       }
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-        RSS(ref_node_tet_grad(ref_node, nodes, equ_flux, flux_grad), "grad");
+        RSS(ref_node_tet_grad_nodes(ref_node, nodes, equ_flux, flux_grad),
+            "grad");
         each_ref_cell_cell_node(ref_cell, cell_node) {
           res[equ + nequ * nodes[cell_node]] +=
               0.25 * flux_grad[dir] * cell_vol;

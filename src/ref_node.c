@@ -2422,8 +2422,8 @@ REF_STATUS ref_node_dist_to_tri(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tet_grad(REF_NODE ref_node, REF_INT *nodes, REF_DBL *scalar,
-                             REF_DBL *gradient) {
+REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
+                                   REF_DBL *scalar, REF_DBL *gradient) {
   REF_DBL vol, norm1[3], norm2[3], norm3[3];
   REF_INT face[3];
 

@@ -2032,7 +2032,7 @@ int main(int argc, char *argv[]) {
     scalar[nodes[2]] = 0.0;
     scalar[nodes[3]] = 0.0;
 
-    RSS(ref_node_tet_grad(ref_node, nodes, scalar, grad), "vol");
+    RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, grad), "vol");
     RWDS(0.0, grad[0], -1.0, "gradx expected");
     RWDS(0.0, grad[1], -1.0, "grady expected");
     RWDS(0.0, grad[2], -1.0, "gradz expected");
@@ -2042,7 +2042,7 @@ int main(int argc, char *argv[]) {
     scalar[nodes[1]] = 1.0;
     scalar[nodes[2]] = 3.0;
     scalar[nodes[3]] = 5.0;
-    RSS(ref_node_tet_grad(ref_node, nodes, scalar, grad), "vol");
+    RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, grad), "vol");
     RWDS(1.0, grad[0], -1.0, "gradx expected");
     RWDS(3.0, grad[1], -1.0, "grady expected");
     RWDS(5.0, grad[2], -1.0, "gradz expected");
