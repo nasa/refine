@@ -261,17 +261,17 @@ REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
               0.5 * (flux[equ + dir * nequ + 3 * nequ * n0] +
                      flux[equ + dir * nequ + 3 * nequ * n1]);
         }
-      }
-      for (macro = 0; macro < 8; macro++) {
-        each_ref_cell_cell_node(ref_cell, cell_node) {
-          xyzs[cell_node] = macro_xyz[m2n[macro][cell_node]];
-          tet_flux[cell_node] = macro_flux[m2n[macro][cell_node]];
-        }
-        RSS(ref_node_xyz_vol(xyzs, &cell_vol), "vol");
-        RSS(ref_node_xyz_grad(xyzs, tet_flux, flux_grad), "grad");
-        each_ref_cell_cell_node(ref_cell, cell_node) {
-          res[equ + nequ * nodes[cell_node]] +=
-              0.25 * flux_grad[dir] * cell_vol;
+        for (macro = 0; macro < 8; macro++) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            xyzs[cell_node] = macro_xyz[m2n[macro][cell_node]];
+            tet_flux[cell_node] = macro_flux[m2n[macro][cell_node]];
+          }
+          RSS(ref_node_xyz_vol(xyzs, &cell_vol), "vol");
+          RSS(ref_node_xyz_grad(xyzs, tet_flux, flux_grad), "grad");
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            res[equ + nequ * nodes[cell_node]] +=
+                0.25 * flux_grad[dir] * cell_vol;
+          }
         }
       }
     }
