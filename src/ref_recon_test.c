@@ -65,6 +65,45 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
+  if (argc == 3) {
+    REF_GRID ref_grid;
+    REF_DBL *function, *derivatives, *scalar, *grad;
+    REF_INT ldim, node, i, dir;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[1]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]),
+        "unable to load grid in position 1");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading function %s\n", argv[2]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &function, argv[2]),
+        "unable to load function in position 2");
+    ref_malloc(derivatives, 3 * ldim * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    for (i = 0; i < ldim; i++) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        scalar[node] = function[i + ldim * node];
+      }
+      RSS(ref_recon_gradient(ref_grid, scalar, grad, reconstruction), "grad");
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (dir = 0; dir < 3; dir++) {
+          derivatives[dir + 3 * i + 3 * ldim * node] = grad[i + 3 * node];
+        }
+      }
+    }
+
+    ref_free(function);
+    ref_free(derivatives);
+    ref_free(scalar);
+    ref_free(grad);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   { /* l2-projection grad */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
