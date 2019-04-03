@@ -82,6 +82,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
 
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct\n");
     for (i = 0; i < ldim; i++) {
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         scalar[node] = function[i + ldim * node];
@@ -89,10 +90,15 @@ int main(int argc, char *argv[]) {
       RSS(ref_recon_gradient(ref_grid, scalar, grad, reconstruction), "grad");
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         for (dir = 0; dir < 3; dir++) {
-          derivatives[dir + 3 * i + 3 * ldim * node] = grad[i + 3 * node];
+          derivatives[dir + 3 * i + 3 * ldim * node] =
+              ABS(grad[dir + 3 * node]);
         }
       }
     }
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", "ref_recon_deriv.tec");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3 * ldim, derivatives, NULL,
+                                       "ref_recon_deriv.tec"),
+        "export derivatives");
 
     ref_free(function);
     ref_free(derivatives);
