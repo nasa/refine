@@ -2004,7 +2004,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   printf("curvature 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(geom);
-  *radius = 0.0;
+  *k = 0.0;
   normal[0] = 1.0;
   normal[1] = 0.0;
   normal[2] = 0.0;
