@@ -1978,7 +1978,7 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 }
 
 REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
-                                   REF_DBL *radius, REF_DBL *normal) {
+                                   REF_DBL *k, REF_DBL *normal) {
 #ifdef HAVE_EGADS
   double curvature[4];
   ego *edges;
@@ -1995,7 +1995,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   t = ref_geom_param(ref_geom, 0, geom);
 
   REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
-  *radius = curvature[0];
+  *k = curvature[0];
   normal[0] = curvature[1];
   normal[1] = curvature[2];
   normal[2] = curvature[3];
