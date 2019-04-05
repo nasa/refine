@@ -57,6 +57,7 @@ int main(int argc, char *argv[]) {
   REF_INT conforming_pos = REF_EMPTY;
   REF_INT triage_pos = REF_EMPTY;
 
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   RXS(ref_args_find(argc, argv, "--recon", &recon_pos), REF_NOT_FOUND,
@@ -89,6 +90,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_by_extension(ref_grid, "ref_geom_face.meshb"), "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -107,6 +109,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom tec");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -114,6 +117,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     if (4 > argc) {
       printf("required args: --conforming grid.ext geom.egads [metric.solb]");
+      RSS(ref_mpi_free(ref_mpi), "free");
+      RSS(ref_mpi_stop(), "stop");
       return REF_FAILURE;
     }
     REIS(1, conforming_pos,
@@ -138,6 +143,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -145,6 +151,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     if (4 > argc) {
       printf("required args: --triage grid.ext geom.egads");
+      RSS(ref_mpi_free(ref_mpi), "free");
+      RSS(ref_mpi_stop(), "stop");
       return REF_FAILURE;
     }
     REIS(1, triage_pos, "required args: --triage grid.ext geom.egads");
@@ -883,5 +891,6 @@ int main(int argc, char *argv[]) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }

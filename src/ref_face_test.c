@@ -33,8 +33,9 @@
 #include "ref_face.h"
 #include "ref_mpi.h"
 
-int main(void) {
+int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   { /* make faces shared by two elements */
@@ -189,5 +190,6 @@ int main(void) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }

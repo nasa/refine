@@ -32,8 +32,9 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-int main(void) {
+int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   { /* opposite prism node */
@@ -108,5 +109,6 @@ int main(void) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }
