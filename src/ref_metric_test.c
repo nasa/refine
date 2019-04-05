@@ -629,11 +629,11 @@ int main(int argc, char *argv[]) {
     REF_DBL implied_system[12], multiscale_system[12];
 
     REIS(1, venditti_pos,
-         "required args: --venditti grid.meshb weight.solb scalar.solb "
+         "required args: --venditti grid.meshb scalar.solb weight.solb "
          "gradation complexity output-metric.solb");
     if (8 > argc) {
       printf(
-          "required args: --venditti grid.meshb weight.solb scalar.solb "
+          "required args: --venditti grid.meshb scalar.solb weight.solb "
           "gradation complexity output-metric.solb");
       return REF_FAILURE;
     }
@@ -654,15 +654,15 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 2");
     ref_node = ref_grid_node(ref_grid);
 
-    if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &weight, argv[3]),
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
         "unable to load scalar in position 3");
-    REIS(1, ldim, "expected one weight");
-
-    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[4]);
-    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[4]),
-        "unable to load scalar in position 4");
     REIS(1, ldim, "expected one scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &weight, argv[4]),
+        "unable to load scalar in position 4");
+    REIS(1, ldim, "expected one weight");
 
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
@@ -696,8 +696,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(implied);
     ref_free(metric);
-    ref_free(scalar);
     ref_free(weight);
+    ref_free(scalar);
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
