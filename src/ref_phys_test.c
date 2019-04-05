@@ -512,8 +512,7 @@ int main(int argc, char *argv[]) {
           l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
       }
       /* approximate boundary with double weight */
-      if (!ref_cell_node_empty(ref_cell, node))
-	weight[node] *= 2.0;
+      if (!ref_cell_node_empty(ref_cell, node)) weight[node] *= 2.0;
       /* weight in now length scale, convert to eigenvalue */
       if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
     }
