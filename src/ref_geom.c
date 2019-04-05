@@ -2869,6 +2869,7 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   ego object, *objects;
   double tol;
 
+  object = (ego)NULL;
   switch (type) {
     case REF_GEOM_NODE:
       if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
