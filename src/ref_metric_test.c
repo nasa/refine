@@ -77,6 +77,7 @@ int main(int argc, char *argv[]) {
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
+  REF_INT venditti_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT buffer_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
@@ -103,6 +104,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--no-goal", &no_goal_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--venditti", &venditti_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
@@ -602,6 +605,98 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
+    ref_free(scalar);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
+    RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (venditti_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *weight, *scalar, *metric, *implied;
+    REF_INT p = 2;
+    REF_DBL gradation, complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+    REF_DBL current_complexity, h, h0, h_h0, scale;
+    REF_INT i, node;
+    REF_DBL implied_system[12], multiscale_system[12];
+
+    REIS(1, venditti_pos,
+         "required args: --venditti grid.meshb scalar.solb weight.solb "
+         "gradation complexity output-metric.solb");
+    if (8 > argc) {
+      printf(
+          "required args: --venditti grid.meshb scalar.solb weight.solb "
+          "gradation complexity output-metric.solb");
+      return REF_FAILURE;
+    }
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+
+    gradation = atof(argv[5]);
+    complexity = atof(argv[6]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_node = ref_grid_node(ref_grid);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+        "unable to load scalar in position 3");
+    REIS(1, ldim, "expected one scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading weight %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &weight, argv[4]),
+        "unable to load scalar in position 4");
+    REIS(1, ldim, "expected one weight");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp");
+
+    ref_malloc(implied, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_imply_from(implied, ref_grid), "imply");
+
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
+      RSS(ref_matrix_diag_m(&(implied[6 * node]), implied_system), "decomp");
+      h0 = MAX(MAX(ref_matrix_eig(implied_system, 0),
+                   ref_matrix_eig(implied_system, 1)),
+               ref_matrix_eig(implied_system, 2));
+      h0 = 1.0 / sqrt(h0);
+      h_h0 = weight[node];
+      h_h0 = MAX(0.1, MIN(10.0, h_h0));
+      h = h_h0 * h0;
+      scale = (1.0 / h * h) / ref_matrix_eig(multiscale_system, 0);
+      for (i = 0; i < 6; i++) metric[i + 6 * node] *= scale;
+    }
+
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *= pow(complexity / current_complexity, 2.0 / 3.0);
+      }
+    }
+
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(implied);
+    ref_free(metric);
+    ref_free(weight);
     ref_free(scalar);
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
