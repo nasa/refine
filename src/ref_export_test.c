@@ -44,6 +44,7 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   if (2 == argc) {
@@ -56,6 +57,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "export");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_metric2d(ref_grid, argv[2]), "export m2d");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -200,5 +203,6 @@ int main(int argc, char *argv[]) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }

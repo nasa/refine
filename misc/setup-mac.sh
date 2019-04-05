@@ -6,16 +6,13 @@ set -x
 
 gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
 
-zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-6gpgaz4xpcw73nqwhup5wkq45m5xehb2"
+zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-5ycetozfhh5njhuuy23d6c762yh7flv5"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE-6.8.1"
 
 # production spack packages
-parmetis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/parmetis-4.0.3-xasrm372i7dgoygsou7f2m7pqppyubmd"
-metis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/metis-5.1.0-nugla3v2bdfmvp5ajz67ypecdymm6wmv"
-# debug assert build
-parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/build/Darwin-x86_64"
-metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3/build/Darwin-x86_64"
+parmetis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/parmetis-4.0.3-rivz73pj3gh7kkgwdcqp2dj4tfah45qv"
+metis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/metis-5.1.0-bw75tli3sois3amctooqhmyka2uepdkf"
 
 mkdir -p strict
 ( cd strict && \
@@ -62,6 +59,7 @@ mkdir -p zoltan
     --enable-lite \
     CC=mpicc \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    LDFLAGS="-headerpad_max_install_names" \
     ) \
     || exit
 

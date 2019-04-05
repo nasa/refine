@@ -125,6 +125,7 @@ static REF_STATUS ref_prism_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
   if (argc == 3) {
     REF_GRID ref_grid;
@@ -145,7 +146,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
     printf("done.\n");
 
-    ref_mpi_free(ref_mpi);
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -366,6 +368,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  ref_mpi_free(ref_mpi);
+  RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }

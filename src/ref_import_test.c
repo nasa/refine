@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   { /* export import twod .msh brick */
@@ -302,5 +303,6 @@ int main(int argc, char *argv[]) {
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }
