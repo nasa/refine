@@ -1978,7 +1978,7 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 }
 
 REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
-                                   REF_DBL *radius, REF_DBL *normal) {
+                                   REF_DBL *k, REF_DBL *normal) {
 #ifdef HAVE_EGADS
   double curvature[4];
   ego *edges;
@@ -1995,7 +1995,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   t = ref_geom_param(ref_geom, 0, geom);
 
   REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
-  *radius = curvature[0];
+  *k = curvature[0];
   normal[0] = curvature[1];
   normal[1] = curvature[2];
   normal[2] = curvature[3];
@@ -2004,7 +2004,7 @@ REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom,
   printf("curvature 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   SUPRESS_UNUSED_COMPILER_WARNING(geom);
-  *radius = 0.0;
+  *k = 0.0;
   normal[0] = 1.0;
   normal[1] = 0.0;
   normal[2] = 0.0;
@@ -3184,6 +3184,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT nnode, nedg, sens;
   REF_INT jump_geom = REF_EMPTY;
   REF_DBL *t, tvalue;
+  REF_DBL radius, normal[3];
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -3241,15 +3242,19 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   }
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    RSS(ref_geom_edge_curvature(ref_geom, geom, &radius, normal), "curve");
+    radius = ABS(radius);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-            ref_node_xyz(ref_node, 2, node), 0.0, 0.0, t[item]);
+            ref_node_xyz(ref_node, 2, node), t[item], 0.0, radius, 0.0);
   }
   if (REF_EMPTY != jump_geom) {
+    RSS(ref_geom_edge_curvature(ref_geom, jump_geom, &radius, normal), "curve");
+    radius = ABS(radius);
     node = ref_geom_node(ref_geom, jump_geom);
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-            ref_node_xyz(ref_node, 2, node), 0.0, 0.0, t[nnode - 1]);
+            ref_node_xyz(ref_node, 2, node), t[nnode - 1], 0.0, radius, 0.0);
   }
   ref_free(t);
 
@@ -3282,10 +3287,11 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_DICT ref_dict, ref_dict_jump, ref_dict_degen;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT item, local, node;
+  REF_INT item2, item, local, node;
   REF_INT nnode, nnode_sens0, nnode_degen, ntri;
   REF_INT sens;
   REF_DBL *uv, param[2];
+  REF_DBL kr, r[3], ks, s[3];
 
   RSS(ref_dict_create(&ref_dict), "create dict");
   RSS(ref_dict_create(&ref_dict_jump), "create dict");
@@ -3363,22 +3369,38 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   }
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    kr = ABS(kr);
+    ks = ABS(ks);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
             ref_node_xyz(ref_node, 2, node), uv[0 + 2 * item], uv[1 + 2 * item],
-            0.0);
+            kr, ks);
   }
   each_ref_dict_key_value(ref_dict_jump, item, node, geom) {
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    kr = ABS(kr);
+    ks = ABS(ks);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
             ref_node_xyz(ref_node, 2, node), uv[0 + 2 * (nnode_sens0 + item)],
-            uv[1 + 2 * (nnode_sens0 + item)], 0.0);
+            uv[1 + 2 * (nnode_sens0 + item)], kr, ks);
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    kr = 0;
+    ks = 0;
+    each_ref_geom_having_node(ref_geom, node, item2, geom) {
+      if (ref_geom_type(ref_geom, geom) == REF_GEOM_FACE &&
+          ref_geom_id(ref_geom, geom) == id) {
+        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      }
+    }
+    kr = ABS(kr);
+    ks = ABS(ks);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
             ref_node_xyz(ref_node, 2, node), uv[0 + 2 * (nnode_degen + item)],
-            uv[1 + 2 * (nnode_degen + item)], 0.0);
+            uv[1 + 2 * (nnode_degen + item)], kr, ks);
   }
   ref_free(uv);
 
@@ -3551,7 +3573,7 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
   RNS(file, "unable to open file");
 
   fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"t\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\" \"p0\" \"p1\" \"k0\" \"k1\"\n");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
@@ -3572,13 +3594,6 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
 
   for (id = min_id; id <= max_id; id++)
     RSS(ref_geom_face_tec_zone(ref_grid, id, file), "tec face");
-
-  if (REF_FALSE && ref_geom_model_loaded(ref_geom)) {
-    for (id = min_id; id <= max_id; id++)
-      RSS(ref_geom_norm_tec_zone(ref_grid, id, file), "tec norm");
-    for (id = min_id; id <= max_id; id++)
-      RSS(ref_geom_curve_tec_zone(ref_grid, id, file), "tec curve");
-  }
 
   fclose(file);
   return REF_SUCCESS;
