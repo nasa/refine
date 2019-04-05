@@ -6,7 +6,7 @@ set -x
 
 gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
 
-zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-5ycetozfhh5njhuuy23d6c762yh7flv5"
+zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-q63yedbi6cfzmqyjkwhwrob3jesy2uge"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE-6.8.1"
 
@@ -48,8 +48,6 @@ mkdir -p parmetis
     ) \
     || exit
 
-exit
-
 mkdir -p zoltan
 ( cd zoltan && \
     ../configure \
@@ -59,9 +57,10 @@ mkdir -p zoltan
     --enable-lite \
     CC=mpicc \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    LDFLAGS="-headerpad_max_install_names" \
     ) \
     || exit
+
+exit
 
 mkdir -p both
 ( cd both && \
