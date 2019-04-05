@@ -48,6 +48,8 @@ mkdir -p parmetis
     ) \
     || exit
 
+exit
+
 mkdir -p zoltan
 ( cd zoltan && \
     ../configure \
@@ -57,10 +59,9 @@ mkdir -p zoltan
     --enable-lite \
     CC=mpicc \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    LDFLAGS="-headerpad_max_install_names" \
     ) \
     || exit
-
-exit
 
 mkdir -p both
 ( cd both && \
