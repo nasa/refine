@@ -103,6 +103,7 @@ int main(int argc, char *argv[]) {
   REF_INT polar2d_pos;
   REF_INT u_pos;
 
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
   RXS(ref_args_find(argc, argv, "-ugawg", &ugawg_pos), REF_NOT_FOUND, "arg");
@@ -115,6 +116,8 @@ int main(int argc, char *argv[]) {
           "  %s -ugawg [linear,polar-1,polar-2] input.grid_format "
           "output.metric\n",
           argv[0]);
+      RSS(ref_mpi_free(ref_mpi), "mpi free");
+      RSS(ref_mpi_stop(), "stop");
       return (1);
     }
     printf("%s reading\n", argv[3]);
@@ -154,6 +157,10 @@ int main(int argc, char *argv[]) {
     RAS(metric_recognized, "did not recognize metric field name");
     printf("%s metric exported\n", argv[4]);
     RSS(ref_gather_metric(ref_grid, argv[4]), "in");
+
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -164,6 +171,8 @@ int main(int argc, char *argv[]) {
     if (4 != argc) {
       printf("usage:\n");
       printf("  %s -polar2d input.grid_format output.metric\n", argv[0]);
+      RSS(ref_mpi_free(ref_mpi), "mpi free");
+      RSS(ref_mpi_stop(), "stop");
       return (1);
     }
     printf("%s reading\n", argv[3]);
@@ -172,6 +181,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_polar2d_node(ref_grid_node(ref_grid)), "lin");
     printf("%s metric exported\n", argv[3]);
     RSS(ref_gather_metric(ref_grid, argv[3]), "in");
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -185,6 +197,9 @@ int main(int argc, char *argv[]) {
       RSS(ref_metric_twod_node(ref_grid_node(ref_grid)), "2d");
 
     RSS(ref_gather_metric(ref_grid, argv[2]), "in");
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -207,7 +222,9 @@ int main(int argc, char *argv[]) {
         "scalar");
 
     ref_free(scalar);
-    ref_grid_free(ref_grid);
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -225,6 +242,9 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_export_by_extension(ref_grid, argv[2]), "out");
 
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -237,6 +257,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_gather_metric(ref_grid, argv[2]), "in");
 
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -267,6 +290,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_gather_metric(ref_grid, argv[2]), "in");
 
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
@@ -343,6 +369,9 @@ int main(int argc, char *argv[]) {
 
       } else if (strcmp(argv[pos], "-h") == 0) {
         printf(" usage\n");
+        RSS(ref_grid_free(ref_grid), "grid free");
+        RSS(ref_mpi_free(ref_mpi), "mpi free");
+        RSS(ref_mpi_stop(), "stop");
         return (0);
       } else {
         fprintf(stderr, "Argument \"%s\" Ignored\n", argv[pos]);
@@ -355,8 +384,14 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_gather_metric(ref_grid, argv[2]), "in");
 
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
     return 0;
   }
 
+  RSS(ref_grid_free(ref_grid), "grid free");
+  RSS(ref_mpi_free(ref_mpi), "mpi free");
+  RSS(ref_mpi_stop(), "stop");
   return 0;
 }
