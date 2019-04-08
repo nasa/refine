@@ -270,3 +270,13 @@ REF_STATUS ref_dict_inspect(REF_DICT ref_dict) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict) {
+  REF_INT i;
+
+  each_ref_dict_key_index(ref_dict, i) {
+    printf(" %d: %d\n", i, ref_dict->key[i]);
+  }
+
+  return REF_SUCCESS;
+}

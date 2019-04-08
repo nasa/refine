@@ -88,6 +88,7 @@ REF_BOOL ref_dict_has_key(REF_DICT ref_dict, REF_INT key);
 REF_BOOL ref_dict_has_value(REF_DICT ref_dict, REF_INT value);
 
 REF_STATUS ref_dict_inspect(REF_DICT ref_dict);
+REF_STATUS ref_dict_inspect_keys(REF_DICT ref_dict);
 END_C_DECLORATION
 
 #endif /* REF_DICT_H */

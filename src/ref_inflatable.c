@@ -67,12 +67,16 @@ int main(int argc, char *argv[]) {
   REF_BOOL extrude_radially = REF_FALSE;
   REF_DBL origin[3];
   REF_INT last_face_arg;
+  REF_INT mapbc_pos;
+  REF_INT bc_type;
+  char *mapbc_file_name, *family_name;
 
   if (7 > argc) {
     printf(
         "usage: \n %s input.grid nlayers first_thickness total_thickness mach "
         "faceid  [faceid...]\n",
         argv[0]);
+    printf("       [--mapbc usm3d_format.mapbc family_name bc_type]\n");
     printf("       [--aoa angle_of_attack_in_degrees]\n");
     printf("       [--rotate angle_in_degrees]\n");
     printf("       [--origin ox oy oz]\n");
@@ -170,14 +174,32 @@ int main(int argc, char *argv[]) {
     last_face_arg = MIN(last_face_arg, scale_pos);
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("faceids");
+  mapbc_pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--mapbc", &mapbc_pos), REF_NOT_FOUND,
+      "mapbc search");
+
   RSS(ref_dict_create(&faceids), "create");
+
+  if (REF_EMPTY != mapbc_pos) {
+    if (mapbc_pos >= argc - 3) THROW("--mapbc requires three values");
+    mapbc_file_name = argv[mapbc_pos + 1];
+    family_name = argv[mapbc_pos + 2];
+    bc_type = atof(argv[mapbc_pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --mapbc %s %s %d\n", mapbc_file_name, family_name, bc_type);
+    last_face_arg = MIN(last_face_arg, mapbc_pos);
+    RSS(ref_inflate_read_usm3d_mapbc(faceids, mapbc_file_name, family_name,
+                                     bc_type),
+        "faceids from mapbc");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("faceids\n");
   for (arg = 6; arg < last_face_arg; arg++) {
     faceid = atoi(argv[arg]);
     RSS(ref_dict_store(faceids, faceid, REF_EMPTY), "store");
-    if (ref_mpi_once(ref_mpi)) printf(" %d", faceid);
   }
-  if (ref_mpi_once(ref_mpi)) printf("\n");
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_dict_inspect_keys(faceids), "faceids dict inspect");
 
   if (first_thickness <= 0.0) {
     first_thickness = total_thickness / (REF_DBL)nlayers;
