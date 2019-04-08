@@ -322,7 +322,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_integrate(truth_grid, interp_scalar, truth_scalar, p,
                              &error),
         "integrate error");
-    h = pow((REF_DBL)ref_node_n(ref_grid_node(candidate_grid)), (-1.0 / 3.0));
+    h = pow((REF_DBL)ref_node_n_global(ref_grid_node(candidate_grid)),
+            (-1.0 / 3.0));
     if (ref_mpi_once(ref_mpi)) {
       printf("%e %e\n", h, error);
     }
