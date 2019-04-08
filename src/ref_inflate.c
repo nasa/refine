@@ -627,9 +627,9 @@ REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
 }
 
 REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
-					const char *mapbc_file_name,
-					const char *family_name,
-					REF_INT boundary_condition) {
+                                        const char *mapbc_file_name,
+                                        const char *family_name,
+                                        REF_INT boundary_condition) {
   FILE *file;
   char line[1024];
   char family[1024];
@@ -639,24 +639,15 @@ REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
   file = fopen(mapbc_file_name, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc_file_name);
   RNS(file, "unable to open file");
-  printf("parse %s\n",mapbc_file_name);
-  while ( fgets ( line, sizeof(line), file ) != NULL )
-      {
-	if(6 == sscanf(line, "%d %d %d %d %d %s", &faceid, &bc, &bc_family, &i0, &i1, family)){
-	  printf( "%d %d %d %d %d >%s<\n", faceid, bc, bc_family, i0, i1, family );
-	  if ( 0 == strncmp(family_name, family, len)) {
-	    printf("fam\n");
-	  }
-	  if (bc==boundary_condition){
-	    printf("bc\n");
-	  }
-	  if ( 0 == strncmp(family_name, family, len) && bc==boundary_condition){
-	    RSS(ref_dict_store(faceids, faceid, REF_EMPTY), "store");
-	  }
-	}
-	printf( "%s\n", line );
-      }
 
+  while (fgets(line, sizeof(line), file) != NULL) {
+    if (6 == sscanf(line, "%d %d %d %d %d %s", &faceid, &bc, &bc_family, &i0,
+                    &i1, family)) {
+      if (0 == strncmp(family_name, family, len) && bc == boundary_condition) {
+        RSS(ref_dict_store(faceids, faceid, REF_EMPTY), "store");
+      }
+    }
+  }
 
   fclose(file);
   return REF_SUCCESS;
