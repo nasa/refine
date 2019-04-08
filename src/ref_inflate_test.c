@@ -141,5 +141,40 @@ int main() {
     printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
   }
 
+  {
+    char file[] = "ref_inflate_test.mapbc";
+    char family[] = "cigar";
+    REF_INT bc= 3;
+    FILE *f;
+    REF_DICT ref_dict;
+    REF_INT id, type;
+
+    f = fopen(file, "w");
+    fprintf(f, "#\n#\n#\n#\n");
+    fprintf(f, "1219            3       3        0 0 SURFACE.  \n");
+    fprintf(f, "1220            4       4        0 0 SURFACE.  \n");
+    fprintf(f, "1221            2       2        0 0 cigar      \n");
+    fprintf(f, "1222            0       0        0 0 cigar     \n");
+    fprintf(f, "1223            3       3        0 0 cigar\n");
+    fprintf(f, "1224            3       3        0 0 cigar       \n");
+    fclose(f);
+
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_inflate_read_usm3d_mapbc(ref_dict, file, family, bc), "read mapbc");
+
+    REIS(2, ref_dict_n(ref_dict), "lines");
+    id = 1223;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(REF_EMPTY, type, "type");
+    id = 1224;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(REF_EMPTY, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  
   return 0;
 }
