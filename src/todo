@@ -1,7 +1,5 @@
 
-protect surface folds and high curvature
- plot curvature
- filter based on neighborhood
+ref_inflate mapbc,family,bc interface
 
 multiscale weight
  continuous galerkin residual
@@ -45,6 +43,9 @@ extract/combine post adaptation operator checks and status
 extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 
 minimize duration of lazy global delete
+
+protect surface folds and high curvature
+ filter based on neighborhood
 
 check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
@@ -264,6 +265,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ plot geom curvature
 
 + 1.8.22
 
