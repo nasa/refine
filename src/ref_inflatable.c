@@ -239,9 +239,9 @@ int main(int argc, char *argv[]) {
           "inflate");
     }
     if (ref_mpi_once(ref_mpi))
-      printf("layer%5d of%5d thickness %10.3e total %10.3e %9d nodes\n",
+      printf("layer%5d of%5d thickness %10.3e total %10.3e %10d nodes\n",
              layer + 1, nlayers, thickness, total,
-             ref_node_n(ref_grid_node(ref_grid)));
+             ref_node_n_global(ref_grid_node(ref_grid)));
   }
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
