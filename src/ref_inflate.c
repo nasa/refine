@@ -635,7 +635,9 @@ REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
   char family[1024];
   REF_INT faceid, bc, bc_family, i0, i1;
   size_t len;
+
   len = strlen(family_name);
+
   file = fopen(mapbc_file_name, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", mapbc_file_name);
   RNS(file, "unable to open file");
