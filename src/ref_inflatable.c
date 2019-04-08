@@ -193,13 +193,13 @@ int main(int argc, char *argv[]) {
         "faceids from mapbc");
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("faceids");
+  if (ref_mpi_once(ref_mpi)) printf("faceids\n");
   for (arg = 6; arg < last_face_arg; arg++) {
     faceid = atoi(argv[arg]);
     RSS(ref_dict_store(faceids, faceid, REF_EMPTY), "store");
   }
   if (ref_mpi_once(ref_mpi))
-    RSS(ref_dict_inspect(faceids), "faceids dict inspect");
+    RSS(ref_dict_inspect_keys(faceids), "faceids dict inspect");
 
   if (first_thickness <= 0.0) {
     first_thickness = total_thickness / (REF_DBL)nlayers;
