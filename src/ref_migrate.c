@@ -113,7 +113,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
     }
   }
 
-  ref_migrate_method(ref_migrate) = REF_MIGRATE_GRAPH;
+  ref_migrate_method(ref_migrate) = REF_MIGRATE_RECOMMENDED;
 
   return REF_SUCCESS;
 }
@@ -441,10 +441,10 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
 
   switch (ref_migrate_method(ref_migrate)) {
-    case REF_MIGRATE_GRAPH:
+    case REF_MIGRATE_ZOLTAN_GRAPH:
       Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
       break;
-    case REF_MIGRATE_RCB:
+    case REF_MIGRATE_ZOLTAN_RCB:
       Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
       break;
     default:
