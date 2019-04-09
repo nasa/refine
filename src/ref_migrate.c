@@ -973,20 +973,46 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid,
                                        REF_MIGRATE_PARTIONER method) {
-#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-  SUPRESS_UNUSED_COMPILER_WARNING(method);
-  RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
-#else
+
+  if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+    RSS(ref_migrate_single_part(ref_grid), "single by nproc");
+    return REF_SUCCESS;
+  }
+
+  switch (method) {
+    case REF_MIGRATE_SINGLE:
+      RSS(ref_migrate_single_part(ref_grid), "single by method");
+      break;
+    case REF_MIGRATE_ZOLTAN_GRAPH:
+    case REF_MIGRATE_ZOLTAN_RCB:
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-  RSS(ref_migrate_zoltan_part(ref_grid, method), "zoltan part");
-#else
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-  SUPRESS_UNUSED_COMPILER_WARNING(method);
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = 0;
+      RSS(ref_migrate_zoltan_part(ref_grid, method), "zoltan part");
+      break;
 #endif
+    case REF_MIGRATE_PARMETIS:
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+      RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+      break;
 #endif
+    case REF_MIGRATE_RECOMMENDED:
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+      RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+      break;
+#endif
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+      RSS(ref_migrate_zoltan_part(ref_grid, method), "zoltan part");
+      break;
+#endif
+    default:
+      if (ref_grid_once(ref_grid))
+        printf(
+            "requested partioner method %d"
+            " is not recognized or configured\n",
+            (int)method);
+      RSS(REF_IMPLEMENT, "ref_migrate_method");
+      break;
+  }
+
   return REF_SUCCESS;
 }
 

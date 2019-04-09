@@ -25,10 +25,11 @@ BEGIN_C_DECLORATION
 typedef struct REF_MIGRATE_STRUCT REF_MIGRATE_STRUCT;
 typedef REF_MIGRATE_STRUCT *REF_MIGRATE;
 typedef enum REF_MIGRATE_PARTIONERS { /* 0 */ REF_MIGRATE_RECOMMENDED,
-                                      /* 1 */ REF_MIGRATE_PARMETIS,
-                                      /* 2 */ REF_MIGRATE_ZOLTAN_GRAPH,
-                                      /* 3 */ REF_MIGRATE_ZOLTAN_RCB,
-                                      /* 4 */ REF_MIGRATE_LAST
+                                      /* 1 */ REF_MIGRATE_SINGLE,
+                                      /* 2 */ REF_MIGRATE_PARMETIS,
+                                      /* 3 */ REF_MIGRATE_ZOLTAN_GRAPH,
+                                      /* 4 */ REF_MIGRATE_ZOLTAN_RCB,
+                                      /* 5 */ REF_MIGRATE_LAST
 } REF_MIGRATE_PARTIONER;
 END_C_DECLORATION
 
