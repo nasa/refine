@@ -1465,39 +1465,43 @@ REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (nodes[node_per] == faceid) {
-      for (node = 0; node < node_per; node++)
-        fprintf(file, " %d", o2n[nodes[node]] + 1);
-      fprintf(file, "\n");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[node_per] == faceid) {
+        for (node = 0; node < node_per; node++)
+          fprintf(file, " %d", o2n[nodes[node]] + 1);
+        fprintf(file, "\n");
+      }
     }
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (nodes[node_per] == faceid) {
-      for (node = 0; node < node_per; node++)
-        fprintf(file, " %d", o2n[nodes[node]] + 1);
-      fprintf(file, "\n");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[node_per] == faceid) {
+        for (node = 0; node < node_per; node++)
+          fprintf(file, " %d", o2n[nodes[node]] + 1);
+        fprintf(file, "\n");
+      }
     }
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (nodes[node_per] == faceid) {
-      fprintf(file, " %d", nodes[3]);
-      fprintf(file, "\n");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[node_per] == faceid) {
+        fprintf(file, " %d", nodes[3]);
+        fprintf(file, "\n");
+      }
     }
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (nodes[node_per] == faceid) {
-      fprintf(file, " %d", nodes[4]);
-      fprintf(file, "\n");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[node_per] == faceid) {
+        fprintf(file, " %d", nodes[4]);
+        fprintf(file, "\n");
+      }
     }
 
   each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
