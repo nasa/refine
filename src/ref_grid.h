@@ -31,6 +31,7 @@ END_C_DECLORATION
 #include "ref_gather.h"
 #include "ref_geom.h"
 #include "ref_interp.h"
+#include "ref_migrate.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
 
@@ -51,6 +52,8 @@ struct REF_GRID_STRUCT {
   REF_ADAPT adapt;
 
   REF_INTERP interp;
+
+  REF_MIGRATE_PARTIONER partitioner;
 
   REF_BOOL twod;
   REF_BOOL surf;
@@ -83,6 +86,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_adapt(ref_grid, param) (((ref_grid)->adapt)->param)
 #define ref_grid_interp(ref_grid) ((ref_grid)->interp)
 
+#define ref_grid_partitioner(ref_grid) ((ref_grid)->partitioner)
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 #define ref_grid_surf(ref_grid) ((ref_grid)->surf)
 

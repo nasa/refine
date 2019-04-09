@@ -113,8 +113,6 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
     }
   }
 
-  ref_migrate_method(ref_migrate) = REF_MIGRATE_GRAPH;
-
   return REF_SUCCESS;
 }
 
@@ -440,11 +438,12 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
   Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
 
-  switch (ref_migrate_method(ref_migrate)) {
-    case REF_MIGRATE_GRAPH:
+  switch (ref_grid_partitioner(ref_grid)) {
+    case REF_MIGRATE_RECOMMENDED:
+    case REF_MIGRATE_ZOLTAN_GRAPH:
       Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
       break;
-    case REF_MIGRATE_RCB:
+    case REF_MIGRATE_ZOLTAN_RCB:
       Zoltan_Set_Param(zz, "LB_METHOD", "RCB");
       break;
     default:
@@ -972,19 +971,45 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 #endif
 
 static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
-#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-  RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
-#else
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-  RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
-#else
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
+  if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+    RSS(ref_migrate_single_part(ref_grid), "single by nproc");
+    return REF_SUCCESS;
+  }
 
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = 0;
+  switch (ref_grid_partitioner(ref_grid)) {
+    case REF_MIGRATE_SINGLE:
+      RSS(ref_migrate_single_part(ref_grid), "single by method");
+      break;
+    case REF_MIGRATE_ZOLTAN_GRAPH:
+    case REF_MIGRATE_ZOLTAN_RCB:
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+      RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
+      break;
 #endif
+    case REF_MIGRATE_PARMETIS:
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+      RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+      break;
 #endif
+    case REF_MIGRATE_RECOMMENDED:
+#if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+      RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
+      break;
+#endif
+#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+      RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
+      break;
+#endif
+    default:
+      if (ref_grid_once(ref_grid))
+        printf(
+            "requested partioner method %d"
+            " is not recognized or configured\n",
+            (int)ref_grid_partitioner(ref_grid));
+      RSS(REF_IMPLEMENT, "ref_migrate_method");
+      break;
+  }
+
   return REF_SUCCESS;
 }
 
@@ -1340,12 +1365,6 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
-  RSS(ref_migrate_single_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
 static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
   REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
   x = (x | x << 32) & 0x1f00000000ffff;

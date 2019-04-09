@@ -24,6 +24,13 @@
 BEGIN_C_DECLORATION
 typedef struct REF_MIGRATE_STRUCT REF_MIGRATE_STRUCT;
 typedef REF_MIGRATE_STRUCT *REF_MIGRATE;
+typedef enum REF_MIGRATE_PARTIONERS { /* 0 */ REF_MIGRATE_RECOMMENDED,
+                                      /* 1 */ REF_MIGRATE_SINGLE,
+                                      /* 2 */ REF_MIGRATE_PARMETIS,
+                                      /* 3 */ REF_MIGRATE_ZOLTAN_GRAPH,
+                                      /* 4 */ REF_MIGRATE_ZOLTAN_RCB,
+                                      /* 5 */ REF_MIGRATE_LAST
+} REF_MIGRATE_PARTIONER;
 END_C_DECLORATION
 
 #include "ref_adj.h"
@@ -41,12 +48,7 @@ struct REF_MIGRATE_STRUCT {
   REF_DBL *xyz;
   REF_DBL *weight;
   REF_INT *age;
-  REF_INT method;
 };
-
-#define REF_MIGRATE_GRAPH (0)
-#define REF_MIGRATE_RCB (1)
-#define ref_migrate_method(ref_migrate) ((ref_migrate)->method)
 
 #define ref_migrate_grid(ref_migrate) ((ref_migrate)->grid)
 #define ref_migrate_parent_global(ref_migrate) ((ref_migrate)->parent_global)
@@ -81,7 +83,6 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell);
 REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid);
 
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
-REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid);
 
 REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z);
 

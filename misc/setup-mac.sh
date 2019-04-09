@@ -60,8 +60,6 @@ mkdir -p zoltan
     ) \
     || exit
 
-exit
-
 mkdir -p both
 ( cd both && \
     ../configure \
