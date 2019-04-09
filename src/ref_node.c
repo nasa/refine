@@ -739,12 +739,10 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
   ref_malloc(a_global, a_total, REF_INT);
-  ref_malloc(a_vector, ldim * a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
   ref_malloc(b_global, b_total, REF_INT);
-  ref_malloc(b_vector, ldim * b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -764,6 +762,8 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
                         REF_INT_TYPE),
       "alltoallv global");
 
+  ref_malloc(a_vector, ldim * a_total, REF_INT);
+  ref_malloc(b_vector, ldim * b_total, REF_INT);
   for (node = 0; node < b_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     for (i = 0; i < ldim; i++)
@@ -779,11 +779,11 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
     for (i = 0; i < ldim; i++)
       vector[i + ldim * local] = a_vector[i + ldim * node];
   }
+  free(b_vector);
+  free(a_vector);
 
   free(a_next);
-  free(b_vector);
   free(b_global);
-  free(a_vector);
   free(a_global);
   free(b_size);
   free(a_size);
@@ -819,12 +819,10 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
   ref_malloc(a_global, a_total, REF_INT);
-  ref_malloc(a_vector, ldim * a_total, REF_DBL);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
   ref_malloc(b_global, b_total, REF_INT);
-  ref_malloc(b_vector, ldim * b_total, REF_DBL);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -843,6 +841,8 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
                         REF_INT_TYPE),
       "alltoallv global");
 
+  ref_malloc(a_vector, ldim * a_total, REF_DBL);
+  ref_malloc(b_vector, ldim * b_total, REF_DBL);
   for (node = 0; node < b_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     for (i = 0; i < ldim; i++)
@@ -858,11 +858,11 @@ REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
     for (i = 0; i < ldim; i++)
       vector[i + ldim * local] = a_vector[i + ldim * node];
   }
+  free(b_vector);
+  free(a_vector);
 
   free(a_next);
-  free(b_vector);
   free(b_global);
-  free(a_vector);
   free(a_global);
   free(b_size);
   free(a_size);
