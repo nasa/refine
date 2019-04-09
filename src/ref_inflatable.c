@@ -95,6 +95,11 @@ int main(int argc, char *argv[]) {
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf(" part %s\n", argv[1]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part grid");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance grid");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack grid");
   } else {
     if (ref_mpi_once(ref_mpi)) printf(" import %s\n", argv[1]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
