@@ -113,8 +113,6 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
     }
   }
 
-  ref_migrate_method(ref_migrate) = REF_MIGRATE_RECOMMENDED;
-
   return REF_SUCCESS;
 }
 
@@ -383,7 +381,8 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     degree++;
   }
 }
-REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
+REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid,
+                                   REF_MIGRATE_PARTIONER method) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -440,7 +439,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   Zoltan_Set_Param(zz, "RETURN_LISTS", "PARTS");
   Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
 
-  switch (ref_migrate_method(ref_migrate)) {
+  switch (method) {
     case REF_MIGRATE_ZOLTAN_GRAPH:
       Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
       break;
@@ -976,7 +975,8 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
   RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
 #else
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-  RSS(ref_migrate_zoltan_part(ref_grid), "zoltan part");
+  RSS(ref_migrate_zoltan_part(ref_grid, REF_MIGRATE_ZOLTAN_GRAPH),
+      "zoltan part");
 #else
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;

@@ -47,10 +47,7 @@ struct REF_MIGRATE_STRUCT {
   REF_DBL *xyz;
   REF_DBL *weight;
   REF_INT *age;
-  REF_INT method;
 };
-
-#define ref_migrate_method(ref_migrate) ((ref_migrate)->method)
 
 #define ref_migrate_grid(ref_migrate) ((ref_migrate)->grid)
 #define ref_migrate_parent_global(ref_migrate) ((ref_migrate)->parent_global)
