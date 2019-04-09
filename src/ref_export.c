@@ -186,7 +186,7 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
     RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
-    RSS(ref_export_fgrid(ref_grid, filename), "ugrid export failed");
+    RSS(ref_export_fgrid(ref_grid, filename), "fgrid export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".cogsg") == 0) {
     RSS(ref_export_cogsg(ref_grid, filename), "cogsg export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".html") == 0) {
