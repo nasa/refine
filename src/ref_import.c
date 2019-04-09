@@ -1335,9 +1335,10 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         nodes[1] = n1;
         nodes[2] = n2;
         RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-        if (normal[1] > 0.0) {
-          n2 = nodes[1];
-          n1 = nodes[2];
+        if (normal[1] < 0.0) {
+          n2 = nodes[0];
+          n1 = nodes[1];
+          n0 = nodes[2];
         }
         nodes[0] = n0;
         nodes[1] = n1;

@@ -2398,8 +2398,8 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
         if (twod_edge) {
           nedge++;
           /* SANS assumption of edge direction */
-          node0_1 = o2n[nodes[node1]] + 1;
-          node1_1 = o2n[nodes[node0]] + 1;
+          node0_1 = o2n[nodes[node0]] + 1;
+          node1_1 = o2n[nodes[node1]] + 1;
           REIS(1, fwrite(&(node0_1), sizeof(REF_INT), 1, file), "edge n0");
           REIS(1, fwrite(&(node1_1), sizeof(REF_INT), 1, file), "edge n1");
         }
@@ -2429,7 +2429,9 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
         ntri++;
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
-          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "tri");
+        }
+        for (node = 0; node < node_per; node++) {
+          REIS(1, fwrite(&(nodes[2 - node]), sizeof(REF_INT), 1, file), "tri");
         }
         id = REF_EXPORT_MESHB_2D_ID;
         REIS(1, fwrite(&(id), sizeof(int), 1, file), "tet id");
