@@ -1365,12 +1365,6 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_migrate_to_single_image(REF_GRID ref_grid) {
-  RSS(ref_migrate_single_part(ref_grid), "new part");
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
-
-  return REF_SUCCESS;
-}
 static REF_ULONG ref_migrate_split_morton(REF_ULONG a) {
   REF_ULONG x = a & 0x1fffff; /* we only look at the first 21 bits */
   x = (x | x << 32) & 0x1f00000000ffff;
