@@ -1188,6 +1188,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT faceid1 = 1;
   REF_INT faceid2 = 2;
   REF_INT candidate;
+  REF_DBL normal[3];
 
   if (verbose) printf("header %s\n", filename);
   RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
@@ -1329,24 +1330,33 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       n1--;
       n2--;
       if (2 == dim) {
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
+        /* test for orientation, flip if x-z normal positive y */
+        nodes[0] = n0;
+        nodes[1] = n1;
+        nodes[2] = n2;
+        RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
+        if (normal[1] > 0.0) {
+          n2 = nodes[1];
+          n1 = nodes[2];
+        }
+        nodes[0] = n0;
+        nodes[1] = n1;
+        nodes[2] = n2;
         nodes[3] = faceid1;
         RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
             "tri face for tri");
-        nodes[0] = n0;
-        nodes[1] = n2;
-        nodes[2] = n1;
+        nodes[0] = n0 + nnode;
+        nodes[1] = n2 + nnode;
+        nodes[2] = n1 + nnode;
         nodes[3] = faceid2;
         RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
             "tri face for tri");
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
-        nodes[3] = n0;
-        nodes[4] = n1;
-        nodes[5] = n2;
+        nodes[0] = n0;
+        nodes[1] = n1;
+        nodes[2] = n2;
+        nodes[3] = n0 + nnode;
+        nodes[4] = n1 + nnode;
+        nodes[5] = n2 + nnode;
         RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell),
             "prism for tri");
       } else {

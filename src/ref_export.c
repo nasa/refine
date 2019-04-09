@@ -2384,8 +2384,9 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
             "twod edge");
         if (twod_edge) {
           nedge++;
-          node0_1 = o2n[nodes[node0]] + 1;
-          node1_1 = o2n[nodes[node1]] + 1;
+          /* SANS assumption of edge direction */
+          node0_1 = o2n[nodes[node1]] + 1;
+          node1_1 = o2n[nodes[node0]] + 1;
           REIS(1, fwrite(&(node0_1), sizeof(REF_INT), 1, file), "edge n0");
           REIS(1, fwrite(&(node1_1), sizeof(REF_INT), 1, file), "edge n1");
         }
