@@ -440,6 +440,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid,
   Zoltan_Set_Param(zz, "LB_APPROACH", "PARTITION");
 
   switch (method) {
+    case REF_MIGRATE_RECOMMENDED:
     case REF_MIGRATE_ZOLTAN_GRAPH:
       Zoltan_Set_Param(zz, "LB_METHOD", "GRAPH");
       break;
@@ -970,17 +971,18 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 }
 #endif
 
-static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid) {
+static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid,
+                                       REF_MIGRATE_PARTIONER method) {
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+  SUPRESS_UNUSED_COMPILER_WARNING(method);
   RSS(ref_migrate_parmetis_part(ref_grid), "parmetis part");
 #else
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-  RSS(ref_migrate_zoltan_part(ref_grid, REF_MIGRATE_ZOLTAN_GRAPH),
-      "zoltan part");
+  RSS(ref_migrate_zoltan_part(ref_grid, method), "zoltan part");
 #else
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
-
+  SUPRESS_UNUSED_COMPILER_WARNING(method);
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = 0;
 #endif
@@ -1334,7 +1336,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
-  RSS(ref_migrate_new_part(ref_grid), "new part");
+  RSS(ref_migrate_new_part(ref_grid, REF_MIGRATE_RECOMMENDED), "new part");
   RSS(ref_migrate_shufflin(ref_grid), "shufflin");
 
   return REF_SUCCESS;
