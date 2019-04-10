@@ -551,9 +551,10 @@ int main(int argc, char *argv[]) {
     }
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
-    if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
+    if (ref_mpi_once(ref_mpi))
+      printf("writing res,dual,weight ref_phys_system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
-                                       "system.tec"),
+                                       "ref_phys_system.tec"),
         "export primitive_dual");
     if (ref_mpi_once(ref_mpi)) printf("writing histogram.tec\n");
     RSS(ref_histogram_node_tec(ref_grid, weight), "export histogram");
