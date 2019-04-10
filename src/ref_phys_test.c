@@ -449,7 +449,7 @@ int main(int argc, char *argv[]) {
 
     convergence_rate = atof(argv[4]);
     exponent = 0.25;
-    if (convergence_rate > 0.0) exponent = 1.0 / convergence_rate;
+    if (convergence_rate > 0.0) exponent = -1.0 / convergence_rate;
     if (ref_mpi_once(ref_mpi))
       printf("convergence rate %f exponent %f\n", convergence_rate, exponent);
 
@@ -513,14 +513,14 @@ int main(int argc, char *argv[]) {
       }
       /* approximate boundary with double weight */
       if (!ref_cell_node_empty(ref_cell, node)) weight[node] *= 2.0;
-      /* weight in now length scale, convert to eigenvalue */
-      if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
     }
     RSS(ref_node_selection(ref_node, weight, ref_node_n_global(ref_node) / 2,
                            &median),
         "parallel median selection");
     each_ref_node_valid_node(ref_node, node) {
       weight[node] /= median;
+      /* weight expected in length scale */
+      if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
       if (ref_node_owned(ref_node, node)) {
         total += weight[node];
         min_weight = MIN(min_weight, weight[node]);
