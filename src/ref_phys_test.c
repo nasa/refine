@@ -507,9 +507,9 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
         weight[node] +=
-            ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
+            ABS(dual_flux[equ + ldim * node] * res[equ + nequ * node]);
         if (ref_node_owned(ref_node, node))
-          l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
+          l2res += res[equ + nequ * node] * res[equ + nequ * node];
       }
       /* approximate boundary with double weight */
       if (!ref_cell_node_empty(ref_cell, node)) weight[node] *= 2.0;
