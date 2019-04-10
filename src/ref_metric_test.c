@@ -624,7 +624,7 @@ int main(int argc, char *argv[]) {
     REF_DBL gradation, complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
-    REF_DBL current_complexity, h, h0, h_h0, scale;
+    REF_DBL current_complexity, h, h0, h_h0, scale, h_ms;
     REF_INT i, node;
     REF_DBL implied_system[12], multiscale_system[12];
     REF_DBL *system;
@@ -676,7 +676,7 @@ int main(int argc, char *argv[]) {
     ref_malloc(implied, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(implied, ref_grid), "imply");
 
-    nsystem = 4;
+    nsystem = 6;
     ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 0.0);
 
@@ -690,12 +690,23 @@ int main(int argc, char *argv[]) {
       h_h0 = weight[node];
       h_h0 = MAX(0.1, MIN(10.0, h_h0));
       h = h_h0 * h0;
-      scale = (1.0 / h * h) / ref_matrix_eig(multiscale_system, 0);
+      h_ms = MAX(MAX(ref_matrix_eig(multiscale_system, 0),
+                     ref_matrix_eig(multiscale_system, 1)),
+                 ref_matrix_eig(multiscale_system, 2));
+      h_ms = 1.0 / sqrt(h_ms);
+      scale = (h_ms * h_ms) / (h * h);
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= scale;
       system[0 + nsystem * node] = h0;
       system[1 + nsystem * node] = h_h0;
       system[2 + nsystem * node] = h;
-      system[3 + nsystem * node] = scale;
+      system[3 + nsystem * node] = h_ms;
+      system[4 + nsystem * node] = scale;
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
+      h_ms = MAX(MAX(ref_matrix_eig(multiscale_system, 0),
+                     ref_matrix_eig(multiscale_system, 1)),
+                 ref_matrix_eig(multiscale_system, 2));
+      h_ms = 1.0 / sqrt(h_ms);
+      system[5 + nsystem * node] = h_ms / h;
     }
 
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
