@@ -626,7 +626,7 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL current_complexity, h, h0, h_h0, scale, h_ms;
     REF_INT i, node;
-    REF_DBL implied_system[12], multiscale_system[12];
+    REF_DBL multiscale_system[12];
     REF_DBL *system;
     REF_INT nsystem;
 
@@ -682,18 +682,19 @@ int main(int argc, char *argv[]) {
 
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
-      RSS(ref_matrix_diag_m(&(implied[6 * node]), implied_system), "decomp");
-      h0 = MAX(MAX(ref_matrix_eig(implied_system, 0),
-                   ref_matrix_eig(implied_system, 1)),
-               ref_matrix_eig(implied_system, 2));
-      h0 = 1.0 / sqrt(h0);
+      RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      h0 = ref_matrix_sqrt_vt_m_v(&(implied[6 * node]),
+                                  &(ref_matrix_vec(multiscale_system, 0, 0)));
+      if (!ref_math_divisible(1.0, h0)) RSS(REF_DIV_ZERO, "inf h0");
+      h0 = 1.0 / h0;
       h_h0 = weight[node];
       h_h0 = MAX(0.1, MIN(10.0, h_h0));
       h = h_h0 * h0;
-      h_ms = MAX(MAX(ref_matrix_eig(multiscale_system, 0),
-                     ref_matrix_eig(multiscale_system, 1)),
-                 ref_matrix_eig(multiscale_system, 2));
+      h_ms = ref_matrix_eig(multiscale_system, 0);
+      if (!ref_math_divisible(1.0, sqrt(h_ms))) RSS(REF_DIV_ZERO, "inf h_ms");
       h_ms = 1.0 / sqrt(h_ms);
+      if (!ref_math_divisible((h_ms * h_ms), (h * h)))
+        RSS(REF_DIV_ZERO, "inf scale");
       scale = (h_ms * h_ms) / (h * h);
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= scale;
       system[0 + nsystem * node] = h0;
@@ -702,9 +703,9 @@ int main(int argc, char *argv[]) {
       system[3 + nsystem * node] = h_ms;
       system[4 + nsystem * node] = scale;
       RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
-      h_ms = MAX(MAX(ref_matrix_eig(multiscale_system, 0),
-                     ref_matrix_eig(multiscale_system, 1)),
-                 ref_matrix_eig(multiscale_system, 2));
+      RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      h_ms = ref_matrix_eig(multiscale_system, 0);
+      if (!ref_math_divisible(1.0, sqrt(h_ms))) RSS(REF_DIV_ZERO, "post h_ms");
       h_ms = 1.0 / sqrt(h_ms);
       system[5 + nsystem * node] = h_ms / h;
     }
