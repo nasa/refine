@@ -449,7 +449,7 @@ int main(int argc, char *argv[]) {
 
     convergence_rate = atof(argv[4]);
     exponent = 0.25;
-    if (convergence_rate > 0.0) exponent = 1.0 / convergence_rate;
+    if (convergence_rate > 0.0) exponent = -1.0 / convergence_rate;
     if (ref_mpi_once(ref_mpi))
       printf("convergence rate %f exponent %f\n", convergence_rate, exponent);
 
@@ -507,20 +507,20 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       for (equ = 0; equ < nequ; equ++) {
         weight[node] +=
-            ABS(dual_flux[equ + ldim * node] * system[equ + nsystem * node]);
+            ABS(dual_flux[equ + ldim * node] * res[equ + nequ * node]);
         if (ref_node_owned(ref_node, node))
-          l2res += system[equ + nsystem * node] * system[equ + nsystem * node];
+          l2res += res[equ + nequ * node] * res[equ + nequ * node];
       }
       /* approximate boundary with double weight */
       if (!ref_cell_node_empty(ref_cell, node)) weight[node] *= 2.0;
-      /* weight in now length scale, convert to eigenvalue */
-      if (weight[node] > 0.0) weight[node] = pow(weight[node], -exponent);
     }
     RSS(ref_node_selection(ref_node, weight, ref_node_n_global(ref_node) / 2,
                            &median),
         "parallel median selection");
     each_ref_node_valid_node(ref_node, node) {
       weight[node] /= median;
+      /* weight expected in length scale */
+      if (weight[node] > 0.0) weight[node] = pow(weight[node], exponent);
       if (ref_node_owned(ref_node, node)) {
         total += weight[node];
         min_weight = MIN(min_weight, weight[node]);
@@ -551,9 +551,10 @@ int main(int argc, char *argv[]) {
     }
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
     RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
-    if (ref_mpi_once(ref_mpi)) printf("writing res,dual,weight system.tec\n");
+    if (ref_mpi_once(ref_mpi))
+      printf("writing res,dual,weight ref_phys_system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
-                                       "system.tec"),
+                                       "ref_phys_system.tec"),
         "export primitive_dual");
     if (ref_mpi_once(ref_mpi)) printf("writing histogram.tec\n");
     RSS(ref_histogram_node_tec(ref_grid, weight), "export histogram");

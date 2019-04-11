@@ -624,9 +624,11 @@ int main(int argc, char *argv[]) {
     REF_DBL gradation, complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
-    REF_DBL current_complexity, h, h0, h_h0, scale;
+    REF_DBL current_complexity, h, h0, h_h0, scale, h_ms;
     REF_INT i, node;
-    REF_DBL implied_system[12], multiscale_system[12];
+    REF_DBL multiscale_system[12];
+    REF_DBL *system;
+    REF_INT nsystem;
 
     REIS(1, venditti_pos,
          "required args: --venditti grid.meshb scalar.solb weight.solb "
@@ -664,26 +666,48 @@ int main(int argc, char *argv[]) {
         "unable to load scalar in position 4");
     REIS(1, ldim, "expected one weight");
 
+    if (ref_mpi_once(ref_mpi)) printf("multiscale metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                       gradation, complexity),
         "lp");
 
+    if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(implied, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(implied, ref_grid), "imply");
 
+    nsystem = 6;
+    ref_malloc_init(system, nsystem * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 0.0);
+
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
-      RSS(ref_matrix_diag_m(&(implied[6 * node]), implied_system), "decomp");
-      h0 = MAX(MAX(ref_matrix_eig(implied_system, 0),
-                   ref_matrix_eig(implied_system, 1)),
-               ref_matrix_eig(implied_system, 2));
-      h0 = 1.0 / sqrt(h0);
+      RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      h0 = ref_matrix_sqrt_vt_m_v(&(implied[6 * node]),
+                                  &(ref_matrix_vec(multiscale_system, 0, 0)));
+      if (!ref_math_divisible(1.0, h0)) RSS(REF_DIV_ZERO, "inf h0");
+      h0 = 1.0 / h0;
       h_h0 = weight[node];
       h_h0 = MAX(0.1, MIN(10.0, h_h0));
       h = h_h0 * h0;
-      scale = (1.0 / h * h) / ref_matrix_eig(multiscale_system, 0);
+      h_ms = ref_matrix_eig(multiscale_system, 0);
+      if (!ref_math_divisible(1.0, sqrt(h_ms))) RSS(REF_DIV_ZERO, "inf h_ms");
+      h_ms = 1.0 / sqrt(h_ms);
+      if (!ref_math_divisible((h_ms * h_ms), (h * h)))
+        RSS(REF_DIV_ZERO, "inf scale");
+      scale = (h_ms * h_ms) / (h * h);
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= scale;
+      system[0 + nsystem * node] = h0;
+      system[1 + nsystem * node] = h_h0;
+      system[2 + nsystem * node] = h;
+      system[3 + nsystem * node] = h_ms;
+      system[4 + nsystem * node] = scale;
+      RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
+      RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      h_ms = ref_matrix_eig(multiscale_system, 0);
+      if (!ref_math_divisible(1.0, sqrt(h_ms))) RSS(REF_DIV_ZERO, "post h_ms");
+      h_ms = 1.0 / sqrt(h_ms);
+      system[5 + nsystem * node] = h_ms / h;
     }
 
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
@@ -692,6 +716,13 @@ int main(int argc, char *argv[]) {
         metric[i + 6 * node] *= pow(complexity / current_complexity, 2.0 / 3.0);
       }
     }
+
+    if (ref_mpi_once(ref_mpi))
+      printf("writing res,dual,weight ref_vend_system.tec\n");
+    RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,
+                                       "ref_vend_system.tec"),
+        "export primitive_dual");
+    ref_free(system);
 
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(implied);
