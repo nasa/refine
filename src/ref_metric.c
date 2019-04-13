@@ -1082,34 +1082,46 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-#define sub_tet_contribution(n0, n1, n2, n3)                            \
-  {                                                                     \
-    tet_nodes[0] = nodes[(n0)];                                         \
-    tet_nodes[1] = nodes[(n1)];                                         \
-    tet_nodes[2] = nodes[(n2)];                                         \
-    tet_nodes[3] = nodes[(n3)];                                         \
-    RSS(ref_matrix_imply_m(m, ref_node_xyz_ptr(ref_node, tet_nodes[0]), \
-                           ref_node_xyz_ptr(ref_node, tet_nodes[1]),    \
-                           ref_node_xyz_ptr(ref_node, tet_nodes[2]),    \
-                           ref_node_xyz_ptr(ref_node, tet_nodes[3])),   \
-        "impl");                                                        \
-    RSS(ref_matrix_log_m(m, log_m), "log");                             \
-    RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");     \
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {        \
-      total_node_volume[nodes[node]] += tet_volume;                     \
-      for (im = 0; im < 6; im++)                                        \
-        metric[im + 6 * nodes[node]] += tet_volume * log_m[im];         \
-    }                                                                   \
+static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
+                              REF_INT *nodes, REF_DBL *metric,
+                              REF_DBL *total_node_volume, REF_NODE ref_node,
+                              REF_CELL ref_cell) {
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL m[6], log_m[6];
+  REF_DBL tet_volume;
+  REF_INT node, im;
+  REF_STATUS status;
+  tet_nodes[0] = nodes[(n0)];
+  tet_nodes[1] = nodes[(n1)];
+  tet_nodes[2] = nodes[(n2)];
+  tet_nodes[3] = nodes[(n3)];
+  status = ref_matrix_imply_m(m, ref_node_xyz_ptr(ref_node, tet_nodes[0]),
+                              ref_node_xyz_ptr(ref_node, tet_nodes[1]),
+                              ref_node_xyz_ptr(ref_node, tet_nodes[2]),
+                              ref_node_xyz_ptr(ref_node, tet_nodes[3]));
+  if (REF_SUCCESS == status) {
+    RSS(ref_matrix_log_m(m, log_m), "log");
+    RSS(ref_node_tet_vol(ref_node, tet_nodes, &tet_volume), "vol");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      total_node_volume[nodes[node]] += tet_volume;
+      for (im = 0; im < 6; im++)
+        metric[im + 6 * nodes[node]] += tet_volume * log_m[im];
+    }
+  } else {
+    REF_WHERE("imply contrib skipped");
   }
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL *total_node_volume, tet_volume;
   REF_DBL m[6], log_m[6];
+  REF_DBL *total_node_volume;
   REF_INT node, im;
   REF_INT cell;
   REF_CELL ref_cell;
-  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER], nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_malloc_init(total_node_volume, ref_node_max(ref_node), REF_DBL, 0.0);
 
@@ -1118,31 +1130,55 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 1, 2, 3);
+    RSS(add_sub_tet(0, 1, 2, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "tet sub tet");
   }
 
   ref_cell = ref_grid_pri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 4, 5, 3);
-    sub_tet_contribution(0, 1, 5, 4);
-    sub_tet_contribution(0, 1, 2, 5);
+    RSS(add_sub_tet(0, 4, 5, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
+    RSS(add_sub_tet(0, 1, 5, 4, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
+    RSS(add_sub_tet(0, 1, 2, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
   }
 
   ref_cell = ref_grid_pyr(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 4, 1, 2);
-    sub_tet_contribution(0, 3, 4, 2);
+    RSS(add_sub_tet(0, 4, 1, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pyr sub tet");
+    RSS(add_sub_tet(0, 3, 4, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pyr sub tet");
   }
 
   ref_cell = ref_grid_hex(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 5, 7, 4);
-    sub_tet_contribution(0, 1, 7, 5);
-    sub_tet_contribution(1, 6, 7, 5);
+    RSS(add_sub_tet(0, 5, 7, 4, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(0, 1, 7, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(1, 6, 7, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
 
-    sub_tet_contribution(0, 7, 2, 3);
-    sub_tet_contribution(0, 7, 1, 2);
-    sub_tet_contribution(1, 7, 6, 2);
+    RSS(add_sub_tet(0, 7, 2, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(0, 7, 1, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(1, 7, 6, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
   }
 
   each_ref_node_valid_node(ref_node, node) {
@@ -1165,41 +1201,49 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 }
 REF_STATUS ref_metric_imply_non_tet(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_DBL *total_node_volume, tet_volume;
+  REF_DBL *total_node_volume;
   REF_DBL m[6], log_m[6];
   REF_INT node, im;
   REF_INT cell;
   REF_CELL ref_cell;
-  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER], nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
   ref_malloc_init(total_node_volume, ref_node_max(ref_node), REF_DBL, 0.0);
 
-  each_ref_node_valid_node(ref_node, node) if (ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_pyr(ref_grid)),
-                                                   node)) ||
-                                               ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_pri(ref_grid)),
-                                                   node)) ||
-                                               ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_hex(ref_grid)),
-                                                   node))) for (im = 0; im < 6;
-                                                                im++)
-      metric[im + 6 * node] = 0.0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_pyr(ref_grid)), node)) ||
+        ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_pri(ref_grid)), node)) ||
+        ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] = 0.0;
+      }
+    }
+  }
 
   ref_cell = ref_grid_pri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 4, 5, 3);
-    sub_tet_contribution(0, 1, 5, 4);
-    sub_tet_contribution(0, 1, 2, 5);
+    RSS(add_sub_tet(0, 4, 5, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
+    RSS(add_sub_tet(0, 1, 5, 4, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
+    RSS(add_sub_tet(0, 1, 2, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pri sub tet");
   }
 
   ref_cell = ref_grid_pyr(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 4, 1, 2);
-    sub_tet_contribution(0, 3, 4, 2);
+    RSS(add_sub_tet(0, 4, 1, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pyr sub tet");
+    RSS(add_sub_tet(0, 3, 4, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "pyr sub tet");
   }
 
   /*
@@ -1209,36 +1253,44 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
 
   ref_cell = ref_grid_hex(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    sub_tet_contribution(0, 5, 7, 4);
-    sub_tet_contribution(0, 1, 7, 5);
-    sub_tet_contribution(1, 6, 7, 5);
+    RSS(add_sub_tet(0, 5, 7, 4, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(0, 1, 7, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(1, 6, 7, 5, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
 
-    sub_tet_contribution(0, 7, 2, 3);
-    sub_tet_contribution(0, 7, 1, 2);
-    sub_tet_contribution(1, 7, 6, 2);
+    RSS(add_sub_tet(0, 7, 2, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(0, 7, 1, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
+    RSS(add_sub_tet(1, 7, 6, 2, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
+        "hex sub tet");
   }
 
-  each_ref_node_valid_node(ref_node, node) if (ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_pyr(ref_grid)),
-                                                   node)) ||
-                                               ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_pri(ref_grid)),
-                                                   node)) ||
-                                               ref_adj_valid(ref_adj_first(
-                                                   ref_cell_adj(
-                                                       ref_grid_hex(ref_grid)),
-                                                   node))) {
-    RAS(0.0 < total_node_volume[node], "zero metric contributions");
-    for (im = 0; im < 6; im++) {
-      if (!ref_math_divisible(metric[im + 6 * node], total_node_volume[node]))
-        RSS(REF_DIV_ZERO, "zero volume");
-      log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_pyr(ref_grid)), node)) ||
+        ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_pri(ref_grid)), node)) ||
+        ref_adj_valid(
+            ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
+      RAS(0.0 < total_node_volume[node], "zero metric contributions");
+      for (im = 0; im < 6; im++) {
+        if (!ref_math_divisible(metric[im + 6 * node], total_node_volume[node]))
+          RSS(REF_DIV_ZERO, "zero volume");
+        log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+      }
+      RSS(ref_matrix_exp_m(log_m, m), "exp");
+      for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
+      total_node_volume[node] = 0.0;
     }
-    RSS(ref_matrix_exp_m(log_m, m), "exp");
-    for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
-    total_node_volume[node] = 0.0;
   }
 
   ref_free(total_node_volume);
