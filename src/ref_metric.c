@@ -1102,10 +1102,10 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     }                                                                   \
   }
 
-static REF_STATUS add_sub_tet(REF_DBL *metric, REF_DBL *total_node_volume,
-                              REF_NODE ref_node, REF_CELL ref_cell,
-                              REF_INT *nodes, REF_INT n0, REF_INT n1,
-                              REF_INT n2, REF_INT n3) {
+static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
+                              REF_INT *nodes, REF_DBL *metric,
+                              REF_DBL *total_node_volume, REF_NODE ref_node,
+                              REF_CELL ref_cell) {
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL m[6], log_m[6];
   REF_DBL tet_volume;
@@ -1148,8 +1148,8 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(add_sub_tet(metric, total_node_volume, ref_node, ref_cell, nodes, 0, 1,
-                    2, 3),
+    RSS(add_sub_tet(0, 1, 2, 3, nodes, metric, total_node_volume, ref_node,
+                    ref_cell),
         "tet sub tet");
   }
 
