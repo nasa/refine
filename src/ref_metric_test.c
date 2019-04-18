@@ -407,6 +407,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
@@ -427,20 +428,23 @@ int main(int argc, char *argv[]) {
           metric[im + 6 * node] += hess[im + 6 * node];
         }
       }
+      ref_mpi_stopwatch_stop(ref_mpi, "timestep processed");
     }
 
     RSS(ref_metric_lp_scale_hessian(metric, NULL, ref_grid, p, gradation,
                                     complexity),
         "lp norm scaling");
-
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
     if (REF_EMPTY != buffer_pos) {
       RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
           "buffer at complexity");
+      ref_mpi_stopwatch_stop(ref_mpi, "buffer metric");
     }
     if (hmin > 0.0 || hmax > 0.0) {
       RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
                                            complexity),
           "limit at complexity");
+      ref_mpi_stopwatch_stop(ref_mpi, "h-limit metric");
     }
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
@@ -451,6 +455,7 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[9]);
     RSS(ref_gather_metric(ref_grid, argv[9]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
