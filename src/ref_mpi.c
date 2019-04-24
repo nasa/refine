@@ -40,6 +40,9 @@
     case REF_INT_TYPE:                                    \
       (macro_mpi_type) = MPI_INT;                         \
       break;                                              \
+    case REF_LONG_TYPE:                                   \
+      (macro_mpi_type) = MPI_LONG;                        \
+      break;                                              \
     case REF_DBL_TYPE:                                    \
       (macro_mpi_type) = MPI_DOUBLE;                      \
       break;                                              \
@@ -321,6 +324,9 @@ REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
   switch (type) {
     case REF_INT_TYPE:
       ((REF_INT *)recv)[0] = ((REF_INT *)send)[0];
+      break;
+    case REF_LONG_TYPE:
+      ((REF_LONG *)recv)[0] = ((REF_LONG *)send)[0];
       break;
     case REF_DBL_TYPE:
       ((REF_DBL *)recv)[0] = ((REF_DBL *)send)[0];
