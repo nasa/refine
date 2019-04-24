@@ -71,7 +71,7 @@ static REF_STATUS tear_down(REF_SHARD ref_shard) {
 }
 
 int main(int argc, char *argv[]) {
-  REF_INT nhex;
+  REF_LONG nhex;
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
