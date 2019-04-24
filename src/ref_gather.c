@@ -1001,7 +1001,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL select_faceid, REF_INT faceid,
                                   FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, node;
+  REF_INT cell, node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT size_per = ref_cell_size_per(ref_cell);
@@ -1011,7 +1011,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part &&
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
         if (faceid_insted_of_c2n) {
           node = node_per;
@@ -1087,7 +1088,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
   } else {
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part &&
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid))
         ncell++;
     }
@@ -1096,7 +1098,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
       ref_malloc(c2n, ncell * size_per, REF_INT);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part &&
             (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
           for (node = 0; node < node_per; node++)
             c2n[node + size_per * ncell] =
