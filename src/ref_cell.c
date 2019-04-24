@@ -1051,8 +1051,8 @@ REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT *data) {
+REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
+                               REF_LONG *data) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -1060,7 +1060,7 @@ REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
   REF_INT part;
   REF_INT *a_next, *a_cell;
   REF_INT *a_nodes, *b_nodes;
-  REF_INT *a_data, *b_data;
+  REF_LONG *a_data, *b_data;
 
   REF_INT cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT local, global;
@@ -1082,13 +1082,13 @@ REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
   ref_malloc(a_nodes, ref_cell_node_per(ref_cell) * a_total, REF_INT);
-  ref_malloc(a_data, a_total, REF_INT);
+  ref_malloc(a_data, a_total, REF_LONG);
   ref_malloc(a_cell, a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
   ref_malloc(b_nodes, ref_cell_node_per(ref_cell) * b_total, REF_INT);
-  ref_malloc(b_data, b_total, REF_INT);
+  ref_malloc(b_data, b_total, REF_LONG);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -1123,7 +1123,7 @@ REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, b_data, b_size, a_data, a_size, 1,
-                        REF_INT_TYPE),
+                        REF_LONG_TYPE),
       "alltoallv return data");
 
   for (request = 0; request < a_total; request++) {
@@ -1147,11 +1147,12 @@ REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
 }
 
 REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
-                           REF_INT **global) {
+                           REF_LONG **global) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell, cell, part, *counts, offset, proc;
+  REF_INT ncell, cell, part, *counts, proc;
+  REF_LONG offset;
 
-  ref_malloc(*global, ref_cell_max(ref_cell), REF_INT);
+  ref_malloc(*global, ref_cell_max(ref_cell), REF_LONG);
 
   ncell = 0;
   each_ref_cell_valid_cell(ref_cell, cell) {
@@ -1175,7 +1176,7 @@ REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
     }
   }
 
-  RSS(ref_cell_ghost_int(ref_cell, ref_node, *global), "ghost");
+  RSS(ref_cell_ghost_long(ref_cell, ref_node, *global), "ghost");
 
   return REF_SUCCESS;
 }

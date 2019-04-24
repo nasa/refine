@@ -113,7 +113,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_ADAPT ref_adapt = ref_grid->adapt;
   REF_CELL ref_cell;
-  REF_INT cell, ncell;
+  REF_INT cell;
+  REF_LONG ncell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL det, max_det, complexity, min_metric_vol;
   REF_DBL quality, min_quality;
@@ -216,7 +217,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   min_metric_vol = 1.0 / sqrt(max_det);
 
   RSS(ref_mpi_allsum(ref_mpi, &complexity, 1, REF_DBL_TYPE), "dbl sum");
-  RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "cell int sum");
+  RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_LONG_TYPE), "cell int sum");
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
@@ -331,7 +332,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
            ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_normdev);
-    printf("nnode %10d ncell %10d complexity %12.1f ratio %5.2f\n", nnode,
+    printf("nnode %10d ncell %12ld complexity %12.1f ratio %5.2f\n", nnode,
            ncell, complexity, nodes_per_complexity);
     printf("volume range %e %e metric %e floor %e\n", max_volume, min_volume,
            min_metric_vol, ref_node->min_volume);

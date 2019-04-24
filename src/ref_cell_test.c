@@ -1136,7 +1136,7 @@ int main(int argc, char *argv[]) {
     REF_CELL ref_cell;
     REF_NODE ref_node;
     REF_INT global, nodes[4], cell;
-    REF_INT *data;
+    REF_LONG *data;
 
     RSS(ref_tet(&ref_cell), "create");
     RSS(ref_node_create(&ref_node, ref_mpi), "create node");
@@ -1157,12 +1157,12 @@ int main(int argc, char *argv[]) {
       RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
     }
 
-    ref_malloc(data, 1, REF_INT);
+    ref_malloc(data, 1, REF_LONG);
     data[0] = REF_EMPTY;
     if (ref_mpi_rank(ref_mpi) == 0) {
       data[0] = 10;
     }
-    RSS(ref_cell_ghost_int(ref_cell, ref_node, data), "ghost");
+    RSS(ref_cell_ghost_long(ref_cell, ref_node, data), "ghost");
     if (ref_cell_n(ref_cell) == 1) {
       REIS(10, data[0], "set ghost");
     }

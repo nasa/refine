@@ -179,11 +179,11 @@ REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
 REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
                                   REF_INT *face0, REF_INT *face1);
 
-REF_STATUS ref_cell_ghost_int(REF_CELL ref_cell, REF_NODE ref_node,
-                              REF_INT *data);
+REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
+                               REF_LONG *data);
 
 REF_STATUS ref_cell_global(REF_CELL ref_cell, REF_NODE ref_node,
-                           REF_INT **global);
+                           REF_LONG **global);
 
 REF_STATUS ref_cell_tec_fill(REF_CELL ref_cell, const char *filename);
 

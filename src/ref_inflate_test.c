@@ -144,7 +144,7 @@ int main() {
   {
     char file[] = "ref_inflate_test.mapbc";
     char family[] = "cigar";
-    REF_INT bc= 3;
+    REF_INT bc = 3;
     FILE *f;
     REF_DICT ref_dict;
     REF_INT id, type;
@@ -175,6 +175,5 @@ int main() {
     REIS(0, remove(file), "test clean up");
   }
 
-  
   return 0;
 }

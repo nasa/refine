@@ -64,7 +64,7 @@ REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
 
 static REF_STATUS ref_gather_cell_below_quality(
     REF_GRID ref_grid, REF_CELL ref_cell, REF_DBL min_quality,
-    REF_INT *nnode_global, REF_INT *ncell_global, REF_INT **l2c) {
+    REF_INT *nnode_global, REF_LONG *ncell_global, REF_INT **l2c) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, part, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -97,7 +97,7 @@ static REF_STATUS ref_gather_cell_below_quality(
   }
 
   (*ncell_global) = ncell;
-  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_INT_TYPE), "allsum");
+  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_LONG_TYPE), "allsum");
 
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
@@ -222,7 +222,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 }
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
-                                      REF_INT ncell_expected, REF_INT *l2c,
+                                      REF_LONG ncell_expected, REF_INT *l2c,
                                       FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
@@ -230,7 +230,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT *c2n, ncell;
   REF_INT proc, part;
-  REF_INT ncell_actual;
+  REF_LONG ncell_actual;
 
   ncell_actual = 0;
 
@@ -297,7 +297,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
 static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
                                          REF_INT cell_id,
-                                         REF_INT ncell_expected, REF_INT *l2c,
+                                         REF_LONG ncell_expected, REF_INT *l2c,
                                          FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
@@ -305,7 +305,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT *c2n, ncell;
   REF_INT proc, part;
-  REF_INT ncell_actual;
+  REF_LONG ncell_actual;
 
   ncell_actual = 0;
 
@@ -378,7 +378,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
 static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
                                               REF_CELL ref_cell,
-                                              REF_INT ncell_expected,
+                                              REF_LONG ncell_expected,
                                               REF_INT *l2c, REF_DBL min_quality,
                                               FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -387,7 +387,8 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT ncell;
   REF_INT *c2n;
-  REF_INT part, proc, ncell_actual;
+  REF_INT part, proc;
+  REF_LONG ncell_actual;
   REF_DBL quality;
 
   ncell_actual = 0;
@@ -502,7 +503,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node, nnode, ncell, *l2c;
+  REF_INT node, nnode, *l2c;
+  REF_LONG ncell;
   REF_DBL *scalar, dot;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
@@ -527,12 +529,12 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
     if (NULL == zone_title) {
       fprintf(ref_gather->grid_file,
-              "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, "
+              "zone t=\"part\", nodes=%d, elements=%ld, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               nnode, ncell, "point", "fetriangle", ref_gather->time);
     } else {
       fprintf(ref_gather->grid_file,
-              "zone t=\"%s\", nodes=%d, elements=%d, datapacking=%s, "
+              "zone t=\"%s\", nodes=%d, elements=%ld, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               zone_title, nnode, ncell, "point", "fetriangle",
               ref_gather->time);
@@ -569,16 +571,16 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                                       &l2c),
         "cell below");
 
-    if (node > 0 && ncell) {
+    if (node > 0 && ncell > 0) {
       if (ref_grid_once(ref_grid)) {
         if (NULL == zone_title) {
           fprintf(ref_gather->grid_file,
-                  "zone t=\"qpart\", nodes=%d, elements=%d, datapacking=%s, "
+                  "zone t=\"qpart\", nodes=%d, elements=%ld, datapacking=%s, "
                   "zonetype=%s, solutiontime=%f\n",
                   nnode, ncell, "point", "fetetrahedron", ref_gather->time);
         } else {
           fprintf(ref_gather->grid_file,
-                  "zone t=\"q%s\", nodes=%d, elements=%d, datapacking=%s, "
+                  "zone t=\"q%s\", nodes=%d, elements=%ld, datapacking=%s, "
                   "zonetype=%s, solutiontime=%f\n",
                   zone_title, nnode, ncell, "point", "fetetrahedron",
                   ref_gather->time);
@@ -609,7 +611,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT node, nnode, ncell, *l2c;
+  REF_INT node, nnode, *l2c;
+  REF_LONG ncell;
   REF_DBL *scalar;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
@@ -625,10 +628,10 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
 
     fprintf(file, "title=\"tecplot refine partion file\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
-    fprintf(
-        file,
-        "zone t=\"part\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        nnode, ncell, "point", "fetriangle");
+    fprintf(file,
+            "zone t=\"part\", nodes=%d, elements=%ld, datapacking=%s, "
+            "zonetype=%s\n",
+            nnode, ncell, "point", "fetriangle");
   }
 
   ref_malloc(scalar, 2 * ref_node_max(ref_node), REF_DBL);
@@ -998,7 +1001,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
                                   REF_BOOL select_faceid, REF_INT faceid,
                                   FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, node;
+  REF_INT cell, node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT size_per = ref_cell_size_per(ref_cell);
@@ -1008,7 +1011,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
 
   if (ref_mpi_once(ref_mpi)) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part &&
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
         if (faceid_insted_of_c2n) {
           node = node_per;
@@ -1084,7 +1088,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
   } else {
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part &&
           (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid))
         ncell++;
     }
@@ -1093,7 +1098,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
       ref_malloc(c2n, ncell * size_per, REF_INT);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0]) &&
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part &&
             (!select_faceid || nodes[ref_cell_node_per(ref_cell)] == faceid)) {
           for (node = 0; node < node_per; node++)
             c2n[node + size_per * ncell] =
@@ -1207,7 +1213,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT code, version, dim;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
-  REF_INT ncell, node_per;
+  REF_LONG ncell;
+  REF_INT ncell_int, node_per;
   REF_INT ngeom, type;
   REF_CELL ref_cell;
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1274,7 +1281,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next pos");
-      REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
+      ncell_int = ncell;
+      REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1296,7 +1304,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next p");
-      REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
+      ncell_int = ncell;
+      REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1318,7 +1327,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next p");
-      REIS(1, fwrite(&(ncell), sizeof(int), 1, file), "nnode");
+      ncell_int = ncell;
+      REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, select_faceid, faceid, file),
@@ -1377,7 +1387,9 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL swap_endian) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_INT nnode;
+  REF_LONG ntri, nqua, ntet, npyr, npri, nhex;
+  REF_INT size_int;
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT faceid, min_faceid, max_faceid;
@@ -1402,25 +1414,29 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
-    if (swap_endian) {
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
-    }
+    size_int = (REF_INT)nnode;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nnode");
 
-    REIS(1, fwrite(&nnode, sizeof(REF_INT), 1, file), "nnode");
+    size_int = (REF_INT)ntri;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntri");
+    size_int = (REF_INT)nqua;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nqua");
 
-    REIS(1, fwrite(&ntri, sizeof(REF_INT), 1, file), "ntri");
-    REIS(1, fwrite(&nqua, sizeof(REF_INT), 1, file), "nqua");
-
-    REIS(1, fwrite(&ntet, sizeof(REF_INT), 1, file), "ntet");
-    REIS(1, fwrite(&npyr, sizeof(REF_INT), 1, file), "npyr");
-    REIS(1, fwrite(&npri, sizeof(REF_INT), 1, file), "npri");
-    REIS(1, fwrite(&nhex, sizeof(REF_INT), 1, file), "nhex");
+    size_int = (REF_INT)ntet;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntet");
+    size_int = (REF_INT)npyr;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npyr");
+    size_int = (REF_INT)npri;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npri");
+    size_int = (REF_INT)nhex;
+    if (swap_endian) SWAP_INT(size_int);
+    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nhex");
   }
 
   RSS(ref_gather_node(ref_node, swap_endian, always_id, file), "nodes");
@@ -1538,20 +1554,19 @@ REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
 }
 
 REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
-                            REF_INT *ncell) {
+                            REF_LONG *ncell) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell_local;
+  REF_INT cell, part;
 
-  ncell_local = 0;
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    if (ref_mpi_rank(ref_mpi) == ref_node_part(ref_node, nodes[0])) {
-      ncell_local++;
+  *ncell = 0;
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "cell part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      (*ncell)++;
     }
   }
 
-  RSS(ref_mpi_sum(ref_mpi, &ncell_local, ncell, 1, REF_INT_TYPE), "sum");
-  RSS(ref_mpi_bcast(ref_mpi, ncell, 1, REF_INT_TYPE), "bcast");
+  RSS(ref_mpi_allsum(ref_mpi, ncell, 1, REF_LONG_TYPE), "sum");
 
   return REF_SUCCESS;
 }
@@ -1581,7 +1596,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   REF_CELL ref_cell;
   FILE *file;
   REF_INT i;
-  REF_INT nnode, ncell, *l2c;
+  REF_INT nnode, *l2c;
+  REF_LONG ncell;
   REF_INT min_faceid, max_faceid, cell_id;
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1610,7 +1626,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     if (nnode > 0 && ncell > 0) {
       if (ref_grid_once(ref_grid)) {
         fprintf(file,
-                "zone t=\"face%d\", nodes=%d, elements=%d, datapacking=%s, "
+                "zone t=\"face%d\", nodes=%d, elements=%ld, datapacking=%s, "
                 "zonetype=%s\n",
                 cell_id, nnode, ncell, "point", "fetriangle");
       }
@@ -1628,7 +1644,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
-              "zone t=\"tet\", nodes=%d, elements=%d, datapacking=%s, "
+              "zone t=\"tet\", nodes=%d, elements=%ld, datapacking=%s, "
               "zonetype=%s\n",
               nnode, ncell, "point", "fetetrahedron");
     }

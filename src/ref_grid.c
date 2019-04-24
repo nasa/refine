@@ -369,7 +369,7 @@ REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
 
 REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                        REF_INT *nnode_global,
-                                       REF_INT *ncell_global, REF_INT **l2c) {
+                                       REF_LONG *ncell_global, REF_INT **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
   REF_INT cell, node, cell_node, part;
@@ -401,7 +401,7 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
   (*ncell_global) = ncell;
-  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_INT_TYPE), "allsum");
+  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_LONG_TYPE), "allsum");
 
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
@@ -426,7 +426,7 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
 REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                           REF_INT cell_id,
                                           REF_INT *nnode_global,
-                                          REF_INT *ncell_global,
+                                          REF_LONG *ncell_global,
                                           REF_INT **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
@@ -462,7 +462,7 @@ REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   }
 
   (*ncell_global) = ncell;
-  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_INT_TYPE), "allsum");
+  RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_LONG_TYPE), "allsum");
 
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");

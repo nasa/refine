@@ -47,9 +47,9 @@ REF_STATUS ref_inflate_dthickness(REF_INT nlayers, REF_DBL first_thickness,
 REF_STATUS ref_inflate_origin(REF_GRID ref_grid, REF_DICT faceids,
                               REF_DBL *origin);
 REF_STATUS ref_inflate_read_usm3d_mapbc(REF_DICT faceids,
-					const char *mapbc_file_name,
-					const char *family_name,
-					REF_INT boundary_condition);
+                                        const char *mapbc_file_name,
+                                        const char *family_name,
+                                        REF_INT boundary_condition);
 END_C_DECLORATION
 
 #endif /* REF_INFLATE_H */

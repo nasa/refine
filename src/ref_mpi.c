@@ -40,6 +40,9 @@
     case REF_INT_TYPE:                                    \
       (macro_mpi_type) = MPI_INT;                         \
       break;                                              \
+    case REF_LONG_TYPE:                                   \
+      (macro_mpi_type) = MPI_LONG;                        \
+      break;                                              \
     case REF_DBL_TYPE:                                    \
       (macro_mpi_type) = MPI_DOUBLE;                      \
       break;                                              \
@@ -322,6 +325,9 @@ REF_STATUS ref_mpi_alltoall(REF_MPI ref_mpi, void *send, void *recv,
     case REF_INT_TYPE:
       ((REF_INT *)recv)[0] = ((REF_INT *)send)[0];
       break;
+    case REF_LONG_TYPE:
+      ((REF_LONG *)recv)[0] = ((REF_LONG *)send)[0];
+      break;
     case REF_DBL_TYPE:
       ((REF_DBL *)recv)[0] = ((REF_DBL *)send)[0];
       break;
@@ -514,6 +520,10 @@ REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
       case REF_INT_TYPE:
         for (i = 0; i < n; i++) ((REF_INT *)output)[i] = ((REF_INT *)input)[i];
         break;
+      case REF_LONG_TYPE:
+        for (i = 0; i < n; i++)
+          ((REF_LONG *)output)[i] = ((REF_LONG *)input)[i];
+        break;
       case REF_DBL_TYPE:
         for (i = 0; i < n; i++) ((REF_DBL *)output)[i] = ((REF_DBL *)input)[i];
         break;
@@ -530,6 +540,9 @@ REF_STATUS ref_mpi_sum(REF_MPI ref_mpi, void *input, void *output, REF_INT n,
   switch (type) {
     case REF_INT_TYPE:
       for (i = 0; i < n; i++) ((REF_INT *)output)[i] = ((REF_INT *)input)[i];
+      break;
+    case REF_LONG_TYPE:
+      for (i = 0; i < n; i++) ((REF_LONG *)output)[i] = ((REF_LONG *)input)[i];
       break;
     case REF_DBL_TYPE:
       for (i = 0; i < n; i++) ((REF_DBL *)output)[i] = ((REF_DBL *)input)[i];
@@ -552,6 +565,10 @@ REF_STATUS ref_mpi_allsum(REF_MPI ref_mpi, void *value, REF_INT n,
     case REF_INT_TYPE:
       ref_malloc(temp, n, REF_INT);
       for (i = 0; i < n; i++) ((REF_INT *)temp)[i] = ((REF_INT *)value)[i];
+      break;
+    case REF_LONG_TYPE:
+      ref_malloc(temp, n, REF_LONG);
+      for (i = 0; i < n; i++) ((REF_LONG *)temp)[i] = ((REF_LONG *)value)[i];
       break;
     case REF_DBL_TYPE:
       ref_malloc(temp, n, REF_DBL);
