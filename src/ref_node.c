@@ -2692,3 +2692,16 @@ REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
+                                 REF_INT shift) {
+  REF_INT i;
+
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    if (ref_node->unused_global[i] >= equal_and_above) {
+      ref_node->unused_global[i] += shift;
+    }
+  }
+
+  return REF_SUCCESS;
+}
