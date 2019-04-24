@@ -231,6 +231,8 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_INT position, REF_DBL *value);
 
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT global);
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */

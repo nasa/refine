@@ -2666,3 +2666,17 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT global) {
+  if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
+    ref_node_max_unused(ref_node) += 1000;
+    ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
+                REF_INT);
+  }
+
+  ref_node->unused_global[ref_node_n_unused(ref_node)] = global;
+
+  ref_node_n_unused(ref_node)++;
+
+  return REF_SUCCESS;
+}
