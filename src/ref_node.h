@@ -44,6 +44,8 @@ struct REF_NODE_STRUCT {
   REF_DBL *aux;
   REF_MPI ref_mpi;
   REF_LIST unused_global_list;
+  REF_INT n_unused, max_unused;
+  REF_INT *unused_global;
   REF_INT old_n_global, new_n_global;
   REF_DBL twod_mid_plane;
   REF_DBL min_volume;
@@ -95,6 +97,9 @@ struct REF_NODE_STRUCT {
   ((ref_node)->aux[(iaux) + ref_node_naux(ref_node) * (node)])
 
 #define ref_node_mpi(ref_node) ((ref_node)->ref_mpi)
+
+#define ref_node_n_unused(ref_node) ((ref_node)->n_unused)
+#define ref_node_max_unused(ref_node) ((ref_node)->max_unused)
 
 #define ref_node_twod_mid_plane(ref_node) ((ref_node)->twod_mid_plane)
 #define ref_node_min_volume(ref_node) ((ref_node)->min_volume)
