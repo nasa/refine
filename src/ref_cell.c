@@ -1052,7 +1052,7 @@ REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
 }
 
 REF_STATUS ref_cell_ghost_long(REF_CELL ref_cell, REF_NODE ref_node,
-			       REF_LONG *data) {
+                               REF_LONG *data) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
