@@ -2667,16 +2667,28 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT global) {
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT unused_global) {
   if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
     ref_node_max_unused(ref_node) += 1000;
     ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
                 REF_INT);
   }
 
-  ref_node->unused_global[ref_node_n_unused(ref_node)] = global;
+  ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
 
   ref_node_n_unused(ref_node)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global) {
+  if (0 == ref_node_n_unused(ref_node)) {
+    *new_global = REF_EMPTY;
+    return REF_FAILURE;
+  }
+
+  ref_node_n_unused(ref_node)--;
+  *new_global = ref_node->unused_global[ref_node_n_unused(ref_node)];
 
   return REF_SUCCESS;
 }
