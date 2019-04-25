@@ -1,5 +1,3 @@
-variables:
-  GIT_STRATEGY: clone
 
 build-and-test-on-cmb20:
   only:
