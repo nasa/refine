@@ -100,6 +100,9 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
                                 REF_INT ldim, REF_DBL *prim_dual,
                                 REF_RECON_RECONSTRUCTION reconstruction);
+REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
+                               REF_DBL *prim_dual,
+                               REF_RECON_RECONSTRUCTION reconstruction);
 
 END_C_DECLORATION
 

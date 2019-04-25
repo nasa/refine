@@ -801,6 +801,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gfe");
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gu");
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");

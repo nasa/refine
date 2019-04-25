@@ -1727,9 +1727,10 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
       }
       RSS(ref_recon_hessian(ref_grid, flux, hess_flux, reconstruction), "hess");
       each_ref_node_valid_node(ref_node, node) {
-        for (i = 0; i < 6; i++)
+        for (i = 0; i < 6; i++) {
           metric[i + 6 * node] +=
               ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
+        }
       }
     }
   }
@@ -1737,6 +1738,60 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(hess_flux);
   ref_free(flux);
   ref_free(grad_lam);
+  ref_free(lam);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
+                               REF_DBL *prim_dual,
+                               REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node, i;
+  REF_INT nequ = 5;
+  REF_DBL *lam, *hess_lam, *sr_lam, *u, *hess_u;
+  REF_DBL u1, u2, u3;
+  REF_DBL diag_system[12];
+
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(sr_lam, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_u, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+  for (var = 0; var < nequ; var++) {
+    each_ref_node_valid_node(ref_node, node) {
+      lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+    }
+    RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_matrix_diag_m(&(hess_lam[6 * node]), diag_system), "decomp");
+      sr_lam[node] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                             ABS(ref_matrix_eig(diag_system, 1))),
+                         ABS(ref_matrix_eig(diag_system, 2)));
+    }
+  }
+
+  var = 1;
+  each_ref_node_valid_node(ref_node, node) {
+    u[node] = prim_dual[var + ldim * node];
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  u1 = ABS(prim_dual[1 + ldim * node]);
+  u2 = ABS(prim_dual[2 + ldim * node]);
+  u3 = ABS(prim_dual[3 + ldim * node]);
+  for (i = 0; i < 6; i++) {
+    metric[i + 6 * node] +=
+        (20.0 * sr_lam[2 * 5 * node] + 2.0 * sr_lam[3 * 5 * node] +
+         2.0 * sr_lam[4 * 5 * node] +
+         (20 * u1 + 2 * u2 + 20 * u3) * sr_lam[4 * 5 * node]) *
+        hess_u[i + 6 * node];
+  }
+
+  ref_free(hess_u);
+  ref_free(u);
+  ref_free(sr_lam);
+  ref_free(hess_lam);
   ref_free(lam);
 
   return REF_SUCCESS;
