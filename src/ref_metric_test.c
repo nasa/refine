@@ -431,10 +431,14 @@ int main(int argc, char *argv[]) {
       ref_mpi_stopwatch_stop(ref_mpi, "timestep processed");
     }
 
-    RSS(ref_metric_lp_scale_hessian(metric, NULL, ref_grid, p, gradation,
-                                    complexity),
-        "lp norm scaling");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local lp norm scaling");
+    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
     if (REF_EMPTY != buffer_pos) {
       RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
           "buffer at complexity");
@@ -634,11 +638,11 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL *weight, *scalar, *metric, *implied;
     REF_INT p = 2;
-    REF_DBL gradation, complexity, complexity_scale;
+    REF_DBL gradation, complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
-    REF_DBL current_complexity, h, h0, h_h0, scale, h_ms;
-    REF_INT i, node, relaxations;
+    REF_DBL h, h0, h_h0, scale, h_ms;
+    REF_INT i, node;
     REF_DBL multiscale_system[12];
     REF_DBL *system;
     REF_INT nsystem;
@@ -725,56 +729,10 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("global scaling and gradation limiting\n");
-    complexity_scale = 2.0 / 3.0;
-    if (ref_grid_twod(ref_grid)) {
-      complexity_scale = 1.0;
-    }
-    for (relaxations = 0; relaxations < 10; relaxations++) {
-      RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
-      if (!ref_math_divisible(complexity, current_complexity)) {
-        RSS(REF_DIV_ZERO, "complexity");
-      }
-      each_ref_node_valid_node(ref_node, node) {
-        for (i = 0; i < 6; i++) {
-          metric[i + 6 * node] *=
-              pow(complexity / current_complexity, complexity_scale);
-        }
-        if (ref_grid_twod(ref_grid)) {
-          metric[1 + 6 * node] = 0.0;
-          metric[3 + 6 * node] = 1.0;
-          metric[4 + 6 * node] = 0.0;
-        }
-      }
-      if (gradation < 1.0) {
-        RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
-            "gradation");
-      } else {
-        RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
-            "gradation");
-      }
-      if (ref_grid_twod(ref_grid)) {
-        each_ref_node_valid_node(ref_node, node) {
-          metric[1 + 6 * node] = 0.0;
-          metric[3 + 6 * node] = 1.0;
-          metric[4 + 6 * node] = 0.0;
-        }
-      }
-    }
-    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
-    if (!ref_math_divisible(complexity, current_complexity)) {
-      RSS(REF_DIV_ZERO, "complexity");
-    }
-    each_ref_node_valid_node(ref_node, node) {
-      for (i = 0; i < 6; i++) {
-        metric[i + 6 * node] *=
-            pow(complexity / current_complexity, complexity_scale);
-      }
-      if (ref_grid_twod(ref_grid)) {
-        metric[1 + 6 * node] = 0.0;
-        metric[3 + 6 * node] = 1.0;
-        metric[4 + 6 * node] = 0.0;
-      }
-    }
+
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
 
     if (ref_mpi_once(ref_mpi))
       printf("writing res,dual,weight ref_vend_system.tec\n");
