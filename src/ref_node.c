@@ -2731,3 +2731,8 @@ REF_STATUS ref_node_sort_unused(REF_NODE ref_node) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_erase_unused(REF_NODE ref_node) {
+  ref_node_n_unused(ref_node) = 0;
+  return REF_SUCCESS;
+}
