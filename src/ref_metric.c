@@ -1777,15 +1777,17 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u[node] = prim_dual[var + ldim * node];
   }
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
-  u1 = ABS(prim_dual[1 + ldim * node]);
-  u2 = ABS(prim_dual[2 + ldim * node]);
-  u3 = ABS(prim_dual[3 + ldim * node]);
-  for (i = 0; i < 6; i++) {
-    metric[i + 6 * node] +=
-        (20.0 * sr_lam[2 * 5 * node] + 2.0 * sr_lam[3 * 5 * node] +
-         2.0 * sr_lam[4 * 5 * node] +
-         (20 * u1 + 2 * u2 + 20 * u3) * sr_lam[4 * 5 * node]) *
-        hess_u[i + 6 * node];
+  each_ref_node_valid_node(ref_node, node) {
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] +=
+          (20.0 * sr_lam[2 * 5 * node] + 2.0 * sr_lam[3 * 5 * node] +
+           2.0 * sr_lam[4 * 5 * node] +
+           (20 * u1 + 2 * u2 + 20 * u3) * sr_lam[4 * 5 * node]) *
+          hess_u[i + 6 * node];
+    }
   }
 
   ref_free(hess_u);

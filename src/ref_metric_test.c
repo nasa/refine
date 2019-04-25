@@ -1613,6 +1613,58 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  if (!ref_mpi_para(ref_mpi)) { /* lp for no variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node, ldim = 10;
+    REF_DBL *prim_dual, *metric;
+    REF_DBL t, ei0, et0;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(prim_dual, ldim * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[0 + ldim * node] = 1.0 + 0.01 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[1 + ldim * node] = 0.5 + 0.1 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 1, node);
+      prim_dual[2 + ldim * node] = 0.0 + 0.1 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 2, node);
+      prim_dual[3 + ldim * node] = 0.1 + 0.1 * sin(t);
+      ei0 = (1.0 / 1.4) / ((1.4 - 1.0) * 1.0);
+      et0 = 1.0 * (ei0 + 0.5 * (0.5 * 0.5 + 0.1 * 0.1));
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[4 + ldim * node] = et0 + 0.01 * sin(t);
+
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[5 + ldim * node] = 1.0 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[6 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 1, node);
+      prim_dual[7 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 2, node);
+      prim_dual[8 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[9 + ldim * node] = 5.0 * cos(t);
+    }
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gfe");
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gu");
+
+    ref_free(metric);
+    ref_free(prim_dual);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
