@@ -2736,3 +2736,43 @@ REF_STATUS ref_node_erase_unused(REF_NODE ref_node) {
   ref_node_n_unused(ref_node) = 0;
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT i;
+  REF_INT *local_copy;
+  REF_INT proc;
+  REF_INT *counts;
+  REF_INT total_count;
+
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+
+  RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
+                        REF_INT_TYPE),
+      "gather size");
+
+  total_count = 0;
+  each_ref_mpi_part(ref_mpi, proc) total_count += counts[proc];
+
+  ref_malloc(local_copy, ref_node_n(ref_node), REF_INT);
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    local_copy[i] = ref_node->unused_global[i];
+  }
+
+  if (total_count > ref_node_max_unused(ref_node)) {
+    ref_node_max_unused(ref_node) = total_count;
+    ref_free(ref_node->unused_global);
+    ref_malloc(ref_node->unused_global, ref_node_max_unused(ref_node), REF_INT);
+  }
+
+  RSS(ref_mpi_allgatherv(ref_mpi, local_copy, counts, ref_node->unused_global,
+                         REF_INT_TYPE),
+      "gather values");
+
+  ref_node_n_unused(ref_node) = total_count;
+
+  ref_free(local_copy);
+  ref_free(counts);
+
+  return REF_SUCCESS;
+}

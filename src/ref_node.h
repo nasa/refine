@@ -237,6 +237,7 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
                                  REF_INT shift);
 REF_STATUS ref_node_sort_unused(REF_NODE ref_node);
 REF_STATUS ref_node_erase_unused(REF_NODE ref_node);
+REF_STATUS ref_node_allgather_unused(REF_NODE ref_node);
 
 END_C_DECLORATION
 
