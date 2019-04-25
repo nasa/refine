@@ -2737,7 +2737,7 @@ REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   REF_INT *counts;
   REF_INT total_count;
 
-  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  ref_malloc(counts, ref_mpi_n_unused(ref_mpi), REF_INT);
 
   RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
                         REF_INT_TYPE),
@@ -2746,7 +2746,7 @@ REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   total_count = 0;
   each_ref_mpi_part(ref_mpi, proc) total_count += counts[proc];
 
-  ref_malloc(local_copy, ref_node_n(ref_node), REF_INT);
+  ref_malloc(local_copy, ref_node_n_unused(ref_node), REF_INT);
   for (i = 0; i < ref_node_n_unused(ref_node); i++) {
     local_copy[i] = ref_node->unused_global[i];
   }
