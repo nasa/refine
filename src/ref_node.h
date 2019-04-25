@@ -26,7 +26,6 @@ typedef struct REF_NODE_STRUCT REF_NODE_STRUCT;
 typedef REF_NODE_STRUCT *REF_NODE;
 END_C_DECLORATION
 
-#include "ref_list.h"
 #include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
@@ -43,7 +42,8 @@ struct REF_NODE_STRUCT {
   REF_INT naux;
   REF_DBL *aux;
   REF_MPI ref_mpi;
-  REF_LIST unused_global_list;
+  REF_INT n_unused, max_unused;
+  REF_INT *unused_global;
   REF_INT old_n_global, new_n_global;
   REF_DBL twod_mid_plane;
   REF_DBL min_volume;
@@ -95,6 +95,9 @@ struct REF_NODE_STRUCT {
   ((ref_node)->aux[(iaux) + ref_node_naux(ref_node) * (node)])
 
 #define ref_node_mpi(ref_node) ((ref_node)->ref_mpi)
+
+#define ref_node_n_unused(ref_node) ((ref_node)->n_unused)
+#define ref_node_max_unused(ref_node) ((ref_node)->max_unused)
 
 #define ref_node_twod_mid_plane(ref_node) ((ref_node)->twod_mid_plane)
 #define ref_node_min_volume(ref_node) ((ref_node)->min_volume)
@@ -225,6 +228,14 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
 
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_INT position, REF_DBL *value);
+
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT unused_global);
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global);
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
+                                 REF_INT shift);
+REF_STATUS ref_node_sort_unused(REF_NODE ref_node);
+REF_STATUS ref_node_erase_unused(REF_NODE ref_node);
+REF_STATUS ref_node_allgather_unused(REF_NODE ref_node);
 
 END_C_DECLORATION
 

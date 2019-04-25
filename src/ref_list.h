@@ -54,14 +54,7 @@ REF_STATUS ref_list_pop(REF_LIST ref_list, REF_INT *last);
 REF_STATUS ref_list_shift(REF_LIST ref_list, REF_INT *first);
 REF_STATUS ref_list_delete(REF_LIST ref_list, REF_INT value);
 
-REF_STATUS ref_list_apply_offset(REF_LIST ref_list, REF_INT equal_and_above,
-                                 REF_INT offset);
-
-REF_STATUS ref_list_sort(REF_LIST ref_list);
-
 REF_STATUS ref_list_erase(REF_LIST ref_list);
-
-REF_STATUS ref_list_allgather(REF_LIST ref_list, REF_MPI ref_mpi);
 
 REF_STATUS ref_list_contains(REF_LIST ref_list, REF_INT item,
                              REF_BOOL *contains);

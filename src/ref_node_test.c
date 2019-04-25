@@ -2110,6 +2110,97 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "node free");
   }
 
+  { /* push one unused */
+    REF_NODE ref_node;
+    REF_INT global;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 27;
+    RSS(ref_node_push_unused(ref_node, global), "push unused");
+    REIS(1, ref_node_n_unused(ref_node), "has one");
+    RSS(ref_node_free(ref_node), "node free");
+  }
+
+  { /* pop one unused */
+    REF_NODE ref_node;
+    REF_INT global, last;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    global = 27;
+    RSS(ref_node_push_unused(ref_node, global), "push unused");
+    RSS(ref_node_pop_unused(ref_node, &last), "push unused");
+    REIS(0, ref_node_n_unused(ref_node), "has one");
+    REIS(global, last, "same one");
+    RSS(ref_node_free(ref_node), "node free");
+  }
+
+  { /* store lots */
+    REF_NODE ref_node;
+    REF_INT global;
+    REF_INT max;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    max = ref_node_max_unused(ref_node);
+    for (global = 0; global <= max; global++) {
+      RSS(ref_node_push_unused(ref_node, global), "store");
+    }
+    RAS(ref_node_max_unused(ref_node) > max, "more?");
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* apply offset */
+    REF_NODE ref_node;
+    REF_INT last;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    RSS(ref_node_push_unused(ref_node, 20), "store");
+    RSS(ref_node_push_unused(ref_node, 10), "store");
+    RSS(ref_node_shift_unused(ref_node, 15, 27), "offset");
+
+    RSS(ref_node_pop_unused(ref_node, &last), "rm");
+    REIS(10, last, "has none");
+
+    RSS(ref_node_pop_unused(ref_node, &last), "rm");
+    REIS(47, last, "has none");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* sort */
+    REF_NODE ref_node;
+    REF_INT last;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    RSS(ref_node_push_unused(ref_node, 20), "store");
+    RSS(ref_node_push_unused(ref_node, 10), "store");
+    RSS(ref_node_sort_unused(ref_node), "sort");
+
+    RSS(ref_node_pop_unused(ref_node, &last), "rm");
+    REIS(20, last, "has none");
+    RSS(ref_node_pop_unused(ref_node, &last), "rm");
+    REIS(10, last, "has none");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* erase */
+    REF_NODE ref_node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    RSS(ref_node_push_unused(ref_node, 20), "store");
+    RSS(ref_node_push_unused(ref_node, 10), "store");
+    RSS(ref_node_erase_unused(ref_node), "sort");
+
+    REIS(0, ref_node_n_unused(ref_node), "has one");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* allgather */
+    REF_NODE ref_node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    RSS(ref_node_push_unused(ref_node, ref_mpi_rank(ref_mpi)), "store");
+    RSS(ref_node_allgather_unused(ref_node), "sort");
+
+    REIS(ref_mpi_n(ref_mpi), ref_node_n_unused(ref_node), "has one");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

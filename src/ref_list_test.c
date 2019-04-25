@@ -23,7 +23,6 @@
 
 #include "ref_list.h"
 #include "ref_mpi.h"
-#include "ref_sort.h"
 
 int main(int argc, char *argv[]) {
   REF_LIST ref_list;
@@ -80,73 +79,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_list_free(ref_list), "free");
   }
 
-  { /* apply offset */
-    REF_INT last;
-    RSS(ref_list_create(&ref_list), "create");
-    RSS(ref_list_push(ref_list, 20), "store");
-    RSS(ref_list_push(ref_list, 10), "store");
-    RSS(ref_list_apply_offset(ref_list, 15, 27), "offset");
-
-    RSS(ref_list_pop(ref_list, &last), "rm");
-    REIS(10, last, "has none");
-
-    RSS(ref_list_pop(ref_list, &last), "rm");
-    REIS(47, last, "has none");
-
-    RSS(ref_list_free(ref_list), "free");
-  }
-
-  { /* sort */
-    REF_INT last;
-    RSS(ref_list_create(&ref_list), "create");
-    RSS(ref_list_push(ref_list, 20), "store");
-    RSS(ref_list_push(ref_list, 10), "store");
-    RSS(ref_list_sort(ref_list), "sort");
-
-    RSS(ref_list_pop(ref_list, &last), "rm");
-    REIS(20, last, "has none");
-    RSS(ref_list_pop(ref_list, &last), "rm");
-    REIS(10, last, "has none");
-
-    RSS(ref_list_free(ref_list), "free");
-  }
-
-  { /* shift */
-    REF_INT first;
-    RSS(ref_list_create(&ref_list), "create");
-    RSS(ref_list_push(ref_list, 30), "store");
-    RSS(ref_list_push(ref_list, 40), "store");
-
-    RSS(ref_list_shift(ref_list, &first), "rm");
-    REIS(30, first, "has none");
-    RSS(ref_list_shift(ref_list, &first), "rm");
-    REIS(40, first, "has none");
-    REIS(REF_FAILURE, ref_list_shift(ref_list, &first), "rm");
-
-    RSS(ref_list_free(ref_list), "free");
-  }
-
   { /* erase */
     RSS(ref_list_create(&ref_list), "create");
     RSS(ref_list_push(ref_list, 20), "store");
     RSS(ref_list_push(ref_list, 10), "store");
-    RSS(ref_list_sort(ref_list), "sort");
 
     RSS(ref_list_erase(ref_list), "rm -rf");
 
     REIS(0, ref_list_n(ref_list), "has none");
-
-    RSS(ref_list_free(ref_list), "free");
-  }
-
-  { /* allgather */
-    RSS(ref_list_create(&ref_list), "create");
-
-    RSS(ref_list_push(ref_list, ref_mpi_rank(ref_mpi)), "store");
-
-    RSS(ref_list_allgather(ref_list, ref_mpi), "gather");
-
-    REIS(ref_mpi_n(ref_mpi), ref_list_n(ref_list), "one from each");
 
     RSS(ref_list_free(ref_list), "free");
   }
