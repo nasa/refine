@@ -28,6 +28,7 @@
 #include "ref_node.h"
 
 #include "ref_interp.h"
+#include "ref_phys.h"
 
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -1689,6 +1690,54 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_INT ldim, REF_DBL *prim_dual,
+                                REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, dir, node, i;
+  REF_INT nequ = 5;
+  REF_DBL state[5], node_flux[5], direction[3];
+  REF_DBL *lam, *grad_lam, *flux, *hess_flux;
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+  for (var = 0; var < nequ; var++) {
+    each_ref_node_valid_node(ref_node, node) {
+      lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction),
+        "grad_lam");
+    for (dir = 0; dir < 3; dir++) {
+      each_ref_node_valid_node(ref_node, node) {
+        direction[0] = 0.0;
+        direction[1] = 0.0;
+        direction[2] = 0.0;
+        direction[dir] = 1.0;
+        for (i = 0; i < 5; i++) {
+          state[i] = prim_dual[var + ldim * node];
+        }
+        RSS(ref_phys_euler(state, direction, node_flux), "euler");
+        flux[node] = node_flux[var];
+      }
+      RSS(ref_recon_hessian(ref_grid, flux, hess_flux, reconstruction), "hess");
+      each_ref_node_valid_node(ref_node, node) {
+        for (i = 0; i < 6; i++)
+          metric[i + 6 * node] +=
+              ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
+      }
+    }
+  }
+
+  ref_free(hess_flux);
+  ref_free(flux);
+  ref_free(grad_lam);
+  ref_free(lam);
 
   return REF_SUCCESS;
 }

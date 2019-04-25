@@ -799,6 +799,9 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
 
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gfe");
+
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
     RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
 
