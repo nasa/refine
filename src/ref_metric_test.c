@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
   REF_INT venditti_pos = REF_EMPTY;
+  REF_INT belme_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT buffer_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
@@ -106,6 +107,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--no-goal", &no_goal_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--venditti", &venditti_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--belme", &belme_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
@@ -749,6 +752,55 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (belme_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *prim_dual, *metric;
+    REF_DBL gradation = -1.0;
+    REF_DBL complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+
+    REIS(1, belme_pos,
+         "required args: --belme grid.meshb prim_dual.solb "
+         "complexity output-metric.solb");
+    if (6 > argc) {
+      printf(
+          "required args: --belme grid.meshb prim_dual.solb "
+          "omplexity output-metric.solb");
+      return REF_FAILURE;
+    }
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+
+    complexity = atof(argv[4]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+        "unable to load scalar in position 3");
+    RAS(10 == ldim || 12 == ldim, "expected one scalar");
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
+    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
