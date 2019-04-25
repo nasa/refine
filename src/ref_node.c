@@ -63,7 +63,6 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
   ref_node->aux = NULL;
 
   ref_node_mpi(ref_node) = ref_mpi; /* reference only */
-  RSS(ref_list_create(&(ref_node->unused_global_list)), "create list");
 
   ref_node_n_unused(ref_node) = 0;
   ref_node_max_unused(ref_node) = 10;
@@ -84,7 +83,6 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
 
 REF_STATUS ref_node_free(REF_NODE ref_node) {
   if (NULL == (void *)ref_node) return REF_NULL;
-  ref_list_free(ref_node->unused_global_list);
   ref_free(ref_node->unused_global);
   /* ref_mpi reference only */
   ref_free(ref_node->aux);
@@ -146,9 +144,6 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
   }
 
   ref_node_mpi(ref_node) = ref_node_mpi(original); /* reference only */
-  RSS(ref_list_deep_copy(&(ref_node->unused_global_list),
-                         original->unused_global_list),
-      "deep copy list");
 
   ref_node->n_unused = original->n_unused;
   ref_node->max_unused = original->max_unused;
@@ -426,7 +421,7 @@ REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node) {
     ref_node->sorted_local[sorted_node] =
         ref_node->sorted_local[sorted_node + 1];
 
-  RSS(ref_list_push(ref_node->unused_global_list, ref_node->global[node]),
+  RSS(ref_node_push_unused(ref_node, ref_node->global[node]),
       "store unused global");
 
   ref_node->global[node] = ref_node->blank;
@@ -440,7 +435,7 @@ REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node) {
 REF_STATUS ref_node_remove_invalidates_sorted(REF_NODE ref_node, REF_INT node) {
   if (!ref_node_valid(ref_node, node)) return REF_INVALID;
 
-  RSS(ref_list_push(ref_node->unused_global_list, ref_node->global[node]),
+  RSS(ref_node_push_unused(ref_node, ref_node->global[node]),
       "store unused global");
 
   ref_node->global[node] = ref_node->blank;
@@ -522,8 +517,8 @@ REF_STATUS ref_node_initialize_n_global(REF_NODE ref_node, REF_INT n_global) {
 }
 
 REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_INT *global) {
-  if (0 < ref_list_n(ref_node->unused_global_list)) {
-    RSS(ref_list_pop(ref_node->unused_global_list, global),
+  if (0 < ref_node_n_unused(ref_node)) {
+    RSS(ref_node_pop_unused(ref_node, global),
         "grab an unused global from list");
   } else {
     if (REF_EMPTY == ref_node->new_n_global)
@@ -575,8 +570,7 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
          node--)
       ref_node->sorted_global[node] += offset;
 
-    RSS(ref_list_apply_offset(ref_node->unused_global_list,
-                              ref_node->old_n_global, offset),
+    RSS(ref_node_shift_unused(ref_node, ref_node->old_n_global, offset),
         "shift");
   }
 
@@ -634,17 +628,15 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
 }
 
 REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
-  REF_LIST ref_list = ref_node->unused_global_list;
   REF_INT sort, offset, local;
 
-  RSS(ref_list_allgather(ref_list, ref_node_mpi(ref_node)),
-      "gather unused global");
-  RSS(ref_list_sort(ref_list), "sort unused global");
+  RSS(ref_node_allgather_unused(ref_node), "gather unused global");
+  RSS(ref_node_sort_unused(ref_node), "sort unused global");
 
   offset = 0;
   for (sort = 0; sort < ref_node_n(ref_node); sort++) {
-    while ((offset < ref_list_n(ref_list)) &&
-           (ref_list_value(ref_list, offset) < ref_node->sorted_global[sort])) {
+    while ((offset < ref_node_n_unused(ref_node)) &&
+           (ref_node->unused_global[offset] < ref_node->sorted_global[sort])) {
       offset++;
     }
     local = ref_node->sorted_local[sort];
@@ -653,10 +645,10 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   }
 
   RSS(ref_node_initialize_n_global(
-          ref_node, ref_node->old_n_global - ref_list_n(ref_list)),
+          ref_node, ref_node->old_n_global - ref_node_n_unused(ref_node)),
       "re-init");
 
-  RSS(ref_list_erase(ref_list), "erase unused list");
+  RSS(ref_node_erase_unused(ref_node), "erase unused list");
 
   return REF_SUCCESS;
 }

@@ -26,7 +26,6 @@ typedef struct REF_NODE_STRUCT REF_NODE_STRUCT;
 typedef REF_NODE_STRUCT *REF_NODE;
 END_C_DECLORATION
 
-#include "ref_list.h"
 #include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
@@ -43,7 +42,6 @@ struct REF_NODE_STRUCT {
   REF_INT naux;
   REF_DBL *aux;
   REF_MPI ref_mpi;
-  REF_LIST unused_global_list;
   REF_INT n_unused, max_unused;
   REF_INT *unused_global;
   REF_INT old_n_global, new_n_global;
