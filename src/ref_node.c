@@ -2737,7 +2737,7 @@ REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   REF_INT *counts;
   REF_INT total_count;
 
-  ref_malloc(counts, ref_mpi_n_unused(ref_mpi), REF_INT);
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
 
   RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
                         REF_INT_TYPE),
