@@ -431,10 +431,14 @@ int main(int argc, char *argv[]) {
       ref_mpi_stopwatch_stop(ref_mpi, "timestep processed");
     }
 
-    RSS(ref_metric_lp_scale_hessian(metric, NULL, ref_grid, p, gradation,
-                                    complexity),
-        "lp norm scaling");
-    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local lp norm scaling");
+    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
     if (REF_EMPTY != buffer_pos) {
       RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
           "buffer at complexity");

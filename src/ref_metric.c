@@ -844,7 +844,7 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] *=
-	  pow(complexity / current_complexity, complexity_scale);
+            pow(complexity / current_complexity, complexity_scale);
       }
       if (ref_grid_twod(ref_grid)) {
         metric[1 + 6 * node] = 0.0;
@@ -1581,17 +1581,17 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eignvalues based on grid size and solution jitter");
-  RSS(ref_metric_lp_scale_hessian(metric, weight, ref_grid, p_norm, gradation,
-                                  target_complexity),
-      "lp norm");
+  RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
+      "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         target_complexity),
+      "gradation at complexity");
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_DBL *weight,
-                                       REF_GRID ref_grid, REF_INT p_norm,
-                                       REF_DBL gradation,
-                                       REF_DBL target_complexity) {
+REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
+                                  REF_GRID ref_grid, REF_INT p_norm) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_INT dimension;
@@ -1628,10 +1628,6 @@ REF_STATUS ref_metric_lp_scale_hessian(REF_DBL *metric, REF_DBL *weight,
     }
   }
 
-  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                         target_complexity),
-      "gradation at complexity");
-
   return REF_SUCCESS;
 }
 
@@ -1642,15 +1638,8 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
                                REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
-  REF_INT dimension;
-  REF_DBL det, exponent, min_non_zero_det;
   REF_INT ldim;
   REF_INT var, dir;
-
-  dimension = 3;
-  if (ref_grid_twod(ref_grid)) {
-    dimension = 2;
-  }
 
   ldim = 4 * nequations;
 
@@ -1694,37 +1683,8 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     }
   }
 
-  min_non_zero_det = 1.0e300;
-  each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (det > 0.0) min_non_zero_det = MIN(det, min_non_zero_det);
-  }
-
-  /* local scaling */
-  if (ref_grid_twod(ref_grid)) dimension = 2;
-  exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
-  each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "det_m local hess scale");
-    if (det > 0.0) {
-      for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
-    } else {
-      metric[0 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
-      metric[1 + 6 * node] = 0.0;
-      metric[2 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
-      metric[4 + 6 * node] = 0.0;
-      metric[5 + 6 * node] = pow(min_non_zero_det, 1.0 / 3.0);
-      RSS(ref_matrix_det_m(&(metric[6 * node]), &det), "local min det scale");
-      for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
-    }
-  }
-  if (ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      metric[1 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = 1.0;
-      metric[4 + 6 * node] = 0.0;
-    }
-  }
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
+      "local scale lp norm");
 
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),

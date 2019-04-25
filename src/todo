@@ -104,11 +104,6 @@ cavity operator in 2D/3D
   2D cavity operator for surf geom edges that allows multiple edge types?
   cavity operator parallel?
 
-metric construction
-  twod
-  extract local lp scaling
-  extract global complexity scaling
-  refactor ref_metric_lp_scale_hessian
 ref_recon
   twod l2projection
 
@@ -266,6 +261,9 @@ mixed element in refine/two
 +++++++++++++++++
 
 + gradation at higher level (with switch)
++ extract local lp scaling
++ extract global complexity scaling
++ refactor ref_metric_lp_scale_hessian
 
 + move ref_node unused global ref_list methods to ref_node
 + cell global are long
