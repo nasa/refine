@@ -2705,3 +2705,29 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_sort_unused(REF_NODE ref_node) {
+  REF_INT *order;
+  REF_INT i;
+
+  /* see if it is too short to require sorting */
+  if (2 > ref_node_n_unused(ref_node)) return REF_SUCCESS;
+
+  ref_malloc(order, ref_node_n_unused(ref_node), REF_INT);
+
+  RSS(ref_sort_heap_int(ref_node_n_unused(ref_node), ref_node->unused_global,
+                        order),
+      "heap");
+
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    order[i] = ref_node->unused_global[order[i]];
+  }
+
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    ref_node->unused_global[i] = order[i];
+  }
+
+  ref_free(order);
+
+  return REF_SUCCESS;
+}

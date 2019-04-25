@@ -235,6 +235,7 @@ REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT unused_global);
 REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global);
 REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
                                  REF_INT shift);
+REF_STATUS ref_node_sort_unused(REF_NODE ref_node);
 
 END_C_DECLORATION
 
