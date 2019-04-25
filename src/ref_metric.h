@@ -56,6 +56,10 @@ REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
                                              REF_DBL beta);
 REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
                                             REF_DBL beta, REF_DBL t);
+REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
+                                              REF_GRID ref_grid,
+                                              REF_DBL gradation,
+                                              REF_DBL complexity);
 
 REF_STATUS ref_metric_sanitize(REF_GRID ref_grid);
 REF_STATUS ref_metric_sanitize_threed(REF_GRID ref_grid);
