@@ -1760,6 +1760,8 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL sutherland_constant = 110.56;
   REF_DBL sutherland_temp;
   REF_DBL t, mu;
+  REF_DBL pr = 0.72;
+  REF_DBL thermal_conductivity;
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1885,6 +1887,23 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight *= mu;
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
+    }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    u[node] = t;
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  each_ref_node_valid_node(ref_node, node) {
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+    thermal_conductivity = -mu / (pr * (gamma - 1.0));
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] +=
+          18.0 * ABS(thermal_conductivity) * hess_u[i + 6 * node];
     }
   }
 
