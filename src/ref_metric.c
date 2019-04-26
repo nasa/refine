@@ -1744,7 +1744,8 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
-                               REF_DBL *prim_dual,
+                               REF_DBL *prim_dual, REF_DBL mach, REF_DBL re,
+                               REF_DBL reference_temp,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i, dir;
@@ -1754,6 +1755,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL u1, u2, u3;
   REF_DBL diag_system[12];
   REF_DBL weight;
+  REF_DBL gamma = 1.4;
+  REF_DBL sutherland_constant = 110.56;
+  REF_DBL sutherland_temp;
+  REF_DBL t, mu;
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1791,7 +1796,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_recon_gradient(ref_grid, u, grad_u, reconstruction), "grad_u");
     each_ref_node_valid_node(ref_node, node) {
       ref_math_cross_product(&(grad_u[3 * node]), &(grad_lam[3 * node]),
-			     &(omega[3 * dir + 9 * node]));
+                             &(omega[3 * dir + 9 * node]));
     }
   }
 
@@ -1811,6 +1816,14 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (20.0 * u1 + 2.0 * u2 + 2.0 * u3) * sr_lam[4 * 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
+
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+
+    weight *= mu;
+
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }

@@ -763,24 +763,30 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *prim_dual, *metric;
     REF_DBL gradation = -1.0;
+    REF_DBL mach, re, temperature;
     REF_DBL complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
 
     REIS(1, belme_pos,
          "required args: --belme grid.meshb prim_dual.solb "
+         "Mach Re Temperature(Kelvin) "
          "complexity output-metric.solb");
-    if (6 > argc) {
+    if (9 > argc) {
       printf(
           "required args: --belme grid.meshb prim_dual.solb "
-          "omplexity output-metric.solb");
+          "Mach Re Temperature(Kelvin) "
+          "complexity output-metric.solb");
       return REF_FAILURE;
     }
     if (REF_EMPTY != kexact_pos) {
       reconstruction = REF_RECON_KEXACT;
     }
 
-    complexity = atof(argv[4]);
+    mach = atof(argv[4]);
+    re = atof(argv[5]);
+    temperature = atof(argv[6]);
+    complexity = atof(argv[7]);
     if (ref_mpi_once(ref_mpi)) {
       printf("gradation %f\n", gradation);
       printf("complexity %f\n", complexity);
@@ -801,11 +807,12 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gfe");
-    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, reconstruction),
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
+                            temperature, reconstruction),
         "gu");
 
-    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
-    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -1620,6 +1627,9 @@ int main(int argc, char *argv[]) {
     REF_DBL *prim_dual, *metric;
     REF_DBL t, ei0, et0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_DBL mach = 0.5;
+    REF_DBL re = 1.0e6;
+    REF_DBL reference_temp = 273.11;
 
     RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
     ref_node = ref_grid_node(ref_grid);
@@ -1656,7 +1666,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gfe");
-    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, reconstruction),
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
+                            reference_temp, reconstruction),
         "gu");
 
     ref_free(metric);
