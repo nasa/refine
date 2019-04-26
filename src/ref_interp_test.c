@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
   REF_INT entropy_pos = REF_EMPTY;
   REF_INT entropyadj_pos = REF_EMPTY;
   REF_INT heat_pos = REF_EMPTY;
+  REF_INT gamma_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -118,6 +119,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--entropyadj", &entropyadj_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--heat", &heat_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--gamma", &gamma_pos), REF_NOT_FOUND,
       "arg search");
 
   if (REF_EMPTY != pair_pos) {
@@ -403,6 +406,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *field, *mach;
     REF_INT ldim, node;
+    REF_DBL gamma = 1.4;
+
     REIS(1, mach_pos,
          "required args: --mach grid.ext solution.solb mach.solb\n");
     if (5 > argc) {
@@ -410,16 +415,24 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
+    if (REF_EMPTY != gamma_pos && gamma_pos <= argc - 2) {
+      gamma = atof(argv[gamma_pos + 1]);
+    }
+    if (ref_mpi_once(ref_mpi)) printf("gamma %f\n", gamma);
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "part grid in position 2");
     ref_mpi_stopwatch_stop(ref_mpi, "part grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
         "unable to load field in position 3");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
     ref_malloc(mach, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, p, temp;
-      REF_DBL gamma = 1.4;
       rho = field[0 + ldim * node];
       u = field[1 + ldim * node];
       v = field[2 + ldim * node];
@@ -430,6 +443,7 @@ int main(int argc, char *argv[]) {
     }
     ref_mpi_stopwatch_stop(ref_mpi, "mach");
 
+    if (ref_mpi_once(ref_mpi)) printf("writing mach to %s\n", argv[4]);
     RSS(ref_gather_scalar(ref_grid, 1, mach, argv[4]), "export mach");
     ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
