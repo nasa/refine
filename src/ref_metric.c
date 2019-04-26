@@ -1830,6 +1830,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u1");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
@@ -1861,6 +1862,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
@@ -1892,6 +1894,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
