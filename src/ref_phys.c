@@ -53,7 +53,7 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL *dir, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, mu, mu_t, t;
   REF_DBL gamma = 1.4;
-  REF_DBL sutherland_constant = 198.6;
+  REF_DBL sutherland_constant = 110.56;
   REF_DBL sutherland_temp;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;

@@ -594,7 +594,7 @@ int main(int argc, char *argv[]) {
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];
     REF_DBL turb = -1.0;
-    REF_DBL mach = 0.1, re = 10.0, temp = 273.0;
+    REF_DBL mach = 0.1, re = 10.0, temp = 273.11;
     REF_DBL dudy = 1.0, mu = 1.0;
     REF_DBL thermal_conductivity = mu / ((1.4 - 1.0) * 0.72);
     REF_DBL dpdx = 1.0 / 1.4, dtdx = 1.0;
@@ -628,7 +628,7 @@ int main(int argc, char *argv[]) {
     REF_DBL state[5], gradient[15], direction[3];
     REF_DBL flux[5];
     REF_DBL turb = -1.0;
-    REF_DBL mach = 0.1, re = 10.0, temp = 273.0;
+    REF_DBL mach = 0.1, re = 10.0, temp = 273.11;
     REF_DBL dvdy = 1.0, mu = 1.0;
     REF_DBL thermal_conductivity = mu / ((1.4 - 1.0) * 0.72), dtdy = 1.0,
             dpdy = 1.0 / 1.4;
