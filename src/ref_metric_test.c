@@ -1623,7 +1623,7 @@ int main(int argc, char *argv[]) {
   if (!ref_mpi_para(ref_mpi)) { /* lp for no variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
-    REF_INT node, ldim = 10;
+    REF_INT node, ldim = 15;
     REF_DBL *prim_dual, *metric;
     REF_DBL t, ei0, et0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -1659,6 +1659,12 @@ int main(int argc, char *argv[]) {
       prim_dual[8 + ldim * node] = 2.0 * sin(t);
       t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
       prim_dual[9 + ldim * node] = 5.0 * cos(t);
+
+      prim_dual[10 + ldim * node] = 2.0;
+      prim_dual[11 + ldim * node] = 3.0;
+      prim_dual[12 + ldim * node] = 4.0;
+      prim_dual[13 + ldim * node] = 5.0;
+      prim_dual[14 + ldim * node] = 6.0;
     }
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
