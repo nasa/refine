@@ -62,6 +62,7 @@ REF_STATUS ref_matrix_vect_mult(REF_DBL *a, REF_DBL *x, REF_DBL *b);
 
 REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12);
 
+REF_STATUS ref_matrix_healthy_m(REF_DBL *m);
 REF_STATUS ref_matrix_show_m(REF_DBL *m);
 
 REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab);
