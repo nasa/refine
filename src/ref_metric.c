@@ -1831,6 +1831,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u1");
   }
 
   var = 2;
@@ -1861,6 +1862,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u2");
   }
 
   var = 3;
@@ -1891,6 +1893,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u3");
   }
 
   each_ref_node_valid_node(ref_node, node) {
