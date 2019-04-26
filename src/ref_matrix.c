@@ -516,6 +516,21 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_healthy_m(REF_DBL *m) {
+  REF_DBL system[12];
+  REF_DBL floor = -1.0e-15;
+  RSS(ref_matrix_diag_m(m, system), "diag");
+  if (ref_matrix_eig(system, 0) < floor || ref_matrix_eig(system, 1) < floor ||
+      ref_matrix_eig(system, 2) < floor) {
+    printf("eigs %e %e %e\n", ref_matrix_eig(system, 0),
+           ref_matrix_eig(system, 1), ref_matrix_eig(system, 2));
+    RSS(ref_matrix_show_m(m), "show");
+    return REF_FAILURE;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_m(REF_DBL *m) {
   char format[] = "%24.15e";
 

@@ -1731,6 +1731,8 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
           metric[i + 6 * node] +=
               ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
         }
+        RSS(ref_matrix_healthy_m(&(hess_flux[6 * node])), "hess_flux");
+        RSS(ref_matrix_healthy_m(&(metric[6 * node])), "euler-opt-goal");
       }
     }
   }
@@ -1779,9 +1781,9 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(hess_lam[6 * node]), diag_system), "decomp");
-      sr_lam[node] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
-                             ABS(ref_matrix_eig(diag_system, 1))),
-                         ABS(ref_matrix_eig(diag_system, 2)));
+      sr_lam[var + 5 * node] = MAX(
+          MAX(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
+          ref_matrix_eig(diag_system, 2));
     }
   }
 
@@ -1816,10 +1818,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
@@ -1828,9 +1830,11 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u1");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u1");
   }
 
   var = 2;
@@ -1846,10 +1850,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[2 + 3 * 0 + 9 * node] - omega[0 + 3 * 2 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
@@ -1858,9 +1862,11 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u2");
   }
 
   var = 3;
@@ -1876,10 +1882,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[0 + 3 * 1 + 9 * node] - omega[1 + 3 * 0 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
@@ -1888,9 +1894,11 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     weight *= mu;
+    RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "u3");
   }
 
   each_ref_node_valid_node(ref_node, node) {
