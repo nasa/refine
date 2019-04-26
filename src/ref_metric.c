@@ -28,6 +28,7 @@
 #include "ref_node.h"
 
 #include "ref_interp.h"
+#include "ref_phys.h"
 
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -1689,6 +1690,231 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_INT ldim, REF_DBL *prim_dual,
+                                REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, dir, node, i;
+  REF_INT nequ = 5;
+  REF_DBL state[5], node_flux[5], direction[3];
+  REF_DBL *lam, *grad_lam, *flux, *hess_flux;
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+  for (var = 0; var < nequ; var++) {
+    each_ref_node_valid_node(ref_node, node) {
+      lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction),
+        "grad_lam");
+    for (dir = 0; dir < 3; dir++) {
+      each_ref_node_valid_node(ref_node, node) {
+        direction[0] = 0.0;
+        direction[1] = 0.0;
+        direction[2] = 0.0;
+        direction[dir] = 1.0;
+        for (i = 0; i < 5; i++) {
+          state[i] = prim_dual[var + ldim * node];
+        }
+        RSS(ref_phys_euler(state, direction, node_flux), "euler");
+        flux[node] = node_flux[var];
+      }
+      RSS(ref_recon_hessian(ref_grid, flux, hess_flux, reconstruction), "hess");
+      each_ref_node_valid_node(ref_node, node) {
+        for (i = 0; i < 6; i++) {
+          metric[i + 6 * node] +=
+              ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
+        }
+      }
+    }
+  }
+
+  ref_free(hess_flux);
+  ref_free(flux);
+  ref_free(grad_lam);
+  ref_free(lam);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
+                               REF_DBL *prim_dual, REF_DBL mach, REF_DBL re,
+                               REF_DBL reference_temp,
+                               REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node, i, dir;
+  REF_INT nequ = 5;
+  REF_DBL *lam, *hess_lam, *grad_lam, *sr_lam, *u, *hess_u, *grad_u;
+  REF_DBL *omega;
+  REF_DBL u1, u2, u3;
+  REF_DBL w1, w2, w3;
+  REF_DBL diag_system[12];
+  REF_DBL weight;
+  REF_DBL gamma = 1.4;
+  REF_DBL sutherland_constant = 110.56;
+  REF_DBL sutherland_temp;
+  REF_DBL t, mu;
+  REF_DBL pr = 0.72;
+  REF_DBL thermal_conductivity;
+
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(sr_lam, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(hess_u, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_u, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(omega, 9 * ref_node_max(ref_node), REF_DBL, 0.0);
+
+  for (var = 0; var < nequ; var++) {
+    each_ref_node_valid_node(ref_node, node) {
+      lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+    }
+    RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_matrix_diag_m(&(hess_lam[6 * node]), diag_system), "decomp");
+      sr_lam[node] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                             ABS(ref_matrix_eig(diag_system, 1))),
+                         ABS(ref_matrix_eig(diag_system, 2)));
+    }
+  }
+
+  var = 4;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+  }
+  RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction), "grad_u");
+
+  for (dir = 0; dir < 3; dir++) {
+    var = 1 + dir;
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = prim_dual[var + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, grad_u, reconstruction), "grad_u");
+    each_ref_node_valid_node(ref_node, node) {
+      ref_math_cross_product(&(grad_u[3 * node]), &(grad_lam[3 * node]),
+                             &(omega[3 * dir + 9 * node]));
+    }
+  }
+
+  var = 1;
+  w1 = 20.0;
+  w2 = 2.0;
+  w3 = 2.0;
+  each_ref_node_valid_node(ref_node, node) {
+    u[node] = prim_dual[var + ldim * node];
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  each_ref_node_valid_node(ref_node, node) {
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
+    weight = 0.0;
+    weight += w1 * sr_lam[1 * 5 * node];
+    weight += w2 * sr_lam[2 * 5 * node];
+    weight += w3 * sr_lam[3 * 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += (5.0 / 3.0) *
+              ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+    weight *= mu;
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] += weight * hess_u[i + 6 * node];
+    }
+  }
+
+  var = 2;
+  w1 = 2.0;
+  w2 = 20.0;
+  w3 = 2.0;
+  each_ref_node_valid_node(ref_node, node) {
+    u[node] = prim_dual[var + ldim * node];
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  each_ref_node_valid_node(ref_node, node) {
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
+    weight = 0.0;
+    weight += w1 * sr_lam[1 * 5 * node];
+    weight += w2 * sr_lam[2 * 5 * node];
+    weight += w3 * sr_lam[3 * 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += (5.0 / 3.0) *
+              ABS(omega[2 + 3 * 0 + 9 * node] - omega[0 + 3 * 2 + 9 * node]);
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+    weight *= mu;
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] += weight * hess_u[i + 6 * node];
+    }
+  }
+
+  var = 3;
+  w1 = 2.0;
+  w2 = 2.0;
+  w3 = 20.0;
+  each_ref_node_valid_node(ref_node, node) {
+    u[node] = prim_dual[var + ldim * node];
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  each_ref_node_valid_node(ref_node, node) {
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
+    weight = 0.0;
+    weight += w1 * sr_lam[1 * 5 * node];
+    weight += w2 * sr_lam[2 * 5 * node];
+    weight += w3 * sr_lam[3 * 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += (5.0 / 3.0) *
+              ABS(omega[0 + 3 * 1 + 9 * node] - omega[1 + 3 * 0 + 9 * node]);
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+    weight *= mu;
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] += weight * hess_u[i + 6 * node];
+    }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    u[node] = t;
+  }
+  RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
+  each_ref_node_valid_node(ref_node, node) {
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    mu = mach / re * mu;
+    thermal_conductivity = -mu / (pr * (gamma - 1.0));
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] +=
+          18.0 * ABS(thermal_conductivity) * hess_u[i + 6 * node];
+    }
+  }
+
+  ref_free(omega);
+  ref_free(grad_u);
+  ref_free(hess_u);
+  ref_free(u);
+  ref_free(sr_lam);
+  ref_free(grad_lam);
+  ref_free(hess_lam);
+  ref_free(lam);
 
   return REF_SUCCESS;
 }

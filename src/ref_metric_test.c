@@ -78,6 +78,7 @@ int main(int argc, char *argv[]) {
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
   REF_INT venditti_pos = REF_EMPTY;
+  REF_INT belme_pos = REF_EMPTY;
   REF_INT hmax_pos = REF_EMPTY;
   REF_INT buffer_pos = REF_EMPTY;
   REF_INT kexact_pos = REF_EMPTY;
@@ -106,6 +107,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--no-goal", &no_goal_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--venditti", &venditti_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--belme", &belme_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--kexact", &kexact_pos), REF_NOT_FOUND,
       "arg search");
@@ -749,6 +752,67 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export opt goal metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (belme_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *prim_dual, *metric;
+    REF_DBL gradation = -1.0;
+    REF_DBL mach, re, temperature;
+    REF_DBL complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+
+    REIS(1, belme_pos,
+         "required args: --belme grid.meshb prim_dual.solb "
+         "Mach Re Temperature(Kelvin) "
+         "complexity output-metric.solb");
+    if (9 > argc) {
+      printf(
+          "required args: --belme grid.meshb prim_dual.solb "
+          "Mach Re Temperature(Kelvin) "
+          "complexity output-metric.solb");
+      return REF_FAILURE;
+    }
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+
+    mach = atof(argv[4]);
+    re = atof(argv[5]);
+    temperature = atof(argv[6]);
+    complexity = atof(argv[7]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
+        "unable to load scalar in position 3");
+    RAS(10 == ldim || 12 == ldim, "expected one scalar");
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gfe");
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
+                            temperature, reconstruction),
+        "gu");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -1552,6 +1616,62 @@ int main(int argc, char *argv[]) {
     RWDS(1000.0, current_complexity, -1.0, "complexity");
     ref_free(metric);
     ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* lp for no variation */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node, ldim = 10;
+    REF_DBL *prim_dual, *metric;
+    REF_DBL t, ei0, et0;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_DBL mach = 0.5;
+    REF_DBL re = 1.0e6;
+    REF_DBL reference_temp = 273.11;
+
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(prim_dual, ldim * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[0 + ldim * node] = 1.0 + 0.01 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[1 + ldim * node] = 0.5 + 0.1 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 1, node);
+      prim_dual[2 + ldim * node] = 0.0 + 0.1 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 2, node);
+      prim_dual[3 + ldim * node] = 0.1 + 0.1 * sin(t);
+      ei0 = (1.0 / 1.4) / ((1.4 - 1.0) * 1.0);
+      et0 = 1.0 * (ei0 + 0.5 * (0.5 * 0.5 + 0.1 * 0.1));
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[4 + ldim * node] = et0 + 0.01 * sin(t);
+
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[5 + ldim * node] = 1.0 * cos(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[6 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 1, node);
+      prim_dual[7 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 2, node);
+      prim_dual[8 + ldim * node] = 2.0 * sin(t);
+      t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
+      prim_dual[9 + ldim * node] = 5.0 * cos(t);
+    }
+
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gfe");
+    RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
+                            reference_temp, reconstruction),
+        "gu");
+
+    ref_free(metric);
+    ref_free(prim_dual);
 
     RSS(ref_grid_free(ref_grid), "free");
   }
