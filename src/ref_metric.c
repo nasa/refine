@@ -1789,8 +1789,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
       u[node] = prim_dual[var + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, u, grad_u, reconstruction), "grad_u");
-    ref_math_cross_product(&(grad_u[3 * node]), &(grad_lam[3 * node]),
-                           &(omega[3 * dir + 9 * node]));
+    each_ref_node_valid_node(ref_node, node) {
+      ref_math_cross_product(&(grad_u[3 * node]), &(grad_lam[3 * node]),
+			     &(omega[3 * dir + 9 * node]));
+    }
   }
 
   var = 1;
