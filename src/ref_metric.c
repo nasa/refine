@@ -1818,10 +1818,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
@@ -1850,10 +1850,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[2 + 3 * 0 + 9 * node] - omega[0 + 3 * 2 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
@@ -1882,10 +1882,10 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
     u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
     weight = 0.0;
-    weight += w1 * sr_lam[1 * 5 * node];
-    weight += w2 * sr_lam[2 * 5 * node];
-    weight += w3 * sr_lam[3 * 5 * node];
-    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 * 5 * node];
+    weight += w1 * sr_lam[1 + 5 * node];
+    weight += w2 * sr_lam[2 + 5 * node];
+    weight += w3 * sr_lam[3 + 5 * node];
+    weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[0 + 3 * 1 + 9 * node] - omega[1 + 3 * 0 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
