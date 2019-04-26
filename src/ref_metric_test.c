@@ -810,6 +810,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
                             temperature, reconstruction),
         "gu");
+    RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gk");
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
     RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
@@ -1675,6 +1677,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
                             reference_temp, reconstruction),
         "gu");
+    RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
+        "gk");
 
     ref_free(metric);
     ref_free(prim_dual);
