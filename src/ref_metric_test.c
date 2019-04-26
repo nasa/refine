@@ -800,7 +800,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
-    RAS(10 == ldim || 12 == ldim, "expected one scalar");
+    RAS(15 == ldim, "expected rho,u,v,w,p,5*adj,5*dfdq");
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
