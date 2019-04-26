@@ -767,6 +767,7 @@ int main(int argc, char *argv[]) {
     REF_DBL complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
     REF_INT ldim;
+    REF_INT p = 1;
 
     REIS(1, belme_pos,
          "required args: --belme grid.meshb prim_dual.solb "
@@ -788,6 +789,7 @@ int main(int argc, char *argv[]) {
     temperature = atof(argv[6]);
     complexity = atof(argv[7]);
     if (ref_mpi_once(ref_mpi)) {
+      printf("p-norm %d\n", p);
       printf("gradation %f\n", gradation);
       printf("complexity %f\n", complexity);
       printf("reconstruction %d\n", (int)reconstruction);
@@ -812,6 +814,11 @@ int main(int argc, char *argv[]) {
         "gu");
     RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gk");
+
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p), "local scale");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation");
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
     RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
