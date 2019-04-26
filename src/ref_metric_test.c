@@ -815,6 +815,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gk");
 
+    RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6),
+        "update ghosts");
+
     RSS(ref_metric_local_scale(metric, NULL, ref_grid, p), "local scale");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                            complexity),
