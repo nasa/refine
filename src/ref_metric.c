@@ -1747,17 +1747,22 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                REF_DBL *prim_dual,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT var, node, i;
+  REF_INT var, node, i, dir;
   REF_INT nequ = 5;
-  REF_DBL *lam, *hess_lam, *sr_lam, *u, *hess_u;
+  REF_DBL *lam, *hess_lam, *grad_lam, *sr_lam, *u, *hess_u, *grad_u;
+  REF_DBL *omega;
   REF_DBL u1, u2, u3;
   REF_DBL diag_system[12];
+  REF_DBL weight;
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(sr_lam, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_u, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(grad_u, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(omega, 9 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   for (var = 0; var < nequ; var++) {
     each_ref_node_valid_node(ref_node, node) {
@@ -1772,6 +1777,22 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     }
   }
 
+  var = 4;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + ldim / 2 + ldim * node];
+  }
+  RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction), "grad_u");
+
+  for (dir = 0; dir < 3; dir++) {
+    var = 1 + dir;
+    each_ref_node_valid_node(ref_node, node) {
+      u[node] = prim_dual[var + ldim * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, u, grad_u, reconstruction), "grad_u");
+    ref_math_cross_product(&(grad_u[3 * node]), &(grad_lam[3 * node]),
+                           &(omega[3 * dir + 9 * node]));
+  }
+
   var = 1;
   each_ref_node_valid_node(ref_node, node) {
     u[node] = prim_dual[var + ldim * node];
@@ -1781,18 +1802,24 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     u1 = ABS(prim_dual[1 + ldim * node]);
     u2 = ABS(prim_dual[2 + ldim * node]);
     u3 = ABS(prim_dual[3 + ldim * node]);
+    weight = 0.0;
+    weight += 20.0 * sr_lam[2 * 5 * node];
+    weight += 2.0 * sr_lam[3 * 5 * node];
+    weight += 2.0 * sr_lam[4 * 5 * node];
+    weight += (20.0 * u1 + 2.0 * u2 + 2.0 * u3) * sr_lam[4 * 5 * node];
+    weight += (5.0 / 3.0) *
+              ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
     for (i = 0; i < 6; i++) {
-      metric[i + 6 * node] +=
-          (20.0 * sr_lam[2 * 5 * node] + 2.0 * sr_lam[3 * 5 * node] +
-           2.0 * sr_lam[4 * 5 * node] +
-           (20 * u1 + 2 * u2 + 20 * u3) * sr_lam[4 * 5 * node]) *
-          hess_u[i + 6 * node];
+      metric[i + 6 * node] += weight * hess_u[i + 6 * node];
     }
   }
 
+  ref_free(omega);
+  ref_free(grad_u);
   ref_free(hess_u);
   ref_free(u);
   ref_free(sr_lam);
+  ref_free(grad_lam);
   ref_free(hess_lam);
   ref_free(lam);
 
