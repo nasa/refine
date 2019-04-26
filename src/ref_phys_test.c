@@ -43,6 +43,11 @@ static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
   REF_INT first, last, i, node, bc;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (0 == ldim % 5) nequ = 5;
+  if (0 == ldim % 6) nequ = 6;
 
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < ldim; i++) {
@@ -56,10 +61,10 @@ static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
     each_ref_cell_cell_node(ref_cell, cell_node) {
       node = nodes[cell_node];
       if (4000 == bc) {
-        first = ldim / 2 + 1; /* first momentum */
-        last = ldim / 2 + 4;  /* energy */
+        first = nequ + 1; /* first momentum */
+        last = nequ + 4;  /* energy */
         for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
-        if (12 == ldim) replace[11 + ldim * node] = REF_TRUE; /* turb */
+        if (6 == nequ) replace[nequ + 5 + ldim * node] = REF_TRUE; /* turb */
       }
     }
   }
@@ -403,8 +408,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[4]),
         "unable to load primitive_dual in position 3");
-    RAS(10 == ldim || 12 == ldim,
-        "expected 10 (rho,u,v,w,p,5*adj) or 12 (rho,u,v,w,p,turb,6*adj)");
+    RAS(10 == ldim || 12 == ldim || 15 == ldim || 18 == ldim,
+        "expected rho,u,v,w,p,5*adj,[5*dfdq] or "
+        "rho,u,v,w,p,turb,6*adj,[6*dfdq]");
 
     ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
     RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict, replace, ldim), "mask");
