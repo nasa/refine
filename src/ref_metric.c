@@ -1732,6 +1732,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
               ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
         }
       }
+      RSS(ref_matrix_healthy_m(&(metric[6 * node])), "euler-opt-goal");
     }
   }
 
