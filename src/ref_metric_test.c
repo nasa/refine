@@ -823,6 +823,9 @@ int main(int argc, char *argv[]) {
                                            complexity),
         "gradation");
 
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
     RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
 
