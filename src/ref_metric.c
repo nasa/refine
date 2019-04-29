@@ -1781,9 +1781,9 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(hess_lam[6 * node]), diag_system), "decomp");
-      sr_lam[var + 5 * node] = MAX(
-          MAX(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
-          ref_matrix_eig(diag_system, 2));
+      sr_lam[var + 5 * node] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                                       ABS(ref_matrix_eig(diag_system, 1))),
+                                   ABS(ref_matrix_eig(diag_system, 2)));
     }
   }
 
