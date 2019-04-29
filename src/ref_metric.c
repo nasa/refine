@@ -1699,7 +1699,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
                                 REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL state[5], node_flux[5], direction[3];
   REF_DBL *lam, *grad_lam, *flux, *hess_flux;
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1707,7 +1707,9 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
   ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  nequ = ldim / 3;
+
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
     }
@@ -1751,7 +1753,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i, dir;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL *lam, *hess_lam, *grad_lam, *sr_lam, *u, *hess_u, *grad_u;
   REF_DBL *omega;
   REF_DBL u1, u2, u3;
@@ -1765,6 +1767,8 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL pr = 0.72;
   REF_DBL thermal_conductivity;
 
+  nequ = ldim / 3;
+
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1774,7 +1778,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   ref_malloc_init(grad_u, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(omega, 9 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
     }
@@ -1937,12 +1941,14 @@ REF_STATUS ref_metric_belme_gk(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL *u, *hess_u;
   ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_u, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  nequ = ldim / 3;
+
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       u[node] = prim_dual_dfdq[var + ldim * node];
     }
