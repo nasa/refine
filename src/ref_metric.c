@@ -1829,7 +1829,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
+              ABS(omega[1 + 2 * 3 + 9 * node] - omega[2 + 1 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
@@ -1867,7 +1867,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[2 + 3 * 0 + 9 * node] - omega[0 + 3 * 2 + 9 * node]);
+              ABS(omega[2 + 0 * 3 + 9 * node] - omega[0 + 2 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
@@ -1905,7 +1905,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[0 + 3 * 1 + 9 * node] - omega[1 + 3 * 0 + 9 * node]);
+              ABS(omega[0 + 1 * 3 + 9 * node] - omega[1 + 0 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
