@@ -2013,7 +2013,7 @@ REF_STATUS ref_metric_belme_gk(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     v = prim_dual_dfdq[2 + ldim * node];
     w = prim_dual_dfdq[3 + ldim * node];
     cons[node] =
-        prim_dual_dfdq[0 + ldim * node] / (gamma - 1.0) +
+        prim_dual_dfdq[4 + ldim * node] / (gamma - 1.0) +
         0.5 * prim_dual_dfdq[0 + ldim * node] * (u * u + v * v + w * w);
   }
   RSS(ref_recon_hessian(ref_grid, cons, hess_cons, reconstruction), "hess_u");
