@@ -1949,8 +1949,8 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
       mu += mu_t;
     }
     for (i = 0; i < 6; i++) {
-      metric[i + 6 * node] +=
-          18.0 * ABS(thermal_conductivity) * hess_u[i + 6 * node];
+      metric[i + 6 * node] += 18.0 * ABS(thermal_conductivity) *
+                              sr_lam[4 + 5 * node] * hess_u[i + 6 * node];
     }
   }
 
