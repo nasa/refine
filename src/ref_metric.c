@@ -1699,7 +1699,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
                                 REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL state[5], node_flux[5], direction[3];
   REF_DBL *lam, *grad_lam, *flux, *hess_flux;
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1707,7 +1707,9 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
   ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  nequ = ldim / 3;
+
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
     }
@@ -1751,7 +1753,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i, dir;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL *lam, *hess_lam, *grad_lam, *sr_lam, *u, *hess_u, *grad_u;
   REF_DBL *omega;
   REF_DBL u1, u2, u3;
@@ -1763,7 +1765,11 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL sutherland_temp;
   REF_DBL t, mu;
   REF_DBL pr = 0.72;
+  REF_DBL turbulent_pr = 0.90;
   REF_DBL thermal_conductivity;
+  REF_DBL rho, turb, mu_t;
+
+  nequ = ldim / 3;
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -1774,16 +1780,16 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   ref_malloc_init(grad_u, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(omega, 9 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
     }
     RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(hess_lam[6 * node]), diag_system), "decomp");
-      sr_lam[var + 5 * node] = MAX(
-          MAX(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
-          ref_matrix_eig(diag_system, 2));
+      sr_lam[var + 5 * node] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                                       ABS(ref_matrix_eig(diag_system, 1))),
+                                   ABS(ref_matrix_eig(diag_system, 2)));
     }
   }
 
@@ -1823,12 +1829,18 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[1 + 3 * 2 + 9 * node] - omega[2 + 3 * 1 + 9 * node]);
+              ABS(omega[1 + 2 * 3 + 9 * node] - omega[2 + 1 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u1");
     for (i = 0; i < 6; i++) {
@@ -1855,12 +1867,18 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[2 + 3 * 0 + 9 * node] - omega[0 + 3 * 2 + 9 * node]);
+              ABS(omega[2 + 0 * 3 + 9 * node] - omega[0 + 2 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
@@ -1887,12 +1905,18 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += w3 * sr_lam[3 + 5 * node];
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
-              ABS(omega[0 + 3 * 1 + 9 * node] - omega[1 + 3 * 0 + 9 * node]);
+              ABS(omega[0 + 1 * 3 + 9 * node] - omega[1 + 0 * 3 + 9 * node]);
     t = gamma * prim_dual_dfdq[4 + ldim * node] /
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
@@ -1914,6 +1938,14 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     thermal_conductivity = -mu / (pr * (gamma - 1.0));
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      thermal_conductivity =
+          -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
+      mu += mu_t;
+    }
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] +=
           18.0 * ABS(thermal_conductivity) * hess_u[i + 6 * node];
@@ -1937,12 +1969,14 @@ REF_STATUS ref_metric_belme_gk(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i;
-  REF_INT nequ = 5;
+  REF_INT nequ;
   REF_DBL *u, *hess_u;
   ref_malloc_init(u, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_u, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  for (var = 0; var < nequ; var++) {
+  nequ = ldim / 3;
+
+  for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       u[node] = prim_dual_dfdq[var + ldim * node];
     }
