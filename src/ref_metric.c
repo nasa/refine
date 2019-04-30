@@ -1765,7 +1765,9 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL sutherland_temp;
   REF_DBL t, mu;
   REF_DBL pr = 0.72;
+  REF_DBL turbulent_pr = 0.90;
   REF_DBL thermal_conductivity;
+  REF_DBL rho, turb, mu_t;
 
   nequ = ldim / 3;
 
@@ -1833,6 +1835,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u1");
     for (i = 0; i < 6; i++) {
@@ -1865,6 +1873,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
@@ -1897,6 +1911,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      mu += mu_t;
+    }
     weight *= mu;
     RAS(weight >= 0.0, "negative weight u2");
     for (i = 0; i < 6; i++) {
@@ -1918,6 +1938,14 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     mu = mach / re * mu;
     thermal_conductivity = -mu / (pr * (gamma - 1.0));
+    if (6 == nequ) {
+      rho = prim_dual_dfdq[0 + ldim * node];
+      turb = prim_dual_dfdq[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      thermal_conductivity =
+          -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
+      mu += mu_t;
+    }
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] +=
           18.0 * ABS(thermal_conductivity) * hess_u[i + 6 * node];
