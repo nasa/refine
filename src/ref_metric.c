@@ -1733,10 +1733,12 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
           metric[i + 6 * node] +=
               ABS(grad_lam[dir + 3 * node]) * hess_flux[i + 6 * node];
         }
-        RSS(ref_matrix_healthy_m(&(hess_flux[6 * node])), "hess_flux");
-        RSS(ref_matrix_healthy_m(&(metric[6 * node])), "euler-opt-goal");
       }
     }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_healthy_m(&(metric[6 * node])), "euler-opt-goal");
   }
 
   ref_free(hess_flux);
