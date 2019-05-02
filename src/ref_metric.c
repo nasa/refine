@@ -1935,7 +1935,6 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    mu = mach / re * mu;
     thermal_conductivity = -mu / (pr * (gamma - 1.0));
     if (6 == nequ) {
       rho = prim_dual_dfdq[0 + ldim * node];
