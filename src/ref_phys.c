@@ -70,12 +70,14 @@ REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
 
   sutherland_temp = sutherland_constant / reference_temp;
   mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-  mu = mach / re * mu;
 
   RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
   thermal_conductivity =
       -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
   mu += mu_t;
+
+  mu *= mach / re;
+  thermal_conductivity *= mach / re;
 
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
