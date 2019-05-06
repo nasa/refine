@@ -1852,6 +1852,7 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   }
   return REF_SUCCESS;
 #else
+  REF_INT i;
   printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
   printf("type %d id %d\n", type, id);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -1859,7 +1860,14 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   xyz[0] = 0.0;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
-  if (NULL != dxyz_dtuv) dxyz_dtuv[0] = 0.0;
+  if (NULL != dxyz_dtuv) {
+    for (i = 0; i < 6; i++) {
+      dxyz_dtuv[i] = 0.0;
+    }
+    if (REF_GEOM_FACE == type) {
+      for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = 0.0;
+    }
+  }
   return REF_IMPLEMENT;
 #endif
 }
@@ -2173,6 +2181,45 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
 
   *dot_product = area_sign * ref_math_dot(n, tri_normal);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node, REF_DBL *dot_prod) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item0, item1, cell0, cell1, id;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL uv[2];
+  REF_DBL r[3], s[3];
+  REF_DBL n0[3], area_sign0;
+  REF_DBL n1[3], area_sign1;
+
+  *dot_prod = 1.0;
+
+  if (!ref_node_valid(ref_node, node)) {
+    return REF_SUCCESS;
+  }
+
+  each_ref_cell_having_node(ref_cell, node, item0, cell0) {
+    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell0, nodes),
+        "tri list for edge");
+    RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
+    id = nodes[ref_cell_node_per(ref_cell)];
+    RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n0), "rsn");
+    RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign0), "a sign");
+    each_ref_cell_having_node(ref_cell, node, item1, cell1) {
+      RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell1, nodes),
+          "tri list for edge");
+      RSS(ref_geom_tri_centroid(ref_grid, nodes, uv), "tri cent");
+      id = nodes[ref_cell_node_per(ref_cell)];
+      RSS(ref_geom_face_rsn(ref_grid_geom(ref_grid), id, uv, r, s, n1), "rsn");
+      RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign1), "a sign");
+
+      *dot_prod =
+          MIN(*dot_prod, area_sign0 * area_sign1 * ref_math_dot(n0, n1));
+    }
+  }
 
   return REF_SUCCESS;
 }

@@ -1039,6 +1039,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL h, hr, hs, hn, tol;
   REF_DBL curvature_ratio, norm_ratio;
   REF_DBL xyz[3];
+  REF_DBL crease_dot_prod, ramp, scale;
 
   if (!ref_geom_model_loaded(ref_geom)) {
     printf("\nNo geometry model, did you forget to load it?\n\n");
@@ -1120,6 +1121,13 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
                            ref_geom_id(ref_geom, geom), &tol),
         "edge tol");
     if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
+
+    RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
+    if (crease_dot_prod < -0.8) {
+      ramp = (-crease_dot_prod - 0.8) / 0.2;
+      scale = 0.25 * ramp + 1.0 * (1.0 - ramp);
+      hr *= scale;
+    }
 
     ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
     ref_matrix_vec(diagonal_system, 1, 0) = 0.0;
