@@ -1852,6 +1852,7 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   }
   return REF_SUCCESS;
 #else
+  REF_INT i;
   printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
   printf("type %d id %d\n", type, id);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
@@ -1859,7 +1860,14 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   xyz[0] = 0.0;
   xyz[1] = 0.0;
   xyz[2] = 0.0;
-  if (NULL != dxyz_dtuv) dxyz_dtuv[0] = 0.0;
+  if (NULL != dxyz_dtuv) {
+    for (i = 0; i < 6; i++) {
+      dxyz_dtuv[i] = 0.0;
+    }
+    if (REF_GEOM_FACE == type) {
+      for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = 0.0;
+    }
+  }
   return REF_IMPLEMENT;
 #endif
 }
