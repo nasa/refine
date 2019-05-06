@@ -1793,7 +1793,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
                                        ABS(ref_matrix_eig(diag_system, 1))),
                                    ABS(ref_matrix_eig(diag_system, 2)));
     }
-  }
+  } /* SR MAX (eig, min(1e-30*max(det^-1/3)) for all lambda of var */
 
   var = 4;
   each_ref_node_valid_node(ref_node, node) {

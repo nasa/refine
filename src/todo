@@ -6,6 +6,11 @@ multiscale weight
  boundary residual integration or scaling
  histogram median
 
+bleme
+ spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
+ l2 projection: replace with volume weighing of donor dual volume
+ strong bc lambda reconstruction: use constant term of quadratic fit
+
 alternating RCB part
  n-medians
 
