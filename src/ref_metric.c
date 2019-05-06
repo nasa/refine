@@ -1025,6 +1025,37 @@ REF_STATUS ref_metric_avoid_geom(REF_GEOM ref_geom, REF_INT query_geom,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_metric_tri_crease(REF_GRID ref_grid, REF_INT node,
+                                        REF_DBL *dot_prod) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item0, item1, cell0, cell1;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL norm0[3], norm1[3];
+
+  *dot_prod = 1.0;
+
+  if (!ref_node_valid(ref_node, node)) {
+    return REF_SUCCESS;
+  }
+
+  each_ref_cell_having_node(ref_cell, node, item0, cell0) {
+    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell0, nodes),
+        "tri list for edge");
+    RSS(ref_node_tri_normal(ref_node, nodes, norm0), "norm0");
+    RSS(ref_math_normalize(norm0), "normalize norm0");
+    each_ref_cell_having_node(ref_cell, node, item1, cell1) {
+      RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell1, nodes),
+          "tri list for edge");
+      RSS(ref_node_tri_normal(ref_node, nodes, norm1), "norm1");
+      RSS(ref_math_normalize(norm1), "normalize norm1");
+      *dot_prod = MIN(*dot_prod, ref_math_dot(norm0, norm1));
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -1039,6 +1070,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL h, hr, hs, hn, tol;
   REF_DBL curvature_ratio, norm_ratio;
   REF_DBL xyz[3];
+  REF_DBL crease_dot_prod;
 
   if (!ref_geom_model_loaded(ref_geom)) {
     printf("\nNo geometry model, did you forget to load it?\n\n");
@@ -1120,6 +1152,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
                            ref_geom_id(ref_geom, geom), &tol),
         "edge tol");
     if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
+
+    RSS(ref_metric_tri_crease(ref_grid, node, &crease_dot_prod), "crease");
+    if (crease_dot_prod < -0.8) hr *= 0.1;
 
     ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
     ref_matrix_vec(diagonal_system, 1, 0) = 0.0;
