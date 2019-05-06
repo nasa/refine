@@ -579,6 +579,7 @@ REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
   return REF_SUCCESS;
 }
 
+/* replace with volume weighing of donor dual volume */
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
