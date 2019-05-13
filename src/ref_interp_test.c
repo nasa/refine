@@ -89,6 +89,7 @@ int main(int argc, char *argv[]) {
   REF_INT pair_pos = REF_EMPTY;
   REF_INT rate_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
+  REF_INT subset_pos = REF_EMPTY;
   REF_INT field_pos = REF_EMPTY;
   REF_INT mach_pos = REF_EMPTY;
   REF_INT cust_pos = REF_EMPTY;
@@ -107,6 +108,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--rate", &rate_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--subset", &subset_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--field", &field_pos), REF_NOT_FOUND,
       "arg search");
@@ -337,6 +340,65 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(candidate_grid), "free");
     ref_free(truth_scalar);
     RSS(ref_grid_free(truth_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != subset_pos) {
+    REF_GRID old_grid, new_grid;
+    REF_DBL *old_subset, *new_subset;
+    REF_INTERP ref_interp;
+    REF_INT ldim;
+    REIS(1, subset_pos,
+         "required args: --subset old_mesh.ext old_solution.solb "
+         "new_mesh.ext new_solution.solb\n");
+    if (6 > argc) {
+      printf(
+          "required args: --subset old_mesh.ext old_solution.solb "
+          "new_mesh.ext new_solution.solb\n");
+      return REF_FAILURE;
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("read/part old grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&old_grid, ref_mpi, argv[2]),
+        "read/part old grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read old grid");
+    if (ref_mpi_once(ref_mpi)) printf("read/part old subset %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(old_grid), &ldim, &old_subset, argv[3]),
+        "read/part old scalar subset in position 3");
+    ref_mpi_stopwatch_stop(ref_mpi, "read old subset");
+    if (ref_mpi_once(ref_mpi)) printf("read/part new grid %s\n", argv[4]);
+    RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
+        "read/part new grid in position 4");
+    if (ref_mpi_once(ref_mpi)) {
+      printf("%d leading dim from %d old nodes to %d new nodes\n", ldim,
+             ref_node_n_global(ref_grid_node(old_grid)),
+             ref_node_n_global(ref_grid_node(new_grid)));
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "read new grid");
+    RSS(ref_interp_create(&ref_interp, old_grid, new_grid), "make interp");
+    RSS(ref_interp_locate_subset(ref_interp), "map");
+    ref_mpi_stopwatch_stop(ref_mpi, "locate");
+
+    ref_malloc(new_subset, ldim * ref_node_max(ref_grid_node(new_grid)),
+               REF_DBL);
+
+    RSS(ref_interp_scalar(ref_interp, ldim, old_subset, new_subset),
+        "interp scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+    if (ref_mpi_once(ref_mpi)) printf("write/gather new subset %s\n", argv[5]);
+    RSS(ref_gather_scalar(new_grid, ldim, new_subset, argv[5]),
+        "write/gather new subset");
+    ref_mpi_stopwatch_stop(ref_mpi, "write new subset");
+
+    ref_free(new_subset);
+    RSS(ref_interp_free(ref_interp), "interp free");
+    RSS(ref_grid_free(new_grid), "free");
+    ref_free(old_subset);
+    RSS(ref_grid_free(old_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
