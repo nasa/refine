@@ -1,11 +1,4 @@
 
-ref_inflate mapbc,family,bc interface
-
-multiscale weight
- continuous galerkin residual
- boundary residual integration or scaling
- histogram median
-
 bleme
  spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
  l2 projection: replace with volume weighing of donor dual volume
@@ -15,8 +8,6 @@ alternating RCB part
  n-medians
 
 configure with metis only, when parmetis not provided
-make partitioner and partitioner algorithm available at run time
-test with zoltan and parmetis configured
 64bit metis/parmetis?
 
 continuous metric interpolation
@@ -35,6 +26,14 @@ continuous metric interpolation
  allow interp asynchronously
  fill in located at end of pass
 
+partition artifacts
+  ref_subdiv only turn off marks with neg vol tet
+    ref geom add between xyz location switch to element/nodes
+    ref subdiv test xyz
+    ref node vol xyz pointers
+    interate on unmark
+  ref_partition diffusion
+
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
 define REF_DBL_MIN, REF_DBL_MAX;
@@ -42,8 +41,6 @@ define REF_DBL_MIN, REF_DBL_MAX;
 mpi allmin allmax
 
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
-
-extract/combine post adaptation operator checks and status
 
 extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 
@@ -53,6 +50,7 @@ protect surface folds and high curvature
  filter based on neighborhood
 
 check that post conditions are implemented completely for all ops
+  extract/combine post adaptation operator checks and status
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
 
@@ -68,7 +66,7 @@ tess
  try gmsh
  + isotropic edge curvature
  anisotropic feature size, edge length tangent, dist to other edge normal?
- feature size accross thin shell geometry, i.e., cusp trailing edge
+ + feature size accross thin shell geometry, i.e., curved cusp trailing edge
  near-tree to drive split for grid size gradation of this shells
  edge chord height warning/constraint?
 
@@ -77,14 +75,15 @@ C2S
  how/when to fail fast?
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
- module deploys
+ + module deploys
 
 improve CI test
 - make check stack fuzz
 - acceptance
   - validate normal deviation (make metric big across cylinder)
   - checks interp error for functions
-  - C2S bootstrap
+  + C2S bootstrap
+  + add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 report threshold means
 
@@ -127,16 +126,6 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-add om6 metric case to acceptance (part one for nnodesg <10k?)
-
-partition artifacts
-  ref_subdiv only turn off marks with neg vol tet
-    ref geom add between xyz location switch to element/nodes
-    ref subdiv test xyz
-    ref node vol xyz pointers
-    interate on unmark
-  ref_partition diffusion
-
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
@@ -144,7 +133,9 @@ initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
-start geode support?
+start meshlink geode support?
+
+surrogate surface reconstruction when EGADS not available
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
@@ -153,6 +144,7 @@ ref_geom
  rename ref_geom to ref_egads?
  create native version of inverse evalute with guess
   use newton with discrete grid to constrain
+ many-to-many association
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
@@ -202,7 +194,7 @@ performance
   unfreeze when areas need help
   zero partition cost
  implement native partitioner
-  recursive bisection (age awareness?)
+  recursive bisection (age awareness?) (odd/even?)
   INRIA space filling curve
   diffusion
  
@@ -230,8 +222,6 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
-
-surrogate surface reconstruction when EGADS not available
 
 egads recon
  clean up method
@@ -264,6 +254,16 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ make partitioner and partitioner algorithm available at run time
++ test with zoltan and parmetis configured
+
++ multiscale weight
+  + continuous galerkin residual
+  + boundary residual integration or scaling
+  + histogram median
+
++ ref_inflate mapbc,family,bc interface
 
 + gradation at higher level (with switch)
 + extract local lp scaling

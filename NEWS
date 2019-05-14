@@ -1,4 +1,8 @@
 
+- interpolation to a subset of the domain
+- add buffer option to fixed-point metric
+- improve plotting of geometry curvature
+
 Thu, Mar 22, 2019 : Released Refine 1.8.22
 
 - continuously interpolated metric from background grid for sequential
