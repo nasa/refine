@@ -154,6 +154,7 @@ smooth verify improvement
 optimized 4th tet node placement
 
 robustness and metric conformity
+ pliant vertex smoothing
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
  process complete criteria (early termination when no more likely progress)
