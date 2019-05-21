@@ -61,7 +61,14 @@ int main(int argc, char *argv[]) {
 
   if (3 > argc) return (print_usage(argv[0]));
 
+  RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("%s can not be used with MPI\n", argv[0]);
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+  }
 
   RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
   ref_node = ref_grid_node(ref_grid);
@@ -243,5 +250,7 @@ int main(int argc, char *argv[]) {
 
   RSS(ref_grid_free(ref_grid), "free");
   RSS(ref_mpi_free(ref_mpi), "free");
+  RSS(ref_mpi_stop(), "stop");
+
   return 0;
 }
