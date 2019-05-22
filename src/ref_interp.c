@@ -1882,7 +1882,7 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   char title[1024], varname[1024], zonename[1024];
   int var, numvar;
   float zonemarker;
-  int parent, strand, notused, zonetype, packing, location;
+  int parent, strand, notused, zonetype, packing, location, neighbor;
   double solutiontime;
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -1929,10 +1929,16 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   printf("plt notused %d\n", notused);
   REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
   printf("plt zonetype %d\n", zonetype);
+  REIS(5, zonetype, "only FEBRICK plt zone implemented");
   REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
   printf("plt packing %d\n", packing);
+  REIS(1, packing, "only point packing plt implemented");
   REIS(1, fread(&location, sizeof(int), 1, file), "location");
   printf("plt location %d\n", location);
+  REIS(0, location, "only node data location plt implemented");
+  REIS(1, fread(&neighbor, sizeof(int), 1, file), "neighbor");
+  printf("plt neighbor %d\n", neighbor);
+  REIS(0, neighbor, "no face nieghbor  plt implemented");
 
   fclose(file);
 
