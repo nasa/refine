@@ -1863,11 +1863,22 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
+  int i, letter;
+  for (i = 0; i < maxlen; i++) {
+    REIS(1, fread(&letter, sizeof(int), 1, file), "plt string letter");
+    string[i] = (char)letter;
+    if (0 == letter) {
+      return REF_SUCCESS;
+    }
+  }
+  return REF_FAILURE;
+}
+
 REF_STATUS ref_iterp_plt_zone(const char *filename) {
   FILE *file;
   char header[9];
   int endian, filetype;
-  int i, letter;
   char title[1024];
   int numvar;
   file = fopen(filename, "r");
@@ -1887,11 +1898,7 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   REIS(1, endian, "expected little endian plt");
   REIS(0, filetype, "expected full filetype");
 
-  for (i = 0; i < 1024; i++) {
-    REIS(1, fread(&letter, sizeof(int), 1, file), "title letter");
-    title[i] = (char)letter;
-    if (0 == letter) break;
-  }
+  RSS(ref_interp_plt_string(file, title, 1024), "read title");
   printf("plt title '%s'\n", title);
 
   REIS(1, fread(&numvar, sizeof(int), 1, file), "numvar");
