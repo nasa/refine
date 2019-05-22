@@ -1879,9 +1879,11 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   FILE *file;
   char header[9];
   int endian, filetype;
-  char title[1024], varname[1024];
+  char title[1024], varname[1024], zonename[1024];
   int var, numvar;
   float zonemarker;
+  int parent, strand, notused, zonetype, packing, location;
+  double solutiontime;
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1913,6 +1915,24 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
   printf("plt zonemarker %f\n", zonemarker);
   RWDS(299.0, zonemarker, -1.0, "zone marker expected");
+
+  RSS(ref_interp_plt_string(file, zonename, 1024), "read zonename");
+  printf("plt zonename '%s'\n", zonename);
+
+  REIS(1, fread(&parent, sizeof(int), 1, file), "parent");
+  printf("plt parent %d\n", parent);
+  REIS(1, fread(&strand, sizeof(int), 1, file), "strand");
+  printf("plt strand %d\n", strand);
+  REIS(1, fread(&solutiontime, sizeof(double), 1, file), "solutiontime");
+  printf("plt solutiontime %f\n", solutiontime);
+  REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
+  printf("plt notused %d\n", notused);
+  REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
+  printf("plt zonetype %d\n", zonetype);
+  REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
+  printf("plt packing %d\n", packing);
+  REIS(1, fread(&location, sizeof(int), 1, file), "location");
+  printf("plt location %d\n", location);
 
   fclose(file);
 
