@@ -1886,6 +1886,7 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   double solutiontime;
   int mystery, i;
   int numpts, numelem;
+  int dim, aux;
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1951,6 +1952,19 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   printf("plt numpts %d\n", numpts);
   REIS(1, fread(&numelem, sizeof(int), 1, file), "numelem");
   printf("plt numelem %d\n", numelem);
+
+  for (i = 0; i < 3; i++) {
+    REIS(1, fread(&dim, sizeof(int), 1, file), "dim");
+    printf("plt dim %d\n", dim);
+    REIS(0, dim, "dim nonzero plt");
+  }
+  REIS(1, fread(&aux, sizeof(int), 1, file), "aux");
+  printf("plt aux %d\n", aux);
+  REIS(0, aux, "aux nonzero plt");
+
+  REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  printf("plt zonemarker %f\n", zonemarker);
+  RWDS(299.0, zonemarker, -1.0, "zone marker expected");
 
   fclose(file);
 
