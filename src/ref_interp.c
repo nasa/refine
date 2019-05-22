@@ -1875,9 +1875,8 @@ static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_iterp_plt_header(const char *filename,
-				       REF_LIST zone_nnode, REF_LIST zone_nelem) {
-  FILE *file;
+static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
+                                       REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
   char title[1024], varname[1024], zonename[1024];
@@ -1888,10 +1887,6 @@ static REF_STATUS ref_iterp_plt_header(const char *filename,
   int mystery, i;
   int numpts, numelem;
   int dim, aux;
-
-  file = fopen(filename, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
 
   RAS(header == fgets(header, 6, file), "header error");
   header[5] = '\0';
@@ -1972,22 +1967,40 @@ static REF_STATUS ref_iterp_plt_header(const char *filename,
 
   RWDS(357.0, zonemarker, -1.0, "end of header marker expected");
 
-  fclose(file);
-
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_iterp_plt_data(FILE *file, REF_LIST zone_nnode,
+                                     REF_LIST zone_nelem) {
+  float zonemarker;
+
+  REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  printf("plt zonemarker %f\n", zonemarker);
+  RWDS(299.0, zonemarker, -1.0, "start of data header expected");
+
+  ref_list_inspect(zone_nnode);
+  ref_list_inspect(zone_nelem);
+  return REF_SUCCESS;
+}
 REF_STATUS ref_iterp_plt(const char *filename) {
+  FILE *file;
   REF_LIST zone_nnode, zone_nelem;
-  
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
   RSS(ref_list_create(&zone_nnode), "nnode list");
   RSS(ref_list_create(&zone_nelem), "nelem list");
 
-  RSS(ref_iterp_plt_header(filename,
-			   zone_nnode, zone_nelem), "parse header");
-  
+  RSS(ref_iterp_plt_header(file, zone_nnode, zone_nelem), "parse header");
+
+  RSS(ref_iterp_plt_data(file, zone_nnode, zone_nelem), "read data");
+
   ref_list_free(zone_nnode);
   ref_list_free(zone_nelem);
+
+  fclose(file);
 
   return REF_SUCCESS;
 }
