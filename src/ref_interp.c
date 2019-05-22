@@ -1867,6 +1867,7 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   FILE *file;
   char header[9];
   int endian, filetype;
+  char title[1024];
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1882,7 +1883,10 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   REIS(1, fread(&filetype, sizeof(int), 1, file), "filetype");
 
   REIS(1, endian, "expected little endian plt");
-  REIS(2, filetype, "expected solution filetype");
+  REIS(0, filetype, "expected full filetype");
+
+  RAS(title == fgets(title, 1024, file), "title error");
+  printf("plt title %s\n", title);
 
   fclose(file);
 
