@@ -1881,6 +1881,7 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   int endian, filetype;
   char title[1024], varname[1024];
   int var, numvar;
+  float zonemarker;
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1908,6 +1909,10 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
     RSS(ref_interp_plt_string(file, varname, 1024), "read variable name");
     printf("plt varable name %d '%s'\n", var, varname);
   }
+
+  REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
+  printf("plt zonemarker %f\n", zonemarker);
+  RWDS(299.0, zonemarker, -1.0, "zone marker expected");
 
   fclose(file);
 
