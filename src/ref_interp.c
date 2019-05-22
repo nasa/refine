@@ -1865,10 +1865,16 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
 
 REF_STATUS ref_iterp_plt_zone(const char *filename) {
   FILE *file;
-
+  char header[9];
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
+  RAS(header == fgets(header, 6, file), "header error");
+  header[5] = '\0';
+  printf("plt header %s\n", header);
+  RAS(header == fgets(header, 4, file), "version error");
+  header[4] = '\0';
+  printf("plt version %s\n", header);
 
   fclose(file);
 
