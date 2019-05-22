@@ -1875,7 +1875,8 @@ static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-REF_STATUS ref_iterp_plt_zone(const char *filename) {
+static REF_STATUS ref_iterp_plt_header(const char *filename,
+				       REF_LIST zone_nnode, REF_LIST zone_nelem) {
   FILE *file;
   char header[9];
   int endian, filetype;
@@ -1887,14 +1888,10 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
   int mystery, i;
   int numpts, numelem;
   int dim, aux;
-  REF_LIST nnode, nelem;
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
-
-  RSS(ref_list_create(&nnode), "nnode list");
-  RSS(ref_list_create(&nelem), "nelem list");
 
   RAS(header == fgets(header, 6, file), "header error");
   header[5] = '\0';
@@ -1957,8 +1954,8 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
     REIS(1, fread(&numelem, sizeof(int), 1, file), "numelem");
     printf("plt numelem %d\n", numelem);
 
-    RSS(ref_list_push(nnode, numpts), "save nnode");
-    RSS(ref_list_push(nelem, numelem), "save nelem");
+    RSS(ref_list_push(zone_nnode, numpts), "save nnode");
+    RSS(ref_list_push(zone_nelem, numelem), "save nelem");
 
     for (i = 0; i < 3; i++) {
       REIS(1, fread(&dim, sizeof(int), 1, file), "dim");
@@ -1975,10 +1972,22 @@ REF_STATUS ref_iterp_plt_zone(const char *filename) {
 
   RWDS(357.0, zonemarker, -1.0, "end of header marker expected");
 
-  ref_list_free(nnode);
-  ref_list_free(nelem);
-
   fclose(file);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_iterp_plt(const char *filename) {
+  REF_LIST zone_nnode, zone_nelem;
+  
+  RSS(ref_list_create(&zone_nnode), "nnode list");
+  RSS(ref_list_create(&zone_nelem), "nelem list");
+
+  RSS(ref_iterp_plt_header(filename,
+			   zone_nnode, zone_nelem), "parse header");
+  
+  ref_list_free(zone_nnode);
+  ref_list_free(zone_nelem);
 
   return REF_SUCCESS;
 }

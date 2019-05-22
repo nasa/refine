@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
       return REF_FAILURE;
     }
 
-    RSS(ref_iterp_plt_zone(argv[2]), "plt zone");
+    RSS(ref_iterp_plt(argv[2]), "plt zone");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
