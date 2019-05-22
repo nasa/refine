@@ -1862,3 +1862,15 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
   *rate = p;
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_iterp_plt_zone(const char *filename) {
+  FILE *file;
+
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fclose(file);
+
+  return REF_SUCCESS;
+}
