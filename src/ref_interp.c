@@ -1926,6 +1926,7 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
     printf("plt solutiontime %f\n", solutiontime);
     REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
     printf("plt notused %d\n", notused);
+    REIS(-1, notused, "not unused shoud be -1 plt");
     REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
     printf("plt zonetype %d\n", zonetype);
     REIS(5, zonetype, "only FEBRICK plt zone implemented");
@@ -1942,6 +1943,7 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
     for (i = 0; i < 8; i++) {
       REIS(1, fread(&mystery, sizeof(int), 1, file), "mystery");
       printf("plt mystery %d\n", mystery);
+      REIS(0, dim, "mystery data nonzero plt");
     }
 
     REIS(1, fread(&numpts, sizeof(int), 1, file), "numpts");
