@@ -1964,10 +1964,11 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
                                      REF_INT *length, REF_DBL **soln) {
   float zonemarker;
   int dataformat;
-  REF_INT i;
-  int passive, sharing, conn;
+  REF_INT i, node, elem;
+  int passive, sharing, conn, c2n;
   double minval, maxval;
   REF_INT nnode, nelem;
+  float var;
 
   RSS(ref_list_shift(zone_nnode, &nnode), "zone node size");
   RSS(ref_list_shift(zone_nelem, &nelem), "zone elem size");
@@ -2006,8 +2007,19 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
 
   ref_malloc(*soln, nvar * nnode, REF_DBL);
 
-  ref_list_inspect(zone_nnode);
-  ref_list_inspect(zone_nelem);
+  for (node = 0; node < nnode; node++) {
+    for (i = 0; i < nvar; i++) {
+      REIS(1, fread(&var, sizeof(float), 1, file), "dim");
+      (*soln)[i + nvar * node] = var;
+    }
+  }
+
+  for (elem = 0; elem < nelem; elem++) {
+    for (i = 0; i < 8; i++) {
+      REIS(1, fread(&c2n, sizeof(int), 1, file), "dim");
+    }
+  }
+
   return REF_SUCCESS;
 }
 
