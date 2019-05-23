@@ -1965,6 +1965,7 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   int dataformat;
   REF_INT i;
   int passive, sharing, conn;
+  double minval, maxval;
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
   printf("plt zonemarker %f\n", zonemarker);
@@ -1990,6 +1991,12 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   }
   REIS(1, fread(&conn, sizeof(int), 1, file), "dim");
   REIS(-1, conn, "connectivity sharing not implemented plt");
+
+  for (i = 0; i < nvar; i++) {
+    REIS(1, fread(&minval, sizeof(double), 1, file), "dim");
+    REIS(1, fread(&maxval, sizeof(double), 1, file), "dim");
+    printf("[%f,%f]\n",minval,maxval);
+  }
 
   ref_list_inspect(zone_nnode);
   ref_list_inspect(zone_nelem);
