@@ -19,6 +19,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ref_interp.h"
 
@@ -1891,9 +1892,11 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
   RAS(header == fgets(header, 6, file), "header error");
   header[5] = '\0';
   printf("plt header %s\n", header);
+  REIS(0, strncmp(header, "#!TDV", 5), "header '#!TDV' missing")
   RAS(header == fgets(header, 4, file), "version error");
   header[4] = '\0';
   printf("plt version %s\n", header);
+  REIS(0, strncmp(header, "112", 5), "expected version '112'")
 
   REIS(1, fread(&endian, sizeof(int), 1, file), "magic");
   REIS(1, fread(&filetype, sizeof(int), 1, file), "filetype");
