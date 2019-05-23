@@ -130,14 +130,35 @@ int main(int argc, char *argv[]) {
       "arg search");
 
   if (REF_EMPTY != plt_pos) {
-    REIS(1, plt_pos, "required args: --plt usm3d-solution.plt\n");
-    if (3 > argc) {
-      printf("required args: --plt usm3d-solution.plt\n");
+    REF_GRID ref_grid;
+    REF_DBL *scalar;
+    REF_INT ldim;
+    REIS(1, plt_pos,
+         "required args: --plt grid.ext usm3d-solution.plt "
+         "stitched-soln.solb\n");
+    if (5 > argc) {
+      printf(
+          "required args: --plt grid.ext usm3d-solution.plt "
+          "stitched-soln.solb\n");
       return REF_FAILURE;
     }
+    RSS(ref_mpi_stopwatch_start(ref_mpi), "sw start");
 
-    RSS(ref_iterp_plt(argv[2]), "plt zone");
+    if (ref_mpi_once(ref_mpi)) printf("read grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    RSS(ref_mpi_stopwatch_stop(ref_mpi, "read grid"), "sw start");
 
+    if (ref_mpi_once(ref_mpi)) printf("read/stitch plt %s\n", argv[3]);
+    RSS(ref_iterp_plt(ref_grid, argv[3], &ldim, &scalar), "plt zone");
+    ref_mpi_stopwatch_stop(ref_mpi, "read/stitch zones");
+
+    if (ref_mpi_once(ref_mpi)) printf("write/gather stitched %s\n", argv[4]);
+    RSS(ref_gather_scalar(ref_grid, ldim, scalar, argv[4]),
+        "write/gather stitched");
+    ref_mpi_stopwatch_stop(ref_mpi, "write stitched");
+
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "grid free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
     return 0;

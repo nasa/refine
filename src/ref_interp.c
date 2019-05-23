@@ -2023,7 +2023,9 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iterp_plt(const char *filename) {
+REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
+                         REF_DBL **scalar) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
   REF_INT nvar;
   REF_LIST zone_nnode, zone_nelem;
@@ -2040,6 +2042,9 @@ REF_STATUS ref_iterp_plt(const char *filename) {
   RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
       "parse header");
   nzone = ref_list_n(zone_nnode);
+
+  *ldim = nvar - 3;
+  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, 0.0);
 
   for (zone = 0; zone < nzone; zone++) {
     RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
