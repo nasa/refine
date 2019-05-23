@@ -1933,7 +1933,7 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
 
     for (i = 0; i < 8; i++) {
       REIS(1, fread(&mystery, sizeof(int), 1, file), "mystery");
-      REIS(0, dim, "mystery data nonzero plt");
+      REIS(0, mystery, "mystery data nonzero plt");
     }
 
     REIS(1, fread(&numpts, sizeof(int), 1, file), "numpts");
