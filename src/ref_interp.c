@@ -2007,8 +2007,8 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
 
   ref_malloc(*soln, nvar * nnode, REF_DBL);
 
-  for (node = 0; node < nnode; node++) {
-    for (i = 0; i < nvar; i++) {
+  for (i = 0; i < nvar; i++) {
+    for (node = 0; node < nnode; node++) {
       REIS(1, fread(&var, sizeof(float), 1, file), "dim");
       (*soln)[i + nvar * node] = var;
     }
@@ -2062,13 +2062,12 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
     RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
         "read data");
     for (point = 0; point < length; point++) {
-      radius = 1.0e-7;
+      radius = 1.0e-5;
       for (i = 0; i < 3; i++) {
         position[i] = soln[i + nvar * point];
       }
       RSS(ref_search_touching(ref_search, touching, position, radius),
           "search tree");
-      RSS(ref_list_erase(touching), "erase");
       best_dist = 1.0e+200;
       best = REF_EMPTY;
       each_ref_node_valid_node(ref_node, node) {
@@ -2080,9 +2079,10 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
           best = node;
         }
       }
-      printf("leaves %d best %d dist %e\n", ref_list_n(touching), best,
-             best_dist);
+      printf("pos %f %f %f leaves %d best %d dist %e\n", position[0],
+             position[1], position[2], ref_list_n(touching), best, best_dist);
     }
+    RSS(ref_list_erase(touching), "erase");
     free(soln);
   }
   RSS(ref_list_free(touching), "free touching");
