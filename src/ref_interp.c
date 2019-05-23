@@ -1876,7 +1876,8 @@ static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
+static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
+                                       REF_LIST zone_nnode,
                                        REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
@@ -1906,6 +1907,7 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
 
   REIS(1, fread(&numvar, sizeof(int), 1, file), "numvar");
   printf("plt number of variables %d\n", numvar);
+  *nvar = numvar;
 
   for (var = 0; var < numvar; var++) {
     RSS(ref_interp_plt_string(file, varname, 1024), "read variable name");
@@ -1957,13 +1959,20 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_iterp_plt_data(FILE *file, REF_LIST zone_nnode,
-                                     REF_LIST zone_nelem) {
+static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
+                                     REF_LIST zone_nnode, REF_LIST zone_nelem) {
   float zonemarker;
+  int dataformat;
+  REF_INT i;
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
   printf("plt zonemarker %f\n", zonemarker);
   RWDS(299.0, zonemarker, -1.0, "start of data header expected");
+
+  for (i = 0; i < nvar; i++) {
+    REIS(1, fread(&dataformat, sizeof(int), 1, file), "dim");
+    REIS(1, dataformat, "dim nonzero plt");
+  }
 
   ref_list_inspect(zone_nnode);
   ref_list_inspect(zone_nelem);
@@ -1971,6 +1980,7 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_LIST zone_nnode,
 }
 REF_STATUS ref_iterp_plt(const char *filename) {
   FILE *file;
+  REF_INT nvar;
   REF_LIST zone_nnode, zone_nelem;
 
   file = fopen(filename, "r");
@@ -1980,9 +1990,10 @@ REF_STATUS ref_iterp_plt(const char *filename) {
   RSS(ref_list_create(&zone_nnode), "nnode list");
   RSS(ref_list_create(&zone_nelem), "nelem list");
 
-  RSS(ref_iterp_plt_header(file, zone_nnode, zone_nelem), "parse header");
+  RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
+      "parse header");
 
-  RSS(ref_iterp_plt_data(file, zone_nnode, zone_nelem), "read data");
+  RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem), "read data");
 
   ref_list_free(zone_nnode);
   ref_list_free(zone_nelem);
