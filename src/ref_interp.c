@@ -1891,24 +1891,21 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
 
   RAS(header == fgets(header, 6, file), "header error");
   header[5] = '\0';
-  printf("plt header %s\n", header);
   REIS(0, strncmp(header, "#!TDV", 5), "header '#!TDV' missing")
   RAS(header == fgets(header, 4, file), "version error");
   header[4] = '\0';
-  printf("plt version %s\n", header);
   REIS(0, strncmp(header, "112", 5), "expected version '112'")
 
   REIS(1, fread(&endian, sizeof(int), 1, file), "magic");
-  REIS(1, fread(&filetype, sizeof(int), 1, file), "filetype");
-
   REIS(1, endian, "expected little endian plt");
+  REIS(1, fread(&filetype, sizeof(int), 1, file), "filetype");
   REIS(0, filetype, "expected full filetype");
 
   RSS(ref_interp_plt_string(file, title, 1024), "read title");
   printf("plt title '%s'\n", title);
 
   REIS(1, fread(&numvar, sizeof(int), 1, file), "numvar");
-  printf("plt numvar %d\n", numvar);
+  printf("plt number of variables %d\n", numvar);
 
   for (var = 0; var < numvar; var++) {
     RSS(ref_interp_plt_string(file, varname, 1024), "read variable name");
@@ -1916,58 +1913,43 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_LIST zone_nnode,
   }
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
-  printf("plt zonemarker %f\n", zonemarker);
   while (ABS(299.0 - zonemarker) < 1.0e-7) {
     RSS(ref_interp_plt_string(file, zonename, 1024), "read zonename");
     printf("plt zonename '%s'\n", zonename);
 
     REIS(1, fread(&parent, sizeof(int), 1, file), "parent");
-    printf("plt parent %d\n", parent);
     REIS(1, fread(&strand, sizeof(int), 1, file), "strand");
-    printf("plt strand %d\n", strand);
     REIS(1, fread(&solutiontime, sizeof(double), 1, file), "solutiontime");
-    printf("plt solutiontime %f\n", solutiontime);
     REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
-    printf("plt notused %d\n", notused);
     REIS(-1, notused, "not unused shoud be -1 plt");
     REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
-    printf("plt zonetype %d\n", zonetype);
     REIS(5, zonetype, "only FEBRICK plt zone implemented");
     REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
-    printf("plt packing %d\n", packing);
     REIS(1, packing, "only point packing plt implemented");
     REIS(1, fread(&location, sizeof(int), 1, file), "location");
-    printf("plt location %d\n", location);
     REIS(0, location, "only node data location plt implemented");
     REIS(1, fread(&neighbor, sizeof(int), 1, file), "neighbor");
-    printf("plt neighbor %d\n", neighbor);
     REIS(0, neighbor, "no face nieghbor  plt implemented");
 
     for (i = 0; i < 8; i++) {
       REIS(1, fread(&mystery, sizeof(int), 1, file), "mystery");
-      printf("plt mystery %d\n", mystery);
       REIS(0, dim, "mystery data nonzero plt");
     }
 
     REIS(1, fread(&numpts, sizeof(int), 1, file), "numpts");
-    printf("plt numpts %d\n", numpts);
     REIS(1, fread(&numelem, sizeof(int), 1, file), "numelem");
-    printf("plt numelem %d\n", numelem);
 
     RSS(ref_list_push(zone_nnode, numpts), "save nnode");
     RSS(ref_list_push(zone_nelem, numelem), "save nelem");
 
     for (i = 0; i < 3; i++) {
       REIS(1, fread(&dim, sizeof(int), 1, file), "dim");
-      printf("plt dim %d\n", dim);
       REIS(0, dim, "dim nonzero plt");
     }
     REIS(1, fread(&aux, sizeof(int), 1, file), "aux");
-    printf("plt aux %d\n", aux);
     REIS(0, aux, "aux nonzero plt");
 
     REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
-    printf("plt zonemarker %f\n", zonemarker);
   }
 
   RWDS(357.0, zonemarker, -1.0, "end of header marker expected");
