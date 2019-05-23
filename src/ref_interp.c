@@ -2024,7 +2024,8 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
 REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
                          REF_DBL **scalar) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  FILE *file;
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  FILE *file = NULL;
   REF_INT nvar;
   REF_LIST zone_nnode, zone_nelem, touching;
   REF_INT zone, nzone, length, node, i, point;
@@ -2041,24 +2042,37 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
         "ins");
   }
 
-  file = fopen(filename, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
+  if (ref_mpi_once(ref_mpi)) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
 
-  RSS(ref_list_create(&zone_nnode), "nnode list");
-  RSS(ref_list_create(&zone_nelem), "nelem list");
+    RSS(ref_list_create(&zone_nnode), "nnode list");
+    RSS(ref_list_create(&zone_nelem), "nelem list");
 
-  RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
-      "parse header");
-  nzone = ref_list_n(zone_nnode);
+    RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
+        "parse header");
+    nzone = ref_list_n(zone_nnode);
+  }
+  RSS(ref_mpi_bcast(ref_mpi, &nvar, 1, REF_INT_TYPE), "b nvar");
+  RSS(ref_mpi_bcast(ref_mpi, &nzone, 1, REF_INT_TYPE), "b nzone");
 
   *ldim = nvar - 3;
   ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, -999.0);
 
   RSS(ref_list_create(&touching), "tounching list");
   for (zone = 0; zone < nzone; zone++) {
-    RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
-        "read data");
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
+                             &soln),
+          "read data");
+      RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
+      RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
+    } else {
+      RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
+      ref_malloc(soln, nvar * length, REF_DBL);
+      RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
+    }
     for (point = 0; point < length; point++) {
       for (i = 0; i < 3; i++) {
         position[i] = soln[i + nvar * point];
@@ -2092,9 +2106,11 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   }
   RSS(ref_list_free(touching), "free touching");
 
-  fclose(file);
-  ref_list_free(zone_nnode);
-  ref_list_free(zone_nelem);
+  if (ref_mpi_once(ref_mpi)) {
+    fclose(file);
+    ref_list_free(zone_nnode);
+    ref_list_free(zone_nelem);
+  }
 
   RSS(ref_search_free(ref_search), "free search");
 
