@@ -2067,6 +2067,8 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
       }
       RSS(ref_search_touching(ref_search, touching, position, radius),
           "search tree");
+      printf("leaves %d\n", ref_list_n(touching));
+      RSS(ref_list_erase(touching),"erase");
     }
     free(soln);
   }
