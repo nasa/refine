@@ -2028,9 +2028,19 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   FILE *file;
   REF_INT nvar;
-  REF_LIST zone_nnode, zone_nelem;
-  REF_INT zone, nzone, length;
+  REF_LIST zone_nnode, zone_nelem, touching;
+  REF_INT zone, nzone, length, node, i;
   REF_DBL *soln;
+  REF_SEARCH ref_search;
+  REF_DBL radius, position[3];
+
+  RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
+  each_ref_node_valid_node(ref_node, node) {
+    radius = 0.0;
+    RSS(ref_search_insert(ref_search, node, ref_node_xyz_ptr(ref_node, node),
+                          radius),
+        "ins");
+  }
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2044,18 +2054,29 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   nzone = ref_list_n(zone_nnode);
 
   *ldim = nvar - 3;
-  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, -999.0);
 
+  RSS(ref_list_create(&touching), "tounching list");
   for (zone = 0; zone < nzone; zone++) {
     RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
         "read data");
+    for (node = 0; node < length; node++) {
+      radius = 1.0e-7;
+      for (i = 0; i < 3; i++) {
+        position[i] = soln[i + nvar * node];
+      }
+      RSS(ref_search_touching(ref_search, touching, position, radius),
+          "search tree");
+    }
     free(soln);
   }
+  RSS(ref_list_free(touching), "free touching");
 
+  fclose(file);
   ref_list_free(zone_nnode);
   ref_list_free(zone_nelem);
 
-  fclose(file);
+  RSS(ref_search_free(ref_search), "free search");
 
   return REF_SUCCESS;
 }
