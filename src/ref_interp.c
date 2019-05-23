@@ -2029,10 +2029,11 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   FILE *file;
   REF_INT nvar;
   REF_LIST zone_nnode, zone_nelem, touching;
-  REF_INT zone, nzone, length, node, i;
+  REF_INT zone, nzone, length, node, i, point;
   REF_DBL *soln;
   REF_SEARCH ref_search;
-  REF_DBL radius, position[3];
+  REF_DBL radius, position[3], dist, best_dist;
+  REF_INT best;
 
   RSS(ref_search_create(&ref_search, ref_node_n(ref_node)), "create search");
   each_ref_node_valid_node(ref_node, node) {
@@ -2060,15 +2061,27 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   for (zone = 0; zone < nzone; zone++) {
     RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
         "read data");
-    for (node = 0; node < length; node++) {
+    for (point = 0; point < length; point++) {
       radius = 1.0e-7;
       for (i = 0; i < 3; i++) {
-        position[i] = soln[i + nvar * node];
+        position[i] = soln[i + nvar * point];
       }
       RSS(ref_search_touching(ref_search, touching, position, radius),
           "search tree");
-      printf("leaves %d\n", ref_list_n(touching));
-      RSS(ref_list_erase(touching),"erase");
+      RSS(ref_list_erase(touching), "erase");
+      best_dist = 1.0e+200;
+      best = REF_EMPTY;
+      each_ref_node_valid_node(ref_node, node) {
+        dist = sqrt(pow(ref_node_xyz(ref_node, 0, node) - position[0], 2) +
+                    pow(ref_node_xyz(ref_node, 1, node) - position[1], 2) +
+                    pow(ref_node_xyz(ref_node, 2, node) - position[2], 2));
+        if (dist < best_dist) {
+          best_dist = dist;
+          best = node;
+        }
+      }
+      printf("leaves %d best %d dist %e\n", ref_list_n(touching), best,
+             best_dist);
     }
     free(soln);
   }
