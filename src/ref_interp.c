@@ -1960,12 +1960,18 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
 }
 
 static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
-                                     REF_LIST zone_nnode, REF_LIST zone_nelem) {
+                                     REF_LIST zone_nnode, REF_LIST zone_nelem,
+                                     REF_INT *length, REF_DBL **soln) {
   float zonemarker;
   int dataformat;
   REF_INT i;
   int passive, sharing, conn;
   double minval, maxval;
+  REF_INT nnode, nelem;
+
+  RSS(ref_list_shift(zone_nnode, &nnode), "zone node size");
+  RSS(ref_list_shift(zone_nelem, &nelem), "zone elem size");
+  *length = nnode;
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
   printf("plt zonemarker %f\n", zonemarker);
@@ -1995,17 +2001,22 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   for (i = 0; i < nvar; i++) {
     REIS(1, fread(&minval, sizeof(double), 1, file), "dim");
     REIS(1, fread(&maxval, sizeof(double), 1, file), "dim");
-    printf("[%f,%f]\n",minval,maxval);
+    printf("[%f,%f]\n", minval, maxval);
   }
+
+  ref_malloc(*soln, nvar * nnode, REF_DBL);
 
   ref_list_inspect(zone_nnode);
   ref_list_inspect(zone_nelem);
   return REF_SUCCESS;
 }
+
 REF_STATUS ref_iterp_plt(const char *filename) {
   FILE *file;
   REF_INT nvar;
   REF_LIST zone_nnode, zone_nelem;
+  REF_INT zone, nzone, length;
+  REF_DBL *soln;
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -2016,8 +2027,13 @@ REF_STATUS ref_iterp_plt(const char *filename) {
 
   RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
       "parse header");
+  nzone = ref_list_n(zone_nnode);
 
-  RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem), "read data");
+  for (zone = 0; zone < nzone; zone++) {
+    RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length, &soln),
+        "read data");
+    free(soln);
+  }
 
   ref_list_free(zone_nnode);
   ref_list_free(zone_nelem);
