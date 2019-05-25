@@ -1459,7 +1459,7 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 }
 
 REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_INT new_node) {
+                                REF_DBL node1_weight, REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1473,6 +1473,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT i, ncell, cells[2];
   REF_INT face_geom, geom0, geom1;
   REF_BOOL support0, support1;
+  REF_DBL node0_weight = 1.0 - node1_weight;
 
   RSS(ref_geom_supported(ref_geom, node0, &support0), "node0 supported");
   RSS(ref_geom_supported(ref_geom, node1, &support1), "node0 supported");
@@ -1497,7 +1498,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
         "cell uv");
     RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
         "cell uv");
-    param[0] = 0.5 * (param0[0] + param1[0]);
+    param[0] = node0_weight * param0[0] + node1_weight * param1[0];
     if (ref_geom_model_loaded(ref_geom))
       RSB(ref_geom_inverse_eval(ref_geom, type, id,
                                 ref_node_xyz_ptr(ref_node, new_node), param),
@@ -1505,7 +1506,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     /* enforce bounding box and use midpoint as full-back */
     if (param[0] < MIN(param0[0], param1[0]) ||
         MAX(param0[0], param1[0]) < param[0])
-      param[0] = 0.5 * (param0[0] + param1[0]);
+      param[0] = node0_weight * param0[0] + node1_weight * param1[0];
     RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
     has_edge_support = REF_TRUE;
     RSS(ref_geom_find(ref_geom, new_node, type, id, &edge_geom),
@@ -1533,8 +1534,8 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
         "cell uv");
     RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
         "cell uv");
-    param[0] = 0.5 * (param0[0] + param1[0]);
-    param[1] = 0.5 * (param0[1] + param1[1]);
+    param[0] = node0_weight * param0[0] + node1_weight * param1[0];
+    param[1] = node0_weight * param0[1] + node1_weight * param1[1];
     if (ref_geom_model_loaded(ref_geom) && !has_edge_support) {
       RSB(ref_geom_inverse_eval(ref_geom, type, id,
                                 ref_node_xyz_ptr(ref_node, new_node), param),
@@ -1544,8 +1545,8 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
           "bb");
       if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
           param[1] < uv_min[1] || uv_max[1] < param[1]) {
-        param[0] = 0.5 * (param0[0] + param1[0]);
-        param[1] = 0.5 * (param0[1] + param1[1]);
+        param[0] = node0_weight * param0[0] + node1_weight * param1[0];
+        param[1] = node0_weight * param0[1] + node1_weight * param1[1];
       }
     }
 

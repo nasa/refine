@@ -161,6 +161,8 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
 REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
                                   REF_INT node1, REF_DBL *ratio,
                                   REF_DBL *dratio_dnode0);
+REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0, REF_INT node1,
+                                REF_DBL *ratio_node0);
 
 REF_STATUS ref_node_tri_normal(REF_NODE ref_node, REF_INT *nodes,
                                REF_DBL *normal);
@@ -197,7 +199,8 @@ REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
 REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
                                REF_INT *clone);
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
-                                     REF_INT node1, REF_INT new_node);
+                                     REF_INT node1, REF_DBL node1_weight,
+                                     REF_INT new_node);
 REF_STATUS ref_node_interpolate_face(REF_NODE ref_node, REF_INT node0,
                                      REF_INT node1, REF_INT node2,
                                      REF_INT new_node);

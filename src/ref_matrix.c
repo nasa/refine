@@ -425,12 +425,14 @@ REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_matrix_average_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
-                                REF_DBL *avg_m_upper_tri) {
+REF_STATUS ref_matrix_weight_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
+                               REF_DBL m1_weight, REF_DBL *avg_m_upper_tri) {
   REF_INT i;
 
-  for (i = 0; i < 6; i++)
-    avg_m_upper_tri[i] = 0.5 * (m0_upper_tri[i] + m1_upper_tri[i]);
+  for (i = 0; i < 6; i++) {
+    avg_m_upper_tri[i] =
+        (1.0 - m1_weight) * m0_upper_tri[i] + m1_weight * m1_upper_tri[i];
+  }
 
   return REF_SUCCESS;
 }

@@ -1225,6 +1225,37 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0, REF_INT node1,
+                                REF_DBL *ratio_node0) {
+  REF_DBL direction[3], length;
+  REF_DBL m[6];
+
+  if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
+    RSS(REF_INVALID, "node invalid");
+
+  direction[0] =
+      (ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0));
+  direction[1] =
+      (ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0));
+  direction[2] =
+      (ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0));
+
+  length = ref_math_dot(direction, direction);
+  length = sqrt(length);
+
+  if (!ref_math_divisible(direction[0], length) ||
+      !ref_math_divisible(direction[1], length) ||
+      !ref_math_divisible(direction[2], length)) {
+    *ratio_node0 = 0.0;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
+  *ratio_node0 = ref_matrix_sqrt_vt_m_v(m, direction);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
                                      REF_DBL *quality) {
   REF_DBL l0, l1, l2, l3, l4, l5;
@@ -2105,27 +2136,29 @@ REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
 }
 
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
-                                     REF_INT node1, REF_INT new_node) {
+                                     REF_INT node1, REF_DBL node1_weight,
+                                     REF_INT new_node) {
   REF_DBL log_m0[6], log_m1[6], log_m[6];
   REF_INT i;
+  REF_DBL node0_weight = 1.0 - node1_weight;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
 
   for (i = 0; i < 3; i++)
     ref_node_xyz(ref_node, i, new_node) =
-        0.5 *
-        (ref_node_xyz(ref_node, i, node0) + ref_node_xyz(ref_node, i, node1));
+        node0_weight * ref_node_xyz(ref_node, i, node0) +
+        node1_weight * ref_node_xyz(ref_node, i, node1);
 
   for (i = 0; i < ref_node_naux(ref_node); i++)
     ref_node_aux(ref_node, i, new_node) =
-        0.5 *
-        (ref_node_aux(ref_node, i, node0) + ref_node_aux(ref_node, i, node1));
+        node0_weight * ref_node_aux(ref_node, i, node0) +
+        node1_weight * ref_node_aux(ref_node, i, node1);
 
   RSS(ref_node_metric_get_log(ref_node, node0, log_m0), "log 0");
   RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "log 1");
 
-  RSS(ref_matrix_average_m(log_m0, log_m1, log_m), "log 1");
+  RSS(ref_matrix_weight_m(log_m0, log_m1, node1_weight, log_m), "log weight");
 
   RSS(ref_node_metric_set_log(ref_node, new_node, log_m), "log new");
 

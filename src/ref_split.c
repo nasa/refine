@@ -23,6 +23,7 @@
 #include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
 #include "ref_split.h"
@@ -54,6 +55,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
   REF_INT global, new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
+  REF_DBL ratio01, ratio0, ratio1, weight_node1;
 
   RAS(!ref_mpi_para(ref_mpi), "not parallel");
   RAS(!ref_grid_twod(ref_grid), "only surf");
@@ -96,17 +98,45 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
         "mixed");
     if (!allowed) continue;
 
+    weight_node1 = 0.5;
+    RSS(ref_node_ratio(ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                       ref_edge_e2n(ref_edge, 1, edge), &ratio01),
+        "ratio01");
+    RSS(ref_node_ratio_node0(ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                             ref_edge_e2n(ref_edge, 1, edge), &ratio0),
+        "ratio0");
+    RSS(ref_node_ratio_node0(ref_node, ref_edge_e2n(ref_edge, 1, edge),
+                             ref_edge_e2n(ref_edge, 0, edge), &ratio1),
+        "ratio1");
+    if (ref_math_divisible(ratio0, ratio1 + ratio0)) {
+      if (0.25 < ratio0 / (ratio0 + ratio1) &&
+          ratio0 / (ratio0 + ratio1) < 0.75) {
+        weight_node1 = 1.0 - ratio0 / (ratio0 + ratio1);
+      } else {
+        if (ratio0 < ratio1) {
+          if (ref_math_divisible(ratio0, ratio01))
+            weight_node1 = 1.0 - ratio0 / ratio01;
+        } else {
+          if (ref_math_divisible(ratio1, ratio01))
+            weight_node1 = ratio1 / ratio01;
+        }
+      }
+    }
+    if (weight_node1 > 1 || weight_node1 < 0) printf("%f\n", weight_node1);
+
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
     RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                                  ref_edge_e2n(ref_edge, 1, edge), new_node),
+                                  ref_edge_e2n(ref_edge, 1, edge), weight_node1,
+                                  new_node),
         "interp new node");
     RSS(ref_metric_interpolate_between(
             ref_grid, ref_edge_e2n(ref_edge, 0, edge),
             ref_edge_e2n(ref_edge, 1, edge), new_node),
         "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                             ref_edge_e2n(ref_edge, 1, edge), new_node),
+                             ref_edge_e2n(ref_edge, 1, edge), weight_node1,
+                             new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
@@ -257,14 +287,15 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
     RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                                  ref_edge_e2n(ref_edge, 1, edge), new_node),
+                                  ref_edge_e2n(ref_edge, 1, edge), 0.5,
+                                  new_node),
         "interp new node");
     RSS(ref_metric_interpolate_between(
             ref_grid, ref_edge_e2n(ref_edge, 0, edge),
             ref_edge_e2n(ref_edge, 1, edge), new_node),
         "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                             ref_edge_e2n(ref_edge, 1, edge), new_node),
+                             ref_edge_e2n(ref_edge, 1, edge), 0.5, new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
@@ -830,12 +861,12 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node0), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node0),
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node0),
         "interp new node");
     RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node0),
         "interp new node0");
 
-    RSS(ref_geom_add_between(ref_grid, node0, node1, new_node0),
+    RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node0),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
 
@@ -873,11 +904,11 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node1), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node2, node3, new_node1),
+    RSS(ref_node_interpolate_edge(ref_node, node2, node3, 0.5, new_node1),
         "interp new node");
     RSS(ref_metric_interpolate_between(ref_grid, node2, node3, new_node1),
         "interp new node1");
-    RSS(ref_geom_add_between(ref_grid, node2, node3, new_node1),
+    RSS(ref_geom_add_between(ref_grid, node2, node3, 0.5, new_node1),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");
 
@@ -1162,14 +1193,15 @@ REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
     RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                                  ref_edge_e2n(ref_edge, 1, edge), new_node),
+                                  ref_edge_e2n(ref_edge, 1, edge), 0.5,
+                                  new_node),
         "interp new node");
     RSS(ref_metric_interpolate_between(
             ref_grid, ref_edge_e2n(ref_edge, 0, edge),
             ref_edge_e2n(ref_edge, 1, edge), new_node),
         "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                             ref_edge_e2n(ref_edge, 1, edge), new_node),
+                             ref_edge_e2n(ref_edge, 1, edge), 0.5, new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
