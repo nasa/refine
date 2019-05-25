@@ -791,7 +791,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
 
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
         "interp new node");
     RSS(ref_interp_locate_between(ref_interp, node0, node1, new_node),
         "locate");

@@ -2105,27 +2105,29 @@ REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
 }
 
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
-                                     REF_INT node1, REF_INT new_node) {
+                                     REF_INT node1, REF_DBL node1_weight,
+                                     REF_INT new_node) {
   REF_DBL log_m0[6], log_m1[6], log_m[6];
   REF_INT i;
+  REF_DBL node0_weight = 1.0 - node1_weight;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
 
   for (i = 0; i < 3; i++)
     ref_node_xyz(ref_node, i, new_node) =
-        0.5 *
-        (ref_node_xyz(ref_node, i, node0) + ref_node_xyz(ref_node, i, node1));
+        node0_weight * ref_node_xyz(ref_node, i, node0) +
+        node1_weight * ref_node_xyz(ref_node, i, node1);
 
   for (i = 0; i < ref_node_naux(ref_node); i++)
     ref_node_aux(ref_node, i, new_node) =
-        0.5 *
-        (ref_node_aux(ref_node, i, node0) + ref_node_aux(ref_node, i, node1));
+        node0_weight * ref_node_aux(ref_node, i, node0) +
+        node1_weight * ref_node_aux(ref_node, i, node1);
 
   RSS(ref_node_metric_get_log(ref_node, node0, log_m0), "log 0");
   RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "log 1");
 
-  RSS(ref_matrix_weight_m(log_m0, log_m1, 0.5, log_m), "log weight");
+  RSS(ref_matrix_weight_m(log_m0, log_m1, node1_weight, log_m), "log weight");
 
   RSS(ref_node_metric_set_log(ref_node, new_node, log_m), "log new");
 

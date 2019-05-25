@@ -1530,7 +1530,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_next_global(ref_node, &global), "next_global");
     RSS(ref_node_add(ref_node, global, &new_node), "add");
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node), "interp");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
+        "interp");
 
     RWDS(0.5, ref_node_xyz(ref_node, 0, new_node), -1.0, "x");
     RWDS(0.0, ref_node_xyz(ref_node, 1, new_node), -1.0, "y");
@@ -1547,7 +1548,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_metric_form(ref_node, node1, 1.0 / (0.1 * 0.1), 0, 0, 1, 0, 1),
         "set 0.1 metric");
 
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node), "interp");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
+        "interp");
 
     RSS(ref_node_metric_get(ref_node, new_node, m), "get");
     RWDS(1.0 / 0.1, m[0], -1.0, "m[0]");
@@ -1625,7 +1627,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_next_global(ref_node, &global), "next_global");
     RSS(ref_node_add(ref_node, global, &new_node), "add");
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node), "interp");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
+        "interp");
 
     RWDS(1.5, ref_node_aux(ref_node, 0, new_node), -1.0, "a");
     RWDS(30.0, ref_node_aux(ref_node, 1, new_node), -1.0, "a");

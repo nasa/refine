@@ -647,7 +647,8 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
         RSS(ref_node_add(ref_node, global, &node), "add node");
         ref_subdiv_node(ref_subdiv, edge) = node;
         RSS(ref_node_interpolate_edge(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                                      ref_edge_e2n(ref_edge, 1, edge), node),
+                                      ref_edge_e2n(ref_edge, 1, edge), 0.5,
+                                      node),
             "new node");
       }
     }

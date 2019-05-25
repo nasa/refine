@@ -249,7 +249,7 @@ REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid) {
         if (has_support) RSS(REF_IMPLEMENT, "add geometry handling");
         RSS(ref_node_next_global(ref_node, &global), "next global");
         RSS(ref_node_add(ref_node, global, &new_node), "new node");
-        RSS(ref_node_interpolate_edge(ref_node, node0, node1, new_node),
+        RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
             "interp new node");
         RSS(ref_geom_add_between(ref_grid, node0, node1, new_node),
             "geom new node");
