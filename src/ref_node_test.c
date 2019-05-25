@@ -727,9 +727,17 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(0.0, ratio, -1.0, "ratio expected");
+    RSS(ref_node_ratio_node0(ref_node, node0, node1, &ratio), "ratio0");
+    RWDS(0.0, ratio, -1.0, "ratio expected");
+    RSS(ref_node_ratio_node0(ref_node, node1, node0, &ratio), "ratio1");
+    RWDS(0.0, ratio, -1.0, "ratio expected");
 
     ref_node_xyz(ref_node, 0, node1) = 1.0;
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
+    RWDS(1.0, ratio, -1.0, "ratio expected");
+    RSS(ref_node_ratio_node0(ref_node, node0, node1, &ratio), "ratio0");
+    RWDS(1.0, ratio, -1.0, "ratio expected");
+    RSS(ref_node_ratio_node0(ref_node, node1, node0, &ratio), "ratio1");
     RWDS(1.0, ratio, -1.0, "ratio expected");
 
     h = 0.5;
@@ -745,6 +753,11 @@ int main(int argc, char *argv[]) {
         "node0 met");
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(4.970679, ratio, 0.00001, "ratio expected");
+
+    RSS(ref_node_ratio_node0(ref_node, node0, node1, &ratio), "ratio0");
+    RWDS(10.0, ratio, -1.0, "ratio expected");
+    RSS(ref_node_ratio_node0(ref_node, node1, node0, &ratio), "ratio1");
+    RWDS(2.0, ratio, -1.0, "ratio expected");
 
     RSS(ref_node_free(ref_node), "free");
   }
