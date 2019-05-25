@@ -54,8 +54,8 @@ REF_STATUS ref_matrix_log_m(REF_DBL *m_upper_tri, REF_DBL *log_m_upper_tri);
 REF_STATUS ref_matrix_exp_m(REF_DBL *m_upper_tri, REF_DBL *exp_m_upper_tri);
 REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
                              REF_DBL *inv_sqrt_m_upper_tri);
-REF_STATUS ref_matrix_average_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
-                                REF_DBL *avg_m_upper_tri);
+REF_STATUS ref_matrix_weight_m(REF_DBL *m0_upper_tri, REF_DBL *m1_upper_tri,
+                               REF_DBL m1_weight, REF_DBL *avg_m_upper_tri);
 REF_STATUS ref_matrix_mult_m(REF_DBL *m0, REF_DBL *m1, REF_DBL *a);
 REF_STATUS ref_matrix_mult_m0m1m0(REF_DBL *m0, REF_DBL *m1, REF_DBL *m);
 REF_STATUS ref_matrix_vect_mult(REF_DBL *a, REF_DBL *x, REF_DBL *b);

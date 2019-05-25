@@ -2125,7 +2125,7 @@ REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
   RSS(ref_node_metric_get_log(ref_node, node0, log_m0), "log 0");
   RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "log 1");
 
-  RSS(ref_matrix_average_m(log_m0, log_m1, log_m), "log 1");
+  RSS(ref_matrix_weight_m(log_m0, log_m1, 0.5, log_m), "log weight");
 
   RSS(ref_node_metric_set_log(ref_node, new_node, log_m), "log new");
 
