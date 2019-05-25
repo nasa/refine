@@ -196,7 +196,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
 REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_DBL *xyz);
 REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_INT new_node);
+                                REF_DBL node1_weight, REF_INT new_node);
 REF_STATUS ref_geom_support_between(REF_GRID ref_grid, REF_INT node0,
                                     REF_INT node1, REF_BOOL *needs_support);
 
