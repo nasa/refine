@@ -1329,6 +1329,8 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   REF_INT faceid;
   REF_BOOL have_jump;
 
+  REF_BOOL verbose = REF_TRUE;
+
   if (edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom) return REF_INVALID;
   if (REF_GEOM_EDGE != ref_geom_type(ref_geom, edge_geom)) return REF_INVALID;
 
@@ -1375,10 +1377,6 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                       faceid);
                ref_geom_tattle(ref_geom, node);
              });
-        printf("edge face uv %f %f\n", edgeuv[0], edgeuv[1]);
-        printf("node xyz %f %f %f\n", ref_node_xyz_ptr(ref_node, node)[0],
-               ref_node_xyz_ptr(ref_node, node)[1],
-               ref_node_xyz_ptr(ref_node, node)[2]);
         invuv[0] = edgeuv[0];
         invuv[1] = edgeuv[1];
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
@@ -1392,10 +1390,12 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
         invdist = sqrt(pow(invxyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                        pow(invxyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                        pow(invxyz[2] - ref_node_xyz(ref_node, 2, node), 2));
-        if (edgedist < invdist) {
+        if (edgedist <= invdist) {
           ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
           ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
         } else {
+          if (verbose)
+            printf("face eval %e closer than edgeUV %e\n", invdist, edgedist);
           ref_geom_param(ref_geom, 0, face_geom) = invuv[0];
           ref_geom_param(ref_geom, 1, face_geom) = invuv[1];
         }
