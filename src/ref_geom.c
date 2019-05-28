@@ -1375,6 +1375,8 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                       faceid);
                ref_geom_tattle(ref_geom, node);
              });
+        invxyz[0] = edgeuv[0];
+        invxyz[1] = edgeuv[1];
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
                                   ref_node_xyz_ptr(ref_node, node), invuv),
             "inv wrapper");
