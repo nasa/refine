@@ -1329,7 +1329,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   REF_INT faceid;
   REF_BOOL have_jump;
 
-  REF_BOOL verbose = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
 
   if (edge_geom < 0 || ref_geom_max(ref_geom) <= edge_geom) return REF_INVALID;
   if (REF_GEOM_EDGE != ref_geom_type(ref_geom, edge_geom)) return REF_INVALID;
