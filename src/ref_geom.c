@@ -549,7 +549,7 @@ REF_STATUS ref_geom_recon(REF_GRID ref_grid) {
     } else {
       int toponode0, toponode1;
       REF_INT node0, node1;
-      double closest[3];
+      double closest[9];
       REF_INT next_node, current_node;
       REF_INT geom;
       REIS(TWONODE, mtype, "ONENODE edge not implemented");
