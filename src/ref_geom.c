@@ -1322,7 +1322,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   REF_INT node, cell_item, geom_item, cell, face_geom;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   double t;
-  double uv[2], edgeuv[2], invuv[2], edgedist, invdist, edgexyz[3], invxyz[3];
+  double uv[2], edgeuv[2], invuv[2], edgedist, invdist, edgexyz[18], invxyz[19];
   int sense;
   ego *edges, *faces;
   ego edge, face;
