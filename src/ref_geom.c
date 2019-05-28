@@ -1912,7 +1912,7 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   REF_BOOL guess_in_range, noguess_in_range;
 
-  REF_BOOL verbose = REF_TRUE;
+  REF_BOOL verbose = REF_FALSE;
 
   switch (type) {
     case (REF_GEOM_NODE):
