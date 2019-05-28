@@ -1707,6 +1707,15 @@ REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_constrain_all(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_geom_constrain(ref_grid, node), "constrain node");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
