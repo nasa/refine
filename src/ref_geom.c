@@ -1582,6 +1582,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     }
 
 #ifdef HAVE_EGADS
+    /* if there is an edge between, set the face uv based on edge t */
     if (ref_geom_model_loaded(ref_geom) && has_edge_support) {
       ego *edges, *faces;
       ego edge, face;
@@ -1606,8 +1607,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     }
 #endif
   }
-
-  /* if there is an edge between, set the face uv based on edge t */
 
   return REF_SUCCESS;
 }
