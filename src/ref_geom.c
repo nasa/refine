@@ -1297,7 +1297,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
         REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
              "edge trange", {
-               printf("for edge %d face %d\n", edgeid,
+               printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
                       ref_geom_id(ref_geom, geom));
              });
         REIB(EGADS_SUCCESS,
