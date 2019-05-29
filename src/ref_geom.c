@@ -1183,7 +1183,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   REF_INT id, edgeid, geom, from, from_geom;
   REF_INT node_index, cell_node;
   ego face_ego, edge_ego;
-  double trange[2], uv[2], uv0[2], uv1[2];
+  double trange[2], uv[2], uv0[2], uv1[2], uvtmin[2], uvtmax[2];
   int periodic;
   REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
@@ -1290,14 +1290,51 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         RAS(0 < hits, "no seed uv found for DEGEN");
         uv0[0] /= (REF_DBL)hits;
         uv0[1] /= (REF_DBL)hits;
-        if (1 == ref_geom_degen(ref_geom, geom)) {
-          *sens = 0;
+
+        *sens = 0;
+        edgeid = ABS(ref_geom_degen(ref_geom, geom));
+        edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
+        face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
+        /* returns -2 EGADS_NULLOBJ for EGADSlite of hemisphere
+           REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
+           "edge trange", {
+           printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
+           ref_geom_id(ref_geom, geom));
+           });
+        */
+        /* use EG_getTopology as an alternate to EG_getRange */
+        {
+          ego ref, *pchldrn;
+          int oclass, mtype, nchild, *psens;
+          REIS(EGADS_SUCCESS,
+               EG_getTopology(edge_ego, &ref, &oclass, &mtype, trange, &nchild,
+                              &pchldrn, &psens),
+               "topo");
+        }
+        REIB(EGADS_SUCCESS,
+             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
+             "edge uv tmin", {
+               printf("for edge %d (%p) face %d (%p)\n", edgeid,
+                      (void *)edge_ego, ref_geom_id(ref_geom, geom),
+                      (void *)face_ego);
+             });
+        REIB(EGADS_SUCCESS,
+             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
+             "edge uv tmax", {
+               printf("for edge %d face %d\n", edgeid,
+                      ref_geom_id(ref_geom, geom));
+             });
+
+        if (0 > ref_geom_degen(ref_geom, geom)) {
           param[0] = uv0[0];
+          param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
+          param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
           param[1] = ref_geom_param(ref_geom, 1, geom);
         } else {
-          *sens = 0;
           param[0] = ref_geom_param(ref_geom, 0, geom);
           param[1] = uv0[1];
+          param[1] = MAX(param[1], MIN(uvtmin[1], uvtmax[1]));
+          param[1] = MIN(param[1], MAX(uvtmin[1], uvtmax[1]));
         }
       }
       break;
@@ -3199,9 +3236,9 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
         du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
         dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
         if (du > dv) {
-          degen = 2; /* trust uv[0] */
+          degen = (edge + 1); /* positive edge, trust uv[0] */
         } else {
-          degen = 1; /* trust uv[1] */
+          degen = -(edge + 1); /* negative edge, trust uv[1] */
         }
         ref_geom_degen(ref_geom, face_geom) = degen;
       }
