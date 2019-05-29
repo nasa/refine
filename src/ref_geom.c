@@ -1303,8 +1303,9 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         REIB(EGADS_SUCCESS,
              EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
              "edge uv tmin", {
-               printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
-                      ref_geom_id(ref_geom, geom));
+               printf("for edge %d (%p) face %d (%p)\n", edgeid,
+                      (void *)edge_ego, ref_geom_id(ref_geom, geom),
+                      (void *)face_ego);
              });
         REIB(EGADS_SUCCESS,
              EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
