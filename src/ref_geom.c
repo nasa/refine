@@ -1297,12 +1297,18 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
         REIS(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
              "edge range");
-        REIS(EGADS_SUCCESS,
+        REIB(EGADS_SUCCESS,
              EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
-             "edge range");
-        REIS(EGADS_SUCCESS,
+             "edge uv tmin", {
+               printf("for edge %d face %d\n", edgeid,
+                      ref_geom_id(ref_geom, geom));
+             });
+        REIB(EGADS_SUCCESS,
              EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
-             "edge range");
+             "edge uv tmax", {
+               printf("for edge %d face %d\n", edgeid,
+                      ref_geom_id(ref_geom, geom));
+             });
 
         if (0 < ref_geom_degen(ref_geom, geom)) {
           param[0] = uv0[0];
@@ -3215,9 +3221,9 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
         du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
         dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
         if (du > dv) {
-          degen = edge; /* positive edge, trust uv[0] */
+          degen = (edge + 1); /* positive edge, trust uv[0] */
         } else {
-          degen = -edge; /* negative edge, trust uv[1] */
+          degen = -(edge + 1); /* negative edge, trust uv[1] */
         }
         ref_geom_degen(ref_geom, face_geom) = degen;
       }
