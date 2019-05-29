@@ -1325,7 +1325,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
                       ref_geom_id(ref_geom, geom));
              });
 
-        if (0 < ref_geom_degen(ref_geom, geom)) {
+        if (0 > ref_geom_degen(ref_geom, geom)) {
           param[0] = uv0[0];
           param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
           param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
