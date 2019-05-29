@@ -29,6 +29,8 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 
+#include "ref_validation.h"
+
 #include "ref_export.h"
 #include "ref_import.h"
 
@@ -99,6 +101,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
   printf("verify constrained param\n");
   RSS(ref_geom_verify_param(ref_grid), "constrained params");
+  printf("verify manifold\n");
+  RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
   ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
 
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
