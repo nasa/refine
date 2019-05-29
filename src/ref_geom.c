@@ -1290,6 +1290,27 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         RAS(0 < hits, "no seed uv found for DEGEN");
         uv0[0] /= (REF_DBL)hits;
         uv0[1] /= (REF_DBL)hits;
+        {
+          int sense = 0;
+          edge_ego = ((ego *)(ref_geom->edges))[32 - 1];
+          face_ego =
+              ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
+          REIS(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
+               "edge range");
+          printf("edge 32 trange %f %f per %d\n", trange[0], trange[1],
+                 periodic);
+          REIS(EGADS_SUCCESS,
+               EG_getEdgeUV(face_ego, edge_ego, sense, trange[0], param),
+               "edge range");
+          printf("face %d  low uv %f %f\n", ref_geom_id(ref_geom, geom),
+                 param[0], param[1]);
+          REIS(EGADS_SUCCESS,
+               EG_getEdgeUV(face_ego, edge_ego, sense, trange[1], param),
+               "edge range");
+          printf("face %d high uv %f %f\n", ref_geom_id(ref_geom, geom),
+                 param[0], param[1]);
+        }
+
         if (1 == ref_geom_degen(ref_geom, geom)) {
           *sens = 0;
           param[0] = uv0[0];
@@ -1297,8 +1318,10 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         } else {
           *sens = 0;
           param[0] = ref_geom_param(ref_geom, 0, geom);
-          param[1] = uv0[1];
+          param[1] = MAX(MIN(0.119565, uv0[1]), 0.119551);
         }
+        printf("face %d uv %f %f\n", ref_geom_id(ref_geom, geom), param[0],
+               param[1]);
       }
       break;
     default:
