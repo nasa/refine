@@ -1185,6 +1185,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   ego face_ego, edge_ego;
   double trange[2], uv[2], uv0[2], uv1[2], uvtmin[2], uvtmax[2];
   int periodic;
+  int egads_status;
   REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
   REF_INT hits;
@@ -1295,35 +1296,47 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         edgeid = ABS(ref_geom_degen(ref_geom, geom));
         edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
         face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
-        REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
-             "edge trange", {
-               printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
-                      ref_geom_id(ref_geom, geom));
-             });
-        REIB(EGADS_SUCCESS,
-             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
-             "edge uv tmin", {
-               printf("for edge %d (%p) face %d (%p)\n", edgeid,
-                      (void *)edge_ego, ref_geom_id(ref_geom, geom),
-                      (void *)face_ego);
-             });
-        REIB(EGADS_SUCCESS,
-             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
-             "edge uv tmax", {
-               printf("for edge %d face %d\n", edgeid,
-                      ref_geom_id(ref_geom, geom));
-             });
+        /* returns -2 EGADS_NULLOBJ for EGADSlite of hemisphere */
+        egads_status = EG_getRange(edge_ego, trange, &periodic);
+        /* REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
+           "edge trange", {
+           printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
+           ref_geom_id(ref_geom, geom));
+           });*/
+        if (EGADS_SUCCESS == egads_status) {
+          REIB(EGADS_SUCCESS,
+               EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
+               "edge uv tmin", {
+                 printf("for edge %d (%p) face %d (%p)\n", edgeid,
+                        (void *)edge_ego, ref_geom_id(ref_geom, geom),
+                        (void *)face_ego);
+               });
+          REIB(EGADS_SUCCESS,
+               EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
+               "edge uv tmax", {
+                 printf("for edge %d face %d\n", edgeid,
+                        ref_geom_id(ref_geom, geom));
+               });
 
-        if (0 < ref_geom_degen(ref_geom, geom)) {
-          param[0] = uv0[0];
-          param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
-          param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
-          param[1] = ref_geom_param(ref_geom, 1, geom);
+          if (0 < ref_geom_degen(ref_geom, geom)) {
+            param[0] = uv0[0];
+            param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
+            param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
+            param[1] = ref_geom_param(ref_geom, 1, geom);
+          } else {
+            param[0] = ref_geom_param(ref_geom, 0, geom);
+            param[1] = uv0[1];
+            param[1] = MAX(param[1], MIN(uvtmin[1], uvtmax[1]));
+            param[1] = MIN(param[1], MAX(uvtmin[1], uvtmax[1]));
+          }
         } else {
-          param[0] = ref_geom_param(ref_geom, 0, geom);
-          param[1] = uv0[1];
-          param[1] = MAX(param[1], MIN(uvtmin[1], uvtmax[1]));
-          param[1] = MIN(param[1], MAX(uvtmin[1], uvtmax[1]));
+          if (0 < ref_geom_degen(ref_geom, geom)) {
+            param[0] = uv0[0];
+            param[1] = ref_geom_param(ref_geom, 1, geom);
+          } else {
+            param[0] = ref_geom_param(ref_geom, 0, geom);
+            param[1] = uv0[1];
+          }
         }
       }
       break;
