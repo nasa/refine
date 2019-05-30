@@ -1325,16 +1325,17 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
                       ref_geom_id(ref_geom, geom));
              });
 
-        if (0 > ref_geom_degen(ref_geom, geom)) {
-          param[0] = uv0[0];
-          param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
-          param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
-          param[1] = ref_geom_param(ref_geom, 1, geom);
-        } else {
+        /* edgeid sign convention defined in ref_geom_mark_jump_degen */
+        if (0 < ref_geom_degen(ref_geom, geom)) {
           param[0] = ref_geom_param(ref_geom, 0, geom);
           param[1] = uv0[1];
           param[1] = MAX(param[1], MIN(uvtmin[1], uvtmax[1]));
           param[1] = MIN(param[1], MAX(uvtmin[1], uvtmax[1]));
+        } else {
+          param[0] = uv0[0];
+          param[0] = MAX(param[0], MIN(uvtmin[0], uvtmax[0]));
+          param[0] = MIN(param[0], MAX(uvtmin[0], uvtmax[0]));
+          param[1] = ref_geom_param(ref_geom, 1, geom);
         }
       }
       break;
@@ -3236,9 +3237,9 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid) {
         du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
         dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
         if (du > dv) {
-          degen = (edge + 1); /* positive edge, trust uv[0] */
+          degen = (edge + 1); /* positive edge, trust uv[0], larger dxyz/du */
         } else {
-          degen = -(edge + 1); /* negative edge, trust uv[1] */
+          degen = -(edge + 1); /* negative edge, trust uv[1], larger dxyz/dv */
         }
         ref_geom_degen(ref_geom, face_geom) = degen;
       }
