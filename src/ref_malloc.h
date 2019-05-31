@@ -36,7 +36,7 @@ BEGIN_C_DECLORATION
     REF_INT ref_malloc_init_i;                                                \
     ref_malloc(ptr, n, ptr_type);                                             \
     for (ref_malloc_init_i = 0; ref_malloc_init_i < (n); ref_malloc_init_i++) \
-      (ptr)[ref_malloc_init_i] = (initial_value);                             \
+      (ptr)[ref_malloc_init_i] = (ptr_type)(initial_value);                   \
   }
 
 /* realloc of size zero with return NULL */
