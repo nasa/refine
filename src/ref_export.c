@@ -2349,14 +2349,14 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
   next_position = (REF_FILEPOS)(4 + 4 + 4) + ftell(file);
   keyword_code = 3;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-  REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+  RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
   dim = 2;
   REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
 
   next_position = (REF_FILEPOS)(4 + 4 + 4 + nnode * (2 * 8 + 4)) + ftell(file);
   keyword_code = 4;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-  REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+  RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
   REIS(1, fwrite(&(nnode), sizeof(int), 1, file), "nnode");
 
   for (node = 0; node < nnode; node++) {
@@ -2377,7 +2377,7 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
   next_position = 4 + 4 + 4 + ref_cell_n(ref_cell) * (3 * 4) + ftell(file);
   keyword_code = 5;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-  REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+  RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
   REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
 
   RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
@@ -2412,7 +2412,7 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
   next_position = 4 + 4 + 4 + ntri * (4 * 4) + ftell(file);
   keyword_code = 6;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-  REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+  RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
   REIS(1, fwrite(&(ntri), sizeof(int), 1, file), "nnode");
 
   RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
@@ -2441,7 +2441,7 @@ REF_STATUS ref_export_twod_meshb(REF_GRID ref_grid, const char *filename) {
   keyword_code = 54;
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
   next_position = 0;
-  REIS(1, fwrite(&next_position, sizeof(next_position), 1, file), "next pos");
+  RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
 
   ref_free(n2o);
   ref_free(o2n);
