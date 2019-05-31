@@ -353,8 +353,7 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
 
   ref_type_mpi_type(type, datatype);
 
-  send_size_n = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
-  RNS(send_size_n, "malloc failed");
+  ref_malloc(send_size_n, ref_mpi_n(ref_mpi), REF_INT);
   each_ref_mpi_part(ref_mpi, part) {
     RAS(0 <= send_size[part], "negative send_size");
     RAS(ref_math_int_multipliable(n, send_size[part]),
@@ -362,8 +361,7 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
     send_size_n[part] = n * send_size[part];
   }
 
-  recv_size_n = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
-  RNS(recv_size_n, "malloc failed");
+  ref_malloc(recv_size_n, ref_mpi_n(ref_mpi), REF_INT);
   each_ref_mpi_part(ref_mpi, part) {
     RAS(0 <= recv_size[part], "negative recv_size");
     RAS(ref_math_int_multipliable(n, recv_size[part]),
@@ -371,8 +369,7 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
     recv_size_n[part] = n * recv_size[part];
   }
 
-  send_disp = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
-  RNS(send_disp, "malloc failed");
+  ref_malloc(send_disp, ref_mpi_n(ref_mpi), REF_INT);
   send_disp[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) {
     RAS(ref_math_int_addable(send_disp[part - 1], send_size_n[part - 1]),
@@ -380,8 +377,7 @@ REF_STATUS ref_mpi_alltoallv(REF_MPI ref_mpi, void *send, REF_INT *send_size,
     send_disp[part] = send_disp[part - 1] + send_size_n[part - 1];
   }
 
-  recv_disp = (REF_INT *)malloc(ref_mpi_n(ref_mpi) * sizeof(REF_INT));
-  RNS(recv_disp, "malloc failed");
+  ref_malloc(recv_disp, ref_mpi_n(ref_mpi), REF_INT);
   recv_disp[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) {
     RAS(ref_math_int_addable(recv_disp[part - 1], recv_size_n[part - 1]),
