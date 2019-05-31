@@ -825,8 +825,7 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
   *recv = NULL;
   switch (type) {
     case REF_INT_TYPE:
-      a_data = malloc(ldim * a_total * sizeof(REF_INT));
-      RNS(a_data, "malloc failed");
+      ref_malloc(a_data, ldim * a_total, REF_INT);
       ref_malloc(*((REF_INT **)recv), ldim * b_total, REF_INT);
       for (i = 0; i < nsend; i++) {
         for (l = 0; l < ldim; l++)
@@ -836,8 +835,7 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
       }
       break;
     case REF_DBL_TYPE:
-      a_data = malloc(ldim * a_total * sizeof(REF_DBL));
-      RNS(a_data, "malloc failed");
+      ref_malloc(a_data, ldim * a_total, REF_DBL);
       ref_malloc(*((REF_DBL **)recv), ldim * b_total, REF_DBL);
       for (i = 0; i < nsend; i++) {
         for (l = 0; l < ldim; l++)
