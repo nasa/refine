@@ -358,14 +358,17 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
       section_size = MIN(chunk, ncell - ncell_read);
       if (node_per == size_per) {
         RES((size_t)(section_size * (node_per + 1)),
-            fread(c2t, sizeof(REF_INT), section_size * (node_per + 1), file),
+            fread(c2t, sizeof(REF_INT), (size_t)(section_size * (node_per + 1)),
+                  file),
             "cn");
         for (cell = 0; cell < section_size; cell++)
           for (node = 0; node < node_per; node++)
             c2n[node + size_per * cell] = c2t[node + (node_per + 1) * cell];
       } else {
         RES((size_t)(section_size * size_per),
-            fread(c2n, sizeof(REF_INT), section_size * size_per, file), "cn");
+            fread(c2n, sizeof(REF_INT), (size_t)(section_size * size_per),
+                  file),
+            "cn");
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
@@ -492,7 +495,8 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
       if (node_per == size_per) {
         ref_malloc(c2t, (node_per + 1) * section_size, REF_INT);
         RES((size_t)(section_size * (node_per + 1)),
-            fread(c2t, sizeof(REF_INT), section_size * (node_per + 1), file),
+            fread(c2t, sizeof(REF_INT), (size_t)(section_size * (node_per + 1)),
+                  file),
             "cn");
         for (cell = 0; cell < section_size; cell++)
           for (node = 0; node < node_per; node++)
@@ -500,7 +504,9 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
         ref_free(c2t);
       } else {
         RES((size_t)(section_size * size_per),
-            fread(c2n, sizeof(REF_INT), section_size * size_per, file), "cn");
+            fread(c2n, sizeof(REF_INT), (size_t)(section_size * size_per),
+                  file),
+            "cn");
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
@@ -690,7 +696,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                  REF_BYTE);
       REIS(ref_geom_cad_data_size(ref_geom),
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-                 ref_geom_cad_data_size(ref_geom), file),
+                 (size_t)ref_geom_cad_data_size(ref_geom), file),
            "cad_data");
       REIS(next_position, ftello(file), "end location");
     }
@@ -775,7 +781,7 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
                  REF_BYTE);
       REIS(ref_geom_cad_data_size(ref_geom),
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-                 ref_geom_cad_data_size(ref_geom), file),
+                 (size_t)ref_geom_cad_data_size(ref_geom), file),
            "cad_data");
       REIS(next_position, ftello(file), "end location");
     }
@@ -983,7 +989,8 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
                   SEEK_SET),
            "seek conn failed");
       RES((size_t)(section_size * node_per),
-          fread(c2n, sizeof(REF_INT), section_size * node_per, file), "cn");
+          fread(c2n, sizeof(REF_INT), (size_t)(section_size * node_per), file),
+          "cn");
       for (cell = 0; cell < section_size * node_per; cell++)
         if (swap_endian) SWAP_INT(c2n[cell]);
       for (cell = 0; cell < section_size * node_per; cell++) c2n[cell]--;
@@ -994,7 +1001,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
                     SEEK_SET),
              "seek tag failed");
         RES((size_t)(section_size),
-            fread(tag, sizeof(REF_INT), section_size, file), "tag");
+            fread(tag, sizeof(REF_INT), (size_t)section_size, file), "tag");
         for (cell = 0; cell < section_size; cell++)
           if (swap_endian) SWAP_INT(tag[cell]);
 
@@ -1614,7 +1621,8 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
     section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       REIS((*ldim) * section_size,
-           fread(data, sizeof(REF_DBL), (*ldim) * section_size, file), "dat");
+           fread(data, sizeof(REF_DBL), (size_t)((*ldim) * section_size), file),
+           "dat");
       RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
                         REF_DBL_TYPE),
           "bcast");
