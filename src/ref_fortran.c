@@ -99,7 +99,7 @@ REF_STATUS REF_FORT_(ref_fortran_import_face,
 
   RSS(ref_grid_face_with(ref_grid, *node_per_face, &ref_cell), "get face");
 
-  nodes = (REF_INT *)malloc(((*node_per_face) + 1) * sizeof(REF_INT));
+  ref_malloc(nodes, (*node_per_face) + 1, REF_INT);
   RNS(nodes, "malloc nodes NULL");
   for (face = 0; face < (*nface); face++) {
     has_a_local_node = REF_FALSE;
