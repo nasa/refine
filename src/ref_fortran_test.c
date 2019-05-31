@@ -82,16 +82,16 @@ int main(int argc, char *argv[]) {
   nnodes = 4;
   nnodesg = 4;
 
-  l2g = (REF_INT *)malloc(sizeof(REF_INT) * nnodes);
-  part = (REF_INT *)malloc(sizeof(REF_INT) * nnodes);
-  x = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
-  y = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
-  z = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
-  m = (REF_DBL *)malloc(sizeof(REF_DBL) * 6 * nnodes);
-  ratio = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
+  l2g = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
+  part = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
+  x = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
+  y = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
+  z = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
+  m = (REF_DBL *)malloc(sizeof(REF_DBL) * 6 * (size_t)nnodes);
+  ratio = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
 
   naux = 2;
-  aux = (REF_DBL *)malloc(sizeof(REF_DBL) * naux * nnodes);
+  aux = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)naux * (size_t)nnodes);
 
   l2g[0] = 3;
   part[0] = 1;
@@ -136,7 +136,8 @@ int main(int argc, char *argv[]) {
 
   node_per_cell = 4;
   ncell = 1;
-  c2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_cell * ncell);
+  c2n = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)node_per_cell *
+                          (size_t)ncell);
 
   c2n[0] = 1;
   c2n[1] = 2;
@@ -149,7 +150,8 @@ int main(int argc, char *argv[]) {
 
   node_per_face = 3;
   nface = 1;
-  f2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_face * nface);
+  f2n = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)node_per_face *
+                          (size_t)nface);
   f2n[0] = 3;
   f2n[1] = 4;
   f2n[2] = 1;
@@ -193,15 +195,15 @@ int main(int argc, char *argv[]) {
   REIS(4, nnodes, "n");
   REIS(4, nnodesg, "n");
 
-  l2g = (REF_INT *)malloc(sizeof(REF_INT) * nnodes);
-  x = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
-  y = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
-  z = (REF_DBL *)malloc(sizeof(REF_DBL) * nnodes);
+  l2g = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
+  x = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
+  y = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
+  z = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
 
   RSS(REF_FORT_(ref_fortran_node, REF_FORTRAN_NODE)(&nnodes, l2g, x, y, z),
       "get node");
 
-  aux = (REF_DBL *)malloc(sizeof(REF_DBL) * naux * nnodes);
+  aux = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)naux * (size_t)nnodes);
 
   RSS(REF_FORT_(ref_fortran_aux, REF_FORTRAN_NODE)(&naux, &nnodes, &offset,
                                                    aux),
@@ -213,7 +215,8 @@ int main(int argc, char *argv[]) {
       "size cell");
   REIS(1, ncell, "n");
 
-  c2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_cell * ncell);
+  c2n = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)node_per_cell *
+                          (size_t)ncell);
 
   RSS(REF_FORT_(ref_fortran_cell, REF_FORTRAN_CELL)(&node_per_cell, &ncell,
                                                     c2n),
@@ -227,7 +230,8 @@ int main(int argc, char *argv[]) {
       "size face");
   REIS(1, nface, "n");
 
-  f2n = (REF_INT *)malloc(sizeof(REF_INT) * node_per_face * nface);
+  f2n = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)node_per_face *
+                          (size_t)nface);
 
   RSS(REF_FORT_(ref_fortran_face, REF_FORTRAN_FACE)(&ibound, &node_per_face,
                                                     &nface, f2n),
