@@ -189,7 +189,7 @@ int main(int argc, char *argv[]) {
     if (mapbc_pos >= argc - 3) THROW("--mapbc requires three values");
     mapbc_file_name = argv[mapbc_pos + 1];
     family_name = argv[mapbc_pos + 2];
-    bc_type = atof(argv[mapbc_pos + 3]);
+    bc_type = atoi(argv[mapbc_pos + 3]);
     if (ref_mpi_once(ref_mpi))
       printf(" --mapbc %s %s %d\n", mapbc_file_name, family_name, bc_type);
     last_face_arg = MIN(last_face_arg, mapbc_pos);
