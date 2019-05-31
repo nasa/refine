@@ -135,7 +135,7 @@ int main(int argc, char *argv[]) {
       printf("%d: --drop-face\n", pos);
       if (pos + 2 > argc) return (print_usage(argv[0]));
       pos++;
-      faceid = strtol(argv[pos], &endptr, 10);
+      faceid = (REF_INT)strtol(argv[pos], &endptr, 10);
       RAS(argv[pos] != endptr, "parse faceid to drop");
       printf(" dropping faceid %d\n", faceid);
       ref_cell = ref_grid_tri(ref_grid);
@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
       printf("%d: --zero-y-face\n", pos);
       if (pos + 2 > argc) return (print_usage(argv[0]));
       pos++;
-      faceid = strtol(argv[pos], &endptr, 10);
+      faceid = (REF_INT)strtol(argv[pos], &endptr, 10);
       RAS(argv[pos] != endptr, "parse faceid to drop");
       printf(" set y to zero on faceid %d\n", faceid);
       deviation = 0.0;
