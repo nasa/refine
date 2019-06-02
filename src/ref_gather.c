@@ -1301,7 +1301,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next pos");
-      ncell_int = ncell;
+      ncell_int = (REF_INT)ncell;
       REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
@@ -1324,7 +1324,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next p");
-      ncell_int = ncell;
+      ncell_int = (REF_INT)ncell;
       REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
@@ -1347,7 +1347,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
            "vertex version code");
       RSS(ref_export_meshb_next_position(file, version, next_position),
           "next p");
-      ncell_int = ncell;
+      ncell_int = (REF_INT)ncell;
       REIS(1, fwrite(&(ncell_int), sizeof(int), 1, file), "nnode");
     }
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
@@ -1387,7 +1387,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
          "n");
     REIS(ref_geom_cad_data_size(ref_geom),
          fwrite(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-                ref_geom_cad_data_size(ref_geom), file),
+                (size_t)ref_geom_cad_data_size(ref_geom), file),
          "node");
     REIS(next_position, ftell(file), "cad_model inconsistent");
   }

@@ -395,8 +395,9 @@ static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
     nread = 0;
     while (nread < ncell) {
       chunk = MIN(max_chunk, ncell - nread);
-      REIS((size_t)(node_per * chunk),
-           fread(c2n, sizeof(REF_INT), node_per * chunk, file), "c2n");
+      REIS((node_per * chunk),
+           fread(c2n, sizeof(REF_INT), (size_t)(node_per * chunk), file),
+           "c2n");
       for (cell = 0; cell < chunk; cell++) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = c2n[node + node_per * cell];
@@ -427,7 +428,7 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
     nread = 0;
     while (nread < ncell) {
       chunk = MIN(max_chunk, ncell - nread);
-      REIS((size_t)(chunk), fread(tag, sizeof(REF_INT), chunk, file), "tags");
+      REIS(chunk, fread(tag, sizeof(REF_INT), (size_t)chunk, file), "tags");
       for (cell = 0; cell < chunk; cell++) {
         if (swap) SWAP_INT(tag[cell]);
         ref_cell_c2n(ref_cell, node_per, nread + cell) = tag[cell];
@@ -481,7 +482,7 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   nread = 0;
   while (nread < nnode) {
     chunk = MIN(max_chunk, nnode - nread);
-    REIS((size_t)(3 * chunk), fread(xyz, sizeof(REF_DBL), 3 * chunk, file),
+    REIS(3 * chunk, fread(xyz, sizeof(REF_DBL), (size_t)(3 * chunk), file),
          "xyz");
     if (swap)
       for (ixyz = 0; ixyz < 3 * chunk; ixyz++) SWAP_DBL(xyz[ixyz]);
@@ -1568,7 +1569,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                REF_BYTE);
     REIS(ref_geom_cad_data_size(ref_geom),
          fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-               ref_geom_cad_data_size(ref_geom), file),
+               (size_t)ref_geom_cad_data_size(ref_geom), file),
          "cad_data");
     REIS(next_position, ftello(file), "end location");
   }

@@ -27,7 +27,7 @@ BEGIN_C_DECLORATION
 #define ref_malloc(ptr, n, ptr_type)                            \
   {                                                             \
     RAS((n) >= 0, "malloc " #ptr " of " #ptr_type " negative"); \
-    (ptr) = (ptr_type *)malloc((n) * sizeof(ptr_type));         \
+    (ptr) = (ptr_type *)malloc((size_t)(n) * sizeof(ptr_type)); \
     RNS((ptr), "malloc " #ptr " of " #ptr_type " NULL");        \
   }
 
@@ -36,23 +36,24 @@ BEGIN_C_DECLORATION
     REF_INT ref_malloc_init_i;                                                \
     ref_malloc(ptr, n, ptr_type);                                             \
     for (ref_malloc_init_i = 0; ref_malloc_init_i < (n); ref_malloc_init_i++) \
-      (ptr)[ref_malloc_init_i] = (initial_value);                             \
+      (ptr)[ref_malloc_init_i] = (ptr_type)(initial_value);                   \
   }
 
 /* realloc of size zero with return NULL */
 
-#define ref_realloc(ptr, n, ptr_type)                                        \
-  {                                                                          \
-    if (REF_FALSE)                                                           \
-      printf("%d: %s: realloc n int %d uLong %lu size_of %lu = %lu\n",       \
-             __LINE__, __func__, (REF_INT)(n), (unsigned long)(n),           \
-             sizeof(ptr_type), (n) * sizeof(ptr_type));                      \
-    fflush(stdout);                                                          \
-    if (0 < (n)) (ptr) = (ptr_type *)realloc((ptr), (n) * sizeof(ptr_type)); \
-    RNB((ptr), "realloc " #ptr " NULL",                                      \
-        printf("failed to realloc n int %d uLong %lu size_of %lu = %lu\n",   \
-               (REF_INT)(n), (unsigned long)(n), sizeof(ptr_type),           \
-               (n) * sizeof(ptr_type)));                                     \
+#define ref_realloc(ptr, n, ptr_type)                                      \
+  {                                                                        \
+    if (REF_FALSE)                                                         \
+      printf("%d: %s: realloc n int %d uLong %lu size_of %lu = %lu\n",     \
+             __LINE__, __func__, (REF_INT)(n), (unsigned long)(n),         \
+             sizeof(ptr_type), (size_t)(n) * sizeof(ptr_type));            \
+    fflush(stdout);                                                        \
+    if (0 < (n))                                                           \
+      (ptr) = (ptr_type *)realloc((ptr), (size_t)(n) * sizeof(ptr_type));  \
+    RNB((ptr), "realloc " #ptr " NULL",                                    \
+        printf("failed to realloc n int %d uLong %lu size_of %lu = %lu\n", \
+               (REF_INT)(n), (unsigned long)(n), sizeof(ptr_type),         \
+               (size_t)(n) * sizeof(ptr_type)));                           \
   }
 
 #define ref_realloc_init(ptr, from, to, ptr_type, initial_value) \

@@ -24,6 +24,7 @@
 
 #include "ref_export.h"
 #include "ref_face.h"
+#include "ref_malloc.h"
 #include "ref_mpi.h"
 
 REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
@@ -162,8 +163,7 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
 
   RSS(ref_face_create(&ref_face, ref_grid), "face");
 
-  hits = (REF_INT *)malloc(ref_face_n(ref_face) * sizeof(REF_INT));
-  RNS(hits, "malloc hits NULL");
+  ref_malloc(hits, ref_face_n(ref_face), REF_INT);
 
   for (face = 0; face < ref_face_n(ref_face); face++) hits[face] = 0;
 

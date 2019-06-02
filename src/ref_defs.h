@@ -157,17 +157,17 @@ typedef int REF_STATUS;
     }                                                                    \
   }
 
-#define REIS(a, b, msg)                                                  \
-  {                                                                      \
-    REF_INT ref_private_status_reis_ai, ref_private_status_reis_bi;      \
-    ref_private_status_reis_ai = (a);                                    \
-    ref_private_status_reis_bi = (b);                                    \
-    if (ref_private_status_reis_ai != ref_private_status_reis_bi) {      \
-      printf("%s: %d: %s: %s\nexpected %d was %d\n", __FILE__, __LINE__, \
-             __func__, (msg), ref_private_status_reis_ai,                \
-             ref_private_status_reis_bi);                                \
-      return REF_FAILURE;                                                \
-    }                                                                    \
+#define REIS(a, b, msg)                                                    \
+  {                                                                        \
+    REF_LONG ref_private_status_reis_ai, ref_private_status_reis_bi;       \
+    ref_private_status_reis_ai = (REF_LONG)(a);                            \
+    ref_private_status_reis_bi = (REF_LONG)(b);                            \
+    if (ref_private_status_reis_ai != ref_private_status_reis_bi) {        \
+      printf("%s: %d: %s: %s\nexpected %ld was %ld\n", __FILE__, __LINE__, \
+             __func__, (msg), ref_private_status_reis_ai,                  \
+             ref_private_status_reis_bi);                                  \
+      return REF_FAILURE;                                                  \
+    }                                                                      \
   }
 
 #define RGDS(a, b, msg)                                                      \
