@@ -55,7 +55,12 @@ typedef int REF_INT;
 #define REF_INT_MIN (INT_MIN)
 
 typedef long REF_LONG;
+
+
 typedef long REF_GLOB;
+#define REF_GLOB_TYPE (2)
+#define REF_GLOB_FMT "%ld"
+
 
 typedef unsigned int REF_UINT;
 typedef unsigned long REF_ULONG;
