@@ -77,15 +77,15 @@ REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents) {
 
 REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
                              const char *context) {
-  printf(
-      "%d: %d id %d mode %d home %d node %d part %d seed %d global %f %f %f "
-      "%s\n",
-      ref_mpi_rank(ref_agents->ref_mpi), id,
-      (int)ref_agent_mode(ref_agents, id), ref_agent_home(ref_agents, id),
-      ref_agent_node(ref_agents, id), ref_agent_part(ref_agents, id),
-      ref_agent_seed(ref_agents, id), ref_agent_global(ref_agents, id),
-      ref_agent_xyz(ref_agents, 1, id), ref_agent_xyz(ref_agents, 1, id),
-      ref_agent_xyz(ref_agents, 2, id), context);
+  printf("%d: %d id %d mode %d home %d node %d part %d seed " REF_GLOB_FMT
+         " global %f %f %f "
+         "%s\n",
+         ref_mpi_rank(ref_agents->ref_mpi), id,
+         (int)ref_agent_mode(ref_agents, id), ref_agent_home(ref_agents, id),
+         ref_agent_node(ref_agents, id), ref_agent_part(ref_agents, id),
+         ref_agent_seed(ref_agents, id), ref_agent_global(ref_agents, id),
+         ref_agent_xyz(ref_agents, 1, id), ref_agent_xyz(ref_agents, 1, id),
+         ref_agent_xyz(ref_agents, 2, id), context);
   return REF_SUCCESS;
 }
 
@@ -261,8 +261,9 @@ REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id, REF_INT *dest) {
 REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
   REF_MPI ref_mpi = ref_agents->ref_mpi;
   REF_INT i, id, nsend, nrecv, dest, rec;
-  REF_INT n_ints, n_dbls;
+  REF_INT n_ints, n_globs, n_dbls;
   REF_INT *destination, *send_int, *recv_int;
+  REF_GLOB *send_glob, *recv_glob;
   REF_DBL *send_dbl, *recv_dbl;
   nsend = 0;
   each_active_ref_agent(ref_agents, id) {
@@ -271,10 +272,12 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
       nsend++;
     }
   }
-  n_ints = 7;
+  n_ints = 6;
+  n_globs = 1;
   n_dbls = 7;
   ref_malloc_init(destination, nsend, REF_INT, REF_EMPTY);
   ref_malloc_init(send_int, nsend * n_ints, REF_INT, REF_EMPTY);
+  ref_malloc_init(send_glob, nsend * n_globs, REF_GLOB, REF_EMPTY);
   ref_malloc_init(send_dbl, nsend * n_dbls, REF_DBL, 0.0);
   nsend = 0;
   each_active_ref_agent(ref_agents, id) {
@@ -286,8 +289,9 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
       send_int[2 + nsend * n_ints] = ref_agent_node(ref_agents, id);
       send_int[3 + nsend * n_ints] = ref_agent_part(ref_agents, id);
       send_int[4 + nsend * n_ints] = ref_agent_seed(ref_agents, id);
-      send_int[5 + nsend * n_ints] = ref_agent_global(ref_agents, id);
-      send_int[6 + nsend * n_ints] = ref_agent_step(ref_agents, id);
+      send_int[5 + nsend * n_ints] = ref_agent_step(ref_agents, id);
+
+      send_glob[0 + nsend * n_globs] = ref_agent_global(ref_agents, id);
 
       for (i = 0; i < 3; i++)
         send_dbl[i + nsend * n_dbls] = ref_agent_xyz(ref_agents, i, id);
@@ -303,10 +307,14 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)send_int, n_ints, nsend,
                         (void **)(&recv_int), &nrecv, REF_INT_TYPE),
       "is");
+  RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)send_glob, n_globs, nsend,
+                        (void **)(&recv_glob), &nrecv, REF_GLOB_TYPE),
+      "is");
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)send_dbl, n_dbls, nsend,
                         (void **)(&recv_dbl), &nrecv, REF_DBL_TYPE),
       "ds");
   ref_free(send_dbl);
+  ref_free(send_glob);
   ref_free(send_int);
   ref_free(destination);
 
@@ -317,8 +325,9 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
     ref_agent_node(ref_agents, id) = recv_int[2 + rec * n_ints];
     ref_agent_part(ref_agents, id) = recv_int[3 + rec * n_ints];
     ref_agent_seed(ref_agents, id) = recv_int[4 + rec * n_ints];
-    ref_agent_global(ref_agents, id) = recv_int[5 + rec * n_ints];
-    ref_agent_step(ref_agents, id) = recv_int[6 + rec * n_ints];
+    ref_agent_step(ref_agents, id) = recv_int[5 + rec * n_ints];
+
+    ref_agent_global(ref_agents, id) = recv_glob[0 + rec * n_globs];
 
     for (i = 0; i < 3; i++)
       ref_agent_xyz(ref_agents, i, id) = recv_dbl[i + rec * n_dbls];
@@ -327,6 +336,7 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
   }
 
   ref_free(recv_dbl);
+  ref_free(recv_glob);
   ref_free(recv_int);
 
   return REF_SUCCESS;

@@ -53,7 +53,7 @@ struct REF_AGENT_STRUCT {
   REF_INT seed;    /* cell guess when WALKING or BOUNDARY
                     * empty when HOP_PART
                     * from cell when ENCLOSE or SUGGESTION */
-  REF_INT global;  /* global node guess when HOP_PART
+  REF_GLOB global; /* global node guess when HOP_PART
                     * global node that needs an interpolant when SUGGESTION
                     * empty otherwise */
   REF_INT step;    /* number of cells visited */
