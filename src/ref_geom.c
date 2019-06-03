@@ -3739,15 +3739,17 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_nnode, *b_nnode;
   REF_INT a_nnode_total, b_nnode_total;
-  REF_INT *a_global, *b_global;
+  REF_GLOB *a_global, *b_global;
   REF_INT *a_part, *b_part;
   REF_INT *a_ngeom, *b_ngeom;
   REF_INT a_ngeom_total, b_ngeom_total;
-  REF_INT *a_descr, *b_descr;
+  REF_GLOB *a_descr, *b_descr;
+  REF_GLOB global;
   REF_DBL *a_param, *b_param;
   REF_INT part, node, degree;
   REF_INT *a_next, *b_next;
   REF_INT local, item, geom, i;
+  REF_INT descr[REF_GEOM_DESCR_SIZE];
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -3769,12 +3771,12 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
 
   a_nnode_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_nnode_total += a_nnode[part];
-  ref_malloc(a_global, a_nnode_total, REF_INT);
+  ref_malloc(a_global, a_nnode_total, REF_GLOB);
   ref_malloc(a_part, a_nnode_total, REF_INT);
 
   b_nnode_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_nnode_total += b_nnode[part];
-  ref_malloc(b_global, b_nnode_total, REF_INT);
+  ref_malloc(b_global, b_nnode_total, REF_GLOB);
   ref_malloc(b_part, b_nnode_total, REF_INT);
 
   a_next[0] = 0;
@@ -3792,7 +3794,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_nnode, b_global, b_nnode, 1,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv global");
   RSS(ref_mpi_alltoallv(ref_mpi, a_part, a_nnode, b_part, b_nnode, 1,
                         REF_INT_TYPE),
@@ -3812,12 +3814,12 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
 
   a_ngeom_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_ngeom_total += a_ngeom[part];
-  ref_malloc(a_descr, REF_GEOM_DESCR_SIZE * a_ngeom_total, REF_INT);
+  ref_malloc(a_descr, REF_GEOM_DESCR_SIZE * a_ngeom_total, REF_GLOB);
   ref_malloc(a_param, 2 * a_ngeom_total, REF_DBL);
 
   b_ngeom_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_ngeom_total += b_ngeom[part];
-  ref_malloc(b_descr, REF_GEOM_DESCR_SIZE * b_ngeom_total, REF_INT);
+  ref_malloc(b_descr, REF_GEOM_DESCR_SIZE * b_ngeom_total, REF_GLOB);
   ref_malloc(b_param, 2 * b_ngeom_total, REF_DBL);
 
   b_next[0] = 0;
@@ -3831,7 +3833,7 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
     each_ref_geom_having_node(ref_geom, local, item, geom) {
       each_ref_descr(ref_geom, i) {
         b_descr[i + REF_GEOM_DESCR_SIZE * b_next[part]] =
-            ref_geom_descr(ref_geom, i, geom);
+            (REF_GLOB)ref_geom_descr(ref_geom, i, geom);
       }
       b_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * b_next[part]] =
           ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
@@ -3842,19 +3844,20 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, b_descr, b_ngeom, a_descr, a_ngeom,
-                        REF_GEOM_DESCR_SIZE, REF_INT_TYPE),
+                        REF_GEOM_DESCR_SIZE, REF_GLOB_TYPE),
       "alltoallv descr");
   RSS(ref_mpi_alltoallv(ref_mpi, b_param, b_ngeom, a_param, a_ngeom, 2,
                         REF_DBL_TYPE),
       "alltoallv param");
 
   for (geom = 0; geom < a_ngeom_total; geom++) {
-    node = a_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
-    RSS(ref_node_local(ref_node, node, &local), "g2l");
-    a_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom] = local;
-    RSS(ref_geom_add_with_descr(ref_geom,
-                                &(a_descr[REF_GEOM_DESCR_SIZE * geom]),
-                                &(a_param[2 * geom])),
+    each_ref_descr(ref_geom, i) {
+      descr[i] = (REF_INT)a_descr[i + REF_GEOM_DESCR_SIZE * geom];
+    }
+    global = a_descr[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
+    RSS(ref_node_local(ref_node, global, &local), "g2l");
+    descr[REF_GEOM_DESCR_NODE] = local;
+    RSS(ref_geom_add_with_descr(ref_geom, descr, &(a_param[2 * geom])),
         "add ghost");
   }
 
