@@ -418,7 +418,6 @@ fi
 AC_CONFIG_FILES( \
 	   Makefile \
 	   src/Makefile \
-	   one/Makefile \
 	   util/Makefile
 	   )
 AC_CONFIG_FILES( \

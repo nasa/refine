@@ -2,7 +2,7 @@
 README: $(srcdir)/README.md
 	cp $(srcdir)/README.md README
 
-SUBDIRS = src one util
+SUBDIRS = src util
 SUBDIRS += acceptance
 
 AUTOMAKE_OPTIONS = 1.7
