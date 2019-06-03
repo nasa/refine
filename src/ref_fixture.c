@@ -508,10 +508,10 @@ REF_STATUS ref_fixture_pri_tet_cap_grid(REF_GRID *ref_grid_ptr,
 REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB global[REF_CELL_MAX_SIZE_PER];
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
-  REF_INT nnodesg = 12;
+  REF_GLOB nnodesg = 12;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
   ref_grid = *ref_grid_ptr;
@@ -620,7 +620,7 @@ REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
     RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
     RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
     RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
+    local[4] = (REF_INT)global[4];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
   }
 
@@ -641,7 +641,7 @@ REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
     RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
     RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
     RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
+    local[4] = (REF_INT)global[4];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
   }
 
@@ -662,7 +662,7 @@ REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
     RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
     RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
     RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
+    local[4] = (REF_INT)global[4];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
   }
 
