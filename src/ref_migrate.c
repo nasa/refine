@@ -68,7 +68,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
 
   ref_migrate_grid(ref_migrate) = ref_grid;
 
-  RSS(ref_adj_create(&(ref_migrate_parent_global(ref_migrate))), "make adj");
+  RSS(ref_adj_create(&(ref_migrate_parent_local(ref_migrate))), "make adj");
   RSS(ref_adj_create(&(ref_migrate_parent_part(ref_migrate))), "make adj");
   RSS(ref_adj_create(&(ref_migrate_conn(ref_migrate))), "make adj");
 
@@ -83,8 +83,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
       ref_migrate_global(ref_migrate, node) = ref_node_global(ref_node, node);
-      RSS(ref_adj_add(ref_migrate_parent_global(ref_migrate), node,
-                      ref_node_global(ref_node, node)),
+      RSS(ref_adj_add(ref_migrate_parent_local(ref_migrate), node, node),
           "add");
       RSS(ref_adj_add(ref_migrate_parent_part(ref_migrate), node,
                       ref_node_part(ref_node, node)),
@@ -126,7 +125,7 @@ REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
 
   RSS(ref_adj_free(ref_migrate_conn(ref_migrate)), "free adj");
   RSS(ref_adj_free(ref_migrate_parent_part(ref_migrate)), "free adj");
-  RSS(ref_adj_free(ref_migrate_parent_global(ref_migrate)), "free adj");
+  RSS(ref_adj_free(ref_migrate_parent_local(ref_migrate)), "free adj");
 
   ref_free(ref_migrate);
 
@@ -135,13 +134,15 @@ REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
 
 REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate) {
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
-  REF_INT node, item, global, part;
+  REF_INT node, item, local, part;
+  REF_INT global;
 
   each_ref_migrate_node(ref_migrate, node) {
     printf(" %2d : %3d :", ref_mpi_rank(ref_node_mpi(ref_node)),
            ref_node_global(ref_node, node));
-    each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
-                                    node, item, global) {
+    each_ref_adj_node_item_with_ref(ref_migrate_parent_local(ref_migrate), node,
+                                    item, local) {
+      global = ref_migrate_global(ref_migrate, local);
       part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
       printf(" %3d+%d", global, part);
     }
@@ -154,7 +155,8 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
                                              REF_INT keep, REF_INT lose) {
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_ADJ conn_adj = ref_migrate_conn(ref_migrate);
-  REF_INT item, global;
+  REF_INT item, local;
+  REF_INT global;
   REF_INT from_node;
 
   /* not working for general agglomeration, ghost lose? */
@@ -165,8 +167,9 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   ref_migrate_global(ref_migrate, lose) = REF_EMPTY;
 
   /* skip if the lose node has been agglomerated */
-  each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate), keep,
-                                  item, global) {
+  each_ref_adj_node_item_with_ref(ref_migrate_parent_local(ref_migrate), keep,
+                                  item, local) {
+    global = ref_migrate_global(ref_migrate, local);
     if (global == ref_node_global(ref_node, lose)) {
       return REF_SUCCESS;
     }
@@ -194,9 +197,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   ref_migrate_xyz(ref_migrate, 1, keep) = 0.5;
   ref_migrate_weight(ref_migrate, keep) = 2.0;
   /* collect age in general case */
-  RSS(ref_adj_add(ref_migrate_parent_global(ref_migrate), keep,
-                  ref_node_global(ref_node, lose)),
-      "add");
+  RSS(ref_adj_add(ref_migrate_parent_local(ref_migrate), keep, lose), "add");
   RSS(ref_adj_add(ref_migrate_parent_part(ref_migrate), keep,
                   ref_node_part(ref_node, lose)),
       "add");
@@ -398,7 +399,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 
   float ver;
 
-  REF_INT node, item, local, global, part;
+  REF_INT node, item, local, part;
 
   REF_INT *migrate_part;
   REF_INT *node_part;
@@ -485,13 +486,12 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   each_ref_migrate_node(ref_migrate, node) {
-    each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
-                                    node, item, global) {
+    each_ref_adj_node_item_with_ref(ref_migrate_parent_local(ref_migrate), node,
+                                    item, local) {
       part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
       if (ref_mpi_rank(ref_mpi) != part) {
         a_size[part]++;
       } else {
-        RSS(ref_node_local(ref_node, global, &local), "g2l");
         node_part[local] = migrate_part[node];
       }
     }
@@ -515,10 +515,11 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   }
 
   each_ref_migrate_node(ref_migrate, node) {
-    each_ref_adj_node_item_with_ref(ref_migrate_parent_global(ref_migrate),
-                                    node, item, global) {
+    each_ref_adj_node_item_with_ref(ref_migrate_parent_local(ref_migrate), node,
+                                    item, local) {
       part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
       if (ref_mpi_rank(ref_mpi) != part) {
+        global = ref_migrate_global(ref_migrate, local);
         a_parts[0 + 2 * a_next[part]] = global;
         a_parts[1 + 2 * a_next[part]] = migrate_part[node];
         a_next[part]++;
