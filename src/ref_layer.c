@@ -135,7 +135,7 @@ REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
     global = (REF_GLOB)local + ref_node_n_global(ref_grid_node(ref_grid));
     RSS(ref_node_add(layer_node, global, &node), "add");
     RSS(ref_layer_normal(ref_layer, ref_grid,
-                         ref_node_global(layer_node, local), norm),
+                         (REF_INT)ref_node_global(layer_node, local), norm),
         "normal");
     for (i = 0; i < 3; i++)
       ref_node_xyz(layer_node, i, node) =
@@ -326,8 +326,8 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_INT node0, node1;
 
   each_ref_cell_valid_cell_with_nodes(layer_edge, cell, nodes) {
-    node0 = ref_node_global(layer_node, nodes[0]);
-    node1 = ref_node_global(layer_node, nodes[1]);
+    node0 = (REF_INT)ref_node_global(layer_node, nodes[0]);
+    node1 = (REF_INT)ref_node_global(layer_node, nodes[1]);
     RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side), "side?");
     if (has_side) {
       if (ref_layer->verbose) printf("got one\n");
