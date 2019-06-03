@@ -46,13 +46,17 @@ struct REF_AGENT_STRUCT {
   REF_INT previous; /* agent list navigation */
   REF_INT next;
 
-  REF_INT home; /* mpi rank of the to node that needs an interpolant */
-  REF_INT node; /* the to node that needs an interpolant (global for SUGGEST)*/
-  REF_INT part; /* mpi rank of the seed */
-  REF_INT seed; /* cell guess when WALKING or BOUNDARY,
-                 * global node guess when HOP_PART or SUGGESTION
-                 * from cell when ENCLOSE */
-  REF_INT step; /* number of cells visited */
+  REF_INT home;    /* mpi rank of the to node that needs an interpolant */
+  REF_INT node;    /* the local node id that needs an interpolant
+                    * empty, map global when SUGGESTION */
+  REF_INT part;    /* mpi rank of the seed */
+  REF_INT seed;    /* cell guess when WALKING or BOUNDARY
+                    * empty when HOP_PART
+                    * from cell when ENCLOSE or SUGGESTION */
+  REF_INT global;  /* global node guess when HOP_PART
+                    * global node that needs an interpolant when SUGGESTION
+                    * empty otherwise */
+  REF_INT step;    /* number of cells visited */
   REF_DBL xyz[3];  /* the to xyz that needs an interpolant */
   REF_DBL bary[4]; /* the from bary of the from cell when ENCLOSE */
 };
@@ -75,6 +79,7 @@ struct REF_AGENTS_STRUCT {
 #define ref_agent_node(ref_agents, id) ((ref_agents)->agent[(id)].node)
 #define ref_agent_part(ref_agents, id) ((ref_agents)->agent[(id)].part)
 #define ref_agent_seed(ref_agents, id) ((ref_agents)->agent[(id)].seed)
+#define ref_agent_global(ref_agents, id) ((ref_agents)->agent[(id)].global)
 #define ref_agent_step(ref_agents, id) ((ref_agents)->agent[(id)].step)
 
 #define ref_agent_xyz(ref_agents, j, id) ((ref_agents)->agent[(id)].xyz[j])

@@ -381,7 +381,8 @@ static REF_STATUS ref_update_agent_seed(REF_INTERP ref_interp, REF_INT id,
       /* pick at pseudo random */
       node = face_nodes[rand() % 3];
       ref_agent_part(ref_agents, id) = ref_node_part(ref_node, node);
-      ref_agent_seed(ref_agents, id) = ref_node_global(ref_node, node);
+      ref_agent_seed(ref_agents, id) = REF_EMPTY;
+      ref_agent_global(ref_agents, id) = ref_node_global(ref_node, node);
       ref_agent_mode(ref_agents, id) = REF_AGENT_HOP_PART;
       return REF_SUCCESS;
     }
@@ -584,8 +585,9 @@ REF_STATUS ref_interp_push_onto_queue(REF_INTERP ref_interp, REF_INT node) {
                           ref_node_xyz_ptr(ref_node, other), &id),
           "enque");
       ref_agent_mode(ref_agents, id) = REF_AGENT_SUGGESTION;
+      ref_agent_node(ref_agents, id) = REF_EMPTY;
       ref_agent_home(ref_agents, id) = ref_node_part(ref_node, other);
-      ref_agent_node(ref_agents, id) = ref_node_global(ref_node, other);
+      ref_agent_global(ref_agents, id) = ref_node_global(ref_node, other);
     }
   }
 
@@ -611,80 +613,81 @@ REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
     if (ref_interp->instrument) ref_agents_population(ref_agents, "agent pop");
     sweep++;
 
-    each_active_ref_agent(
-        ref_agents,
-        id) if (REF_AGENT_WALKING == ref_agent_mode(ref_agents, id) &&
-                ref_agent_part(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
-      RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+    each_active_ref_agent(ref_agents, id) {
+      if (REF_AGENT_WALKING == ref_agent_mode(ref_agents, id) &&
+          ref_agent_part(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
+        RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+      }
     }
 
     RSS(ref_agents_migrate(ref_agents), "send it");
 
-    each_active_ref_agent(
-        ref_agents,
-        id) if (REF_AGENT_HOP_PART == ref_agent_mode(ref_agents, id) &&
-                ref_agent_part(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
-      RSS(ref_node_local(from_node, ref_agent_seed(ref_agents, id), &node),
-          "localize");
-      ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
-      /* pick best from orbit? */
-      ref_agent_seed(ref_agents, id) = ref_cell_first_with(from_cell, node);
-    }
-
-    each_active_ref_agent(
-        ref_agents,
-        id) if (REF_AGENT_SUGGESTION == ref_agent_mode(ref_agents, id) &&
-                ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
-      RSS(ref_node_local(to_node, ref_agent_node(ref_agents, id), &node),
-          "localize");
-      if (REF_EMPTY != ref_interp->cell[node] ||
-          ref_interp->agent_hired[node]) {
-        RSS(ref_agents_remove(ref_interp->ref_agents, id), "already got one");
-      } else {
-        ref_agent_mode(ref_interp->ref_agents, id) = REF_AGENT_WALKING;
-        ref_agent_node(ref_interp->ref_agents, id) = node;
-        ref_interp->agent_hired[node] = REF_TRUE;
+    each_active_ref_agent(ref_agents, id) {
+      if (REF_AGENT_HOP_PART == ref_agent_mode(ref_agents, id) &&
+          ref_agent_part(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
+        RSS(ref_node_local(from_node, ref_agent_global(ref_agents, id), &node),
+            "localize");
+        ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
+        /* pick best from orbit? */
+        ref_agent_seed(ref_agents, id) = ref_cell_first_with(from_cell, node);
       }
     }
 
-    each_active_ref_agent(
-        ref_agents,
-        id) if ((REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents, id) ||
-                 REF_AGENT_TERMINATED == ref_agent_mode(ref_agents, id)) &&
-                ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
-      node = ref_agent_node(ref_agents, id);
-      RAS(ref_node_valid(to_node, node), "not vaild");
-      RAS(ref_node_owned(to_node, node), "ghost, not owned");
-      REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
-      RAS(ref_interp->agent_hired[node], "should have an agent");
-      if (REF_AGENT_TERMINATED == ref_agent_mode(ref_agents, id)) {
+    each_active_ref_agent(ref_agents, id) {
+      if (REF_AGENT_SUGGESTION == ref_agent_mode(ref_agents, id) &&
+          ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
+        RSS(ref_node_local(to_node, ref_agent_global(ref_agents, id), &node),
+            "localize");
+        if (REF_EMPTY != ref_interp->cell[node] ||
+            ref_interp->agent_hired[node]) {
+          RSS(ref_agents_remove(ref_interp->ref_agents, id), "already got one");
+        } else {
+          ref_agent_mode(ref_interp->ref_agents, id) = REF_AGENT_WALKING;
+          ref_agent_node(ref_interp->ref_agents, id) = node;
+          ref_agent_global(ref_interp->ref_agents, id) = REF_EMPTY;
+          ref_interp->agent_hired[node] = REF_TRUE;
+        }
+      }
+    }
+
+    each_active_ref_agent(ref_agents, id) {
+      if ((REF_AGENT_AT_BOUNDARY == ref_agent_mode(ref_agents, id) ||
+           REF_AGENT_TERMINATED == ref_agent_mode(ref_agents, id)) &&
+          ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
+        node = ref_agent_node(ref_agents, id);
+        RAS(ref_node_valid(to_node, node), "not vaild");
+        RAS(ref_node_owned(to_node, node), "ghost, not owned");
+        REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
+        RAS(ref_interp->agent_hired[node], "should have an agent");
+        if (REF_AGENT_TERMINATED == ref_agent_mode(ref_agents, id)) {
+          (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
+          (ref_interp->n_terminated)++;
+        }
+        ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+        RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      }
+    }
+
+    each_active_ref_agent(ref_agents, id) {
+      if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id) &&
+          ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
+        node = ref_agent_node(ref_agents, id);
+        RAS(ref_node_valid(to_node, node), "not vaild");
+        RAS(ref_node_owned(to_node, node), "ghost, not owned");
+        REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
+        RAS(ref_interp->agent_hired[node], "should have an agent");
+
+        ref_interp->cell[node] = ref_agent_seed(ref_agents, id);
+        ref_interp->part[node] = ref_agent_part(ref_agents, id);
+        for (i = 0; i < 4; i++)
+          ref_interp->bary[i + 4 * node] = ref_agent_bary(ref_agents, i, id);
         (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
-        (ref_interp->n_terminated)++;
+        (ref_interp->n_walk)++;
+
+        ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
+        RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+        RSS(ref_interp_push_onto_queue(ref_interp, node), "push");
       }
-      ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
-    }
-
-    each_active_ref_agent(
-        ref_agents,
-        id) if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id) &&
-                ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
-      node = ref_agent_node(ref_agents, id);
-      RAS(ref_node_valid(to_node, node), "not vaild");
-      RAS(ref_node_owned(to_node, node), "ghost, not owned");
-      REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
-      RAS(ref_interp->agent_hired[node], "should have an agent");
-
-      ref_interp->cell[node] = ref_agent_seed(ref_agents, id);
-      ref_interp->part[node] = ref_agent_part(ref_agents, id);
-      for (i = 0; i < 4; i++)
-        ref_interp->bary[i + 4 * node] = ref_agent_bary(ref_agents, i, id);
-      (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
-      (ref_interp->n_walk)++;
-
-      ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
-      RSS(ref_interp_push_onto_queue(ref_interp, node), "push");
     }
 
     n_agents = ref_agents_n(ref_agents);

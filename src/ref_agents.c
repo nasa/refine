@@ -77,13 +77,15 @@ REF_STATUS ref_agents_inspect(REF_AGENTS ref_agents) {
 
 REF_STATUS ref_agents_tattle(REF_AGENTS ref_agents, REF_INT id,
                              const char *context) {
-  printf("%d: %d id %d mode %d home %d node %d part %d seed %f %f %f %s\n",
-         ref_mpi_rank(ref_agents->ref_mpi), id,
-         (int)ref_agent_mode(ref_agents, id), ref_agent_home(ref_agents, id),
-         ref_agent_node(ref_agents, id), ref_agent_part(ref_agents, id),
-         ref_agent_seed(ref_agents, id), ref_agent_xyz(ref_agents, 1, id),
-         ref_agent_xyz(ref_agents, 1, id), ref_agent_xyz(ref_agents, 2, id),
-         context);
+  printf(
+      "%d: %d id %d mode %d home %d node %d part %d seed %d global %f %f %f "
+      "%s\n",
+      ref_mpi_rank(ref_agents->ref_mpi), id,
+      (int)ref_agent_mode(ref_agents, id), ref_agent_home(ref_agents, id),
+      ref_agent_node(ref_agents, id), ref_agent_part(ref_agents, id),
+      ref_agent_seed(ref_agents, id), ref_agent_global(ref_agents, id),
+      ref_agent_xyz(ref_agents, 1, id), ref_agent_xyz(ref_agents, 1, id),
+      ref_agent_xyz(ref_agents, 2, id), context);
   return REF_SUCCESS;
 }
 
@@ -148,6 +150,7 @@ REF_STATUS ref_agents_restart(REF_AGENTS ref_agents, REF_INT part, REF_INT seed,
   ref_agent_mode(ref_agents, id) = REF_AGENT_WALKING;
   ref_agent_part(ref_agents, id) = part;
   ref_agent_seed(ref_agents, id) = seed;
+  ref_agent_global(ref_agents, id) = REF_EMPTY;
   ref_agent_step(ref_agents, id) = 0;
 
   return REF_SUCCESS;
@@ -165,6 +168,7 @@ REF_STATUS ref_agents_push(REF_AGENTS ref_agents, REF_INT node, REF_INT part,
   ref_agent_node(ref_agents, id) = node;
   ref_agent_part(ref_agents, id) = part;
   ref_agent_seed(ref_agents, id) = seed;
+  ref_agent_global(ref_agents, id) = REF_EMPTY;
   ref_agent_step(ref_agents, id) = 0;
   for (i = 0; i < 3; i++) ref_agent_xyz(ref_agents, i, id) = xyz[i];
 
@@ -267,7 +271,7 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
       nsend++;
     }
   }
-  n_ints = 6;
+  n_ints = 7;
   n_dbls = 7;
   ref_malloc_init(destination, nsend, REF_INT, REF_EMPTY);
   ref_malloc_init(send_int, nsend * n_ints, REF_INT, REF_EMPTY);
@@ -282,7 +286,8 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
       send_int[2 + nsend * n_ints] = ref_agent_node(ref_agents, id);
       send_int[3 + nsend * n_ints] = ref_agent_part(ref_agents, id);
       send_int[4 + nsend * n_ints] = ref_agent_seed(ref_agents, id);
-      send_int[5 + nsend * n_ints] = ref_agent_step(ref_agents, id);
+      send_int[5 + nsend * n_ints] = ref_agent_global(ref_agents, id);
+      send_int[6 + nsend * n_ints] = ref_agent_step(ref_agents, id);
 
       for (i = 0; i < 3; i++)
         send_dbl[i + nsend * n_dbls] = ref_agent_xyz(ref_agents, i, id);
@@ -312,7 +317,8 @@ REF_STATUS ref_agents_migrate(REF_AGENTS ref_agents) {
     ref_agent_node(ref_agents, id) = recv_int[2 + rec * n_ints];
     ref_agent_part(ref_agents, id) = recv_int[3 + rec * n_ints];
     ref_agent_seed(ref_agents, id) = recv_int[4 + rec * n_ints];
-    ref_agent_step(ref_agents, id) = recv_int[5 + rec * n_ints];
+    ref_agent_global(ref_agents, id) = recv_int[5 + rec * n_ints];
+    ref_agent_step(ref_agents, id) = recv_int[6 + rec * n_ints];
 
     for (i = 0; i < 3; i++)
       ref_agent_xyz(ref_agents, i, id) = recv_dbl[i + rec * n_dbls];
