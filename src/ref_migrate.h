@@ -40,7 +40,7 @@ BEGIN_C_DECLORATION
 
 struct REF_MIGRATE_STRUCT {
   REF_GRID grid;
-  REF_ADJ parent_global;
+  REF_ADJ parent_local;
   REF_ADJ parent_part;
   REF_ADJ conn;
   REF_INT max;
@@ -51,7 +51,7 @@ struct REF_MIGRATE_STRUCT {
 };
 
 #define ref_migrate_grid(ref_migrate) ((ref_migrate)->grid)
-#define ref_migrate_parent_global(ref_migrate) ((ref_migrate)->parent_global)
+#define ref_migrate_parent_local(ref_migrate) ((ref_migrate)->parent_local)
 #define ref_migrate_parent_part(ref_migrate) ((ref_migrate)->parent_part)
 #define ref_migrate_conn(ref_migrate) ((ref_migrate)->conn)
 
