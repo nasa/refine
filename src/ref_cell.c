@@ -537,15 +537,15 @@ REF_STATUS ref_cell_add(REF_CELL ref_cell, REF_INT *nodes, REF_INT *new_cell) {
 }
 
 REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
-                                    REF_INT n, REF_INT *c2n, REF_INT *part,
+                                    REF_INT n, REF_GLOB *c2n, REF_INT *part,
                                     REF_INT exclude_part_id) {
-  REF_INT *global;
+  REF_GLOB *global;
   REF_INT nnode;
   REF_INT node, cell;
   REF_INT local, local_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
 
-  ref_malloc(global, ref_cell_node_per(ref_cell) * n, REF_INT);
+  ref_malloc(global, ref_cell_node_per(ref_cell) * n, REF_GLOB);
 
   nnode = 0;
   for (cell = 0; cell < n; cell++)
@@ -570,7 +570,7 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
     }
     if (ref_cell_last_node_is_an_id(ref_cell))
       local_nodes[ref_cell_size_per(ref_cell) - 1] =
-          c2n[(ref_cell_size_per(ref_cell) - 1) +
+	(REF_INT)c2n[(ref_cell_size_per(ref_cell) - 1) +
               ref_cell_size_per(ref_cell) * cell];
 
     RXS(ref_cell_with(ref_cell, local_nodes, &new_cell), REF_NOT_FOUND,
