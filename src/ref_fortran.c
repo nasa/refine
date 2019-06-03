@@ -42,7 +42,7 @@ REF_BOOL ref_fortran_allow_screen_output = REF_TRUE;
 
 REF_STATUS REF_FORT_(ref_fortran_init,
                      REF_FORTRAN_INIT)(REF_INT *nnodes, REF_INT *nnodesg,
-                                       REF_INT *l2g, REF_INT *part,
+                                       REF_GLOB *l2g, REF_INT *part,
                                        REF_INT *partition, REF_DBL *x,
                                        REF_DBL *y, REF_DBL *z) {
   REF_NODE ref_node;
@@ -213,7 +213,7 @@ REF_STATUS REF_FORT_(ref_fortran_import_ratio,
 
 REF_STATUS REF_FORT_(ref_fortran_size_node,
                      REF_FORTRAN_SIZE_NODE)(REF_INT *nnodes0, REF_INT *nnodes,
-                                            REF_INT *nnodesg) {
+                                            REF_GLOB *nnodesg) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
 
@@ -232,7 +232,7 @@ REF_STATUS REF_FORT_(ref_fortran_size_node,
 }
 
 REF_STATUS REF_FORT_(ref_fortran_node,
-                     REF_FORTRAN_NODE)(REF_INT *nnodes, REF_INT *l2g,
+                     REF_FORTRAN_NODE)(REF_INT *nnodes, REF_GLOB *l2g,
                                        REF_DBL *x, REF_DBL *y, REF_DBL *z) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT *o2n, *n2o, node;
