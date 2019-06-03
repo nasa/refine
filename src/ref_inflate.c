@@ -86,7 +86,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT ntri, tris[2], nquad, quads[2];
   REF_INT tri_node;
-  REF_INT *o2n, *o2g, o2n_max;
+  REF_INT *o2n, o2n_max;
+  REF_GLOB *o2g;
   REF_GLOB global;
   REF_INT new_node, node;
   REF_INT new_cell;
@@ -188,7 +189,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   /* sync globals */
   RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
-  ref_malloc_init(o2g, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(o2g, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
 
   /* fill ghost node globals */
   for (node = 0; node < o2n_max; node++) {
@@ -196,7 +197,7 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       o2g[node] = ref_node_global(ref_node, o2n[node]);
     }
   }
-  RSS(ref_node_ghost_int(ref_node, o2g, 1), "update ghosts");
+  RSS(ref_node_ghost_glob(ref_node, o2g, 1), "update ghosts");
 
   ref_free(o2n);
   o2n_max = ref_node_max(ref_node);
