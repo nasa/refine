@@ -677,12 +677,13 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_DBL swapped_dbl;
-  REF_INT nnode_written, first, n, i;
-  REF_INT global, local;
+  REF_GLOB nnode_written, first, global;
+  REF_INT n, i;
+  REF_INT local;
   REF_INT id = REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 4 * chunk, REF_DBL);
   ref_malloc(xyzm, 4 * chunk, REF_DBL);
@@ -690,7 +691,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -719,7 +721,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[3 + 4 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[3 + 4 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[3 + 4 * i]);
         }
         swapped_dbl = xyzm[0 + 4 * i];
         if (swap_endian) SWAP_DBL(swapped_dbl);
@@ -744,11 +747,11 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -756,7 +759,8 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -780,7 +784,8 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[6 + 7 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[6 + 7 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[6 + 7 * i]);
         }
         fprintf(file, "%.15e %.15e %.15e %.15e %.15e %.15e \n", xyzm[0 + 7 * i],
                 xyzm[1 + 7 * i], xyzm[2 + 7 * i], xyzm[3 + 7 * i],
@@ -798,8 +803,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
@@ -842,7 +847,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "metric solution");
   }
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -850,7 +855,9 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -874,7 +881,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[6 + 7 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[6 + 7 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[6 + 7 * i]);
         }
         REIS(1, fwrite(&(xyzm[0 + 7 * i]), sizeof(REF_DBL), 1, file), "m11");
         REIS(1, fwrite(&(xyzm[1 + 7 * i]), sizeof(REF_DBL), 1, file), "m12");
@@ -907,8 +915,8 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
@@ -953,7 +961,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     }
   }
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
   ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
@@ -961,7 +969,8 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -988,7 +997,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i,
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
                  xyzm[ldim + (ldim + 1) * i]);
         }
         for (im = 0; im < ldim; im++) {
@@ -1026,7 +1035,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT size_per = ref_cell_size_per(ref_cell);
   REF_INT ncell;
-  REF_INT *c2n;
+  REF_GLOB *c2n;
+  REF_INT c2n_int;
   REF_INT proc;
 
   if (ref_mpi_once(ref_mpi)) {
@@ -1040,11 +1050,10 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cel node");
         } else {
           for (node = 0; node < node_per; node++) {
-            nodes[node] = ref_node_global(ref_node, nodes[node]);
-            nodes[node]++;
-            if (swap_endian) SWAP_INT(nodes[node]);
-            REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file),
-                 "cel node");
+            c2n_int = (REF_INT)ref_node_global(ref_node, nodes[node]);
+            c2n_int++;
+            if (swap_endian) SWAP_INT(c2n_int);
+            REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cel node");
           }
           if (always_id) {
             if (ref_cell_last_node_is_an_id(ref_cell)) {
@@ -1067,34 +1076,28 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
       if (ncell > 0) {
-        ref_malloc(c2n, ncell * size_per, REF_INT);
-        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, proc),
+        ref_malloc(c2n, ncell * size_per, REF_GLOB);
+        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, proc),
             "recv c2n");
         for (cell = 0; cell < ncell; cell++)
           if (faceid_insted_of_c2n) {
             node = node_per;
-            if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-            REIS(1,
-                 fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                        file),
-                 "cell");
+            c2n_int = (REF_INT)c2n[node + size_per * cell];
+            if (swap_endian) SWAP_INT(c2n_int);
+            REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
           } else {
             for (node = 0; node < node_per; node++) {
-              c2n[node + size_per * cell]++;
-              if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-              REIS(1,
-                   fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                          file),
-                   "cell");
+              c2n_int = (REF_INT)c2n[node + size_per * cell];
+              c2n_int++;
+              if (swap_endian) SWAP_INT(c2n_int);
+              REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
             }
             if (always_id) {
               if (ref_cell_last_node_is_an_id(ref_cell)) {
                 node = node_per;
-                if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-                REIS(1,
-                     fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                            file),
-                     "cel node");
+                c2n_int = (REF_INT)c2n[node + size_per * cell];
+                if (swap_endian) SWAP_INT(c2n_int);
+                REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cel node");
               } else {
                 node = REF_EXPORT_MESHB_3D_ID;
                 if (swap_endian) SWAP_INT(node);
@@ -1115,7 +1118,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
     if (ncell > 0) {
-      ref_malloc(c2n, ncell * size_per, REF_INT);
+      ref_malloc(c2n, ncell * size_per, REF_GLOB);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -1125,11 +1128,11 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
             c2n[node + size_per * ncell] =
                 ref_node_global(ref_node, nodes[node]);
           for (node = node_per; node < size_per; node++)
-            c2n[node + size_per * ncell] = nodes[node];
+            c2n[node + size_per * ncell] = (REF_GLOB)nodes[node];
           ncell++;
         }
       }
-      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
+      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, 0),
           "send c2n");
       ref_free(c2n);
     }
@@ -1153,7 +1156,8 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
       if (ref_mpi_rank(ref_mpi) !=
           ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
         continue;
-      node = ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
+      node =
+          (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
       id = ref_geom_id(ref_geom, geom);
       REIS(1, fwrite(&(node), sizeof(int), 1, file), "node");
       REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
@@ -1209,7 +1213,7 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
             ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
           continue;
         node_id[0 + 2 * ngeom] =
-            ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
+            (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
         node_id[1 + 2 * ngeom] = ref_geom_id(ref_geom, geom);
         for (i = 0; i < type; i++)
           param[i + 2 * ngeom] = ref_geom_param(ref_geom, i, geom);
@@ -1418,7 +1422,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  nnode = ref_node_n_global(ref_node);
+  nnode = (REF_INT)ref_node_n_global(ref_node);
 
   RSS(ref_gather_ncell(ref_node, ref_grid_tri(ref_grid), &ntri), "ntri");
   RSS(ref_gather_ncell(ref_node, ref_grid_qua(ref_grid), &nqua), "nqua");
