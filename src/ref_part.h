@@ -62,11 +62,11 @@ BEGIN_C_DECLORATION
    ref_part_n_large_part(total_things, total_parts))
 
 /* part id for a thing */
-#define ref_part_implicit(total_things, total_parts, thing)        \
-  ((thing) / ref_part_large_part_size(total_things, total_parts) < \
-           ref_part_n_large_part(total_things, total_parts)        \
-       ? ref_part_large_implicit(total_things, total_parts, thing) \
-       : ref_part_small_implicit(total_things, total_parts, thing))
+#define ref_part_implicit(total_things, total_parts, thing)                 \
+  (REF_INT)((thing) / ref_part_large_part_size(total_things, total_parts) < \
+                    ref_part_n_large_part(total_things, total_parts)        \
+                ? ref_part_large_implicit(total_things, total_parts, thing) \
+                : ref_part_small_implicit(total_things, total_parts, thing))
 
 REF_STATUS ref_part_by_extension(REF_GRID *ref_grid, REF_MPI ref_mpi,
                                  const char *filename);
