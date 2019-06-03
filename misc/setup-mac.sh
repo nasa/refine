@@ -4,8 +4,7 @@ set -x
 
 ./bootstrap
 
-gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized'
-# refine one can't -Wconversion
+gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wconversion'
 
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-q63yedbi6cfzmqyjkwhwrob3jesy2uge"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
