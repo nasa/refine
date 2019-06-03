@@ -2537,7 +2537,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   char *ele_name = "ref_geom_test.1.ele";
   char command[1024];
   FILE *file;
-  REF_INT nnode, ndim, attr, mark, global;
+  REF_INT nnode, ndim, attr, mark;
+  REF_GLOB global;
   REF_INT ntet, node_per;
   REF_INT node, nnode_surface, item, new_node;
   REF_DBL xyz[3], dist;
@@ -2599,7 +2600,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
     REIS(node, item, "file node index");
     RSS(ref_node_next_global(ref_node, &global), "next global");
     REIS(node, global, "global node index");
-    RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+    RSS(ref_node_add(ref_node, global, &new_node), "new_node");
     RES(node, new_node, "node index");
     RES(1, fscanf(file, "%lf", &(xyz[0])), "x");
     RES(1, fscanf(file, "%lf", &(xyz[1])), "y");
@@ -2647,7 +2648,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_DBL xyz[3];
-  REF_INT new_node, orig_nnode, node, tri, global;
+  REF_INT new_node, orig_nnode, node, tri;
+  REF_GLOB global;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua;
   REF_INT face_id;
@@ -2674,7 +2676,7 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
     if (node >= orig_nnode) {
       RSS(ref_node_next_global(ref_node, &global), "next global");
       REIS(node, global, "global node index");
-      RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+      RSS(ref_node_add(ref_node, global, &new_node), "new_node");
       REIS(node, new_node, "node index");
       ref_node_xyz(ref_node, 0, new_node) = xyz[0];
       ref_node_xyz(ref_node, 1, new_node) = xyz[1];
