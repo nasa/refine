@@ -179,7 +179,7 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   REF_INT edge;
   REF_INT part;
   REF_INT *a_next, *a_edge;
-  REF_INT *a_nodes, *b_nodes;
+  REF_GLOB *a_nodes, *b_nodes;
   REF_INT *a_data, *b_data;
 
   REF_INT node0, node1;
@@ -200,13 +200,13 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_nodes, 2 * a_total, REF_INT);
+  ref_malloc(a_nodes, 2 * a_total, REF_GLOB);
   ref_malloc(a_data, a_total, REF_INT);
   ref_malloc(a_edge, a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_nodes, 2 * b_total, REF_INT);
+  ref_malloc(b_nodes, 2 * b_total, REF_GLOB);
   ref_malloc(b_data, b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -227,7 +227,7 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_nodes, a_size, b_nodes, b_size, 2,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv requested nodes");
 
   for (request = 0; request < b_total; request++) {
@@ -269,7 +269,7 @@ REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   REF_INT edge;
   REF_INT part;
   REF_INT *a_next, *a_edge;
-  REF_INT *a_nodes, *b_nodes;
+  REF_GLOB *a_nodes, *b_nodes;
   REF_INT *a_data, *b_data;
 
   REF_INT node0, node1;
@@ -290,13 +290,13 @@ REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_nodes, 2 * a_total, REF_INT);
+  ref_malloc(a_nodes, 2 * a_total, REF_GLOB);
   ref_malloc(a_data, a_total, REF_INT);
   ref_malloc(a_edge, a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_nodes, 2 * b_total, REF_INT);
+  ref_malloc(b_nodes, 2 * b_total, REF_GLOB);
   ref_malloc(b_data, b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -318,7 +318,7 @@ REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_nodes, a_size, b_nodes, b_size, 2,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv requested nodes");
   RSS(ref_mpi_alltoallv(ref_mpi, a_data, a_size, b_data, b_size, 1,
                         REF_INT_TYPE),
@@ -371,7 +371,7 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
   REF_INT edge;
   REF_INT part;
   REF_INT *a_next, *a_edge;
-  REF_INT *a_nodes, *b_nodes;
+  REF_GLOB *a_nodes, *b_nodes;
   REF_DBL *a_data, *b_data;
 
   REF_INT node0, node1;
@@ -393,13 +393,13 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_nodes, 2 * a_total, REF_INT);
+  ref_malloc(a_nodes, 2 * a_total, REF_GLOB);
   ref_malloc(a_data, dim * a_total, REF_DBL);
   ref_malloc(a_edge, a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_nodes, 2 * b_total, REF_INT);
+  ref_malloc(b_nodes, 2 * b_total, REF_GLOB);
   ref_malloc(b_data, dim * b_total, REF_DBL);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -420,7 +420,7 @@ REF_STATUS ref_edge_ghost_dbl(REF_EDGE ref_edge, REF_MPI ref_mpi, REF_DBL *data,
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_nodes, a_size, b_nodes, b_size, 2,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv requested nodes");
 
   for (request = 0; request < b_total; request++) {
