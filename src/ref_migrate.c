@@ -400,6 +400,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   float ver;
 
   REF_INT node, item, local, part;
+  REF_INT global;
 
   REF_INT *migrate_part;
   REF_INT *node_part;
