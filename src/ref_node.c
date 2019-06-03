@@ -816,6 +816,108 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector,
+			       REF_INT ldim) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT *a_global, *b_global;
+  REF_INT part, node;
+  REF_INT *a_next;
+  REF_GLOB *a_vector, *b_vector;
+  REF_INT i, local;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_node_owned(ref_node, node)) {
+      a_size[ref_node_part(ref_node, node)]++;
+    }
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+      "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
+  ref_malloc(a_global, a_total, REF_INT);
+
+  b_total = 0;
+  each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
+  ref_malloc(b_global, b_total, REF_INT);
+
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) {
+    a_next[part] = a_next[part - 1] + a_size[part - 1];
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_node_owned(ref_node, node)) {
+      part = ref_node_part(ref_node, node);
+      a_global[a_next[part]] = ref_node_global(ref_node, node);
+      a_next[ref_node_part(ref_node, node)]++;
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
+                        REF_INT_TYPE),
+      "alltoallv global");
+
+  if (a_total < REF_INT_MAX / ldim && b_total < REF_INT_MAX / ldim) {
+    ref_malloc(a_vector, ldim * a_total, REF_GLOB);
+    ref_malloc(b_vector, ldim * b_total, REF_GLOB);
+    for (node = 0; node < b_total; node++) {
+      RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
+      for (i = 0; i < ldim; i++)
+        b_vector[i + ldim * node] = vector[i + ldim * local];
+    }
+
+    RSS(ref_mpi_alltoallv(ref_mpi, b_vector, b_size, a_vector, a_size, ldim,
+                          REF_GLOB_TYPE),
+        "alltoallv global");
+
+    for (node = 0; node < a_total; node++) {
+      RSS(ref_node_local(ref_node, a_global[node], &local), "g2l");
+      for (i = 0; i < ldim; i++)
+        vector[i + ldim * local] = a_vector[i + ldim * node];
+    }
+    free(b_vector);
+    free(a_vector);
+  } else {
+    ref_malloc(a_vector, a_total, REF_GLOB);
+    ref_malloc(b_vector, b_total, REF_GLOB);
+    for (i = 0; i < ldim; i++) {
+      for (node = 0; node < b_total; node++) {
+        RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
+        b_vector[node] = vector[i + ldim * local];
+      }
+
+      RSS(ref_mpi_alltoallv(ref_mpi, b_vector, b_size, a_vector, a_size, 1,
+                            REF_GLOB_TYPE),
+          "alltoallv global");
+
+      for (node = 0; node < a_total; node++) {
+        RSS(ref_node_local(ref_node, a_global[node], &local), "g2l");
+        vector[i + ldim * local] = a_vector[node];
+      }
+    }
+    free(b_vector);
+    free(a_vector);
+  }
+
+  free(a_next);
+  free(b_global);
+  free(a_global);
+  free(b_size);
+  free(a_size);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector,
                               REF_INT ldim) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
