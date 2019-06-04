@@ -175,8 +175,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 
     for (i = 0; i < n; i++) {
       global = first + i;
-      status =
-          ref_sort_search(total_cellnode, sorted_cellnode, global, &position);
+      status = ref_sort_search_glob(total_cellnode, sorted_cellnode, global,
+                                    &position);
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status) {
         local = sorted_local[position];

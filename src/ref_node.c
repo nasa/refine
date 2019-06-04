@@ -408,8 +408,8 @@ REF_STATUS ref_node_remove(REF_NODE ref_node, REF_INT node) {
   REF_INT location, sorted_node;
   if (!ref_node_valid(ref_node, node)) return REF_INVALID;
 
-  RSS(ref_sort_search(ref_node_n(ref_node), ref_node->sorted_global,
-                      ref_node->global[node], &location),
+  RSS(ref_sort_search_glob(ref_node_n(ref_node), ref_node->sorted_global,
+                           ref_node->global[node], &location),
       "find global in sort list");
 
   for (sorted_node = location; sorted_node < ref_node_n(ref_node) - 1;
@@ -450,8 +450,8 @@ REF_STATUS ref_node_remove_without_global(REF_NODE ref_node, REF_INT node) {
   REF_INT location, sorted_node;
   if (!ref_node_valid(ref_node, node)) return REF_INVALID;
 
-  RSS(ref_sort_search(ref_node_n(ref_node), ref_node->sorted_global,
-                      ref_node->global[node], &location),
+  RSS(ref_sort_search_glob(ref_node_n(ref_node), ref_node->sorted_global,
+                           ref_node->global[node], &location),
       "find global in sort list");
 
   for (sorted_node = location; sorted_node < ref_node_n(ref_node) - 1;
@@ -664,8 +664,8 @@ REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *local) {
 
   (*local) = REF_EMPTY;
 
-  RAISE(ref_sort_search(ref_node_n(ref_node), ref_node->sorted_global, global,
-                        &location));
+  RAISE(ref_sort_search_glob(ref_node_n(ref_node), ref_node->sorted_global,
+                             global, &location));
 
   if ((location) == REF_EMPTY) return REF_NOT_FOUND;
 
