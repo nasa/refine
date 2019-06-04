@@ -44,7 +44,7 @@ struct REF_MIGRATE_STRUCT {
   REF_ADJ parent_part;
   REF_ADJ conn;
   REF_INT max;
-  REF_INT *global;
+  REF_GLOB *global;
   REF_DBL *xyz;
   REF_DBL *weight;
   REF_INT *age;
