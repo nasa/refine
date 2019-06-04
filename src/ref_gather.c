@@ -65,15 +65,16 @@ REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
 
 static REF_STATUS ref_gather_cell_below_quality(
     REF_GRID ref_grid, REF_CELL ref_cell, REF_DBL min_quality,
-    REF_INT *nnode_global, REF_LONG *ncell_global, REF_INT **l2c) {
+    REF_GLOB *nnode_global, REF_LONG *ncell_global, REF_GLOB **l2c) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, part, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
-  REF_INT proc, offset, *counts;
+  REF_INT proc, *counts;
+  REF_GLOB offset;
   REF_DBL quality;
 
-  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
 
   (*nnode_global) = 0;
   (*ncell_global) = 0;
@@ -115,22 +116,23 @@ static REF_STATUS ref_gather_cell_below_quality(
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
+  RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
-                                           REF_INT *l2c, REF_INT ldim,
+static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_GLOB nnode,
+                                           REF_GLOB *l2c, REF_INT ldim,
                                            REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, id;
-  REF_INT global, local;
+  REF_GLOB nnode_written, first, global;
+  REF_INT local, n, i, id;
   REF_STATUS status;
   REF_INT dim = 3 + ldim + 1;
-  REF_INT *sorted_local, *sorted_cellnode, *pack, total_cellnode, position;
+  REF_INT *sorted_local, *pack, total_cellnode, position;
+  REF_GLOB *sorted_cellnode;
 
   total_cellnode = 0;
   for (i = 0; i < ref_node_max(ref_node); i++) {
@@ -140,7 +142,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
   }
 
   ref_malloc(sorted_local, total_cellnode, REF_INT);
-  ref_malloc(sorted_cellnode, total_cellnode, REF_INT);
+  ref_malloc(sorted_cellnode, total_cellnode, REF_GLOB);
   ref_malloc(pack, total_cellnode, REF_INT);
 
   total_cellnode = 0;
@@ -151,14 +153,15 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
       total_cellnode++;
     }
   }
-  RSS(ref_sort_heap_int(total_cellnode, sorted_cellnode, sorted_local), "sort");
+  RSS(ref_sort_heap_glob(total_cellnode, sorted_cellnode, sorted_local),
+      "sort");
   for (i = 0; i < total_cellnode; i++) {
     sorted_local[i] = pack[sorted_local[i]];
     sorted_cellnode[i] = l2c[sorted_local[i]];
   }
   ref_free(pack);
 
-  chunk = nnode / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(nnode / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
@@ -167,7 +170,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
   nnode_written = 0;
   while (nnode_written < nnode) {
     first = nnode_written;
-    n = MIN(chunk, nnode - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk, nnode - nnode_written);
 
     nnode_written += n;
 
@@ -193,8 +196,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++) {
       if ((ABS(local_xyzm[3 + ldim + dim * i] - 1.0) > 0.1) &&
           (ABS(local_xyzm[3 + ldim + dim * i] - 0.0) > 0.1)) {
-        printf("%s: %d: %s: before sum %d %f\n", __FILE__, __LINE__, __func__,
-               first + i, local_xyzm[3 + ldim + dim * i]);
+        printf("%s: %d: %s: before sum " REF_GLOB_FMT " %f\n", __FILE__,
+               __LINE__, __func__, first + i, local_xyzm[3 + ldim + dim * i]);
       }
     }
 
@@ -203,8 +206,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     if (ref_mpi_once(ref_mpi)) {
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[3 + ldim + dim * i] - 1.0) > 0.1) {
-          printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__, __func__,
-                 first + i, xyzm[3 + ldim + dim * i]);
+          printf("%s: %d: %s: after sum " REF_GLOB_FMT " %f\n", __FILE__,
+                 __LINE__, __func__, first + i, xyzm[3 + ldim + dim * i]);
         }
         for (id = 0; id < 3 + ldim; id++) {
           fprintf(file, " %.15e", xyzm[id + dim * i]);
