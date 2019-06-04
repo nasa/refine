@@ -659,7 +659,7 @@ REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_local(REF_NODE ref_node, REF_INT global, REF_INT *local) {
+REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *local) {
   REF_INT location;
 
   (*local) = REF_EMPTY;
@@ -817,7 +817,7 @@ REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector,
 }
 
 REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector,
-			       REF_INT ldim) {
+                               REF_INT ldim) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
@@ -1022,7 +1022,7 @@ REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
-  REF_INT *a_global, *b_global;
+  REF_GLOB *a_global, *b_global;
   REF_INT part, node;
   REF_INT *a_next;
   REF_INT *a_scalar, *b_scalar;
@@ -1044,12 +1044,12 @@ REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) { a_total += a_size[part]; }
-  ref_malloc(a_global, a_total, REF_INT);
+  ref_malloc(a_global, a_total, REF_GLOB);
   ref_malloc(a_scalar, a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) { b_total += b_size[part]; }
-  ref_malloc(b_global, b_total, REF_INT);
+  ref_malloc(b_global, b_total, REF_GLOB);
   ref_malloc(b_scalar, b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -1068,12 +1068,12 @@ REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv global");
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_scalar, a_size, b_scalar, b_size, 1,
                         REF_INT_TYPE),
-      "alltoallv global");
+      "alltoallv scalar");
 
   for (node = 0; node < b_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
@@ -2794,11 +2794,11 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT unused_global) {
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global) {
   if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
     ref_node_max_unused(ref_node) += 1000;
     ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
-                REF_INT);
+                REF_GLOB);
   }
 
   ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
@@ -2808,7 +2808,7 @@ REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_INT unused_global) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global) {
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global) {
   if (0 == ref_node_n_unused(ref_node)) {
     *new_global = REF_EMPTY;
     return REF_FAILURE;
@@ -2820,8 +2820,8 @@ REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_INT *new_global) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
-                                 REF_INT shift) {
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
+                                 REF_GLOB shift) {
   REF_INT i;
 
   for (i = 0; i < ref_node_n_unused(ref_node); i++) {
@@ -2835,25 +2835,28 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_INT equal_and_above,
 
 REF_STATUS ref_node_sort_unused(REF_NODE ref_node) {
   REF_INT *order;
+  REF_GLOB *new_order;
   REF_INT i;
 
   /* see if it is too short to require sorting */
   if (2 > ref_node_n_unused(ref_node)) return REF_SUCCESS;
 
   ref_malloc(order, ref_node_n_unused(ref_node), REF_INT);
+  ref_malloc(new_order, ref_node_n_unused(ref_node), REF_GLOB);
 
-  RSS(ref_sort_heap_int(ref_node_n_unused(ref_node), ref_node->unused_global,
-                        order),
+  RSS(ref_sort_heap_glob(ref_node_n_unused(ref_node), ref_node->unused_global,
+                         order),
       "heap");
 
   for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    order[i] = ref_node->unused_global[order[i]];
+    new_order[i] = ref_node->unused_global[order[i]];
   }
 
   for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    ref_node->unused_global[i] = order[i];
+    ref_node->unused_global[i] = new_order[i];
   }
 
+  ref_free(new_order);
   ref_free(order);
 
   return REF_SUCCESS;
@@ -2867,7 +2870,7 @@ REF_STATUS ref_node_erase_unused(REF_NODE ref_node) {
 REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT i;
-  REF_INT *local_copy;
+  REF_GLOB *local_copy;
   REF_INT proc;
   REF_INT *counts;
   REF_INT total_count;
@@ -2881,7 +2884,7 @@ REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   total_count = 0;
   each_ref_mpi_part(ref_mpi, proc) total_count += counts[proc];
 
-  ref_malloc(local_copy, ref_node_n_unused(ref_node), REF_INT);
+  ref_malloc(local_copy, ref_node_n_unused(ref_node), REF_GLOB);
   for (i = 0; i < ref_node_n_unused(ref_node); i++) {
     local_copy[i] = ref_node->unused_global[i];
   }
@@ -2889,11 +2892,12 @@ REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
   if (total_count > ref_node_max_unused(ref_node)) {
     ref_node_max_unused(ref_node) = total_count;
     ref_free(ref_node->unused_global);
-    ref_malloc(ref_node->unused_global, ref_node_max_unused(ref_node), REF_INT);
+    ref_malloc(ref_node->unused_global, ref_node_max_unused(ref_node),
+               REF_GLOB);
   }
 
   RSS(ref_mpi_allgatherv(ref_mpi, local_copy, counts, ref_node->unused_global,
-                         REF_INT_TYPE),
+                         REF_GLOB_TYPE),
       "gather values");
 
   ref_node_n_unused(ref_node) = total_count;
