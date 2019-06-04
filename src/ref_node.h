@@ -35,7 +35,7 @@ struct REF_NODE_STRUCT {
   REF_INT blank;
   REF_GLOB *global;
   REF_GLOB *sorted_global;
-  REF_GLOB *sorted_local;
+  REF_INT *sorted_local;
   REF_INT *part;
   REF_INT *age;
   REF_DBL *real;
@@ -138,7 +138,8 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o);
 
 REF_STATUS ref_node_ghost_real(REF_NODE ref_node);
 REF_STATUS ref_node_ghost_int(REF_NODE ref_node, REF_INT *vector, REF_INT ldim);
-REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector, REF_INT ldim);
+REF_STATUS ref_node_ghost_glob(REF_NODE ref_node, REF_GLOB *vector,
+                               REF_INT ldim);
 REF_STATUS ref_node_ghost_dbl(REF_NODE ref_node, REF_DBL *vector, REF_INT ldim);
 REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar);
 
