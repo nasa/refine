@@ -1300,10 +1300,11 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
 
   for (geom = 0; geom < b_total; geom++) {
     each_ref_descr(ref_geom, i) {
-      descr[i] = (REF_INT)a_int[i + REF_GEOM_DESCR_SIZE * geom];
+      descr[i] = (REF_INT)b_int[i + REF_GEOM_DESCR_SIZE * geom];
     }
     global = b_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
     RSS(ref_node_local(ref_node, global, &node), "g2l");
+    descr[REF_GEOM_DESCR_NODE] = node;
     RSS(ref_geom_add_with_descr(ref_geom, descr, &(b_real[2 * geom])),
         "geom add");
   }
