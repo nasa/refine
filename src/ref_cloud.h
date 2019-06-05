@@ -65,6 +65,7 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud, REF_CLOUD original);
 
 REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_INT global, REF_DBL *aux);
 REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item);
+REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_INT global);
 
 END_C_DECLORATION
 

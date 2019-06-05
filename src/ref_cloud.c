@@ -134,3 +134,15 @@ REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item) {
 
   return REF_NOT_FOUND;
 }
+
+REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_INT global) {
+  REF_INT i;
+
+  each_ref_cloud_item(ref_cloud, i) {
+    if (global == ref_cloud_global(ref_cloud, i)) {
+      return REF_TRUE;
+    }
+  }
+
+  return REF_FALSE;
+}
