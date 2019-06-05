@@ -327,7 +327,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
   REF_INT elements_to_receive;
   REF_INT *c2n;
   REF_INT *c2t;
-  REF_INT *sent_c2n;
+  REF_GLOB *sent_c2n;
   REF_INT *dest;
   REF_INT *sent_part;
   REF_INT *elements_to_send;
@@ -344,7 +344,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
 
-  ref_malloc(sent_c2n, size_per * chunk, REF_INT);
+  ref_malloc(sent_c2n, size_per * chunk, REF_GLOB);
 
   if (ref_mpi_once(ref_mpi)) {
     ref_malloc(elements_to_send, ref_mpi_n(ref_mpi), REF_INT);
@@ -419,7 +419,8 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
                          part),
             "send");
         RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                         size_per * elements_to_send[part], REF_INT_TYPE, part),
+                         size_per * elements_to_send[part], REF_GLOB_TYPE,
+                         part),
             "send");
       }
     }
@@ -440,7 +441,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
           "recv");
       if (elements_to_receive > 0) {
         RSS(ref_mpi_recv(ref_mpi, sent_c2n, size_per * elements_to_receive,
-                         REF_INT_TYPE, 0),
+                         REF_GLOB_TYPE, 0),
             "send");
 
         ref_malloc_init(sent_part, size_per * elements_to_receive, REF_INT,
@@ -951,7 +952,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   REF_INT *c2n;
   REF_INT *tag;
   REF_INT *c2t;
-  REF_INT *sent_c2n;
+  REF_GLOB *sent_c2n;
   REF_INT *dest;
   REF_INT *sent_part;
   REF_INT *elements_to_send;
@@ -968,7 +969,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
 
-  ref_malloc(sent_c2n, size_per * chunk, REF_INT);
+  ref_malloc(sent_c2n, size_per * chunk, REF_GLOB);
 
   if (ref_mpi_once(ref_mpi)) {
     ref_malloc(elements_to_send, ref_mpi_n(ref_mpi), REF_INT);
@@ -1061,7 +1062,8 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
                          part),
             "send");
         RSS(ref_mpi_send(ref_mpi, &(sent_c2n[size_per * start_to_send[part]]),
-                         size_per * elements_to_send[part], REF_INT_TYPE, part),
+                         size_per * elements_to_send[part], REF_GLOB_TYPE,
+                         part),
             "send");
       }
     }
@@ -1083,7 +1085,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
           "recv");
       if (elements_to_receive > 0) {
         RSS(ref_mpi_recv(ref_mpi, sent_c2n, size_per * elements_to_receive,
-                         REF_INT_TYPE, 0),
+                         REF_GLOB_TYPE, 0),
             "send");
 
         ref_malloc_init(sent_part, size_per * elements_to_receive, REF_INT,
