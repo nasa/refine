@@ -28,7 +28,7 @@ typedef enum REF_RECON_RECONSTRUCTIONS { /* 0 */ REF_RECON_L2PROJECTION,
 } REF_RECON_RECONSTRUCTION;
 END_C_DECLORATION
 
-#include "ref_dict.h"
+#include "ref_cloud.h"
 #include "ref_grid.h"
 #include "ref_node.h"
 
@@ -45,7 +45,7 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
 /* for testing */
 REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
                               REF_INT ldim);
-REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node);
+REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node);
 
 /* eliminate */
 REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);

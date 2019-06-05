@@ -31,7 +31,6 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 
-#include "ref_dict.h"
 #include "ref_twod.h"
 
 #define REF_RECON_MAX_DEGREE (1000)
@@ -148,7 +147,7 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
 }
 
 static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
-                                            REF_DICT ref_dict, REF_BOOL twod,
+                                            REF_CLOUD ref_cloud, REF_BOOL twod,
                                             REF_DBL mid_plane,
                                             REF_DBL *gradient,
                                             REF_DBL *hessian) {
@@ -156,18 +155,17 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   REF_DBL dx, dy, dz, dq;
   REF_DBL *a, *q, *r;
   REF_INT m, n;
-  REF_INT cloud_global, key_index, im, i, j;
+  REF_INT cloud_global, item, im, i, j;
   REF_DBL xyzs[4];
   REF_BOOL verbose = REF_FALSE;
 
-  RSS(ref_dict_location(ref_dict, center_global, &key_index), "missing center");
-  xyzs[0] = ref_dict_keyvalueaux(ref_dict, 0, key_index);
-  xyzs[1] = ref_dict_keyvalueaux(ref_dict, 1, key_index);
-  xyzs[2] = ref_dict_keyvalueaux(ref_dict, 2, key_index);
-  xyzs[3] = ref_dict_keyvalueaux(ref_dict, 3, key_index);
+  RSS(ref_cloud_item(ref_cloud, center_global, &item), "missing center");
+  each_ref_cloud_aux(ref_cloud, i) {
+    xyzs[i] = ref_cloud_aux(ref_cloud, i, item);
+  }
   /* solve A with QR factorization size m x n */
-  m = ref_dict_n(ref_dict) - 1; /* skip self */
-  if (twod) m++;                /* add mid node */
+  m = ref_cloud_n(ref_cloud) - 1; /* skip self */
+  if (twod) m++;                  /* add mid node */
   n = 9;
   if (verbose)
     printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
@@ -196,11 +194,11 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
     }
     i++;
   }
-  each_ref_dict_key(ref_dict, key_index, cloud_global) {
+  each_ref_cloud_global(ref_cloud, item, cloud_global) {
     if (center_global == cloud_global) continue; /* skip self */
-    dx = ref_dict_keyvalueaux(ref_dict, 0, key_index) - xyzs[0];
-    dy = ref_dict_keyvalueaux(ref_dict, 1, key_index) - xyzs[1];
-    dz = ref_dict_keyvalueaux(ref_dict, 2, key_index) - xyzs[2];
+    dx = ref_cloud_aux(ref_cloud, 0, item) - xyzs[0];
+    dy = ref_cloud_aux(ref_cloud, 1, item) - xyzs[1];
+    dz = ref_cloud_aux(ref_cloud, 2, item) - xyzs[2];
     geom[0] = 0.5 * dx * dx;
     geom[1] = dx * dy;
     geom[2] = dx * dz;
@@ -234,9 +232,9 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
     }
     i++;
   }
-  each_ref_dict_key(ref_dict, key_index, cloud_global) {
+  each_ref_cloud_global(ref_cloud, item, cloud_global) {
     if (center_global == cloud_global) continue; /* skip self */
-    dq = ref_dict_keyvalueaux(ref_dict, 3, key_index) - xyzs[3];
+    dq = ref_cloud_aux(ref_cloud, 3, item) - xyzs[3];
     for (j = 0; j < 9; j++) {
       ab[j + 9 * 9] += q[i + m * j] * dq;
     }
@@ -260,7 +258,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
+static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
                                                   REF_NODE ref_node,
                                                   REF_CELL ref_cell,
                                                   REF_DBL *scalar) {
@@ -276,7 +274,7 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
           xyzs[1] = ref_node_xyz(ref_node, 1, target);
           xyzs[2] = ref_node_xyz(ref_node, 2, target);
           xyzs[3] = scalar[target];
-          RSS(ref_dict_store_with_aux(one_layer[node], global, REF_EMPTY, xyzs),
+          RSS(ref_cloud_store(one_layer[node], global, xyzs),
               "store could stencil");
         }
       }
@@ -285,21 +283,21 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_DICT *one_layer,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
+REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_DICT ref_dict;
+  REF_CLOUD ref_cloud;
   REF_INT *a_nnode, *b_nnode;
   REF_INT a_nnode_total, b_nnode_total;
   REF_INT *a_global, *b_global;
   REF_INT *a_part, *b_part;
-  REF_INT *a_ndict, *b_ndict;
-  REF_INT a_ndict_total, b_ndict_total;
+  REF_INT *a_ncloud, *b_ncloud;
+  REF_INT a_ncloud_total, b_ncloud_total;
   REF_INT *a_keyval, *b_keyval;
   REF_DBL *a_aux, *b_aux;
   REF_INT part, node, degree;
   REF_INT *a_next, *b_next;
-  REF_INT local, global, dict, key_index, aux_index;
-  REF_INT nkeyval = 3, naux = 4;
+  REF_INT local, global, cloud, key_index, aux_index;
+  REF_INT nkeyval = 2, naux = 4;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -307,8 +305,8 @@ REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
   ref_malloc_init(b_next, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(a_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
   ref_malloc_init(b_nnode, ref_mpi_n(ref_mpi), REF_INT, 0);
-  ref_malloc_init(a_ndict, ref_mpi_n(ref_mpi), REF_INT, 0);
-  ref_malloc_init(b_ndict, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(a_ncloud, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_ncloud, ref_mpi_n(ref_mpi), REF_INT, 0);
 
   /* ghost nodes need to fill */
   each_ref_node_valid_node(ref_node, node) {
@@ -351,63 +349,61 @@ REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
                         REF_INT_TYPE),
       "alltoallv global");
 
-  /* degree of these node dict to send */
+  /* degree of these node cloud to send */
   for (node = 0; node < b_nnode_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     part = b_part[node];
-    degree = ref_dict_n(one_layer[local]);
-    b_ndict[part] += degree;
+    degree = ref_cloud_n(one_layer[local]);
+    b_ncloud[part] += degree;
   }
 
-  RSS(ref_mpi_alltoall(ref_mpi, b_ndict, a_ndict, REF_INT_TYPE),
-      "alltoall ndicts");
+  RSS(ref_mpi_alltoall(ref_mpi, b_ncloud, a_ncloud, REF_INT_TYPE),
+      "alltoall nclouds");
 
-  a_ndict_total = 0;
-  each_ref_mpi_part(ref_mpi, part) a_ndict_total += a_ndict[part];
-  ref_malloc(a_keyval, nkeyval * a_ndict_total, REF_INT);
-  ref_malloc(a_aux, naux * a_ndict_total, REF_DBL);
+  a_ncloud_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_ncloud_total += a_ncloud[part];
+  ref_malloc(a_keyval, nkeyval * a_ncloud_total, REF_INT);
+  ref_malloc(a_aux, naux * a_ncloud_total, REF_DBL);
 
-  b_ndict_total = 0;
-  each_ref_mpi_part(ref_mpi, part) b_ndict_total += b_ndict[part];
-  ref_malloc(b_keyval, nkeyval * b_ndict_total, REF_INT);
-  ref_malloc(b_aux, naux * b_ndict_total, REF_DBL);
+  b_ncloud_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_ncloud_total += b_ncloud[part];
+  ref_malloc(b_keyval, nkeyval * b_ncloud_total, REF_INT);
+  ref_malloc(b_aux, naux * b_ncloud_total, REF_DBL);
 
   b_next[0] = 0;
   each_ref_mpi_worker(ref_mpi, part) {
-    b_next[part] = b_next[part - 1] + b_ndict[part - 1];
+    b_next[part] = b_next[part - 1] + b_ncloud[part - 1];
   }
 
   for (node = 0; node < b_nnode_total; node++) {
     RSS(ref_node_local(ref_node, b_global[node], &local), "g2l");
     part = b_part[node];
-    ref_dict = one_layer[local];
-    each_ref_dict_key_index(ref_dict, key_index) {
+    ref_cloud = one_layer[local];
+    each_ref_cloud_item(ref_cloud, key_index) {
       b_keyval[0 + nkeyval * b_next[part]] = b_global[node];
-      b_keyval[1 + nkeyval * b_next[part]] = ref_dict_key(ref_dict, key_index);
-      b_keyval[2 + nkeyval * b_next[part]] =
-          ref_dict_keyvalue(ref_dict, key_index);
+      b_keyval[1 + nkeyval * b_next[part]] =
+          ref_cloud_global(ref_cloud, key_index);
       for (aux_index = 0; aux_index < naux; aux_index++) {
         b_aux[aux_index + naux * b_next[part]] =
-            ref_dict_keyvalueaux(ref_dict, aux_index, key_index);
+            ref_cloud_aux(ref_cloud, aux_index, key_index);
       }
       b_next[part]++;
     }
   }
 
-  RSS(ref_mpi_alltoallv(ref_mpi, b_keyval, b_ndict, a_keyval, a_ndict, nkeyval,
-                        REF_INT_TYPE),
+  RSS(ref_mpi_alltoallv(ref_mpi, b_keyval, b_ncloud, a_keyval, a_ncloud,
+                        nkeyval, REF_INT_TYPE),
       "alltoallv keyval");
-  RSS(ref_mpi_alltoallv(ref_mpi, b_aux, b_ndict, a_aux, a_ndict, naux,
+  RSS(ref_mpi_alltoallv(ref_mpi, b_aux, b_ncloud, a_aux, a_ncloud, naux,
                         REF_DBL_TYPE),
       "alltoallv aux");
 
-  for (dict = 0; dict < a_ndict_total; dict++) {
-    global = a_keyval[0 + nkeyval * dict];
+  for (cloud = 0; cloud < a_ncloud_total; cloud++) {
+    global = a_keyval[0 + nkeyval * cloud];
     RSS(ref_node_local(ref_node, global, &local), "g2l");
-    ref_dict = one_layer[local];
-    RSS(ref_dict_store_with_aux(ref_dict, a_keyval[1 + nkeyval * dict],
-                                a_keyval[2 + nkeyval * dict],
-                                &(a_aux[naux * dict])),
+    ref_cloud = one_layer[local];
+    RSS(ref_cloud_store(ref_cloud, a_keyval[1 + nkeyval * cloud],
+                        &(a_aux[naux * cloud])),
         "add ghost");
   }
 
@@ -419,8 +415,8 @@ REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
   free(b_global);
   free(a_part);
   free(a_global);
-  free(b_ndict);
-  free(a_ndict);
+  free(b_ncloud);
+  free(a_ncloud);
   free(b_nnode);
   free(a_nnode);
   free(b_next);
@@ -429,32 +425,31 @@ REF_STATUS ref_recon_ghost_cloud(REF_DICT *one_layer, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_grow_cloud_one_layer(REF_DICT ref_dict,
-                                                 REF_DICT *one_layer,
+static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
+                                                 REF_CLOUD *one_layer,
                                                  REF_NODE ref_node) {
-  REF_DICT copy;
+  REF_CLOUD copy;
   REF_STATUS ref_status;
   REF_INT pivot_index, global_pivot, local_pivot;
-  REF_INT add_index, global;
+  REF_INT add_index, i;
+  REF_INT global;
   REF_DBL xyzs[4];
-  RSS(ref_dict_deep_copy(&copy, ref_dict), "copy");
-  each_ref_dict_key(copy, pivot_index, global_pivot) {
+  RSS(ref_cloud_deep_copy(&copy, ref_cloud), "copy");
+  each_ref_cloud_global(copy, pivot_index, global_pivot) {
     ref_status = ref_node_local(ref_node, global_pivot, &local_pivot);
     if (REF_NOT_FOUND == ref_status) {
       continue;
     } else {
       RSS(ref_status, "local search");
     }
-    each_ref_dict_key(one_layer[local_pivot], add_index, global) {
-      xyzs[0] = ref_dict_keyvalueaux(one_layer[local_pivot], 0, add_index);
-      xyzs[1] = ref_dict_keyvalueaux(one_layer[local_pivot], 1, add_index);
-      xyzs[2] = ref_dict_keyvalueaux(one_layer[local_pivot], 2, add_index);
-      xyzs[3] = ref_dict_keyvalueaux(one_layer[local_pivot], 3, add_index);
-      RSS(ref_dict_store_with_aux(ref_dict, global, REF_EMPTY, xyzs),
-          "store stencil increase");
+    each_ref_cloud_global(one_layer[local_pivot], add_index, global) {
+      each_ref_cloud_aux(one_layer[local_pivot], i) {
+        xyzs[i] = ref_cloud_aux(one_layer[local_pivot], i, add_index);
+      }
+      RSS(ref_cloud_store(ref_cloud, global, xyzs), "store stencil increase");
     }
   }
-  ref_dict_free(copy);
+  ref_cloud_free(copy);
 
   return REF_SUCCESS;
 }
@@ -466,19 +461,18 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node, im;
-  REF_DICT ref_dict;
+  REF_CLOUD ref_cloud;
   REF_DBL node_gradient[3], node_hessian[6];
   REF_STATUS status;
-  REF_DICT *one_layer;
+  REF_CLOUD *one_layer;
   REF_BOOL report_large_eig = REF_FALSE;
   REF_INT layer;
 
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
 
-  ref_malloc_init(one_layer, ref_node_max(ref_node), REF_DICT, NULL);
+  ref_malloc_init(one_layer, ref_node_max(ref_node), REF_CLOUD, NULL);
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_dict_create(&(one_layer[node])), "cloud storage");
-    RSS(ref_dict_includes_aux_value(one_layer[node], 4), "x y z s");
+    RSS(ref_cloud_create(&(one_layer[node]), 4), "cloud storage");
   }
 
   RSS(ref_recon_local_immediate_cloud(one_layer, ref_node, ref_cell, scalar),
@@ -487,14 +481,14 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
 
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
-      /* use ref_dict to get a unique list of halo(2) nodes */
-      RSS(ref_dict_deep_copy(&ref_dict, one_layer[node]), "create ref_dict");
+      /* use ref_cloud to get a unique list of halo(2) nodes */
+      RSS(ref_cloud_deep_copy(&ref_cloud, one_layer[node]), "create ref_cloud");
       status = REF_INVALID;
       for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
-        RSS(ref_recon_grow_cloud_one_layer(ref_dict, one_layer, ref_node),
+        RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
             "grow");
         status = ref_recon_kexact_with_aux(
-            ref_node_global(ref_node, node), ref_dict, ref_grid_twod(ref_grid),
+            ref_node_global(ref_node, node), ref_cloud, ref_grid_twod(ref_grid),
             ref_node_twod_mid_plane(ref_node), node_gradient, node_hessian);
         if (REF_DIV_ZERO == status) {
           ref_node_location(ref_node, node);
@@ -526,12 +520,12 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
           hessian[im + 6 * node] = node_hessian[im];
         }
       }
-      RSS(ref_dict_free(ref_dict), "free ref_dict");
+      RSS(ref_cloud_free(ref_cloud), "free ref_cloud");
     }
   }
 
   each_ref_node_valid_node(ref_node, node) {
-    ref_dict_free(one_layer[node]); /* no-op for null */
+    ref_cloud_free(one_layer[node]); /* no-op for null */
   }
   ref_free(one_layer);
 
