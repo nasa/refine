@@ -146,7 +146,7 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
+static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
                                             REF_CLOUD ref_cloud, REF_BOOL twod,
                                             REF_DBL mid_plane,
                                             REF_DBL *gradient,
@@ -155,7 +155,8 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_INT center_global,
   REF_DBL dx, dy, dz, dq;
   REF_DBL *a, *q, *r;
   REF_INT m, n;
-  REF_INT cloud_global, item, im, i, j;
+  REF_GLOB cloud_global;
+  REF_INT item, im, i, j;
   REF_DBL xyzs[4];
   REF_BOOL verbose = REF_FALSE;
 
@@ -262,7 +263,8 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
                                                   REF_NODE ref_node,
                                                   REF_CELL ref_cell,
                                                   REF_DBL *scalar) {
-  REF_INT node, item, cell, cell_node, target, global;
+  REF_INT node, item, cell, cell_node, target;
+  REF_GLOB global;
   REF_DBL xyzs[4];
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
@@ -288,15 +290,16 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   REF_CLOUD ref_cloud;
   REF_INT *a_nnode, *b_nnode;
   REF_INT a_nnode_total, b_nnode_total;
-  REF_INT *a_global, *b_global;
+  REF_GLOB *a_global, *b_global;
   REF_INT *a_part, *b_part;
   REF_INT *a_ncloud, *b_ncloud;
   REF_INT a_ncloud_total, b_ncloud_total;
-  REF_INT *a_keyval, *b_keyval;
+  REF_GLOB *a_keyval, *b_keyval;
   REF_DBL *a_aux, *b_aux;
   REF_INT part, node, degree;
   REF_INT *a_next, *b_next;
-  REF_INT local, global, cloud, key_index, aux_index;
+  REF_INT local, cloud, key_index, aux_index;
+  REF_GLOB global;
   REF_INT nkeyval = 2, naux = 4;
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
@@ -320,12 +323,12 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
 
   a_nnode_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_nnode_total += a_nnode[part];
-  ref_malloc(a_global, a_nnode_total, REF_INT);
+  ref_malloc(a_global, a_nnode_total, REF_GLOB);
   ref_malloc(a_part, a_nnode_total, REF_INT);
 
   b_nnode_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_nnode_total += b_nnode[part];
-  ref_malloc(b_global, b_nnode_total, REF_INT);
+  ref_malloc(b_global, b_nnode_total, REF_GLOB);
   ref_malloc(b_part, b_nnode_total, REF_INT);
 
   a_next[0] = 0;
@@ -343,11 +346,11 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_nnode, b_global, b_nnode, 1,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv global");
   RSS(ref_mpi_alltoallv(ref_mpi, a_part, a_nnode, b_part, b_nnode, 1,
                         REF_INT_TYPE),
-      "alltoallv global");
+      "alltoallv part");
 
   /* degree of these node cloud to send */
   for (node = 0; node < b_nnode_total; node++) {
@@ -362,12 +365,12 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
 
   a_ncloud_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_ncloud_total += a_ncloud[part];
-  ref_malloc(a_keyval, nkeyval * a_ncloud_total, REF_INT);
+  ref_malloc(a_keyval, nkeyval * a_ncloud_total, REF_GLOB);
   ref_malloc(a_aux, naux * a_ncloud_total, REF_DBL);
 
   b_ncloud_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_ncloud_total += b_ncloud[part];
-  ref_malloc(b_keyval, nkeyval * b_ncloud_total, REF_INT);
+  ref_malloc(b_keyval, nkeyval * b_ncloud_total, REF_GLOB);
   ref_malloc(b_aux, naux * b_ncloud_total, REF_DBL);
 
   b_next[0] = 0;
@@ -392,7 +395,7 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, b_keyval, b_ncloud, a_keyval, a_ncloud,
-                        nkeyval, REF_INT_TYPE),
+                        nkeyval, REF_GLOB_TYPE),
       "alltoallv keyval");
   RSS(ref_mpi_alltoallv(ref_mpi, b_aux, b_ncloud, a_aux, a_ncloud, naux,
                         REF_DBL_TYPE),
@@ -430,9 +433,9 @@ static REF_STATUS ref_recon_grow_cloud_one_layer(REF_CLOUD ref_cloud,
                                                  REF_NODE ref_node) {
   REF_CLOUD copy;
   REF_STATUS ref_status;
-  REF_INT pivot_index, global_pivot, local_pivot;
+  REF_INT pivot_index, local_pivot;
   REF_INT add_index, i;
-  REF_INT global;
+  REF_GLOB global, global_pivot;
   REF_DBL xyzs[4];
   RSS(ref_cloud_deep_copy(&copy, ref_cloud), "copy");
   each_ref_cloud_global(copy, pivot_index, global_pivot) {
