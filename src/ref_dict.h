@@ -50,7 +50,7 @@ REF_STATUS ref_dict_deep_copy(REF_DICT *ref_dict, REF_DICT original);
   ((ref_dict)->aux[(aux_index) + ref_dict_naux(ref_dict) * (key_index)])
 
 #define ref_dict_valid(ref_dict, key_index) \
-  (0 <= (key_index) && (key_index) < ref_dict_max(ref_dict))
+  (0 <= (key_index) && (key_index) < ref_dict_n(ref_dict))
 
 #define ref_dict_safe_key(ref_dict, key_index)                        \
   (ref_dict_valid(ref_dict, key_index) ? (ref_dict)->key[(key_index)] \
