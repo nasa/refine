@@ -290,8 +290,8 @@ static void ref_migrate_zoltan_local_ids(void *void_ref_migrate, int global_dim,
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
-    local[n] = node;
-    global[n] = ref_migrate_global(ref_migrate, node);
+    local[n] = (ZOLTAN_ID_TYPE)node;
+    global[n] = (ZOLTAN_ID_TYPE)ref_migrate_global(ref_migrate, node);
     obj_wgts[n] = (float)ref_migrate_weight(ref_migrate, node);
     n++;
   }
@@ -345,7 +345,7 @@ static int ref_migrate_zoltan_num_edges(void *void_ref_migrate, int global_dim,
     return 0;
   }
 
-  node = local[0];
+  node = (REF_INT)local[0];
   RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
 
   return degree;
@@ -370,15 +370,15 @@ static void ref_migrate_zoltan_edge_list(void *void_ref_migrate, int global_dim,
     return;
   }
 
-  node = local[0];
+  node = (REF_INT)local[0];
   degree = 0;
 
   each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                   ref) {
-    conn_global[degree] = ref_node_global(ref_node, ref);
-    conn_part[degree] = ref_node_part(ref_node, ref);
+    conn_global[degree] = (ZOLTAN_ID_TYPE)ref_node_global(ref_node, ref);
+    conn_part[degree] = (int)ref_node_part(ref_node, ref);
     weight[degree] = (float)ref_migrate_age(ref_migrate, node) +
-                     (float)ref_migrate_age(ref_migrate, ref) + 1.0;
+                     (float)ref_migrate_age(ref_migrate, ref) + (float)1.0;
     degree++;
   }
 }
