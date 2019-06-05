@@ -9,6 +9,7 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_axi.h
         ${REFINE_SRC_PATH}/ref_cavity.h
         ${REFINE_SRC_PATH}/ref_cell.h
+        ${REFINE_SRC_PATH}/ref_cloud.h
         ${REFINE_SRC_PATH}/ref_clump.h
         ${REFINE_SRC_PATH}/ref_collapse.h
         ${REFINE_SRC_PATH}/ref_comprow.h
@@ -60,6 +61,7 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_axi.c"
   "${REFINE_SRC_PATH}/ref_cavity.c"
   "${REFINE_SRC_PATH}/ref_cell.c"
+  "${REFINE_SRC_PATH}/ref_cloud.c"
   "${REFINE_SRC_PATH}/ref_clump.c"
   "${REFINE_SRC_PATH}/ref_collapse.c"
   "${REFINE_SRC_PATH}/ref_comprow.c"

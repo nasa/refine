@@ -1,4 +1,5 @@
 
+- ref_cloud replaces ref_dict_aux for ref_recon
 - degenerate face uv bounded by degenerate edge uv range
 - interpolation to a subset of the domain
 - add buffer option to fixed-point metric

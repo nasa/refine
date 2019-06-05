@@ -11,6 +11,7 @@ libref2_a_SOURCES = \
 	ref_axi.c \
 	ref_cavity.c \
 	ref_cell.c \
+	ref_cloud.c \
 	ref_clump.c \
 	ref_collapse.c \
 	ref_comprow.c \
@@ -52,7 +53,8 @@ libref2_a_SOURCES = \
 	ref_validation.c
 
 include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
-	ref_cavity.h ref_cell.h ref_clump.h ref_collapse.h ref_comprow.h \
+	ref_cavity.h ref_cell.h ref_cloud.h \
+	ref_clump.h ref_collapse.h ref_comprow.h \
 	ref_dict.h ref_defs.h ref_edge.h ref_elast.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_geom.h ref_grid.h \
@@ -147,6 +149,11 @@ TESTS += ref_cell_test
 noinst_PROGRAMS += ref_cell_test
 ref_cell_test_SOURCES = ref_cell_test.c
 ref_cell_test_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ @mpi_ldadd@ -lm
+
+TESTS += ref_cloud_test
+noinst_PROGRAMS += ref_cloud_test
+ref_cloud_test_SOURCES = ref_cloud_test.c
+ref_cloud_test_LDADD = libref2.a @egads_ldadd@ @opencascade_ldadd@ @mpi_ldadd@ -lm
 
 TESTS += ref_clump_test
 noinst_PROGRAMS += ref_clump_test
