@@ -34,7 +34,7 @@ REF_STATUS ref_cloud_create(REF_CLOUD *ref_cloud_ptr, REF_INT naux) {
   ref_cloud_max(ref_cloud) = 20;
   ref_cloud_naux(ref_cloud) = naux;
 
-  ref_malloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_INT);
+  ref_malloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_GLOB);
   ref_malloc(ref_cloud->aux,
              ref_cloud_naux(ref_cloud) * ref_cloud_max(ref_cloud), REF_DBL);
 
@@ -52,7 +52,7 @@ REF_STATUS ref_cloud_free(REF_CLOUD ref_cloud) {
 REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud_ptr, REF_CLOUD original) {
   REF_CLOUD ref_cloud;
   REF_INT item, i;
-  REF_INT global;
+  REF_GLOB global;
 
   ref_malloc(*ref_cloud_ptr, 1, REF_CLOUD_STRUCT);
 
@@ -62,7 +62,7 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud_ptr, REF_CLOUD original) {
   ref_cloud_max(ref_cloud) = ref_cloud_max(original);
   ref_cloud_naux(ref_cloud) = ref_cloud_naux(original);
 
-  ref_malloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_INT);
+  ref_malloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_GLOB);
   ref_malloc(ref_cloud->aux,
              ref_cloud_naux(ref_cloud) * ref_cloud_max(ref_cloud), REF_DBL);
 
@@ -76,13 +76,13 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud_ptr, REF_CLOUD original) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_INT global, REF_DBL *aux) {
+REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux) {
   REF_INT item, i, insert_point;
 
   if (ref_cloud_max(ref_cloud) == ref_cloud_n(ref_cloud)) {
     ref_cloud_max(ref_cloud) += 100;
 
-    ref_realloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_INT);
+    ref_realloc(ref_cloud->global, ref_cloud_max(ref_cloud), REF_GLOB);
     ref_realloc(ref_cloud->aux,
                 ref_cloud_naux(ref_cloud) * ref_cloud_max(ref_cloud), REF_DBL);
   }
@@ -120,7 +120,7 @@ REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_INT global, REF_DBL *aux) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item) {
+REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global, REF_INT *item) {
   REF_INT i;
 
   *item = REF_EMPTY;
@@ -135,7 +135,7 @@ REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item) {
   return REF_NOT_FOUND;
 }
 
-REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_INT global) {
+REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_GLOB global) {
   REF_INT i;
 
   each_ref_cloud_item(ref_cloud, i) {
