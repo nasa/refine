@@ -1388,8 +1388,9 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   FILE *file;
   REF_INT chunk;
   REF_DBL *metric;
-  REF_INT nnode_read, section_size;
-  REF_INT node, local, global;
+  REF_INT section_size;
+  REF_GLOB nnode_read, global;
+  REF_INT node, local;
   size_t end_of_string;
   REF_BOOL sol_format, found_keyword;
   REF_INT nnode, ntype, type;
@@ -1441,15 +1442,16 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
     }
   }
 
-  chunk = MAX(100000,
-              ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = MIN(chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MAX(
+      100000, ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
 
   ref_malloc_init(metric, 6 * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
   while (nnode_read < ref_node_n_global(ref_node)) {
-    section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
+    section_size =
+        (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       for (node = 0; node < section_size; node++)
         if (sol_format) {
@@ -1498,9 +1500,10 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT chunk;
   REF_DBL *metric;
-  REF_INT file_nnode, nnode_read, section_size;
-  REF_INT node, local, opposite, global;
-  REF_INT nterm, nnode;
+  REF_INT file_nnode, section_size;
+  REF_GLOB nnode, nnode_read, global;
+  REF_INT node, local, opposite;
+  REF_INT nterm;
 
   nnode = ref_node_n_global(ref_node) / 2;
 
@@ -1514,14 +1517,15 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
     REIS(3, nterm, "expected 3 term 2x2 anisotropic M");
   }
 
-  chunk = MAX(100000, nnode / ref_mpi_n(ref_grid_mpi(ref_grid)));
-  chunk = MIN(chunk, nnode);
+  chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_grid_mpi(ref_grid)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
 
   ref_malloc_init(metric, 3 * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
   while (nnode_read < nnode) {
-    section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
+    section_size =
+        (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_grid_once(ref_grid)) {
       for (node = 0; node < section_size; node++) {
         REIS(3,
@@ -1569,8 +1573,9 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
   FILE *file;
   REF_INT chunk;
   REF_DBL *data;
-  REF_INT nnode_read, section_size;
-  REF_INT node, local, global;
+  REF_INT section_size;
+  REF_GLOB nnode_read, global;
+  REF_INT node, local;
   size_t end_of_string;
   REF_BOOL available;
   REF_INT version, dim, nnode, ntype, type, i;
@@ -1610,15 +1615,16 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
       "bcast ldim");
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
-  chunk = MAX(100000,
-              ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = MIN(chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MAX(
+      100000, ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
 
   ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
   while (nnode_read < ref_node_n_global(ref_node)) {
-    section_size = MIN(chunk, ref_node_n_global(ref_node) - nnode_read);
+    section_size =
+        (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       REIS((*ldim) * section_size,
            fread(data, sizeof(REF_DBL), (size_t)((*ldim) * section_size), file),
