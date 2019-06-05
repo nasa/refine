@@ -119,3 +119,18 @@ REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_INT global, REF_DBL *aux) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item) {
+  REF_INT i;
+
+  *item = REF_EMPTY;
+
+  each_ref_cloud_item(ref_cloud, i) {
+    if (global == ref_cloud_global(ref_cloud, i)) {
+      *item = i;
+      return REF_SUCCESS;
+    }
+  }
+
+  return REF_NOT_FOUND;
+}

@@ -50,8 +50,9 @@ int main(void) {
     RSS(ref_cloud_free(ref_cloud), "free");
   }
 
-  { /* store two, in global order*/
+  { /* store two and recal, in global order*/
     REF_INT global;
+    REF_INT item;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
 
@@ -63,6 +64,13 @@ int main(void) {
     RSS(ref_cloud_store(ref_cloud, global, aux), "store");
     REIS(1, ref_cloud_safe_global(ref_cloud, 0), "missing");
     REIS(2, ref_cloud_safe_global(ref_cloud, 1), "missing");
+
+    global = 1;
+    RSS(ref_cloud_item(ref_cloud, global, &item), "find");
+    REIS(0, item, "missing");
+    global = 2;
+    RSS(ref_cloud_item(ref_cloud, global, &item), "find");
+    REIS(1, item, "missing");
 
     RSS(ref_cloud_free(ref_cloud), "free");
   }
