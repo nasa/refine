@@ -570,8 +570,8 @@ REF_STATUS ref_cell_add_many_global(REF_CELL ref_cell, REF_NODE ref_node,
     }
     if (ref_cell_last_node_is_an_id(ref_cell))
       local_nodes[ref_cell_size_per(ref_cell) - 1] =
-	(REF_INT)c2n[(ref_cell_size_per(ref_cell) - 1) +
-              ref_cell_size_per(ref_cell) * cell];
+          (REF_INT)c2n[(ref_cell_size_per(ref_cell) - 1) +
+                       ref_cell_size_per(ref_cell) * cell];
 
     RXS(ref_cell_with(ref_cell, local_nodes, &new_cell), REF_NOT_FOUND,
         "with failed");

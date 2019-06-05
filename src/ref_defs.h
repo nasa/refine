@@ -56,7 +56,6 @@ typedef int REF_INT;
 
 typedef long REF_LONG;
 
-
 #ifdef LONG_GLOBALS
 typedef long REF_GLOB;
 #define REF_GLOB_TYPE (2)
