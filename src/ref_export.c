@@ -1544,8 +1544,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
       if (nodes[node_per] == faceid) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
-          if (swap) SWAP_INT(nodes[node]);
-          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "tri");
+          RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
         }
       }
     }
@@ -1558,8 +1557,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
       if (nodes[node_per] == faceid) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
-          if (swap) SWAP_INT(nodes[node]);
-          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "qua");
+          RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
         }
       }
     }
@@ -1570,8 +1568,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
-        if (swap) SWAP_INT(nodes[3]);
-        REIS(1, fwrite(&(nodes[3]), sizeof(REF_INT), 1, file), "tri id");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[3]), "c2n");
       }
     }
   }
@@ -1581,8 +1578,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
-        if (swap) SWAP_INT(nodes[4]);
-        REIS(1, fwrite(&(nodes[4]), sizeof(REF_INT), 1, file), "qua id");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[4]), "c2n");
       }
     }
   }
@@ -1592,8 +1588,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < node_per; node++) {
         nodes[node] = o2n[nodes[node]] + 1;
-        if (swap) SWAP_INT(nodes[node]);
-        REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cell");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
       }
     }
   }
