@@ -307,7 +307,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
-    REF_INT global, node;
+    REF_GLOB global;
+    REF_INT node;
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "pri");
     ref_node = ref_grid_node(ref_grid);
@@ -339,7 +340,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
-    REF_INT global, node, face;
+    REF_GLOB global;
+    REF_INT node, face;
     REF_BOOL visible;
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "pri");
