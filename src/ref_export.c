@@ -2876,6 +2876,12 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
     RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
         "b8.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
+        "lb8.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
+        "b8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
