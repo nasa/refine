@@ -1467,11 +1467,10 @@ static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
 }
 
 static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
-                                       REF_BOOL swap) {
+                                       REF_BOOL swap, REF_BOOL fat) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node;
   REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -1486,33 +1485,57 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  nnode = ref_node_n(ref_node);
+  if (fat) {
+    REF_LONG nnode, ntri, nqua, ntet, npyr, npri, nhex;
+    nnode = ref_node_n(ref_node);
+    ntri = ref_cell_n(ref_grid_tri(ref_grid));
+    nqua = ref_cell_n(ref_grid_qua(ref_grid));
+    ntet = ref_cell_n(ref_grid_tet(ref_grid));
+    npyr = ref_cell_n(ref_grid_pyr(ref_grid));
+    npri = ref_cell_n(ref_grid_pri(ref_grid));
+    nhex = ref_cell_n(ref_grid_hex(ref_grid));
 
-  ntri = ref_cell_n(ref_grid_tri(ref_grid));
-  nqua = ref_cell_n(ref_grid_qua(ref_grid));
+    if (swap) SWAP_LONG(nnode);
+    if (swap) SWAP_LONG(ntri);
+    if (swap) SWAP_LONG(nqua);
+    if (swap) SWAP_LONG(ntet);
+    if (swap) SWAP_LONG(npyr);
+    if (swap) SWAP_LONG(npri);
+    if (swap) SWAP_LONG(nhex);
 
-  ntet = ref_cell_n(ref_grid_tet(ref_grid));
-  npyr = ref_cell_n(ref_grid_pyr(ref_grid));
-  npri = ref_cell_n(ref_grid_pri(ref_grid));
-  nhex = ref_cell_n(ref_grid_hex(ref_grid));
+    REIS(1, fwrite(&nnode, sizeof(REF_LONG), 1, file), "nnode");
+    REIS(1, fwrite(&ntri, sizeof(REF_LONG), 1, file), "ntri");
+    REIS(1, fwrite(&nqua, sizeof(REF_LONG), 1, file), "nqua");
+    REIS(1, fwrite(&ntet, sizeof(REF_LONG), 1, file), "ntet");
+    REIS(1, fwrite(&npyr, sizeof(REF_LONG), 1, file), "npyr");
+    REIS(1, fwrite(&npri, sizeof(REF_LONG), 1, file), "npri");
+    REIS(1, fwrite(&nhex, sizeof(REF_LONG), 1, file), "nhex");
+  } else {
+    REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+    nnode = ref_node_n(ref_node);
+    ntri = ref_cell_n(ref_grid_tri(ref_grid));
+    nqua = ref_cell_n(ref_grid_qua(ref_grid));
+    ntet = ref_cell_n(ref_grid_tet(ref_grid));
+    npyr = ref_cell_n(ref_grid_pyr(ref_grid));
+    npri = ref_cell_n(ref_grid_pri(ref_grid));
+    nhex = ref_cell_n(ref_grid_hex(ref_grid));
 
-  if (swap) SWAP_INT(nnode);
-  if (swap) SWAP_INT(ntri);
-  if (swap) SWAP_INT(nqua);
-  if (swap) SWAP_INT(ntet);
-  if (swap) SWAP_INT(npyr);
-  if (swap) SWAP_INT(npri);
-  if (swap) SWAP_INT(nhex);
+    if (swap) SWAP_INT(nnode);
+    if (swap) SWAP_INT(ntri);
+    if (swap) SWAP_INT(nqua);
+    if (swap) SWAP_INT(ntet);
+    if (swap) SWAP_INT(npyr);
+    if (swap) SWAP_INT(npri);
+    if (swap) SWAP_INT(nhex);
 
-  REIS(1, fwrite(&nnode, sizeof(REF_INT), 1, file), "nnode");
-
-  REIS(1, fwrite(&ntri, sizeof(REF_INT), 1, file), "ntri");
-  REIS(1, fwrite(&nqua, sizeof(REF_INT), 1, file), "nqua");
-
-  REIS(1, fwrite(&ntet, sizeof(REF_INT), 1, file), "ntet");
-  REIS(1, fwrite(&npyr, sizeof(REF_INT), 1, file), "npyr");
-  REIS(1, fwrite(&npri, sizeof(REF_INT), 1, file), "npri");
-  REIS(1, fwrite(&nhex, sizeof(REF_INT), 1, file), "nhex");
+    REIS(1, fwrite(&nnode, sizeof(REF_INT), 1, file), "nnode");
+    REIS(1, fwrite(&ntri, sizeof(REF_INT), 1, file), "ntri");
+    REIS(1, fwrite(&nqua, sizeof(REF_INT), 1, file), "nqua");
+    REIS(1, fwrite(&ntet, sizeof(REF_INT), 1, file), "ntet");
+    REIS(1, fwrite(&npyr, sizeof(REF_INT), 1, file), "npyr");
+    REIS(1, fwrite(&npri, sizeof(REF_INT), 1, file), "npri");
+    REIS(1, fwrite(&nhex, sizeof(REF_INT), 1, file), "nhex");
+  }
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
@@ -2869,10 +2892,10 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 4], ".su2") == 0) {
     RSS(ref_export_su2(ref_grid, filename), "su2 export failed");
   } else if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE),
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
         "lb8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE),
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
         "b8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
