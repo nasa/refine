@@ -298,7 +298,7 @@ int main(int argc, char *argv[]) {
 
   { /* add many to empty */
     REF_INT n = 2, node;
-    REF_INT global[2];
+    REF_GLOB global[2];
     REF_NODE ref_node;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -320,7 +320,7 @@ int main(int argc, char *argv[]) {
 
   { /* add many to existing */
     REF_INT n = 2, node;
-    REF_INT global[2];
+    REF_GLOB global[2];
     REF_NODE ref_node;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
 
   { /* add many duplicates */
     REF_INT n = 2, node;
-    REF_INT global[2];
+    REF_GLOB global[2];
     REF_NODE ref_node;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -364,7 +364,8 @@ int main(int argc, char *argv[]) {
 
   { /* reuse removed global */
     REF_NODE ref_node;
-    REF_INT node, global;
+    REF_INT node;
+    REF_GLOB global, next;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -373,14 +374,15 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_remove(ref_node, node), "remove node");
 
-    RSS(ref_node_next_global(ref_node, &node), "next gloabal");
-    REIS(global, node, "not reused");
+    RSS(ref_node_next_global(ref_node, &next), "next gloabal");
+    REIS(global, next, "not reused");
 
     RSS(ref_node_free(ref_node), "free");
   }
 
   if (!ref_mpi_para(ref_mpi)) { /* shift globals */
-    REF_INT local, global, node;
+    REF_INT local, node;
+    REF_GLOB global;
     REF_NODE ref_node;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -1524,7 +1526,8 @@ int main(int argc, char *argv[]) {
 
   { /* interpolate */
     REF_NODE ref_node;
-    REF_INT node0, node1, new_node, global;
+    REF_INT node0, node1, new_node;
+    REF_GLOB global;
     REF_DBL m[6];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -1577,7 +1580,8 @@ int main(int argc, char *argv[]) {
 
   { /* clone a twod node  */
     REF_NODE ref_node;
-    REF_INT node0, node1, global;
+    REF_INT node0, node1;
+    REF_GLOB global;
     REF_DBL m[6];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -1613,7 +1617,8 @@ int main(int argc, char *argv[]) {
 
   { /* interpolate aux */
     REF_NODE ref_node;
-    REF_INT node0, node1, new_node, global;
+    REF_INT node0, node1, new_node;
+    REF_GLOB global;
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
 
@@ -2138,7 +2143,7 @@ int main(int argc, char *argv[]) {
 
   { /* pop one unused */
     REF_NODE ref_node;
-    REF_INT global, last;
+    REF_GLOB global, last;
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
     global = 27;
     RSS(ref_node_push_unused(ref_node, global), "push unused");
@@ -2163,7 +2168,7 @@ int main(int argc, char *argv[]) {
 
   { /* apply offset */
     REF_NODE ref_node;
-    REF_INT last;
+    REF_GLOB last;
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
     RSS(ref_node_push_unused(ref_node, 20), "store");
     RSS(ref_node_push_unused(ref_node, 10), "store");
@@ -2180,7 +2185,7 @@ int main(int argc, char *argv[]) {
 
   { /* sort */
     REF_NODE ref_node;
-    REF_INT last;
+    REF_GLOB last;
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
     RSS(ref_node_push_unused(ref_node, 20), "store");
     RSS(ref_node_push_unused(ref_node, 10), "store");
