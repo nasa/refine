@@ -411,8 +411,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
         "read/part new grid in position 4");
     if (ref_mpi_once(ref_mpi)) {
-      printf("%d leading dim from %d old nodes to %d new nodes\n", ldim,
-             ref_node_n_global(ref_grid_node(old_grid)),
+      printf("%d leading dim from " REF_GLOB_FMT " old nodes to " REF_GLOB_FMT
+             " new nodes\n",
+             ldim, ref_node_n_global(ref_grid_node(old_grid)),
              ref_node_n_global(ref_grid_node(new_grid)));
     }
     ref_mpi_stopwatch_stop(ref_mpi, "read new grid");
@@ -470,8 +471,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_by_extension(&new_grid, ref_mpi, argv[4]),
         "read/part new grid in position 4");
     if (ref_mpi_once(ref_mpi)) {
-      printf("%d leading dim from %d old nodes to %d new nodes\n", ldim,
-             ref_node_n_global(ref_grid_node(old_grid)),
+      printf("%d leading dim from " REF_GLOB_FMT " old nodes to " REF_GLOB_FMT
+             " new nodes\n",
+             ldim, ref_node_n_global(ref_grid_node(old_grid)),
              ref_node_n_global(ref_grid_node(new_grid)));
     }
     ref_mpi_stopwatch_stop(ref_mpi, "read new grid");
@@ -779,7 +781,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_INTERP ref_interp;
-    REF_INT node0, node1, new_node, global;
+    REF_INT node0, node1, new_node;
+    REF_GLOB global;
     REF_DBL max_error;
     RSS(ref_fixture_tet2_grid(&ref_grid, ref_mpi), "2 tet fixture");
     ref_node = ref_grid_node(ref_grid);
