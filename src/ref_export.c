@@ -1367,7 +1367,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1596,16 +1596,6 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   fclose(file);
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_lb8_ugrid(REF_GRID ref_grid, const char *filename) {
-  RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE), "bin not swapped");
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_b8_ugrid(REF_GRID ref_grid, const char *filename) {
-  RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE), "bin swap");
   return REF_SUCCESS;
 }
 
@@ -2879,9 +2869,11 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
   } else if (strcmp(&filename[end_of_string - 4], ".su2") == 0) {
     RSS(ref_export_su2(ref_grid, filename), "su2 export failed");
   } else if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_export_lb8_ugrid(ref_grid, filename), "lb8.ugrid export failed");
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE),
+        "lb8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_export_b8_ugrid(ref_grid, filename), "b8.ugrid export failed");
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE),
+        "b8.ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {

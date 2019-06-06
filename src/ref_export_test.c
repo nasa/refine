@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.ugrid";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_ugrid(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
@@ -124,7 +124,16 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.b8.ugrid";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_b8_ugrid(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    RSS(ref_grid_free(ref_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export .lb8.ugrid tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.lb8.ugrid";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
