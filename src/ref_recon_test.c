@@ -434,7 +434,8 @@ int main(int argc, char *argv[]) {
 
   { /* ghost cloud one_layer cloud */
     REF_NODE ref_node;
-    REF_INT local, ghost, global;
+    REF_INT local, ghost;
+    REF_GLOB global;
     REF_CLOUD one_layer[] = {NULL, NULL};
     REF_DBL xyzs[4];
 
@@ -443,13 +444,13 @@ int main(int argc, char *argv[]) {
     /* set up 0-local and 1-ghost with global=part */
     global = ref_mpi_rank(ref_mpi);
     RSS(ref_node_add(ref_node, global, &local), "add");
-    ref_node_part(ref_node, local) = global;
+    ref_node_part(ref_node, local) = (REF_INT)global;
 
     if (ref_mpi_para(ref_mpi)) {
       global = ref_mpi_rank(ref_mpi) + 1;
       if (global >= ref_mpi_n(ref_mpi)) global = 0;
       RSS(ref_node_add(ref_node, global, &ghost), "add");
-      ref_node_part(ref_node, ghost) = global;
+      ref_node_part(ref_node, ghost) = (REF_INT)global;
     }
 
     /* set up local cloud with both nodes if para */
