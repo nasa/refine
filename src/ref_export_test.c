@@ -138,6 +138,42 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  { /* export .b8l.ugrid tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.b8l.ugrid";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    RSS(ref_grid_free(ref_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export .lb8l.ugrid tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.lb8l.ugrid";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    RSS(ref_grid_free(ref_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export .b8.ugrid64 tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.b8.ugrid64";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    RSS(ref_grid_free(ref_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export .lb8.ugrid64 tet */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.lb8.ugrid64";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
+    RSS(ref_grid_free(ref_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
   { /* face id flag range */
     REF_GRID ref_grid;
     REF_INT min_faceid, max_faceid;
