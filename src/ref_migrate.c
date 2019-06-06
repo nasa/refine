@@ -400,13 +400,13 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   float ver;
 
   REF_INT node, item, local, part;
-  REF_INT global;
+  REF_GLOB global;
 
   REF_INT *migrate_part;
   REF_INT *node_part;
 
   REF_INT *a_next;
-  REF_INT *a_parts, *b_parts;
+  REF_GLOB *a_parts, *b_parts;
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
 
@@ -503,11 +503,11 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_parts, 2 * a_total, REF_INT);
+  ref_malloc(a_parts, 2 * a_total, REF_GLOB);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_parts, 2 * b_total, REF_INT);
+  ref_malloc(b_parts, 2 * b_total, REF_GLOB);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -522,19 +522,19 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
       if (ref_mpi_rank(ref_mpi) != part) {
         global = ref_migrate_global(ref_migrate, local);
         a_parts[0 + 2 * a_next[part]] = global;
-        a_parts[1 + 2 * a_next[part]] = migrate_part[node];
+        a_parts[1 + 2 * a_next[part]] = (REF_GLOB)migrate_part[node];
         a_next[part]++;
       }
     }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_parts, a_size, b_parts, b_size, 2,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv parts");
 
   for (node = 0; node < b_total; node++) {
     global = b_parts[0 + 2 * node];
-    part = b_parts[1 + 2 * node];
+    part = (REF_INT)b_parts[1 + 2 * node];
     RSS(ref_node_local(ref_node, global, &local), "g2l");
     node_part[local] = part;
   }
