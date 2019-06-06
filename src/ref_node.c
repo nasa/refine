@@ -2759,7 +2759,7 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
 }
 
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
-                              REF_INT position, REF_DBL *value) {
+                              REF_GLOB position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_DBL *pack, *sorted;
   REF_INT *order;

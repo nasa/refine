@@ -232,7 +232,7 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
 
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
-                              REF_INT position, REF_DBL *value);
+                              REF_GLOB position, REF_DBL *value);
 
 REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
 REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
