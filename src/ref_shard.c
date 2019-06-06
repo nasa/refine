@@ -442,7 +442,7 @@ REF_STATUS ref_shard_split(REF_SHARD ref_shard) {
     RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol), "tet vol");             \
     if (vol <= 0.0) {                                                        \
       printf("tet vol %e\n", vol);                                           \
-      printf("minnode %d\n", minnode);                                       \
+      printf("minnode " REF_GLOB_FMT "\n", minnode);                         \
       printf("orig %d %d %d %d %d %d\n", orig[0], orig[1], orig[2], orig[3], \
              orig[4], orig[5]);                                              \
       printf("prism %d %d %d %d %d %d\n", pri_nodes[0], pri_nodes[1],        \
@@ -470,12 +470,13 @@ static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node, REF_CELL ref_cell,
 
 REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
                                     REF_INT of_faceid) {
-  REF_INT cell, tri_mark, minnode;
+  REF_INT cell, tri_mark;
+  REF_GLOB minnode;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
-  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB global[REF_CELL_MAX_SIZE_PER];
   REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT pri_global[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB pri_global[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL pri = ref_grid_pri(ref_grid);
   REF_CELL pyr = ref_grid_pyr(ref_grid);
@@ -483,7 +484,7 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
 
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT qua_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT qua_global[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB qua_global[REF_CELL_MAX_SIZE_PER];
   REF_CELL qua = ref_grid_qua(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
 
