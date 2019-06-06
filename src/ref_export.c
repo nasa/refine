@@ -1466,6 +1466,22 @@ static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_bin_ugrid_int(FILE *file, REF_BOOL swap,
+                                           REF_BOOL fat, REF_INT output) {
+  if (fat) {
+    REF_LONG actual;
+    actual = (REF_LONG)output;
+    if (swap) SWAP_LONG(actual);
+    REIS(1, fwrite(&actual, sizeof(REF_LONG), 1, file), "output long");
+  } else {
+    REF_INT actual;
+    actual = output;
+    if (swap) SWAP_INT(actual);
+    REIS(1, fwrite(&actual, sizeof(REF_INT), 1, file), "output int");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
                                        REF_BOOL swap, REF_BOOL fat) {
   FILE *file;
@@ -1485,57 +1501,25 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  if (fat) {
-    REF_LONG nnode, ntri, nqua, ntet, npyr, npri, nhex;
-    nnode = ref_node_n(ref_node);
-    ntri = ref_cell_n(ref_grid_tri(ref_grid));
-    nqua = ref_cell_n(ref_grid_qua(ref_grid));
-    ntet = ref_cell_n(ref_grid_tet(ref_grid));
-    npyr = ref_cell_n(ref_grid_pyr(ref_grid));
-    npri = ref_cell_n(ref_grid_pri(ref_grid));
-    nhex = ref_cell_n(ref_grid_hex(ref_grid));
-
-    if (swap) SWAP_LONG(nnode);
-    if (swap) SWAP_LONG(ntri);
-    if (swap) SWAP_LONG(nqua);
-    if (swap) SWAP_LONG(ntet);
-    if (swap) SWAP_LONG(npyr);
-    if (swap) SWAP_LONG(npri);
-    if (swap) SWAP_LONG(nhex);
-
-    REIS(1, fwrite(&nnode, sizeof(REF_LONG), 1, file), "nnode");
-    REIS(1, fwrite(&ntri, sizeof(REF_LONG), 1, file), "ntri");
-    REIS(1, fwrite(&nqua, sizeof(REF_LONG), 1, file), "nqua");
-    REIS(1, fwrite(&ntet, sizeof(REF_LONG), 1, file), "ntet");
-    REIS(1, fwrite(&npyr, sizeof(REF_LONG), 1, file), "npyr");
-    REIS(1, fwrite(&npri, sizeof(REF_LONG), 1, file), "npri");
-    REIS(1, fwrite(&nhex, sizeof(REF_LONG), 1, file), "nhex");
-  } else {
-    REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
-    nnode = ref_node_n(ref_node);
-    ntri = ref_cell_n(ref_grid_tri(ref_grid));
-    nqua = ref_cell_n(ref_grid_qua(ref_grid));
-    ntet = ref_cell_n(ref_grid_tet(ref_grid));
-    npyr = ref_cell_n(ref_grid_pyr(ref_grid));
-    npri = ref_cell_n(ref_grid_pri(ref_grid));
-    nhex = ref_cell_n(ref_grid_hex(ref_grid));
-
-    if (swap) SWAP_INT(nnode);
-    if (swap) SWAP_INT(ntri);
-    if (swap) SWAP_INT(nqua);
-    if (swap) SWAP_INT(ntet);
-    if (swap) SWAP_INT(npyr);
-    if (swap) SWAP_INT(npri);
-    if (swap) SWAP_INT(nhex);
-
-    REIS(1, fwrite(&nnode, sizeof(REF_INT), 1, file), "nnode");
-    REIS(1, fwrite(&ntri, sizeof(REF_INT), 1, file), "ntri");
-    REIS(1, fwrite(&nqua, sizeof(REF_INT), 1, file), "nqua");
-    REIS(1, fwrite(&ntet, sizeof(REF_INT), 1, file), "ntet");
-    REIS(1, fwrite(&npyr, sizeof(REF_INT), 1, file), "npyr");
-    REIS(1, fwrite(&npri, sizeof(REF_INT), 1, file), "npri");
-    REIS(1, fwrite(&nhex, sizeof(REF_INT), 1, file), "nhex");
-  }
+  RSS(ref_export_bin_ugrid_int(file, swap, fat, ref_node_n(ref_node)), "nnode");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_tri(ref_grid))),
+      "ntri");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_qua(ref_grid))),
+      "nqua");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_tet(ref_grid))),
+      "ntet");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_pyr(ref_grid))),
+      "npyr");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_pri(ref_grid))),
+      "npri");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_hex(ref_grid))),
+      "nhex");
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
