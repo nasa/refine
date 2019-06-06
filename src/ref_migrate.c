@@ -926,7 +926,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
       "allsum");
 
-  min_part = ref_node_n_global(ref_node);
+  min_part = INT_MAX;
   max_part = 0;
   each_ref_mpi_part(ref_mpi, proc) {
     min_part = MIN(min_part, partition_size[proc]);
@@ -934,12 +934,13 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("balance %6.3f on %d of %d target %d size min %d max %d\n",
-           (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-               (REF_DBL)ref_mpi_n(ref_mpi),
-           newpart, ref_mpi_n(ref_mpi),
-           ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
-           max_part);
+    printf(
+        "balance %6.3f on %d of %d target %d size min %d max %d\n",
+        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+            (REF_DBL)ref_mpi_n(ref_mpi),
+        newpart, ref_mpi_n(ref_mpi),
+        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
+        min_part, max_part);
   }
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
