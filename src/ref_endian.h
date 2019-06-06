@@ -37,7 +37,7 @@ BEGIN_C_DECLORATION
 
 #define SWAP_LONG(x)         \
   {                          \
-    double y;                \
+    long y;                  \
     char *xp = (char *)&(x); \
     char *yp = (char *)&(y); \
     *(yp + 7) = *(xp + 0);   \
