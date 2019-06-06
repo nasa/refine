@@ -261,6 +261,96 @@ REF_STATUS ref_edge_ghost_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_edge_ghost_glob(REF_EDGE ref_edge, REF_MPI ref_mpi,
+                               REF_GLOB *data) {
+  REF_NODE ref_node = ref_edge_node(ref_edge);
+  REF_INT *a_size, *b_size;
+  REF_INT a_total, b_total;
+  REF_INT edge;
+  REF_INT part;
+  REF_INT *a_next, *a_edge;
+  REF_GLOB *a_nodes, *b_nodes;
+  REF_GLOB *a_data, *b_data;
+
+  REF_INT node0, node1;
+  REF_INT request;
+
+  if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
+
+  ref_malloc_init(a_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(b_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+    if (part != ref_mpi_rank(ref_mpi)) a_size[part]++;
+  }
+
+  RSS(ref_mpi_alltoall(ref_mpi, a_size, b_size, REF_INT_TYPE),
+      "alltoall sizes");
+
+  a_total = 0;
+  each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
+  ref_malloc(a_nodes, 2 * a_total, REF_GLOB);
+  ref_malloc(a_data, a_total, REF_GLOB);
+  ref_malloc(a_edge, a_total, REF_INT);
+
+  b_total = 0;
+  each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
+  ref_malloc(b_nodes, 2 * b_total, REF_GLOB);
+  ref_malloc(b_data, b_total, REF_GLOB);
+
+  ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
+  a_next[0] = 0;
+  each_ref_mpi_worker(ref_mpi, part) a_next[part] =
+      a_next[part - 1] + a_size[part - 1];
+
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+    if (part != ref_mpi_rank(ref_mpi)) {
+      a_edge[a_next[part]] = edge;
+      a_nodes[0 + 2 * a_next[part]] =
+          ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, edge));
+      a_nodes[1 + 2 * a_next[part]] =
+          ref_node_global(ref_node, ref_edge_e2n(ref_edge, 1, edge));
+      (a_next[part])++;
+    }
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, a_nodes, a_size, b_nodes, b_size, 2,
+                        REF_GLOB_TYPE),
+      "alltoallv requested nodes");
+
+  for (request = 0; request < b_total; request++) {
+    RSS(ref_node_local(ref_node, b_nodes[0 + 2 * request], &node0), "loc 0");
+    RSS(ref_node_local(ref_node, b_nodes[1 + 2 * request], &node1), "loc 1");
+    RSS(ref_edge_with(ref_edge, node0, node1, &edge), "find edge");
+    b_data[request] = data[edge];
+  }
+
+  RSS(ref_mpi_alltoallv(ref_mpi, b_data, b_size, a_data, a_size, 1,
+                        REF_GLOB_TYPE),
+      "alltoallv return data");
+
+  for (request = 0; request < a_total; request++) {
+    data[a_edge[request]] = a_data[request];
+  }
+
+  ref_free(a_next);
+
+  ref_free(b_data);
+  ref_free(b_nodes);
+
+  ref_free(a_edge);
+
+  ref_free(a_data);
+  ref_free(a_nodes);
+
+  ref_free(b_size);
+  ref_free(a_size);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_edge_ghost_min_int(REF_EDGE ref_edge, REF_MPI ref_mpi,
                                   REF_INT *data) {
   REF_NODE ref_node = ref_edge_node(ref_edge);
