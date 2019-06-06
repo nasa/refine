@@ -41,7 +41,7 @@ static REF_GRID ref_grid = NULL;
 REF_BOOL ref_fortran_allow_screen_output = REF_TRUE;
 
 REF_STATUS REF_FORT_(ref_fortran_init,
-                     REF_FORTRAN_INIT)(REF_INT *nnodes, REF_INT *nnodesg,
+                     REF_FORTRAN_INIT)(REF_INT *nnodes, REF_GLOB *nnodesg,
                                        REF_GLOB *l2g, REF_INT *part,
                                        REF_INT *partition, REF_DBL *x,
                                        REF_DBL *y, REF_DBL *z) {

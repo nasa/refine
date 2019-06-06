@@ -54,8 +54,8 @@
 
 int main(int argc, char *argv[]) {
   REF_INT nnodes, nnodes0;
-  REF_INT nnodesg;
-  REF_INT *l2g;
+  REF_GLOB nnodesg;
+  REF_GLOB *l2g;
   REF_INT *part;
   REF_INT partition;
   REF_DBL *x;
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
   nnodes = 4;
   nnodesg = 4;
 
-  l2g = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
+  l2g = (REF_GLOB *)malloc(sizeof(REF_GLOB) * (size_t)nnodes);
   part = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
   x = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
   y = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
@@ -187,7 +187,8 @@ int main(int argc, char *argv[]) {
   free(part);
   free(l2g);
 
-  nnodes = nnodesg = REF_EMPTY;
+  nnodes = REF_EMPTY;
+  nnodesg = REF_EMPTY;
   RSS(REF_FORT_(ref_fortran_size_node, REF_FORTRAN_SIZE_NODE)(&nnodes0, &nnodes,
                                                               &nnodesg),
       "size_node");
@@ -195,7 +196,7 @@ int main(int argc, char *argv[]) {
   REIS(4, nnodes, "n");
   REIS(4, nnodesg, "n");
 
-  l2g = (REF_INT *)malloc(sizeof(REF_INT) * (size_t)nnodes);
+  l2g = (REF_GLOB *)malloc(sizeof(REF_GLOB) * (size_t)nnodes);
   x = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
   y = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
   z = (REF_DBL *)malloc(sizeof(REF_DBL) * (size_t)nnodes);
