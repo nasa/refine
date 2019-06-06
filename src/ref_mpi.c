@@ -636,6 +636,10 @@ REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
         for (i = 0; i < counts[0]; i++)
           ((REF_INT *)concatenated_array)[i] = ((REF_INT *)local_array)[i];
         break;
+      case REF_LONG_TYPE:
+        for (i = 0; i < counts[0]; i++)
+          ((REF_LONG *)concatenated_array)[i] = ((REF_LONG *)local_array)[i];
+        break;
       case REF_DBL_TYPE:
         for (i = 0; i < counts[0]; i++)
           ((REF_DBL *)concatenated_array)[i] = ((REF_DBL *)local_array)[i];
@@ -664,6 +668,10 @@ REF_STATUS ref_mpi_allgatherv(REF_MPI ref_mpi, void *local_array,
     case REF_INT_TYPE:
       for (i = 0; i < counts[0]; i++)
         ((REF_INT *)concatenated_array)[i] = ((REF_INT *)local_array)[i];
+      break;
+    case REF_LONG_TYPE:
+      for (i = 0; i < counts[0]; i++)
+        ((REF_LONG *)concatenated_array)[i] = ((REF_LONG *)local_array)[i];
       break;
     case REF_DBL_TYPE:
       for (i = 0; i < counts[0]; i++)
@@ -786,6 +794,12 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
           (*((REF_INT **)recv))[i] = ((REF_INT *)send)[i];
         }
         break;
+      case REF_LONG_TYPE:
+        ref_malloc(*((REF_LONG **)recv), ldim * nsend, REF_LONG);
+        for (i = 0; i < ldim * nsend; i++) {
+          (*((REF_LONG **)recv))[i] = ((REF_LONG *)send)[i];
+        }
+        break;
       case REF_DBL_TYPE:
         ref_malloc(*((REF_DBL **)recv), ldim * nsend, REF_DBL);
         for (i = 0; i < ldim * nsend; i++) {
@@ -827,6 +841,16 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
         for (l = 0; l < ldim; l++)
           ((REF_INT *)a_data)[l + ldim * a_next[proc[i]]] =
               ((REF_INT *)send)[l + ldim * i];
+        a_next[proc[i]]++;
+      }
+      break;
+    case REF_LONG_TYPE:
+      ref_malloc(a_data, ldim * a_total, REF_LONG);
+      ref_malloc(*((REF_LONG **)recv), ldim * b_total, REF_LONG);
+      for (i = 0; i < nsend; i++) {
+        for (l = 0; l < ldim; l++)
+          ((REF_LONG *)a_data)[l + ldim * a_next[proc[i]]] =
+              ((REF_LONG *)send)[l + ldim * i];
         a_next[proc[i]]++;
       }
       break;

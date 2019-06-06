@@ -77,8 +77,9 @@ int main(void) {
   }
 
   { /* sparse global to local */
-    REF_INT n = 7, i, global[7], sorted_index[7], sorted_global[7];
-    REF_INT pack[7], position, total;
+    REF_INT n = 7, i;
+    REF_GLOB global[7], sorted_global[7];
+    REF_INT pack[7], sorted_index[7], position, total;
     global[0] = 10;
     global[1] = REF_EMPTY;
     global[2] = 30;
@@ -94,80 +95,86 @@ int main(void) {
         total++;
       }
     }
-    RSS(ref_sort_heap_int(total, sorted_global, sorted_index), "sort");
+    RSS(ref_sort_heap_glob(total, sorted_global, sorted_index), "sort");
     for (i = 0; i < total; i++) {
       sorted_index[i] = pack[sorted_index[i]];
       sorted_global[i] = global[sorted_index[i]];
     }
-    RSS(ref_sort_search(total, sorted_global, global[0], &position), "search");
+    RSS(ref_sort_search_glob(total, sorted_global, global[0], &position),
+        "search");
     REIS(0, sorted_index[position], "0");
-    RSS(ref_sort_search(total, sorted_global, global[2], &position), "search");
+    RSS(ref_sort_search_glob(total, sorted_global, global[2], &position),
+        "search");
     REIS(2, sorted_index[position], "2");
-    RSS(ref_sort_search(total, sorted_global, global[5], &position), "search");
+    RSS(ref_sort_search_glob(total, sorted_global, global[5], &position),
+        "search");
     REIS(5, sorted_index[position], "5");
   }
 
-  { /* global to local */
-    REF_INT n = 4, i, global[4], sorted_index[4], sorted_global[4], position;
+  { /* dense global to local */
+    REF_GLOB global[4], sorted_global[4];
+    REF_INT n = 4, i, sorted_index[4], position;
     global[0] = 40;
     global[1] = 10;
     global[2] = 30;
     global[3] = 20;
-    RSS(ref_sort_heap_int(n, global, sorted_index), "sort");
+    RSS(ref_sort_heap_glob(n, global, sorted_index), "sort");
     for (i = 0; i < n; i++) {
       sorted_global[i] = global[sorted_index[i]];
     }
-    RSS(ref_sort_search(n, sorted_global, global[0], &position), "search");
+    RSS(ref_sort_search_glob(n, sorted_global, global[0], &position), "search");
     REIS(0, sorted_index[position], "0");
-    RSS(ref_sort_search(n, sorted_global, global[1], &position), "search");
+    RSS(ref_sort_search_glob(n, sorted_global, global[1], &position), "search");
     REIS(1, sorted_index[position], "1");
-    RSS(ref_sort_search(n, sorted_global, global[2], &position), "search");
+    RSS(ref_sort_search_glob(n, sorted_global, global[2], &position), "search");
     REIS(2, sorted_index[position], "2");
-    RSS(ref_sort_search(n, sorted_global, global[3], &position), "search");
+    RSS(ref_sort_search_glob(n, sorted_global, global[3], &position), "search");
     REIS(3, sorted_index[position], "3");
   }
 
   { /* search */
-    REF_INT n = 4, ascending_list[4], position;
+    REF_INT n = 4, position;
+    REF_GLOB ascending_list[4];
     ascending_list[0] = 10;
     ascending_list[1] = 20;
     ascending_list[2] = 30;
     ascending_list[3] = 40;
 
-    RSS(ref_sort_search(n, ascending_list, ascending_list[0], &position),
+    RSS(ref_sort_search_glob(n, ascending_list, ascending_list[0], &position),
         "search");
     REIS(0, position, "0");
-    RSS(ref_sort_search(n, ascending_list, ascending_list[1], &position),
+    RSS(ref_sort_search_glob(n, ascending_list, ascending_list[1], &position),
         "search");
     REIS(1, position, "1");
-    RSS(ref_sort_search(n, ascending_list, ascending_list[2], &position),
+    RSS(ref_sort_search_glob(n, ascending_list, ascending_list[2], &position),
         "search");
     REIS(2, position, "2");
-    RSS(ref_sort_search(n, ascending_list, ascending_list[3], &position),
+    RSS(ref_sort_search_glob(n, ascending_list, ascending_list[3], &position),
         "search");
     REIS(3, position, "3");
 
-    REIS(REF_NOT_FOUND, ref_sort_search(n, ascending_list, 0, &position),
+    REIS(REF_NOT_FOUND, ref_sort_search_glob(n, ascending_list, 0, &position),
          "search");
     REIS(REF_EMPTY, position, "0");
-    REIS(REF_NOT_FOUND, ref_sort_search(n, ascending_list, 15, &position),
+    REIS(REF_NOT_FOUND, ref_sort_search_glob(n, ascending_list, 15, &position),
          "search");
     REIS(REF_EMPTY, position, "15");
-    REIS(REF_NOT_FOUND, ref_sort_search(n, ascending_list, 50, &position),
+    REIS(REF_NOT_FOUND, ref_sort_search_glob(n, ascending_list, 50, &position),
          "search");
     REIS(REF_EMPTY, position, "50");
   }
 
   { /* search 0 */
-    REF_INT n = 0, *ascending_list = NULL, position;
+    REF_INT n = 0, position;
+    REF_GLOB *ascending_list = NULL;
 
     position = 0;
-    REIS(REF_NOT_FOUND, ref_sort_search(n, ascending_list, 17, &position),
+    REIS(REF_NOT_FOUND, ref_sort_search_glob(n, ascending_list, 17, &position),
          "search");
     REIS(REF_EMPTY, position, "0");
   }
 
-  { /* heap sort zero */
+  { /* heap sort zero int */
     REF_INT n = 0, original[1], sorted_index[1];
     original[0] = 1;
     sorted_index[0] = 2;
@@ -175,7 +182,7 @@ int main(void) {
     REIS(2, sorted_index[0], "sorted_index[0]");
   }
 
-  { /* heap sort one */
+  { /* heap sort one int */
     REF_INT n = 1, original[1], sorted_index[1];
     original[0] = 1;
     sorted_index[0] = 2;
@@ -183,7 +190,7 @@ int main(void) {
     REIS(0, sorted_index[0], "sorted_index[0]");
   }
 
-  { /* heap two order */
+  { /* heap two order int */
     REF_INT n = 2, original[2], sorted_index[2];
     original[0] = 1;
     original[1] = 2;
@@ -192,7 +199,7 @@ int main(void) {
     REIS(1, sorted_index[1], "sorted_index[1]");
   }
 
-  { /* heap two reversed */
+  { /* heap two reversed int */
     REF_INT n = 2, original[2], sorted_index[2];
     original[0] = 2;
     original[1] = 1;
@@ -201,7 +208,7 @@ int main(void) {
     REIS(0, sorted_index[1], "sorted_index[1]");
   }
 
-  { /* heap three 012 */
+  { /* heap three 012 int */
     REF_INT n = 3, original[3], sorted_index[3];
     original[0] = 0;
     original[1] = 1;
@@ -212,18 +219,7 @@ int main(void) {
     REIS(2, sorted_index[2], "sorted_index[2]");
   }
 
-  { /* heap three 012 */
-    REF_INT n = 3, original[3], sorted_index[3];
-    original[0] = 0;
-    original[1] = 1;
-    original[2] = 2;
-    RSS(ref_sort_heap_int(n, original, sorted_index), "sort");
-    REIS(0, sorted_index[0], "sorted_index[0]");
-    REIS(1, sorted_index[1], "sorted_index[1]");
-    REIS(2, sorted_index[2], "sorted_index[2]");
-  }
-
-  { /* heap three 120 */
+  { /* heap three 120 int */
     REF_INT n = 3, original[3], sorted_index[3];
     original[0] = 2;
     original[1] = 0;

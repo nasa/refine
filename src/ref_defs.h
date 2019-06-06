@@ -56,6 +56,15 @@ typedef int REF_INT;
 
 typedef long REF_LONG;
 
+typedef long REF_GLOB;
+#define REF_GLOB_TYPE (2)
+#define REF_GLOB_FMT "%ld"
+/* revert to global ints
+typedef int REF_GLOB;
+#define REF_GLOB_TYPE (1)
+#define REF_GLOB_FMT "%d"
+*/
+
 typedef unsigned int REF_UINT;
 typedef unsigned long REF_ULONG;
 

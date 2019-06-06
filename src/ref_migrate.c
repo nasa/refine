@@ -74,7 +74,7 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
 
   ref_migrate_max(ref_migrate) = ref_node_max(ref_node);
 
-  ref_malloc_init(ref_migrate->global, ref_migrate_max(ref_migrate), REF_INT,
+  ref_malloc_init(ref_migrate->global, ref_migrate_max(ref_migrate), REF_GLOB,
                   REF_EMPTY);
   ref_malloc(ref_migrate->xyz, 3 * ref_migrate_max(ref_migrate), REF_DBL);
   ref_malloc(ref_migrate->weight, ref_migrate_max(ref_migrate), REF_DBL);
@@ -135,16 +135,16 @@ REF_STATUS ref_migrate_free(REF_MIGRATE ref_migrate) {
 REF_STATUS ref_migrate_inspect(REF_MIGRATE ref_migrate) {
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_INT node, item, local, part;
-  REF_INT global;
+  REF_GLOB global;
 
   each_ref_migrate_node(ref_migrate, node) {
-    printf(" %2d : %3d :", ref_mpi_rank(ref_node_mpi(ref_node)),
+    printf(" %2d : " REF_GLOB_FMT " :", ref_mpi_rank(ref_node_mpi(ref_node)),
            ref_node_global(ref_node, node));
     each_ref_adj_node_item_with_ref(ref_migrate_parent_local(ref_migrate), node,
                                     item, local) {
       global = ref_migrate_global(ref_migrate, local);
       part = ref_adj_item_ref(ref_migrate_parent_part(ref_migrate), item);
-      printf(" %3d+%d", global, part);
+      printf(" " REF_GLOB_FMT "+%d", global, part);
     }
     printf("\n");
   }
@@ -156,7 +156,7 @@ REF_STATUS ref_migrate_2d_agglomeration_keep(REF_MIGRATE ref_migrate,
   REF_NODE ref_node = ref_grid_node(ref_migrate_grid(ref_migrate));
   REF_ADJ conn_adj = ref_migrate_conn(ref_migrate);
   REF_INT item, local;
-  REF_INT global;
+  REF_GLOB global;
   REF_INT from_node;
 
   /* not working for general agglomeration, ghost lose? */
@@ -400,13 +400,13 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   float ver;
 
   REF_INT node, item, local, part;
-  REF_INT global;
+  REF_GLOB global;
 
   REF_INT *migrate_part;
   REF_INT *node_part;
 
   REF_INT *a_next;
-  REF_INT *a_parts, *b_parts;
+  REF_GLOB *a_parts, *b_parts;
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
 
@@ -503,11 +503,11 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_parts, 2 * a_total, REF_INT);
+  ref_malloc(a_parts, 2 * a_total, REF_GLOB);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_parts, 2 * b_total, REF_INT);
+  ref_malloc(b_parts, 2 * b_total, REF_GLOB);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
   a_next[0] = 0;
@@ -522,19 +522,19 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
       if (ref_mpi_rank(ref_mpi) != part) {
         global = ref_migrate_global(ref_migrate, local);
         a_parts[0 + 2 * a_next[part]] = global;
-        a_parts[1 + 2 * a_next[part]] = migrate_part[node];
+        a_parts[1 + 2 * a_next[part]] = (REF_GLOB)migrate_part[node];
         a_next[part]++;
       }
     }
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_parts, a_size, b_parts, b_size, 2,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv parts");
 
   for (node = 0; node < b_total; node++) {
     global = b_parts[0 + 2 * node];
-    part = b_parts[1 + 2 * node];
+    part = (REF_INT)b_parts[1 + 2 * node];
     RSS(ref_node_local(ref_node, global, &local), "g2l");
     node_part[local] = part;
   }
@@ -926,7 +926,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
       "allsum");
 
-  min_part = ref_node_n_global(ref_node);
+  min_part = INT_MAX;
   max_part = 0;
   each_ref_mpi_part(ref_mpi, proc) {
     min_part = MIN(min_part, partition_size[proc]);
@@ -934,12 +934,13 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
   }
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("balance %6.3f on %d of %d target %d size min %d max %d\n",
-           (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-               (REF_DBL)ref_mpi_n(ref_mpi),
-           newpart, ref_mpi_n(ref_mpi),
-           ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi), min_part,
-           max_part);
+    printf(
+        "balance %6.3f on %d of %d target %d size min %d max %d\n",
+        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+            (REF_DBL)ref_mpi_n(ref_mpi),
+        newpart, ref_mpi_n(ref_mpi),
+        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
+        min_part, max_part);
   }
 
   ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
@@ -1019,7 +1020,7 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *a_size, *b_size;
   REF_INT a_total, b_total;
-  REF_INT *a_global, *b_global;
+  REF_GLOB *a_global, *b_global;
   REF_INT part, node;
   REF_INT *a_next;
   REF_DBL *a_real, *b_real;
@@ -1034,8 +1035,9 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       if (ref_node_part(ref_node, node) < 0 ||
           ref_node_part(ref_node, node) >= ref_mpi_n(ref_mpi)) {
-        printf("id %d node %d global %d part %d", ref_mpi_rank(ref_mpi), node,
-               ref_node_global(ref_node, node), ref_node_part(ref_node, node));
+        printf("id %d node %d global " REF_GLOB_FMT " part %d",
+               ref_mpi_rank(ref_mpi), node, ref_node_global(ref_node, node),
+               ref_node_part(ref_node, node));
         THROW("part out of range");
       }
       a_size[ref_node_part(ref_node, node)]++;
@@ -1047,7 +1049,7 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_global, a_total, REF_INT);
+  ref_malloc(a_global, a_total, REF_GLOB);
   ref_malloc(a_real, REF_NODE_REAL_PER * a_total, REF_DBL);
   a_aux = NULL;
   if (ref_node_naux(ref_node) > 0)
@@ -1055,7 +1057,7 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_global, b_total, REF_INT);
+  ref_malloc(b_global, b_total, REF_GLOB);
   ref_malloc(b_real, REF_NODE_REAL_PER * b_total, REF_DBL);
   b_aux = NULL;
   if (ref_node_naux(ref_node) > 0)
@@ -1081,17 +1083,17 @@ static REF_STATUS ref_migrate_shufflin_node(REF_NODE ref_node) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_global, a_size, b_global, b_size, 1,
-                        REF_INT_TYPE),
+                        REF_GLOB_TYPE),
       "alltoallv global");
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_real, a_size, b_real, b_size,
                         REF_NODE_REAL_PER, REF_DBL_TYPE),
-      "alltoallv global");
+      "alltoallv real");
 
   if (ref_node_naux(ref_node) > 0)
     RSS(ref_mpi_alltoallv(ref_mpi, a_aux, a_size, b_aux, b_size,
                           ref_node_naux(ref_node), REF_DBL_TYPE),
-        "alltoallv global");
+        "alltoallv aux");
 
   RSS(ref_node_add_many(ref_node, b_total, b_global), "add many");
 
@@ -1128,7 +1130,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   REF_INT a_total, b_total;
   REF_INT part, node, cell, i;
   REF_INT *a_next;
-  REF_INT *a_c2n, *b_c2n;
+  REF_GLOB *a_c2n, *b_c2n;
   REF_INT *a_parts, *b_parts;
   REF_BOOL need_to_keep;
 
@@ -1155,12 +1157,12 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_c2n, ref_cell_size_per(ref_cell) * a_total, REF_INT);
+  ref_malloc(a_c2n, ref_cell_size_per(ref_cell) * a_total, REF_GLOB);
   ref_malloc(a_parts, ref_cell_size_per(ref_cell) * a_total, REF_INT);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_c2n, ref_cell_size_per(ref_cell) * b_total, REF_INT);
+  ref_malloc(b_c2n, ref_cell_size_per(ref_cell) * b_total, REF_GLOB);
   ref_malloc(b_parts, ref_cell_size_per(ref_cell) * b_total, REF_INT);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -1187,7 +1189,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
         if (ref_cell_last_node_is_an_id(ref_cell)) {
           a_c2n[ref_cell_node_per(ref_cell) +
                 ref_cell_size_per(ref_cell) * a_next[part]] =
-              nodes[ref_cell_node_per(ref_cell)];
+              (REF_GLOB)nodes[ref_cell_node_per(ref_cell)];
           a_parts[ref_cell_node_per(ref_cell) +
                   ref_cell_size_per(ref_cell) * a_next[part]] = REF_EMPTY;
         }
@@ -1197,7 +1199,7 @@ REF_STATUS ref_migrate_shufflin_cell(REF_NODE ref_node, REF_CELL ref_cell) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_c2n, a_size, b_c2n, b_size,
-                        ref_cell_size_per(ref_cell), REF_INT_TYPE),
+                        ref_cell_size_per(ref_cell), REF_GLOB_TYPE),
       "alltoallv c2n");
   RSS(ref_mpi_alltoallv(ref_mpi, a_parts, a_size, b_parts, b_size,
                         ref_cell_size_per(ref_cell), REF_INT_TYPE),
@@ -1236,9 +1238,11 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   REF_INT a_total, b_total;
   REF_INT part, node;
   REF_INT *a_next;
-  REF_INT *a_int, *b_int;
+  REF_GLOB *a_int, *b_int;
   REF_DBL *a_real, *b_real;
-  REF_INT i, global, degree, item, geom;
+  REF_INT i, degree, item, geom;
+  REF_GLOB global;
+  REF_INT descr[REF_GEOM_DESCR_SIZE];
 
   if (!ref_mpi_para(ref_mpi)) return REF_SUCCESS;
 
@@ -1257,12 +1261,12 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
 
   a_total = 0;
   each_ref_mpi_part(ref_mpi, part) a_total += a_size[part];
-  ref_malloc(a_int, REF_GEOM_DESCR_SIZE * a_total, REF_INT);
+  ref_malloc(a_int, REF_GEOM_DESCR_SIZE * a_total, REF_GLOB);
   ref_malloc(a_real, 2 * a_total, REF_DBL);
 
   b_total = 0;
   each_ref_mpi_part(ref_mpi, part) b_total += b_size[part];
-  ref_malloc(b_int, REF_GEOM_DESCR_SIZE * b_total, REF_INT);
+  ref_malloc(b_int, REF_GEOM_DESCR_SIZE * b_total, REF_GLOB);
   ref_malloc(b_real, 2 * b_total, REF_DBL);
 
   ref_malloc(a_next, ref_mpi_n(ref_mpi), REF_INT);
@@ -1277,7 +1281,7 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
         part = ref_node_part(ref_node, node);
         each_ref_descr(ref_geom, i) {
           a_int[i + REF_GEOM_DESCR_SIZE * a_next[part]] =
-              ref_geom_descr(ref_geom, i, geom);
+              (REF_GLOB)ref_geom_descr(ref_geom, i, geom);
         }
         a_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * a_next[part]] =
             ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
@@ -1289,18 +1293,20 @@ static REF_STATUS ref_migrate_shufflin_geom(REF_GRID ref_grid) {
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, a_int, a_size, b_int, b_size,
-                        REF_GEOM_DESCR_SIZE, REF_INT_TYPE),
+                        REF_GEOM_DESCR_SIZE, REF_GLOB_TYPE),
       "alltoallv geom int");
   RSS(ref_mpi_alltoallv(ref_mpi, a_real, a_size, b_real, b_size, 2,
                         REF_DBL_TYPE),
       "alltoallv geom real");
 
   for (geom = 0; geom < b_total; geom++) {
+    each_ref_descr(ref_geom, i) {
+      descr[i] = (REF_INT)b_int[i + REF_GEOM_DESCR_SIZE * geom];
+    }
     global = b_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom];
     RSS(ref_node_local(ref_node, global, &node), "g2l");
-    b_int[REF_GEOM_DESCR_NODE + REF_GEOM_DESCR_SIZE * geom] = node;
-    RSS(ref_geom_add_with_descr(ref_geom, &(b_int[REF_GEOM_DESCR_SIZE * geom]),
-                                &(b_real[2 * geom])),
+    descr[REF_GEOM_DESCR_NODE] = node;
+    RSS(ref_geom_add_with_descr(ref_geom, descr, &(b_real[2 * geom])),
         "geom add");
   }
 

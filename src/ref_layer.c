@@ -112,7 +112,8 @@ REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_INT item, cell, cell_node, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT prism[REF_CELL_MAX_SIZE_PER];
   REF_INT new_cell;
-  REF_INT node, local, global, i, nnode_per_layer;
+  REF_INT node, local, i, nnode_per_layer;
+  REF_GLOB global;
   REF_DBL norm[3];
 
   /* first layer of nodes */
@@ -131,10 +132,10 @@ REF_STATUS ref_layer_puff(REF_LAYER ref_layer, REF_GRID ref_grid) {
 
   /* second layer of nodes */
   for (local = 0; local < nnode_per_layer; local++) {
-    global = local + ref_node_n_global(ref_grid_node(ref_grid));
+    global = (REF_GLOB)local + ref_node_n_global(ref_grid_node(ref_grid));
     RSS(ref_node_add(layer_node, global, &node), "add");
     RSS(ref_layer_normal(ref_layer, ref_grid,
-                         ref_node_global(layer_node, local), norm),
+                         (REF_INT)ref_node_global(layer_node, local), norm),
         "normal");
     for (i = 0; i < 3; i++)
       ref_node_xyz(layer_node, i, node) =
@@ -199,7 +200,8 @@ REF_STATUS ref_layer_insert(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE layer_node = ref_grid_node(ref_layer_grid(ref_layer));
-  REF_INT nnode_per_layer, node, local, global;
+  REF_INT nnode_per_layer, node, local;
+  REF_GLOB global;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], node0, node1, node2, node3;
   REF_INT tet, i, new_node;
   REF_DBL bary[4];
@@ -324,8 +326,8 @@ REF_STATUS ref_layer_recon(REF_LAYER ref_layer, REF_GRID ref_grid) {
   REF_INT node0, node1;
 
   each_ref_cell_valid_cell_with_nodes(layer_edge, cell, nodes) {
-    node0 = ref_node_global(layer_node, nodes[0]);
-    node1 = ref_node_global(layer_node, nodes[1]);
+    node0 = (REF_INT)ref_node_global(layer_node, nodes[0]);
+    node1 = (REF_INT)ref_node_global(layer_node, nodes[1]);
     RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side), "side?");
     if (has_side) {
       if (ref_layer->verbose) printf("got one\n");

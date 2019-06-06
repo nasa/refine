@@ -368,19 +368,20 @@ REF_STATUS ref_grid_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
 }
 
 REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
-                                       REF_INT *nnode_global,
-                                       REF_LONG *ncell_global, REF_INT **l2c) {
+                                       REF_GLOB *nnode_global,
+                                       REF_LONG *ncell_global, REF_GLOB **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
   REF_INT cell, node, cell_node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
-  REF_INT proc, offset, *counts;
+  REF_INT proc, *counts;
+  REF_GLOB offset;
 
   ref_node = ref_grid_node(ref_grid);
   ref_mpi = ref_node_mpi(ref_node);
 
-  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
 
   (*nnode_global) = 0;
   (*ncell_global) = 0;
@@ -418,27 +419,28 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
+  RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                           REF_INT cell_id,
-                                          REF_INT *nnode_global,
+                                          REF_GLOB *nnode_global,
                                           REF_LONG *ncell_global,
-                                          REF_INT **l2c) {
+                                          REF_GLOB **l2c) {
   REF_NODE ref_node;
   REF_MPI ref_mpi;
   REF_INT cell, node, cell_node, part;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
-  REF_INT proc, offset, *counts;
+  REF_INT proc, *counts;
+  REF_INT offset;
 
   ref_node = ref_grid_node(ref_grid);
   ref_mpi = ref_node_mpi(ref_node);
 
-  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
 
   (*nnode_global) = 0;
   (*ncell_global) = 0;
@@ -479,7 +481,7 @@ REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
+  RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }

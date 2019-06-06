@@ -42,7 +42,7 @@ int main(void) {
   }
 
   { /* store one */
-    REF_INT global = 2;
+    REF_GLOB global = 2;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
     RSS(ref_cloud_store(ref_cloud, global, aux), "store");
@@ -51,7 +51,7 @@ int main(void) {
   }
 
   { /* store two, recall, and has (in global order) */
-    REF_INT global;
+    REF_GLOB global;
     REF_INT item;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
@@ -69,7 +69,7 @@ int main(void) {
     RSS(ref_cloud_item(ref_cloud, global, &item), "find");
     REIS(0, item, "missing");
     RAS(ref_cloud_has_global(ref_cloud, global), "has");
-    
+
     global = 2;
     RSS(ref_cloud_item(ref_cloud, global, &item), "find");
     REIS(1, item, "missing");
@@ -82,7 +82,7 @@ int main(void) {
   }
 
   { /* store lots */
-    REF_INT global;
+    REF_GLOB global;
     REF_INT max;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
@@ -95,7 +95,7 @@ int main(void) {
   }
 
   { /* store key only once with latest value */
-    REF_INT global = 7;
+    REF_GLOB global = 7;
     REF_DBL aux0[4] = {0.0, 1.0, 2.0, 3.0};
     REF_DBL aux1[4] = {10.0, 11.0, 12.0, 13.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
@@ -115,7 +115,7 @@ int main(void) {
 
   { /* store two, deep copy */
     REF_CLOUD deep_copy;
-    REF_INT global;
+    REF_GLOB global;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
 
     RSS(ref_cloud_create(&ref_cloud, 4), "create");
@@ -136,7 +136,7 @@ int main(void) {
 
   { /* store lots, deep copy */
     REF_CLOUD deep_copy;
-    REF_INT global;
+    REF_GLOB global;
     REF_INT max;
     REF_DBL aux[4] = {0.0, 1.0, 2.0, 3.0};
     RSS(ref_cloud_create(&ref_cloud, 4), "create");

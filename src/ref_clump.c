@@ -57,7 +57,7 @@ static REF_STATUS ref_clump_zone_around(FILE *f, REF_CELL ref_cell,
     xyz_phys[2] =
         ref_node_xyz(ref_node, 2, local) - ref_node_xyz(ref_node, 2, node);
     RSS(ref_matrix_vect_mult(jacob, xyz_phys, xyz_comp), "ax");
-    fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e %d\n",
+    fprintf(f, " %.16e %.16e %.16e %.16e %.16e %.16e " REF_GLOB_FMT "\n",
             ref_node_xyz(ref_node, 0, local), ref_node_xyz(ref_node, 1, local),
             ref_node_xyz(ref_node, 2, local), xyz_comp[0], xyz_comp[1],
             xyz_comp[2], ref_node_global(ref_node, local));

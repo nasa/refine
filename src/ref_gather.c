@@ -65,15 +65,16 @@ REF_STATUS ref_gather_tec_movie_record_button(REF_GATHER ref_gather,
 
 static REF_STATUS ref_gather_cell_below_quality(
     REF_GRID ref_grid, REF_CELL ref_cell, REF_DBL min_quality,
-    REF_INT *nnode_global, REF_LONG *ncell_global, REF_INT **l2c) {
+    REF_GLOB *nnode_global, REF_LONG *ncell_global, REF_GLOB **l2c) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node, part, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT nnode, ncell;
-  REF_INT proc, offset, *counts;
+  REF_INT proc, *counts;
+  REF_GLOB offset;
   REF_DBL quality;
 
-  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
 
   (*nnode_global) = 0;
   (*ncell_global) = 0;
@@ -115,22 +116,23 @@ static REF_STATUS ref_gather_cell_below_quality(
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, (*l2c), 1), "xfer");
+  RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
 
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
-                                           REF_INT *l2c, REF_INT ldim,
+static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_GLOB nnode,
+                                           REF_GLOB *l2c, REF_INT ldim,
                                            REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, id;
-  REF_INT global, local;
+  REF_GLOB nnode_written, first, global;
+  REF_INT local, n, i, id;
   REF_STATUS status;
   REF_INT dim = 3 + ldim + 1;
-  REF_INT *sorted_local, *sorted_cellnode, *pack, total_cellnode, position;
+  REF_INT *sorted_local, *pack, total_cellnode, position;
+  REF_GLOB *sorted_cellnode;
 
   total_cellnode = 0;
   for (i = 0; i < ref_node_max(ref_node); i++) {
@@ -140,7 +142,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
   }
 
   ref_malloc(sorted_local, total_cellnode, REF_INT);
-  ref_malloc(sorted_cellnode, total_cellnode, REF_INT);
+  ref_malloc(sorted_cellnode, total_cellnode, REF_GLOB);
   ref_malloc(pack, total_cellnode, REF_INT);
 
   total_cellnode = 0;
@@ -151,14 +153,15 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
       total_cellnode++;
     }
   }
-  RSS(ref_sort_heap_int(total_cellnode, sorted_cellnode, sorted_local), "sort");
+  RSS(ref_sort_heap_glob(total_cellnode, sorted_cellnode, sorted_local),
+      "sort");
   for (i = 0; i < total_cellnode; i++) {
     sorted_local[i] = pack[sorted_local[i]];
     sorted_cellnode[i] = l2c[sorted_local[i]];
   }
   ref_free(pack);
 
-  chunk = nnode / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(nnode / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
 
   ref_malloc(local_xyzm, dim * chunk, REF_DBL);
@@ -167,7 +170,7 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
   nnode_written = 0;
   while (nnode_written < nnode) {
     first = nnode_written;
-    n = MIN(chunk, nnode - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk, nnode - nnode_written);
 
     nnode_written += n;
 
@@ -175,8 +178,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 
     for (i = 0; i < n; i++) {
       global = first + i;
-      status =
-          ref_sort_search(total_cellnode, sorted_cellnode, global, &position);
+      status = ref_sort_search_glob(total_cellnode, sorted_cellnode, global,
+                                    &position);
       RXS(status, REF_NOT_FOUND, "node local failed");
       if (REF_SUCCESS == status) {
         local = sorted_local[position];
@@ -193,8 +196,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     for (i = 0; i < n; i++) {
       if ((ABS(local_xyzm[3 + ldim + dim * i] - 1.0) > 0.1) &&
           (ABS(local_xyzm[3 + ldim + dim * i] - 0.0) > 0.1)) {
-        printf("%s: %d: %s: before sum %d %f\n", __FILE__, __LINE__, __func__,
-               first + i, local_xyzm[3 + ldim + dim * i]);
+        printf("%s: %d: %s: before sum " REF_GLOB_FMT " %f\n", __FILE__,
+               __LINE__, __func__, first + i, local_xyzm[3 + ldim + dim * i]);
       }
     }
 
@@ -203,8 +206,8 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
     if (ref_mpi_once(ref_mpi)) {
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[3 + ldim + dim * i] - 1.0) > 0.1) {
-          printf("%s: %d: %s: after sum %d %f\n", __FILE__, __LINE__, __func__,
-                 first + i, xyzm[3 + ldim + dim * i]);
+          printf("%s: %d: %s: after sum " REF_GLOB_FMT " %f\n", __FILE__,
+                 __LINE__, __func__, first + i, xyzm[3 + ldim + dim * i]);
         }
         for (id = 0; id < 3 + ldim; id++) {
           fprintf(file, " %.15e", xyzm[id + dim * i]);
@@ -223,14 +226,15 @@ static REF_STATUS ref_gather_node_tec_part(REF_NODE ref_node, REF_INT nnode,
 }
 
 static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
-                                      REF_LONG ncell_expected, REF_INT *l2c,
+                                      REF_LONG ncell_expected, REF_GLOB *l2c,
                                       FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB globals[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT *c2n, ncell;
-  REF_INT proc, part;
+  REF_GLOB *c2n;
+  REF_INT proc, part, ncell;
   REF_LONG ncell_actual;
 
   ncell_actual = 0;
@@ -240,9 +244,9 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
       if (ref_mpi_rank(ref_mpi) == part) {
         for (node = 0; node < node_per; node++) {
-          nodes[node] = l2c[nodes[node]];
-          nodes[node]++;
-          fprintf(file, " %d", nodes[node]);
+          globals[node] = l2c[nodes[node]];
+          globals[node]++;
+          fprintf(file, " " REF_GLOB_FMT, globals[node]);
         }
         ncell_actual++;
         fprintf(file, "\n");
@@ -253,13 +257,13 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
-      ref_malloc(c2n, ncell * node_per, REF_INT);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
+      ref_malloc(c2n, ncell * node_per, REF_GLOB);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
           c2n[node + node_per * cell]++;
-          fprintf(file, " %d", c2n[node + node_per * cell]);
+          fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
         }
         ncell_actual++;
         fprintf(file, "\n");
@@ -273,7 +277,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
       if (ref_mpi_rank(ref_mpi) == part) ncell++;
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -283,7 +287,7 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
         ncell++;
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
         "send c2n");
 
     ref_free(c2n);
@@ -298,14 +302,15 @@ static REF_STATUS ref_gather_cell_tec(REF_NODE ref_node, REF_CELL ref_cell,
 
 static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
                                          REF_INT cell_id,
-                                         REF_LONG ncell_expected, REF_INT *l2c,
+                                         REF_LONG ncell_expected, REF_GLOB *l2c,
                                          FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB globals[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
-  REF_INT *c2n, ncell;
-  REF_INT proc, part;
+  REF_GLOB *c2n;
+  REF_INT proc, part, ncell;
   REF_LONG ncell_actual;
 
   ncell_actual = 0;
@@ -316,9 +321,9 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
         RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
         if (ref_mpi_rank(ref_mpi) == part) {
           for (node = 0; node < node_per; node++) {
-            nodes[node] = l2c[nodes[node]];
-            nodes[node]++;
-            fprintf(file, " %d", nodes[node]);
+            globals[node] = l2c[nodes[node]];
+            globals[node]++;
+            fprintf(file, " " REF_GLOB_FMT, globals[node]);
           }
           ncell_actual++;
           fprintf(file, "\n");
@@ -330,13 +335,13 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
-      ref_malloc(c2n, ncell * node_per, REF_INT);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
+      ref_malloc(c2n, ncell * node_per, REF_GLOB);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
           c2n[node + node_per * cell]++;
-          fprintf(file, " %d", c2n[node + node_per * cell]);
+          fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
         }
         ncell_actual++;
         fprintf(file, "\n");
@@ -352,7 +357,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
       }
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (cell_id == nodes[ref_cell_id_index(ref_cell)]) {
@@ -364,7 +369,7 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
         }
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
         "send c2n");
 
     ref_free(c2n);
@@ -380,14 +385,15 @@ static REF_STATUS ref_gather_cell_id_tec(REF_NODE ref_node, REF_CELL ref_cell,
 static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
                                               REF_CELL ref_cell,
                                               REF_LONG ncell_expected,
-                                              REF_INT *l2c, REF_DBL min_quality,
-                                              FILE *file) {
+                                              REF_GLOB *l2c,
+                                              REF_DBL min_quality, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB globals[REF_CELL_MAX_SIZE_PER];
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT ncell;
-  REF_INT *c2n;
+  REF_GLOB *c2n;
   REF_INT part, proc;
   REF_LONG ncell_actual;
   REF_DBL quality;
@@ -401,9 +407,9 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
         RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
         if (quality < min_quality) {
           for (node = 0; node < node_per; node++) {
-            nodes[node] = l2c[nodes[node]];
-            nodes[node]++;
-            fprintf(file, " %d", nodes[node]);
+            globals[node] = l2c[nodes[node]];
+            globals[node]++;
+            fprintf(file, " " REF_GLOB_FMT, globals[node]);
           }
           ncell_actual++;
           fprintf(file, "\n");
@@ -415,13 +421,13 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
   if (ref_mpi_once(ref_mpi)) {
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
-      ref_malloc(c2n, ncell * node_per, REF_INT);
-      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, proc),
+      ref_malloc(c2n, ncell * node_per, REF_GLOB);
+      RSS(ref_mpi_recv(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, proc),
           "recv c2n");
       for (cell = 0; cell < ncell; cell++) {
         for (node = 0; node < node_per; node++) {
           c2n[node + node_per * cell]++;
-          fprintf(file, " %d", c2n[node + node_per * cell]);
+          fprintf(file, " " REF_GLOB_FMT, c2n[node + node_per * cell]);
         }
         fprintf(file, "\n");
       }
@@ -438,7 +444,7 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
       }
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
-    ref_malloc(c2n, ncell * node_per, REF_INT);
+    ref_malloc(c2n, ncell * node_per, REF_GLOB);
     ncell = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -451,7 +457,7 @@ static REF_STATUS ref_gather_cell_quality_tec(REF_NODE ref_node,
         }
       }
     }
-    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_INT_TYPE, 0),
+    RSS(ref_mpi_send(ref_mpi, c2n, ncell * node_per, REF_GLOB_TYPE, 0),
         "send c2n");
     ref_free(c2n);
   }
@@ -504,7 +510,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node, nnode, *l2c;
+  REF_INT node;
+  REF_GLOB nnode, *l2c;
   REF_LONG ncell;
   REF_DBL *scalar, dot;
   REF_INT edge, node0, node1;
@@ -533,12 +540,14 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
     if (NULL == zone_title) {
       fprintf(ref_gather->grid_file,
-              "zone t=\"part\", nodes=%d, elements=%ld, datapacking=%s, "
+              "zone t=\"part\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               nnode, ncell, "point", "fetriangle", ref_gather->time);
     } else {
       fprintf(ref_gather->grid_file,
-              "zone t=\"%s\", nodes=%d, elements=%ld, datapacking=%s, "
+              "zone t=\"%s\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
               "zonetype=%s, solutiontime=%f\n",
               zone_title, nnode, ncell, "point", "fetriangle",
               ref_gather->time);
@@ -595,12 +604,14 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       if (ref_grid_once(ref_grid)) {
         if (NULL == zone_title) {
           fprintf(ref_gather->grid_file,
-                  "zone t=\"qpart\", nodes=%d, elements=%ld, datapacking=%s, "
+                  "zone t=\"qpart\", nodes=" REF_GLOB_FMT
+                  ", elements=%ld, datapacking=%s, "
                   "zonetype=%s, solutiontime=%f\n",
                   nnode, ncell, "point", "fetetrahedron", ref_gather->time);
         } else {
           fprintf(ref_gather->grid_file,
-                  "zone t=\"q%s\", nodes=%d, elements=%ld, datapacking=%s, "
+                  "zone t=\"q%s\", nodes=" REF_GLOB_FMT
+                  ", elements=%ld, datapacking=%s, "
                   "zonetype=%s, solutiontime=%f\n",
                   zone_title, nnode, ncell, "point", "fetetrahedron",
                   ref_gather->time);
@@ -631,7 +642,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT node, nnode, *l2c;
+  REF_INT node;
+  REF_GLOB nnode, *l2c;
   REF_LONG ncell;
   REF_DBL *scalar;
 
@@ -649,7 +661,8 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
     fprintf(file, "title=\"tecplot refine partion file\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
     fprintf(file,
-            "zone t=\"part\", nodes=%d, elements=%ld, datapacking=%s, "
+            "zone t=\"part\", nodes=" REF_GLOB_FMT
+            ", elements=%ld, datapacking=%s, "
             "zonetype=%s\n",
             nnode, ncell, "point", "fetriangle");
   }
@@ -677,12 +690,13 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_DBL swapped_dbl;
-  REF_INT nnode_written, first, n, i;
-  REF_INT global, local;
+  REF_GLOB nnode_written, first, global;
+  REF_INT n, i;
+  REF_INT local;
   REF_INT id = REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 4 * chunk, REF_DBL);
   ref_malloc(xyzm, 4 * chunk, REF_DBL);
@@ -690,7 +704,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -719,7 +734,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[3 + 4 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[3 + 4 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[3 + 4 * i]);
         }
         swapped_dbl = xyzm[0 + 4 * i];
         if (swap_endian) SWAP_DBL(swapped_dbl);
@@ -744,11 +760,11 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -756,7 +772,8 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -780,7 +797,8 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[6 + 7 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[6 + 7 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[6 + 7 * i]);
         }
         fprintf(file, "%.15e %.15e %.15e %.15e %.15e %.15e \n", xyzm[0 + 7 * i],
                 xyzm[1 + 7 * i], xyzm[2 + 7 * i], xyzm[3 + 7 * i],
@@ -798,8 +816,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
@@ -842,7 +860,7 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "metric solution");
   }
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, 7 * chunk, REF_DBL);
   ref_malloc(xyzm, 7 * chunk, REF_DBL);
@@ -850,7 +868,9 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -874,7 +894,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[6 + 7 * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i, xyzm[6 + 7 * i]);
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
+                 xyzm[6 + 7 * i]);
         }
         REIS(1, fwrite(&(xyzm[0 + 7 * i]), sizeof(REF_DBL), 1, file), "m11");
         REIS(1, fwrite(&(xyzm[1 + 7 * i]), sizeof(REF_DBL), 1, file), "m12");
@@ -907,8 +928,8 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
-  REF_INT nnode_written, first, n, i, im;
-  REF_INT global, local;
+  REF_GLOB global, nnode_written, first;
+  REF_INT local, n, i, im;
   REF_STATUS status;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
@@ -953,7 +974,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     }
   }
 
-  chunk = ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1;
+  chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
   ref_malloc(local_xyzm, (ldim + 1) * chunk, REF_DBL);
   ref_malloc(xyzm, (ldim + 1) * chunk, REF_DBL);
@@ -961,7 +982,8 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
   nnode_written = 0;
   while (nnode_written < ref_node_n_global(ref_node)) {
     first = nnode_written;
-    n = MIN(chunk, ref_node_n_global(ref_node) - nnode_written);
+    n = (REF_INT)MIN((REF_GLOB)chunk,
+                     ref_node_n_global(ref_node) - nnode_written);
 
     nnode_written += n;
 
@@ -988,7 +1010,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
     if (ref_mpi_once(ref_mpi))
       for (i = 0; i < n; i++) {
         if (ABS(xyzm[ldim + (ldim + 1) * i] - 1.0) > 0.1) {
-          printf("error gather node %d %f\n", first + i,
+          printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
                  xyzm[ldim + (ldim + 1) * i]);
         }
         for (im = 0; im < ldim; im++) {
@@ -1026,7 +1048,8 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT node_per = ref_cell_node_per(ref_cell);
   REF_INT size_per = ref_cell_size_per(ref_cell);
   REF_INT ncell;
-  REF_INT *c2n;
+  REF_GLOB *c2n;
+  REF_INT c2n_int;
   REF_INT proc;
 
   if (ref_mpi_once(ref_mpi)) {
@@ -1040,11 +1063,10 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cel node");
         } else {
           for (node = 0; node < node_per; node++) {
-            nodes[node] = ref_node_global(ref_node, nodes[node]);
-            nodes[node]++;
-            if (swap_endian) SWAP_INT(nodes[node]);
-            REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file),
-                 "cel node");
+            c2n_int = (REF_INT)ref_node_global(ref_node, nodes[node]);
+            c2n_int++;
+            if (swap_endian) SWAP_INT(c2n_int);
+            REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cel node");
           }
           if (always_id) {
             if (ref_cell_last_node_is_an_id(ref_cell)) {
@@ -1067,34 +1089,28 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ncell, 1, REF_INT_TYPE, proc), "recv ncell");
       if (ncell > 0) {
-        ref_malloc(c2n, ncell * size_per, REF_INT);
-        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, proc),
+        ref_malloc(c2n, ncell * size_per, REF_GLOB);
+        RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, proc),
             "recv c2n");
         for (cell = 0; cell < ncell; cell++)
           if (faceid_insted_of_c2n) {
             node = node_per;
-            if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-            REIS(1,
-                 fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                        file),
-                 "cell");
+            c2n_int = (REF_INT)c2n[node + size_per * cell];
+            if (swap_endian) SWAP_INT(c2n_int);
+            REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
           } else {
             for (node = 0; node < node_per; node++) {
-              c2n[node + size_per * cell]++;
-              if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-              REIS(1,
-                   fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                          file),
-                   "cell");
+              c2n_int = (REF_INT)c2n[node + size_per * cell];
+              c2n_int++;
+              if (swap_endian) SWAP_INT(c2n_int);
+              REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
             }
             if (always_id) {
               if (ref_cell_last_node_is_an_id(ref_cell)) {
                 node = node_per;
-                if (swap_endian) SWAP_INT(c2n[node + size_per * cell]);
-                REIS(1,
-                     fwrite(&(c2n[node + size_per * cell]), sizeof(REF_INT), 1,
-                            file),
-                     "cel node");
+                c2n_int = (REF_INT)c2n[node + size_per * cell];
+                if (swap_endian) SWAP_INT(c2n_int);
+                REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cel node");
               } else {
                 node = REF_EXPORT_MESHB_3D_ID;
                 if (swap_endian) SWAP_INT(node);
@@ -1115,7 +1131,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
     }
     RSS(ref_mpi_send(ref_mpi, &ncell, 1, REF_INT_TYPE, 0), "send ncell");
     if (ncell > 0) {
-      ref_malloc(c2n, ncell * size_per, REF_INT);
+      ref_malloc(c2n, ncell * size_per, REF_GLOB);
       ncell = 0;
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
@@ -1125,11 +1141,11 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
             c2n[node + size_per * ncell] =
                 ref_node_global(ref_node, nodes[node]);
           for (node = node_per; node < size_per; node++)
-            c2n[node + size_per * ncell] = nodes[node];
+            c2n[node + size_per * ncell] = (REF_GLOB)nodes[node];
           ncell++;
         }
       }
-      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_INT_TYPE, 0),
+      RSS(ref_mpi_send(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, 0),
           "send c2n");
       ref_free(c2n);
     }
@@ -1153,7 +1169,8 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
       if (ref_mpi_rank(ref_mpi) !=
           ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
         continue;
-      node = ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
+      node =
+          (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
       id = ref_geom_id(ref_geom, geom);
       REIS(1, fwrite(&(node), sizeof(int), 1, file), "node");
       REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
@@ -1209,7 +1226,7 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
             ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
           continue;
         node_id[0 + 2 * ngeom] =
-            ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
+            (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
         node_id[1 + 2 * ngeom] = ref_geom_id(ref_geom, geom);
         for (i = 0; i < type; i++)
           param[i + 2 * ngeom] = ref_geom_param(ref_geom, i, geom);
@@ -1418,7 +1435,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  nnode = ref_node_n_global(ref_node);
+  nnode = (REF_INT)ref_node_n_global(ref_node);
 
   RSS(ref_gather_ncell(ref_node, ref_grid_tri(ref_grid), &ntri), "ntri");
   RSS(ref_gather_ncell(ref_node, ref_grid_qua(ref_grid), &nqua), "nqua");
@@ -1616,7 +1633,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   REF_CELL ref_cell;
   FILE *file;
   REF_INT i;
-  REF_INT nnode, *l2c;
+  REF_GLOB nnode, *l2c;
   REF_LONG ncell;
   REF_INT min_faceid, max_faceid, cell_id;
   file = NULL;
@@ -1646,7 +1663,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     if (nnode > 0 && ncell > 0) {
       if (ref_grid_once(ref_grid)) {
         fprintf(file,
-                "zone t=\"face%d\", nodes=%d, elements=%ld, datapacking=%s, "
+                "zone t=\"face%d\", nodes=" REF_GLOB_FMT
+                ", elements=%ld, datapacking=%s, "
                 "zonetype=%s\n",
                 cell_id, nnode, ncell, "point", "fetriangle");
       }
@@ -1664,7 +1682,8 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   if (nnode > 0 && ncell > 0) {
     if (ref_grid_once(ref_grid)) {
       fprintf(file,
-              "zone t=\"tet\", nodes=%d, elements=%ld, datapacking=%s, "
+              "zone t=\"tet\", nodes=" REF_GLOB_FMT
+              ", elements=%ld, datapacking=%s, "
               "zonetype=%s\n",
               nnode, ncell, "point", "fetetrahedron");
     }

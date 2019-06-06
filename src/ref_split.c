@@ -53,7 +53,8 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
-  REF_INT global, new_node;
+  REF_GLOB global;
+  REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
 
@@ -230,7 +231,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_quality, allowed_tet_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
-  REF_INT global, new_node;
+  REF_GLOB global;
+  REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_BOOL span_parts;
   REF_LIST para_no_geom = NULL;
@@ -821,7 +823,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
   REF_INT edge, n, i;
   REF_BOOL active, allowed;
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
-  REF_INT global;
+  REF_GLOB global;
 
   RAS(ref_grid_twod(ref_grid), "only 2D");
 
@@ -1168,7 +1170,8 @@ REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
   REF_EDGE ref_edge;
   REF_INT edge;
   REF_BOOL allowed, geom_support;
-  REF_INT global, new_node;
+  REF_GLOB global;
+  REF_INT new_node;
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
 

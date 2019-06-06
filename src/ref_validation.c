@@ -120,8 +120,9 @@ REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid) {
     RSS(ref_grid_cell_has_face(ref_grid, nodes, &has_face), "has_face");
     if (!has_face) {
       problem = REF_TRUE;
-      printf("triangle %d nodes %d %d %d global %d %d %d\n", cell, nodes[0],
-             nodes[1], nodes[2],
+      printf("triangle %d nodes %d %d %d global " REF_GLOB_FMT " " REF_GLOB_FMT
+             " " REF_GLOB_FMT "\n",
+             cell, nodes[0], nodes[1], nodes[2],
              ref_node_global(ref_grid_node(ref_grid), nodes[0]),
              ref_node_global(ref_grid_node(ref_grid), nodes[1]),
              ref_node_global(ref_grid_node(ref_grid), nodes[2]));
@@ -205,8 +206,9 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
       printf(" hits %d\n", hits[face]);
       for (node = 0; node < 3; node++)
         nodes[node] = ref_face_f2n(ref_face, node, face);
-      printf("face %d nodes %d %d %d global %d %d %d\n", face, nodes[0],
-             nodes[1], nodes[2],
+      printf("face %d nodes %d %d %d global " REF_GLOB_FMT " " REF_GLOB_FMT
+             " " REF_GLOB_FMT "\n",
+             face, nodes[0], nodes[1], nodes[2],
              ref_node_global(ref_grid_node(ref_grid), nodes[0]),
              ref_node_global(ref_grid_node(ref_grid), nodes[1]),
              ref_node_global(ref_grid_node(ref_grid), nodes[2]));

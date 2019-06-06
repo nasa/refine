@@ -72,7 +72,7 @@ REF_STATUS ref_subdiv_inspect_cell(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
   }
   printf(" cell %d rank %d", cell, ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)));
   each_ref_cell_cell_node(ref_cell, cell_node) {
-    printf(" %d",
+    printf(" " REF_GLOB_FMT,
            ref_node_global(ref_node, ref_cell_c2n(ref_cell, cell_node, cell)));
   }
   printf("\n");
@@ -420,8 +420,8 @@ REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
                                         REF_INT e1) {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
-  REF_INT e0min, e0max;
-  REF_INT e1min, e1max;
+  REF_GLOB e0min, e0max;
+  REF_GLOB e1min, e1max;
 
   /* unmark the edge with the smallest edge globals */
   e0min = MIN(ref_node_global(ref_node, ref_edge_e2n(ref_edge, 0, e0)),
@@ -630,10 +630,12 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
-  REF_INT edge, global, node, i;
+  REF_INT edge, node, i;
+  REF_GLOB global;
   REF_INT part;
 
-  REF_INT *edge_global, *edge_part;
+  REF_GLOB *edge_global;
+  REF_INT *edge_part;
   REF_DBL *edge_real;
   REF_DBL *edge_aux;
 
@@ -656,7 +658,7 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
 
   RSS(ref_node_shift_new_globals(ref_node), "shift glob");
 
-  ref_malloc_init(edge_global, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
+  ref_malloc_init(edge_global, ref_edge_n(ref_edge), REF_GLOB, REF_EMPTY);
   ref_malloc_init(edge_part, ref_edge_n(ref_edge), REF_INT, REF_EMPTY);
   ref_malloc_init(edge_real, REF_NODE_REAL_PER * ref_edge_n(ref_edge), REF_DBL,
                   -999.0);
@@ -679,7 +681,7 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
     }
   }
 
-  RSS(ref_edge_ghost_int(ref_edge, ref_mpi, edge_global), "global ghost");
+  RSS(ref_edge_ghost_glob(ref_edge, ref_mpi, edge_global), "global ghost");
   RSS(ref_edge_ghost_int(ref_edge, ref_mpi, edge_part), "part ghost");
   RSS(ref_edge_ghost_dbl(ref_edge, ref_mpi, edge_real, REF_NODE_REAL_PER),
       "xyz ghost");

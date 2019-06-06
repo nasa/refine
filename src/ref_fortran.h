@@ -36,8 +36,8 @@ BEGIN_C_DECLORATION
 extern REF_BOOL ref_fortran_allow_screen_output;
 
 REF_STATUS REF_FORT_(ref_fortran_init,
-                     REF_FORTRAN_INIT)(REF_INT *nnodes, REF_INT *nnodesg,
-                                       REF_INT *l2g, REF_INT *part,
+                     REF_FORTRAN_INIT)(REF_INT *nnodes, REF_GLOB *nnodesg,
+                                       REF_GLOB *l2g, REF_INT *part,
                                        REF_INT *partition, REF_DBL *x,
                                        REF_DBL *y, REF_DBL *z);
 
@@ -63,10 +63,10 @@ REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void);
 
 REF_STATUS REF_FORT_(ref_fortran_size_node,
                      REF_FORTRAN_SIZE_NODE)(REF_INT *nnodes0, REF_INT *nnodes,
-                                            REF_INT *nnodesg);
+                                            REF_GLOB *nnodesg);
 
 REF_STATUS REF_FORT_(ref_fortran_node,
-                     REF_FORTRAN_NODE)(REF_INT *nnodes, REF_INT *l2g,
+                     REF_FORTRAN_NODE)(REF_INT *nnodes, REF_GLOB *l2g,
                                        REF_DBL *x, REF_DBL *y, REF_DBL *z);
 
 REF_STATUS REF_FORT_(ref_fortran_size_cell,

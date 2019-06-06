@@ -106,7 +106,7 @@ int main(int argc, char *argv[]) {
   { /* add many global */
     REF_CELL ref_cell;
     REF_NODE ref_node;
-    REF_INT nodes[4];
+    REF_GLOB nodes[4];
     REF_INT parts[4];
     REF_INT retrieved[4];
 

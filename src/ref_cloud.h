@@ -30,7 +30,7 @@ BEGIN_C_DECLORATION
 
 struct REF_CLOUD_STRUCT {
   REF_INT n, max, naux;
-  REF_INT *global;
+  REF_GLOB *global;
   REF_DBL *aux;
 };
 
@@ -63,9 +63,9 @@ REF_STATUS ref_cloud_deep_copy(REF_CLOUD *ref_cloud, REF_CLOUD original);
        (item) < ref_cloud_n(ref_cloud);                               \
        (item)++, (global) = ref_cloud_safe_global(ref_cloud, item))
 
-REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_INT global, REF_DBL *aux);
-REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_INT global, REF_INT *item);
-REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_INT global);
+REF_STATUS ref_cloud_store(REF_CLOUD ref_cloud, REF_GLOB global, REF_DBL *aux);
+REF_STATUS ref_cloud_item(REF_CLOUD ref_cloud, REF_GLOB global, REF_INT *item);
+REF_BOOL ref_cloud_has_global(REF_CLOUD ref_cloud, REF_GLOB global);
 
 END_C_DECLORATION
 
