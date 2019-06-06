@@ -110,7 +110,8 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     ref_edge = ref_subdiv_edge(ref_subdiv);
 
-    if (ref_mpi_once(ref_mpi)) printf("orig %d\n", ref_node_n_global(ref_node));
+    if (ref_mpi_once(ref_mpi))
+      printf("orig " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
 
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
       REF_DBL zmin = 0.00005;
@@ -132,7 +133,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_subdiv_split(ref_subdiv), "split");
 
     if (ref_mpi_once(ref_mpi))
-      printf("split %d\n", ref_node_n_global(ref_node));
+      printf("split " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
 
     RSS(ref_export_tec_part(ref_grid, "ref_subdiv_splt"), "split part");
 
