@@ -1600,22 +1600,32 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
 
   if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
-        "lb8_ugrid failed");
+        ".lb8.ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
-        "b8_ugrid failed");
+        ".b8.ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
-        "lb8_ugrid failed");
+        ".lb8l.ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
-        "b8_ugrid failed");
+        ".b8l.ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
+        ".lb8.ugrid64 failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
+        ".b8.ugrid64 failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
