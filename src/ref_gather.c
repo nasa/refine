@@ -1114,28 +1114,47 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
         RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, proc),
             "recv c2n");
         for (cell = 0; cell < ncell; cell++) {
+          for (node = 0; node < node_per; node++)
+            globals[node] = c2n[node + size_per * cell] + 1;
+          globals[node_per] = REF_EXPORT_MESHB_3D_ID;
+          if (size_per > node_per)
+            globals[node_per] = c2n[node_per + size_per * cell];
+
           if (faceid_insted_of_c2n) {
-            node = node_per;
-            c2n_int = (REF_INT)c2n[node + size_per * cell];
-            if (swap_endian) SWAP_INT(c2n_int);
-            REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
+            if (sixty_four_bit) {
+              c2n_long = globals[node_per];
+              if (swap_endian) SWAP_LONG(c2n_long);
+              REIS(1, fwrite(&(c2n_long), sizeof(REF_LONG), 1, file),
+                   "long id");
+            } else {
+              c2n_int = (REF_INT)globals[node_per];
+              if (swap_endian) SWAP_INT(c2n_int);
+              REIS(1, fwrite(&(c2n_int), sizeof(REF_INT), 1, file), "int id");
+            }
           } else {
             for (node = 0; node < node_per; node++) {
-              c2n_int = (REF_INT)c2n[node + size_per * cell];
-              c2n_int++;
-              if (swap_endian) SWAP_INT(c2n_int);
-              REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cell");
+              if (sixty_four_bit) {
+                c2n_long = globals[node];
+                if (swap_endian) SWAP_LONG(c2n_long);
+                REIS(1, fwrite(&c2n_long, sizeof(REF_LONG), 1, file),
+                     "long cel node");
+              } else {
+                c2n_int = (REF_INT)globals[node];
+                if (swap_endian) SWAP_INT(c2n_int);
+                REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file),
+                     "int cel node");
+              }
             }
             if (always_id) {
-              if (ref_cell_last_node_is_an_id(ref_cell)) {
-                node = node_per;
-                c2n_int = (REF_INT)c2n[node + size_per * cell];
-                if (swap_endian) SWAP_INT(c2n_int);
-                REIS(1, fwrite(&c2n_int, sizeof(REF_INT), 1, file), "cel node");
+              if (sixty_four_bit) {
+                c2n_long = globals[node_per];
+                if (swap_endian) SWAP_LONG(c2n_long);
+                REIS(1, fwrite(&(c2n_long), sizeof(REF_LONG), 1, file),
+                     "long id");
               } else {
-                node = REF_EXPORT_MESHB_3D_ID;
-                if (swap_endian) SWAP_INT(node);
-                REIS(1, fwrite(&(node), sizeof(REF_INT), 1, file), "cel node");
+                c2n_int = (REF_INT)globals[node_per];
+                if (swap_endian) SWAP_INT(c2n_int);
+                REIS(1, fwrite(&(c2n_int), sizeof(REF_INT), 1, file), "int id");
               }
             }
           }
