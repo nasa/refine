@@ -1,11 +1,5 @@
 
-module avail
-
 module use --append /u/shared/fun3d/fun3d_users/modulefiles
-
-module avail
-
-module list
 
 module load FUN3D/13.4.1-576-g0fd6f27
 
