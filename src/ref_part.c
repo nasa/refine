@@ -939,19 +939,102 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_bin_ugrid_pack_cell(
+    FILE *file, REF_BOOL swap_endian, REF_BOOL sixty_four_bit,
+    REF_FILEPOS conn_offset, REF_FILEPOS faceid_offset, REF_INT section_size,
+    REF_LONG ncell_read, REF_INT node_per, REF_INT size_per, REF_GLOB *c2n) {
+  REF_INT cell, node;
+  REF_FILEPOS ibyte;
+  ibyte = (sixty_four_bit ? 8 : 4);
+
+  if (sixty_four_bit) {
+    REF_LONG *c2t;
+    ref_malloc(c2t, node_per * section_size, REF_LONG);
+    REIS(0,
+         fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
+                SEEK_SET),
+         "seek conn failed");
+    RES((size_t)(section_size * node_per),
+        fread(c2t, sizeof(REF_LONG), (size_t)(section_size * node_per), file),
+        "cn");
+    for (cell = 0; cell < section_size * node_per; cell++) {
+      if (swap_endian) SWAP_LONG(c2t[cell]);
+    }
+    for (cell = 0; cell < section_size; cell++) {
+      for (node = 0; node < node_per; node++) {
+        c2n[node + size_per * cell] = c2t[node + node_per * cell] - 1;
+      }
+    }
+    if (node_per != size_per) {
+      REF_LONG *tag;
+      ref_malloc(tag, section_size, REF_LONG);
+      REIS(0,
+           fseeko(file, faceid_offset + ibyte * (REF_FILEPOS)ncell_read,
+                  SEEK_SET),
+           "seek tag failed");
+      RES((size_t)(section_size),
+          fread(tag, sizeof(REF_LONG), (size_t)section_size, file), "tag");
+      for (cell = 0; cell < section_size; cell++) {
+        if (swap_endian) SWAP_LONG(tag[cell]);
+      }
+      /* sort into right locations */
+      for (cell = 0; cell < section_size; cell++)
+        c2n[node_per + cell * size_per] = tag[cell];
+      ref_free(tag);
+    }
+    ref_free(c2t);
+  } else {
+    REF_INT *c2t;
+    ref_malloc(c2t, node_per * section_size, REF_INT);
+    REIS(0,
+         fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
+                SEEK_SET),
+         "seek conn failed");
+    RES((size_t)(section_size * node_per),
+        fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
+        "cn");
+    for (cell = 0; cell < section_size * node_per; cell++) {
+      if (swap_endian) SWAP_INT(c2t[cell]);
+    }
+    for (cell = 0; cell < section_size; cell++) {
+      for (node = 0; node < node_per; node++) {
+        c2n[node + size_per * cell] = c2t[node + node_per * cell] - 1;
+      }
+    }
+    if (node_per != size_per) {
+      REF_INT *tag;
+      ref_malloc(tag, section_size, REF_INT);
+      REIS(0,
+           fseeko(file, faceid_offset + ibyte * (REF_FILEPOS)ncell_read,
+                  SEEK_SET),
+           "seek tag failed");
+      RES((size_t)(section_size),
+          fread(tag, sizeof(REF_INT), (size_t)section_size, file), "tag");
+      for (cell = 0; cell < section_size; cell++) {
+        if (swap_endian) SWAP_INT(tag[cell]);
+      }
+      /* sort into right locations */
+      for (cell = 0; cell < section_size; cell++)
+        c2n[node_per + cell * size_per] = tag[cell];
+      ref_free(tag);
+    }
+    ref_free(c2t);
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
                                           REF_NODE ref_node, REF_GLOB nnode,
                                           FILE *file, REF_FILEPOS conn_offset,
                                           REF_FILEPOS faceid_offset,
-                                          REF_BOOL swap_endian) {
+                                          REF_BOOL swap_endian,
+                                          REF_BOOL sixty_four_bit) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell_read;
+  REF_LONG ncell_read;
   REF_INT chunk;
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
-  REF_INT *c2n;
-  REF_INT *tag;
-  REF_INT *c2t;
+  REF_GLOB *c2n;
   REF_GLOB *sent_c2n;
   REF_INT *dest;
   REF_INT *sent_part;
@@ -974,47 +1057,17 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
   if (ref_mpi_once(ref_mpi)) {
     ref_malloc(elements_to_send, ref_mpi_n(ref_mpi), REF_INT);
     ref_malloc(start_to_send, ref_mpi_n(ref_mpi), REF_INT);
-    ref_malloc(c2n, size_per * chunk, REF_INT);
-    ref_malloc(tag, chunk, REF_INT);
-    ref_malloc(c2t, size_per * chunk, REF_INT);
+    ref_malloc(c2n, size_per * chunk, REF_GLOB);
     ref_malloc(dest, chunk, REF_INT);
 
     ncell_read = 0;
     while (ncell_read < ncell) {
       section_size = (REF_INT)MIN((REF_LONG)chunk, ncell - ncell_read);
 
-      REIS(0,
-           fseeko(file,
-                  conn_offset + (REF_FILEPOS)4 * (REF_FILEPOS)node_per *
-                                    (REF_FILEPOS)ncell_read,
-                  SEEK_SET),
-           "seek conn failed");
-      RES((size_t)(section_size * node_per),
-          fread(c2n, sizeof(REF_INT), (size_t)(section_size * node_per), file),
-          "cn");
-      for (cell = 0; cell < section_size * node_per; cell++)
-        if (swap_endian) SWAP_INT(c2n[cell]);
-      for (cell = 0; cell < section_size * node_per; cell++) c2n[cell]--;
-      if (ref_cell_last_node_is_an_id(ref_cell)) {
-        REIS(0,
-             fseeko(file,
-                    faceid_offset + (REF_FILEPOS)4 * (REF_FILEPOS)ncell_read,
-                    SEEK_SET),
-             "seek tag failed");
-        RES((size_t)(section_size),
-            fread(tag, sizeof(REF_INT), (size_t)section_size, file), "tag");
-        for (cell = 0; cell < section_size; cell++)
-          if (swap_endian) SWAP_INT(tag[cell]);
-
-        /* sort into right locations */
-        for (cell = 0; cell < section_size; cell++)
-          for (node = 0; node < node_per; node++)
-            c2t[node + cell * size_per] = c2n[node + cell * node_per];
-        for (cell = 0; cell < section_size; cell++)
-          c2t[node_per + cell * size_per] = tag[cell];
-        for (cell = 0; cell < section_size * size_per; cell++)
-          c2n[cell] = c2t[cell];
-      }
+      RSS(ref_part_bin_ugrid_pack_cell(file, swap_endian, sixty_four_bit,
+                                       conn_offset, faceid_offset, section_size,
+                                       ncell_read, node_per, size_per, c2n),
+          "read c2n");
 
       ncell_read += section_size;
 
@@ -1069,8 +1122,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
     }
 
     ref_free(dest);
-    ref_free(c2t);
-    ref_free(tag);
     ref_free(c2n);
     ref_free(start_to_send);
     ref_free(elements_to_send);
@@ -1210,7 +1261,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                     (REF_FILEPOS)ntri * 3 * ibyte +
                     (REF_FILEPOS)nqua * 4 * ibyte;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tri(ref_grid), ntri, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "tri");
   }
 
@@ -1221,7 +1273,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                     (REF_FILEPOS)ntri * 4 * ibyte +
                     (REF_FILEPOS)nqua * 4 * ibyte;
     RSS(ref_part_bin_ugrid_cell(ref_grid_qua(ref_grid), nqua, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "qua");
   }
 
@@ -1232,7 +1285,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                   (REF_FILEPOS)ntri * 4 * ibyte + (REF_FILEPOS)nqua * 5 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tet(ref_grid), ntet, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "tet");
   }
 
@@ -1242,7 +1296,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                   (REF_FILEPOS)nqua * 5 * ibyte + (REF_FILEPOS)ntet * 4 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_pyr(ref_grid), npyr, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "pyr");
   }
 
@@ -1253,7 +1308,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                   (REF_FILEPOS)ntet * 4 * ibyte + (REF_FILEPOS)npyr * 5 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_pri(ref_grid), npri, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "pri");
   }
 
@@ -1265,7 +1321,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                   (REF_FILEPOS)npyr * 5 * ibyte + (REF_FILEPOS)npri * 6 * ibyte;
     faceid_offset = REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_hex(ref_grid), nhex, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "hex");
   }
 
