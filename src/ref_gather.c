@@ -1421,11 +1421,13 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
 }
 
 static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
-                                       REF_BOOL swap_endian) {
+                                       REF_BOOL swap_endian,
+                                       REF_BOOL sixty_four_bit) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nnode;
   REF_LONG ntri, nqua, ntet, npyr, npri, nhex;
+  REF_LONG size_long;
   REF_INT size_int;
   REF_CELL ref_cell;
   REF_INT group;
@@ -1451,29 +1453,55 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
-    size_int = (REF_INT)nnode;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nnode");
+    if (sixty_four_bit) {
+      size_long = (REF_LONG)nnode;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "nnode");
 
-    size_int = (REF_INT)ntri;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntri");
-    size_int = (REF_INT)nqua;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nqua");
+      size_long = (REF_LONG)ntri;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "ntri");
+      size_long = (REF_LONG)nqua;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "nqua");
 
-    size_int = (REF_INT)ntet;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntet");
-    size_int = (REF_INT)npyr;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npyr");
-    size_int = (REF_INT)npri;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npri");
-    size_int = (REF_INT)nhex;
-    if (swap_endian) SWAP_INT(size_int);
-    REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nhex");
+      size_long = (REF_LONG)ntet;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "ntet");
+      size_long = (REF_LONG)npyr;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "npyr");
+      size_long = (REF_LONG)npri;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "npri");
+      size_long = (REF_LONG)nhex;
+      if (swap_endian) SWAP_LONG(size_long);
+      REIS(1, fwrite(&size_long, sizeof(REF_LONG), 1, file), "nhex");
+    } else {
+      size_int = (REF_INT)nnode;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nnode");
+
+      size_int = (REF_INT)ntri;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntri");
+      size_int = (REF_INT)nqua;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nqua");
+
+      size_int = (REF_INT)ntet;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "ntet");
+      size_int = (REF_INT)npyr;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npyr");
+      size_int = (REF_INT)npri;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "npri");
+      size_int = (REF_INT)nhex;
+      if (swap_endian) SWAP_INT(size_int);
+      REIS(1, fwrite(&size_int, sizeof(REF_INT), 1, file), "nhex");
+    }
   }
 
   RSS(ref_gather_node(ref_node, swap_endian, always_id, file), "nodes");
@@ -1521,12 +1549,13 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
   end_of_string = strlen(filename);
 
   if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE),
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
         "lb8_ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE), "b8_ugrid failed");
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
+        "b8_ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
