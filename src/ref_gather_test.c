@@ -146,6 +146,32 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_gather_test.b8.ugrid"), "test clean up");
   }
 
+  { /* recycle tet brick lb8.ugrid */
+    REF_GRID seq_grid, para_grid;
+    char seq_file[] = "ref_gather_test_seq.lb8.ugrid";
+    char para_file[] = "ref_gather_test_para.lb8.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&seq_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(seq_grid, seq_file), "export");
+    }
+    RSS(ref_part_by_extension(&para_grid, ref_mpi, seq_file), "part");
+    RSS(ref_gather_by_extension(para_grid, para_file), "gather");
+    RSS(ref_grid_free(para_grid), "free");
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_import_by_extension(&para_grid, ref_mpi, para_file), "import");
+      REIS(ref_node_n(ref_grid_node(seq_grid)),
+           ref_node_n(ref_grid_node(para_grid)), "nnode mis-match");
+      REIS(ref_cell_n(ref_grid_tri(seq_grid)),
+           ref_cell_n(ref_grid_tri(para_grid)), "ntri mis-match");
+      REIS(ref_cell_n(ref_grid_tet(seq_grid)),
+           ref_cell_n(ref_grid_tet(para_grid)), "ntet mis-match");
+      RSS(ref_grid_free(para_grid), "free");
+      RSS(ref_grid_free(seq_grid), "free");
+      REIS(0, remove(seq_file), "test clean up");
+      REIS(0, remove(para_file), "test clean up");
+    }
+  }
+
   { /* export import .meshb tet with cad_model */
     REF_GRID export_grid, import_grid;
     REF_GEOM ref_geom;
