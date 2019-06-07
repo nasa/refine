@@ -21,7 +21,6 @@ cat << EOF > ${testname}.pbs
 #PBS -N ${testname}
 #PBS -o ${testname}
 #PBS -W umask=027
-#PBS -j oe
 #PBS -m n
 
 set -o xtrace   # show commands invoked
@@ -32,7 +31,7 @@ uname -mrn
 
 cd \$PBS_O_WORKDIR
 
-./acceptance/c2s.sh > $BUILDLOG 2>&1
+./acceptance/c2s.sh
 
 EOF
 

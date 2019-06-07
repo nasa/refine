@@ -227,13 +227,91 @@ int main(int argc, char *argv[]) {
     REIS(63, ref_part_implicit(800, 64, 799), "part");
   }
 
-  { /* part b8.ugrid */
+  { /* part tet brick lb8.ugrid */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.lb8.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part tet brick b8.ugrid */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.b8.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part tet brick lb8l.ugrid */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.lb8l.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part tet brick b8l.ugrid */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.b8l.ugrid";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part tet brick lb8.ugrid64 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.lb8.ugrid64";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part tet brick b8.ugrid64 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test.b8.ugrid64";
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part prism b8.ugrid */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.b8.ugrid";
 
     RSS(ref_fixture_pri_stack_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_export_b8_ugrid(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
     }
     RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
 
@@ -248,7 +326,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pri_stack_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_export_lb8_ugrid(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
     }
     RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
 
@@ -264,7 +342,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_export_lb8_ugrid(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
     }
     RSS(ref_grid_free(export_grid), "free");
 

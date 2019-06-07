@@ -156,59 +156,6 @@
     brick[7] = nodes[7];            \
   }
 
-REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
-  size_t end_of_string;
-
-  end_of_string = strlen(filename);
-
-  if (strcmp(&filename[end_of_string - 4], ".vtk") == 0) {
-    RSS(ref_export_vtk(ref_grid, filename), "vtk export failed");
-  } else if (strcmp(&filename[end_of_string - 2], ".c") == 0) {
-    RSS(ref_export_c(ref_grid, filename), "C export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".tec") == 0) {
-    RSS(ref_export_tec(ref_grid, filename), "tec export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".plt") == 0) {
-    RSS(ref_export_plt(ref_grid, filename), "plt export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".eps") == 0) {
-    RSS(ref_export_eps(ref_grid, filename), "eps export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".pdf") == 0) {
-    RSS(ref_export_pdf(ref_grid, filename), "pdf export failed");
-  } else if (strcmp(&filename[end_of_string - 4], ".su2") == 0) {
-    RSS(ref_export_su2(ref_grid, filename), "su2 export failed");
-  } else if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_export_lb8_ugrid(ref_grid, filename), "lb8.ugrid export failed");
-  } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_export_b8_ugrid(ref_grid, filename), "b8.ugrid export failed");
-  } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
-    RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
-  } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
-    RSS(ref_export_poly(ref_grid, filename), "poly export failed");
-  } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
-    RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
-  } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
-    RSS(ref_export_fgrid(ref_grid, filename), "fgrid export failed");
-  } else if (strcmp(&filename[end_of_string - 6], ".cogsg") == 0) {
-    RSS(ref_export_cogsg(ref_grid, filename), "cogsg export failed");
-  } else if (strcmp(&filename[end_of_string - 5], ".html") == 0) {
-    RSS(ref_export_html(ref_grid, filename), "html export failed");
-  } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
-    if (ref_grid_twod(ref_grid)) {
-      RSS(ref_export_twod_meshb(ref_grid, filename),
-          "twod meshb export failed");
-    } else {
-      RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
-    }
-  } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
-    RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
-  } else {
-    printf("%s: %d: %s %s\n", __FILE__, __LINE__,
-           "export file name extension unknown", filename);
-    RSS(REF_FAILURE, "unknown file extension");
-  }
-
-  return REF_SUCCESS;
-}
-
 /* https://www.vtk.org/VTK/img/file-formats.pdf */
 REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   FILE *file;
@@ -1420,7 +1367,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1519,12 +1466,27 @@ REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_bin_ugrid_int(FILE *file, REF_BOOL swap,
+                                           REF_BOOL fat, REF_INT output) {
+  if (fat) {
+    REF_LONG actual;
+    actual = (REF_LONG)output;
+    if (swap) SWAP_LONG(actual);
+    REIS(1, fwrite(&actual, sizeof(REF_LONG), 1, file), "output long");
+  } else {
+    REF_INT actual;
+    actual = output;
+    if (swap) SWAP_INT(actual);
+    REIS(1, fwrite(&actual, sizeof(REF_INT), 1, file), "output int");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
-                                       REF_BOOL swap) {
+                                       REF_BOOL swap, REF_BOOL fat) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_INT node;
   REF_INT *o2n, *n2o;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -1539,33 +1501,25 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  nnode = ref_node_n(ref_node);
-
-  ntri = ref_cell_n(ref_grid_tri(ref_grid));
-  nqua = ref_cell_n(ref_grid_qua(ref_grid));
-
-  ntet = ref_cell_n(ref_grid_tet(ref_grid));
-  npyr = ref_cell_n(ref_grid_pyr(ref_grid));
-  npri = ref_cell_n(ref_grid_pri(ref_grid));
-  nhex = ref_cell_n(ref_grid_hex(ref_grid));
-
-  if (swap) SWAP_INT(nnode);
-  if (swap) SWAP_INT(ntri);
-  if (swap) SWAP_INT(nqua);
-  if (swap) SWAP_INT(ntet);
-  if (swap) SWAP_INT(npyr);
-  if (swap) SWAP_INT(npri);
-  if (swap) SWAP_INT(nhex);
-
-  REIS(1, fwrite(&nnode, sizeof(REF_INT), 1, file), "nnode");
-
-  REIS(1, fwrite(&ntri, sizeof(REF_INT), 1, file), "ntri");
-  REIS(1, fwrite(&nqua, sizeof(REF_INT), 1, file), "nqua");
-
-  REIS(1, fwrite(&ntet, sizeof(REF_INT), 1, file), "ntet");
-  REIS(1, fwrite(&npyr, sizeof(REF_INT), 1, file), "npyr");
-  REIS(1, fwrite(&npri, sizeof(REF_INT), 1, file), "npri");
-  REIS(1, fwrite(&nhex, sizeof(REF_INT), 1, file), "nhex");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat, ref_node_n(ref_node)), "nnode");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_tri(ref_grid))),
+      "ntri");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_qua(ref_grid))),
+      "nqua");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_tet(ref_grid))),
+      "ntet");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_pyr(ref_grid))),
+      "npyr");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_pri(ref_grid))),
+      "npri");
+  RSS(ref_export_bin_ugrid_int(file, swap, fat,
+                               ref_cell_n(ref_grid_hex(ref_grid))),
+      "nhex");
 
   RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
 
@@ -1590,8 +1544,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
       if (nodes[node_per] == faceid) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
-          if (swap) SWAP_INT(nodes[node]);
-          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "tri");
+          RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
         }
       }
     }
@@ -1604,8 +1557,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
       if (nodes[node_per] == faceid) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
-          if (swap) SWAP_INT(nodes[node]);
-          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "qua");
+          RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
         }
       }
     }
@@ -1616,8 +1568,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
-        if (swap) SWAP_INT(nodes[3]);
-        REIS(1, fwrite(&(nodes[3]), sizeof(REF_INT), 1, file), "tri id");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[3]), "c2n");
       }
     }
   }
@@ -1627,8 +1578,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
-        if (swap) SWAP_INT(nodes[4]);
-        REIS(1, fwrite(&(nodes[4]), sizeof(REF_INT), 1, file), "qua id");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[4]), "c2n");
       }
     }
   }
@@ -1638,8 +1588,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < node_per; node++) {
         nodes[node] = o2n[nodes[node]] + 1;
-        if (swap) SWAP_INT(nodes[node]);
-        REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "cell");
+        RSS(ref_export_bin_ugrid_int(file, swap, fat, nodes[node]), "c2n");
       }
     }
   }
@@ -1649,16 +1598,6 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   fclose(file);
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_lb8_ugrid(REF_GRID ref_grid, const char *filename) {
-  RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE), "bin not swapped");
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_b8_ugrid(REF_GRID ref_grid, const char *filename) {
-  RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE), "bin swap");
   return REF_SUCCESS;
 }
 
@@ -2907,6 +2846,73 @@ REF_STATUS ref_export_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     *min_edgeid = MIN(*min_edgeid, nodes[ref_cell_node_per(ref_cell)]);
     *max_edgeid = MAX(*max_edgeid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if (strcmp(&filename[end_of_string - 4], ".vtk") == 0) {
+    RSS(ref_export_vtk(ref_grid, filename), "vtk export failed");
+  } else if (strcmp(&filename[end_of_string - 2], ".c") == 0) {
+    RSS(ref_export_c(ref_grid, filename), "C export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".tec") == 0) {
+    RSS(ref_export_tec(ref_grid, filename), "tec export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".plt") == 0) {
+    RSS(ref_export_plt(ref_grid, filename), "plt export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".eps") == 0) {
+    RSS(ref_export_eps(ref_grid, filename), "eps export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".pdf") == 0) {
+    RSS(ref_export_pdf(ref_grid, filename), "pdf export failed");
+  } else if (strcmp(&filename[end_of_string - 4], ".su2") == 0) {
+    RSS(ref_export_su2(ref_grid, filename), "su2 export failed");
+  } else if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
+        "lb8.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
+        "b8.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
+        "lb8l.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
+        "b8l.ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
+        "lb8.ugrid64 export failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+    RSS(ref_export_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
+        "b8.ugrid64 export failed");
+  } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
+    RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
+    RSS(ref_export_poly(ref_grid, filename), "poly export failed");
+  } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
+    RSS(ref_export_smesh(ref_grid, filename), "smesh export failed");
+  } else if (strcmp(&filename[end_of_string - 6], ".fgrid") == 0) {
+    RSS(ref_export_fgrid(ref_grid, filename), "fgrid export failed");
+  } else if (strcmp(&filename[end_of_string - 6], ".cogsg") == 0) {
+    RSS(ref_export_cogsg(ref_grid, filename), "cogsg export failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".html") == 0) {
+    RSS(ref_export_html(ref_grid, filename), "html export failed");
+  } else if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_export_twod_meshb(ref_grid, filename),
+          "twod meshb export failed");
+    } else {
+      RSS(ref_export_meshb(ref_grid, filename), "meshb export failed");
+    }
+  } else if (strcmp(&filename[end_of_string - 4], ".msh") == 0) {
+    RSS(ref_export_twod_msh(ref_grid, filename), "msh export failed");
+  } else {
+    printf("%s: %d: %s %s\n", __FILE__, __LINE__,
+           "export file name extension unknown", filename);
+    RSS(REF_FAILURE, "unknown file extension");
   }
 
   return REF_SUCCESS;

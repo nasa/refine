@@ -379,8 +379,38 @@ static REF_STATUS ref_import_surf(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_bin_ugrid_chunk(FILE *file, REF_BOOL swap,
+                                             REF_BOOL fat, REF_INT n,
+                                             REF_INT *chunk) {
+  REF_INT i;
+  if (fat) {
+    REF_LONG *actual;
+    ref_malloc(actual, n, REF_LONG);
+    REIS(n, fread(actual, sizeof(REF_LONG), (size_t)(n), file), "long chunk");
+    if (swap) {
+      for (i = 0; i < n; i++) {
+        SWAP_LONG(actual[i]);
+      }
+    }
+    for (i = 0; i < n; i++) {
+      chunk[i] = (REF_INT)actual[i];
+    }
+    ref_free(actual);
+  } else {
+    REIS(n, fread(chunk, sizeof(REF_INT), (size_t)(n), file), "int chunk");
+    if (swap) {
+      for (i = 0; i < n; i++) {
+        SWAP_INT(chunk[i]);
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
-                                           FILE *file, REF_BOOL swap) {
+                                           FILE *file, REF_BOOL swap,
+                                           REF_BOOL fat) {
   REF_INT node_per, max_chunk, nread, chunk, cell, node, new_cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *c2n;
@@ -395,14 +425,11 @@ static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
     nread = 0;
     while (nread < ncell) {
       chunk = MIN(max_chunk, ncell - nread);
-      REIS((node_per * chunk),
-           fread(c2n, sizeof(REF_INT), (size_t)(node_per * chunk), file),
-           "c2n");
+      RSS(ref_import_bin_ugrid_chunk(file, swap, fat, node_per * chunk, c2n),
+          "c2n");
       for (cell = 0; cell < chunk; cell++) {
         for (node = 0; node < node_per; node++) {
-          nodes[node] = c2n[node + node_per * cell];
-          if (swap) SWAP_INT(nodes[node]);
-          nodes[node]--;
+          nodes[node] = c2n[node + node_per * cell] - 1;
         }
         RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new cell");
         RES(cell + nread, new_cell, "cell index");
@@ -417,7 +444,7 @@ static REF_STATUS ref_import_bin_ugrid_c2n(REF_CELL ref_cell, REF_INT ncell,
 
 static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
                                                  REF_INT ncell, FILE *file,
-                                                 REF_BOOL swap) {
+                                                 REF_BOOL swap, REF_BOOL fat) {
   REF_INT node_per, max_chunk, nread, chunk, cell;
   REF_INT *tag;
 
@@ -428,9 +455,8 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
     nread = 0;
     while (nread < ncell) {
       chunk = MIN(max_chunk, ncell - nread);
-      REIS(chunk, fread(tag, sizeof(REF_INT), (size_t)chunk, file), "tags");
+      RSS(ref_import_bin_ugrid_chunk(file, swap, fat, chunk, tag), "tag");
       for (cell = 0; cell < chunk; cell++) {
-        if (swap) SWAP_INT(tag[cell]);
         ref_cell_c2n(ref_cell, node_per, nread + cell) = tag[cell];
       }
       nread += chunk;
@@ -442,7 +468,8 @@ static REF_STATUS ref_import_bin_ugrid_bound_tag(REF_CELL ref_cell,
 }
 
 static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                       const char *filename, REF_BOOL swap) {
+                                       const char *filename, REF_BOOL swap,
+                                       REF_BOOL fat) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   FILE *file;
@@ -460,21 +487,13 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
-  RES(1, fread(&nnode, sizeof(REF_INT), 1, file), "nnode");
-  RES(1, fread(&ntri, sizeof(REF_INT), 1, file), "ntri");
-  RES(1, fread(&nqua, sizeof(REF_INT), 1, file), "nqua");
-  RES(1, fread(&ntet, sizeof(REF_INT), 1, file), "ntet");
-  RES(1, fread(&npyr, sizeof(REF_INT), 1, file), "npyr");
-  RES(1, fread(&npri, sizeof(REF_INT), 1, file), "npri");
-  RES(1, fread(&nhex, sizeof(REF_INT), 1, file), "nhex");
-
-  if (swap) SWAP_INT(nnode);
-  if (swap) SWAP_INT(ntri);
-  if (swap) SWAP_INT(nqua);
-  if (swap) SWAP_INT(ntet);
-  if (swap) SWAP_INT(npyr);
-  if (swap) SWAP_INT(npri);
-  if (swap) SWAP_INT(nhex);
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &nnode), "nnode");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &ntri), "ntri");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &nqua), "nqua");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &ntet), "ntet");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &npyr), "npyr");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &npri), "npri");
+  RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &nhex), "nhex");
 
   /* large block reads reccomended for IO performance */
   max_chunk = MIN(1000000, nnode);
@@ -498,41 +517,29 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
 
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_tri(ref_grid), ntri, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_tri(ref_grid), ntri, file, swap, fat),
       "tri face nodes");
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_qua(ref_grid), nqua, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_qua(ref_grid), nqua, file, swap, fat),
       "qua face nodes");
 
-  RSS(ref_import_bin_ugrid_bound_tag(ref_grid_tri(ref_grid), ntri, file, swap),
+  RSS(ref_import_bin_ugrid_bound_tag(ref_grid_tri(ref_grid), ntri, file, swap,
+                                     fat),
       "tri face tags");
-  RSS(ref_import_bin_ugrid_bound_tag(ref_grid_qua(ref_grid), nqua, file, swap),
+  RSS(ref_import_bin_ugrid_bound_tag(ref_grid_qua(ref_grid), nqua, file, swap,
+                                     fat),
       "tri face tags");
 
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_tet(ref_grid), ntet, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_tet(ref_grid), ntet, file, swap, fat),
       "tet face nodes");
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_pyr(ref_grid), npyr, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_pyr(ref_grid), npyr, file, swap, fat),
       "pyr face nodes");
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_pri(ref_grid), npri, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_pri(ref_grid), npri, file, swap, fat),
       "pri face nodes");
-  RSS(ref_import_bin_ugrid_c2n(ref_grid_hex(ref_grid), nhex, file, swap),
+  RSS(ref_import_bin_ugrid_c2n(ref_grid_hex(ref_grid), nhex, file, swap, fat),
       "hex face nodes");
 
   fclose(file);
 
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_import_lb8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                       const char *filename) {
-  RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE),
-      "import bin ugrid unswapped");
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_import_b8_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                                      const char *filename) {
-  RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE),
-      "import bin ugrid swapped");
   return REF_SUCCESS;
 }
 
@@ -1586,10 +1593,28 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   end_of_string = strlen(filename);
 
   if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_import_lb8_ugrid(ref_grid_ptr, ref_mpi, filename),
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                             REF_FALSE),
         "lb8_ugrid failed");
   } else if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_import_b8_ugrid(ref_grid_ptr, ref_mpi, filename),
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                             REF_FALSE),
+        "b8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                             REF_TRUE),
+        "lb8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                             REF_TRUE),
+        "b8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                             REF_TRUE),
+        "lb8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                             REF_TRUE),
         "b8_ugrid failed");
   } else if (strcmp(&filename[end_of_string - 9], ".r8.ugrid") == 0) {
     RSS(ref_import_r8_ugrid(ref_grid_ptr, ref_mpi, filename),

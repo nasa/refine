@@ -37,7 +37,7 @@
 
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
                                 REF_BOOL has_id, REF_NODE ref_node,
-                                REF_INT nnode) {
+                                REF_LONG nnode) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT node, new_node;
   REF_INT part;
@@ -65,8 +65,8 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
       if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
     }
     each_ref_mpi_worker(ref_mpi, part) {
-      n = ref_part_first(nnode, ref_mpi_n(ref_mpi), part + 1) -
-          ref_part_first(nnode, ref_mpi_n(ref_mpi), part);
+      n = (REF_INT)(ref_part_first(nnode, ref_mpi_n(ref_mpi), part + 1) -
+                    ref_part_first(nnode, ref_mpi_n(ref_mpi), part));
       RSS(ref_mpi_send(ref_mpi, &n, 1, REF_INT_TYPE, part), "send");
       if (n > 0) {
         ref_malloc(xyz, 3 * n, REF_DBL);
@@ -939,19 +939,102 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
-                                          REF_NODE ref_node, REF_INT nnode,
+static REF_STATUS ref_part_bin_ugrid_pack_cell(
+    FILE *file, REF_BOOL swap_endian, REF_BOOL sixty_four_bit,
+    REF_FILEPOS conn_offset, REF_FILEPOS faceid_offset, REF_INT section_size,
+    REF_LONG ncell_read, REF_INT node_per, REF_INT size_per, REF_GLOB *c2n) {
+  REF_INT cell, node;
+  REF_FILEPOS ibyte;
+  ibyte = (sixty_four_bit ? 8 : 4);
+
+  if (sixty_four_bit) {
+    REF_LONG *c2t;
+    ref_malloc(c2t, node_per * section_size, REF_LONG);
+    REIS(0,
+         fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
+                SEEK_SET),
+         "seek conn failed");
+    RES((size_t)(section_size * node_per),
+        fread(c2t, sizeof(REF_LONG), (size_t)(section_size * node_per), file),
+        "cn");
+    for (cell = 0; cell < section_size * node_per; cell++) {
+      if (swap_endian) SWAP_LONG(c2t[cell]);
+    }
+    for (cell = 0; cell < section_size; cell++) {
+      for (node = 0; node < node_per; node++) {
+        c2n[node + size_per * cell] = c2t[node + node_per * cell] - 1;
+      }
+    }
+    if (node_per != size_per) {
+      REF_LONG *tag;
+      ref_malloc(tag, section_size, REF_LONG);
+      REIS(0,
+           fseeko(file, faceid_offset + ibyte * (REF_FILEPOS)ncell_read,
+                  SEEK_SET),
+           "seek tag failed");
+      RES((size_t)(section_size),
+          fread(tag, sizeof(REF_LONG), (size_t)section_size, file), "tag");
+      for (cell = 0; cell < section_size; cell++) {
+        if (swap_endian) SWAP_LONG(tag[cell]);
+      }
+      /* sort into right locations */
+      for (cell = 0; cell < section_size; cell++)
+        c2n[node_per + cell * size_per] = tag[cell];
+      ref_free(tag);
+    }
+    ref_free(c2t);
+  } else {
+    REF_INT *c2t;
+    ref_malloc(c2t, node_per * section_size, REF_INT);
+    REIS(0,
+         fseeko(file, conn_offset + ibyte * node_per * (REF_FILEPOS)ncell_read,
+                SEEK_SET),
+         "seek conn failed");
+    RES((size_t)(section_size * node_per),
+        fread(c2t, sizeof(REF_INT), (size_t)(section_size * node_per), file),
+        "cn");
+    for (cell = 0; cell < section_size * node_per; cell++) {
+      if (swap_endian) SWAP_INT(c2t[cell]);
+    }
+    for (cell = 0; cell < section_size; cell++) {
+      for (node = 0; node < node_per; node++) {
+        c2n[node + size_per * cell] = c2t[node + node_per * cell] - 1;
+      }
+    }
+    if (node_per != size_per) {
+      REF_INT *tag;
+      ref_malloc(tag, section_size, REF_INT);
+      REIS(0,
+           fseeko(file, faceid_offset + ibyte * (REF_FILEPOS)ncell_read,
+                  SEEK_SET),
+           "seek tag failed");
+      RES((size_t)(section_size),
+          fread(tag, sizeof(REF_INT), (size_t)section_size, file), "tag");
+      for (cell = 0; cell < section_size; cell++) {
+        if (swap_endian) SWAP_INT(tag[cell]);
+      }
+      /* sort into right locations */
+      for (cell = 0; cell < section_size; cell++)
+        c2n[node_per + cell * size_per] = tag[cell];
+      ref_free(tag);
+    }
+    ref_free(c2t);
+  }
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
+                                          REF_NODE ref_node, REF_GLOB nnode,
                                           FILE *file, REF_FILEPOS conn_offset,
                                           REF_FILEPOS faceid_offset,
-                                          REF_BOOL swap_endian) {
+                                          REF_BOOL swap_endian,
+                                          REF_BOOL sixty_four_bit) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell_read;
+  REF_LONG ncell_read;
   REF_INT chunk;
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
-  REF_INT *c2n;
-  REF_INT *tag;
-  REF_INT *c2t;
+  REF_GLOB *c2n;
   REF_GLOB *sent_c2n;
   REF_INT *dest;
   REF_INT *sent_part;
@@ -964,7 +1047,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   REF_INT ncell_keep;
   REF_INT new_location;
 
-  chunk = MAX(1000000, ncell / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_node_mpi(ref_node))));
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
@@ -974,47 +1057,17 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   if (ref_mpi_once(ref_mpi)) {
     ref_malloc(elements_to_send, ref_mpi_n(ref_mpi), REF_INT);
     ref_malloc(start_to_send, ref_mpi_n(ref_mpi), REF_INT);
-    ref_malloc(c2n, size_per * chunk, REF_INT);
-    ref_malloc(tag, chunk, REF_INT);
-    ref_malloc(c2t, size_per * chunk, REF_INT);
+    ref_malloc(c2n, size_per * chunk, REF_GLOB);
     ref_malloc(dest, chunk, REF_INT);
 
     ncell_read = 0;
     while (ncell_read < ncell) {
-      section_size = MIN(chunk, ncell - ncell_read);
+      section_size = (REF_INT)MIN((REF_LONG)chunk, ncell - ncell_read);
 
-      REIS(0,
-           fseeko(file,
-                  conn_offset + (REF_FILEPOS)4 * (REF_FILEPOS)node_per *
-                                    (REF_FILEPOS)ncell_read,
-                  SEEK_SET),
-           "seek conn failed");
-      RES((size_t)(section_size * node_per),
-          fread(c2n, sizeof(REF_INT), (size_t)(section_size * node_per), file),
-          "cn");
-      for (cell = 0; cell < section_size * node_per; cell++)
-        if (swap_endian) SWAP_INT(c2n[cell]);
-      for (cell = 0; cell < section_size * node_per; cell++) c2n[cell]--;
-      if (ref_cell_last_node_is_an_id(ref_cell)) {
-        REIS(0,
-             fseeko(file,
-                    faceid_offset + (REF_FILEPOS)4 * (REF_FILEPOS)ncell_read,
-                    SEEK_SET),
-             "seek tag failed");
-        RES((size_t)(section_size),
-            fread(tag, sizeof(REF_INT), (size_t)section_size, file), "tag");
-        for (cell = 0; cell < section_size; cell++)
-          if (swap_endian) SWAP_INT(tag[cell]);
-
-        /* sort into right locations */
-        for (cell = 0; cell < section_size; cell++)
-          for (node = 0; node < node_per; node++)
-            c2t[node + cell * size_per] = c2n[node + cell * node_per];
-        for (cell = 0; cell < section_size; cell++)
-          c2t[node_per + cell * size_per] = tag[cell];
-        for (cell = 0; cell < section_size * size_per; cell++)
-          c2n[cell] = c2t[cell];
-      }
+      RSS(ref_part_bin_ugrid_pack_cell(file, swap_endian, sixty_four_bit,
+                                       conn_offset, faceid_offset, section_size,
+                                       ncell_read, node_per, size_per, c2n),
+          "read c2n");
 
       ncell_read += section_size;
 
@@ -1069,8 +1122,6 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
     }
 
     ref_free(dest);
-    ref_free(c2t);
-    ref_free(tag);
     ref_free(c2n);
     ref_free(start_to_send);
     ref_free(elements_to_send);
@@ -1113,10 +1164,11 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                              const char *filename, REF_BOOL swap_endian) {
+static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                     const char *filename, REF_BOOL swap_endian,
+                                     REF_BOOL sixty_four_bit) {
   FILE *file;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_LONG nnode, ntri, nqua, ntet, npyr, npri, nhex;
 
   REF_FILEPOS conn_offset, faceid_offset;
 
@@ -1125,6 +1177,10 @@ REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
+
+  REF_INT single;
+  REF_FILEPOS ibyte;
+  ibyte = (sixty_four_bit ? 8 : 4);
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -1140,32 +1196,56 @@ REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
-    RES(1, fread(&nnode, sizeof(REF_INT), 1, file), "nnode");
-    RES(1, fread(&ntri, sizeof(REF_INT), 1, file), "ntri");
-    RES(1, fread(&nqua, sizeof(REF_INT), 1, file), "nqua");
-    RES(1, fread(&ntet, sizeof(REF_INT), 1, file), "ntet");
-    RES(1, fread(&npyr, sizeof(REF_INT), 1, file), "npyr");
-    RES(1, fread(&npri, sizeof(REF_INT), 1, file), "npri");
-    RES(1, fread(&nhex, sizeof(REF_INT), 1, file), "nhex");
+    if (sixty_four_bit) {
+      RES(1, fread(&nnode, sizeof(REF_LONG), 1, file), "nnode");
+      RES(1, fread(&ntri, sizeof(REF_LONG), 1, file), "ntri");
+      RES(1, fread(&nqua, sizeof(REF_LONG), 1, file), "nqua");
+      RES(1, fread(&ntet, sizeof(REF_LONG), 1, file), "ntet");
+      RES(1, fread(&npyr, sizeof(REF_LONG), 1, file), "npyr");
+      RES(1, fread(&npri, sizeof(REF_LONG), 1, file), "npri");
+      RES(1, fread(&nhex, sizeof(REF_LONG), 1, file), "nhex");
 
-    if (swap_endian) {
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
+      if (swap_endian) {
+        SWAP_LONG(nnode);
+        SWAP_LONG(ntri);
+        SWAP_LONG(nqua);
+        SWAP_LONG(ntet);
+        SWAP_LONG(npyr);
+        SWAP_LONG(npri);
+        SWAP_LONG(nhex);
+      }
+    } else {
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nnode");
+      if (swap_endian) SWAP_INT(single);
+      nnode = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "ntri");
+      if (swap_endian) SWAP_INT(single);
+      ntri = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nqua");
+      if (swap_endian) SWAP_INT(single);
+      nqua = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "ntet");
+      if (swap_endian) SWAP_INT(single);
+      ntet = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "npyr");
+      if (swap_endian) SWAP_INT(single);
+      npyr = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "npri");
+      if (swap_endian) SWAP_INT(single);
+      npri = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nhex");
+      if (swap_endian) SWAP_INT(single);
+      nhex = single;
     }
   }
 
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nqua, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npyr, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_INT_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nqua, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npyr, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
   /* guess twod status */
 
@@ -1176,79 +1256,73 @@ REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");
 
   if (0 < ntri) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode;
-    faceid_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                    (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                    (REF_FILEPOS)4 * (REF_FILEPOS)3 * (REF_FILEPOS)ntri +
-                    (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)nqua;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3);
+    faceid_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                    (REF_FILEPOS)ntri * 3 * ibyte +
+                    (REF_FILEPOS)nqua * 4 * ibyte;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tri(ref_grid), ntri, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "tri");
   }
 
   if (0 < nqua) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)3 * (REF_FILEPOS)ntri;
-    faceid_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                    (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                    (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntri +
-                    (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)nqua;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                  (REF_FILEPOS)ntri * 4 * ibyte;
+    faceid_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                    (REF_FILEPOS)ntri * 4 * ibyte +
+                    (REF_FILEPOS)nqua * 4 * ibyte;
     RSS(ref_part_bin_ugrid_cell(ref_grid_qua(ref_grid), nqua, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "qua");
   }
 
   if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "bound");
 
   if (0 < ntet) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntri +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)nqua;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                  (REF_FILEPOS)ntri * 4 * ibyte + (REF_FILEPOS)nqua * 5 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_tet(ref_grid), ntet, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "tet");
   }
 
   if (0 < npyr) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntri +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)nqua +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntet;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                  (REF_FILEPOS)ntri * 4 * ibyte +
+                  (REF_FILEPOS)nqua * 5 * ibyte + (REF_FILEPOS)ntet * 4 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_pyr(ref_grid), npyr, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "pyr");
   }
 
   if (0 < npri) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntri +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)nqua +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntet +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)npyr;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                  (REF_FILEPOS)ntri * 4 * ibyte +
+                  (REF_FILEPOS)nqua * 5 * ibyte +
+                  (REF_FILEPOS)ntet * 4 * ibyte + (REF_FILEPOS)npyr * 5 * ibyte;
     faceid_offset = (REF_FILEPOS)REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_pri(ref_grid), npri, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "pri");
   }
 
   if (0 < nhex) {
-    conn_offset = (REF_FILEPOS)4 * (REF_FILEPOS)7 +
-                  (REF_FILEPOS)8 * (REF_FILEPOS)3 * (REF_FILEPOS)nnode +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntri +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)nqua +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)4 * (REF_FILEPOS)ntet +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)5 * (REF_FILEPOS)npyr +
-                  (REF_FILEPOS)4 * (REF_FILEPOS)6 * (REF_FILEPOS)npri;
+    conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
+                  (REF_FILEPOS)ntri * 4 * ibyte +
+                  (REF_FILEPOS)nqua * 5 * ibyte +
+                  (REF_FILEPOS)ntet * 4 * ibyte +
+                  (REF_FILEPOS)npyr * 5 * ibyte + (REF_FILEPOS)npri * 6 * ibyte;
     faceid_offset = REF_EMPTY;
     RSS(ref_part_bin_ugrid_cell(ref_grid_hex(ref_grid), nhex, ref_node, nnode,
-                                file, conn_offset, faceid_offset, swap_endian),
+                                file, conn_offset, faceid_offset, swap_endian,
+                                sixty_four_bit),
         "hex");
   }
 
@@ -1667,12 +1741,36 @@ REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   end_of_string = strlen(filename);
 
   if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
-    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE),
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                           REF_FALSE),
         "lb8_ugrid failed");
     return REF_SUCCESS;
   }
   if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
-    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE),
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                           REF_FALSE),
+        "b8_ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                           REF_TRUE),
+        "lb8_ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE, REF_TRUE),
+        "b8_ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                           REF_TRUE),
+        "lb8_ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+    RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE, REF_TRUE),
         "b8_ugrid failed");
     return REF_SUCCESS;
   }
