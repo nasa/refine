@@ -37,7 +37,7 @@
 
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
                                 REF_BOOL has_id, REF_NODE ref_node,
-                                REF_INT nnode) {
+                                REF_LONG nnode) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT node, new_node;
   REF_INT part;
@@ -65,8 +65,8 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
       if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
     }
     each_ref_mpi_worker(ref_mpi, part) {
-      n = ref_part_first(nnode, ref_mpi_n(ref_mpi), part + 1) -
-          ref_part_first(nnode, ref_mpi_n(ref_mpi), part);
+      n = (REF_INT)(ref_part_first(nnode, ref_mpi_n(ref_mpi), part + 1) -
+                    ref_part_first(nnode, ref_mpi_n(ref_mpi), part));
       RSS(ref_mpi_send(ref_mpi, &n, 1, REF_INT_TYPE, part), "send");
       if (n > 0) {
         ref_malloc(xyz, 3 * n, REF_DBL);
@@ -939,8 +939,8 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
-                                          REF_NODE ref_node, REF_INT nnode,
+static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_LONG ncell,
+                                          REF_NODE ref_node, REF_GLOB nnode,
                                           FILE *file, REF_FILEPOS conn_offset,
                                           REF_FILEPOS faceid_offset,
                                           REF_BOOL swap_endian) {
@@ -964,7 +964,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   REF_INT ncell_keep;
   REF_INT new_location;
 
-  chunk = MAX(1000000, ncell / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = MAX(1000000, (REF_INT)(ncell / ref_mpi_n(ref_node_mpi(ref_node))));
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
@@ -981,7 +981,7 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
 
     ncell_read = 0;
     while (ncell_read < ncell) {
-      section_size = MIN(chunk, ncell - ncell_read);
+      section_size = (REF_INT)MIN((REF_LONG)chunk, ncell - ncell_read);
 
       REIS(0,
            fseeko(file,
@@ -1117,7 +1117,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                      const char *filename, REF_BOOL swap_endian,
                                      REF_BOOL sixty_four_bit) {
   FILE *file;
-  REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
+  REF_LONG nnode, ntri, nqua, ntet, npyr, npri, nhex;
 
   REF_FILEPOS conn_offset, faceid_offset;
 
@@ -1127,6 +1127,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_BOOL has_id = REF_FALSE;
   REF_BOOL instrument = REF_FALSE;
 
+  REF_INT single;
   REF_FILEPOS ibyte;
   ibyte = (sixty_four_bit ? 8 : 4);
 
@@ -1144,32 +1145,56 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
-    RES(1, fread(&nnode, sizeof(REF_INT), 1, file), "nnode");
-    RES(1, fread(&ntri, sizeof(REF_INT), 1, file), "ntri");
-    RES(1, fread(&nqua, sizeof(REF_INT), 1, file), "nqua");
-    RES(1, fread(&ntet, sizeof(REF_INT), 1, file), "ntet");
-    RES(1, fread(&npyr, sizeof(REF_INT), 1, file), "npyr");
-    RES(1, fread(&npri, sizeof(REF_INT), 1, file), "npri");
-    RES(1, fread(&nhex, sizeof(REF_INT), 1, file), "nhex");
+    if (sixty_four_bit) {
+      RES(1, fread(&nnode, sizeof(REF_LONG), 1, file), "nnode");
+      RES(1, fread(&ntri, sizeof(REF_LONG), 1, file), "ntri");
+      RES(1, fread(&nqua, sizeof(REF_LONG), 1, file), "nqua");
+      RES(1, fread(&ntet, sizeof(REF_LONG), 1, file), "ntet");
+      RES(1, fread(&npyr, sizeof(REF_LONG), 1, file), "npyr");
+      RES(1, fread(&npri, sizeof(REF_LONG), 1, file), "npri");
+      RES(1, fread(&nhex, sizeof(REF_LONG), 1, file), "nhex");
 
-    if (swap_endian) {
-      SWAP_INT(nnode);
-      SWAP_INT(ntri);
-      SWAP_INT(nqua);
-      SWAP_INT(ntet);
-      SWAP_INT(npyr);
-      SWAP_INT(npri);
-      SWAP_INT(nhex);
+      if (swap_endian) {
+        SWAP_LONG(nnode);
+        SWAP_LONG(ntri);
+        SWAP_LONG(nqua);
+        SWAP_LONG(ntet);
+        SWAP_LONG(npyr);
+        SWAP_LONG(npri);
+        SWAP_LONG(nhex);
+      }
+    } else {
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nnode");
+      if (swap_endian) SWAP_INT(single);
+      nnode = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "ntri");
+      if (swap_endian) SWAP_INT(single);
+      ntri = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nqua");
+      if (swap_endian) SWAP_INT(single);
+      nqua = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "ntet");
+      if (swap_endian) SWAP_INT(single);
+      ntet = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "npyr");
+      if (swap_endian) SWAP_INT(single);
+      npyr = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "npri");
+      if (swap_endian) SWAP_INT(single);
+      npri = single;
+      RES(1, fread(&single, sizeof(REF_INT), 1, file), "nhex");
+      if (swap_endian) SWAP_INT(single);
+      nhex = single;
     }
   }
 
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nqua, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npyr, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_INT_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nnode, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntri, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nqua, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &ntet, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npyr, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
   /* guess twod status */
 
