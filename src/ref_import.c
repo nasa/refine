@@ -1600,6 +1600,22 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
                              REF_FALSE),
         "b8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                             REF_TRUE),
+        "lb8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                             REF_TRUE),
+        "b8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
+                             REF_TRUE),
+        "lb8_ugrid failed");
+  } else if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+    RSS(ref_import_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
+                             REF_TRUE),
+        "b8_ugrid failed");
   } else if (strcmp(&filename[end_of_string - 9], ".r8.ugrid") == 0) {
     RSS(ref_import_r8_ugrid(ref_grid_ptr, ref_mpi, filename),
         "r8_ugrid failed");

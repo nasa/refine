@@ -279,6 +279,106 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  { /* export import .lb8l.ugrid tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.lb8l.ugrid";
+    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .b8l.ugrid tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.b8l.ugrid";
+    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .lb8.ugrid64 tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.lb8.ugrid64";
+    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .b8.ugrid64 tet */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test.b8.ugrid64";
+    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RWDS(ref_node_xyz(ref_grid_node(export_grid), 0, 1),
+         ref_node_xyz(ref_grid_node(import_grid), 0, 1), 1e-15, "x 1");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 0, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 0, 0), "tet node0");
+    REIS(ref_cell_c2n(ref_grid_tet(export_grid), 1, 0),
+         ref_cell_c2n(ref_grid_tet(import_grid), 1, 0), "tet node 1");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
   { /* read AFLR3 < 14 surf */
     REF_GRID import_grid;
     char file[] = "ref_import_test.surf";
