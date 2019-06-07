@@ -1113,7 +1113,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
         ref_malloc(c2n, ncell * size_per, REF_GLOB);
         RSS(ref_mpi_recv(ref_mpi, c2n, ncell * size_per, REF_GLOB_TYPE, proc),
             "recv c2n");
-        for (cell = 0; cell < ncell; cell++)
+        for (cell = 0; cell < ncell; cell++) {
           if (faceid_insted_of_c2n) {
             node = node_per;
             c2n_int = (REF_INT)c2n[node + size_per * cell];
@@ -1139,6 +1139,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
               }
             }
           }
+        }
         ref_free(c2n);
       }
     }
