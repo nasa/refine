@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-set -e # exit on first error
-set -u # Treat unset variables as error
-
 set -x # echo
 
 # Setup bash module environment
@@ -10,6 +7,9 @@ set -x # echo
 
 module purge
 source acceptance/c2s-modules.sh
+
+set -e # exit on first error
+set -u # Treat unset variables as error
 
 log=`pwd`/../log-build.txt
 
