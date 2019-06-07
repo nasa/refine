@@ -1113,8 +1113,9 @@ static REF_STATUS ref_part_bin_ugrid_cell(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
-                              const char *filename, REF_BOOL swap_endian) {
+static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
+                                     const char *filename,
+                                     REF_BOOL swap_endian) {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
 
