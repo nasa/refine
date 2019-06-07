@@ -1608,6 +1608,16 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
         "b8_ugrid failed");
     return REF_SUCCESS;
   }
+  if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
+        "lb8_ugrid failed");
+    return REF_SUCCESS;
+  }
+  if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+    RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
+        "b8_ugrid failed");
+    return REF_SUCCESS;
+  }
   if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_gather_meshb(ref_grid, filename), "meshb failed");
     return REF_SUCCESS;
