@@ -2,14 +2,15 @@
 
 set -x # echo
 
+set -e # exit on first error
+set -u # Treat unset variables as error
+
 # Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
 
+
 module purge
 source acceptance/c2s-modules.sh
-
-set -e # exit on first error
-set -u # Treat unset variables as error
 
 log=`pwd`/../log-build.txt
 
