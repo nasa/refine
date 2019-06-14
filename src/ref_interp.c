@@ -1889,7 +1889,7 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
   float zonemarker;
   int parent, strand, notused, zonetype, packing, location, neighbor;
   double solutiontime;
-  int mystery, i;
+  int miscellaneous, i;
   int numpts, numelem;
   int dim, aux;
 
@@ -1936,9 +1936,9 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
     REIS(1, fread(&neighbor, sizeof(int), 1, file), "neighbor");
     REIS(0, neighbor, "no face nieghbor  plt implemented");
 
-    for (i = 0; i < 8; i++) {
-      REIS(1, fread(&mystery, sizeof(int), 1, file), "mystery");
-      REIS(0, mystery, "mystery data nonzero plt");
+    for (i = 0; i < numvar; i++) {
+      REIS(1, fread(&miscellaneous, sizeof(int), 1, file), "mystery");
+      REIS(0, miscellaneous, "mystery data nonzero plt");
     }
 
     REIS(1, fread(&numpts, sizeof(int), 1, file), "numpts");
