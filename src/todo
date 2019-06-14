@@ -1,4 +1,8 @@
 
+size_t cad data
+
+ref_dict reals
+
 bleme
  spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
  l2 projection: replace with volume weighing of donor dual volume
