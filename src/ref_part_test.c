@@ -379,8 +379,8 @@ int main(int argc, char *argv[]) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
       ref_geom = ref_grid_geom(export_grid);
       ref_geom_cad_data_size(ref_geom) = 3;
-      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-                 REF_BYTE);
+      ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                        ref_geom_cad_data_size(ref_geom), REF_BYTE);
       ref_geom_cad_data(ref_geom)[0] = 5;
       ref_geom_cad_data(ref_geom)[1] = 4;
       ref_geom_cad_data(ref_geom)[2] = 3;

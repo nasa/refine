@@ -2785,18 +2785,18 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
     /* entry point NOT in egads.h */
     int EG_exportModel(ego mobject, size_t * nbytes, char *stream[]);
 
-    size_t cad_data_size;
+    REF_SIZE cad_data_size;
     REF_BYTE *cad_data;
 
     REIS(EGADS_SUCCESS, EG_exportModel(model, &cad_data_size, &cad_data),
          "EG stream");
-    ref_geom_cad_data_size(ref_geom) = (REF_INT)cad_data_size;
+    ref_geom_cad_data_size(ref_geom) = cad_data_size;
     /* safe non-NULL free, if already allocated, to prevent memory leaks */
     ref_free(ref_geom->cad_data);
-    ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-               REF_BYTE);
+    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
     memcpy(ref_geom_cad_data(ref_geom), cad_data,
-           (size_t)ref_geom_cad_data_size(ref_geom));
+           ref_geom_cad_data_size(ref_geom));
     EG_free(cad_data);
   }
 #endif

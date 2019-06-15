@@ -2064,7 +2064,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT node;
   REF_INT min_faceid, max_faceid, node_per, faceid, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT type, id, i;
+  REF_INT type, id, i, size_bytes;
   REF_INT geom;
   int ngeom;
 
@@ -2225,11 +2225,11 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
                     (REF_FILEPOS)ref_geom_cad_data_size(ref_geom) + ftell(file);
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    REIS(1, fwrite(&(ref_geom_cad_data_size(ref_geom)), sizeof(int), 1, file),
-         "n");
+    size_bytes = (REF_INT)ref_geom_cad_data_size(ref_geom);
+    REIS(1, fwrite(&size_bytes, sizeof(int), 1, file), "n");
     REIS(ref_geom_cad_data_size(ref_geom),
          fwrite(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-                (size_t)ref_geom_cad_data_size(ref_geom), file),
+                ref_geom_cad_data_size(ref_geom), file),
          "node");
     REIS(next_position, ftell(file), "cad_model inconsistent");
   }

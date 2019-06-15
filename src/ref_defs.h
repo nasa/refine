@@ -73,6 +73,7 @@ typedef double REF_DBL;
 typedef char REF_BYTE;
 
 typedef off_t REF_FILEPOS;
+typedef size_t REF_SIZE;
 
 typedef int REF_STATUS;
 

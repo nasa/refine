@@ -1569,14 +1569,14 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
          fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
          "cad data size");
     if (verbose)
-      printf("cad_data %d bytes\n", ref_geom_cad_data_size(ref_geom));
+      printf("cad_data %ld bytes\n", ref_geom_cad_data_size(ref_geom));
     /* safe non-NULL free, if already allocated, to prevent memory leaks */
     ref_free(ref_geom_cad_data(ref_geom));
-    ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-               REF_BYTE);
+    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
     REIS(ref_geom_cad_data_size(ref_geom),
          fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-               (size_t)ref_geom_cad_data_size(ref_geom), file),
+               ref_geom_cad_data_size(ref_geom), file),
          "cad_data");
     REIS(next_position, ftello(file), "end location");
   }
