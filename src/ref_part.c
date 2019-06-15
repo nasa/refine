@@ -690,14 +690,14 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
           fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
           "cad_data_size");
       if (verbose)
-        printf("cad_data_size %d\n", ref_geom_cad_data_size(ref_geom));
+        printf("cad_data_size %ld\n", ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
       ref_free(ref_geom_cad_data(ref_geom));
-      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-                 REF_BYTE);
+      ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                        ref_geom_cad_data_size(ref_geom), REF_BYTE);
       REIS(ref_geom_cad_data_size(ref_geom),
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
-                 (size_t)ref_geom_cad_data_size(ref_geom), file),
+                 ref_geom_cad_data_size(ref_geom), file),
            "cad_data");
       REIS(next_position, ftello(file), "end location");
     }
@@ -705,13 +705,13 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ref_geom_cad_data_size(ref_geom), 1,
-                      REF_INT_TYPE),
+                      REF_LONG_TYPE),
         "bcast");
     if (!ref_grid_once(ref_grid))
-      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-                 REF_BYTE);
+      ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                        ref_geom_cad_data_size(ref_geom), REF_BYTE);
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
-                      ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
+                      (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");
   }
 
@@ -775,11 +775,11 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
           fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
           "cad_data_size");
       if (verbose)
-        printf("cad_data_size %d\n", ref_geom_cad_data_size(ref_geom));
+        printf("cad_data_size %ld\n", ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
       ref_free(ref_geom_cad_data(ref_geom));
-      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-                 REF_BYTE);
+      ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                        ref_geom_cad_data_size(ref_geom), REF_BYTE);
       REIS(ref_geom_cad_data_size(ref_geom),
            fread(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                  (size_t)ref_geom_cad_data_size(ref_geom), file),
@@ -796,10 +796,10 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
                       REF_INT_TYPE),
         "bcast");
     if (!ref_grid_once(ref_grid))
-      ref_malloc(ref_geom_cad_data(ref_geom), ref_geom_cad_data_size(ref_geom),
-                 REF_BYTE);
+      ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                        ref_geom_cad_data_size(ref_geom), REF_BYTE);
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
-                      ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
+                      (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");
   }
 

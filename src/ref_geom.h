@@ -73,7 +73,7 @@ struct REF_GEOM_STRUCT {
   void *faces;
   void *edges;
   void *nodes;
-  REF_INT cad_data_size;
+  REF_SIZE cad_data_size;
   REF_BYTE *cad_data;
 };
 

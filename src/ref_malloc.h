@@ -24,11 +24,16 @@
 
 BEGIN_C_DECLORATION
 
+#define ref_malloc_size_t(ptr, n, ptr_type)                     \
+  {                                                             \
+    (ptr) = (ptr_type *)malloc((size_t)(n) * sizeof(ptr_type)); \
+    RNS((ptr), "malloc " #ptr " of " #ptr_type " NULL");        \
+  }
+
 #define ref_malloc(ptr, n, ptr_type)                            \
   {                                                             \
     RAS((n) >= 0, "malloc " #ptr " of " #ptr_type " negative"); \
-    (ptr) = (ptr_type *)malloc((size_t)(n) * sizeof(ptr_type)); \
-    RNS((ptr), "malloc " #ptr " of " #ptr_type " NULL");        \
+    ref_malloc_size_t(ptr, n, ptr_type);                        \
   }
 
 #define ref_malloc_init(ptr, n, ptr_type, initial_value)                      \
