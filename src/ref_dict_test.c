@@ -136,53 +136,6 @@ int main(void) {
     RSS(ref_dict_free(ref_dict), "free");
   }
 
-  {
-    REF_INT naux = 4;
-    REIS(REF_NULL, ref_dict_free(NULL), "dont free NULL");
-    RSS(ref_dict_create(&ref_dict), "create");
-    RSS(ref_dict_includes_aux_value(ref_dict, naux), "set first");
-    REIS(REF_INVALID, ref_dict_includes_aux_value(ref_dict, 0), "immutable");
-    RSS(ref_dict_free(ref_dict), "free");
-  }
-
-  { /* setting naux only once */
-    REF_INT naux = 4;
-    REIS(REF_NULL, ref_dict_free(NULL), "dont free NULL");
-    RSS(ref_dict_create(&ref_dict), "create");
-    RSS(ref_dict_includes_aux_value(ref_dict, naux), "set first");
-    REIS(REF_INVALID, ref_dict_includes_aux_value(ref_dict, 0), "immutable");
-    RSS(ref_dict_free(ref_dict), "free");
-  }
-
-  { /* store methods are exclusive */
-    REF_INT naux = 4;
-    REF_INT key = 3, value = 5;
-    REF_DBL aux[] = {1, 2, 3, 4};
-    REIS(REF_NULL, ref_dict_free(NULL), "dont free NULL");
-    RSS(ref_dict_create(&ref_dict), "create");
-    REIS(REF_INVALID, ref_dict_store_with_aux(ref_dict, key, value, aux),
-         "aux not set");
-    RSS(ref_dict_includes_aux_value(ref_dict, naux), "set first");
-    REIS(REF_INVALID, ref_dict_store(ref_dict, key, value), "aux set");
-    RSS(ref_dict_free(ref_dict), "free");
-  }
-
-  { /* store one with aux*/
-    REF_INT key = 2, value = 5, location;
-    REF_INT naux = 4;
-    REF_DBL aux[] = {1, 2, 3, 4};
-    REF_DBL tol = -1.0;
-    RSS(ref_dict_create(&ref_dict), "create");
-    RSS(ref_dict_includes_aux_value(ref_dict, naux), "set first");
-    RSS(ref_dict_store_with_aux(ref_dict, key, value, aux), "store");
-    RSS(ref_dict_location(ref_dict, key, &location), "retrieve");
-    RWDS(1.0, ref_dict_keyvalueaux(ref_dict, 0, location), tol, "aux[0]");
-    RWDS(2.0, ref_dict_keyvalueaux(ref_dict, 1, location), tol, "aux[1]");
-    RWDS(3.0, ref_dict_keyvalueaux(ref_dict, 2, location), tol, "aux[2]");
-    RWDS(4.0, ref_dict_keyvalueaux(ref_dict, 3, location), tol, "aux[3]");
-    RSS(ref_dict_free(ref_dict), "free");
-  }
-
   { /* store two, deep copy */
     REF_DICT deep_copy;
     REF_INT key, value;
