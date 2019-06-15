@@ -541,6 +541,91 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
+                                        REF_DBL *ideal_location) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ixyz;
+  REF_DBL weight;
+  REF_INT max_node = 100, nnode;
+  REF_INT node_list[100];
+  REF_INT edge;
+  REF_DBL ratio, norm[3], l4;
+
+  RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
+                                node_list),
+      "node list for edges");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) ideal_location[ixyz] = 0.0;
+
+  for (edge = 0; edge < nnode; edge++) {
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                   ref_node_xyz(ref_node, ixyz, node_list[edge]);
+    RSS(ref_math_normalize(norm), "normalize edge vector");
+    RSS(ref_node_ratio(ref_node, node, node_list[edge], &ratio), "ratio");
+    l4 = ratio * ratio * ratio * ratio;
+    weight = 0.2 * (1.0 - l4) * exp(-l4);
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ideal_location[ixyz] += weight * norm[ixyz];
+  }
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal_location[ixyz] += ref_node_xyz(ref_node, ixyz, node);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT tries;
+  REF_DBL ideal[3], original[3];
+  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
+  REF_INT ixyz, opposite;
+  REF_BOOL allowed;
+
+  /* can't handle boundaries yet */
+  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+
+  RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
+
+  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++) {
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ref_node_xyz(ref_node, ixyz, node) =
+          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
+    if (allowed) {
+      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
+      RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+      if ((quality > quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+        /* update opposite side: X and Z only */
+        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
+            "opp");
+        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
+        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
+        return REF_SUCCESS;
+      }
+    }
+    backoff *= 0.5;
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_smooth_node_same_normal(REF_GRID ref_grid, REF_INT node,
                                               REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
