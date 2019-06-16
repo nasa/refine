@@ -568,8 +568,6 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
       ideal_location[ixyz] += weight * norm[ixyz];
   }
 
-  ideal_location[1] = 0;
-
   for (ixyz = 0; ixyz < 3; ixyz++)
     ideal_location[ixyz] += ref_node_xyz(ref_node, ixyz, node);
 
