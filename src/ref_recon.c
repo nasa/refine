@@ -493,12 +493,12 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
         status = ref_recon_kexact_with_aux(
             ref_node_global(ref_node, node), ref_cloud, ref_grid_twod(ref_grid),
             ref_node_twod_mid_plane(ref_node), node_gradient, node_hessian);
-        if (REF_DIV_ZERO == status) {
+        if (REF_DIV_ZERO == status && layer > 4) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_DIV_ZERO", layer);
         }
-        if (REF_ILL_CONDITIONED == status) {
+        if (REF_ILL_CONDITIONED == status && layer > 4) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
                  "REF_ILL_CONDITIONED", layer);
