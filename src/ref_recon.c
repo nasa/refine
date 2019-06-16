@@ -243,7 +243,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   REIS(m, i, "b row miscount");
   if (verbose) RSS(ref_matrix_show_ab(9, 10, ab), "show");
-  RSS(ref_matrix_solve_ab(9, 10, ab), "solve rx=qtb");
+  RAISE(ref_matrix_solve_ab(9, 10, ab));
   if (verbose) RSS(ref_matrix_show_ab(9, 10, ab), "show");
   j = 9;
   for (im = 0; im < 6; im++) {
