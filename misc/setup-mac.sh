@@ -8,7 +8,7 @@ gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized
 
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-q63yedbi6cfzmqyjkwhwrob3jesy2uge"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
-opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE-6.8.1"
+opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
 
 # production spack packages
 parmetis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/parmetis-4.0.3-rivz73pj3gh7kkgwdcqp2dj4tfah45qv"
