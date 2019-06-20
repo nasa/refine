@@ -1681,10 +1681,15 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(ref_node_n_global(ref_node), nnode, "global nnode");
-    *ldim = ntype;
-    for (i = 0; i < *ldim; i++) {
+    *ldim = 0;
+    for (i = 0; i < ntype; i++) {
       REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-      REIS(1, type, "scalar solution type");
+      if (1 != type && 2 != type) {
+        printf("only types 1 (scalar) or 2 (vector) supported for %d type\n",
+               type);
+      }
+      if (1 == type) (*ldim) += 1;
+      if (2 == type) (*ldim) += dim;
     }
   }
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
