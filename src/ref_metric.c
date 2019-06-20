@@ -1943,17 +1943,17 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
         prim_dual_dfdq[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
-    thermal_conductivity = -mu / (pr * (gamma - 1.0));
+    thermal_conductivity = mu / (pr * (gamma - 1.0));
     if (6 == nequ) {
       rho = prim_dual_dfdq[0 + ldim * node];
       turb = prim_dual_dfdq[5 + ldim * node];
       RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
       thermal_conductivity =
-          -(mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
+          (mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
       mu += mu_t;
     }
     for (i = 0; i < 6; i++) {
-      metric[i + 6 * node] += 18.0 * mach / re * ABS(thermal_conductivity) *
+      metric[i + 6 * node] += 18.0 * mach / re * thermal_conductivity *
                               sr_lam[4 + 5 * node] * hess_u[i + 6 * node];
     }
   }
