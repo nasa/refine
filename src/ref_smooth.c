@@ -491,9 +491,39 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
 
 REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
                                           REF_INT *node0, REF_INT *node1) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_qua(ref_grid);
+  REF_INT item, cell, cell_edge, n0, n1;
+  REF_BOOL twod;
   *node0 = REF_EMPTY;
   *node1 = REF_EMPTY;
-  if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_NOT_FOUND;
+  RSS(ref_node_node_twod(ref_node, node, &twod), "node twod");
+  RAS(twod, "expected twod node");
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      if (node == ref_cell_e2n(ref_cell, 0, cell_edge, cell)) {
+        n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      } else if (node == ref_cell_e2n(ref_cell, 1, cell_edge, cell)) {
+        n0 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        n1 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      } else {
+        continue;
+      }
+      RSS(ref_node_edge_twod(ref_node, n0, n1, &twod), "edge twod");
+      if (twod) {
+        if (REF_EMPTY == *node0) {
+          *node0 = n1;
+          continue;
+        }
+        if (REF_EMPTY == *node1) {
+          *node1 = n1;
+          continue;
+        }
+        THROW("found more than two boundary edges");
+      }
+    }
+  }
 
   return REF_SUCCESS;
 }

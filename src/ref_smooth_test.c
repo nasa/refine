@@ -478,8 +478,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_smooth_tri2_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
     RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
         "bnode");
-    REIS(REF_EMPTY, node0, "node0");
-    REIS(REF_EMPTY, node1, "node1");
+    REIS(2, MIN(node0, node1), "node min");
+    REIS(6, MAX(node0, node1), "node max");
     RSS(ref_grid_free(ref_grid), "free");
   }
 
