@@ -579,6 +579,110 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
+                                               REF_INT node0, REF_INT node1,
+                                               REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL tan0[3], tan1[3];
+  REF_DBL dot;
+  REF_INT i;
+
+  *allowed = REF_FALSE;
+  for (i = 0; i < 3; i++)
+    tan0[i] =
+        ref_node_xyz(ref_node, i, node) - ref_node_xyz(ref_node, i, node0);
+  for (i = 0; i < 3; i++)
+    tan1[i] =
+        ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+
+  RSS(ref_math_normalize(tan0), "edge 0 zero length");
+  RSB(ref_math_normalize(tan1), "edge 1 zero length",
+      { printf("nodes %d %d %d\n", node0, node, node1); });
+
+  dot = ref_math_dot(tan0, tan1);
+  /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
+  if (dot < (1.0 - 1.0e-8)) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node0, node1;
+  REF_INT tries;
+  REF_DBL r0, r1, rsum, s_orig, ideal[3], original[3];
+  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
+  REF_INT ixyz, opposite;
+  REF_BOOL allowed;
+
+  /* boundaries only */
+  if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+
+  RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
+      "edge nodes");
+  if (REF_EMPTY == node1) return REF_SUCCESS;
+  RSS(ref_smooth_node_same_tangent(ref_grid, node, node0, node1, &allowed),
+      "tan");
+  if (!allowed) return REF_SUCCESS;
+
+  RSS(ref_node_ratio(ref_node, node0, node, &r0), "get r0");
+  RSS(ref_node_ratio(ref_node, node, node1, &r1), "get r1");
+
+  rsum = r1 + r0;
+  if (ref_math_divisible(r0, rsum)) {
+    s_orig = r0 / rsum;
+    /* one percent imblance is good enough */
+    if (ABS(s_orig - 0.5) < 0.01) return REF_SUCCESS;
+  } else {
+    printf("div zero %e r0 %e r1\n", r1, r0);
+    return REF_DIV_ZERO;
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal[ixyz] = s_orig * ref_node_xyz(ref_node, ixyz, node1) +
+                  (1.0 - s_orig) * ref_node_xyz(ref_node, ixyz, node0);
+
+  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++) {
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ref_node_xyz(ref_node, ixyz, node) =
+          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
+    if (allowed) {
+      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
+      RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+      if ((quality > quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+        /* update opposite side: X and Z only */
+        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
+            "opp");
+        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
+        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
+        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
+        return REF_SUCCESS;
+      }
+    }
+    backoff *= 0.5;
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *ideal_location) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -803,11 +907,33 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
   REF_INT node;
   REF_BOOL allowed;
 
+  /* boundary */
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
     if (!allowed) continue;
 
-    /* can't handle boundaries yet */
+    /* boundaries only */
+    allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+    if (allowed) continue;
+
+    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
+                                    &allowed),
+        "para");
+    if (!allowed) {
+      ref_node_age(ref_node, node)++;
+      continue;
+    }
+
+    ref_node_age(ref_node, node) = 0;
+    RSS(ref_smooth_twod_bound_improve(ref_grid, node), "improve");
+  }
+
+  /* interior */
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
+    if (!allowed) continue;
+
+    /* already did boundaries */
     allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
     if (!allowed) continue;
 
@@ -821,6 +947,7 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
     ref_node_age(ref_node, node) = 0;
     RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
+    /* RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve"); */
   }
 
   return REF_SUCCESS;
