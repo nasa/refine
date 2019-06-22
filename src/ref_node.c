@@ -2758,8 +2758,8 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
-                              REF_GLOB position, REF_DBL *value) {
+REF_STATUS ref_node_selection_bound(REF_NODE ref_node, REF_DBL *elements,
+                                    REF_GLOB position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_DBL local_value, lower_value, guess_value, upper_value, tol;
   REF_GLOB lower_position, guess_position, upper_position;
@@ -2816,8 +2816,8 @@ REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_selection_heap(REF_NODE ref_node, REF_DBL *elements,
-                                   REF_GLOB position, REF_DBL *value) {
+REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
+                              REF_GLOB position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_DBL *pack, *sorted;
   REF_INT *order;
