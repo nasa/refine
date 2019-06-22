@@ -49,6 +49,9 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
                                             REF_DBL *ideal_uv);
 
+REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
+                                          REF_INT *node0, REF_INT *node1);
+
 REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node);
 

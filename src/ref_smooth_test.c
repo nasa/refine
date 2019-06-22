@@ -210,6 +210,16 @@ static REF_STATUS ref_smooth_tri_two_fixture(REF_GRID *ref_grid_ptr,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_smooth_tri2_two_fixture(REF_GRID *ref_grid_ptr,
+                                              REF_MPI ref_mpi,
+                                              REF_INT *target_node) {
+  *target_node = REF_EMPTY;
+  RSS(ref_fixture_pri2_grid(ref_grid_ptr, ref_mpi), "pri2");
+  RXS(ref_node_local(ref_grid_node(*ref_grid_ptr), 0, target_node),
+      REF_NOT_FOUND, "global target lookup");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_smooth_tet_two_fixture(REF_GRID *ref_grid_ptr,
                                              REF_MPI ref_mpi,
                                              REF_INT *target_node,
@@ -459,6 +469,17 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, ideal[1], -1, "ideal y");
     RWDS(0.5 * (0.5 + 0.5 * sqrt(3.0)), ideal[2], -1, "ideal z");
 
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* improve twod boundary */
+    REF_GRID ref_grid;
+    REF_INT node, node0, node1;
+    RSS(ref_smooth_tri2_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
+    RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
+        "bnode");
+    REIS(REF_EMPTY, node0, "node0");
+    REIS(REF_EMPTY, node1, "node1");
     RSS(ref_grid_free(ref_grid), "free");
   }
 

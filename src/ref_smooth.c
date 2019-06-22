@@ -489,6 +489,15 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
+                                          REF_INT *node0, REF_INT *node1) {
+  *node0 = REF_EMPTY;
+  *node1 = REF_EMPTY;
+  if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_NOT_FOUND;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
