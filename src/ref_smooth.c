@@ -620,6 +620,8 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
 
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* protect mixed-element quads */
+  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
 
   RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
       "edge nodes");
