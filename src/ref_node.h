@@ -233,6 +233,8 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
 
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_GLOB position, REF_DBL *value);
+REF_STATUS ref_node_selection_heap(REF_NODE ref_node, REF_DBL *elements,
+                                   REF_GLOB position, REF_DBL *value);
 
 REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
 REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
