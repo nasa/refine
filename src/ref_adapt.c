@@ -140,8 +140,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   }
 
   min_quality = 1.0;
-  min_volume = 1.0e100;
-  max_volume = -1.0e100;
+  min_volume = REF_DBL_MAX;
+  max_volume = REF_DBL_MIN;
   max_det = -1.0;
   complexity = 0.0;
   ncell = 0;
@@ -259,8 +259,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
 
-  min_ratio = 1.0e100;
-  max_ratio = -1.0e100;
+  min_ratio = REF_DBL_MAX;
+  max_ratio = REF_DBL_MIN;
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
@@ -408,8 +408,8 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
 
-  min_ratio = 1.0e100;
-  max_ratio = -1.0e100;
+  min_ratio = REF_DBL_MAX;
+  max_ratio = REF_DBL_MIN;
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");

@@ -1728,8 +1728,8 @@ REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
   REIS(2, ncell, "expected two tri for box2 nodes");
 
-  for (iuv = 0; iuv < 2; iuv++) uv_min[iuv] = 1.0e200;
-  for (iuv = 0; iuv < 2; iuv++) uv_max[iuv] = -1.0e200;
+  for (iuv = 0; iuv < 2; iuv++) uv_min[iuv] = REF_DBL_MAX;
+  for (iuv = 0; iuv < 2; iuv++) uv_max[iuv] = REF_DBL_MIN;
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
@@ -3993,8 +3993,8 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   for (face = 0; face < nfaceid; face++) {
     faceid = face + min_faceid;
     for (j = 0; j < 3; j++) {
-      face_box[j + 0 * 3 + 6 * face] = 1.0e200;
-      face_box[j + 1 * 3 + 6 * face] = -1.0e200;
+      face_box[j + 0 * 3 + 6 * face] = REF_DBL_MAX;
+      face_box[j + 1 * 3 + 6 * face] = REF_DBL_MIN;
     }
     for (j = 0; j < 4; j++) {
       face_cga[j + 4 * face] = 0.0;
@@ -4138,10 +4138,10 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
   REF_DBL normdev, area, uv_area, area_sign;
 
   min_normdev = 2.0;
-  min_area = 1.0e100;
-  max_area = -1.0e100;
-  min_uv_area = 1.0e100;
-  max_uv_area = -1.0e100;
+  min_area = REF_DBL_MAX;
+  max_area = REF_DBL_MIN;
+  min_uv_area = REF_DBL_MAX;
+  max_uv_area = REF_DBL_MIN;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
     min_normdev = MIN(min_normdev, normdev);

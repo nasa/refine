@@ -1268,7 +1268,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   *improved = REF_TRUE;
 
   min_normdev = 2.0;
-  min_uv_area = 1.0e100;
+  min_uv_area = REF_DBL_MAX;
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
@@ -1285,7 +1285,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
     printf("- min %12.8f %12.8f\n", min_normdev, min_uv_area);
 
   min_normdev = 2.0;
-  min_uv_area = 1.0e100;
+  min_uv_area = REF_DBL_MAX;
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     skip = REF_FALSE;
     /* skip a collapsed triangle that in on the boundary of cavity */
