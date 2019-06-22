@@ -36,7 +36,6 @@ partition artifacts
 
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
-define REF_DBL_MIN, REF_DBL_MAX;
 
 mpi allmin allmax
 

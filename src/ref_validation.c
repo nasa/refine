@@ -337,8 +337,8 @@ REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
   REF_DBL min_volume, max_volume;
   REF_DBL volume;
 
-  min_volume = 1.0e100;
-  max_volume = -1.0e100;
+  min_volume = REF_DBL_MAX;
+  max_volume = REF_DBL_MIN;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_vol(ref_grid_node(ref_grid), nodes, &volume), "vol");
     min_volume = MIN(min_volume, volume);

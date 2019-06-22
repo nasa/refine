@@ -69,6 +69,8 @@ typedef unsigned int REF_UINT;
 typedef unsigned long REF_ULONG;
 
 typedef double REF_DBL;
+#define REF_DBL_MIN (-1.0e200)
+#define REF_DBL_MAX (1.0e200)
 
 typedef char REF_BYTE;
 

@@ -2758,6 +2758,64 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_selection_bound(REF_NODE ref_node, REF_DBL *elements,
+                                    REF_GLOB position, REF_DBL *value) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_DBL local_value, lower_value, guess_value, upper_value, tol;
+  REF_GLOB lower_position, guess_position, upper_position;
+  REF_INT node;
+
+  lower_value = REF_DBL_MAX;
+  upper_value = REF_DBL_MIN;
+  lower_position = 0;
+  upper_position = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      upper_position += 1;
+      lower_value = MIN(lower_value, elements[node]);
+      upper_value = MAX(upper_value, elements[node]);
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, &upper_position, 1, REF_LONG_TYPE), "sum elem");
+  upper_position -= 1;
+  if (upper_position < 0) return REF_NOT_FOUND;
+  local_value = lower_value;
+  RSS(ref_mpi_min(ref_mpi, &local_value, &lower_value, REF_DBL_TYPE),
+      "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &lower_value, 1, REF_DBL_TYPE), "mbast");
+  local_value = upper_value;
+  RSS(ref_mpi_max(ref_mpi, &local_value, &upper_value, REF_DBL_TYPE),
+      "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &upper_value, 1, REF_DBL_TYPE), "mbast");
+  tol = 1.0e-12 * (upper_value - lower_value);
+
+  guess_value = 0.5 * (lower_value + upper_value);
+  while (upper_position > lower_position) {
+    guess_position = 0;
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        if (elements[node] < guess_value) {
+          guess_position += 1;
+        }
+      }
+    }
+    RSS(ref_mpi_allsum(ref_mpi, &guess_position, 1, REF_LONG_TYPE), "sum elem");
+    if (upper_value - lower_value <= tol) break; /* repeated */
+    if (guess_position <= position) {
+      lower_value = guess_value;
+      lower_position = guess_position;
+    }
+    if (guess_position > position) {
+      upper_value = guess_value;
+      upper_position = guess_position;
+    }
+    guess_value = 0.5 * (lower_value + upper_value);
+  }
+  *value = guess_value;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_selection(REF_NODE ref_node, REF_DBL *elements,
                               REF_GLOB position, REF_DBL *value) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
