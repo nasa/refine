@@ -57,6 +57,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
+  REF_STATUS status;
 
   RAS(!ref_mpi_para(ref_mpi), "not parallel");
   RAS(!ref_grid_twod(ref_grid), "only surf");
@@ -190,9 +191,15 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                       ref_edge_e2n(ref_edge, 1, edge), new_node),
-        "split");
+    status = ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                            ref_edge_e2n(ref_edge, 1, edge), new_node);
+    if (REF_INCREASE_LIMIT == status) {
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+      continue;
+    }
+    RSS(status, "tet edge split");
+
     if (valid_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_surf_ball(ref_cavity, ref_grid, new_node),
@@ -437,11 +444,13 @@ REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[MAX_CELL_SPLIT];
   REF_INT node, new_cell;
+  REF_STATUS status;
 
   ref_cell = ref_grid_tet(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
-                          cell_to_split),
-      "get list");
+  status = ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
+                               cell_to_split);
+  if (REF_INCREASE_LIMIT == status) return status;
+  RSS(status, "tet list to split");
 
   for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
     cell = cell_to_split[cell_in_list];
@@ -462,7 +471,7 @@ REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
                           cell_to_split),
-      "get list");
+      "get tri list, should have been smaller then tets");
 
   for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
     cell = cell_to_split[cell_in_list];
@@ -483,7 +492,7 @@ REF_STATUS ref_split_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   ref_cell = ref_grid_edg(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
                           cell_to_split),
-      "get list");
+      "get edg list, should have been smaller then tets");
 
   for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
     cell = cell_to_split[cell_in_list];
