@@ -57,7 +57,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
-  REF_STATUS status;
 
   RAS(!ref_mpi_para(ref_mpi), "not parallel");
   RAS(!ref_grid_twod(ref_grid), "only surf");
@@ -191,14 +190,9 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    status = ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                            ref_edge_e2n(ref_edge, 1, edge), new_node);
-    if (REF_INCREASE_LIMIT == status) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
-    }
-    RSS(status, "tet edge split");
+    RSS(ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                       ref_edge_e2n(ref_edge, 1, edge), new_node),
+        "split edge on surf");
 
     if (valid_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
@@ -245,6 +239,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_LIST para_no_geom = NULL;
   REF_LIST para_cavity = NULL;
   REF_SUBDIV ref_subdiv = NULL;
+  REF_STATUS status;
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
   RAS(!ref_grid_surf(ref_grid), "only 3D");
@@ -374,9 +369,15 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                       ref_edge_e2n(ref_edge, 1, edge), new_node),
-        "split");
+    status = ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                            ref_edge_e2n(ref_edge, 1, edge), new_node);
+    if (REF_INCREASE_LIMIT == status) {
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+      continue;
+    }
+    RSS(status, "tet edge split");
+
     if (valid_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
