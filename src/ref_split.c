@@ -1081,8 +1081,7 @@ REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell, cell_in_list;
-  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT item, cell_node;
   REF_INT node;
   REF_INT e0, e1, cell_edge;
   REF_DBL ratio;
@@ -1090,12 +1089,7 @@ REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
-                          cell_to_split),
-      "get list");
-
-  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
-    cell = cell_to_split[cell_in_list];
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
 
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
