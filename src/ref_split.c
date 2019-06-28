@@ -670,8 +670,7 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell, cell_in_list;
-  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT item, cell_node;
   REF_INT node;
   REF_INT cell_edge, e0, e1;
   REF_DBL ratio;
@@ -684,13 +683,7 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
     ref_cell = ref_grid_tet(ref_grid);
   }
 
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
-                          cell_to_split),
-      "tets");
-
-  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
-    cell = cell_to_split[cell_in_list];
-
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (node0 == nodes[node]) nodes[node] = new_node;
@@ -744,8 +737,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncell, cell_in_list;
-  REF_INT cell_to_split[MAX_CELL_SPLIT];
+  REF_INT item, cell_node;
   REF_INT node;
   REF_DBL sign_uv_area, uv_area0, uv_area1;
   REF_DBL normdev, normdev0, normdev1;
@@ -754,11 +746,7 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
 
   if (0 < ref_geom_n(ref_geom)) {
     ref_cell = ref_grid_tri(ref_grid);
-    RSS(ref_cell_list_with2(ref_cell, node0, node1, MAX_CELL_SPLIT, &ncell,
-                            cell_to_split),
-        "tris");
-    for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
-      cell = cell_to_split[cell_in_list];
+    each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
 
