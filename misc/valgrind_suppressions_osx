@@ -264,3 +264,10 @@
    fun:objc_msgSend
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:_objc_init
+   ...
+}
