@@ -41,3 +41,31 @@ REF_STATUS ref_math_normalize(REF_DBL *normal) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
+                                       REF_DBL *orth2) {
+  REF_DBL dot;
+  RSS(ref_math_normalize(orth0), "orthonormalize input orth0");
+  if (ABS(orth0[0]) >= ABS(orth0[1]) && ABS(orth0[0]) >= ABS(orth0[2])) {
+    orth1[0] = 0.0;
+    orth1[1] = 1.0;
+    orth1[2] = 0.0;
+  }
+  if (ABS(orth0[1]) >= ABS(orth0[0]) && ABS(orth0[1]) >= ABS(orth0[2])) {
+    orth1[0] = 0.0;
+    orth1[1] = 0.0;
+    orth1[2] = 1.0;
+  }
+  if (ABS(orth0[2]) >= ABS(orth0[0]) && ABS(orth0[2]) >= ABS(orth0[1])) {
+    orth1[0] = 1.0;
+    orth1[1] = 0.0;
+    orth1[2] = 0.0;
+  }
+  dot = ref_math_dot(orth0, orth1);
+  orth1[0] -= dot * orth0[0];
+  orth1[1] -= dot * orth0[1];
+  orth1[2] -= dot * orth0[2];
+  RSS(ref_math_normalize(orth1), "orthonormalize orth1");
+  ref_math_cross_product(orth0, orth1, orth2);
+  return REF_SUCCESS;
+}
