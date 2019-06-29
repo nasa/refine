@@ -1036,9 +1036,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL drad;
   REF_DBL hmax;
   REF_DBL rlimit;
-  REF_DBL h, hr, hs, hn, tol;
-  REF_DBL curvature_ratio, norm_ratio;
-  REF_DBL xyz[3];
+  REF_DBL hr, hs, hn, tol;
+  REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
 
   if (!ref_geom_model_loaded(ref_geom)) {
@@ -1053,21 +1052,24 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   /* prevent div by zero, use hmax for large radius, small kr ks */
   rlimit = hmax / drad; /* h = r*drad, r = h/drad */
   /* limit aspect ratio via curvature */
-  curvature_ratio = 1.0 / 20.0;
+  aspect_ratio = 20.0;
+  curvature_ratio = 1.0 / aspect_ratio;
   /* limit normal direction to a factor of surface spacing */
   norm_ratio = 2.0;
 
   each_ref_node_valid_node(ref_node, node) {
-    xyz[0] = ref_node_xyz(ref_node, 0, node);
-    xyz[1] = ref_node_xyz(ref_node, 1, node);
-    xyz[2] = ref_node_xyz(ref_node, 2, node);
-    RSS(ref_geom_feature_size(ref_geom, node, xyz, &h), "get feature size");
-    metric[0 + 6 * node] = 1.0 / (h * h);
-    metric[1 + 6 * node] = 0.0;
-    metric[2 + 6 * node] = 0.0;
-    metric[3 + 6 * node] = 1.0 / (h * h);
-    metric[4 + 6 * node] = 0.0;
-    metric[5 + 6 * node] = 1.0 / (h * h);
+    RSS(ref_geom_feature_size(ref_geom, node, &hr, r, &hs, s, &hn, n),
+        "feature size");
+    hs = MIN(hs, hr * aspect_ratio);
+    hn = MIN(hn, norm_ratio * hr);
+    hn = MIN(hn, norm_ratio * hs);
+    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
+    ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
+    ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
+    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
+    ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
+    RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
   }
 
   each_ref_geom_face(ref_geom, geom) {
