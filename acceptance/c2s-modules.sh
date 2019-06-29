@@ -7,4 +7,7 @@ module load gcc_6.2.0
 module load ESP/114
 module load tetgen/1.5.0
 
+# non FUN3D version for license
+module load intel_2018.3.222
+
 module list
