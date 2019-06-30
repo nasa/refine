@@ -58,7 +58,7 @@ trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${strict_dir} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran  > $LOG 2>&1
+    CC=gcc  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.strict-make-check-valgrind
@@ -84,7 +84,7 @@ ${source_dir}/configure \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    FC=gfortran  > $LOG 2>&1
+    CC=gcc  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.egads-make
@@ -110,8 +110,7 @@ ${source_dir}/configure \
     --with-EGADS=${egads_path} \
     --enable-lite \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
-    CC=mpicc \
-    FC=mpif90  > $LOG 2>&1
+    CC=mpicc > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.zoltan-make
@@ -137,8 +136,7 @@ ${source_dir}/configure \
     --with-EGADS=${egads_path} \
     --enable-lite \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
-    CC=mpicc \
-    FC=mpif90  > $LOG 2>&1
+    CC=mpicc > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.parmetis-make
