@@ -33,8 +33,7 @@ mkdir -p parmetis
     --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
     --enable-lite \
     CFLAGS="-DHAVE_MPI -g -O2" \
-    CC=mpicc \
-    LIBS=-lmpi >> $log 2>&1 \
+    CC=mpicc >> $log 2>&1 \
     && make -j >> $log 2>&1 \
     && make install >> $log 2>&1 \
     ) \
