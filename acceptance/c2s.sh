@@ -29,7 +29,7 @@ mkdir -p parmetis
 ( cd parmetis && \
     ../configure \
     --prefix=`pwd` \
-    --with-parmetis="/u/shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-mpt-2.17r14-intel_2018.3.222" \
+    --with-parmetis="/u/shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-mpt-2.17r14-gcc_6.2.0" \
     --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
     --enable-lite \
     CFLAGS="-DHAVE_MPI -g -O2" \
