@@ -8,7 +8,6 @@ set -u # Treat unset variables as error
 # Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
 
-
 module purge
 source acceptance/c2s-modules.sh
 
@@ -20,7 +19,8 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
-    CFLAGS="-g -O2" >> $log 2>&1 \
+    CFLAGS="-g -O2" \
+    CC=gcc >> $log 2>&1 \
     && make -j >> $log 2>&1 \
     && make install >> $log 2>&1 \
     ) \
@@ -32,8 +32,8 @@ mkdir -p parmetis
     --with-parmetis="/u/shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-mpt-2.17r14-intel_2018.3.222" \
     --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
     --enable-lite \
-    CFLAGS="-DHAVE_MPI -g -O2 -traceback" \
-    CC=icc \
+    CFLAGS="-DHAVE_MPI -g -O2" \
+    CC=gcc \
     LIBS=-lmpi >> $log 2>&1 \
     && make -j >> $log 2>&1 \
     && make install >> $log 2>&1 \
