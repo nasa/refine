@@ -48,6 +48,9 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_math_normalize(REF_DBL *normal);
 
+REF_STATUS ref_math_orthonormal_system(REF_DBL *orth0, REF_DBL *orth1,
+                                       REF_DBL *orth2);
+
 END_C_DECLORATION
 
 #endif /* REF_MATH_H */

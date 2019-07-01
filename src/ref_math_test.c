@@ -66,6 +66,51 @@ int main(void) {
     RWDS(0.0, vect[2], -1.0, "same");
   }
 
+  { /* orthonormal system x */
+    REF_DBL orth0[3] = {0.1, 0.0, 0.0};
+    REF_DBL orth1[3], orth2[3];
+    RSS(ref_math_orthonormal_system(orth0, orth1, orth2), "ortho");
+    RWDS(1.0, orth0[0], -1.0, "same");
+    RWDS(0.0, orth0[1], -1.0, "same");
+    RWDS(0.0, orth0[2], -1.0, "same");
+    RWDS(0.0, orth1[0], -1.0, "o1");
+    RWDS(1.0, orth1[1], -1.0, "o1");
+    RWDS(0.0, orth1[2], -1.0, "o1");
+    RWDS(0.0, orth2[0], -1.0, "o2");
+    RWDS(0.0, orth2[1], -1.0, "o2");
+    RWDS(1.0, orth2[2], -1.0, "o2");
+  }
+
+  { /* orthonormal system y */
+    REF_DBL orth0[3] = {0.0, 1.0, 0.0};
+    REF_DBL orth1[3], orth2[3];
+    RSS(ref_math_orthonormal_system(orth0, orth1, orth2), "ortho");
+    RWDS(0.0, orth0[0], -1.0, "same");
+    RWDS(1.0, orth0[1], -1.0, "same");
+    RWDS(0.0, orth0[2], -1.0, "same");
+    RWDS(0.0, orth1[0], -1.0, "o1");
+    RWDS(0.0, orth1[1], -1.0, "o1");
+    RWDS(1.0, orth1[2], -1.0, "o1");
+    RWDS(1.0, orth2[0], -1.0, "o2");
+    RWDS(0.0, orth2[1], -1.0, "o2");
+    RWDS(0.0, orth2[2], -1.0, "o2");
+  }
+
+  { /* orthonormal system z */
+    REF_DBL orth0[3] = {0.0, 0.0, 10.0};
+    REF_DBL orth1[3], orth2[3];
+    RSS(ref_math_orthonormal_system(orth0, orth1, orth2), "ortho");
+    RWDS(0.0, orth0[0], -1.0, "same");
+    RWDS(0.0, orth0[1], -1.0, "same");
+    RWDS(1.0, orth0[2], -1.0, "same");
+    RWDS(1.0, orth1[0], -1.0, "o1");
+    RWDS(0.0, orth1[1], -1.0, "o1");
+    RWDS(0.0, orth1[2], -1.0, "o1");
+    RWDS(0.0, orth2[0], -1.0, "o2");
+    RWDS(1.0, orth2[1], -1.0, "o2");
+    RWDS(0.0, orth2[2], -1.0, "o2");
+  }
+
   { /* acos */
     RWDS(0.0, acos(1.0), -1.0, "acos");
     RWDS(1.04719755119660, acos(0.5), -1.0, "acos");

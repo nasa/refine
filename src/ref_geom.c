@@ -2895,22 +2895,71 @@ REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
-                                 REF_DBL *length) {
+REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
+#ifdef HAVE_EGADS
+  ego object;
+  double box[6];
+  switch (ref_geom_type(ref_geom, geom)) {
+    case REF_GEOM_EDGE:
+      object = ((ego *)(ref_geom->edges))[ref_geom_id(ref_geom, geom) - 1];
+      break;
+    case REF_GEOM_FACE:
+      object = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
+      break;
+    default:
+      *diag = 0.0; /* for node */
+      return REF_SUCCESS;
+  }
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
+  *diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+               (box[1] - box[4]) * (box[1] - box[4]) +
+               (box[2] - box[5]) * (box[2] - box[5]));
+
+#else
+  printf("returning 1.0 from %s, No EGADS\n", __func__);
+  *diag = 1.0;
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
+                                 REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
+                                 REF_DBL *h2, REF_DBL *dir2) {
 #ifdef HAVE_EGADS
   REF_INT edge_item, face_item, edge_geom, face_geom, edgeid, faceid, iloop;
   ego ref, *cadnodes, *edges, *loops;
   int oclass, mtype, ncadnode, nedge, nloop, *senses;
   double data[18];
   double trange[2];
+  REF_DBL xyz[3];
+  REF_DBL dxyz_dt[6];
   REF_DBL xyz1[3];
   REF_INT ineligible_cad_node0, ineligible_cad_node1;
   REF_INT cad_node0, cad_node1;
   REF_DBL param[2];
   REF_INT other_edgeid, iedge;
+  REF_DBL len, diagonal;
+  REF_DBL tangent[3], dx[3], dot, orth[3];
   int status;
 
-  RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
+  /* initialize isotropic with bounding box */
+  RSS(ref_geom_egads_diagonal(ref_geom, &diagonal), "bbox diag init");
+  *h0 = diagonal;
+  dir0[0] = 1.0;
+  dir0[1] = 0.0;
+  dir0[2] = 0.0;
+  *h1 = diagonal;
+  dir1[0] = 0.0;
+  dir1[1] = 1.0;
+  dir1[2] = 0.0;
+  *h2 = diagonal;
+  dir2[0] = 0.0;
+  dir2[1] = 0.0;
+  dir2[2] = 1.0;
 
   each_ref_geom_having_node(ref_geom, node, edge_item, edge_geom) {
     if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom)) {
@@ -2918,8 +2967,13 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
       REIS(EGADS_SUCCESS,
            EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref, &oclass,
                           &mtype, trange, &ncadnode, &cadnodes, &senses),
-           "EG topo node");
+           "EG topo edge");
       RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
+      RSS(ref_geom_eval(ref_geom, edge_geom, xyz, dxyz_dt), "eval edge");
+      tangent[0] = dxyz_dt[0];
+      tangent[1] = dxyz_dt[1];
+      tangent[2] = dxyz_dt[2];
+      RSS(ref_math_normalize(tangent), "tangent of edge_geom");
       RAS(0 < ncadnode && ncadnode < 3, "edge children");
       ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
       if (2 == ncadnode) {
@@ -2967,9 +3021,38 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
                   EG_invEvaluate(((ego *)(ref_geom->edges))[other_edgeid - 1],
                                  xyz, param, xyz1);
               REIS(EGADS_SUCCESS, status, "EG_invEvaluate opp edge");
-              *length = MIN(*length, sqrt(pow(xyz1[0] - xyz[0], 2) +
-                                          pow(xyz1[1] - xyz[1], 2) +
-                                          pow(xyz1[2] - xyz[2], 2)));
+              dx[0] = xyz1[0] - xyz[0];
+              dx[1] = xyz1[1] - xyz[1];
+              dx[2] = xyz1[2] - xyz[2];
+              len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+              RSS(ref_math_normalize(dx), "direction across face");
+              if (len < *h0) {
+                dot = ref_math_dot(tangent, dx);
+                orth[0] = tangent[0] - dot * dx[0];
+                orth[1] = tangent[1] - dot * dx[1];
+                orth[2] = tangent[2] - dot * dx[2];
+                if (REF_SUCCESS == ref_math_normalize(orth)) {
+                  *h0 = len;
+                  dir0[0] = dx[0];
+                  dir0[1] = dx[1];
+                  dir0[2] = dx[2];
+                  RSS(ref_geom_diagonal(ref_geom, edge_geom, h1), "local diag");
+                  dir1[0] = orth[0];
+                  dir1[1] = orth[1];
+                  dir1[2] = orth[2];
+                  *h2 = diagonal;
+                  ref_math_cross_product(dir0, dir1, dir2);
+                } else {
+                  *h0 = len;
+                  dir0[0] = dx[0];
+                  dir0[1] = dx[1];
+                  dir0[2] = dx[2];
+                  *h1 = diagonal;
+                  *h2 = diagonal;
+                  RSS(ref_math_orthonormal_system(dir0, dir1, dir2),
+                      "arbitrary orthonormal dir1 dir2");
+                }
+              }
             }
           }
         }
@@ -2977,9 +3060,15 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *xyz,
     }
   }
 #else
-  RSS(ref_geom_egads_diagonal(ref_geom, length), "bbox diag init");
+  RSS(ref_geom_egads_diagonal(ref_geom, h0), "bbox diag init");
+  dir0[0] = 1.0;
+  dir0[1] = 0.0;
+  dir0[2] = 0.0;
+  *h1 = *h0;
+  *h2 = *h0;
+  RSS(ref_math_orthonormal_system(dir0, dir1, dir2),
+      "arbitrary orthonormal dir1 dir2");
   SUPRESS_UNUSED_COMPILER_WARNING(node);
-  SUPRESS_UNUSED_COMPILER_WARNING(xyz);
 #endif
   return REF_SUCCESS;
 }
