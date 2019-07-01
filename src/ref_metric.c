@@ -1705,7 +1705,7 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
-                                REF_INT ldim, REF_DBL *prim_dual_dfdq,
+                                REF_INT ldim, REF_DBL *prim_dual,
                                 REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
@@ -1721,7 +1721,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
 
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
-      lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
+      lam[node] = prim_dual[var + 1 * nequ + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction),
         "grad_lam");
@@ -1732,7 +1732,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
         direction[2] = 0.0;
         direction[dir] = 1.0;
         for (i = 0; i < 5; i++) {
-          state[i] = prim_dual_dfdq[var + 0 * nequ + ldim * node];
+          state[i] = prim_dual[var + 0 * nequ + ldim * node];
         }
         RSS(ref_phys_euler(state, direction, node_flux), "euler");
         flux[node] = node_flux[var];
@@ -1760,8 +1760,8 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
-                               REF_DBL *prim_dual_dfdq, REF_DBL mach,
-                               REF_DBL re, REF_DBL reference_temp,
+                               REF_DBL *prim_dual, REF_DBL mach, REF_DBL re,
+                               REF_DBL reference_temp,
                                REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, node, i, dir;
@@ -1794,7 +1794,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
 
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
-      lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
+      lam[node] = prim_dual[var + 1 * nequ + ldim * node];
     }
     RSS(ref_recon_hessian(ref_grid, lam, hess_lam, reconstruction), "hess_lam");
     each_ref_node_valid_node(ref_node, node) {
@@ -1807,14 +1807,14 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
 
   var = 4;
   each_ref_node_valid_node(ref_node, node) {
-    lam[node] = prim_dual_dfdq[var + 1 * nequ + ldim * node];
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
   }
   RSS(ref_recon_gradient(ref_grid, lam, grad_lam, reconstruction), "grad_u");
 
   for (dir = 0; dir < 3; dir++) {
     var = 1 + dir;
     each_ref_node_valid_node(ref_node, node) {
-      u[node] = prim_dual_dfdq[var + 0 * nequ + ldim * node];
+      u[node] = prim_dual[var + 0 * nequ + ldim * node];
     }
     RSS(ref_recon_gradient(ref_grid, u, grad_u, reconstruction), "grad_u");
     each_ref_node_valid_node(ref_node, node) {
@@ -1828,13 +1828,13 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   w2 = 2.0;
   w3 = 2.0;
   each_ref_node_valid_node(ref_node, node) {
-    u[node] = prim_dual_dfdq[var + 0 * nequ + ldim * node];
+    u[node] = prim_dual[var + 0 * nequ + ldim * node];
   }
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
   each_ref_node_valid_node(ref_node, node) {
-    u1 = ABS(prim_dual_dfdq[1 + ldim * node]);
-    u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
-    u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
     weight = 0.0;
     weight += w1 * sr_lam[1 + 5 * node];
     weight += w2 * sr_lam[2 + 5 * node];
@@ -1842,13 +1842,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[1 + 2 * 3 + 9 * node] - omega[2 + 1 * 3 + 9 * node]);
-    t = gamma * prim_dual_dfdq[4 + ldim * node] /
-        prim_dual_dfdq[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     if (6 == nequ) {
-      rho = prim_dual_dfdq[0 + ldim * node];
-      turb = prim_dual_dfdq[5 + ldim * node];
+      rho = prim_dual[0 + ldim * node];
+      turb = prim_dual[5 + ldim * node];
       RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
       mu += mu_t;
     }
@@ -1865,13 +1864,13 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   w2 = 20.0;
   w3 = 2.0;
   each_ref_node_valid_node(ref_node, node) {
-    u[node] = prim_dual_dfdq[var + ldim * node];
+    u[node] = prim_dual[var + ldim * node];
   }
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
   each_ref_node_valid_node(ref_node, node) {
-    u1 = ABS(prim_dual_dfdq[1 + ldim * node]);
-    u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
-    u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
     weight = 0.0;
     weight += w1 * sr_lam[1 + 5 * node];
     weight += w2 * sr_lam[2 + 5 * node];
@@ -1879,13 +1878,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[2 + 0 * 3 + 9 * node] - omega[0 + 2 * 3 + 9 * node]);
-    t = gamma * prim_dual_dfdq[4 + ldim * node] /
-        prim_dual_dfdq[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     if (6 == nequ) {
-      rho = prim_dual_dfdq[0 + ldim * node];
-      turb = prim_dual_dfdq[5 + ldim * node];
+      rho = prim_dual[0 + ldim * node];
+      turb = prim_dual[5 + ldim * node];
       RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
       mu += mu_t;
     }
@@ -1902,13 +1900,13 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   w2 = 2.0;
   w3 = 20.0;
   each_ref_node_valid_node(ref_node, node) {
-    u[node] = prim_dual_dfdq[var + ldim * node];
+    u[node] = prim_dual[var + ldim * node];
   }
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
   each_ref_node_valid_node(ref_node, node) {
-    u1 = ABS(prim_dual_dfdq[1 + ldim * node]);
-    u2 = ABS(prim_dual_dfdq[2 + ldim * node]);
-    u3 = ABS(prim_dual_dfdq[3 + ldim * node]);
+    u1 = ABS(prim_dual[1 + ldim * node]);
+    u2 = ABS(prim_dual[2 + ldim * node]);
+    u3 = ABS(prim_dual[3 + ldim * node]);
     weight = 0.0;
     weight += w1 * sr_lam[1 + 5 * node];
     weight += w2 * sr_lam[2 + 5 * node];
@@ -1916,13 +1914,12 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
     weight += (w1 * u1 + w2 * u2 + w3 * u3) * sr_lam[4 + 5 * node];
     weight += (5.0 / 3.0) *
               ABS(omega[0 + 1 * 3 + 9 * node] - omega[1 + 0 * 3 + 9 * node]);
-    t = gamma * prim_dual_dfdq[4 + ldim * node] /
-        prim_dual_dfdq[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     if (6 == nequ) {
-      rho = prim_dual_dfdq[0 + ldim * node];
-      turb = prim_dual_dfdq[5 + ldim * node];
+      rho = prim_dual[0 + ldim * node];
+      turb = prim_dual[5 + ldim * node];
       RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
       mu += mu_t;
     }
@@ -1935,20 +1932,18 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   }
 
   each_ref_node_valid_node(ref_node, node) {
-    t = gamma * prim_dual_dfdq[4 + ldim * node] /
-        prim_dual_dfdq[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     u[node] = t;
   }
   RSS(ref_recon_hessian(ref_grid, u, hess_u, reconstruction), "hess_u");
   each_ref_node_valid_node(ref_node, node) {
-    t = gamma * prim_dual_dfdq[4 + ldim * node] /
-        prim_dual_dfdq[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
     thermal_conductivity = mu / (pr * (gamma - 1.0));
     if (6 == nequ) {
-      rho = prim_dual_dfdq[0 + ldim * node];
-      turb = prim_dual_dfdq[5 + ldim * node];
+      rho = prim_dual[0 + ldim * node];
+      turb = prim_dual[5 + ldim * node];
       RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
       thermal_conductivity =
           (mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
@@ -1971,4 +1966,3 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
 
   return REF_SUCCESS;
 }
-
