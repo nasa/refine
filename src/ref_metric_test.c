@@ -805,9 +805,9 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
-    RAS(15 == ldim || 18 == ldim,
-        "expected rho,u,v,w,p,5*adj,5*dfdq "
-        "or rho,u,v,w,p,turb,6*adj,6*dfdq");
+    RAS(10 == ldim || 12 == ldim,
+        "expected rho,u,v,w,p,5*adj "
+        "or rho,u,v,w,p,turb,6*adj");
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
@@ -817,8 +817,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
                             temperature, reconstruction),
         "gu");
-    RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
-        "gk");
 
     RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6),
         "update ghosts");
@@ -877,19 +875,15 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("reading prim_dual %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &prim_dual, argv[3]),
         "unable to load scalar in position 3");
-    RAS(15 == ldim || 18 == ldim,
-        "expected rho,u,v,w,p,5*adj,5*dfdq "
-        "or rho,u,v,w,p,turb,6*adj,6*dfdq");
+    RAS(10 == ldim || 12 == ldim,
+        "expected rho,u,v,w,p,5*adj "
+        "or rho,u,v,w,p,turb,6*adj");
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
 
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, prim_dual, reconstruction),
         "gfe");
-    /*
-    RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
-        "gk");
-    */
     RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6),
         "update ghosts");
 
@@ -1713,7 +1707,7 @@ int main(int argc, char *argv[]) {
   if (!ref_mpi_para(ref_mpi)) { /* lp for no variation */
     REF_GRID ref_grid;
     REF_NODE ref_node;
-    REF_INT node, ldim = 15;
+    REF_INT node, ldim = 10;
     REF_DBL *prim_dual, *metric;
     REF_DBL t, ei0, et0;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -1749,12 +1743,6 @@ int main(int argc, char *argv[]) {
       prim_dual[8 + ldim * node] = 2.0 * sin(t);
       t = ref_math_pi * ref_node_xyz(ref_node, 0, node);
       prim_dual[9 + ldim * node] = 5.0 * cos(t);
-
-      prim_dual[10 + ldim * node] = 2.0;
-      prim_dual[11 + ldim * node] = 3.0;
-      prim_dual[12 + ldim * node] = 4.0;
-      prim_dual[13 + ldim * node] = 5.0;
-      prim_dual[14 + ldim * node] = 6.0;
     }
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
@@ -1765,8 +1753,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_belme_gu(metric, ref_grid, ldim, prim_dual, mach, re,
                             reference_temp, reconstruction),
         "gu");
-    RSS(ref_metric_belme_gk(metric, ref_grid, ldim, prim_dual, reconstruction),
-        "gk");
 
     ref_free(metric);
     ref_free(prim_dual);
