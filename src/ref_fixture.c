@@ -451,10 +451,10 @@ REF_STATUS ref_fixture_pri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
       ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[5])) {
     add_that_node(0, 0.0, 0.0, 0.0);
-    add_that_node(1,-1.0, 0.0, 0.0);
+    add_that_node(1, -1.0, 0.0, 0.0);
     add_that_node(2, 0.0, 0.0, 1.0);
     add_that_node(3, 0.0, 1.0, 0.0);
-    add_that_node(4,-1.0, 1.0, 0.0);
+    add_that_node(4, -1.0, 1.0, 0.0);
     add_that_node(5, 0.0, 1.0, 1.0);
 
     RSS(ref_cell_add(ref_grid_pri(ref_grid), local, &cell), "add prism");
