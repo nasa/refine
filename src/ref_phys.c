@@ -47,6 +47,62 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
 
   return REF_SUCCESS;
 }
+/* I do like CFD, vol 2, page 77, (3.6.8) */
+REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
+                              REF_DBL *dflux_dcons) {
+  REF_DBL rho, u, v, w, p, q2, e, qn;
+  REF_DBL gamma = 1.4;
+  REF_DBL K, H;
+  REF_DBL nx, ny, nz;
+  nx = direction[0];
+  ny = direction[1];
+  nz = direction[2];
+
+  K = gamma - 1;
+  rho = state[0];
+  u = state[1];
+  v = state[2];
+  w = state[3];
+  p = state[4];
+
+  q2 = (u * u + v * v + w * w);
+  e = p / K + 0.5 * rho * q2;
+  H = e + p;
+
+  qn = u * nx + v * ny + w * nz;
+
+  dflux_dcons[0 + 0 * 5] = 0.0;
+  dflux_dcons[1 + 0 * 5] = 0.5 * K * q2 * nx - u * qn;
+  dflux_dcons[2 + 0 * 5] = 0.5 * K * q2 * ny - v * qn;
+  dflux_dcons[3 + 0 * 5] = 0.5 * K * q2 * nz - w * qn;
+  dflux_dcons[4 + 0 * 5] = (0.5 * K * q2 - H) * qn;
+
+  dflux_dcons[0 + 1 * 5] = nx;
+  dflux_dcons[1 + 1 * 5] = u * nx - K * u * nx + qn;
+  dflux_dcons[2 + 1 * 5] = v * nx - K * u * ny;
+  dflux_dcons[3 + 1 * 5] = w * nx - K * u * nz;
+  dflux_dcons[4 + 1 * 5] = H * nx - K * u * qn;
+
+  dflux_dcons[0 + 2 * 5] = nx;
+  dflux_dcons[1 + 2 * 5] = u * ny - K * v * nx;
+  dflux_dcons[2 + 2 * 5] = v * ny - K * v * ny + qn;
+  dflux_dcons[3 + 2 * 5] = w * ny - K * v * nz;
+  dflux_dcons[4 + 2 * 5] = H * ny - K * v * qn;
+
+  dflux_dcons[0 + 3 * 5] = nz;
+  dflux_dcons[1 + 3 * 5] = u * nz - K * w * nx;
+  dflux_dcons[2 + 3 * 5] = v * nz - K * w * ny;
+  dflux_dcons[3 + 3 * 5] = w * nz - K * w * nz + qn;
+  dflux_dcons[4 + 3 * 5] = H * nz - K * w * qn;
+
+  dflux_dcons[0 + 4 * 5] = 0;
+  dflux_dcons[1 + 4 * 5] = K * nx;
+  dflux_dcons[2 + 4 * 5] = K * ny;
+  dflux_dcons[3 + 4 * 5] = K * nz;
+  dflux_dcons[4 + 4 * 5] = gamma * qn;
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_phys_viscous(REF_DBL *state, REF_DBL *grad, REF_DBL turb,
                             REF_DBL mach, REF_DBL re, REF_DBL reference_temp,
