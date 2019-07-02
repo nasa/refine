@@ -27,6 +27,8 @@
 
 BEGIN_C_DECLORATION
 
+REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive);
+REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved);
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux);
 REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
                               REF_DBL *dflux_dcons);

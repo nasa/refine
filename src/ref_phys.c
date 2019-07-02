@@ -25,6 +25,42 @@
 
 #include "ref_recon.h"
 
+REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
+  REF_DBL rho, u, v, w, p, e;
+  REF_DBL gamma = 1.4;
+  rho = conserved[0];
+  u = conserved[1] / conserved[0];
+  v = conserved[2] / conserved[0];
+  w = conserved[3] / conserved[0];
+  e = conserved[4];
+  p = (gamma - 1.0) * (e - 0.5 * rho * (u * u + v * v + w * w));
+
+  primitive[0] = rho;
+  primitive[1] = u;
+  primitive[2] = v;
+  primitive[3] = w;
+  primitive[4] = p;
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
+  REF_DBL rho, u, v, w, p, e;
+  REF_DBL gamma = 1.4;
+  rho = primitive[0];
+  u = primitive[1];
+  v = primitive[2];
+  w = primitive[3];
+  p = primitive[4];
+  e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
+  conserved[0] = rho;
+  conserved[1] = rho * u;
+  conserved[2] = rho * v;
+  conserved[3] = rho * w;
+  conserved[4] = e;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;

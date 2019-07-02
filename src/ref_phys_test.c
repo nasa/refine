@@ -577,6 +577,24 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  {
+    REF_DBL state[5];
+    REF_DBL primitive[5];
+    REF_DBL conserved[5];
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    RSS(ref_phys_make_conserved(state, conserved), "cons");
+    RSS(ref_phys_make_primitive(conserved, primitive), "prim");
+    RWDS(state[0], primitive[0], -1, "rho");
+    RWDS(state[1], primitive[1], -1, "u");
+    RWDS(state[2], primitive[2], -1, "v");
+    RWDS(state[3], primitive[3], -1, "w");
+    RWDS(state[4], primitive[4], -1, "p");
+  }
+
   { /* x-Euler flux */
     REF_DBL state[5], direction[3];
     REF_DBL flux[5];
