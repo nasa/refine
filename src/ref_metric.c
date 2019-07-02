@@ -1717,7 +1717,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
   ref_malloc_init(flux, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_flux, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
-  nequ = ldim / 3;
+  nequ = ldim / 2;
 
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
@@ -1781,7 +1781,7 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   REF_DBL thermal_conductivity;
   REF_DBL rho, turb, mu_t;
 
-  nequ = ldim / 3;
+  nequ = ldim / 2;
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_lam, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
