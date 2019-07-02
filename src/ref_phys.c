@@ -94,16 +94,16 @@ REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
   ny = direction[1];
   nz = direction[2];
 
-  K = gamma - 1;
   rho = state[0];
   u = state[1];
   v = state[2];
   w = state[3];
   p = state[4];
 
+  K = gamma - 1;
   q2 = (u * u + v * v + w * w);
   e = p / K + 0.5 * rho * q2;
-  H = e + p;
+  H = (e + p) / rho;
 
   qn = u * nx + v * ny + w * nz;
 
