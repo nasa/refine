@@ -119,7 +119,7 @@ REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
   dflux_dcons[3 + 1 * 5] = w * nx - K * u * nz;
   dflux_dcons[4 + 1 * 5] = H * nx - K * u * qn;
 
-  dflux_dcons[0 + 2 * 5] = nx;
+  dflux_dcons[0 + 2 * 5] = ny;
   dflux_dcons[1 + 2 * 5] = u * ny - K * v * nx;
   dflux_dcons[2 + 2 * 5] = v * ny - K * v * ny + qn;
   dflux_dcons[3 + 2 * 5] = w * ny - K * v * nz;
