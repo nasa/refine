@@ -25,6 +25,42 @@
 
 #include "ref_recon.h"
 
+REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {
+  REF_DBL rho, u, v, w, p, e;
+  REF_DBL gamma = 1.4;
+  rho = conserved[0];
+  u = conserved[1] / conserved[0];
+  v = conserved[2] / conserved[0];
+  w = conserved[3] / conserved[0];
+  e = conserved[4];
+  p = (gamma - 1.0) * (e - 0.5 * rho * (u * u + v * v + w * w));
+
+  primitive[0] = rho;
+  primitive[1] = u;
+  primitive[2] = v;
+  primitive[3] = w;
+  primitive[4] = p;
+
+  return REF_SUCCESS;
+}
+REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
+  REF_DBL rho, u, v, w, p, e;
+  REF_DBL gamma = 1.4;
+  rho = primitive[0];
+  u = primitive[1];
+  v = primitive[2];
+  w = primitive[3];
+  p = primitive[4];
+  e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
+  conserved[0] = rho;
+  conserved[1] = rho * u;
+  conserved[2] = rho * v;
+  conserved[3] = rho * w;
+  conserved[4] = e;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;
@@ -44,6 +80,62 @@ REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   flux[2] = rho * speed * v + p * direction[1];
   flux[3] = rho * speed * w + p * direction[2];
   flux[4] = speed * (e + p);
+
+  return REF_SUCCESS;
+}
+/* I do like CFD, vol 2, page 77, (3.6.8) */
+REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
+                              REF_DBL *dflux_dcons) {
+  REF_DBL rho, u, v, w, p, q2, e, qn;
+  REF_DBL gamma = 1.4;
+  REF_DBL K, H;
+  REF_DBL nx, ny, nz;
+  nx = direction[0];
+  ny = direction[1];
+  nz = direction[2];
+
+  rho = state[0];
+  u = state[1];
+  v = state[2];
+  w = state[3];
+  p = state[4];
+
+  K = gamma - 1;
+  q2 = (u * u + v * v + w * w);
+  e = p / K + 0.5 * rho * q2;
+  H = (e + p) / rho;
+
+  qn = u * nx + v * ny + w * nz;
+
+  dflux_dcons[0 + 0 * 5] = 0.0;
+  dflux_dcons[1 + 0 * 5] = 0.5 * K * q2 * nx - u * qn;
+  dflux_dcons[2 + 0 * 5] = 0.5 * K * q2 * ny - v * qn;
+  dflux_dcons[3 + 0 * 5] = 0.5 * K * q2 * nz - w * qn;
+  dflux_dcons[4 + 0 * 5] = (0.5 * K * q2 - H) * qn;
+
+  dflux_dcons[0 + 1 * 5] = nx;
+  dflux_dcons[1 + 1 * 5] = u * nx - K * u * nx + qn;
+  dflux_dcons[2 + 1 * 5] = v * nx - K * u * ny;
+  dflux_dcons[3 + 1 * 5] = w * nx - K * u * nz;
+  dflux_dcons[4 + 1 * 5] = H * nx - K * u * qn;
+
+  dflux_dcons[0 + 2 * 5] = ny;
+  dflux_dcons[1 + 2 * 5] = u * ny - K * v * nx;
+  dflux_dcons[2 + 2 * 5] = v * ny - K * v * ny + qn;
+  dflux_dcons[3 + 2 * 5] = w * ny - K * v * nz;
+  dflux_dcons[4 + 2 * 5] = H * ny - K * v * qn;
+
+  dflux_dcons[0 + 3 * 5] = nz;
+  dflux_dcons[1 + 3 * 5] = u * nz - K * w * nx;
+  dflux_dcons[2 + 3 * 5] = v * nz - K * w * ny;
+  dflux_dcons[3 + 3 * 5] = w * nz - K * w * nz + qn;
+  dflux_dcons[4 + 3 * 5] = H * nz - K * w * qn;
+
+  dflux_dcons[0 + 4 * 5] = 0;
+  dflux_dcons[1 + 4 * 5] = K * nx;
+  dflux_dcons[2 + 4 * 5] = K * ny;
+  dflux_dcons[3 + 4 * 5] = K * nz;
+  dflux_dcons[4 + 4 * 5] = gamma * qn;
 
   return REF_SUCCESS;
 }

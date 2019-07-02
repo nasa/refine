@@ -577,6 +577,24 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  {
+    REF_DBL state[5];
+    REF_DBL primitive[5];
+    REF_DBL conserved[5];
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    RSS(ref_phys_make_conserved(state, conserved), "cons");
+    RSS(ref_phys_make_primitive(conserved, primitive), "prim");
+    RWDS(state[0], primitive[0], -1, "rho");
+    RWDS(state[1], primitive[1], -1, "u");
+    RWDS(state[2], primitive[2], -1, "v");
+    RWDS(state[3], primitive[3], -1, "w");
+    RWDS(state[4], primitive[4], -1, "p");
+  }
+
   { /* x-Euler flux */
     REF_DBL state[5], direction[3];
     REF_DBL flux[5];
@@ -594,6 +612,226 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, flux[2], -1, "y mo flux");
     RWDS(0.0, flux[3], -1, "z mo flux");
     RWDS(0.504, flux[4], -1, "energy flux");
+  }
+
+  { /* dEuler/drho */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], pert[5], cons_offset[5], prim_offset[5], direction[3];
+    REF_DBL jac[5], fp[5], fm[5];
+    REF_DBL step = 1.0e-8;
+    REF_DBL tol = 1.e-8;
+    REF_INT i;
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    direction[0] = 1.0 / 9.0;
+    direction[1] = 4.0 / 9.0;
+    direction[2] = 8.0 / 9.0;
+
+    pert[0] = step;
+    pert[1] = 0.0;
+    pert[2] = 0.0;
+    pert[3] = 0.0;
+    pert[4] = 0.0;
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] += pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fp), "euler");
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] -= pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fm), "euler");
+
+    for (i = 0; i < 5; i++) jac[i] = (fp[i] - fm[i]) / (2.0 * step);
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+
+    i = 0;
+    RWDS(jac[0], dflux_dcons[0 + i * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + i * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + i * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + i * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
+  }
+
+  { /* dEuler/dmo-x */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], pert[5], cons_offset[5], prim_offset[5], direction[3];
+    REF_DBL jac[5], fp[5], fm[5];
+    REF_DBL step = 1.0e-8;
+    REF_DBL tol = 1.e-8;
+    REF_INT i;
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    direction[0] = 1.0 / 9.0;
+    direction[1] = 4.0 / 9.0;
+    direction[2] = 8.0 / 9.0;
+
+    pert[0] = 0.0;
+    pert[1] = step;
+    pert[2] = 0.0;
+    pert[3] = 0.0;
+    pert[4] = 0.0;
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] += pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fp), "euler");
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] -= pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fm), "euler");
+
+    for (i = 0; i < 5; i++) jac[i] = (fp[i] - fm[i]) / (2.0 * step);
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+
+    i = 1;
+    RWDS(jac[0], dflux_dcons[0 + i * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + i * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + i * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + i * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
+  }
+
+  { /* dEuler/dmo-y */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], pert[5], cons_offset[5], prim_offset[5], direction[3];
+    REF_DBL jac[5], fp[5], fm[5];
+    REF_DBL step = 1.0e-8;
+    REF_DBL tol = 1.e-8;
+    REF_INT i;
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    direction[0] = 1.0 / 9.0;
+    direction[1] = 4.0 / 9.0;
+    direction[2] = 8.0 / 9.0;
+
+    pert[0] = 0.0;
+    pert[1] = 0.0;
+    pert[2] = step;
+    pert[3] = 0.0;
+    pert[4] = 0.0;
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] += pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fp), "euler");
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] -= pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fm), "euler");
+
+    for (i = 0; i < 5; i++) jac[i] = (fp[i] - fm[i]) / (2.0 * step);
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+
+    i = 2;
+    RWDS(jac[0], dflux_dcons[0 + i * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + i * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + i * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + i * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
+  }
+
+  { /* dEuler/dmo-z */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], pert[5], cons_offset[5], prim_offset[5], direction[3];
+    REF_DBL jac[5], fp[5], fm[5];
+    REF_DBL step = 1.0e-8;
+    REF_DBL tol = 1.e-8;
+    REF_INT i;
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    direction[0] = 1.0 / 9.0;
+    direction[1] = 4.0 / 9.0;
+    direction[2] = 8.0 / 9.0;
+
+    pert[0] = 0.0;
+    pert[1] = 0.0;
+    pert[2] = 0.0;
+    pert[3] = step;
+    pert[4] = 0.0;
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] += pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fp), "euler");
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] -= pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fm), "euler");
+
+    for (i = 0; i < 5; i++) jac[i] = (fp[i] - fm[i]) / (2.0 * step);
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+
+    i = 3;
+    RWDS(jac[0], dflux_dcons[0 + i * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + i * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + i * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + i * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
+  }
+
+  { /* dEuler/dE */
+    REF_DBL dflux_dcons[25];
+    REF_DBL state[5], pert[5], cons_offset[5], prim_offset[5], direction[3];
+    REF_DBL jac[5], fp[5], fm[5];
+    REF_DBL step = 1.0e-8;
+    REF_DBL tol = 1.e-8;
+    REF_INT i;
+    state[0] = 0.8;
+    state[1] = 0.2;
+    state[2] = 0.03;
+    state[3] = 0.3;
+    state[4] = 0.9 / 1.4;
+    direction[0] = 1.0 / 9.0;
+    direction[1] = 4.0 / 9.0;
+    direction[2] = 8.0 / 9.0;
+
+    pert[0] = 0.0;
+    pert[1] = 0.0;
+    pert[2] = 0.0;
+    pert[3] = 0.0;
+    pert[4] = step;
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] += pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fp), "euler");
+
+    RSS(ref_phys_make_conserved(state, cons_offset), "cons");
+    for (i = 0; i < 5; i++) cons_offset[i] -= pert[i];
+    RSS(ref_phys_make_primitive(cons_offset, prim_offset), "cons");
+    RSS(ref_phys_euler(prim_offset, direction, fm), "euler");
+
+    for (i = 0; i < 5; i++) jac[i] = (fp[i] - fm[i]) / (2.0 * step);
+
+    RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "jac");
+
+    i = 4;
+    RWDS(jac[0], dflux_dcons[0 + i * 5], tol, "mass flux");
+    RWDS(jac[1], dflux_dcons[1 + i * 5], tol, "mox flux");
+    RWDS(jac[2], dflux_dcons[2 + i * 5], tol, "moy flux");
+    RWDS(jac[3], dflux_dcons[3 + i * 5], tol, "moz flux");
+    RWDS(jac[4], dflux_dcons[4 + i * 5], tol, "energy flux");
   }
 
   { /* Couette laminar flux */
