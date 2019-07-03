@@ -9,7 +9,7 @@ uname -n
 testname=ref
 
 # Use this script to find quickest-to-start queue when K is backed up
-queue=$(./acceptance/check_K_queues.py)
+queue=$(./acceptance/k-best-queue.py)
 
 if [[ "$queue" == "K4-"* ]]; then
   nprocs=40
