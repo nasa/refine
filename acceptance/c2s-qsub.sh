@@ -6,6 +6,8 @@ set -x # echo
 
 uname -n
 
+pwd # echo path
+
 testname=c2s
 
 # Use this script to find quickest-to-start queue when K is backed up
