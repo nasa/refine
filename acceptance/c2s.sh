@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -x # echo
+set -x # echo commands
 
 set -e # exit on first error
 set -u # Treat unset variables as error

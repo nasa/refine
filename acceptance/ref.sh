@@ -1,40 +1,24 @@
 #!/usr/bin/env bash
 
 set -x # echo commands
+
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-set +x # echo commands
+# Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
 
-date
+module purge
+source acceptance/ref-modules.sh
 
-module load gcc_6.2.0
-module load openmpi_1.10.2_intel_2017
-module load intel.2017.2.174
-module load git # for git describe
-
-module use --append /ump/fldmd/home/casb-shared/fun3d/fun3d_users/modulefiles
-module load tetgen
-# should not be necessary with rpath (rpath works with gcc, not intel)
-# module load ESP/113
-
-module use --append /usr/local/pkgs-geolab/Modules/modulefiles
-module load geolab_64 AFLR3/current
-
-module load valgrind_3.13.0
-
-module list
-set -x # echo commands
-
-module_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules"
-parmetis_path="${module_path}/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
-zoltan_path="${module_path}/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
+module_path="/u/shared/fun3d/fun3d_users/modulefiles"
+parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
+zoltan_path="/u/shared/fun3d/fun3d_users/regression_modulefiles/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
 egads_path="${module_path}/ESP/114/EngSketchPad"
 opencascade_path="${module_path}/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
 
-root_dir=$(dirname $PWD)
+root_dir=$(dirname $PWD)/..
 source_dir=${root_dir}/refine
 
 parmetis_dir=${root_dir}/_refine-parmetis-egadslite
