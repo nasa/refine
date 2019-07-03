@@ -1,19 +1,19 @@
 variables:
   GIT_STRATEGY: clone
 
-build-and-test-on-cmb20:
+ref-accept-k:
   only:
     - merge_requests
   tags:
     - gitlab_runner
-  script: ./acceptance/cfdlab-wrapper.sh
+  script: ./acceptance/ref-wrapper.sh
   artifacts:
     paths:
       - "log.*"
       - "refine-*.tar.gz"
     expire_in: 1 week
 
-c2s-acceptance-k:
+c2s-accept-k:
   only:
     - merge_requests
   tags:
