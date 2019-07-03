@@ -18,7 +18,7 @@ zoltan_path="/u/shared/fun3d/fun3d_users/regression_modulefiles/Zoltan/3.82-open
 egads_path="${module_path}/ESP/114/EngSketchPad"
 opencascade_path="${module_path}/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
 
-root_dir=$(dirname $PWD)/..
+root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
 
 parmetis_dir=${root_dir}/_refine-parmetis-egadslite
