@@ -6,9 +6,7 @@ set -x # echo
 
 uname -n
 
-pwd # echo path
-
-testname=c2s
+testname=ref
 
 # Use this script to find quickest-to-start queue when K is backed up
 queue=$(./acceptance/k-best-queue.py)
@@ -48,7 +46,7 @@ uname -mrn
 
 cd \$PBS_O_WORKDIR
 
-./acceptance/c2s.sh
+./acceptance/ref.sh
 
 EOF
 

@@ -184,7 +184,12 @@
    <insert_a_suppression_name_here>
    Memcheck:Leak
    fun:malloc
-   fun:opal_dss_copy_value
+   ...
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
    ...
    fun:clone
 }
@@ -268,5 +273,27 @@
    fun:ref_mpi_create_from_comm
    fun:ref_mpi_create
    fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:btl_openib_component_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:calloc
+   ...
+   fun:opal_btl_openib_connect_base_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:rdmacm_component_init
 }
 
