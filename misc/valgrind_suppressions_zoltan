@@ -26,3 +26,25 @@
    fun:Zoltan_Malloc
    fun:Zoltan_Special_Malloc
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:Zoltan_PHG_Redistribute
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:Zoltan_PHG_Initialize_Params
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:Zoltan_Create
+   ...
+}
+
+
