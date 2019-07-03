@@ -7,9 +7,27 @@ set -x # echo
 uname -n
 
 testname=c2s
-queue=K3-route
-nprocs=16
-walltime=20
+
+# Use this script to find quickest-to-start queue when K is backed up
+queue=$(./acceptance/check_K_queues.py)
+
+if [[ "$queue" == "K4-"* ]]; then
+  nprocs=40
+  walltime=20
+elif [[ "$queue" == "K3-"* ]]; then
+  nprocs=16
+  walltime=20
+elif [[ "$queue" == "K2-"* ]]; then
+  nprocs=12
+  walltime=20
+elif [[ "$queue" == "K2a-"* ]]; then
+  nprocs=12
+  walltime=20
+else
+  echo "unknown queue requested: $queue"
+  exit 1
+fi
+
 
 BUILDLOG=$PWD/../log-pbs-out.txt
 
