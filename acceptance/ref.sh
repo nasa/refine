@@ -11,9 +11,9 @@ set -u # Treat unset variables as error
 module purge
 source acceptance/ref-modules.sh
 
-module_path="/u/shared/fun3d/fun3d_users/modulefiles"
+module_path="/u/shared/fun3d/fun3d_users/modules"
 parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
-zoltan_path="/u/shared/fun3d/fun3d_users/regression_modulefiles/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
+zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
 egads_path="${module_path}/ESP/114/EngSketchPad"
 opencascade_path="${module_path}/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
