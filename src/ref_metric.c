@@ -1973,16 +1973,14 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
   REF_INT nequ;
-  REF_DBL G[5];
   REF_DBL state[5], conserved[5], dflux_dcons[25], direction[3];
+  REF_DBL *G;
   REF_DBL *lam, *grad_lam;
   REF_DBL *cons, *hess_cons;
 
   nequ = ldim / 2;
 
-  for (var = 0; var < 5; var++) {
-    G[var] = 0;
-  }
+  ref_malloc_init(G, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -2004,7 +2002,8 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
         }
         RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "euler");
         for (i = 0; i < 5; i++) {
-          G[i] += dflux_dcons[var + i * 5] * grad_lam[dir + 3 * node];
+          G[i + 5 * node] +=
+              dflux_dcons[var + i * 5] * grad_lam[dir + 3 * node];
         }
       }
     }
@@ -2026,13 +2025,16 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
     RSS(ref_recon_hessian(ref_grid, cons, hess_cons, reconstruction), "hess");
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 6; i++) {
-        metric[i + 6 * node] += ABS(G[var]) * hess_cons[i + 6 * node];
+        metric[i + 6 * node] +=
+            ABS(G[var + 5 * node]) * hess_cons[i + 6 * node];
       }
     }
   }
 
   ref_free(hess_cons);
   ref_free(cons);
+
+  ref_free(G);
 
   return REF_SUCCESS;
 }
