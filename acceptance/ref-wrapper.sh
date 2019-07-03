@@ -4,9 +4,9 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-build_directory_root=/scratch/fun3d/gitlab-ci
+build_directory_root=/hpnobackup1/fun3d/ref-ci
 
-build_machine=cmb20
+build_machine=k4
 ssh -o StrictHostKeyChecking=no fun3d@${build_machine} true
 
 BUILD_TAG="${CI_JOB_NAME}-${CI_JOB_ID}"
@@ -29,7 +29,7 @@ cd ${build_directory_root} && \
     cd refine && \
       pwd && \
       ${checkout_cmd} && \
-    ./acceptance/cfdlab.sh
+    ./acceptance/ref-qsub.sh
 EOF
 
 scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
@@ -38,6 +38,7 @@ scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/refine-\*.tar.gz
 trap "cat cleanup.log" EXIT
 ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF
 whoami && \
+uname -n && \
 cd ${build_directory_root}/${BUILD_TAG}/refine && \
  ./acceptance/remove_old_builds.sh \
   "${build_directory_root}"
