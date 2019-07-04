@@ -2022,13 +2022,13 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
   REF_DBL gamma = 1.4;
   REF_DBL sutherland_constant = 110.56;
   REF_DBL sutherland_temp;
-  REF_DBL t, mu;
+  REF_DBL t, mu, u1, u2, u3;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
   REF_DBL thermal_conductivity;
   REF_DBL rho, turb, mu_t;
-  REF_DBL frhoe;
-  REF_INT xx = 0, yy = 3, zz = 5;
+  REF_DBL frhou1, frhou2, frhou3, frhoe;
+  REF_INT xx = 0, xy = 1, xz = 2, yy = 3, yz = 4, zz = 5;
 
   nequ = ldim / 2;
 
@@ -2062,6 +2062,9 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
 
   each_ref_node_valid_node(ref_node, node) {
     rho = prim_dual[0 + ldim * node];
+    u1 = prim_dual[1 + ldim * node];
+    u2 = prim_dual[2 + ldim * node];
+    u3 = prim_dual[3 + ldim * node];
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
@@ -2075,9 +2078,32 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
     }
     mu *= mach / re;
     thermal_conductivity *= mach / re;
-    frhoe = thermal_conductivity / rho *
-            (rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
-             rhoestar[zz + 6 * node]);
+
+    frhou1 = 4.0 * rhou1star[xx + 6 * node] + 3.0 * rhou1star[yy + 6 * node] +
+             3.0 * rhou1star[zz + 6 * node] + rhou2star[xy + 6 * node] +
+             rhou3star[xz + 6 * node] + 4.0 * u1 * rhoestar[xx + 6 * node] +
+             3.0 * u1 * rhoestar[yy + 6 * node] +
+             3.0 * u1 * rhoestar[zz + 6 * node] + u2 * rhoestar[xy + 6 * node] +
+             u3 * rhoestar[xz + 6 * node];
+    frhou1 *= (1.0 / 3.0) * mu / rho;
+    frhou2 = rhou1star[xy + 6 * node] + 3.0 * rhou2star[xx + 6 * node] +
+             4.0 * rhou2star[yy + 6 * node] + 3.0 * rhou2star[zz + 6 * node] +
+             rhou3star[yz + 6 * node] + u1 * rhoestar[xy + 6 * node] +
+             3.0 * u2 * rhoestar[xx + 6 * node] +
+             4.0 * u2 * rhoestar[yy + 6 * node] +
+             3.0 * u2 * rhoestar[zz + 6 * node] + u3 * rhoestar[yz + 6 * node];
+    frhou2 *= (1.0 / 3.0) * mu / rho;
+    frhou3 = rhou1star[xz + 6 * node] + rhou2star[yz + 6 * node] +
+             3.0 * rhou3star[xx + 6 * node] + 3.0 * rhou3star[yy + 6 * node] +
+             4.0 * rhou3star[zz + 6 * node] + u1 * rhoestar[xz + 6 * node] +
+             u2 * rhoestar[yz + 6 * node] + 3.0 * u3 * rhoestar[xx + 6 * node] +
+             3.0 * u3 * rhoestar[yy + 6 * node] +
+             4.0 * u3 * rhoestar[zz + 6 * node];
+    frhou3 *= (1.0 / 3.0) * mu / rho;
+
+    frhoe = rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
+            rhoestar[zz + 6 * node];
+    frhoe *= thermal_conductivity / rho;
     g[4 + 5 * node] += frhoe;
   }
 
