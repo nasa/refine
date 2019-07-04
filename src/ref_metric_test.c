@@ -909,7 +909,7 @@ int main(int argc, char *argv[]) {
 
   if (euler_cons_pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_DBL *prim_dual, *metric;
+    REF_DBL *prim_dual, *g, *metric;
     REF_DBL gradation = -1.0;
     REF_DBL complexity;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -950,10 +950,14 @@ int main(int argc, char *argv[]) {
 
     ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
+    ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    RSS(ref_metric_cons_euler_g(g, ref_grid, ldim, prim_dual, reconstruction),
+        "cons euler g weights");
 
-    RSS(ref_metric_cons_euler(metric, ref_grid, ldim, prim_dual,
-                              reconstruction),
-        "cons euler metric");
+    RSS(ref_metric_cons_assembly(metric, g, ref_grid, ldim, prim_dual,
+                                 reconstruction),
+        "cons metric assembly");
+    ref_free(g);
     RSS(ref_node_ghost_dbl(ref_grid_node(ref_grid), metric, 6),
         "update ghosts");
 

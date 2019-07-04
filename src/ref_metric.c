@@ -1967,20 +1967,16 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
-                                 REF_INT ldim, REF_DBL *prim_dual,
-                                 REF_RECON_RECONSTRUCTION reconstruction) {
+REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
+                                   REF_DBL *prim_dual,
+                                   REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
   REF_INT nequ;
-  REF_DBL state[5], conserved[5], dflux_dcons[25], direction[3];
-  REF_DBL *G;
+  REF_DBL state[5], dflux_dcons[25], direction[3];
   REF_DBL *lam, *grad_lam;
-  REF_DBL *cons, *hess_cons;
 
   nequ = ldim / 2;
-
-  ref_malloc_init(G, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -2002,7 +1998,7 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
         }
         RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "euler");
         for (i = 0; i < 5; i++) {
-          G[i + 5 * node] +=
+          g[i + 5 * node] +=
               dflux_dcons[var + i * 5] * grad_lam[dir + 3 * node];
         }
       }
@@ -2011,13 +2007,140 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(grad_lam);
   ref_free(lam);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
+                                     REF_INT ldim, REF_DBL *prim_dual,
+                                     REF_DBL mach, REF_DBL re,
+                                     REF_DBL reference_temp,
+                                     REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node;
+  REF_INT nequ;
+  REF_DBL *lam, *rhou1star, *rhou2star, *rhou3star, *rhoestar;
+  REF_DBL gamma = 1.4;
+  REF_DBL sutherland_constant = 110.56;
+  REF_DBL sutherland_temp;
+  REF_DBL t, mu, u1, u2, u3, q2, e;
+  REF_DBL pr = 0.72;
+  REF_DBL turbulent_pr = 0.90;
+  REF_DBL thermal_conductivity;
+  REF_DBL rho, turb, mu_t;
+  REF_DBL frhou1, frhou2, frhou3, frhoe;
+  REF_INT xx = 0, xy = 1, xz = 2, yy = 3, yz = 4, zz = 5;
+
+  nequ = ldim / 2;
+
+  ref_malloc_init(rhou1star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhou2star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhou3star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhoestar, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+
+  var = 1;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou1star, reconstruction), "h1");
+  var = 2;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou2star, reconstruction), "h2");
+  var = 3;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou3star, reconstruction), "h3");
+  var = 4;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhoestar, reconstruction), "h4");
+  ref_free(lam);
+
+  each_ref_node_valid_node(ref_node, node) {
+    rho = prim_dual[0 + ldim * node];
+    u1 = prim_dual[1 + ldim * node];
+    u2 = prim_dual[2 + ldim * node];
+    u3 = prim_dual[3 + ldim * node];
+    q2 = u1 * u1 + u2 * u2 + u3 * u3;
+    e = prim_dual[4 + ldim * node] / (gamma - 1.0) + 0.5 * rho * q2;
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    thermal_conductivity = mu / (pr * (gamma - 1.0));
+    if (6 == nequ) {
+      turb = prim_dual[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      thermal_conductivity =
+          (mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
+      mu += mu_t;
+    }
+    mu *= mach / re;
+    thermal_conductivity *= mach / re;
+
+    frhou1 = 4.0 * rhou1star[xx + 6 * node] + 3.0 * rhou1star[yy + 6 * node] +
+             3.0 * rhou1star[zz + 6 * node] + rhou2star[xy + 6 * node] +
+             rhou3star[xz + 6 * node] + 4.0 * u1 * rhoestar[xx + 6 * node] +
+             3.0 * u1 * rhoestar[yy + 6 * node] +
+             3.0 * u1 * rhoestar[zz + 6 * node] + u2 * rhoestar[xy + 6 * node] +
+             u3 * rhoestar[xz + 6 * node];
+    frhou1 *= (1.0 / 3.0) * mu / rho;
+
+    frhou2 = rhou1star[xy + 6 * node] + 3.0 * rhou2star[xx + 6 * node] +
+             4.0 * rhou2star[yy + 6 * node] + 3.0 * rhou2star[zz + 6 * node] +
+             rhou3star[yz + 6 * node] + u1 * rhoestar[xy + 6 * node] +
+             3.0 * u2 * rhoestar[xx + 6 * node] +
+             4.0 * u2 * rhoestar[yy + 6 * node] +
+             3.0 * u2 * rhoestar[zz + 6 * node] + u3 * rhoestar[yz + 6 * node];
+    frhou2 *= (1.0 / 3.0) * mu / rho;
+
+    frhou3 = rhou1star[xz + 6 * node] + rhou2star[yz + 6 * node] +
+             3.0 * rhou3star[xx + 6 * node] + 3.0 * rhou3star[yy + 6 * node] +
+             4.0 * rhou3star[zz + 6 * node] + u1 * rhoestar[xz + 6 * node] +
+             u2 * rhoestar[yz + 6 * node] + 3.0 * u3 * rhoestar[xx + 6 * node] +
+             3.0 * u3 * rhoestar[yy + 6 * node] +
+             4.0 * u3 * rhoestar[zz + 6 * node];
+    frhou3 *= (1.0 / 3.0) * mu / rho;
+
+    frhoe = rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
+            rhoestar[zz + 6 * node];
+    frhoe *= thermal_conductivity / rho;
+    /* fun3d e has density in it */
+    g[0 + 5 * node] +=
+        -u1 * frhou1 - u2 * frhou2 - u3 * frhou3 + (q2 - e / rho) * frhoe;
+    g[1 + 5 * node] += frhou1 - u1 * frhoe;
+    g[2 + 5 * node] += frhou2 - u2 * frhoe;
+    g[3 + 5 * node] += frhou3 - u3 * frhoe;
+    g[4 + 5 * node] += frhoe;
+  }
+
+  ref_free(rhoestar);
+  ref_free(rhou3star);
+  ref_free(rhou2star);
+  ref_free(rhou1star);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
+                                    REF_GRID ref_grid, REF_INT ldim,
+                                    REF_DBL *prim_dual,
+                                    REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node, i;
+  REF_DBL state[5], conserved[5];
+  REF_DBL *cons, *hess_cons;
+
   ref_malloc_init(cons, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_cons, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 5; i++) {
-        state[i] = prim_dual[var + 0 * nequ + ldim * node];
+        state[i] = prim_dual[var + ldim * node];
       }
       RSS(ref_phys_make_conserved(state, conserved), "prim2cons");
       cons[node] = conserved[var];
@@ -2026,15 +2149,13 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] +=
-            ABS(G[var + 5 * node]) * hess_cons[i + 6 * node];
+            ABS(g[var + 5 * node]) * hess_cons[i + 6 * node];
       }
     }
   }
 
   ref_free(hess_cons);
   ref_free(cons);
-
-  ref_free(G);
 
   return REF_SUCCESS;
 }
