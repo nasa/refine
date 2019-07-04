@@ -1967,20 +1967,16 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
-                                 REF_INT ldim, REF_DBL *prim_dual,
-                                 REF_RECON_RECONSTRUCTION reconstruction) {
+REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
+                                   REF_DBL *prim_dual,
+                                   REF_RECON_RECONSTRUCTION reconstruction) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT var, dir, node, i;
   REF_INT nequ;
-  REF_DBL state[5], conserved[5], dflux_dcons[25], direction[3];
-  REF_DBL *G;
+  REF_DBL state[5], dflux_dcons[25], direction[3];
   REF_DBL *lam, *grad_lam;
-  REF_DBL *cons, *hess_cons;
 
   nequ = ldim / 2;
-
-  ref_malloc_init(G, 5 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(grad_lam, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
@@ -2002,7 +1998,7 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
         }
         RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "euler");
         for (i = 0; i < 5; i++) {
-          G[i + 5 * node] +=
+          g[i + 5 * node] +=
               dflux_dcons[var + i * 5] * grad_lam[dir + 3 * node];
         }
       }
@@ -2011,13 +2007,25 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(grad_lam);
   ref_free(lam);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
+                                    REF_GRID ref_grid, REF_INT ldim,
+                                    REF_DBL *prim_dual,
+                                    REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node, i;
+  REF_DBL state[5], conserved[5];
+  REF_DBL *cons, *hess_cons;
+
   ref_malloc_init(cons, ref_node_max(ref_node), REF_DBL, 0.0);
   ref_malloc_init(hess_cons, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
 
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 5; i++) {
-        state[i] = prim_dual[var + 0 * nequ + ldim * node];
+        state[i] = prim_dual[var + ldim * node];
       }
       RSS(ref_phys_make_conserved(state, conserved), "prim2cons");
       cons[node] = conserved[var];
@@ -2026,15 +2034,13 @@ REF_STATUS ref_metric_cons_euler(REF_DBL *metric, REF_GRID ref_grid,
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] +=
-            ABS(G[var + 5 * node]) * hess_cons[i + 6 * node];
+            ABS(g[var + 5 * node]) * hess_cons[i + 6 * node];
       }
     }
   }
 
   ref_free(hess_cons);
   ref_free(cons);
-
-  ref_free(G);
 
   return REF_SUCCESS;
 }
