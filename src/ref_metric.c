@@ -2022,7 +2022,7 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
   REF_DBL gamma = 1.4;
   REF_DBL sutherland_constant = 110.56;
   REF_DBL sutherland_temp;
-  REF_DBL t, mu, u1, u2, u3;
+  REF_DBL t, mu, u1, u2, u3, q2, e;
   REF_DBL pr = 0.72;
   REF_DBL turbulent_pr = 0.90;
   REF_DBL thermal_conductivity;
@@ -2065,6 +2065,8 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
     u1 = prim_dual[1 + ldim * node];
     u2 = prim_dual[2 + ldim * node];
     u3 = prim_dual[3 + ldim * node];
+    q2 = u1 * u1 + u2 * u2 + u3 * u3;
+    e = prim_dual[4 + ldim * node] / (gamma - 1.0) + 0.5 * rho * q2;
     t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
     sutherland_temp = sutherland_constant / reference_temp;
     mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
@@ -2086,6 +2088,7 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
              3.0 * u1 * rhoestar[zz + 6 * node] + u2 * rhoestar[xy + 6 * node] +
              u3 * rhoestar[xz + 6 * node];
     frhou1 *= (1.0 / 3.0) * mu / rho;
+
     frhou2 = rhou1star[xy + 6 * node] + 3.0 * rhou2star[xx + 6 * node] +
              4.0 * rhou2star[yy + 6 * node] + 3.0 * rhou2star[zz + 6 * node] +
              rhou3star[yz + 6 * node] + u1 * rhoestar[xy + 6 * node] +
@@ -2093,6 +2096,7 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
              4.0 * u2 * rhoestar[yy + 6 * node] +
              3.0 * u2 * rhoestar[zz + 6 * node] + u3 * rhoestar[yz + 6 * node];
     frhou2 *= (1.0 / 3.0) * mu / rho;
+
     frhou3 = rhou1star[xz + 6 * node] + rhou2star[yz + 6 * node] +
              3.0 * rhou3star[xx + 6 * node] + 3.0 * rhou3star[yy + 6 * node] +
              4.0 * rhou3star[zz + 6 * node] + u1 * rhoestar[xz + 6 * node] +
@@ -2104,6 +2108,11 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
     frhoe = rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
             rhoestar[zz + 6 * node];
     frhoe *= thermal_conductivity / rho;
+    g[0 + 5 * node] +=
+        -u1 * frhou1 - u2 * frhou2 - u3 * frhou3 + (q2 - e) * frhoe;
+    g[1 + 5 * node] += frhou1 - u1 * frhoe;
+    g[2 + 5 * node] += frhou2 - u2 * frhoe;
+    g[3 + 5 * node] += frhou3 - u3 * frhoe;
     g[4 + 5 * node] += frhoe;
   }
 
