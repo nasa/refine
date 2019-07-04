@@ -36,6 +36,9 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
                               REF_RECON_RECONSTRUCTION recon);
+REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                    REF_DBL *hessian,
+                                    REF_RECON_RECONSTRUCTION recon);
 REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
                              REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon);
 

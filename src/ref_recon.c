@@ -697,8 +697,9 @@ static REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
-                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon) {
+REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                                    REF_DBL *hessian,
+                                    REF_RECON_RECONSTRUCTION recon) {
   REF_BOOL *replace;
 
   switch (recon) {
@@ -718,7 +719,12 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       THROW("reconstruction not available");
   }
 
-  RSS(ref_recon_abs_value_hessian(ref_grid, hessian), "abs hess");
+  return REF_SUCCESS;
+}
 
+REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
+                             REF_DBL *hessian, REF_RECON_RECONSTRUCTION recon) {
+  RSS(ref_recon_signed_hessian(ref_grid, scalar, hessian, recon), "abs hess");
+  RSS(ref_recon_abs_value_hessian(ref_grid, hessian), "abs hess");
   return REF_SUCCESS;
 }
