@@ -468,7 +468,6 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
   REF_DBL node_gradient[3], node_hessian[6];
   REF_STATUS status;
   REF_CLOUD *one_layer;
-  REF_BOOL report_large_eig = REF_FALSE;
   REF_INT layer;
 
   if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
@@ -546,14 +545,6 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
         ref_matrix_eig(diag_system, 1) = ABS(ref_matrix_eig(diag_system, 1));
         ref_matrix_eig(diag_system, 2) = ABS(ref_matrix_eig(diag_system, 2));
         RSS(ref_matrix_form_m(diag_system, &(hessian[6 * node])), "re-form");
-        if (report_large_eig) {
-          if (ref_matrix_eig(diag_system, 0) > 2.0e5) {
-            printf("n %d e %f\n", node, ref_matrix_eig(diag_system, 0));
-            printf("%f\n", ref_node_xyz(ref_node, 0, node));
-            printf("%f\n", ref_node_xyz(ref_node, 1, node));
-            printf("%f\n", ref_node_xyz(ref_node, 2, node));
-          }
-        }
       }
     }
     RSS(ref_node_ghost_dbl(ref_node, hessian, 6), "update ghosts");
