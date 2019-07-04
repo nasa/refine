@@ -1056,7 +1056,7 @@ int main(int argc, char *argv[]) {
     ref_free(metric);
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
-    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
