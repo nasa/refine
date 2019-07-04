@@ -2108,8 +2108,9 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
     frhoe = rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
             rhoestar[zz + 6 * node];
     frhoe *= thermal_conductivity / rho;
+    /* fun3d e has density in it */
     g[0 + 5 * node] +=
-        -u1 * frhou1 - u2 * frhou2 - u3 * frhou3 + (q2 - e) * frhoe;
+        -u1 * frhou1 - u2 * frhou2 - u3 * frhou3 + (q2 - e / rho) * frhoe;
     g[1 + 5 * node] += frhou1 - u1 * frhoe;
     g[2 + 5 * node] += frhou2 - u2 * frhoe;
     g[3 + 5 * node] += frhou3 - u3 * frhoe;
