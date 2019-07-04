@@ -1,7 +1,6 @@
 
 bleme
  spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
- l2 projection: replace with volume weighing of donor dual volume
  strong bc lambda reconstruction: use constant term of quadratic fit
 
 alternating RCB part
@@ -64,7 +63,7 @@ tess
  + add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
  try gmsh
  + isotropic edge curvature
- anisotropic feature size, edge length tangent, dist to other edge normal?
+ + anisotropic feature size, edge length tangent, dist to other edge normal?
  + feature size accross thin shell geometry, i.e., curved cusp trailing edge
  near-tree to drive split for grid size gradation of this shells
  edge chord height warning/constraint?
@@ -254,6 +253,15 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ euler conservative variable metric
++ abs value of hessian as last step
++ l2 projection: replace with volume weighing of donor dual volume
+
++ long globals
++ ugrid64 file formats
+
++ bound degenerate parameter reconstruction
 
 + size_t cad data
 
