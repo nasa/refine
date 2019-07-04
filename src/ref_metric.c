@@ -2010,6 +2010,85 @@ REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
+                                     REF_INT ldim, REF_DBL *prim_dual,
+                                     REF_DBL mach, REF_DBL re,
+                                     REF_DBL reference_temp,
+                                     REF_RECON_RECONSTRUCTION reconstruction) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT var, node;
+  REF_INT nequ;
+  REF_DBL *lam, *rhou1star, *rhou2star, *rhou3star, *rhoestar;
+  REF_DBL gamma = 1.4;
+  REF_DBL sutherland_constant = 110.56;
+  REF_DBL sutherland_temp;
+  REF_DBL t, mu;
+  REF_DBL pr = 0.72;
+  REF_DBL turbulent_pr = 0.90;
+  REF_DBL thermal_conductivity;
+  REF_DBL rho, turb, mu_t;
+  REF_DBL frhoe;
+  REF_INT xx = 0, yy = 3, zz = 5;
+
+  nequ = ldim / 2;
+
+  ref_malloc_init(rhou1star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhou2star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhou3star, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(rhoestar, 6 * ref_node_max(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(lam, ref_node_max(ref_node), REF_DBL, 0.0);
+
+  var = 1;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou1star, reconstruction), "h1");
+  var = 2;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou2star, reconstruction), "h2");
+  var = 3;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhou3star, reconstruction), "h3");
+  var = 4;
+  each_ref_node_valid_node(ref_node, node) {
+    lam[node] = prim_dual[var + 1 * nequ + ldim * node];
+  }
+  RSS(ref_recon_signed_hessian(ref_grid, lam, rhoestar, reconstruction), "h4");
+  ref_free(lam);
+
+  each_ref_node_valid_node(ref_node, node) {
+    rho = prim_dual[0 + ldim * node];
+    t = gamma * prim_dual[4 + ldim * node] / prim_dual[0 + ldim * node];
+    sutherland_temp = sutherland_constant / reference_temp;
+    mu = (1.0 + sutherland_temp) / (t + sutherland_temp) * t * sqrt(t);
+    thermal_conductivity = mu / (pr * (gamma - 1.0));
+    if (6 == nequ) {
+      turb = prim_dual[5 + ldim * node];
+      RSS(ref_phys_mut_sa(turb, rho, mu / rho, &mu_t), "eddy viscosity");
+      thermal_conductivity =
+          (mu / (pr * (gamma - 1.0)) + mu_t / (turbulent_pr * (gamma - 1.0)));
+      mu += mu_t;
+    }
+    mu *= mach / re;
+    thermal_conductivity *= mach / re;
+    frhoe = thermal_conductivity / rho *
+            (rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
+             rhoestar[zz + 6 * node]);
+    g[4 + 5 * node] += frhoe;
+  }
+
+  ref_free(rhoestar);
+  ref_free(rhou3star);
+  ref_free(rhou2star);
+  ref_free(rhou1star);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
                                     REF_GRID ref_grid, REF_INT ldim,
                                     REF_DBL *prim_dual,

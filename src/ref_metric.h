@@ -108,6 +108,11 @@ REF_STATUS ref_metric_belme_gu(REF_DBL *metric, REF_GRID ref_grid, REF_INT ldim,
 REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
                                    REF_DBL *prim_dual,
                                    REF_RECON_RECONSTRUCTION reconstruction);
+REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
+                                     REF_INT ldim, REF_DBL *prim_dual,
+                                     REF_DBL mach, REF_DBL re,
+                                     REF_DBL reference_temp,
+                                     REF_RECON_RECONSTRUCTION reconstruction);
 
 REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
                                     REF_GRID ref_grid, REF_INT ldim,
