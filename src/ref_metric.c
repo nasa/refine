@@ -2083,26 +2083,29 @@ REF_STATUS ref_metric_cons_viscous_g(REF_DBL *g, REF_GRID ref_grid,
 
     frhou1 = 4.0 * rhou1star[xx + 6 * node] + 3.0 * rhou1star[yy + 6 * node] +
              3.0 * rhou1star[zz + 6 * node] + rhou2star[xy + 6 * node] +
-             rhou3star[xz + 6 * node] + 4.0 * u1 * rhoestar[xx + 6 * node] +
-             3.0 * u1 * rhoestar[yy + 6 * node] +
-             3.0 * u1 * rhoestar[zz + 6 * node] + u2 * rhoestar[xy + 6 * node] +
-             u3 * rhoestar[xz + 6 * node];
+             rhou3star[xz + 6 * node];
+    frhou1 += 4.0 * u1 * rhoestar[xx + 6 * node] +
+              3.0 * u1 * rhoestar[yy + 6 * node] +
+              3.0 * u1 * rhoestar[zz + 6 * node] +
+              u2 * rhoestar[xy + 6 * node] + u3 * rhoestar[xz + 6 * node];
     frhou1 *= (1.0 / 3.0) * mu / rho;
 
     frhou2 = rhou1star[xy + 6 * node] + 3.0 * rhou2star[xx + 6 * node] +
              4.0 * rhou2star[yy + 6 * node] + 3.0 * rhou2star[zz + 6 * node] +
-             rhou3star[yz + 6 * node] + u1 * rhoestar[xy + 6 * node] +
-             3.0 * u2 * rhoestar[xx + 6 * node] +
-             4.0 * u2 * rhoestar[yy + 6 * node] +
-             3.0 * u2 * rhoestar[zz + 6 * node] + u3 * rhoestar[yz + 6 * node];
+             rhou3star[yz + 6 * node];
+    frhou2 += u1 * rhoestar[xy + 6 * node] +
+              3.0 * u2 * rhoestar[xx + 6 * node] +
+              4.0 * u2 * rhoestar[yy + 6 * node] +
+              3.0 * u2 * rhoestar[zz + 6 * node] + u3 * rhoestar[yz + 6 * node];
     frhou2 *= (1.0 / 3.0) * mu / rho;
 
     frhou3 = rhou1star[xz + 6 * node] + rhou2star[yz + 6 * node] +
              3.0 * rhou3star[xx + 6 * node] + 3.0 * rhou3star[yy + 6 * node] +
-             4.0 * rhou3star[zz + 6 * node] + u1 * rhoestar[xz + 6 * node] +
-             u2 * rhoestar[yz + 6 * node] + 3.0 * u3 * rhoestar[xx + 6 * node] +
-             3.0 * u3 * rhoestar[yy + 6 * node] +
-             4.0 * u3 * rhoestar[zz + 6 * node];
+             4.0 * rhou3star[zz + 6 * node];
+    frhou3 += u1 * rhoestar[xz + 6 * node] + u2 * rhoestar[yz + 6 * node] +
+              3.0 * u3 * rhoestar[xx + 6 * node] +
+              3.0 * u3 * rhoestar[yy + 6 * node] +
+              4.0 * u3 * rhoestar[zz + 6 * node];
     frhou3 *= (1.0 / 3.0) * mu / rho;
 
     frhoe = rhoestar[xx + 6 * node] + rhoestar[yy + 6 * node] +
