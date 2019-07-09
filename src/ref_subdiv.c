@@ -593,15 +593,65 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
 }
 
 REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
-  REF_INT cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT map;
+  REF_DBL xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  REF_DBL *xyzs[4] = {xyz0, xyz1, xyz2, xyz3};
+  REF_INT node, i;
+  REF_INT edge, split_edge, n0, n1;
+  REF_DBL volume;
+  REF_BOOL unmark_cell;
 
   each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    unmark_cell = REF_FALSE;
     map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
     switch (map) {
-    case 0: /* don't split */
-      break;
+      case 0: /* don't split */
+        break;
+      case 1:
+      case 2:
+      case 4:
+      case 8:
+      case 16:
+      case 32:
+        split_edge = REF_EMPTY;
+        for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++)
+          if (ref_subdiv_mark(ref_subdiv,
+                              ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)))
+            split_edge = edge;
+        RAS(REF_EMPTY != split_edge, "edge not found");
+        n0 = ref_cell_e2n_gen(ref_cell, 0, split_edge);
+        n1 = ref_cell_e2n_gen(ref_cell, 1, split_edge);
+
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, n0, n1, xyzs[n0]), "b0");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, n0, n1, xyzs[n1]), "b1");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        break;
+    }
+    if (unmark_cell) {
+      for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)) = 0;
+      }
     }
   }
   return REF_SUCCESS;
