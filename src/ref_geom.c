@@ -1539,7 +1539,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_DBL node0_weight = 1.0 - node1_weight;
 
   RSS(ref_geom_supported(ref_geom, node0, &support0), "node0 supported");
-  RSS(ref_geom_supported(ref_geom, node1, &support1), "node0 supported");
+  RSS(ref_geom_supported(ref_geom, node1, &support1), "node1 supported");
   if (!support0 || !support1) {
     return REF_SUCCESS;
   }
