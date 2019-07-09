@@ -610,6 +610,8 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
   REF_INT map;
   REF_DBL xyz0[3], xyz1[3], xyz2[3], xyz3[3];
   REF_DBL *xyzs[4] = {xyz0, xyz1, xyz2, xyz3};
+  REF_DBL edg0[3], edg1[3], edg2[3], edg3[3], edg4[3], edg5[3];
+  REF_DBL *cxyz[4];
   REF_INT node, i;
   REF_INT edge, split_edge, n0, n1;
   REF_DBL volume;
@@ -720,6 +722,78 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
         RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[0], xyzs[2]), "c2");
         RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
         if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+        break;
+      case 63:
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], edg0), "e0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[2], edg1), "e1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[3], edg2), "e2");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], edg3), "e3");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[3], edg4), "e4");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[3], edg5), "e5");
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg2;
+        cxyz[2] = edg1;
+        cxyz[3] = xyz0;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg3;
+        cxyz[2] = edg4;
+        cxyz[3] = xyz1;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg1;
+        cxyz[1] = edg5;
+        cxyz[2] = edg3;
+        cxyz[3] = xyz2;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg2;
+        cxyz[1] = edg4;
+        cxyz[2] = edg5;
+        cxyz[3] = xyz3;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg1;
+        cxyz[3] = edg2;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg2;
+        cxyz[3] = edg4;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg4;
+        cxyz[3] = edg3;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg3;
+        cxyz[3] = edg1;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        break;
     }
     if (unmark_cell) {
       *again = REF_TRUE;
