@@ -601,7 +601,8 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     (nodes)[(b)] = nst;          \
   }
 
-REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
+REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
+                                                  REF_BOOL *again) {
   REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
@@ -730,6 +731,7 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
         if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
     }
     if (unmark_cell) {
+      *again = REF_TRUE;
       for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
         ref_subdiv_mark(ref_subdiv,
                         ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)) = 0;
