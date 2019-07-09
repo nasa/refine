@@ -2040,8 +2040,10 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
 
   RSS(ref_node_synchronize_globals(ref_node), "sync glob for mark relax");
 
+  RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
   RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
   RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
+  RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
   RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
   RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
 
