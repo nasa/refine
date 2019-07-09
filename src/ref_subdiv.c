@@ -2152,20 +2152,22 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   RSS(ref_subdiv_split_edg(ref_subdiv), "split edg");
 
   /* remove unused nodes on partition boundaries */
-  each_ref_node_valid_node(
-      ref_node,
-      node) if (ref_adj_empty(ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node)) {
-    if (ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
-        ref_node_part(ref_node, node))
-      RSS(REF_FAILURE, "unused local node");
-    if (!ref_adj_empty(ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
-        !ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node))
-      RSS(REF_FAILURE, "boundary face node not in vol cells");
-    RSS(ref_node_remove_without_global(ref_node, node), "rm");
-    RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_adj_empty(ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node)) {
+      if (ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
+          ref_node_part(ref_node, node)) {
+        RSS(REF_FAILURE, "unused local node");
+      }
+      if (!ref_adj_empty(ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
+          !ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node)) {
+        RSS(REF_FAILURE, "boundary face node not in vol cells");
+      }
+      RSS(ref_node_remove_without_global(ref_node, node), "rm");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
+    }
   }
 
   return REF_SUCCESS;
