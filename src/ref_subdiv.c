@@ -26,6 +26,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+#include "ref_metric.h"
 #include "ref_part.h"
 
 static REF_INT ref_subdiv_c2e(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
@@ -890,6 +891,7 @@ REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
 }
 
 static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
@@ -915,6 +917,14 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
                                       ref_edge_e2n(ref_edge, 1, edge), 0.5,
                                       node),
             "new node");
+        RSS(ref_metric_interpolate_between(
+                ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                ref_edge_e2n(ref_edge, 1, edge), node),
+            "interp new metric");
+        RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                 ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+            "new node");
+        RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
       }
     }
   }
@@ -968,6 +978,8 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
             edge_aux[i + ref_node_naux(ref_node) * edge];
     }
   }
+
+  RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "fill new node geom");
 
   ref_free(edge_aux);
   ref_free(edge_real);
@@ -2120,10 +2132,8 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   RSS(ref_node_synchronize_globals(ref_node), "sync glob for mark relax");
 
   RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
-  RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
   RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
   RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
-  RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
   RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
 
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
