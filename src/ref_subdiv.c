@@ -741,6 +741,50 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
+  REF_INT nsweeps, nmark;
+  REF_BOOL again;
+
+  /* make sure consistent before starting */
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
+
+  nsweeps = 0;
+  again = REF_TRUE;
+  while (again) {
+    nsweeps++;
+    again = REF_FALSE;
+
+    RSS(ref_subdiv_unmark_neg_tet_geom_support(ref_subdiv, &again), "neg geom");
+
+    /* most conservative, unmark if any ghosts unmarked */
+    RSS(ref_edge_ghost_min_int(ref_subdiv_edge(ref_subdiv),
+                               ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+        "ghost mark");
+
+    if (nsweeps > 0) {
+      RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+      if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+        printf(" %d edges marked after %d unmark neg geom tet relaxations\n",
+               nmark, nsweeps);
+    }
+
+    RUS(200, nsweeps, "too many unmark neg geom tet sweeps, stop inf loop");
+
+    RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
+  }
+
+  if (ref_subdiv->instrument) {
+    RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+    if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+      printf(" %d edges marked after %d neg geom tet unmark relaxations\n",
+             nmark, nsweeps);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge;
