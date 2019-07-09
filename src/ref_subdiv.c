@@ -592,6 +592,21 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
+  REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell;
+  REF_INT map;
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
+    switch (map) {
+    case 0: /* don't split */
+      break;
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge;
