@@ -141,6 +141,8 @@ REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid) {
   ref_malloc_init(ref_subdiv->node, ref_edge_n(ref_subdiv_edge(ref_subdiv)),
                   REF_INT, REF_EMPTY);
 
+  ref_subdiv->allow_geometry = REF_TRUE;
+
   ref_subdiv->instrument = REF_FALSE;
   ref_subdiv->debug = REF_FALSE;
 
@@ -2138,9 +2140,17 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
       printf(" %d edges marked before relaxation\n", nmark);
   }
 
-  RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  if (ref_subdiv->allow_geometry) {
+    RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  } else {
+    RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
+  }
   RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
-  RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  if (ref_subdiv->allow_geometry) {
+    RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  } else {
+    RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
+  }
   RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
 
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
