@@ -2128,8 +2128,15 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_INT node;
+  REF_INT nmark;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync glob for mark relax");
+
+  if (ref_subdiv->instrument) {
+    RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+    if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+      printf(" %d edges marked before relaxation\n", nmark);
+  }
 
   RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
   RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
