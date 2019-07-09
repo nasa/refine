@@ -766,6 +766,11 @@ REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
     RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
   }
 
+  /* not be required but here for safety? */
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
+
   if (ref_subdiv->instrument) {
     RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
     if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
