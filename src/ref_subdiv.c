@@ -592,6 +592,14 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
+#define node_swap(nodes, a, b)   \
+  {                              \
+    REF_INT nst;                 \
+    nst = (nodes)[(a)];          \
+    (nodes)[(a)] = (nodes)[(b)]; \
+    (nodes)[(b)] = nst;          \
+  }
+
 REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
   REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
@@ -632,7 +640,8 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
             xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
           }
         }
-        RSS(ref_geom_xyz_between(ref_grid, n0, n1, xyzs[n0]), "b0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[n0], nodes[n1], xyzs[n0]),
+            "b0");
         RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
         if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
 
@@ -641,11 +650,83 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv) {
             xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
           }
         }
-        RSS(ref_geom_xyz_between(ref_grid, n0, n1, xyzs[n1]), "b1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[n0], nodes[n1], xyzs[n1]),
+            "b1");
         RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
         if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
 
         break;
+      case 11:
+      case 56:
+      case 38:
+      case 21:
+        /* orient cell for other cases */
+        if (56 == map) {
+          node_swap(nodes, 0, 3);
+          node_swap(nodes, 1, 2);
+        }
+        if (38 == map) {
+          node_swap(nodes, 1, 3);
+          node_swap(nodes, 0, 2);
+        }
+        if (21 == map) {
+          node_swap(nodes, 2, 3);
+          node_swap(nodes, 0, 1);
+        }
+
+        /* near node 0 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], xyzs[nodes[1]]),
+            "s0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[2], xyzs[nodes[2]]),
+            "s0");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* near node 1 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[0], xyzs[nodes[0]]),
+            "s1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], xyzs[nodes[2]]),
+            "s1");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* near node 2 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[0], xyzs[nodes[0]]),
+            "s2");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[1], xyzs[nodes[1]]),
+            "s2");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* center */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], xyzs[nodes[0]]),
+            "c0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], xyzs[nodes[1]]),
+            "c1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[0], xyzs[nodes[2]]),
+            "c2");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
     }
     if (unmark_cell) {
       for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
@@ -1381,14 +1462,6 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
 
   return REF_SUCCESS;
 }
-
-#define node_swap(nodes, a, b)   \
-  {                              \
-    REF_INT nst;                 \
-    nst = (nodes)[(a)];          \
-    (nodes)[(a)] = (nodes)[(b)]; \
-    (nodes)[(b)] = nst;          \
-  }
 
 #define add_cell_with(fnnw0, fnnw1, fnnw2, fnnw3) \
   new_nodes[0] = (fnnw0);                         \
