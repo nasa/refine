@@ -552,17 +552,18 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
-    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
-        each_ref_cell_valid_cell(ref_cell, cell) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
+    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+      each_ref_cell_valid_cell(ref_cell, cell) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
 
-          RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again), "unmark tet");
+            RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again), "unmark tet");
 
-          break;
-        default:
-          /* RSS(REF_IMPLEMENT,"implement cell type"); */
-          break;
+            break;
+          default:
+            /* RSS(REF_IMPLEMENT,"implement cell type"); */
+            break;
+        }
       }
     }
 
