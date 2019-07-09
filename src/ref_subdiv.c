@@ -754,7 +754,7 @@ REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
                                ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
         "ghost mark");
 
-    if (nsweeps > 0) {
+    if (nsweeps > 5 || ref_subdiv->instrument) {
       RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
       if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
         printf(" %d edges marked after %d unmark neg geom tet relaxations\n",
