@@ -1453,40 +1453,50 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_DBL *xyz) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   REF_INT item0, item1;
   REF_INT geom0, geom1;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
   REF_BOOL has_id;
   REF_INT i;
+  REF_BOOL support0, support1;
+  REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_STATUS status;
 
   for (i = 0; i < 3; i++)
     xyz[i] = 0.5 * (ref_node_xyz(ref_node, i, node0) +
                     ref_node_xyz(ref_node, i, node1));
 
-  /* edge between */
-  type = REF_GEOM_EDGE;
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node0, item0, geom0) {
-    each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node1, item1,
-                                    geom1) {
-      if (ref_geom_type(ref_geom, geom0) == type &&
-          ref_geom_type(ref_geom, geom1) == type &&
-          ref_geom_id(ref_geom, geom0) == ref_geom_id(ref_geom, geom1)) {
-        id = ref_geom_id(ref_geom, geom0);
-        RSS(ref_cell_side_has_id(ref_grid_edg(ref_grid), node0, node1, id,
-                                 &has_id),
-            "has edge id");
-        if (has_id) {
-          RSS(ref_geom_tuv(ref_geom, node0, type, id, param0), "node0");
-          RSS(ref_geom_tuv(ref_geom, node1, type, id, param1), "node1");
-          param[0] = 0.5 * (param0[0] + param1[0]);
-          if (ref_geom_model_loaded(ref_geom))
-            RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param),
-                "inv eval edge",
-                ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-          return REF_SUCCESS;
-        }
-      }
+  RSS(ref_geom_supported(ref_geom, node0, &support0), "node0 supported");
+  RSS(ref_geom_supported(ref_geom, node1, &support1), "node1 supported");
+  if (!support0 || !support1) {
+    return REF_SUCCESS;
+  }
+
+  /* evaluate edge geom on edge cell if present */
+  nodes[0] = node0;
+  nodes[1] = node1;
+  ref_cell = ref_grid_edg(ref_grid);
+  status = ref_cell_with(ref_cell, nodes, &cell);
+  if (REF_NOT_FOUND != status) {
+    RSS(status, "search for edg");
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
+    id = nodes[ref_cell_node_per(ref_cell)];
+    type = REF_GEOM_EDGE;
+    RSS(ref_geom_cell_tuv(ref_geom, node0, nodes, type, param0, &sense),
+        "cell uv");
+    RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
+        "cell uv");
+    param[0] = 0.5 * (param0[0] + param1[0]);
+    if (ref_geom_model_loaded(ref_geom))
+      RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param),
+          "inv eval edge", ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
+    /* enforce bounding box and use midpoint as full-back */
+    if (param[0] < MIN(param0[0], param1[0]) ||
+        MAX(param0[0], param1[0]) < param[0]) {
+      param[0] = 0.5 * (param0[0] + param1[0]);
+      RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
     }
   }
 
