@@ -26,6 +26,7 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+#include "ref_metric.h"
 #include "ref_part.h"
 
 static REF_INT ref_subdiv_c2e(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
@@ -139,6 +140,8 @@ REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid) {
                   REF_INT, 0);
   ref_malloc_init(ref_subdiv->node, ref_edge_n(ref_subdiv_edge(ref_subdiv)),
                   REF_INT, REF_EMPTY);
+
+  ref_subdiv->allow_geometry = REF_TRUE;
 
   ref_subdiv->instrument = REF_FALSE;
   ref_subdiv->debug = REF_FALSE;
@@ -552,17 +555,18 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
-    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
-        each_ref_cell_valid_cell(ref_cell, cell) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
+    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+      each_ref_cell_valid_cell(ref_cell, cell) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
 
-          RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again), "unmark tet");
+            RSS(ref_subdiv_unmark_tet(ref_subdiv, cell, &again), "unmark tet");
 
-          break;
-        default:
-          /* RSS(REF_IMPLEMENT,"implement cell type"); */
-          break;
+            break;
+          default:
+            /* RSS(REF_IMPLEMENT,"implement cell type"); */
+            break;
+        }
       }
     }
 
@@ -587,6 +591,268 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
     if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
       printf(" %d edges marked after %d unmark relaxations\n", nmark, nsweeps);
+  }
+
+  return REF_SUCCESS;
+}
+
+#define node_swap(nodes, a, b)   \
+  {                              \
+    REF_INT nst;                 \
+    nst = (nodes)[(a)];          \
+    (nodes)[(a)] = (nodes)[(b)]; \
+    (nodes)[(b)] = nst;          \
+  }
+
+REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
+                                                  REF_BOOL *again) {
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
+  REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
+  REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT map;
+  REF_DBL xyz0[3], xyz1[3], xyz2[3], xyz3[3];
+  REF_DBL *xyzs[4] = {xyz0, xyz1, xyz2, xyz3};
+  REF_DBL edg0[3], edg1[3], edg2[3], edg3[3], edg4[3], edg5[3];
+  REF_DBL *cxyz[4];
+  REF_INT node, i;
+  REF_INT edge, split_edge, n0, n1;
+  REF_DBL volume;
+  REF_BOOL unmark_cell;
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    unmark_cell = REF_FALSE;
+    map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
+    switch (map) {
+      case 0: /* don't split */
+        break;
+      case 1:
+      case 2:
+      case 4:
+      case 8:
+      case 16:
+      case 32:
+        split_edge = REF_EMPTY;
+        for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++)
+          if (ref_subdiv_mark(ref_subdiv,
+                              ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)))
+            split_edge = edge;
+        RAS(REF_EMPTY != split_edge, "edge not found");
+        n0 = ref_cell_e2n_gen(ref_cell, 0, split_edge);
+        n1 = ref_cell_e2n_gen(ref_cell, 1, split_edge);
+
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[n0], nodes[n1], xyzs[n0]),
+            "b0");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[n0], nodes[n1], xyzs[n1]),
+            "b1");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "edge split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        break;
+      case 11:
+      case 56:
+      case 38:
+      case 21:
+        /* orient cell for other cases */
+        if (56 == map) {
+          node_swap(nodes, 0, 3);
+          node_swap(nodes, 1, 2);
+        }
+        if (38 == map) {
+          node_swap(nodes, 1, 3);
+          node_swap(nodes, 0, 2);
+        }
+        if (21 == map) {
+          node_swap(nodes, 2, 3);
+          node_swap(nodes, 0, 1);
+        }
+
+        /* near node 0 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], xyzs[1]), "s0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[2], xyzs[2]), "s0");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* near node 1 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[0], xyzs[0]), "s1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], xyzs[2]), "s1");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* near node 2 */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[0], xyzs[0]), "s2");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[1], xyzs[1]), "s2");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        /* center */
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], xyzs[0]), "c0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], xyzs[1]), "c1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[0], xyzs[2]), "c2");
+        RSS(ref_node_xyz_vol(xyzs, &volume), "face split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+        break;
+      case 63:
+        for (node = 0; node < 4; node++) {
+          for (i = 0; i < 3; i++) {
+            xyzs[node][i] = ref_node_xyz(ref_node, i, nodes[node]);
+          }
+        }
+
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[1], edg0), "e0");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[2], edg1), "e1");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[0], nodes[3], edg2), "e2");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[2], edg3), "e3");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[3], edg4), "e4");
+        RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[3], edg5), "e5");
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg2;
+        cxyz[2] = edg1;
+        cxyz[3] = xyz0;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg3;
+        cxyz[2] = edg4;
+        cxyz[3] = xyz1;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg1;
+        cxyz[1] = edg5;
+        cxyz[2] = edg3;
+        cxyz[3] = xyz2;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg2;
+        cxyz[1] = edg4;
+        cxyz[2] = edg5;
+        cxyz[3] = xyz3;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg1;
+        cxyz[3] = edg2;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg2;
+        cxyz[3] = edg4;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg4;
+        cxyz[3] = edg3;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        cxyz[0] = edg0;
+        cxyz[1] = edg5;
+        cxyz[2] = edg3;
+        cxyz[3] = edg1;
+        RSS(ref_node_xyz_vol(cxyz, &volume), "cell split vol");
+        if (ref_node_min_volume(ref_node) > volume) unmark_cell = REF_TRUE;
+
+        break;
+    }
+    if (unmark_cell) {
+      *again = REF_TRUE;
+      for (edge = 0; edge < ref_cell_edge_per(ref_cell); edge++) {
+        ref_subdiv_mark(ref_subdiv,
+                        ref_subdiv_c2e(ref_subdiv, ref_cell, edge, cell)) = 0;
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
+  REF_INT nsweeps, nmark;
+  REF_BOOL again;
+
+  /* make sure consistent before starting */
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
+
+  nsweeps = 0;
+  again = REF_TRUE;
+  while (again) {
+    nsweeps++;
+    again = REF_FALSE;
+
+    RSS(ref_subdiv_unmark_neg_tet_geom_support(ref_subdiv, &again), "neg geom");
+
+    /* most conservative, unmark if any ghosts unmarked */
+    RSS(ref_edge_ghost_min_int(ref_subdiv_edge(ref_subdiv),
+                               ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+        "ghost mark");
+
+    if (nsweeps > 5) {
+      RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+      if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+        printf(" %d edges marked after %d unmark neg geom tet relaxations\n",
+               nmark, nsweeps);
+    }
+
+    RUS(200, nsweeps, "too many unmark neg geom tet sweeps, stop inf loop");
+
+    RSS(ref_mpi_all_or(ref_subdiv_mpi(ref_subdiv), &again), "mpi all or");
+  }
+
+  /* not be required but here for safety? */
+  RSS(ref_edge_ghost_int(ref_subdiv_edge(ref_subdiv),
+                         ref_subdiv_mpi(ref_subdiv), ref_subdiv->mark),
+      "ghost mark");
+
+  if (ref_subdiv->instrument) {
+    RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+    if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+      printf(" %d edges marked after %d neg geom tet unmark relaxations\n",
+             nmark, nsweeps);
   }
 
   return REF_SUCCESS;
@@ -627,6 +893,7 @@ REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
 }
 
 static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
+  REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
@@ -652,6 +919,14 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
                                       ref_edge_e2n(ref_edge, 1, edge), 0.5,
                                       node),
             "new node");
+        RSS(ref_metric_interpolate_between(
+                ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                ref_edge_e2n(ref_edge, 1, edge), node),
+            "interp new metric");
+        RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                 ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
+            "new node");
+        RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
       }
     }
   }
@@ -705,6 +980,8 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
             edge_aux[i + ref_node_naux(ref_node) * edge];
     }
   }
+
+  RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "fill new node geom");
 
   ref_free(edge_aux);
   ref_free(edge_real);
@@ -1317,14 +1594,6 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
-#define node_swap(nodes, a, b)   \
-  {                              \
-    REF_INT nst;                 \
-    nst = (nodes)[(a)];          \
-    (nodes)[(a)] = (nodes)[(b)]; \
-    (nodes)[(b)] = nst;          \
-  }
-
 #define add_cell_with(fnnw0, fnnw1, fnnw2, fnnw3) \
   new_nodes[0] = (fnnw0);                         \
   new_nodes[1] = (fnnw1);                         \
@@ -1861,12 +2130,27 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   REF_GRID ref_grid = ref_subdiv_grid(ref_subdiv);
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_INT node;
+  REF_INT nmark;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync glob for mark relax");
 
-  RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
+  if (ref_subdiv->instrument) {
+    RSS(ref_subdiv_mark_n(ref_subdiv, &nmark), "count");
+    if (ref_mpi_once(ref_subdiv_mpi(ref_subdiv)))
+      printf(" %d edges marked before relaxation\n", nmark);
+  }
+
+  if (ref_subdiv->allow_geometry) {
+    RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  } else {
+    RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
+  }
   RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
-  RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "geom marks");
+  if (ref_subdiv->allow_geometry) {
+    RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  } else {
+    RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
+  }
   RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
 
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
@@ -1885,20 +2169,22 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   RSS(ref_subdiv_split_edg(ref_subdiv), "split edg");
 
   /* remove unused nodes on partition boundaries */
-  each_ref_node_valid_node(
-      ref_node,
-      node) if (ref_adj_empty(ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
-                ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node)) {
-    if (ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
-        ref_node_part(ref_node, node))
-      RSS(REF_FAILURE, "unused local node");
-    if (!ref_adj_empty(ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
-        !ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node))
-      RSS(REF_FAILURE, "boundary face node not in vol cells");
-    RSS(ref_node_remove_without_global(ref_node, node), "rm");
-    RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_adj_empty(ref_cell_adj(ref_grid_tet(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node) &&
+        ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node)) {
+      if (ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)) ==
+          ref_node_part(ref_node, node)) {
+        RSS(REF_FAILURE, "unused local node");
+      }
+      if (!ref_adj_empty(ref_cell_adj(ref_grid_tri(ref_grid)), node) ||
+          !ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node)) {
+        RSS(REF_FAILURE, "boundary face node not in vol cells");
+      }
+      RSS(ref_node_remove_without_global(ref_node, node), "rm");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
+    }
   }
 
   return REF_SUCCESS;

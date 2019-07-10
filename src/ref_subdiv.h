@@ -36,6 +36,7 @@ struct REF_SUBDIV_STRUCT {
   REF_EDGE edge;
   REF_INT *mark;
   REF_INT *node;
+  REF_INT allow_geometry;
   REF_INT instrument;
   REF_INT debug;
 };
