@@ -50,6 +50,9 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
 REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
                                REF_DBL *position, REF_DBL radius);
 
+REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
+                                  REF_DBL *trim_radius);
+
 END_C_DECLORATION
 
 #endif /* REF_SEARCH_H */
