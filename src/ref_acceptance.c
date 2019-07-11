@@ -96,7 +96,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_GRID ref_grid;
+  REF_GRID ref_grid = NULL;
   REF_NODE ref_node;
   REF_INT masabl_pos;
   REF_INT ugawg_pos;

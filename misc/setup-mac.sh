@@ -6,13 +6,13 @@ set -x
 
 gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wconversion'
 
-zoltan_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/zoltan-3.83-q63yedbi6cfzmqyjkwhwrob3jesy2uge"
+zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
 
 # production spack packages
-parmetis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/parmetis-4.0.3-rivz73pj3gh7kkgwdcqp2dj4tfah45qv"
-metis_path="/Users/mpark/spack/opt/spack/darwin-highsierra-x86_64/gcc-8.2.0/metis-5.1.0-bw75tli3sois3amctooqhmyka2uepdkf"
+parmetis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/parmetis-4.0.3-jwaxhhbilbtvsmt2tskek4k72nel7gtc"
+metis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/metis-5.1.0-czqd5zteq5zfccffypwbjrlb5joqeoyw"
 
 mkdir -p strict
 ( cd strict && \
