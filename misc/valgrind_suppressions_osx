@@ -271,3 +271,70 @@
    fun:_objc_init
    ...
 }
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:_os_object_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   ...
+   fun:_dyld_objc_notify_register
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:_xpc_dictionary_insert
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:xpc_uint64_create
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:objc_initializeClassPair
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:objc_memmove_collectable
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Value8
+   fun:_objc_rootAlloc
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:_objc_rootAlloc
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:drbg_update
+   ...
+   fun:libdispatch_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:ccaes_vng_ctr_crypt
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   fun:drbg_update
+   ...
+   fun:environ_init
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Cond
+   ...
+   fun:_dyld_start
+}
