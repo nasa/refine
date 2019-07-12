@@ -2478,8 +2478,8 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
       }
     }
   }
-  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum nset");
-  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum nset");
+  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum n set");
+  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum n moving");
   if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node) && 0 < n_set) {
     printf(" %6.2f %% " REF_GLOB_FMT " set %6.2f %% " REF_GLOB_FMT
            " moving of " REF_GLOB_FMT " recept nodes\n",
@@ -2487,6 +2487,12 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
            n_set, 100.0 * (REF_DBL)n_moving / (REF_DBL)n_set, n_moving,
            ref_node_n_global(from_node));
   }
+
+  /* use edges to set others */
+
+  /* return from parts and update ref_interp->part */
+
+  /* set parts of from_node */
 
   ref_free(from_part);
   return REF_SUCCESS;
