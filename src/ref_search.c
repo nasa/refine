@@ -175,3 +175,54 @@ REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
   RSS(ref_search_gather(ref_search, ref_list, 0, position, radius), "gthr");
   return REF_SUCCESS;
 }
+
+static REF_STATUS ref_search_trim(REF_SEARCH ref_search, REF_INT parent,
+                                  REF_DBL *position, REF_DBL *trim_radius) {
+  REF_INT i;
+  REF_DBL distance;
+
+  if (REF_EMPTY == parent) return REF_SUCCESS;
+  if (parent >= ref_search->n) return REF_SUCCESS;
+  if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
+
+  distance = 0.0;
+  for (i = 0; i < ref_search->d; i++)
+    distance +=
+        pow(position[i] - ref_search->pos[i + ref_search->d * parent], 2);
+  distance = sqrt(distance);
+
+  if (distance + ref_search->radius[parent] < *trim_radius) {
+    *trim_radius = distance + ref_search->radius[parent];
+  }
+
+  /* if the trim_distance is larger than the distance between me and the target
+   * minus the children_ball look for better */
+  if (*trim_radius > distance - ref_search->children_ball[parent]) {
+    RSS(ref_search_trim(ref_search, ref_search->left[parent], position,
+                        trim_radius),
+        "gthr");
+    RSS(ref_search_trim(ref_search, ref_search->right[parent], position,
+                        trim_radius),
+        "gthr");
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
+                                  REF_DBL *trim_radius) {
+  REF_INT parent;
+  parent = 0;
+  *trim_radius = REF_DBL_MAX;
+  RSS(ref_search_trim(ref_search, parent, position, trim_radius), "trim");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
+                                         REF_LIST ref_list, REF_DBL *position) {
+  REF_DBL trim_radius;
+  RSS(ref_search_trim_radius(ref_search, position, &trim_radius), "scope");
+  RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
+      "touches");
+  return REF_SUCCESS;
+}

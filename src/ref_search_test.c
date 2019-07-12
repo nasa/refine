@@ -166,6 +166,79 @@ int main(int argc, char *argv[]) {
     RSS(ref_search_free(ref_search), "search free");
   }
 
+  { /* nearest candidate */
+    REF_SEARCH ref_search;
+    REF_LIST ref_list;
+    REF_INT item;
+    REF_DBL xyz[3], r, trim;
+
+    RSS(ref_search_create(&ref_search, 10), "make search");
+    RSS(ref_list_create(&ref_list), "make list");
+
+    item = 28;
+    xyz[0] = 2.8;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 1.0;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RWDS(trim, 3.8, -1, "expected");
+
+    item = 32;
+    xyz[0] = 3.2;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 1.0;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RWDS(trim, 3.8, -1, "expected");
+
+    item = 50;
+    xyz[0] = 5.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 0.1;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RWDS(trim, 3.8, -1, "expected");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "touches");
+    REIS(2, ref_list_n(ref_list), "should gather");
+    REIS(28, ref_list_value(ref_list, 0), "should item");
+    REIS(32, ref_list_value(ref_list, 1), "should item");
+
+    item = 5;
+    xyz[0] = 0.5;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    r = 0.1;
+    RSS(ref_search_insert(ref_search, item, xyz, r), "make search");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RWDS(trim, 0.6, -1, "expected");
+
+    RSS(ref_list_free(ref_list), "list free");
+    RSS(ref_search_free(ref_search), "search free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
