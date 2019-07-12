@@ -1594,24 +1594,24 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
-#define add_cell_with(fnnw0, fnnw1, fnnw2, fnnw3)                        \
-  new_nodes[0] = (fnnw0);                                                \
-  new_nodes[1] = (fnnw1);                                                \
-  new_nodes[2] = (fnnw2);                                                \
-  new_nodes[3] = (fnnw3);                                                \
-  RSS(ref_cell_add(ref_cell_split, new_nodes, &new_cell), "add");        \
-  RSS(ref_node_tet_vol(ref_node, new_nodes, &volume), "edge split vol"); \
-  if (ref_node_min_volume(ref_node) > volume) {                          \
-    printf("%d map %d: %d(%d) %d(%d) %d(%d) %d(%d) vol %e\n", map,       \
-           ref_mpi_rank(ref_node_mpi(ref_node)), new_nodes[0],           \
-           ref_node_part(ref_node, new_nodes[0]), new_nodes[1],          \
-           ref_node_part(ref_node, new_nodes[1]), new_nodes[2],          \
-           ref_node_part(ref_node, new_nodes[2]), new_nodes[3],          \
-           ref_node_part(ref_node, new_nodes[3]), volume);               \
-    ref_node_location(ref_node, new_nodes[0]);                           \
-    ref_node_location(ref_node, new_nodes[1]);                           \
-    ref_node_location(ref_node, new_nodes[2]);                           \
-    ref_node_location(ref_node, new_nodes[3]);                           \
+#define add_cell_with(fnnw0, fnnw1, fnnw2, fnnw3)                           \
+  new_nodes[0] = (fnnw0);                                                   \
+  new_nodes[1] = (fnnw1);                                                   \
+  new_nodes[2] = (fnnw2);                                                   \
+  new_nodes[3] = (fnnw3);                                                   \
+  RSS(ref_cell_add(ref_cell_split, new_nodes, &new_cell), "add");           \
+  RSS(ref_node_tet_vol(ref_node, new_nodes, &volume), "edge split vol");    \
+  if (ref_node_min_volume(ref_node) > volume) {                             \
+    printf("%d cell %d map %d: %d(%d) %d(%d) %d(%d) %d(%d) vol %e\n", cell, \
+           map, ref_mpi_rank(ref_node_mpi(ref_node)), new_nodes[0],         \
+           ref_node_part(ref_node, new_nodes[0]), new_nodes[1],             \
+           ref_node_part(ref_node, new_nodes[1]), new_nodes[2],             \
+           ref_node_part(ref_node, new_nodes[2]), new_nodes[3],             \
+           ref_node_part(ref_node, new_nodes[3]), volume);                  \
+    ref_node_location(ref_node, new_nodes[0]);                              \
+    ref_node_location(ref_node, new_nodes[1]);                              \
+    ref_node_location(ref_node, new_nodes[2]);                              \
+    ref_node_location(ref_node, new_nodes[3]);                              \
   }
 
 static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
