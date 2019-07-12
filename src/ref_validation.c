@@ -311,7 +311,7 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
     }
     RAB(volume > 0.0, "negative volume tet", {
       REF_INT cell_node;
-      printf("cell %d\n", cell);
+      printf("cell %d volume %e\n", cell, volume);
       each_ref_cell_cell_node(ref_cell, cell_node)
           ref_node_location(ref_node, nodes[cell_node]);
     });
