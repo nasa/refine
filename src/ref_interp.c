@@ -2408,11 +2408,12 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp) {
+REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2420,6 +2421,7 @@ REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp) {
   REF_INT n_recept, donation, n_donor;
   REF_INT *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
+  REF_GLOB n_set;
 
   ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
 
@@ -2439,7 +2441,7 @@ REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp) {
     if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
       recept_proc[n_recept] = ref_interp->part[node];
       recept_cell[n_recept] = ref_interp->cell[node];
-      recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+      recept_ret[n_recept] = to_part[node];
       n_recept++;
     }
   }
@@ -2465,6 +2467,20 @@ REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp) {
 
   ref_free(donor_ret);
   ref_free(donor_cell);
+
+  n_set = 0;
+  each_ref_node_valid_node(from_node, node) {
+    if (ref_node_owned(from_node, node) && REF_EMPTY != from_part[node]) {
+      n_set++;
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum nset");
+  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node)) {
+    printf(" %f " REF_GLOB_FMT " of " REF_GLOB_FMT
+           " from parts set from recepts\n",
+           100.0 * (REF_DBL)n_set / (REF_DBL)ref_node_n_global(from_node),
+           n_set, ref_node_n_global(from_node));
+  }
 
   ref_free(from_part);
   return REF_SUCCESS;
