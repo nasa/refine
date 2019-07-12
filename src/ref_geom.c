@@ -1518,7 +1518,14 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (ref_geom_model_loaded(ref_geom)) {
     RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param), "inv eval face",
         ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-    RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
+    {
+      REF_DBL xyz2[3], dist;
+      RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz2, NULL), "eval at");
+      dist = sqrt(pow(xyz2[0] - xyz[0], 2) + pow(xyz2[1] - xyz[1], 2) +
+                  pow(xyz2[2] - xyz[2], 2));
+      if (dist > 1.0e-12) printf("dist %e\n", dist);
+    }
+
     if (2 == ncell) { /* revisit in para */
       /* enforce bounding box of node0 and try midpoint */
       RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
