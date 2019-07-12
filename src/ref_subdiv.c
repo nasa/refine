@@ -1608,6 +1608,10 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
            ref_node_part(ref_node, new_nodes[1]), new_nodes[2],          \
            ref_node_part(ref_node, new_nodes[2]), new_nodes[3],          \
            ref_node_part(ref_node, new_nodes[3]), volume);               \
+    ref_node_location(ref_node, new_nodes[0]);                           \
+    ref_node_location(ref_node, new_nodes[1]);                           \
+    ref_node_location(ref_node, new_nodes[2]);                           \
+    ref_node_location(ref_node, new_nodes[3]);                           \
   }
 
 static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
