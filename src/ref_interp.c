@@ -2421,7 +2421,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT n_recept, donation, n_donor;
   REF_INT *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
-  REF_GLOB n_set;
+  REF_GLOB n_set, n_moving;
 
   ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
 
@@ -2469,17 +2469,23 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(donor_cell);
 
   n_set = 0;
+  n_moving = 0;
   each_ref_node_valid_node(from_node, node) {
     if (ref_node_owned(from_node, node) && REF_EMPTY != from_part[node]) {
       n_set++;
+      if (from_part[node] != ref_node_part(from_node, node)) {
+        n_moving++;
+      }
     }
   }
   RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum nset");
-  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node)) {
-    printf(" %f " REF_GLOB_FMT " of " REF_GLOB_FMT
-           " from parts set from recepts\n",
+  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum nset");
+  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node) && 0 < n_set) {
+    printf(" %6.2f %% " REF_GLOB_FMT " set %6.2f %% " REF_GLOB_FMT
+           " moving of " REF_GLOB_FMT " recept nodes\n",
            100.0 * (REF_DBL)n_set / (REF_DBL)ref_node_n_global(from_node),
-           n_set, ref_node_n_global(from_node));
+           n_set, 100.0 * (REF_DBL)n_moving / (REF_DBL)n_set, n_moving,
+           ref_node_n_global(from_node));
   }
 
   ref_free(from_part);
