@@ -740,24 +740,6 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
         RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[3], edg4), "e4");
         RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[3], edg5), "e5");
 
-        if ((8 == ref_mpi_rank(ref_node_mpi(ref_node)) && 17205 == cell) ||
-            (15 == ref_mpi_rank(ref_node_mpi(ref_node)) && 559 == cell)) {
-          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[0]);
-          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[1]);
-          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[2]);
-          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[3]);
-          printf(" primal 0 %e %e %e\n", xyz0[0], xyz0[1], xyz0[2]);
-          printf(" primal 1 %e %e %e\n", xyz1[0], xyz1[1], xyz1[2]);
-          printf(" primal 2 %e %e %e\n", xyz2[0], xyz2[1], xyz2[2]);
-          printf(" primal 3 %e %e %e\n", xyz3[0], xyz3[1], xyz3[2]);
-          printf(" edge 0 %e %e %e\n", edg0[0], edg0[1], edg0[2]);
-          printf(" edge 1 %e %e %e\n", edg1[0], edg1[1], edg1[2]);
-          printf(" edge 2 %e %e %e\n", edg2[0], edg2[1], edg2[2]);
-          printf(" edge 3 %e %e %e\n", edg3[0], edg3[1], edg3[2]);
-          printf(" edge 4 %e %e %e\n", edg4[0], edg4[1], edg4[2]);
-          printf(" edge 5 %e %e %e\n", edg5[0], edg5[1], edg5[2]);
-        }
-
         cxyz[0] = edg0;
         cxyz[1] = edg2;
         cxyz[2] = edg1;
