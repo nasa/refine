@@ -254,6 +254,11 @@ static REF_STATUS ref_migrate_update_node_part(REF_GRID ref_grid,
 
   RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
 
+  if (NULL != ref_grid_interp(ref_grid)) {
+    RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
+        "from part");
+  }
+
   for (node = 0; node < ref_node_max(ref_node); node++)
     ref_node_part(ref_node, node) = node_part[node];
 
