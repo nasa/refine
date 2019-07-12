@@ -741,6 +741,10 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
         RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[3], edg5), "e5");
 
         if (8 == ref_mpi_rank(ref_node_mpi(ref_node)) && 17205 == cell) {
+          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[0]);
+          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[1]);
+          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[2]);
+          ref_geom_tattle(ref_grid_geom(ref_grid), nodes[3]);
           printf(" primal 0 %e %e %e\n", xyz0[0], xyz0[1], xyz0[2]);
           printf(" primal 1 %e %e %e\n", xyz1[0], xyz1[1], xyz1[2]);
           printf(" primal 2 %e %e %e\n", xyz2[0], xyz2[1], xyz2[2]);
