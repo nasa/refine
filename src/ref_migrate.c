@@ -247,15 +247,33 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_update_node_part(REF_GRID ref_grid,
+                                               REF_INT *node_part) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+
+  RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
+
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    ref_node_part(ref_node, node) = node_part[node];
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
+  REF_INT *node_part;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
 
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = 0;
+  ref_malloc_init(node_part, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
+
+  RSS(ref_migrate_update_node_part(ref_grid, node_part), "update node part");
+
+  ref_free(node_part);
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "single part");
   return REF_SUCCESS;
@@ -545,10 +563,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid) {
   free(b_size);
   free(a_size);
 
-  RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
-
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = node_part[node];
+  RSS(ref_migrate_update_node_part(ref_grid, node_part), "update node part");
 
   ref_free(node_part);
   ref_free(migrate_part);
@@ -952,10 +967,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid) {
 
   /* skip agglomeration stuff */
 
-  RSS(ref_node_ghost_int(ref_node, node_part, 1), "ghost part");
-
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = node_part[node];
+  RSS(ref_migrate_update_node_part(ref_grid, node_part), "update node part");
 
   ref_free(node_part);
 
