@@ -2407,3 +2407,65 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_INT node, ibary;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *from_part;
+  REF_INT n_recept, donation, n_donor;
+  REF_INT *donor_ret, *donor_cell;
+  REF_INT *recept_proc, *recept_ret, *recept_cell;
+
+  ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      n_recept++;
+    }
+  }
+
+  ref_malloc(recept_cell, n_recept, REF_INT);
+  ref_malloc(recept_ret, n_recept, REF_INT);
+  ref_malloc(recept_proc, n_recept, REF_INT);
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      recept_proc[n_recept] = ref_interp->part[node];
+      recept_cell[n_recept] = ref_interp->cell[node];
+      recept_ret[n_recept] = ref_mpi_rank(ref_mpi);
+      n_recept++;
+    }
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_cell, 1, n_recept,
+                        (void **)(&donor_cell), &n_donor, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_ret, 1, n_recept,
+                        (void **)(&donor_ret), &n_donor, REF_INT_TYPE),
+      "blind send ret");
+
+  for (donation = 0; donation < n_donor; donation++) {
+    RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
+        "node needs to be localized");
+    for (ibary = 0; ibary < 4; ibary++) {
+      from_part[nodes[ibary]] = donor_ret[donation];
+    }
+  }
+
+  ref_free(recept_proc);
+  ref_free(recept_ret);
+  ref_free(recept_cell);
+
+  ref_free(donor_ret);
+  ref_free(donor_cell);
+
+  ref_free(from_part);
+  return REF_SUCCESS;
+}
