@@ -740,7 +740,8 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
         RSS(ref_geom_xyz_between(ref_grid, nodes[1], nodes[3], edg4), "e4");
         RSS(ref_geom_xyz_between(ref_grid, nodes[2], nodes[3], edg5), "e5");
 
-        if (8 == ref_mpi_rank(ref_node_mpi(ref_node)) && 17205 == cell) {
+        if ((8 == ref_mpi_rank(ref_node_mpi(ref_node)) && 17205 == cell) ||
+            (15 == ref_mpi_rank(ref_node_mpi(ref_node)) && 559 == cell)) {
           ref_geom_tattle(ref_grid_geom(ref_grid), nodes[0]);
           ref_geom_tattle(ref_grid_geom(ref_grid), nodes[1]);
           ref_geom_tattle(ref_grid_geom(ref_grid), nodes[2]);
