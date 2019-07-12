@@ -109,10 +109,10 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
                                        REF_DBL h2, REF_DBL f1, REF_DBL h1,
                                        REF_DBL *rate);
 
-REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
-                         REF_DBL **scalar);
+REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
+                          REF_INT *ldim, REF_DBL **scalar);
 
-REF_STATUS ref_iterp_from_part(REF_INTERP ref_interp, REF_INT *to_part);
+REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part);
 
 END_C_DECLORATION
 

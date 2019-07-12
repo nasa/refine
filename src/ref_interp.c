@@ -2167,9 +2167,9 @@ static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
-                                       REF_LIST zone_nnode,
-                                       REF_LIST zone_nelem) {
+static REF_STATUS ref_interp_plt_header(FILE *file, REF_INT *nvar,
+                                        REF_LIST zone_nnode,
+                                        REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
   char title[1024], varname[1024], zonename[1024];
@@ -2250,9 +2250,9 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
-                                     REF_LIST zone_nnode, REF_LIST zone_nelem,
-                                     REF_INT *length, REF_DBL **soln) {
+static REF_STATUS ref_interp_plt_data(FILE *file, REF_INT nvar,
+                                      REF_LIST zone_nnode, REF_LIST zone_nelem,
+                                      REF_INT *length, REF_DBL **soln) {
   float zonemarker;
   int dataformat;
   REF_INT i, node, elem;
@@ -2312,8 +2312,8 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
-                         REF_DBL **scalar) {
+REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
+                          REF_INT *ldim, REF_DBL **scalar) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   FILE *file = NULL;
@@ -2341,7 +2341,7 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
     RSS(ref_list_create(&zone_nnode), "nnode list");
     RSS(ref_list_create(&zone_nelem), "nelem list");
 
-    RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
+    RSS(ref_interp_plt_header(file, &nvar, zone_nnode, zone_nelem),
         "parse header");
     nzone = ref_list_n(zone_nnode);
   }
@@ -2354,8 +2354,8 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   RSS(ref_list_create(&touching), "tounching list");
   for (zone = 0; zone < nzone; zone++) {
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
-                             &soln),
+      RSS(ref_interp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
+                              &soln),
           "read data");
       RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
       RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
@@ -2408,7 +2408,7 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iterp_join_part(REF_INTERP ref_interp, REF_INT *to_part) {
+REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
