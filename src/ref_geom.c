@@ -1488,15 +1488,18 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
         "cell uv");
     param[0] = 0.5 * (param0[0] + param1[0]);
-    if (ref_geom_model_loaded(ref_geom))
+    if (ref_geom_model_loaded(ref_geom)) {
       RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param),
           "inv eval edge", ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-    /* enforce bounding box and use midpoint as full-back */
-    if (param[0] < MIN(param0[0], param1[0]) ||
-        MAX(param0[0], param1[0]) < param[0]) {
-      param[0] = 0.5 * (param0[0] + param1[0]);
+      /* enforce bounding box and use midpoint as full-back */
+      if (param[0] < MIN(param0[0], param1[0]) ||
+          MAX(param0[0], param1[0]) < param[0]) {
+        param[0] = 0.5 * (param0[0] + param1[0]);
+      }
+      /* constrain xyz to geom, inverse_eval does not set */
       RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
     }
+    return REF_SUCCESS;
   }
 
   /* insert face between */
@@ -1517,15 +1520,7 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   param[1] = 0.5 * (param0[1] + param1[1]);
   if (ref_geom_model_loaded(ref_geom)) {
     RSB(ref_geom_inverse_eval(ref_geom, type, id, xyz, param), "inv eval face",
-        ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-    {
-      REF_DBL xyz2[3], dist;
-      RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz2, NULL), "eval at");
-      dist = sqrt(pow(xyz2[0] - xyz[0], 2) + pow(xyz2[1] - xyz[1], 2) +
-                  pow(xyz2[2] - xyz[2], 2));
-      if (dist > 1.0e-12) printf("dist %e\n", dist);
-    }
-
+        ref_geom_tec(ref_grid, "ref_geom_xyz_between_face.tec"));
     if (2 == ncell) { /* revisit in para */
       /* enforce bounding box of node0 and try midpoint */
       RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
@@ -1534,9 +1529,11 @@ REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
           param[1] < uv_min[1] || uv_max[1] < param[1]) {
         param[0] = 0.5 * (param0[0] + param1[0]);
         param[1] = 0.5 * (param0[1] + param1[1]);
-        RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
       }
     }
+    /* constrain xyz to geom, inverse_eval does not set */
+    RSS(ref_geom_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
+    return REF_SUCCESS;
   }
 
   return REF_SUCCESS;
