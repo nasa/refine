@@ -74,8 +74,9 @@ static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
-                                             REF_DBL *center, REF_DBL *radius) {
+static REF_STATUS ref_interp_bounding_sphere4(REF_NODE ref_node, REF_INT *nodes,
+                                              REF_DBL *center,
+                                              REF_DBL *radius) {
   REF_INT i;
   for (i = 0; i < 3; i++)
     center[i] = 0.25 * (ref_node_xyz(ref_node, i, nodes[0]) +
@@ -103,7 +104,7 @@ static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   ref_interp_search(ref_interp) = ref_search;
 
   each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
-    RSS(ref_interp_bounding_sphere(from_node, nodes, center, &radius), "b");
+    RSS(ref_interp_bounding_sphere4(from_node, nodes, center, &radius), "b");
     RSS(ref_search_insert(ref_search, cell, center,
                           ref_interp_search_donor_scale(ref_interp) * radius),
         "ins");
