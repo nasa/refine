@@ -2163,6 +2163,12 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
     RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
   }
   RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
+  if (ref_subdiv->allow_geometry) {
+    RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
+  } else {
+    RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
+  }
+  RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
 
   RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
 
