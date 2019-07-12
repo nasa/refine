@@ -1602,7 +1602,7 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
   RSS(ref_cell_add(ref_cell_split, new_nodes, &new_cell), "add");        \
   RSS(ref_node_tet_vol(ref_node, new_nodes, &volume), "edge split vol"); \
   if (ref_node_min_volume(ref_node) > volume) {                          \
-    printf("%d: %d(%d) %d(%d) %d(%d) %d(%d) vol %e\n",                   \
+    printf("%d map %d: %d(%d) %d(%d) %d(%d) %d(%d) vol %e\n", map,       \
            ref_mpi_rank(ref_node_mpi(ref_node)), new_nodes[0],           \
            ref_node_part(ref_node, new_nodes[0]), new_nodes[1],          \
            ref_node_part(ref_node, new_nodes[1]), new_nodes[2],          \
