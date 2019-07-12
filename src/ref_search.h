@@ -52,6 +52,8 @@ REF_STATUS ref_search_touching(REF_SEARCH ref_search, REF_LIST ref_list,
 
 REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
                                   REF_DBL *trim_radius);
+REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
+                                         REF_LIST ref_list, REF_DBL *position);
 
 END_C_DECLORATION
 

@@ -217,3 +217,12 @@ REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
   RSS(ref_search_trim(ref_search, parent, position, trim_radius), "trim");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
+                                         REF_LIST ref_list, REF_DBL *position) {
+  REF_DBL trim_radius;
+  RSS(ref_search_trim_radius(ref_search, position, &trim_radius), "scope");
+  RSS(ref_search_touching(ref_search, ref_list, position, trim_radius),
+      "touches");
+  return REF_SUCCESS;
+}
