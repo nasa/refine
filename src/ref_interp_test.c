@@ -991,14 +991,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_interp_locate_nearest(ref_interp), "map");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(27, ref_interp->n_walk, "walk count");
-      REIS(33, ref_interp->n_tree, "tree count");
+      REIS(37, ref_interp->n_tree, "tree count");
     }
 
     RSS(ref_interp_create(&ref_interp, to, from), "make interp");
     RSS(ref_interp_locate_nearest(ref_interp), "map");
     if (!ref_mpi_para(ref_mpi)) {
       REIS(27, ref_interp->n_walk, "walk count");
-      REIS(33, ref_interp->n_tree, "tree count");
+      REIS(37, ref_interp->n_tree, "tree count");
     }
 
     RSS(ref_grid_free(to), "free");

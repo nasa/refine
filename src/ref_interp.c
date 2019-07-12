@@ -374,6 +374,57 @@ REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_best_tri_in_list(REF_GRID ref_grid, REF_LIST ref_list,
+                                       REF_DBL *xyz, REF_INT *cell,
+                                       REF_DBL *bary) {
+  REF_CELL ref_tri = ref_grid_tri(ref_grid);
+  REF_CELL ref_tet = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, tri_candidate, best_candidate, tet0, tet1, i, j;
+  REF_DBL current_bary3[3];
+  REF_DBL best_bary, min_bary;
+  REF_STATUS status;
+
+  best_candidate = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_list_item(ref_list, item) {
+    tri_candidate = ref_list_value(ref_list, item);
+    RSS(ref_cell_nodes(ref_tri, tri_candidate, tri_nodes), "cell");
+    status = ref_node_bary3d(ref_node, tri_nodes, xyz, current_bary3);
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+
+      min_bary = MIN(MIN(current_bary3[0], current_bary3[1]), current_bary3[2]);
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = tri_candidate;
+        best_bary = min_bary;
+      }
+    }
+  }
+
+  RUS(REF_EMPTY, best_candidate, "failed to find tri");
+
+  RSS(ref_cell_nodes(ref_tri, best_candidate, tri_nodes), "cell");
+  RSS(ref_node_bary3d(ref_node, tri_nodes, xyz, current_bary3), "bary3d");
+  tri_nodes[3] = tri_nodes[0];
+  RSS(ref_cell_with_face(ref_tet, tri_nodes, &tet0, &tet1), "find with face");
+  RUS(REF_EMPTY, tet0, "no tet for tri");
+  REIS(REF_EMPTY, tet1, "found two tets for boundary face");
+
+  *cell = tet0;
+  RSS(ref_cell_nodes(ref_tet, tet0, tet_nodes), "cell");
+  for (i = 0; i < 4; i++) {
+    bary[i] = 0.0;
+    for (j = 0; j < 3; j++) {
+      if (tri_nodes[j] == tet_nodes[i]) bary[i] = current_bary3[j];
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_update_agent_seed(REF_INTERP ref_interp, REF_INT id,
                                         REF_INT node0, REF_INT node1,
                                         REF_INT node2) {
@@ -1085,6 +1136,182 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
+                                                 REF_SEARCH ref_search) {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_DBL bary[4];
+  REF_LIST ref_list;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node, *best_node, *best_cell, *from_proc;
+  REF_DBL *best_bary;
+  REF_INT ntarget;
+  REF_DBL *local_xyz, *global_xyz;
+  REF_INT *local_node, *global_node;
+  REF_INT *source, total_node;
+  REF_INT nsend, nrecv;
+  REF_INT *send_proc, *my_proc, *recv_proc;
+  REF_INT *send_cell, *recv_cell;
+  REF_INT *send_node, *recv_node;
+  REF_DBL *send_bary, *recv_bary;
+  REF_INT i, item;
+
+  RSS(ref_list_create(&ref_list), "create list");
+
+  ntarget = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (!ref_node_owned(to_node, node) || REF_EMPTY != ref_interp->cell[node])
+      continue;
+    ntarget++;
+  }
+  ref_malloc(local_node, ntarget, REF_INT);
+  ref_malloc(local_xyz, 3 * ntarget, REF_DBL);
+  ntarget = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (!ref_node_owned(to_node, node) || REF_EMPTY != ref_interp->cell[node])
+      continue;
+    local_node[ntarget] = node;
+    local_xyz[0 + 3 * ntarget] = ref_node_xyz(to_node, 0, node);
+    local_xyz[1 + 3 * ntarget] = ref_node_xyz(to_node, 1, node);
+    local_xyz[2 + 3 * ntarget] = ref_node_xyz(to_node, 2, node);
+    ntarget++;
+  }
+  RSS(ref_mpi_allconcat(ref_mpi, 3, ntarget, (void *)local_xyz, &total_node,
+                        &source, (void **)&global_xyz, REF_DBL_TYPE),
+      "cat");
+  ref_free(source);
+  RSS(ref_mpi_allconcat(ref_mpi, 1, ntarget, (void *)local_node, &total_node,
+                        &source, (void **)&global_node, REF_INT_TYPE),
+      "cat");
+
+  ref_malloc(best_bary, total_node, REF_DBL);
+  ref_malloc(best_node, total_node, REF_INT);
+  ref_malloc(best_cell, total_node, REF_INT);
+  ref_malloc(from_proc, total_node, REF_INT);
+  for (node = 0; node < total_node; node++) {
+    best_node[node] = global_node[node];
+    best_cell[node] = REF_EMPTY;
+    best_bary[node] = 1.0e20; /* negative for min, until use max*/
+    RSS(ref_search_nearest_candidates(ref_search, ref_list,
+                                      &(global_xyz[3 * node])),
+        "near canidates");
+    if (ref_list_n(ref_list) > 0) {
+      RSS(ref_interp_best_tri_in_list(from_grid, ref_list,
+                                      &(global_xyz[3 * node]),
+                                      &(best_cell[node]), bary),
+          "best in list");
+      if (REF_EMPTY != best_cell[node]) {
+        /* negative for min, until use max*/
+        best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
+      }
+    } else {
+      best_cell[node] = REF_EMPTY;
+    }
+    (ref_interp->tree_cells) += ref_list_n(ref_list);
+    RSS(ref_list_erase(ref_list), "reset list");
+  }
+
+  /* negative for min, until use max*/
+  RSS(ref_mpi_allminwho(ref_mpi, best_bary, from_proc, total_node), "who");
+
+  nsend = 0;
+  for (node = 0; node < total_node; node++)
+    if (ref_mpi_rank(ref_mpi) == from_proc[node]) nsend++;
+
+  ref_malloc(send_bary, 4 * nsend, REF_DBL);
+  ref_malloc(send_cell, nsend, REF_INT);
+  ref_malloc(send_node, nsend, REF_INT);
+  ref_malloc(send_proc, nsend, REF_INT);
+  ref_malloc_init(my_proc, nsend, REF_INT, ref_mpi_rank(ref_mpi));
+  nsend = 0;
+  for (node = 0; node < total_node; node++)
+    if (ref_mpi_rank(ref_mpi) == from_proc[node]) {
+      send_proc[nsend] = source[node];
+      send_node[nsend] = best_node[node];
+      send_cell[nsend] = best_cell[node];
+      if (REF_EMPTY != send_cell[nsend]) {
+        RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
+            "cell should be set and valid", {
+              printf("global %d best cell %d best bary %e\n", best_node[node],
+                     best_cell[node], best_bary[node]);
+            });
+        RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
+                           &(send_bary[4 * nsend])),
+            "bary");
+      }
+      nsend++;
+    }
+
+  RSS(ref_mpi_blindsend(ref_mpi, send_proc, (void *)send_node, 1, nsend,
+                        (void **)(&recv_node), &nrecv, REF_INT_TYPE),
+      "blind send node");
+  RSS(ref_mpi_blindsend(ref_mpi, send_proc, (void *)send_cell, 1, nsend,
+                        (void **)(&recv_cell), &nrecv, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, send_proc, (void *)my_proc, 1, nsend,
+                        (void **)(&recv_proc), &nrecv, REF_INT_TYPE),
+      "blind send proc");
+  RSS(ref_mpi_blindsend(ref_mpi, send_proc, (void *)send_bary, 4, nsend,
+                        (void **)(&recv_bary), &nrecv, REF_DBL_TYPE),
+      "blind send bary");
+
+  for (item = 0; item < nrecv; item++) {
+    (ref_interp->n_tree)++;
+    node = recv_node[item];
+    REIS(REF_EMPTY, ref_interp->cell[node], "tree already found?");
+    if (ref_interp->agent_hired[node]) { /* need to dequeue */
+      RSS(ref_agents_delete(ref_interp->ref_agents, node), "deq");
+      ref_interp->agent_hired[node] = REF_FALSE;
+    }
+    ref_interp->cell[node] = recv_cell[item];
+    ref_interp->part[node] = recv_proc[item];
+    if (REF_EMPTY != recv_cell[item]) {
+      for (i = 0; i < 4; i++)
+        ref_interp->bary[i + 4 * node] = recv_bary[i + 4 * item];
+    } else {
+      (ref_interp->n_tree)--;
+    }
+  }
+
+  RSS(ref_mpi_allsum(ref_mpi, &(ref_interp->n_tree), 1, REF_INT_TYPE), "as");
+
+  ref_free(recv_node);
+  ref_free(recv_cell);
+  ref_free(recv_proc);
+  ref_free(recv_bary);
+
+  ref_free(send_bary);
+  ref_free(my_proc);
+  ref_free(send_cell);
+  ref_free(send_node);
+  ref_free(send_proc);
+
+  ref_free(from_proc);
+  ref_free(best_cell);
+  ref_free(best_node);
+  ref_free(best_bary);
+
+  ref_free(source);
+  ref_free(global_node);
+  ref_free(global_xyz);
+  ref_free(local_xyz);
+  ref_free(local_node);
+
+  RSS(ref_list_free(ref_list), "free list");
+
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node)) {
+      RUS(REF_EMPTY, ref_interp->cell[node], "node missed by tree");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_interp_seed_tree(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
@@ -1377,6 +1604,7 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
       RSS(ref_search_insert(ref_search, cell, center,
                             ref_interp_search_donor_scale(ref_interp) * radius),
           "ins");
+      RSS(ref_interp_nearest_tri_in_tree(ref_interp, ref_search), "near tri");
     }
     RSS(ref_search_free(ref_search), "free search");
   }
