@@ -2555,8 +2555,6 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
-  /* use edges to set others */
-
   /* return from parts and update ref_interp->part */
 
   /* set parts of from_node */
