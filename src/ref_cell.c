@@ -967,21 +967,22 @@ REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
   REF_BOOL already_have_it;
 
   *nnode = 0;
-  each_ref_cell_having_node(ref_cell, node, item,
-                            cell) for (cell_node = 0;
-                                       cell_node < ref_cell_node_per(ref_cell);
-                                       cell_node++) {
-    if (node == ref_cell_c2n(ref_cell, cell_node, cell)) continue;
-    already_have_it = REF_FALSE;
-    for (haves = 0; haves < *nnode; haves++)
-      if (node_list[haves] == ref_cell_c2n(ref_cell, cell_node, cell)) {
-        already_have_it = REF_TRUE;
-        break;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (node == ref_cell_c2n(ref_cell, cell_node, cell)) continue;
+      already_have_it = REF_FALSE;
+      for (haves = 0; haves < *nnode; haves++)
+        if (node_list[haves] == ref_cell_c2n(ref_cell, cell_node, cell)) {
+          already_have_it = REF_TRUE;
+          break;
+        }
+      if (!already_have_it) {
+        if (*nnode >= max_node) {
+          RSS(REF_INCREASE_LIMIT, "max_node too small");
+        }
+        node_list[*nnode] = ref_cell_c2n(ref_cell, cell_node, cell);
+        (*nnode)++;
       }
-    if (!already_have_it) {
-      if (*nnode >= max_node) RSS(REF_INCREASE_LIMIT, "max_node too small");
-      node_list[*nnode] = ref_cell_c2n(ref_cell, cell_node, cell);
-      (*nnode)++;
     }
   }
 
