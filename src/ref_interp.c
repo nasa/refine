@@ -2501,6 +2501,10 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
 
+  if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
+  }
+
   ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
 
   n_recept = 0;
