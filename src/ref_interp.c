@@ -2408,12 +2408,42 @@ REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_from_part_status(REF_INTERP ref_interp,
+                                              REF_INT *from_part) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+
+  REF_GLOB n_set, n_moving;
+  REF_INT node;
+
+  n_set = 0;
+  n_moving = 0;
+  each_ref_node_valid_node(from_node, node) {
+    if (ref_node_owned(from_node, node) && REF_EMPTY != from_part[node]) {
+      n_set++;
+      if (from_part[node] != ref_node_part(from_node, node)) {
+        n_moving++;
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum n set");
+  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum n moving");
+  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node) && 0 < n_set) {
+    printf(" %6.2f %% " REF_GLOB_FMT " set %6.2f %% " REF_GLOB_FMT
+           " moving of " REF_GLOB_FMT " recept nodes\n",
+           100.0 * (REF_DBL)n_set / (REF_DBL)ref_node_n_global(from_node),
+           n_set, 100.0 * (REF_DBL)n_moving / (REF_DBL)n_set, n_moving,
+           ref_node_n_global(from_node));
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2421,7 +2451,6 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT n_recept, donation, n_donor;
   REF_INT *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
-  REF_GLOB n_set, n_moving;
 
   ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
 
@@ -2468,25 +2497,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(donor_ret);
   ref_free(donor_cell);
 
-  n_set = 0;
-  n_moving = 0;
-  each_ref_node_valid_node(from_node, node) {
-    if (ref_node_owned(from_node, node) && REF_EMPTY != from_part[node]) {
-      n_set++;
-      if (from_part[node] != ref_node_part(from_node, node)) {
-        n_moving++;
-      }
-    }
-  }
-  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum n set");
-  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum n moving");
-  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node) && 0 < n_set) {
-    printf(" %6.2f %% " REF_GLOB_FMT " set %6.2f %% " REF_GLOB_FMT
-           " moving of " REF_GLOB_FMT " recept nodes\n",
-           100.0 * (REF_DBL)n_set / (REF_DBL)ref_node_n_global(from_node),
-           n_set, 100.0 * (REF_DBL)n_moving / (REF_DBL)n_set, n_moving,
-           ref_node_n_global(from_node));
-  }
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
   /* use edges to set others */
 
