@@ -2439,11 +2439,60 @@ static REF_STATUS ref_interp_from_part_status(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_from_part_neighbor(REF_INTERP ref_interp,
+                                                REF_INT *from_part,
+                                                REF_INT node) {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_CELL ref_cell = ref_grid_tet(from_grid);
+  REF_INT item, cell, cell_node;
+
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      if (REF_EMPTY != from_part[ref_cell_c2n(ref_cell, cell_node, cell)]) {
+        from_part[node] = from_part[ref_cell_c2n(ref_cell, cell_node, cell)];
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_fill_empty_from_part(REF_INTERP ref_interp,
+                                                  REF_INT *from_part) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_BOOL again;
+  REF_INT nsweeps, node;
+  nsweeps = 0;
+  again = REF_TRUE;
+  while (again) {
+    nsweeps++;
+    again = REF_FALSE;
+    each_ref_node_valid_node(from_node, node) {
+      if (ref_node_owned(from_node, node) && REF_EMPTY == from_part[node]) {
+        RSS(ref_interp_from_part_neighbor(ref_interp, from_part, node), "fill");
+        again = again || REF_EMPTY != from_part[node];
+      }
+    }
+
+    RUS(200, nsweeps, "too many sweeps, stop inf loop");
+    RSS(ref_mpi_all_or(ref_mpi, &again), "mpi all or");
+    if (again) {
+      RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2489,6 +2538,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
       from_part[nodes[ibary]] = donor_ret[donation];
     }
   }
+  RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
 
   ref_free(recept_proc);
   ref_free(recept_ret);
@@ -2497,6 +2547,8 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(donor_ret);
   ref_free(donor_cell);
 
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+  RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
   /* use edges to set others */
