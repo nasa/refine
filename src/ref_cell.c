@@ -685,31 +685,40 @@ REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
-                         REF_INT *output_part) {
+REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
+                                   REF_INT cell, REF_INT *cell_node) {
   REF_GLOB global, smallest_global;
-  REF_INT part, smallest_global_part;
-  REF_INT node;
-  *output_part = REF_EMPTY;
+  REF_INT node, smallest_global_node;
+  *cell_node = REF_EMPTY;
   if (cell < 0 || cell > ref_cell_max(ref_cell)) return REF_INVALID;
   if (REF_EMPTY == ref_cell_c2n(ref_cell, 0, cell)) return REF_INVALID;
   /* set first node as samllest */
   node = 0;
   global = ref_node_global(ref_node, ref_cell_c2n(ref_cell, node, cell));
-  part = ref_node_part(ref_node, ref_cell_c2n(ref_cell, node, cell));
   smallest_global = global;
-  smallest_global_part = part;
-  /* serach other nodes for smaller global */
+  smallest_global_node = node;
+  /* search other nodes for smaller global */
   for (node = 1; node < ref_cell_node_per(ref_cell); node++) {
     global = ref_node_global(ref_node, ref_cell_c2n(ref_cell, node, cell));
-    part = ref_node_part(ref_node, ref_cell_c2n(ref_cell, node, cell));
     if (global < smallest_global) {
       smallest_global = global;
-      smallest_global_part = part;
+      smallest_global_node = node;
     }
   }
-  RUS(REF_EMPTY, smallest_global_part, "part is empty?");
-  *output_part = smallest_global_part;
+  RUS(REF_EMPTY, smallest_global_node, "node is empty?");
+  *cell_node = smallest_global_node;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
+                         REF_INT *output_part) {
+  REF_INT cell_node;
+  *output_part = REF_EMPTY;
+  RSS(ref_cell_part_cell_node(ref_cell, ref_node, cell, &cell_node),
+      "part_cell_node");
+  RUS(REF_EMPTY, cell_node, "cell_node is empty?");
+  *output_part =
+      ref_node_part(ref_node, ref_cell_c2n(ref_cell, cell_node, cell));
   return REF_SUCCESS;
 }
 
