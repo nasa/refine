@@ -2494,11 +2494,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_INT node, i;
+  REF_INT node, i, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
   REF_INT n_recept, donation, n_donor;
-  REF_INT *donor_ret, *donor_cell, *donor_donation;
+  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_proc;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
   REF_GLOB *recept_global, *donor_global, *donor_nodes;
   REF_DBL *recept_bary, *donor_bary;
@@ -2552,14 +2552,13 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
 
   ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
   ref_malloc(donor_donation, n_donor, REF_INT);
+  ref_malloc(donor_proc, n_donor, REF_INT);
 
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
     for (i = 0; i < 4; i++) {
       from_part[nodes[i]] = donor_ret[donation];
-      donor_nodes[i + 4 * donation] = ref_node_global(from_node, nodes[i]);
-      donor_donation[donation] = donation;
     }
   }
   RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
@@ -2567,7 +2566,18 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
-  /* donor_part where this cell is headed, based on smallest global */
+  for (donation = 0; donation < n_donor; donation++) {
+    RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
+        "node needs to be localized");
+    for (i = 0; i < 4; i++) {
+      donor_nodes[i + 4 * donation] = ref_node_global(from_node, nodes[i]);
+    }
+    donor_donation[donation] = donation;
+    RSS(ref_cell_part_cell_node(from_cell, from_node, donor_cell[donation],
+                                &cell_node),
+        "part cell_node");
+    donor_proc[donation] = from_part[nodes[cell_node]];
+  }
 
   /* set parts of from_node */
   /* shuffle from_node */
@@ -2578,6 +2588,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
 
   /* return from data to to grid and refill ref_interp->data */
 
+  ref_free(donor_proc);
   ref_free(donor_donation);
   ref_free(donor_nodes);
   ref_free(donor_bary);
