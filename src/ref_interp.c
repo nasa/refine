@@ -2494,12 +2494,14 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_INT node, ibary;
+  REF_INT node, i;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
   REF_INT n_recept, donation, n_donor;
   REF_INT *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
+  REF_GLOB *recept_global, *donor_global;
+  REF_DBL *recept_bary, *donor_bary;
 
   if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
@@ -2514,15 +2516,21 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     }
   }
 
+  ref_malloc(recept_bary, 4 * n_recept, REF_DBL);
   ref_malloc(recept_cell, n_recept, REF_INT);
+  ref_malloc(recept_global, n_recept, REF_GLOB);
   ref_malloc(recept_ret, n_recept, REF_INT);
   ref_malloc(recept_proc, n_recept, REF_INT);
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
     if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
-      recept_proc[n_recept] = ref_interp->part[node];
+      for (i = 0; i < 4; i++) {
+        recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
+      }
       recept_cell[n_recept] = ref_interp->cell[node];
+      recept_global[n_recept] = ref_node_global(to_node, node);
+      recept_proc[n_recept] = ref_interp->part[node];
       recept_ret[n_recept] = to_part[node];
       n_recept++;
     }
@@ -2534,22 +2542,33 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_ret, 1, n_recept,
                         (void **)(&donor_ret), &n_donor, REF_INT_TYPE),
       "blind send ret");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_global, 1,
+                        n_recept, (void **)(&donor_global), &n_donor,
+                        REF_GLOB_TYPE),
+      "blind send global");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_bary, 4, n_recept,
+                        (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
+      "blind send bary");
 
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (ibary = 0; ibary < 4; ibary++) {
-      from_part[nodes[ibary]] = donor_ret[donation];
+    for (i = 0; i < 4; i++) {
+      from_part[nodes[i]] = donor_ret[donation];
     }
   }
   RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
 
-  ref_free(recept_proc);
-  ref_free(recept_ret);
-  ref_free(recept_cell);
-
+  ref_free(donor_bary);
+  ref_free(donor_global);
   ref_free(donor_ret);
   ref_free(donor_cell);
+
+  ref_free(recept_proc);
+  ref_free(recept_ret);
+  ref_free(recept_global);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
 
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
