@@ -2555,14 +2555,17 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
-  /* gather all interp on from inclding bary and cell nodes */
+  /* gather all interp on from including bary, cell nodes, and to_global */
+  /* move interp data to new from part */
 
   /* set parts of from_node */
-  /* migrate from and interp gathered to from, update cell */
+  /* shuffle from_node */
 
-  /* migrate to and return interp to to */
+  /* update cell */
 
-  /* return from parts and update ref_interp->part */
+  /* shuffle to */
+
+  /* return from data to to grid and refill ref_interp->data */
 
   ref_free(from_part);
   return REF_SUCCESS;
