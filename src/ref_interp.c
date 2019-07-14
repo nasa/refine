@@ -2498,9 +2498,9 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
   REF_INT n_recept, donation, n_donor;
-  REF_INT *donor_ret, *donor_cell;
+  REF_INT *donor_ret, *donor_cell, *donor_donation;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
-  REF_GLOB *recept_global, *donor_global;
+  REF_GLOB *recept_global, *donor_global, *donor_nodes;
   REF_DBL *recept_bary, *donor_bary;
 
   if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
@@ -2550,15 +2550,36 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
                         (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
       "blind send bary");
 
+  ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
+  ref_malloc(donor_donation, n_donor, REF_INT);
+
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
     for (i = 0; i < 4; i++) {
       from_part[nodes[i]] = donor_ret[donation];
+      donor_nodes[i + 4 * donation] = ref_node_global(from_node, nodes[i]);
+      donor_donation[donation] = donation;
     }
   }
   RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+  RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
+  /* donor_part where this cell is headed, based on smallest global */
+
+  /* set parts of from_node */
+  /* shuffle from_node */
+
+  /* use new from part to translate nodes to cell (back and forth) */
+
+  /* shuffle to */
+
+  /* return from data to to grid and refill ref_interp->data */
+
+  ref_free(donor_donation);
+  ref_free(donor_nodes);
   ref_free(donor_bary);
   ref_free(donor_global);
   ref_free(donor_ret);
@@ -2570,22 +2591,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(recept_cell);
   ref_free(recept_bary);
 
-  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
-  RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
-  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
-
-  /* gather all interp on from including bary, cell nodes, and to_global */
-  /* move interp data to new from part */
-
-  /* set parts of from_node */
-  /* shuffle from_node */
-
-  /* update cell */
-
-  /* shuffle to */
-
-  /* return from data to to grid and refill ref_interp->data */
-
   ref_free(from_part);
+
   return REF_SUCCESS;
 }
