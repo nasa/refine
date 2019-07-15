@@ -2645,6 +2645,8 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     ref_interp->part[node] = REF_EMPTY;
   }
 
+  /* remake interp search tree */
+
   ref_free(lookedup_donation);
   ref_free(lookedup_cell);
 
