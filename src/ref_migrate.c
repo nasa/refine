@@ -1363,14 +1363,13 @@ REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid) {
   if (NULL != ref_grid_interp(ref_grid)) {
     RSS(ref_interp_from_part(ref_grid_interp(ref_grid), node_part),
         "from part");
+  } else {
+    for (node = 0; node < ref_node_max(ref_node); node++)
+      ref_node_part(ref_node, node) = node_part[node];
+
+    RSS(ref_migrate_shufflin(ref_grid), "shufflin");
   }
-
-  for (node = 0; node < ref_node_max(ref_node); node++)
-    ref_node_part(ref_node, node) = node_part[node];
-
   ref_free(node_part);
-
-  RSS(ref_migrate_shufflin(ref_grid), "shufflin");
 
   return REF_SUCCESS;
 }

@@ -2497,11 +2497,15 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT node, i, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
-  REF_INT n_recept, donation, n_donor;
-  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_proc;
+  REF_INT n_recept, donation, n_donor, find, n_find, lookedup, n_lookedup;
+  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_proc,
+      *donor_origpart;
   REF_INT *recept_proc, *recept_ret, *recept_cell;
   REF_GLOB *recept_global, *donor_global, *donor_nodes;
   REF_DBL *recept_bary, *donor_bary;
+  REF_INT *find_ret, *find_donation, *find_cell;
+  REF_GLOB *find_nodes;
+  REF_INT *lookedup_donation, *lookedup_cell;
 
   if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
@@ -2553,6 +2557,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
   ref_malloc(donor_donation, n_donor, REF_INT);
   ref_malloc(donor_proc, n_donor, REF_INT);
+  ref_malloc(donor_origpart, n_donor, REF_INT);
 
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
@@ -2577,16 +2582,76 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
                                 &cell_node),
         "part cell_node");
     donor_proc[donation] = from_part[nodes[cell_node]];
+    donor_origpart[donation] = ref_mpi_rank(ref_mpi);
   }
 
   /* set parts of from_node */
+  for (node = 0; node < ref_node_max(from_node); node++)
+    ref_node_part(from_node, node) = from_part[node];
+
   /* shuffle from_node */
+  RSS(ref_migrate_shufflin(from_grid), "shufflin from grid");
 
   /* use new from part to translate nodes to cell (back and forth) */
 
+  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_nodes, 4, n_donor,
+                        (void **)(&find_nodes), &n_find, REF_GLOB_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_donation, 1, n_donor,
+                        (void **)(&find_donation), &n_find, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_origpart, 1, n_donor,
+                        (void **)(&find_ret), &n_find, REF_INT_TYPE),
+      "blind send cell");
+
+  ref_malloc(find_cell, n_find, REF_INT);
+
+  for (find = 0; find < n_find; find++) {
+    for (i = 0; i < 4; i++) {
+      RSS(ref_node_local(from_node, find_nodes[i + 4 * find], &(nodes[i])),
+          "g2l");
+    }
+    RSS(ref_cell_with(from_cell, nodes, &(find_cell[find])),
+        "find cell with nodes");
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, find_ret, (void *)find_cell, 1, n_find,
+                        (void **)(&lookedup_cell), &n_lookedup, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, find_ret, (void *)find_donation, 1, n_find,
+                        (void **)(&lookedup_donation), &n_lookedup,
+                        REF_INT_TYPE),
+      "blind send cell");
+
+  for (lookedup = 0; lookedup < n_lookedup; lookedup++) {
+    donor_cell[lookedup_donation[lookedup]] = lookedup_cell[lookedup];
+  }
+
   /* shuffle to */
+  for (node = 0; node < ref_node_max(to_node); node++) {
+    ref_node_part(to_node, node) = to_part[node];
+  }
+
+  RSS(ref_migrate_shufflin(to_grid), "shufflin to grid");
 
   /* return from data to to grid and refill ref_interp->data */
+  if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
+  }
+  for (node = 0; node < ref_node_max(to_node); node++) {
+    RAS(!ref_interp->agent_hired[node],
+        "agent should not be hired during migration");
+    ref_interp->cell[node] = REF_EMPTY;
+    ref_interp->part[node] = REF_EMPTY;
+  }
+
+  ref_free(lookedup_donation);
+  ref_free(lookedup_cell);
+
+  ref_free(find_cell);
+  ref_free(find_ret);
+  ref_free(find_donation);
+  ref_free(find_nodes);
 
   ref_free(donor_proc);
   ref_free(donor_donation);
