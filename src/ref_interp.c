@@ -2497,10 +2497,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT node, i, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
-  REF_INT n_recept, donation, n_donor, find, n_find, lookedup, n_lookedup;
-  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_proc,
+  REF_INT recept, n_recept, donation, n_donor;
+  REF_INT find, n_find, lookedup, n_lookedup;
+  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_part,
       *donor_origpart;
-  REF_INT *recept_proc, *recept_ret, *recept_cell;
+  REF_INT *recept_part, *recept_ret, *recept_cell;
   REF_GLOB *recept_global, *donor_global, *donor_nodes;
   REF_DBL *recept_bary, *donor_bary;
   REF_INT *find_ret, *find_donation, *find_cell;
@@ -2524,7 +2525,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_malloc(recept_cell, n_recept, REF_INT);
   ref_malloc(recept_global, n_recept, REF_GLOB);
   ref_malloc(recept_ret, n_recept, REF_INT);
-  ref_malloc(recept_proc, n_recept, REF_INT);
+  ref_malloc(recept_part, n_recept, REF_INT);
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
@@ -2534,29 +2535,29 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
       }
       recept_cell[n_recept] = ref_interp->cell[node];
       recept_global[n_recept] = ref_node_global(to_node, node);
-      recept_proc[n_recept] = ref_interp->part[node];
+      recept_part[n_recept] = ref_interp->part[node];
       recept_ret[n_recept] = to_part[node];
       n_recept++;
     }
   }
 
-  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_cell, 1, n_recept,
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_cell, 1, n_recept,
                         (void **)(&donor_cell), &n_donor, REF_INT_TYPE),
       "blind send cell");
-  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_ret, 1, n_recept,
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_ret, 1, n_recept,
                         (void **)(&donor_ret), &n_donor, REF_INT_TYPE),
       "blind send ret");
-  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_global, 1,
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_global, 1,
                         n_recept, (void **)(&donor_global), &n_donor,
                         REF_GLOB_TYPE),
       "blind send global");
-  RSS(ref_mpi_blindsend(ref_mpi, recept_proc, (void *)recept_bary, 4, n_recept,
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_bary, 4, n_recept,
                         (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
       "blind send bary");
 
   ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
   ref_malloc(donor_donation, n_donor, REF_INT);
-  ref_malloc(donor_proc, n_donor, REF_INT);
+  ref_malloc(donor_part, n_donor, REF_INT);
   ref_malloc(donor_origpart, n_donor, REF_INT);
 
   for (donation = 0; donation < n_donor; donation++) {
@@ -2581,7 +2582,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     RSS(ref_cell_part_cell_node(from_cell, from_node, donor_cell[donation],
                                 &cell_node),
         "part cell_node");
-    donor_proc[donation] = from_part[nodes[cell_node]];
+    donor_part[donation] = from_part[nodes[cell_node]];
     donor_origpart[donation] = ref_mpi_rank(ref_mpi);
   }
 
@@ -2594,13 +2595,13 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
 
   /* use new from part to translate nodes to cell (back and forth) */
 
-  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_nodes, 4, n_donor,
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_nodes, 4, n_donor,
                         (void **)(&find_nodes), &n_find, REF_GLOB_TYPE),
       "blind send cell");
-  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_donation, 1, n_donor,
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_donation, 1, n_donor,
                         (void **)(&find_donation), &n_find, REF_INT_TYPE),
       "blind send cell");
-  RSS(ref_mpi_blindsend(ref_mpi, donor_proc, (void *)donor_origpart, 1, n_donor,
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_origpart, 1, n_donor,
                         (void **)(&find_ret), &n_find, REF_INT_TYPE),
       "blind send cell");
 
@@ -2645,6 +2646,33 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     ref_interp->part[node] = REF_EMPTY;
   }
 
+  ref_free(recept_part);
+  ref_free(recept_global);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_cell, 1, n_donor,
+                        (void **)(&recept_cell), &n_recept, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_global, 1, n_donor,
+                        (void **)(&recept_global), &n_recept, REF_GLOB_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_part, 1, n_donor,
+                        (void **)(&recept_part), &n_recept, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_bary, 4, n_donor,
+                        (void **)(&recept_bary), &n_recept, REF_DBL_TYPE),
+      "blind send cell");
+
+  for (recept = 0; recept < n_recept; recept++) {
+    RSS(ref_node_local(to_node, recept_global[recept], &node), "g2l");
+    ref_interp->cell[node] = recept_cell[recept];
+    ref_interp->part[node] = recept_part[recept];
+    for (i = 0; i < 4; i++) {
+      ref_interp->bary[i + 4 * node] = recept_bary[i + 4 * recept];
+    }
+  }
+
   /* remake interp search tree */
 
   ref_free(lookedup_donation);
@@ -2655,7 +2683,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(find_donation);
   ref_free(find_nodes);
 
-  ref_free(donor_proc);
+  ref_free(donor_part);
   ref_free(donor_donation);
   ref_free(donor_nodes);
   ref_free(donor_bary);
@@ -2663,7 +2691,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(donor_ret);
   ref_free(donor_cell);
 
-  ref_free(recept_proc);
+  ref_free(recept_part);
   ref_free(recept_ret);
   ref_free(recept_global);
   ref_free(recept_cell);
