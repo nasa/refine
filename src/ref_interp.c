@@ -2598,7 +2598,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
   }
 
-  ref_malloc_init(from_part, ref_node_max(to_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(from_part, ref_node_max(from_node), REF_INT, REF_EMPTY);
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
