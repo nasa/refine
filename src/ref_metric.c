@@ -643,8 +643,6 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   ref_free(recept_node);
   ref_free(recept_log_m);
 
-  RSS(ref_interp_free(ref_interp), "interp free");
-
   return REF_SUCCESS;
 }
 
