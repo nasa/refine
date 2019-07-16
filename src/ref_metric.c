@@ -663,8 +663,7 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
       return REF_SUCCESS;
     }
 
-    RSS(ref_interp_reset(ref_interp), "ref_interp resize/reset");
-    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_interp_locate_warm(ref_interp), "map from existing");
     RSS(ref_metric_interpolate(ref_interp), "interp");
     return REF_SUCCESS;
   }

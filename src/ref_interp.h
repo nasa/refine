@@ -89,6 +89,7 @@ REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node);
 
 REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node);
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
+REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);

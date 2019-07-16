@@ -1553,6 +1553,44 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_NODE to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
+  REF_BOOL increase_fuzz;
+  REF_INT tries;
+  REF_INT node;
+
+  if (ref_interp->instrument)
+    RSS(ref_mpi_stopwatch_start(ref_mpi), "locate clock");
+
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      RSS(ref_interp_push_onto_queue(ref_interp, node), "queue neighbors");
+    }
+  }
+
+  RSS(ref_interp_process_agents(ref_interp), "drain");
+  if (ref_interp->instrument)
+    RSS(ref_mpi_stopwatch_stop(ref_mpi, "drain"), "locate clock");
+
+  increase_fuzz = REF_FALSE;
+  for (tries = 0; tries < 12; tries++) {
+    if (increase_fuzz) {
+      ref_interp_search_fuzz(ref_interp) *= 10.0;
+      if (ref_mpi_once(ref_mpi))
+        printf("retry tree search with %e fuzz\n",
+               ref_interp_search_fuzz(ref_interp));
+    }
+    RSS(ref_interp_tree(ref_interp, &increase_fuzz), "tree");
+    if (ref_interp->instrument)
+      RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+    if (!increase_fuzz) break;
+  }
+  REIS(REF_FALSE, increase_fuzz, "unable to grow fuzz to find tree candidate");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_BOOL increase_fuzz;
