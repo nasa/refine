@@ -76,6 +76,7 @@ struct REF_INTERP_STRUCT {
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
+REF_STATUS ref_interp_reset(REF_INTERP ref_interp);
 REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
                                       REF_GRID ref_grid);
 

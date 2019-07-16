@@ -170,7 +170,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
+static REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
   REF_INT old = ref_interp_max(ref_interp);
 
   ref_realloc_init(ref_interp->agent_hired, old, max, REF_BOOL, REF_FALSE);
@@ -179,6 +179,27 @@ REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
   ref_realloc(ref_interp->bary, 4 * max, REF_DBL);
 
   ref_interp_max(ref_interp) = max;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_reset(REF_INTERP ref_interp) {
+  REF_INT node_max =
+      ref_node_max(ref_grid_node(ref_interp_to_grid(ref_interp)));
+  REF_INT node;
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    RAS(!ref_interp->agent_hired[node],
+        "agent should not be hired during reset");
+  }
+  if (node_max > ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, node_max), "protective resize");
+  }
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    ref_interp->cell[node] = REF_EMPTY;
+  }
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    ref_interp->part[node] = REF_EMPTY;
+  }
 
   return REF_SUCCESS;
 }
@@ -2636,15 +2657,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   RSS(ref_migrate_shufflin(to_grid), "shufflin to grid");
 
   /* return from data to to grid and refill ref_interp->data */
-  if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
-    RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
-  }
-  for (node = 0; node < ref_node_max(to_node); node++) {
-    RAS(!ref_interp->agent_hired[node],
-        "agent should not be hired during migration");
-    ref_interp->cell[node] = REF_EMPTY;
-    ref_interp->part[node] = REF_EMPTY;
-  }
+  RSS(ref_interp_reset(ref_interp), "ref_interp resize/reset");
 
   ref_free(recept_part);
   ref_free(recept_global);
