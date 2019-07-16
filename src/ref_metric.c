@@ -652,11 +652,14 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
 
 REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   REF_INTERP ref_interp = ref_grid_interp(to_grid);
+  REF_MPI ref_mpi;
   REF_INT node;
 
   if (NULL == ref_interp) return REF_SUCCESS;
 
-  if (!ref_interp_continuously(ref_interp)) {
+  ref_mpi = ref_interp_mpi(ref_interp);
+
+  if (!ref_interp_continuously(ref_interp) || ref_mpi_para(ref_mpi)) {
     if (ref_grid_twod(to_grid)) {
       REF_GRID from_grid = ref_interp_from_grid(ref_interp);
       RSS(ref_metric_interpolate_twod(to_grid, from_grid), "2d version");
