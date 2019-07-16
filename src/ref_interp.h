@@ -63,6 +63,7 @@ struct REF_INTERP_STRUCT {
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
+#define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
 #define ref_interp_cell(ref_interp, node) ((ref_interp)->cell[(node)])
 #define ref_interp_part(ref_interp, node) ((ref_interp)->part[(node)])
 #define ref_interp_bary(ref_interp, j, node) \

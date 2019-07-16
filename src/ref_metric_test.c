@@ -1242,6 +1242,7 @@ int main(int argc, char *argv[]) {
 
   if (parent_pos != REF_EMPTY) {
     REF_GRID ref_grid, parent_grid;
+    REF_INTERP ref_interp;
 
     REIS(2, parent_pos,
          "required args: grid.ext --parent pgrid.ext pgrid.metric");
@@ -1252,7 +1253,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_metric(ref_grid_node(parent_grid), argv[4]),
         "unable to load parent grid in position 4");
 
-    RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
+    RSS(ref_interp_create(&ref_interp, ref_grid, parent_grid), "map");
+    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_metric_interpolate(ref_interp), "interp");
 
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "qual");
@@ -1261,8 +1264,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_metric(ref_grid, "ref_metric_interp.solb"),
         "unable to gather metric");
 
-    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_interp_free(ref_interp), "free");
     RSS(ref_grid_free(parent_grid), "free");
+    RSS(ref_grid_free(ref_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
@@ -1581,7 +1585,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_olympic_node(ref_grid_node(parent_grid), 0.001), "oly");
     RSS(ref_metric_twod_node(ref_grid_node(parent_grid)), "2d");
 
-    RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
+    RSS(ref_metric_interpolate_twod(ref_grid, parent_grid), "interp");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_node_metric_get(ref_grid_node(parent_grid), node, parent_m),
@@ -1599,6 +1603,7 @@ int main(int argc, char *argv[]) {
 
   {
     REF_GRID ref_grid, parent_grid;
+    REF_INTERP ref_interp;
     REF_INT node, im;
     REF_DBL tol = -1.0;
     REF_DBL parent_m[6];
@@ -1609,7 +1614,9 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_metric_olympic_node(ref_grid_node(parent_grid), 0.001), "oly");
 
-    RSS(ref_metric_interpolate(ref_grid, parent_grid), "interp");
+    RSS(ref_interp_create(&ref_interp, ref_grid, parent_grid), "map");
+    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_metric_interpolate(ref_interp), "interp");
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RSS(ref_node_metric_get(ref_grid_node(parent_grid), node, parent_m),
@@ -1621,6 +1628,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
+    RSS(ref_interp_free(ref_interp), "free");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_grid_free(parent_grid), "free");
   }

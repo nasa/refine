@@ -30,8 +30,6 @@
 
 #define MAX_NODE_LIST (200)
 
-#define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
-
 #define ref_interp_bary_inside(ref_interp, bary)                             \
   ((bary)[0] >= (ref_interp)->inside && (bary)[1] >= (ref_interp)->inside && \
    (bary)[2] >= (ref_interp)->inside && (bary)[3] >= (ref_interp)->inside)

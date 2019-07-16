@@ -486,8 +486,8 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
-                                              REF_GRID parent_grid) {
+REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
+                                       REF_GRID parent_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_NODE parent_node = ref_grid_node(parent_grid);
   REF_INT node, tri, ixyz, ibary, im;
@@ -537,12 +537,13 @@ static REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
+REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_MPI ref_mpi = ref_grid_mpi(to_grid);
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_CELL from_cell = ref_grid_tet(from_grid);
-  REF_INTERP ref_interp;
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL max_error, tol = 1.0e-8;
@@ -551,14 +552,6 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
   REF_DBL *recept_log_m, *donor_log_m, *recept_bary, *donor_bary;
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
-
-  if (ref_grid_twod(to_grid)) {
-    RSS(ref_metric_interpolate_twod(to_grid, from_grid), "2d version");
-    return REF_SUCCESS;
-  }
-
-  RSS(ref_interp_create(&ref_interp, from_grid, to_grid), "make interp");
-  RSS(ref_interp_locate(ref_interp), "map");
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "err");
   if (max_error > tol && ref_mpi_once(ref_mpi)) {
@@ -657,14 +650,20 @@ REF_STATUS ref_metric_interpolate(REF_GRID to_grid, REF_GRID from_grid) {
 
 REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   REF_INTERP ref_interp = ref_grid_interp(to_grid);
-  REF_GRID from_grid;
   REF_INT node;
 
   if (NULL == ref_interp) return REF_SUCCESS;
-  from_grid = ref_interp_from_grid(ref_interp);
 
   if (!ref_interp_continuously(ref_interp)) {
-    RSS(ref_metric_interpolate(to_grid, from_grid), "interp");
+    if (ref_grid_twod(to_grid)) {
+      REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+      RSS(ref_metric_interpolate_twod(to_grid, from_grid), "2d version");
+      return REF_SUCCESS;
+    }
+
+    RSS(ref_interp_reset(ref_interp), "ref_interp resize/reset");
+    RSS(ref_interp_locate(ref_interp), "map");
+    RSS(ref_metric_interpolate(ref_interp), "interp");
     return REF_SUCCESS;
   }
 
