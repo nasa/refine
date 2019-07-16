@@ -204,6 +204,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
   } else {
+    if (curvature_constraint) {
+      RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+      RSS(ref_validation_cell_volume(ref_grid), "vol");
+      ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+    }
     RSS(ref_grid_cache_background(ref_grid), "cache");
     ref_interp_continuously(ref_grid_interp(ref_grid)) =
         !ref_mpi_para(ref_mpi) && !ref_grid_twod(ref_grid) &&
@@ -220,11 +225,6 @@ int main(int argc, char *argv[]) {
   RSS(ref_histogram_ratio(ref_grid), "gram");
   ref_mpi_stopwatch_stop(ref_mpi, "histogram");
 
-  if (curvature_constraint) {
-    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
-    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
-  }
   if (sanitize_metric) {
     if (ref_mpi_once(ref_mpi)) printf("sanitizing metric\n");
     RSS(ref_metric_sanitize(ref_grid), "sant metric");
@@ -250,10 +250,6 @@ int main(int argc, char *argv[]) {
     } else {
       RSS(ref_metric_synchronize(ref_grid), "sync with background");
       ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
-    }
-    if (curvature_constraint) {
-      RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
-      ref_mpi_stopwatch_stop(ref_mpi, "crv const");
     }
     if (sanitize_metric) {
       RSS(ref_metric_sanitize(ref_grid), "sant metric");
