@@ -24,8 +24,8 @@ continuous metric interpolation
  load balance interp
  allow interp asynchronously
  fill in located at end of pass
- ref_metric_interpolate no twod, take ref_interp
- ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
+ + ref_metric_interpolate no twod, take ref_interp
+ + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet
