@@ -1976,7 +1976,7 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (ref_node_owned(to_node, node)) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
       n_recept++;
     }
   }
@@ -1989,8 +1989,7 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (ref_node_owned(to_node, node)) {
-      RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
       for (i = 0; i < 4; i++) {
         recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
       }
