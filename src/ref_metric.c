@@ -408,7 +408,7 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
     return REF_SUCCESS;
   }
 
-  RSS(ref_interp_locate_node(ref_interp, node), "locate");
+  RAISE(ref_interp_locate_node(ref_interp, node));
 
   /* location unsuccessful */
   if (REF_EMPTY == ref_interp_cell(ref_interp, node)) return REF_SUCCESS;
