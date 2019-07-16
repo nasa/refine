@@ -168,7 +168,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
+REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
   REF_INT old = ref_interp_max(ref_interp);
 
   ref_realloc_init(ref_interp->agent_hired, old, max, REF_BOOL, REF_FALSE);
