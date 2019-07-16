@@ -2768,6 +2768,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(find_donation);
   ref_free(find_nodes);
 
+  ref_free(donor_origpart);
   ref_free(donor_part);
   ref_free(donor_donation);
   ref_free(donor_nodes);
