@@ -25,6 +25,7 @@ continuous metric interpolation
  + parallel interp
  + load balance interp
  + pack interp
+ + rebuild search tree
  fill in located at end of pass
  + ref_metric_interpolate no twod, take ref_interp
  + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp

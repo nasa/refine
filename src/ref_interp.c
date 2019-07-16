@@ -2714,6 +2714,8 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   }
 
   /* remake interp search tree */
+  RSS(ref_search_free(ref_interp_search(ref_interp)), "free search tree");
+  RSS(ref_interp_create_search(ref_interp), "(re)build search tree");
 
   ref_free(lookedup_donation);
   ref_free(lookedup_cell);
