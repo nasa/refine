@@ -1751,22 +1751,22 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
     }
   }
 
-  if (id == REF_EMPTY) return REF_SUCCESS;
-
-  if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
-    ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
-    ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
-    for (i = 0; i < 4; i++)
-      ref_interp->bary[i + 4 * new_node] = ref_agent_bary(ref_agents, i, id);
-    (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
-    (ref_interp->n_walk)++;
-  } else {
-    /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
-    /* what for parallel REF_AGENT_HOP_PART */
-    ref_interp->cell[new_node] = REF_EMPTY;
+  if (id != REF_EMPTY) {
+    if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
+      ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
+      ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
+      for (i = 0; i < 4; i++)
+        ref_interp->bary[i + 4 * new_node] = ref_agent_bary(ref_agents, i, id);
+      (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
+      (ref_interp->n_walk)++;
+    } else {
+      /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
+      /* what for parallel REF_AGENT_HOP_PART */
+      ref_interp->cell[new_node] = REF_EMPTY;
+    }
+    ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+    RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
   }
-  ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
-  RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
 
   if (!ref_mpi_para(ref_mpi) && REF_EMPTY == ref_interp->cell[new_node]) {
     REF_LIST ref_list;
