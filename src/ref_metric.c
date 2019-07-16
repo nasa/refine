@@ -386,28 +386,32 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   REF_INT ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  /* skip if parallel at this point */
-  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
+  if (NULL == ref_grid_interp(ref_grid)) {
+    return REF_SUCCESS;
+  }
 
-  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
   ref_interp = ref_grid_interp(ref_grid);
   from_grid = ref_interp_from_grid(ref_interp);
   from_node = ref_grid_node(from_grid);
 
-  if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-
   if (ref_grid_twod(ref_grid)) {
-    RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
+    if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      RSS(REF_IMPLEMENT, "para twod metric interp not implemented");
+    } else {
+      RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
+    }
     return REF_SUCCESS;
   }
 
-  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
+  if (!ref_interp_continuously(ref_interp)) {
+    ref_interp_cell(ref_interp, node) = REF_EMPTY; /* mark moved */
+    return REF_SUCCESS;
+  }
 
-  if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) return REF_SUCCESS;
   RSS(ref_interp_locate_node(ref_interp, node), "locate");
 
   /* location unsuccessful */
-  if (REF_EMPTY == ref_interp_cell(ref_interp, node)) return REF_NOT_FOUND;
+  if (REF_EMPTY == ref_interp_cell(ref_interp, node)) return REF_SUCCESS;
 
   RSS(ref_cell_nodes(ref_grid_tet(from_grid), ref_interp_cell(ref_interp, node),
                      nodes),

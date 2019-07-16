@@ -1632,15 +1632,19 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
 }
 
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
+  REF_MPI ref_mpi;
   REF_NODE ref_node;
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
+  ref_mpi = ref_interp_mpi(ref_interp);
 
   RAS(node < ref_interp_max(ref_interp), "more nodes added, should move only");
 
   /* no starting guess, skip */
-  if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
+  if (REF_EMPTY == ref_interp->cell[node] ||
+      ref_mpi_rank(ref_mpi) != ref_interp->part[node])
+    return REF_SUCCESS;
 
   ref_node = ref_grid_node(ref_interp_to_grid(ref_interp));
   ref_agents = ref_interp->ref_agents;
@@ -1668,7 +1672,8 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   ref_interp->agent_hired[node] = REF_FALSE; /* dismissed */
   RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
 
-  if (REF_EMPTY == ref_interp->cell[node]) {
+  if (!ref_mpi_para(ref_node_mpi(ref_node)) &&
+      REF_EMPTY == ref_interp->cell[node]) {
     REF_LIST ref_list;
 
     RSS(ref_list_create(&ref_list), "create list");
@@ -1686,6 +1691,9 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     RSS(ref_list_free(ref_list), "free list");
   }
 
+  if (REF_EMPTY == ref_interp->cell[node]) {
+    return REF_NOT_FOUND;
+  }
   return REF_SUCCESS;
 }
 
@@ -1693,10 +1701,12 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
                                      REF_INT node1, REF_INT new_node) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_MPI ref_mpi;
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
 
+  ref_mpi = ref_interp_mpi(ref_interp);
   ref_grid = ref_interp_to_grid(ref_interp);
   ref_node = ref_grid_node(ref_grid);
   if (new_node >= ref_interp_max(ref_interp)) {
@@ -1704,25 +1714,45 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   }
   ref_interp->cell[new_node] = REF_EMPTY; /* initialize new_node locate */
 
-  /* no starting guess */
-  RUS(REF_EMPTY, ref_interp->cell[node0], "node0 no guess");
-  RUS(REF_EMPTY, ref_interp->cell[node1], "node1 no guess");
-
   ref_agents = ref_interp->ref_agents;
   REIS(0, ref_agents_n(ref_agents), "did not expect active agents");
 
-  ref_interp->agent_hired[new_node] = REF_TRUE;
-  RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
-                      ref_interp->cell[node0],
-                      ref_node_xyz_ptr(ref_node, new_node), &id),
-      "requeue");
-  RSS(ref_interp_walk_agent(ref_interp, id), "walking");
-  if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
-    RSS(ref_agents_restart(ref_agents, ref_interp->part[node1],
-                           ref_interp->cell[node1], id),
-        "restart");
+  id = REF_EMPTY;
+
+  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node0] &&
+      ref_mpi_rank(ref_mpi) == ref_interp->part[node0]) {
+    ref_interp->agent_hired[new_node] = REF_TRUE;
+    RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
+                        ref_interp->cell[node0],
+                        ref_node_xyz_ptr(ref_node, new_node), &id),
+        "requeue");
+    REIS(REF_AGENT_WALKING, ref_agent_mode(ref_agents, id), "not walking?");
     RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+    if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
+      ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      id = REF_EMPTY;
+    }
   }
+
+  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node1] &&
+      ref_mpi_rank(ref_mpi) == ref_interp->part[node1]) {
+    ref_interp->agent_hired[new_node] = REF_TRUE;
+    RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node1],
+                        ref_interp->cell[node1],
+                        ref_node_xyz_ptr(ref_node, new_node), &id),
+        "requeue");
+    REIS(REF_AGENT_WALKING, ref_agent_mode(ref_agents, id), "not walking?");
+    RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+    if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
+      ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      id = REF_EMPTY;
+    }
+  }
+
+  if (id == REF_EMPTY) return REF_SUCCESS;
+
   if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
     ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
     ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
@@ -1738,7 +1768,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
   RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
 
-  if (REF_EMPTY == ref_interp->cell[new_node]) {
+  if (!ref_mpi_para(ref_mpi) && REF_EMPTY == ref_interp->cell[new_node]) {
     REF_LIST ref_list;
 
     RSS(ref_list_create(&ref_list), "create list");
