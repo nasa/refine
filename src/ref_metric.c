@@ -654,6 +654,7 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
   REF_INTERP ref_interp = ref_grid_interp(to_grid);
   REF_MPI ref_mpi;
   REF_INT node;
+  REF_DBL max_error, tol = 1.0e-8;
 
   if (NULL == ref_interp) return REF_SUCCESS;
 
@@ -673,6 +674,11 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
 
   each_ref_node_valid_node(ref_grid_node(to_grid), node) {
     RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+  }
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "err");
+  if (max_error > tol && ref_mpi_once(ref_mpi)) {
+    printf("warning: %e max_error greater than %e tol\n", max_error, tol);
   }
 
   return REF_SUCCESS;

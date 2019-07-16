@@ -2593,6 +2593,12 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT *find_ret, *find_donation, *find_cell;
   REF_GLOB *find_nodes;
   REF_INT *lookedup_donation, *lookedup_cell;
+  REF_DBL max_error;
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+    printf("starting %e max error\n", max_error);
+  }
 
   if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
@@ -2778,6 +2784,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_free(recept_bary);
 
   ref_free(from_part);
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+    printf("final %e max error\n", max_error);
+  }
 
   return REF_SUCCESS;
 }
