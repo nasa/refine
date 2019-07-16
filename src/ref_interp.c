@@ -261,7 +261,6 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
   REF_INT i, node, n, max;
 
   if (NULL == ref_interp) return REF_SUCCESS;
-  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
 
   n = ref_node_n(ref_grid_node(ref_interp_to_grid(ref_interp)));
   max = ref_interp_max(ref_interp);

@@ -20,9 +20,9 @@ continuous metric interpolation
  + store background in grid
  + default for seq
  cache curvature_metric
- parallel interp
+ + parallel interp
  + load balance interp
- pack interp
+ + pack interp
  fill in located at end of pass
  + ref_metric_interpolate no twod, take ref_interp
  + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
