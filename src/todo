@@ -9,8 +9,6 @@ alternating RCB part
 configure with metis only, when parmetis not provided
 64bit metis/parmetis?
 
-remove sanitize_metric option from ref_driver
-
 continuous metric interpolation
  + pair and store interp at startup
  + incremental interp for new
@@ -257,6 +255,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ remove sanitize_metric option from ref_driver
 
 + euler conservative variable metric
 + abs value of hessian as last step
