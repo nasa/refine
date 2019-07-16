@@ -84,6 +84,7 @@ int main(int argc, char *argv[]) {
   int opt;
   int passes = 15, pass;
   REF_BOOL tecplot_movie = REF_FALSE;
+  REF_BOOL sanitize_metric = REF_FALSE;
   REF_BOOL curvature_metric = REF_TRUE;
   REF_BOOL curvature_constraint = REF_FALSE;
   REF_BOOL debug_verbose = REF_FALSE;
@@ -137,6 +138,9 @@ int main(int argc, char *argv[]) {
       case 's':
         passes = atoi(optarg);
         break;
+      case 'l':
+        sanitize_metric = REF_TRUE;
+        break;
       case 't':
         tecplot_movie = REF_TRUE;
         break;
@@ -160,6 +164,7 @@ int main(int argc, char *argv[]) {
         printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
         printf("       [-x export_grid.ext]\n");
+        printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
         printf("       [-c] deactivate continuous metric interpolation\n");
@@ -220,6 +225,15 @@ int main(int argc, char *argv[]) {
   RSS(ref_histogram_ratio(ref_grid), "gram");
   ref_mpi_stopwatch_stop(ref_mpi, "histogram");
 
+  if (sanitize_metric) {
+    if (ref_mpi_once(ref_mpi)) printf("sanitizing metric\n");
+    RSS(ref_metric_sanitize(ref_grid), "sant metric");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+  }
+
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
   ref_mpi_stopwatch_stop(ref_mpi, "pack");
@@ -236,6 +250,10 @@ int main(int argc, char *argv[]) {
     } else {
       RSS(ref_metric_synchronize(ref_grid), "sync with background");
       ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
+    }
+    if (sanitize_metric) {
+      RSS(ref_metric_sanitize(ref_grid), "sant metric");
+      ref_mpi_stopwatch_stop(ref_mpi, "sant");
     }
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     RSS(ref_histogram_quality(ref_grid), "gram");
