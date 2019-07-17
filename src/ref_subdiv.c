@@ -1649,6 +1649,8 @@ static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
   REF_INT map;
 
   REF_INT edge, split_edge, global_edge;
+  REF_INT n0, n1, n2, n3;
+  REF_INT e0, e1, e2, e3, e4, e5;
 
   REF_INT node;
   REF_DBL volume;
@@ -1682,12 +1684,12 @@ static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
 
         marked_for_removal[cell] = 1;
 
-        RSS(ref_cell_nodes(ref_cell, cell, new_nodes), "nodes");
+        for (node = 0; node < 4; node++) new_nodes[node] = nodes[node];
         new_nodes[ref_cell_e2n_gen(ref_cell, 0, split_edge)] =
             ref_subdiv_node(ref_subdiv, global_edge);
         RSS(ref_cell_add(ref_cell_split, new_nodes, &new_cell), "add");
 
-        RSS(ref_cell_nodes(ref_cell, cell, new_nodes), "nodes");
+        for (node = 0; node < 4; node++) new_nodes[node] = nodes[node];
         new_nodes[ref_cell_e2n_gen(ref_cell, 1, split_edge)] =
             ref_subdiv_node(ref_subdiv, global_edge);
         RSS(ref_cell_add(ref_cell_split, new_nodes, &new_cell), "add");
@@ -1773,34 +1775,25 @@ static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
        */
       case 63:
         marked_for_removal[cell] = 1;
-        {
-          REF_INT n0, n1, n2, n3;
-          REF_INT e0, e1, e2, e3, e4, e5;
-          n0 = nodes[0];
-          n1 = nodes[1];
-          n2 = nodes[2];
-          n3 = nodes[3];
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[1], &e0),
-              "e");
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[2], &e1),
-              "e");
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[3], &e2),
-              "e");
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[1], nodes[2], &e3),
-              "e");
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[1], nodes[3], &e4),
-              "e");
-          RSS(ref_subdiv_node_between(ref_subdiv, nodes[2], nodes[3], &e5),
-              "e");
-          add_cell_with(e0, e2, e1, n0);
-          add_cell_with(e0, e3, e4, n1);
-          add_cell_with(e1, e5, e3, n2);
-          add_cell_with(e2, e4, e5, n3);
-          add_cell_with(e0, e5, e1, e2);
-          add_cell_with(e0, e5, e2, e4);
-          add_cell_with(e0, e5, e4, e3);
-          add_cell_with(e0, e5, e3, e1);
-        }
+
+        n0 = nodes[0];
+        n1 = nodes[1];
+        n2 = nodes[2];
+        n3 = nodes[3];
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[1], &e0), "e");
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[2], &e1), "e");
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[0], nodes[3], &e2), "e");
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[1], nodes[2], &e3), "e");
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[1], nodes[3], &e4), "e");
+        RSS(ref_subdiv_node_between(ref_subdiv, nodes[2], nodes[3], &e5), "e");
+        add_cell_with(e0, e2, e1, n0);
+        add_cell_with(e0, e3, e4, n1);
+        add_cell_with(e1, e5, e3, n2);
+        add_cell_with(e2, e4, e5, n3);
+        add_cell_with(e0, e5, e1, e2);
+        add_cell_with(e0, e5, e2, e4);
+        add_cell_with(e0, e5, e4, e3);
+        add_cell_with(e0, e5, e3, e1);
         break;
       default:
         RSS(ref_subdiv_map_to_edge(map), "map2edge");
