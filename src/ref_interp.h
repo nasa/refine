@@ -63,6 +63,7 @@ struct REF_INTERP_STRUCT {
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
+#define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
 #define ref_interp_cell(ref_interp, node) ((ref_interp)->cell[(node)])
 #define ref_interp_part(ref_interp, node) ((ref_interp)->part[(node)])
 #define ref_interp_bary(ref_interp, j, node) \
@@ -76,6 +77,8 @@ struct REF_INTERP_STRUCT {
 
 REF_STATUS ref_interp_create(REF_INTERP *ref_interp, REF_GRID from_grid,
                              REF_GRID to_grid);
+REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max);
+REF_STATUS ref_interp_reset(REF_INTERP ref_interp);
 REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp,
                                       REF_GRID ref_grid);
 
@@ -87,6 +90,7 @@ REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node);
 
 REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node);
 REF_STATUS ref_interp_locate(REF_INTERP ref_interp);
+REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp);
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node);
@@ -109,8 +113,10 @@ REF_STATUS ref_interp_convergence_rate(REF_DBL f3, REF_DBL h3, REF_DBL f2,
                                        REF_DBL h2, REF_DBL f1, REF_DBL h1,
                                        REF_DBL *rate);
 
-REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
-                         REF_DBL **scalar);
+REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
+                          REF_INT *ldim, REF_DBL **scalar);
+
+REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part);
 
 END_C_DECLORATION
 

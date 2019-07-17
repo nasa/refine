@@ -1248,6 +1248,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t), "set t");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
+    RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
     RSS(ref_node_ratio(ref_node, nodes[0], node, &r0), "get r0");
     RSS(ref_node_ratio(ref_node, nodes[1], node, &r1), "get r1");
     if (ref_grid_surf(ref_grid)) {
@@ -1276,6 +1277,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "set t");
   RSS(ref_geom_constrain(ref_grid, node), "constrain");
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
   if (ref_grid_surf(ref_grid)) {
     q = 1.0;
   } else {
@@ -1299,7 +1301,12 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
   REF_DBL uv_min[2], uv_max[2];
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+
   REF_BOOL verbose = REF_FALSE;
+
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
@@ -1319,6 +1326,12 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   }
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
 
   if (verbose)
     printf("uv %f %f tri %f tet %f\n", uv_orig[0], uv_orig[1], qtri_orig,
@@ -1335,6 +1348,9 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
 
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
+
     if (ref_grid_surf(ref_grid)) {
       qtet = 1.0;
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
@@ -1347,7 +1363,8 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if ((normdev * qtri >= normdev_orig * qtri_orig) &&
+    if ((REF_SUCCESS == interp_status) &&
+        (normdev * qtri >= normdev_orig * qtri_orig) &&
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
@@ -1359,10 +1376,13 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
   }
 
   RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv_orig), "set t");
   RSS(ref_geom_constrain(ref_grid, node), "constrain");
+  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   if (verbose)
     printf("undo qtri %f qtet %f was %f %f\n", qtri, qtet, qtri_orig,

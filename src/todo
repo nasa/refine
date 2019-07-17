@@ -9,6 +9,8 @@ alternating RCB part
 configure with metis only, when parmetis not provided
 64bit metis/parmetis?
 
+remove sanitize_metric option from ref_driver
+
 continuous metric interpolation
  + pair and store interp at startup
  + incremental interp for new
@@ -20,10 +22,13 @@ continuous metric interpolation
  + store background in grid
  + default for seq
  cache curvature_metric
- parallel interp
- load balance interp
- allow interp asynchronously
+ + parallel interp
+ + load balance interp
+ + pack interp
+ + rebuild search tree
  fill in located at end of pass
+ + ref_metric_interpolate no twod, take ref_interp
+ + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
 
 partition artifacts
   ref_subdiv only turn off marks with neg vol tet

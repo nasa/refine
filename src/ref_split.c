@@ -131,15 +131,15 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                   ref_edge_e2n(ref_edge, 1, edge), weight_node1,
                                   new_node),
         "interp new node");
-    RSS(ref_metric_interpolate_between(
-            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-            ref_edge_e2n(ref_edge, 1, edge), new_node),
-        "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                              ref_edge_e2n(ref_edge, 1, edge), weight_node1,
                              new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
+    RSS(ref_metric_interpolate_between(
+            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+            ref_edge_e2n(ref_edge, 1, edge), new_node),
+        "interp new node metric");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
@@ -294,14 +294,14 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                                   ref_edge_e2n(ref_edge, 1, edge), 0.5,
                                   new_node),
         "interp new node");
-    RSS(ref_metric_interpolate_between(
-            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-            ref_edge_e2n(ref_edge, 1, edge), new_node),
-        "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                              ref_edge_e2n(ref_edge, 1, edge), 0.5, new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
+    RSS(ref_metric_interpolate_between(
+            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+            ref_edge_e2n(ref_edge, 1, edge), new_node),
+        "interp new node metric");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
@@ -856,12 +856,11 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node0), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node0),
         "interp new node");
-    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node0),
-        "interp new node0");
-
     RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node0),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
+    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node0),
+        "interp new node0");
 
     RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0, &allowed),
         "ratio of new tri sides");
@@ -899,11 +898,11 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     RSS(ref_node_add(ref_node, global, &new_node1), "new node");
     RSS(ref_node_interpolate_edge(ref_node, node2, node3, 0.5, new_node1),
         "interp new node");
-    RSS(ref_metric_interpolate_between(ref_grid, node2, node3, new_node1),
-        "interp new node1");
     RSS(ref_geom_add_between(ref_grid, node2, node3, 0.5, new_node1),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");
+    RSS(ref_metric_interpolate_between(ref_grid, node2, node3, new_node1),
+        "interp new node1");
 
     RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node0, node2, node3,
                             new_node1),
@@ -1177,14 +1176,14 @@ REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
                                   ref_edge_e2n(ref_edge, 1, edge), 0.5,
                                   new_node),
         "interp new node");
-    RSS(ref_metric_interpolate_between(
-            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-            ref_edge_e2n(ref_edge, 1, edge), new_node),
-        "interp new node metric");
     RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                              ref_edge_e2n(ref_edge, 1, edge), 0.5, new_node),
         "geom new node");
     RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
+    RSS(ref_metric_interpolate_between(
+            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+            ref_edge_e2n(ref_edge, 1, edge), new_node),
+        "interp new node metric");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 

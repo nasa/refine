@@ -162,7 +162,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_stopwatch_stop(ref_mpi, "read grid"), "sw start");
 
     if (ref_mpi_once(ref_mpi)) printf("read/stitch plt %s\n", argv[3]);
-    RSS(ref_iterp_plt(ref_grid, argv[3], &ldim, &scalar), "plt zone");
+    RSS(ref_interp_plt(ref_grid, argv[3], &ldim, &scalar), "plt zone");
     ref_mpi_stopwatch_stop(ref_mpi, "read/stitch zones");
 
     if (ref_mpi_once(ref_mpi)) printf("write/gather stitched %s\n", argv[4]);

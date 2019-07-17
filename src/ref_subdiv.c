@@ -919,14 +919,14 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
                                       ref_edge_e2n(ref_edge, 1, edge), 0.5,
                                       node),
             "new node");
-        RSS(ref_metric_interpolate_between(
-                ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                ref_edge_e2n(ref_edge, 1, edge), node),
-            "interp new metric");
         RSS(ref_geom_add_between(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                  ref_edge_e2n(ref_edge, 1, edge), 0.5, node),
             "new node");
         RSS(ref_geom_constrain(ref_grid, node), "geom constraint");
+        RSS(ref_metric_interpolate_between(
+                ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                ref_edge_e2n(ref_edge, 1, edge), node),
+            "interp new metric");
       }
     }
   }

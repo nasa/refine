@@ -116,7 +116,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
     if (NULL != background_grid) {
-      RSS(ref_metric_interpolate(ref_grid, background_grid), "interp");
+      RSS(ref_metric_interpolate_twod(ref_grid, background_grid), "interp");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "interp");
     }
     RSS(ref_validation_cell_volume(ref_grid), "vol");

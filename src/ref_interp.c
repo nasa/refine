@@ -30,8 +30,6 @@
 
 #define MAX_NODE_LIST (200)
 
-#define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
-
 #define ref_interp_bary_inside(ref_interp, bary)                             \
   ((bary)[0] >= (ref_interp)->inside && (bary)[1] >= (ref_interp)->inside && \
    (bary)[2] >= (ref_interp)->inside && (bary)[3] >= (ref_interp)->inside)
@@ -183,6 +181,27 @@ REF_STATUS ref_interp_resize(REF_INTERP ref_interp, REF_INT max) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_reset(REF_INTERP ref_interp) {
+  REF_INT node_max =
+      ref_node_max(ref_grid_node(ref_interp_to_grid(ref_interp)));
+  REF_INT node;
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    RAS(!ref_interp->agent_hired[node],
+        "agent should not be hired during reset");
+  }
+  if (node_max > ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, node_max), "protective resize");
+  }
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    ref_interp->cell[node] = REF_EMPTY;
+  }
+  for (node = 0; node < ref_interp_max(ref_interp); node++) {
+    ref_interp->part[node] = REF_EMPTY;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
                                       REF_GRID to_grid) {
   REF_INTERP ref_interp;
@@ -242,7 +261,6 @@ REF_STATUS ref_interp_pack(REF_INTERP ref_interp, REF_INT *n2o) {
   REF_INT i, node, n, max;
 
   if (NULL == ref_interp) return REF_SUCCESS;
-  if (!ref_interp_continuously(ref_interp)) return REF_SUCCESS;
 
   n = ref_node_n(ref_grid_node(ref_interp_to_grid(ref_interp)));
   max = ref_interp_max(ref_interp);
@@ -1535,6 +1553,44 @@ REF_STATUS ref_interp_locate(REF_INTERP ref_interp) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_locate_warm(REF_INTERP ref_interp) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_NODE to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
+  REF_BOOL increase_fuzz;
+  REF_INT tries;
+  REF_INT node;
+
+  if (ref_interp->instrument)
+    RSS(ref_mpi_stopwatch_start(ref_mpi), "locate clock");
+
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      RSS(ref_interp_push_onto_queue(ref_interp, node), "queue neighbors");
+    }
+  }
+
+  RSS(ref_interp_process_agents(ref_interp), "drain");
+  if (ref_interp->instrument)
+    RSS(ref_mpi_stopwatch_stop(ref_mpi, "drain"), "locate clock");
+
+  increase_fuzz = REF_FALSE;
+  for (tries = 0; tries < 12; tries++) {
+    if (increase_fuzz) {
+      ref_interp_search_fuzz(ref_interp) *= 10.0;
+      if (ref_mpi_once(ref_mpi))
+        printf("retry tree search with %e fuzz\n",
+               ref_interp_search_fuzz(ref_interp));
+    }
+    RSS(ref_interp_tree(ref_interp, &increase_fuzz), "tree");
+    if (ref_interp->instrument)
+      RSS(ref_mpi_stopwatch_stop(ref_mpi, "tree"), "locate clock");
+    if (!increase_fuzz) break;
+  }
+  REIS(REF_FALSE, increase_fuzz, "unable to grow fuzz to find tree candidate");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_locate_subset(REF_INTERP ref_interp) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_BOOL increase_fuzz;
@@ -1613,15 +1669,19 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
 }
 
 REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
+  REF_MPI ref_mpi;
   REF_NODE ref_node;
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
+  ref_mpi = ref_interp_mpi(ref_interp);
 
   RAS(node < ref_interp_max(ref_interp), "more nodes added, should move only");
 
   /* no starting guess, skip */
-  if (REF_EMPTY == ref_interp->cell[node]) return REF_SUCCESS;
+  if (REF_EMPTY == ref_interp->cell[node] ||
+      ref_mpi_rank(ref_mpi) != ref_interp->part[node])
+    return REF_SUCCESS;
 
   ref_node = ref_grid_node(ref_interp_to_grid(ref_interp));
   ref_agents = ref_interp->ref_agents;
@@ -1649,7 +1709,8 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   ref_interp->agent_hired[node] = REF_FALSE; /* dismissed */
   RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
 
-  if (REF_EMPTY == ref_interp->cell[node]) {
+  if (!ref_mpi_para(ref_node_mpi(ref_node)) &&
+      REF_EMPTY == ref_interp->cell[node]) {
     REF_LIST ref_list;
 
     RSS(ref_list_create(&ref_list), "create list");
@@ -1667,6 +1728,9 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     RSS(ref_list_free(ref_list), "free list");
   }
 
+  if (REF_EMPTY == ref_interp->cell[node]) {
+    return REF_NOT_FOUND;
+  }
   return REF_SUCCESS;
 }
 
@@ -1674,10 +1738,12 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
                                      REF_INT node1, REF_INT new_node) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
+  REF_MPI ref_mpi;
   REF_AGENTS ref_agents;
   REF_INT i, id;
   RNS(ref_interp, "ref_interp NULL");
 
+  ref_mpi = ref_interp_mpi(ref_interp);
   ref_grid = ref_interp_to_grid(ref_interp);
   ref_node = ref_grid_node(ref_grid);
   if (new_node >= ref_interp_max(ref_interp)) {
@@ -1685,41 +1751,61 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
   }
   ref_interp->cell[new_node] = REF_EMPTY; /* initialize new_node locate */
 
-  /* no starting guess */
-  RUS(REF_EMPTY, ref_interp->cell[node0], "node0 no guess");
-  RUS(REF_EMPTY, ref_interp->cell[node1], "node1 no guess");
-
   ref_agents = ref_interp->ref_agents;
   REIS(0, ref_agents_n(ref_agents), "did not expect active agents");
 
-  ref_interp->agent_hired[new_node] = REF_TRUE;
-  RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
-                      ref_interp->cell[node0],
-                      ref_node_xyz_ptr(ref_node, new_node), &id),
-      "requeue");
-  RSS(ref_interp_walk_agent(ref_interp, id), "walking");
-  if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
-    RSS(ref_agents_restart(ref_agents, ref_interp->part[node1],
-                           ref_interp->cell[node1], id),
-        "restart");
-    RSS(ref_interp_walk_agent(ref_interp, id), "walking");
-  }
-  if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
-    ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
-    ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
-    for (i = 0; i < 4; i++)
-      ref_interp->bary[i + 4 * new_node] = ref_agent_bary(ref_agents, i, id);
-    (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
-    (ref_interp->n_walk)++;
-  } else {
-    /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
-    /* what for parallel REF_AGENT_HOP_PART */
-    ref_interp->cell[new_node] = REF_EMPTY;
-  }
-  ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
-  RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+  id = REF_EMPTY;
 
-  if (REF_EMPTY == ref_interp->cell[new_node]) {
+  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node0] &&
+      ref_mpi_rank(ref_mpi) == ref_interp->part[node0]) {
+    ref_interp->agent_hired[new_node] = REF_TRUE;
+    RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node0],
+                        ref_interp->cell[node0],
+                        ref_node_xyz_ptr(ref_node, new_node), &id),
+        "requeue");
+    REIS(REF_AGENT_WALKING, ref_agent_mode(ref_agents, id), "not walking?");
+    RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+    if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
+      ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      id = REF_EMPTY;
+    }
+  }
+
+  if (id == REF_EMPTY && REF_EMPTY != ref_interp->cell[node1] &&
+      ref_mpi_rank(ref_mpi) == ref_interp->part[node1]) {
+    ref_interp->agent_hired[new_node] = REF_TRUE;
+    RSS(ref_agents_push(ref_agents, new_node, ref_interp->part[node1],
+                        ref_interp->cell[node1],
+                        ref_node_xyz_ptr(ref_node, new_node), &id),
+        "requeue");
+    REIS(REF_AGENT_WALKING, ref_agent_mode(ref_agents, id), "not walking?");
+    RSS(ref_interp_walk_agent(ref_interp, id), "walking");
+    if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
+      ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      id = REF_EMPTY;
+    }
+  }
+
+  if (id != REF_EMPTY) {
+    if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id)) {
+      ref_interp->cell[new_node] = ref_agent_seed(ref_agents, id);
+      ref_interp->part[new_node] = ref_agent_part(ref_agents, id);
+      for (i = 0; i < 4; i++)
+        ref_interp->bary[i + 4 * new_node] = ref_agent_bary(ref_agents, i, id);
+      (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
+      (ref_interp->n_walk)++;
+    } else {
+      /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
+      /* what for parallel REF_AGENT_HOP_PART */
+      ref_interp->cell[new_node] = REF_EMPTY;
+    }
+    ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
+    RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+  }
+
+  if (!ref_mpi_para(ref_mpi) && REF_EMPTY == ref_interp->cell[new_node]) {
     REF_LIST ref_list;
 
     RSS(ref_list_create(&ref_list), "create list");
@@ -1890,7 +1976,7 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (ref_node_owned(to_node, node)) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
       n_recept++;
     }
   }
@@ -1903,8 +1989,7 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (ref_node_owned(to_node, node)) {
-      RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
       for (i = 0; i < 4; i++) {
         recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
       }
@@ -2167,9 +2252,9 @@ static REF_STATUS ref_interp_plt_string(FILE *file, char *string, int maxlen) {
   return REF_FAILURE;
 }
 
-static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
-                                       REF_LIST zone_nnode,
-                                       REF_LIST zone_nelem) {
+static REF_STATUS ref_interp_plt_header(FILE *file, REF_INT *nvar,
+                                        REF_LIST zone_nnode,
+                                        REF_LIST zone_nelem) {
   char header[9];
   int endian, filetype;
   char title[1024], varname[1024], zonename[1024];
@@ -2250,9 +2335,9 @@ static REF_STATUS ref_iterp_plt_header(FILE *file, REF_INT *nvar,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
-                                     REF_LIST zone_nnode, REF_LIST zone_nelem,
-                                     REF_INT *length, REF_DBL **soln) {
+static REF_STATUS ref_interp_plt_data(FILE *file, REF_INT nvar,
+                                      REF_LIST zone_nnode, REF_LIST zone_nelem,
+                                      REF_INT *length, REF_DBL **soln) {
   float zonemarker;
   int dataformat;
   REF_INT i, node, elem;
@@ -2312,8 +2397,8 @@ static REF_STATUS ref_iterp_plt_data(FILE *file, REF_INT nvar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
-                         REF_DBL **scalar) {
+REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
+                          REF_INT *ldim, REF_DBL **scalar) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   FILE *file = NULL;
@@ -2341,7 +2426,7 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
     RSS(ref_list_create(&zone_nnode), "nnode list");
     RSS(ref_list_create(&zone_nelem), "nelem list");
 
-    RSS(ref_iterp_plt_header(file, &nvar, zone_nnode, zone_nelem),
+    RSS(ref_interp_plt_header(file, &nvar, zone_nnode, zone_nelem),
         "parse header");
     nzone = ref_list_n(zone_nnode);
   }
@@ -2354,8 +2439,8 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   RSS(ref_list_create(&touching), "tounching list");
   for (zone = 0; zone < nzone; zone++) {
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_iterp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
-                             &soln),
+      RSS(ref_interp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
+                              &soln),
           "read data");
       RSS(ref_mpi_bcast(ref_mpi, &length, 1, REF_INT_TYPE), "b length");
       RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
@@ -2404,6 +2489,306 @@ REF_STATUS ref_iterp_plt(REF_GRID ref_grid, const char *filename, REF_INT *ldim,
   }
 
   RSS(ref_search_free(ref_search), "free search");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_from_part_status(REF_INTERP ref_interp,
+                                              REF_INT *from_part) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+
+  REF_GLOB n_set, n_moving;
+  REF_INT node;
+
+  n_set = 0;
+  n_moving = 0;
+  each_ref_node_valid_node(from_node, node) {
+    if (ref_node_owned(from_node, node) && REF_EMPTY != from_part[node]) {
+      n_set++;
+      if (from_part[node] != ref_node_part(from_node, node)) {
+        n_moving++;
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, &n_set, 1, REF_LONG_TYPE), "sum n set");
+  RSS(ref_mpi_allsum(ref_mpi, &n_moving, 1, REF_LONG_TYPE), "sum n moving");
+  if (ref_mpi_once(ref_mpi) && 0 < ref_node_n_global(from_node) && 0 < n_set) {
+    printf(" %6.2f %% " REF_GLOB_FMT " set %6.2f %% " REF_GLOB_FMT
+           " moving of " REF_GLOB_FMT " recept nodes\n",
+           100.0 * (REF_DBL)n_set / (REF_DBL)ref_node_n_global(from_node),
+           n_set, 100.0 * (REF_DBL)n_moving / (REF_DBL)n_set, n_moving,
+           ref_node_n_global(from_node));
+  }
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_from_part_neighbor(REF_INTERP ref_interp,
+                                                REF_INT *from_part,
+                                                REF_INT node) {
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_CELL ref_cell = ref_grid_tet(from_grid);
+  REF_INT item, cell, cell_node;
+
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      if (REF_EMPTY != from_part[ref_cell_c2n(ref_cell, cell_node, cell)]) {
+        from_part[node] = from_part[ref_cell_c2n(ref_cell, cell_node, cell)];
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_interp_fill_empty_from_part(REF_INTERP ref_interp,
+                                                  REF_INT *from_part) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_BOOL again;
+  REF_INT nsweeps, node;
+  nsweeps = 0;
+  again = REF_TRUE;
+  while (again) {
+    nsweeps++;
+    again = REF_FALSE;
+    each_ref_node_valid_node(from_node, node) {
+      if (ref_node_owned(from_node, node) && REF_EMPTY == from_part[node]) {
+        RSS(ref_interp_from_part_neighbor(ref_interp, from_part, node), "fill");
+        again = again || REF_EMPTY != from_part[node];
+      }
+    }
+
+    RUS(200, nsweeps, "too many sweeps, stop inf loop");
+    RSS(ref_mpi_all_or(ref_mpi, &again), "mpi all or");
+    if (again) {
+      RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
+  REF_GRID to_grid = ref_interp_to_grid(ref_interp);
+  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
+  REF_NODE to_node = ref_grid_node(to_grid);
+  REF_NODE from_node = ref_grid_node(from_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_INT node, i, cell_node;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *from_part;
+  REF_INT recept, n_recept, donation, n_donor;
+  REF_INT find, n_find, lookedup, n_lookedup;
+  REF_INT *donor_ret, *donor_cell, *donor_donation, *donor_part,
+      *donor_origpart;
+  REF_INT *recept_part, *recept_ret, *recept_cell;
+  REF_GLOB *recept_global, *donor_global, *donor_nodes;
+  REF_DBL *recept_bary, *donor_bary;
+  REF_INT *find_ret, *find_donation, *find_cell;
+  REF_GLOB *find_nodes;
+  REF_INT *lookedup_donation, *lookedup_cell;
+  REF_DBL max_error;
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+    printf("starting %e max error\n", max_error);
+  }
+
+  if (ref_node_max(to_node) > ref_interp_max(ref_interp)) {
+    RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
+  }
+
+  ref_malloc_init(from_part, ref_node_max(from_node), REF_INT, REF_EMPTY);
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      n_recept++;
+    }
+  }
+
+  ref_malloc(recept_bary, 4 * n_recept, REF_DBL);
+  ref_malloc(recept_cell, n_recept, REF_INT);
+  ref_malloc(recept_global, n_recept, REF_GLOB);
+  ref_malloc(recept_ret, n_recept, REF_INT);
+  ref_malloc(recept_part, n_recept, REF_INT);
+
+  n_recept = 0;
+  each_ref_node_valid_node(to_node, node) {
+    if (ref_node_owned(to_node, node) && REF_EMPTY != ref_interp->cell[node]) {
+      for (i = 0; i < 4; i++) {
+        recept_bary[i + 4 * n_recept] = ref_interp->bary[i + 4 * node];
+      }
+      recept_cell[n_recept] = ref_interp->cell[node];
+      recept_global[n_recept] = ref_node_global(to_node, node);
+      recept_part[n_recept] = ref_interp->part[node];
+      recept_ret[n_recept] = to_part[node];
+      n_recept++;
+    }
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_cell, 1, n_recept,
+                        (void **)(&donor_cell), &n_donor, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_ret, 1, n_recept,
+                        (void **)(&donor_ret), &n_donor, REF_INT_TYPE),
+      "blind send ret");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_global, 1,
+                        n_recept, (void **)(&donor_global), &n_donor,
+                        REF_GLOB_TYPE),
+      "blind send global");
+  RSS(ref_mpi_blindsend(ref_mpi, recept_part, (void *)recept_bary, 4, n_recept,
+                        (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
+      "blind send bary");
+
+  ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
+  ref_malloc(donor_donation, n_donor, REF_INT);
+  ref_malloc(donor_part, n_donor, REF_INT);
+  ref_malloc(donor_origpart, n_donor, REF_INT);
+
+  for (donation = 0; donation < n_donor; donation++) {
+    RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
+        "node needs to be localized");
+    for (i = 0; i < 4; i++) {
+      from_part[nodes[i]] = donor_ret[donation];
+    }
+  }
+  RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+  RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
+  RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
+
+  for (donation = 0; donation < n_donor; donation++) {
+    RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
+        "node needs to be localized");
+    for (i = 0; i < 4; i++) {
+      donor_nodes[i + 4 * donation] = ref_node_global(from_node, nodes[i]);
+    }
+    donor_donation[donation] = donation;
+    RSS(ref_cell_part_cell_node(from_cell, from_node, donor_cell[donation],
+                                &cell_node),
+        "part cell_node");
+    donor_part[donation] = from_part[nodes[cell_node]];
+    donor_origpart[donation] = ref_mpi_rank(ref_mpi);
+  }
+
+  /* set parts of from_node */
+  for (node = 0; node < ref_node_max(from_node); node++)
+    ref_node_part(from_node, node) = from_part[node];
+
+  /* shuffle from_node */
+  RSS(ref_migrate_shufflin(from_grid), "shufflin from grid");
+
+  /* use new from part to translate nodes to cell (back and forth) */
+
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_nodes, 4, n_donor,
+                        (void **)(&find_nodes), &n_find, REF_GLOB_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_donation, 1, n_donor,
+                        (void **)(&find_donation), &n_find, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_origpart, 1, n_donor,
+                        (void **)(&find_ret), &n_find, REF_INT_TYPE),
+      "blind send cell");
+
+  ref_malloc(find_cell, n_find, REF_INT);
+
+  for (find = 0; find < n_find; find++) {
+    for (i = 0; i < 4; i++) {
+      RSS(ref_node_local(from_node, find_nodes[i + 4 * find], &(nodes[i])),
+          "g2l");
+    }
+    RSS(ref_cell_with(from_cell, nodes, &(find_cell[find])),
+        "find cell with nodes");
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, find_ret, (void *)find_cell, 1, n_find,
+                        (void **)(&lookedup_cell), &n_lookedup, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, find_ret, (void *)find_donation, 1, n_find,
+                        (void **)(&lookedup_donation), &n_lookedup,
+                        REF_INT_TYPE),
+      "blind send cell");
+
+  for (lookedup = 0; lookedup < n_lookedup; lookedup++) {
+    donor_cell[lookedup_donation[lookedup]] = lookedup_cell[lookedup];
+  }
+
+  /* shuffle to */
+  for (node = 0; node < ref_node_max(to_node); node++) {
+    ref_node_part(to_node, node) = to_part[node];
+  }
+
+  RSS(ref_migrate_shufflin(to_grid), "shufflin to grid");
+
+  /* return from data to to grid and refill ref_interp->data */
+  RSS(ref_interp_reset(ref_interp), "ref_interp resize/reset");
+
+  ref_free(recept_part);
+  ref_free(recept_global);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_cell, 1, n_donor,
+                        (void **)(&recept_cell), &n_recept, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_global, 1, n_donor,
+                        (void **)(&recept_global), &n_recept, REF_GLOB_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_part, 1, n_donor,
+                        (void **)(&recept_part), &n_recept, REF_INT_TYPE),
+      "blind send cell");
+  RSS(ref_mpi_blindsend(ref_mpi, donor_ret, (void *)donor_bary, 4, n_donor,
+                        (void **)(&recept_bary), &n_recept, REF_DBL_TYPE),
+      "blind send cell");
+
+  for (recept = 0; recept < n_recept; recept++) {
+    RSS(ref_node_local(to_node, recept_global[recept], &node), "g2l");
+    ref_interp->cell[node] = recept_cell[recept];
+    ref_interp->part[node] = recept_part[recept];
+    for (i = 0; i < 4; i++) {
+      ref_interp->bary[i + 4 * node] = recept_bary[i + 4 * recept];
+    }
+  }
+
+  /* remake interp search tree */
+  RSS(ref_search_free(ref_interp_search(ref_interp)), "free search tree");
+  RSS(ref_interp_create_search(ref_interp), "(re)build search tree");
+
+  ref_free(lookedup_donation);
+  ref_free(lookedup_cell);
+
+  ref_free(find_cell);
+  ref_free(find_ret);
+  ref_free(find_donation);
+  ref_free(find_nodes);
+
+  ref_free(donor_origpart);
+  ref_free(donor_part);
+  ref_free(donor_donation);
+  ref_free(donor_nodes);
+  ref_free(donor_bary);
+  ref_free(donor_global);
+  ref_free(donor_ret);
+  ref_free(donor_cell);
+
+  ref_free(recept_part);
+  ref_free(recept_ret);
+  ref_free(recept_global);
+  ref_free(recept_cell);
+  ref_free(recept_bary);
+
+  ref_free(from_part);
+
+  RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
+  if (ref_mpi_once(ref_grid_mpi(to_grid))) {
+    printf("final %e max error\n", max_error);
+  }
 
   return REF_SUCCESS;
 }
