@@ -897,6 +897,7 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_MPI ref_mpi = ref_subdiv_mpi(ref_subdiv);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT edge, node, i;
   REF_GLOB global;
   REF_INT part;
@@ -906,10 +907,28 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
   REF_DBL *edge_real;
   REF_DBL *edge_aux;
 
+  /* remove previously created new_node that is unmarked */
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    if (!ref_subdiv_mark(ref_subdiv, edge) &&
+        REF_EMPTY != ref_subdiv_node(ref_subdiv, edge)) {
+      node = ref_subdiv_node(ref_subdiv, edge);
+      RSS(ref_geom_remove_all(ref_geom, node), "remove geom from node");
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        RSS(ref_node_remove(ref_node, node), "owned, rm node with global");
+      } else {
+        RSS(ref_node_remove_without_global(ref_node, node),
+            "ghost, rm node without global");
+      }
+      ref_subdiv_node(ref_subdiv, edge) = REF_EMPTY;
+    }
+  }
+
   RSS(ref_node_synchronize_globals(ref_node), "sync glob");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    if (ref_subdiv_mark(ref_subdiv, edge)) {
+    if (ref_subdiv_mark(ref_subdiv, edge) &&
+        REF_EMPTY == ref_subdiv_node(ref_subdiv, edge)) {
       RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
       if (ref_mpi_rank(ref_mpi) == part) {
         RSS(ref_node_next_global(ref_node, &global), "next global");
@@ -945,14 +964,17 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node = ref_subdiv_node(ref_subdiv, edge);
     if (REF_EMPTY != node) {
-      edge_global[edge] = ref_node_global(ref_node, node);
-      edge_part[edge] = ref_node_part(ref_node, node);
-      for (i = 0; i < REF_NODE_REAL_PER; i++)
-        edge_real[i + REF_NODE_REAL_PER * edge] =
-            ref_node_real(ref_node, i, node);
-      for (i = 0; i < ref_node_naux(ref_node); i++)
-        edge_aux[i + ref_node_naux(ref_node) * edge] =
-            ref_node_aux(ref_node, i, node);
+      RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        edge_global[edge] = ref_node_global(ref_node, node);
+        edge_part[edge] = ref_node_part(ref_node, node);
+        for (i = 0; i < REF_NODE_REAL_PER; i++)
+          edge_real[i + REF_NODE_REAL_PER * edge] =
+              ref_node_real(ref_node, i, node);
+        for (i = 0; i < ref_node_naux(ref_node); i++)
+          edge_aux[i + ref_node_naux(ref_node) * edge] =
+              ref_node_aux(ref_node, i, node);
+      }
     }
   }
 
@@ -966,9 +988,9 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
         "aux ghost");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    node = ref_subdiv_node(ref_subdiv, edge);
     global = edge_global[edge];
-    if (REF_EMPTY == node && REF_EMPTY != global) {
+    if (REF_EMPTY != global) {
+      /* finds local if already inserted */
       RSS(ref_node_add(ref_node, global, &node), "add node");
       ref_subdiv_node(ref_subdiv, edge) = node;
       ref_node_part(ref_node, node) = edge_part[edge];
@@ -981,7 +1003,7 @@ static REF_STATUS ref_subdiv_new_node(REF_SUBDIV ref_subdiv) {
     }
   }
 
-  RSS(ref_geom_ghost(ref_grid_geom(ref_grid), ref_node), "fill new node geom");
+  RSS(ref_geom_ghost(ref_geom, ref_node), "fill new node geom");
 
   ref_free(edge_aux);
   ref_free(edge_real);
