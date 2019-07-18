@@ -21,7 +21,7 @@ continuous metric interpolation
  + seq cube-cylinder test
  + store background in grid
  + default for seq
- cache curvature_metric
+ + cache curvature_metric
  + parallel interp
  + load balance interp
  + pack interp
@@ -59,17 +59,9 @@ check that post conditions are implemented completely for all ops
 
 tess
  high order geometry visualization
- + complexity for surface adaptation
- + turn off surf bit after volume is filled
- + split egads surface tess, surface adaptation, and volume fill
  volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
- + tetgen poly format jaxa standard model
- + add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
  try gmsh
- + isotropic edge curvature
- + anisotropic feature size, edge length tangent, dist to other edge normal?
- + feature size accross thin shell geometry, i.e., curved cusp trailing edge
  near-tree to drive split for grid size gradation of this shells
  edge chord height warning/constraint?
 
@@ -258,6 +250,17 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ 1.9.0
+
++ complexity for surface adaptation
++ turn off surf bit after volume is filled
++ split egads surface tess, surface adaptation, and volume fill
++ tetgen poly format jaxa standard model
++ add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
++ isotropic edge curvature
++ anisotropic feature size, edge length tangent, dist to other edge normal?
++ feature size accross thin shell geometry, i.e., curved cusp trailing edge
 
 + euler conservative variable metric
 + abs value of hessian as last step
