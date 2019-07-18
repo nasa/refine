@@ -37,8 +37,8 @@
 
 /* Alauzet and A. Loseille doi:10.1016/j.jcp.2009.09.020
  * section 2.2.4.1. A double L2-projection */
-static REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid,
-                                               REF_DBL *scalar, REF_DBL *grad) {
+REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
+                                        REF_DBL *grad) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT i, node, cell, group, cell_node;

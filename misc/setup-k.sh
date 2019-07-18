@@ -5,13 +5,12 @@ set -x
 ./bootstrap
 
 module_path="/u/shared/fun3d/fun3d_users/modules"
-zoltan_path="/u/mpark/local/pkgs/Zoltan_v3.82/gcc_6.2.0-mpt-2.18a108"
-parmetis_path="/u/mpark/local/pkgs/parmetis-4.0.3/build/Linux-x86_64"
+zoltan_path="${module_path}/Zoltan/3.82-mpt-2.19-intel_2018.3.222"
+parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.19-intel_2018.3.222"
 egads_path="${module_path}/ESP/114/EngSketchPad"
 
-opt_parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.16-intel_2017.2.174"
-
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
+icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"
 
 mkdir -p strict
 ( cd strict && \
@@ -37,8 +36,8 @@ mkdir -p zoltan
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gcc_flags}" \
+    CC=icc \
+    CFLAGS="-DHAVE_MPI ${icc_flags}" \
     LIBS=-lmpi \
     ) \
     || exit
@@ -50,8 +49,8 @@ mkdir -p parmetis
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gcc_flags}" \
+    CC=icc \
+    CFLAGS="-DHAVE_MPI ${icc_flags}" \
     LIBS=-lmpi \
     ) \
     || exit
