@@ -18,7 +18,7 @@ if __name__ == "__main__":
         exit(0)
 
     for q in free_nodes:
-        queue_output = check_output("qstat -q | grep %s-standard | grep -v 512" % q, shell=True)
+        queue_output = check_output("qstat -q | grep %s-standard | grep -v 512 | grep -v K3" % q, shell=True)
         free_nodes[q]["selection weight"] = free_nodes[q]["nodes available"] - int(queue_output.split()[6])
 
         # Try to get K4 more often
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 print "K4-debug"
                 exit(0)
 
-    cores_count = {"K4": 40, "K2": 12, "K2a": 12}
+    cores_count = {"K4": 40, "K3": 16, "K2": 12, "K2a": 12}
 
     highest_weight = -99999
     best_queue_to_submit = ""
