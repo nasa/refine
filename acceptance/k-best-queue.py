@@ -4,7 +4,7 @@ from subprocess import check_output
 import re
 
 if __name__ == "__main__":
-    qstat_output = check_output("qstat -a | grep Free | egrep -v 'hmem|KNL|K2'", shell=True)
+    qstat_output = check_output("qstat -a | grep Free | egrep -v 'hmem|KNL|K2' | grep -v K3", shell=True)
     free_nodes = {}
     found_queue = False
     for line in qstat_output.split("\n"):
