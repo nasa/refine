@@ -1,0 +1,5 @@
+- proof read NEWS
+- mark version in src/todo
+- hard code version number
+- tag version
+- set versioning back to live
