@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 print "K4-debug"
                 exit(0)
 
-    cores_count = {"K4": 40, "K3": 16, "K2": 12, "K2a": 12}
+    cores_count = {"K4": 40, "K2": 12, "K2a": 12}
 
     highest_weight = -99999
     best_queue_to_submit = ""
