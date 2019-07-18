@@ -1,4 +1,17 @@
 
+Thu, Jul 18, 2019 : Released Refine 1.9.0
+
+- background grid load balanced with adapted grid
+- metric interpolation cached and reused when possible
+- parallel artifacts reduced with subdivision allowed on geometry
+- geometry constraint metric evaluated on background grid and interpolated
+- geometry constraint metric anisotropic for CAD feature size
+- geometry constraint metric gained edge curvature terms
+- complexity estimates for surface-only adaptation
+- ugrid64 format
+- 64bit global node (and cell indexes)
+- ref_inflate gained mapbc, family, and bc interface and parallel
+- module deploys match FUN3D v13.5
 - ref_cloud replaces ref_dict_aux for ref_recon
 - degenerate face uv bounded by degenerate edge uv range
 - interpolation to a subset of the domain
