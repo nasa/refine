@@ -690,7 +690,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
           fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
           "cad_data_size");
       if (verbose)
-        printf("cad_data_size %zd\n", ref_geom_cad_data_size(ref_geom));
+        printf("cad_data_size %ld\n", (long)ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
       ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
@@ -775,7 +775,7 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
           fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
           "cad_data_size");
       if (verbose)
-        printf("cad_data_size %zd\n", ref_geom_cad_data_size(ref_geom));
+        printf("cad_data_size %ld\n", (long)ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
       ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
