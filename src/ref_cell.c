@@ -678,10 +678,12 @@ REF_STATUS ref_cell_compact(REF_CELL ref_cell, REF_INT **o2n_ptr,
 
 REF_STATUS ref_cell_nodes(REF_CELL ref_cell, REF_INT cell, REF_INT *nodes) {
   REF_INT node;
-  if (cell < 0 || cell > ref_cell_max(ref_cell)) return REF_INVALID;
-  if (REF_EMPTY == ref_cell_c2n(ref_cell, 0, cell)) return REF_INVALID;
+
+  if (!ref_cell_valid(ref_cell, cell)) return REF_INVALID;
+
   for (node = 0; node < ref_cell_size_per(ref_cell); node++)
     nodes[node] = ref_cell_c2n(ref_cell, node, cell);
+
   return REF_SUCCESS;
 }
 

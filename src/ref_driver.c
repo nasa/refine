@@ -211,8 +211,8 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_grid_cache_background(ref_grid), "cache");
     ref_interp_continuously(ref_grid_interp(ref_grid)) =
-        !ref_mpi_para(ref_mpi) && !ref_grid_twod(ref_grid) &&
-        !ref_grid_surf(ref_grid) && continuous_interpolation;
+        !ref_grid_twod(ref_grid) && !ref_grid_surf(ref_grid) &&
+        continuous_interpolation;
     ref_mpi_stopwatch_stop(ref_mpi, "cache metric");
   }
 
