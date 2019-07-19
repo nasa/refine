@@ -492,6 +492,7 @@ static REF_STATUS ref_update_agent_seed(REF_INTERP ref_interp, REF_INT id,
 }
 
 REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
+  REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_INT i, j, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL xyz[3], error;
   if (NULL == ref_interp) {
@@ -515,31 +516,33 @@ REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
          ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 0, node),
          ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 1, node),
          ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 2, node));
-  RSS(ref_cell_nodes(ref_grid_tet(ref_interp_from_grid(ref_interp)),
-                     ref_interp->cell[node], nodes),
-      "node needs to be localized");
+  if (ref_mpi_rank(ref_mpi) == ref_interp->part[node]) {
+    RSS(ref_cell_nodes(ref_grid_tet(ref_interp_from_grid(ref_interp)),
+                       ref_interp->cell[node], nodes),
+        "node needs to be localized");
 
-  for (i = 0; i < 3; i++) xyz[i] = 0.0;
-  for (j = 0; j < 4; j++) {
-    for (i = 0; i < 3; i++) {
-      xyz[i] += ref_interp->bary[j + 4 * node] *
-                ref_node_xyz(ref_grid_node(ref_interp_from_grid(ref_interp)), i,
-                             nodes[j]);
+    for (i = 0; i < 3; i++) xyz[i] = 0.0;
+    for (j = 0; j < 4; j++) {
+      for (i = 0; i < 3; i++) {
+        xyz[i] += ref_interp->bary[j + 4 * node] *
+                  ref_node_xyz(ref_grid_node(ref_interp_from_grid(ref_interp)),
+                               i, nodes[j]);
+      }
     }
-  }
 
-  error =
-      pow(xyz[0] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
-                                0, node),
-          2) +
-      pow(xyz[1] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
-                                1, node),
-          2) +
-      pow(xyz[2] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
-                                2, node),
-          2);
-  error = sqrt(error);
-  printf("interp %f %f %f error %e\n", xyz[0], xyz[1], xyz[2], error);
+    error =
+        pow(xyz[0] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                  0, node),
+            2) +
+        pow(xyz[1] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                  1, node),
+            2) +
+        pow(xyz[2] - ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)),
+                                  2, node),
+            2);
+    error = sqrt(error);
+    printf("interp %f %f %f error %e\n", xyz[0], xyz[1], xyz[2], error);
+  }
 
   return REF_SUCCESS;
 }
