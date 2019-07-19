@@ -1676,7 +1676,7 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
   RNS(ref_interp, "ref_interp NULL");
   ref_mpi = ref_interp_mpi(ref_interp);
 
-  RAS(node < ref_interp_max(ref_interp), "more nodes added, should move only");
+  RAS(node <= ref_interp_max(ref_interp), "more nodes added, should move only");
 
   /* no starting guess, skip */
   if (REF_EMPTY == ref_interp->cell[node] ||
