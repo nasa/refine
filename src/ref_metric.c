@@ -379,6 +379,7 @@ static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INTERP ref_interp;
   REF_GRID from_grid;
   REF_NODE from_node;
@@ -411,7 +412,9 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   RAISE(ref_interp_locate_node(ref_interp, node));
 
   /* location unsuccessful */
-  if (REF_EMPTY == ref_interp_cell(ref_interp, node)) return REF_SUCCESS;
+  if (REF_EMPTY == ref_interp_cell(ref_interp, node) ||
+      ref_mpi_rank(ref_mpi) != ref_interp->part[node])
+    return REF_SUCCESS;
 
   RSS(ref_cell_nodes(ref_grid_tet(from_grid), ref_interp_cell(ref_interp, node),
                      nodes),
