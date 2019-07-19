@@ -140,6 +140,18 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "cleanup");
   }
 
+  { /* ref_cell_nodes bounds */
+    REF_CELL ref_cell;
+    REF_INT max;
+    REF_INT cell, nodes[4];
+    RSS(ref_tet(&ref_cell), "create");
+    max = ref_cell_max(ref_cell);
+    cell = -1;
+    REIS(REF_INVALID, ref_cell_nodes(ref_cell, cell, nodes), "invalid cell");
+    cell = max;
+    REIS(REF_INVALID, ref_cell_nodes(ref_cell, cell, nodes), "invalid cell");
+  }
+
   { /* remove */
     REF_CELL ref_cell;
     REF_INT nodes[4];
