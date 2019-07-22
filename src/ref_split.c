@@ -1202,7 +1202,6 @@ REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid) {
   REF_BOOL allowed, tri_side;
   REF_GLOB global;
   REF_INT new_node;
-  REF_DBL ratio01;
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
 
@@ -1234,11 +1233,6 @@ REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid) {
                                     ref_edge_e2n(ref_edge, 1, edge)) &&
                !tri_side);
     if (!allowed) continue;
-
-    RSS(ref_node_ratio(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                       ref_edge_e2n(ref_edge, 1, edge), &ratio01),
-        "ratio01");
-    printf("splitting ratio %f\n", ratio01);
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
