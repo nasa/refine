@@ -62,6 +62,9 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->smooth_per_pass = 1;
   ref_adapt->smooth_min_quality = 1.0e-3;
 
+  ref_adapt->swap_max_degree = 10000;
+  ref_adapt->swap_min_quality = 0.4;
+
   ref_adapt->post_min_normdev = 0.0;
   ref_adapt->post_min_ratio = 1.0e-3;
   ref_adapt->post_max_ratio = 3.0;
@@ -91,6 +94,9 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
 
   ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
+
+  ref_adapt->swap_max_degree = original->swap_max_degree;
+  ref_adapt->swap_min_quality = original->swap_min_quality;
 
   ref_adapt->post_min_normdev = original->post_min_normdev;
   ref_adapt->post_min_ratio = original->post_min_ratio;
@@ -292,6 +298,9 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   target_quality = MAX(MIN(0.1, min_quality), 1.0e-3);
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
+
+  ref_adapt->swap_max_degree = 10000;
+  ref_adapt->swap_min_quality = 0.4;
 
   ref_node->min_volume = MIN(1.0e-15, 0.01 * min_metric_vol);
 
