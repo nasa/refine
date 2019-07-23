@@ -33,8 +33,8 @@ function adapt_cycle {
 ${two}/ref_acceptance -ugawg ${field} ega.meshb ega-metric.solb
 
 adapt_cycle ega para01 2 1
-adapt_cycle para01 para02 5 1
-adapt_cycle para02 para03 10 4
+adapt_cycle para01 para02 15 4
+adapt_cycle para02 para03 15 4
 adapt_cycle para03 para04 15 4
 
 cat para04.status

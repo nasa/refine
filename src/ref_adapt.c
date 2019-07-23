@@ -43,7 +43,6 @@
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   REF_ADAPT ref_adapt;
-  REF_DBL overshoot = 1.1;
 
   ref_malloc(*ref_adapt_ptr, 1, REF_ADAPT_STRUCT);
 
@@ -51,12 +50,12 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
 
   ref_adapt->split_per_pass = 1;
   ref_adapt->split_ratio_growth = REF_FALSE;
-  ref_adapt->split_ratio = sqrt(2.0) * overshoot;
+  ref_adapt->split_ratio = sqrt(2.0);
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
 
   ref_adapt->collapse_per_pass = 5;
-  ref_adapt->collapse_ratio = 1.0 / (sqrt(2.0) * overshoot);
+  ref_adapt->collapse_ratio = 1.0 / sqrt(2.0);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
 
   ref_adapt->smooth_per_pass = 1;
@@ -323,10 +322,15 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
   }
 
+  ref_adapt->split_ratio = sqrt(2.0);
+  if (nodes_per_complexity > 3.0)
+    ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
+
   if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
       ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
       (max_age < 50 ||
-       (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0))) {
+       (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0)) &&
+      1.5 > ref_adapt->split_ratio) {
     *all_done = REF_TRUE;
     if (ref_grid_once(ref_grid)) {
       printf("termination recommended\n");
@@ -337,9 +341,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
 
   if (ref_grid_once(ref_grid)) {
-    printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f\n",
+    printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f split %6.2f\n",
            target_quality, ref_adapt->post_min_normdev,
-           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
+           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio,
+           ref_adapt->split_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_normdev);
     printf("nnode %10d ncell %12ld complexity %12.1f ratio %5.2f\n", nnode,
@@ -485,6 +490,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   for (pass = 0; pass < ref_grid_adapt(ref_grid, collapse_per_pass); pass++) {
     RSS(ref_collapse_pass(ref_grid), "col pass");
+    RSS(ref_cavity_pass(ref_grid), "cavity pass");
     ref_gather_blocking_frame(ref_grid, "collapse");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "collapse geom topo check");
@@ -498,19 +504,13 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_parameter(ref_grid, all_done), "param");
   }
 
-  RSS(ref_cavity_pass(ref_grid), "cavity pass");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "cavity geom topo check");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt cav");
-
   for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
     if (ref_grid_surf(ref_grid)) {
       RSS(ref_split_surf_pass(ref_grid), "split surfpass");
     } else {
       RSS(ref_split_pass(ref_grid), "split pass");
     }
+    RSS(ref_cavity_pass(ref_grid), "cavity pass");
     ref_gather_blocking_frame(ref_grid, "split");
     if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))
@@ -533,15 +533,9 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     }
   }
 
-  RSS(ref_cavity_pass(ref_grid), "cavity pass");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "cavity geom topo check");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt cav");
-
   for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
     RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
+    RSS(ref_cavity_pass(ref_grid), "cavity pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
