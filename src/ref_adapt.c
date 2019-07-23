@@ -329,7 +329,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
       ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
       (max_age < 50 ||
-       (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0))) {
+       (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0)) &&
+      1.5 > ref_adapt->split_ratio) {
     *all_done = REF_TRUE;
     if (ref_grid_once(ref_grid)) {
       printf("termination recommended\n");
