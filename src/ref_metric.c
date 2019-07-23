@@ -982,7 +982,7 @@ REF_STATUS ref_metric_interpolated_curvature(REF_GRID ref_grid) {
 
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(metric, ref_grid), "curve");
-  for (gradation = 0; gradation < 10; gradation++) {
+  for (gradation = 0; gradation < 20; gradation++) {
     RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0), "grad");
   }
   RSS(ref_metric_to_node(metric, ref_node), "to node");

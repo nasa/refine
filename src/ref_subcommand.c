@@ -29,6 +29,9 @@
 #include "ref_geom.h"
 #include "ref_grid.h"
 
+#include "ref_histogram.h"
+#include "ref_metric.h"
+#include "ref_split.h"
 #include "ref_validation.h"
 
 #include "ref_export.h"
@@ -129,12 +132,21 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
   ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
 
+  RSS(ref_split_edge_geometry(ref_grid), "split geom");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+
   sprintf(filename, "%s-vol.meshb", project);
   printf("export %s\n", filename);
   RSS(ref_export_by_extension(ref_grid, filename), "vol export");
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
-  RSS(ref_grid_free(ref_grid), "create");
+  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+  RSS(ref_histogram_quality(ref_grid), "gram");
+  RSS(ref_histogram_ratio(ref_grid), "gram");
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
+
+  RSS(ref_grid_free(ref_grid), "free grid");
 
   return REF_SUCCESS;
 shutdown:

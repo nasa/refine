@@ -1360,7 +1360,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    if (quality < 0.1) {
+    if (quality < ref_grid_adapt(ref_grid, swap_min_quality)) {
       best_other = REF_EMPTY;
       best = -2.0;
       for (other = 0; other < 12; other++) {
@@ -1373,7 +1373,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         if (allowed) {
           RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
               "edge degree");
-          if (degree > 12) continue;
+          if (degree > ref_grid_adapt(ref_grid, swap_min_quality)) continue;
           RSS(ref_cavity_create(&ref_cavity), "create");
           RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
                                   nodes[n2]),

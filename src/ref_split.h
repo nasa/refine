@@ -66,6 +66,8 @@ REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
                                   REF_INT skip);
 
+REF_STATUS ref_split_edge_geometry(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_SPLIT_H */

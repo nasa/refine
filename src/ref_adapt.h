@@ -44,6 +44,9 @@ struct REF_ADAPT_STRUCT {
   REF_INT smooth_per_pass;
   REF_DBL smooth_min_quality;
 
+  REF_INT swap_max_degree;
+  REF_DBL swap_min_quality;
+
   REF_DBL post_min_normdev;
   REF_DBL post_min_ratio;
   REF_DBL post_max_ratio;
