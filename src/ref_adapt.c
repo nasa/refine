@@ -322,6 +322,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
   }
 
+  ref_adapt->split_ratio = sqrt(2.0);
+  if (nodes_per_complexity > 3.0)
+    ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
+
   if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
       ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
       (max_age < 50 ||
@@ -336,9 +340,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
 
   if (ref_grid_once(ref_grid)) {
-    printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f\n",
+    printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f split %6.2f\n",
            target_quality, ref_adapt->post_min_normdev,
-           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio);
+           ref_adapt->post_min_ratio, ref_adapt->post_max_ratio,
+           ref_adapt->split_ratio);
     printf("max degree %d max age %d normdev %7.4f\n", max_degree, max_age,
            min_normdev);
     printf("nnode %10d ncell %12ld complexity %12.1f ratio %5.2f\n", nnode,
