@@ -1,42 +1,12 @@
 
-bleme
- spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
- strong bc lambda reconstruction: use constant term of quadratic fit
-
 alternating RCB part
  n-medians
+ref_partition diffusion
 
 configure with metis only, when parmetis not provided
 64bit metis/parmetis?
 
 remove sanitize_metric option from ref_driver
-
-continuous metric interpolation
- + pair and store interp at startup
- + incremental interp for new
- + incremental interp for move
- + tree for boundary
- + store new node assoc
- + seq cube test
- + seq cube-cylinder test
- + store background in grid
- + default for seq
- + cache curvature_metric
- + parallel interp
- + load balance interp
- + pack interp
- + rebuild search tree
- fill in located at end of pass
- + ref_metric_interpolate no twod, take ref_interp
- + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
-
-partition artifacts
-  ref_subdiv only turn off marks with neg vol tet
-    ref geom add between xyz location switch to element/nodes
-    ref subdiv test xyz
-    ref node vol xyz pointers
-    interate on unmark
-  ref_partition diffusion
 
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
@@ -66,7 +36,7 @@ tess
  edge chord height warning/constraint?
 
 C2S
- acceptance test merge build
+ + acceptance test merge build
  how/when to fail fast?
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
@@ -106,6 +76,10 @@ cavity operator in 2D/3D
 ref_recon
   twod l2projection
 
+bleme
+ spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
+ strong bc lambda reconstruction: use constant term of quadratic fit
+
 multiscale entropy and/or entropy adjoint (for heating)
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
 ref_phys_test extraction from ref_interp
@@ -124,7 +98,6 @@ ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
-initialize metric to unit?
 cache curvature metric or apply to input (too much refinment of coarse grids)
 always limit implied metric distance after every interp?
 
@@ -251,7 +224,34 @@ mixed element in refine/two
 
 +++++++++++++++++
 
+
+
++ continuous metric interpolation
+ + pair and store interp at startup
+ + incremental interp for new
+ + incremental interp for move
+ + tree for boundary
+ + store new node assoc
+ + seq cube test
+ + seq cube-cylinder test
+ + store background in grid
+ + default for seq
+ + cache curvature_metric
+ + parallel interp
+ + load balance interp
+ + pack interp
+ + rebuild search tree
+ + fill in located at end of pass
+ + ref_metric_interpolate no twod, take ref_interp
+ + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
+
 + 1.9.0
+
++ ref_subdiv only turn off marks with neg vol tet
+ + ref geom add between xyz location switch to element/nodes
+ + ref subdiv test xyz
+ + ref node vol xyz pointers
+ + iterate on unmark
 
 + complexity for surface adaptation
 + turn off surf bit after volume is filled
@@ -372,6 +372,8 @@ mixed element in refine/two
   + node and cell reordering for cache
   + cell pack: insert in first node index order
   + compact adj (happens narturally during cell rodering)
+
++ initialize metric to unit
 
 + always store metric in log form
   + eliminate direct structure access
