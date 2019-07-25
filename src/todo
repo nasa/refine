@@ -1,57 +1,4 @@
 
-alternating RCB part
- n-medians
-ref_partition diffusion
-
-configure with metis only, when parmetis not provided
-64bit metis/parmetis?
-
-remove sanitize_metric option from ref_driver
-
-split public/private ref_defs.h
-namespace ABS, MIN, MAX
-
-mpi allmin allmax
-
-reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
-
-extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
-
-minimize duration of lazy global delete
-
-protect surface folds and high curvature
- filter based on neighborhood
-
-check that post conditions are implemented completely for all ops
-  extract/combine post adaptation operator checks and status
-  ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
-  tattle throw out out range
-
-tess
- high order geometry visualization
- volume fill: merge import grid, remove specialized readers
- unfreeze edges for AFLR volume
- try gmsh
- near-tree to drive split for grid size gradation of this shells
- edge chord height warning/constraint?
-
-C2S
- + acceptance test merge build
- how/when to fail fast?
- update best practice multiscale in docs
-  gradation, reconstruction, parallel, field for speed regime
- + module deploys
-
-improve CI test
-- make check stack fuzz
-- acceptance
-  - validate normal deviation (make metric big across cylinder)
-  - checks interp error for functions
-  + C2S bootstrap
-  + add om6 metric case to acceptance (part one for nnodesg <10k?)
-
-report threshold means
-
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   implement more in cavity
@@ -72,6 +19,53 @@ cavity operator in 2D/3D
   extract skip face with node
   2D cavity operator for surf geom edges that allows multiple edge types?
   cavity operator parallel?
+
+alternating RCB part
+ n-medians
+ref_partition diffusion
+
+configure with metis only, when parmetis not provided
+64bit metis/parmetis?
+
+remove sanitize_metric option from ref_driver
+
+split public/private ref_defs.h
+namespace ABS, MIN, MAX
+
+mpi allmin allmax
+
+reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
+
+extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
+
+minimize duration of lazy global delete
+
+protect geom constraint metric from surface folds and high curvature
+ filter based on neighborhood
+
+check that post conditions are implemented completely for all ops
+  extract/combine post adaptation operator checks and status
+  ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
+  tattle throw out out range
+
+tess
+ high order geometry visualization
+ volume fill: merge import grid, remove specialized readers
+ unfreeze edges for AFLR volume
+ try gmsh
+ near-tree for grid size gradation of thin shells
+ edge chord height warning/constraint?
+
+C2S
+ how/when to fail fast?
+ update best practice multiscale in docs
+  gradation, reconstruction, parallel, field for speed regime
+
+improve CI test
+ make check stack fuzz
+ big acceptance test
+ validate normal deviation (make metric big across cylinder)
+ checks interp error for functions
 
 ref_recon
   twod l2projection
@@ -122,6 +116,7 @@ smooth verify improvement
 optimized 4th tet node placement
 
 robustness and metric conformity
+ report threshold means
  pliant vertex smoothing
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
@@ -133,7 +128,6 @@ robustness and metric conformity
   rigorous way to set these
  split
   insert optimized node location (uv,xyz) with validity constraint
-  interpolate metric after split
  collapse
   cavity operator
   examine triangle MR
@@ -244,6 +238,7 @@ mixed element in refine/two
  + fill in located at end of pass
  + ref_metric_interpolate no twod, take ref_interp
  + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
+ + interpolate metric after split
 
 + 1.9.0
 
@@ -424,6 +419,11 @@ mixed element in refine/two
 
 + cube/polar-2 para/seq metric conformity differences
 + sinfun stability
+
++ acceptance test merge build
++ module deploys
++ C2S bootstrap test
++ add om6 metric case to acceptance (part one for nnodesg <10k?)
 
 + parallel kexact Hessian reconstruction
 
