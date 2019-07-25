@@ -142,12 +142,10 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
                               REF_BOOL *visible);
 REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity);
-REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg);
 
 REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face);
-REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_INT face);
 
 REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 

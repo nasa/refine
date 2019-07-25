@@ -793,40 +793,6 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_shrink_visible(REF_CAVITY ref_cavity) {
-  REF_INT node = ref_cavity_node(ref_cavity);
-  REF_INT face;
-  REF_BOOL visible;
-  REF_BOOL keep_growing;
-  REF_STATUS status;
-
-  keep_growing = REF_TRUE;
-  while (keep_growing) {
-    keep_growing = REF_FALSE;
-    each_ref_cavity_valid_face(ref_cavity, face) {
-      /* skip a face attached to node */
-      if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
-          node == ref_cavity_f2n(ref_cavity, 1, face))
-        continue;
-      if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
-
-      RSS(ref_cavity_visible(ref_cavity, face, &visible), "free");
-      if (!visible) {
-        status = ref_cavity_shrink_face(ref_cavity, face);
-        RXS(status, REF_INVALID, "shrink face");
-        if (REF_SUCCESS == status) {
-          keep_growing = REF_TRUE;
-        } else {
-          RSS(ref_cavity_tec(ref_cavity, "ref_cavity_debug_shrink.tec"), "tec");
-          THROW("boundary, see debug");
-        }
-      }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -928,32 +894,6 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   if (have_cell0 == have_cell1) THROW("cavity same state");
   if (have_cell0) RSS(ref_cavity_add_tet(ref_cavity, tet1), "add c1");
   if (have_cell1) RSS(ref_cavity_add_tet(ref_cavity, tet0), "add c0");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_cavity_shrink_face(REF_CAVITY ref_cavity, REF_INT face) {
-  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
-  REF_INT face_nodes[4];
-  REF_BOOL have_cell0, have_cell1;
-  REF_INT tet0, tet1;
-
-  face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-  face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-  face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-  face_nodes[3] = face_nodes[0];
-  RSS(ref_cell_with_face(ref_cell, face_nodes, &tet0, &tet1),
-      "unable to find tets with face");
-  if (REF_EMPTY == tet0) THROW("cavity tets missing");
-  /* boundary is allowed, use the interior tet */
-
-  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0, &have_cell0),
-      "cell0");
-  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet1, &have_cell1),
-      "cell1");
-  if (have_cell0 == have_cell1) THROW("cavity same state");
-  if (!have_cell0) RSS(ref_cavity_rm_tet(ref_cavity, tet1), "add c1");
-  if (!have_cell1) RSS(ref_cavity_rm_tet(ref_cavity, tet0), "add c0");
 
   return REF_SUCCESS;
 }
