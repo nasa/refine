@@ -854,7 +854,7 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
     complexity_scale = 1.0;
   }
 
-  for (relaxations = 0; relaxations < 10; relaxations++) {
+  for (relaxations = 0; relaxations < 20; relaxations++) {
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(complexity, current_complexity)) {
       return REF_DIV_ZERO;
@@ -1004,7 +1004,7 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
 
   ref_malloc(curvature_metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(curvature_metric, ref_grid), "curve");
-  for (gradation = 0; gradation < 5; gradation++) {
+  for (gradation = 0; gradation < 20; gradation++) {
     RSS(ref_metric_mixed_space_gradation(curvature_metric, ref_grid, -1.0,
                                          -1.0),
         "grad");
