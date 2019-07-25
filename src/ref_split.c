@@ -201,7 +201,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
       RSS(ref_cavity_enlarge_conforming(ref_cavity), "cav enlarge");
       REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
            "enlarge not successful");
-      RSS(ref_cavity_replace_tri(ref_cavity), "cav replace");
+      RSS(ref_cavity_replace(ref_cavity), "cav replace");
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
     }
@@ -385,7 +385,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       RSS(ref_cavity_enlarge_visible(ref_cavity), "cav enlarge");
       REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
            "enlarge not successful");
-      RSS(ref_cavity_replace_tet(ref_cavity), "cav replace");
+      RSS(ref_cavity_replace(ref_cavity), "cav replace");
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
     }
