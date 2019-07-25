@@ -113,11 +113,11 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
                                 REF_INT *found_face, REF_BOOL *reversed);
 
 REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri);
-REF_STATUS ref_cavity_replace_tri(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
 REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet);
-REF_STATUS ref_cavity_replace_tet(REF_CAVITY ref_cavity);
+
+REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_form_empty(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                  REF_INT node);
