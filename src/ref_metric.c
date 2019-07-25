@@ -854,7 +854,7 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
     complexity_scale = 1.0;
   }
 
-  for (relaxations = 0; relaxations < 10; relaxations++) {
+  for (relaxations = 0; relaxations < 20; relaxations++) {
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(complexity, current_complexity)) {
       return REF_DIV_ZERO;
