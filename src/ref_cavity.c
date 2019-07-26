@@ -566,7 +566,8 @@ REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
+static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
+                                      REF_BOOL *manifold) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   REF_INT seg;

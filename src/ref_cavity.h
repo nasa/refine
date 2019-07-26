@@ -134,7 +134,6 @@ REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
                                            REF_GRID ref_grid, REF_INT node0,
                                            REF_INT node1, REF_INT new_node);
 
-REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold);
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming);
 REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);
