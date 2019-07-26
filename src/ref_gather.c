@@ -517,6 +517,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_INT edge, node0, node1;
   REF_EDGE ref_edge;
   REF_DBL edge_ratio;
+  REF_BOOL active;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -560,28 +561,38 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     scalar[1 + 3 * node] = (REF_DBL)ref_node_age(ref_node, node);
     scalar[2 + 3 * node] = 0.0;
   }
-  if (ref_geom_model_loaded(ref_geom)) {
+  if (ref_geom_model_loaded(ref_geom) || ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_node, node) {
       scalar[0 + 3 * node] = 2.0;
       scalar[1 + 3 * node] = 1.0;
       scalar[2 + 3 * node] = 1.0;
     }
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
-      each_ref_cell_cell_node(ref_cell, cell_node) {
-        scalar[0 + 3 * nodes[cell_node]] =
-            MIN(scalar[0 + 3 * nodes[cell_node]], dot);
+    if (ref_geom_model_loaded(ref_geom)) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          scalar[0 + 3 * nodes[cell_node]] =
+              MIN(scalar[0 + 3 * nodes[cell_node]], dot);
+        }
       }
     }
     RSS(ref_edge_create(&ref_edge, ref_grid), "create edges");
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
       node0 = ref_edge_e2n(ref_edge, 0, edge);
       node1 = ref_edge_e2n(ref_edge, 1, edge);
-      RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
-      scalar[1 + 3 * node0] = MIN(scalar[1 + 3 * node0], edge_ratio);
-      scalar[1 + 3 * node1] = MIN(scalar[1 + 3 * node1], edge_ratio);
-      scalar[2 + 3 * node0] = MAX(scalar[2 + 3 * node0], edge_ratio);
-      scalar[2 + 3 * node1] = MAX(scalar[2 + 3 * node1], edge_ratio);
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_node_edge_twod(ref_node, node0, node1, &active),
+            "act twod edge");
+      } else {
+        active = REF_TRUE;
+      }
+      if (active) {
+        RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
+        scalar[1 + 3 * node0] = MIN(scalar[1 + 3 * node0], edge_ratio);
+        scalar[1 + 3 * node1] = MIN(scalar[1 + 3 * node1], edge_ratio);
+        scalar[2 + 3 * node0] = MAX(scalar[2 + 3 * node0], edge_ratio);
+        scalar[2 + 3 * node1] = MAX(scalar[2 + 3 * node1], edge_ratio);
+      }
     }
     RSS(ref_edge_free(ref_edge), "free edges");
   }
