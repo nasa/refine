@@ -470,8 +470,9 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_gem(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                               REF_INT node0, REF_INT node1, REF_INT node) {
+REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
+                                     REF_INT node0, REF_INT node1,
+                                     REF_INT node) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell_node, cell;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
@@ -566,7 +567,8 @@ REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity, REF_BOOL *manifold) {
+static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
+                                      REF_BOOL *manifold) {
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   REF_INT seg;
@@ -1306,8 +1308,8 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
               "edge degree");
           if (degree > ref_grid_adapt(ref_grid, swap_min_quality)) continue;
           RSS(ref_cavity_create(&ref_cavity), "create");
-          RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
-                                  nodes[n2]),
+          RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
+                                        nodes[n1], nodes[n2]),
               "cavity gem");
           if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
             REF_WHERE("enlarge"); /* note but skip cavity failures */
@@ -1328,8 +1330,8 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         n0 = others[best_other][0];
         n1 = others[best_other][1];
         n2 = others[best_other][2];
-        RSS(ref_cavity_form_gem(ref_cavity, ref_grid, nodes[n0], nodes[n1],
-                                nodes[n2]),
+        RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
+                                      nodes[n1], nodes[n2]),
             "cavity gem");
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
