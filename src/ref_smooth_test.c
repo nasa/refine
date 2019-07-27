@@ -452,7 +452,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_smooth_tri_ideal(ref_grid, node, cell, ideal), "ideal");
     RWDS(0.5, ideal[0], -1, "ideal x");
     RWDS(1.0, ideal[1], -1, "ideal y");
-    RWDS(2.0 * 0.5 * sqrt(3.0), ideal[2], -1, "ideal z");
+    RWDS(1.091123635971721, ideal[2], -1, "ideal z");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
