@@ -146,7 +146,7 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version) {
       t = atan2(z, x);
       h_y = 1.0;
       h_t = 0.1;
-      h_r = 0.025;
+      h_r = 0.01;
     }
     t = atan2(z, x);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
