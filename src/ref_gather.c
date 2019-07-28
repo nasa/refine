@@ -513,7 +513,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_INT node;
   REF_GLOB nnode, *l2c;
   REF_LONG ncell;
-  REF_DBL *scalar, dot;
+  REF_DBL *scalar, dot, quality;
   REF_INT edge, node0, node1;
   REF_EDGE ref_edge;
   REF_DBL edge_ratio;
@@ -573,6 +573,15 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
         each_ref_cell_cell_node(ref_cell, cell_node) {
           scalar[0 + 3 * nodes[cell_node]] =
               MIN(scalar[0 + 3 * nodes[cell_node]], dot);
+        }
+      }
+    }
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        RSS(ref_node_tri_quality(ref_node, nodes, &quality), "tri qual");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          scalar[0 + 3 * nodes[cell_node]] =
+              MIN(scalar[0 + 3 * nodes[cell_node]], quality);
         }
       }
     }
