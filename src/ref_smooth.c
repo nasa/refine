@@ -213,9 +213,10 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT n0, n1;
-  REF_INT ixyz;
+  REF_INT ixyz, i;
   REF_DBL dn[3];
   REF_DBL dt[3];
+  REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m[6];
   REF_DBL m[6];
   REF_DBL tangent_length, projection, scale, length_in_metric;
 
@@ -257,8 +258,15 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   }
 
   RSS(ref_math_normalize(dn), "normalize direction");
-  /* would an averaged metric be more appropriate? */
-  RSS(ref_node_metric_get(ref_node, node, m), "get node m");
+
+  /* averaged metric */
+  RSS(ref_node_metric_get_log(ref_node, n0, log_m0), "get n0 log m");
+  RSS(ref_node_metric_get_log(ref_node, n1, log_m1), "get n1 log m");
+  RSS(ref_node_metric_get_log(ref_node, node, log_m2), "get node log m");
+  for (i = 0; i < 6; i++)
+    log_m[i] = (1.0 / 3.0) * (log_m0[i] + log_m1[i] + log_m2[i]);
+  RSS(ref_matrix_exp_m(log_m, m), "exp avg");
+
   length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
 
   scale = 0.5 * sqrt(3.0); /* altitude of equilateral triangle */
