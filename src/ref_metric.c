@@ -122,21 +122,33 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node) {
+REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version) {
   REF_INT node;
-  REF_DBL x, z, r, t;
-  REF_DBL h_y, h_t, h_r, h0;
+  REF_DBL x = 0, z = 0, r, t;
+  REF_DBL h_y = 0, h_t = 0, h_r = 0, h0;
   REF_DBL d[12], m[6];
 
+  RAS(2 == version || 11 == version, "version not implemented");
+
   each_ref_node_valid_node(ref_node, node) {
-    x = ref_node_xyz(ref_node, 0, node);
-    z = ref_node_xyz(ref_node, 2, node);
-    r = sqrt(x * x + z * z);
+    if (2 == version) {
+      x = ref_node_xyz(ref_node, 0, node);
+      z = ref_node_xyz(ref_node, 2, node);
+      r = sqrt(x * x + z * z);
+      h_y = 1.0;
+      h_t = 0.1;
+      h0 = 0.001;
+      h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
+    }
+    if (11 == version) {
+      x = ref_node_xyz(ref_node, 0, node) + 0.5;
+      z = ref_node_xyz(ref_node, 2, node) + 0.5;
+      t = atan2(z, x);
+      h_y = 1.0;
+      h_t = 0.1;
+      h_r = 0.025;
+    }
     t = atan2(z, x);
-    h_y = 1.0;
-    h_t = 0.1;
-    h0 = 0.001;
-    h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
     ref_matrix_eig(d, 1) = 1.0 / (h_t * h_t);
     ref_matrix_eig(d, 2) = 1.0 / (h_y * h_y);
@@ -158,35 +170,9 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node) {
 
 REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version) {
   REF_INT node;
-  REF_DBL x, y, z, r, t;
-  REF_DBL h_y, h_z, h_t, h_r, h0, d0;
+  REF_DBL x, y, r, t;
+  REF_DBL h_z, h_t, h_r, h0, d0;
   REF_DBL d[12], m[6];
-
-  if (11 == version) {
-    each_ref_node_valid_node(ref_node, node) {
-      x = ref_node_xyz(ref_node, 0, node) + 0.5;
-      z = ref_node_xyz(ref_node, 2, node) + 0.5;
-      t = atan2(z, x);
-      h_y = 0.1;
-      h_t = 0.1;
-      h_r = 0.025;
-      ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
-      ref_matrix_eig(d, 1) = 1.0 / (h_t * h_t);
-      ref_matrix_eig(d, 2) = 1.0 / (h_y * h_y);
-      ref_matrix_vec(d, 0, 0) = cos(t);
-      ref_matrix_vec(d, 1, 0) = 0.0;
-      ref_matrix_vec(d, 2, 0) = sin(t);
-      ref_matrix_vec(d, 0, 1) = -sin(t);
-      ref_matrix_vec(d, 1, 1) = 0.0;
-      ref_matrix_vec(d, 2, 1) = cos(t);
-      ref_matrix_vec(d, 0, 2) = 0.0;
-      ref_matrix_vec(d, 1, 2) = 1.0;
-      ref_matrix_vec(d, 2, 2) = 0.0;
-      ref_matrix_form_m(d, m);
-      RSS(ref_node_metric_set(ref_node, node, m), "set node met");
-    }
-    return REF_SUCCESS;
-  }
 
   if (1 == version || 2 == version) {
     each_ref_node_valid_node(ref_node, node) {

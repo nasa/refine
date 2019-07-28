@@ -154,11 +154,6 @@ int main(int argc, char *argv[]) {
       printf(" -ugawg circle metric\n");
       RSS(ref_metric_circle_node(ref_grid_node(ref_grid)), "side");
     }
-    if (strcmp(argv[2], "radial-1") == 0) {
-      metric_recognized = REF_TRUE;
-      printf(" -ugawg radial-1 metric\n");
-      RSS(ref_metric_ugawg_node(ref_grid_node(ref_grid), 11), "p2");
-    }
     RAS(metric_recognized, "did not recognize metric field name");
     printf("%s metric exported\n", argv[4]);
     RSS(ref_gather_metric(ref_grid, argv[4]), "in");
@@ -173,19 +168,21 @@ int main(int argc, char *argv[]) {
       "arg");
 
   if (REF_EMPTY != polar2d_pos) {
-    if (4 != argc) {
+    if (5 != argc || 1 != polar2d_pos) {
       printf("usage:\n");
-      printf("  %s -polar2d input.grid_format output.metric\n", argv[0]);
+      printf("  %s -polar2d version input.grid_format output.metric\n",
+             argv[0]);
       RSS(ref_mpi_free(ref_mpi), "mpi free");
       RSS(ref_mpi_stop(), "stop");
       return (1);
     }
     printf("%s reading\n", argv[3]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "in");
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
 
-    RSS(ref_metric_polar2d_node(ref_grid_node(ref_grid)), "lin");
-    printf("%s metric exported\n", argv[3]);
-    RSS(ref_gather_metric(ref_grid, argv[3]), "in");
+    printf("%d version\n", atoi(argv[2]));
+    RSS(ref_metric_polar2d_node(ref_grid_node(ref_grid), atoi(argv[2])), "lin");
+    printf("%s metric exported\n", argv[4]);
+    RSS(ref_gather_metric(ref_grid, argv[4]), "in");
     RSS(ref_grid_free(ref_grid), "grid free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
