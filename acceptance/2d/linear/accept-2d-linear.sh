@@ -39,5 +39,5 @@ adapt_cycle accept-2d-linear-03
 adapt_cycle accept-2d-linear-04
 
 cat accept-2d-linear-04.status
-../../../check.rb accept-2d-linear-04.status 0.40 1.6
+../../check.rb accept-2d-linear-04.status 0.40 1.6
 
