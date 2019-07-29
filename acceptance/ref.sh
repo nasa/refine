@@ -207,10 +207,10 @@ cd ${source_dir}/acceptance/2d/linear
 ( ./accept-2d-linear.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-2d-polar-2-two
+LOG=${root_dir}/log.accept-2d-polar-2
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/polar-2/two
-( ./accept-2d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/2d/polar-2
+( ./accept-2d-polar-2.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-2d-masabl
