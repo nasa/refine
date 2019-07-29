@@ -164,14 +164,12 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  RXS(ref_args_find(argc, argv, "-twod", &twod_pos), REF_NOT_FOUND,
-      "arg");
+  RXS(ref_args_find(argc, argv, "-twod", &twod_pos), REF_NOT_FOUND, "arg");
 
   if (REF_EMPTY != twod_pos) {
     if (5 != argc || 1 != twod_pos) {
       printf("usage:\n");
-      printf("  %s -twod version input.grid_format output.metric\n",
-             argv[0]);
+      printf("  %s -twod version input.grid_format output.metric\n", argv[0]);
       RSS(ref_mpi_free(ref_mpi), "mpi free");
       RSS(ref_mpi_stop(), "stop");
       return (1);

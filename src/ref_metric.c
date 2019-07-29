@@ -124,15 +124,24 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
 }
 
 REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
-					 const char *version) {
+                                         const char *version) {
   REF_INT node;
   REF_DBL x = 0, z = 0, r, t;
-  REF_DBL h_y = 0, h_t = 0, h_r = 0, h0;
+  REF_DBL h_y = 0, h_t = 0, h_r = 0, h0, h, hh;
   REF_DBL d[12], m[6];
-  REF_BOOL metric_recognized;
-  
+  REF_BOOL metric_recognized = REF_FALSE;
+
   each_ref_node_valid_node(ref_node, node) {
-    metric_recognized = REF_FALSE;
+    if (strcmp(version, "side") == 0) {
+      metric_recognized = REF_TRUE;
+      h0 = 0.1;
+      h = 0.01;
+      hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 2, node) - 0.5) / 0.5;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0, 1.0, 0,
+                               1.0 / (hh * hh)),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "polar-2") == 0) {
       metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node);
@@ -152,7 +161,6 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       h_t = 0.1;
       h_r = 0.01;
     }
-    RAS(metric_recognized, "metric unknown");
     t = atan2(z, x);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
     ref_matrix_eig(d, 1) = 1.0 / (h_t * h_t);
@@ -169,6 +177,8 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
     ref_matrix_form_m(d, m);
     RSS(ref_node_metric_set(ref_node, node, m), "set node met");
   }
+
+  RAS(metric_recognized, "metric unknown");
 
   return REF_SUCCESS;
 }
