@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
   REF_NODE ref_node;
   REF_INT masabl_pos;
   REF_INT ugawg_pos;
-  REF_INT polar2d_pos;
+  REF_INT twod_pos;
   REF_INT u_pos;
 
   RSS(ref_mpi_start(argc, argv), "start");
@@ -164,14 +164,12 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  RXS(ref_args_find(argc, argv, "-polar2d", &polar2d_pos), REF_NOT_FOUND,
-      "arg");
+  RXS(ref_args_find(argc, argv, "-twod", &twod_pos), REF_NOT_FOUND, "arg");
 
-  if (REF_EMPTY != polar2d_pos) {
-    if (5 != argc || 1 != polar2d_pos) {
+  if (REF_EMPTY != twod_pos) {
+    if (5 != argc || 1 != twod_pos) {
       printf("usage:\n");
-      printf("  %s -polar2d version input.grid_format output.metric\n",
-             argv[0]);
+      printf("  %s -twod version input.grid_format output.metric\n", argv[0]);
       RSS(ref_mpi_free(ref_mpi), "mpi free");
       RSS(ref_mpi_stop(), "stop");
       return (1);
@@ -179,8 +177,8 @@ int main(int argc, char *argv[]) {
     printf("%s reading\n", argv[3]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
 
-    printf("%d version\n", atoi(argv[2]));
-    RSS(ref_metric_polar2d_node(ref_grid_node(ref_grid), atoi(argv[2])), "lin");
+    printf("%s version\n", argv[2]);
+    RSS(ref_metric_twod_analytic_node(ref_grid_node(ref_grid), argv[2]), "lin");
     printf("%s metric exported\n", argv[4]);
     RSS(ref_gather_metric(ref_grid, argv[4]), "in");
     RSS(ref_grid_free(ref_grid), "grid free");

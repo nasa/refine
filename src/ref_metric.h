@@ -39,7 +39,8 @@ REF_STATUS ref_metric_to_node(REF_DBL *metric, REF_NODE ref_node);
 REF_STATUS ref_metric_olympic_node(REF_NODE ref_node, REF_DBL h);
 REF_STATUS ref_metric_side_node(REF_NODE ref_node);
 REF_STATUS ref_metric_ring_node(REF_NODE ref_node);
-REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version);
+REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
+                                         const char *version);
 REF_STATUS ref_metric_ugawg_node(REF_NODE ref_node, REF_INT version);
 REF_STATUS ref_metric_masabl_node(REF_NODE ref_node);
 REF_STATUS ref_metric_circle_node(REF_NODE ref_node);

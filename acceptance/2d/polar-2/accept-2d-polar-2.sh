@@ -22,7 +22,7 @@ function adapt_cycle {
     ${two}/ref_driver -i ${inproj}.b8.ugrid -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
     mv ref_gather_histo.tec ${inproj}_histo.tec
     mv ref_gather_movie.tec ${inproj}_movie.tec
-    ${two}/ref_acceptance -polar2d 2 ${outproj}.b8.ugrid ${outproj}.metric
+    ${two}/ref_acceptance -twod polar-2 ${outproj}.b8.ugrid ${outproj}.metric
     ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
 
 }
@@ -30,7 +30,7 @@ function adapt_cycle {
 # ./cube.sh
 
 ${two}/ref_acceptance 2 cycle00.b8.ugrid
-${two}/ref_acceptance -polar2d 2 cycle00.b8.ugrid cycle00.metric
+${two}/ref_acceptance -twod polar-2 cycle00.b8.ugrid cycle00.metric
 
 adapt_cycle cycle00 cycle01 2
 adapt_cycle cycle01 cycle02 2
@@ -44,5 +44,5 @@ adapt_cycle cycle08 cycle09 10
 adapt_cycle cycle09 cycle10 10
 
 cat cycle10.status
-../../../check.rb cycle10.status 0.30 2.0
+../../check.rb cycle10.status 0.30 2.0
 

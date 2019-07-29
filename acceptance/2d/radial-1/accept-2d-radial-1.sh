@@ -21,7 +21,7 @@ function adapt_cycle {
 
     ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
 
-    ${two}/ref_acceptance -polar2d 11 ${proj}.b8.ugrid ${proj}.solb
+    ${two}/ref_acceptance -twod radial-1 ${proj}.b8.ugrid ${proj}.solb
     ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb -x ref_adapt_test.b8.ugrid -t | tee ${proj}.out || exit 1
 
     cp ref_gather_movie.tec ${proj}_movie.tec
