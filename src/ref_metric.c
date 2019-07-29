@@ -136,7 +136,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       metric_recognized = REF_TRUE;
       h0 = 0.1;
       h = 0.01;
-      hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 2, node) - 0.5) / 0.5;
+      hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
       RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0, 1.0, 0,
                                1.0 / (hh * hh)),
           "set node met");
