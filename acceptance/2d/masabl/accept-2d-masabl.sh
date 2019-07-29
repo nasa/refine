@@ -32,14 +32,14 @@ function adapt_cycle {
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
-adapt_cycle accept-2d-two-00
-adapt_cycle accept-2d-two-01
-adapt_cycle accept-2d-two-02
-adapt_cycle accept-2d-two-03
-adapt_cycle accept-2d-two-04
-adapt_cycle accept-2d-two-05
+adapt_cycle accept-2d-masabl-00
+adapt_cycle accept-2d-masabl-01
+adapt_cycle accept-2d-masabl-02
+adapt_cycle accept-2d-masabl-03
+adapt_cycle accept-2d-masabl-04
+adapt_cycle accept-2d-masabl-05
 
-cat accept-2d-two-05.status
-../../../check.rb accept-2d-two-05.status 0.40 2.0
+cat accept-2d-masabl-05.status
+../../check.rb accept-2d-masabl-05.status 0.40 2.0
 
 
