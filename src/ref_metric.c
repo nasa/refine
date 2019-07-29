@@ -19,6 +19,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ref_metric.h"
 
@@ -122,16 +123,18 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version) {
+REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
+					 const char *version) {
   REF_INT node;
   REF_DBL x = 0, z = 0, r, t;
   REF_DBL h_y = 0, h_t = 0, h_r = 0, h0;
   REF_DBL d[12], m[6];
-
-  RAS(2 == version || 11 == version, "version not implemented");
-
+  REF_BOOL metric_recognized;
+  
   each_ref_node_valid_node(ref_node, node) {
-    if (2 == version) {
+    metric_recognized = REF_FALSE;
+    if (strcmp(version, "polar-2") == 0) {
+      metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node);
       z = ref_node_xyz(ref_node, 2, node);
       r = sqrt(x * x + z * z);
@@ -140,7 +143,8 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version) {
       h0 = 0.001;
       h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
     }
-    if (11 == version) {
+    if (strcmp(version, "radial-1") == 0) {
+      metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node) + 0.5;
       z = ref_node_xyz(ref_node, 2, node) + 0.5;
       t = atan2(z, x);
@@ -148,6 +152,7 @@ REF_STATUS ref_metric_polar2d_node(REF_NODE ref_node, REF_INT version) {
       h_t = 0.1;
       h_r = 0.01;
     }
+    RAS(metric_recognized, "metric unknown");
     t = atan2(z, x);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
     ref_matrix_eig(d, 1) = 1.0 / (h_t * h_t);
