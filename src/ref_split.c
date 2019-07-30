@@ -39,6 +39,7 @@
 #include "ref_smooth.h"
 #include "ref_subdiv.h"
 
+#include "ref_matrix.h"
 #include "ref_metric.h"
 
 #define MAX_CELL_SPLIT (100)
@@ -790,6 +791,73 @@ REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   }
 
   *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_split_edge_tri_complexity(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_INT new_node,
+                                         REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell_node;
+  REF_INT node;
+  REF_INT degree;
+  REF_DBL det, m[6];
+  REF_DBL area, complexity0, complexity1;
+
+  *allowed = REF_TRUE;
+
+  degree = 0;
+  complexity0 = 0.0;
+  complexity1 = 0.0;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    degree++;
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      RSS(ref_node_metric_get(ref_node, nodes[node], m), "get");
+      RSS(ref_matrix_det_m(m, &det), "det");
+      complexity0 += sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+    }
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) nodes[node] = new_node;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (new_node == nodes[node]) nodes[node] = node0;
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      RSS(ref_node_metric_get(ref_node, nodes[node], m), "get");
+      RSS(ref_matrix_det_m(m, &det), "det");
+      complexity1 += sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+    }
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = new_node;
+
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      RSS(ref_node_metric_get(ref_node, nodes[node], m), "get");
+      RSS(ref_matrix_det_m(m, &det), "det");
+      complexity1 += sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+    }
+  }
+
+  if (ref_math_divisible(((REF_DBL)(2 * degree)), complexity1)) {
+    *allowed = (2.0 >= ((REF_DBL)(2 * degree)) / complexity1);
+  } else {
+    *allowed = REF_FALSE;
+  }
+
+  /*
+  printf("density %f %f\n", ((REF_DBL)(degree)) / complexity0,
+         ((REF_DBL)(2 * degree)) / complexity1);
+  */
 
   return REF_SUCCESS;
 }
