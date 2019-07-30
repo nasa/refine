@@ -246,7 +246,8 @@ int main(int argc, char *argv[]) {
              ref_mpi_n(ref_mpi));
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
-    all_done = all_done0 && all_done1;
+    all_done = all_done0 && all_done1 &&
+               (!ref_grid_twod(ref_grid) || pass > MIN(5, passes));
     ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
