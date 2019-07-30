@@ -658,6 +658,56 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
+                                    REF_DBL max_jump) {
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_DBL radius, dist;
+  REF_DBL eig_ceiling;
+  REF_INT nnode, node_list[REF_RECON_MAX_DEGREE],
+      max_node = REF_RECON_MAX_DEGREE;
+  REF_DBL diag_system[12];
+
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode, node_list),
+        "first halo of nodes");
+    radius = 0.0;
+    for (i = 0; i < nnode; i++) {
+      dist = sqrt(pow(ref_node_xyz(ref_node, 0, node_list[i]) -
+                          ref_node_xyz(ref_node, 0, node),
+                      2) +
+                  pow(ref_node_xyz(ref_node, 1, node_list[i]) -
+                          ref_node_xyz(ref_node, 1, node),
+                      2) +
+                  pow(ref_node_xyz(ref_node, 2, node_list[i]) -
+                          ref_node_xyz(ref_node, 2, node),
+                      2));
+      if (i == 0) radius = dist;
+      radius = MIN(radius, dist);
+    }
+    /* 2nd order central finite difference */
+    if (ref_math_divisible(4 * max_jump, radius * radius)) {
+      eig_ceiling = (4 * max_jump) / (radius * radius);
+
+      RSS(ref_matrix_diag_m(&(recon[6 * node]), diag_system), "eigen decomp");
+      ref_matrix_eig(diag_system, 0) =
+          MIN(ref_matrix_eig(diag_system, 0), eig_ceiling);
+      ref_matrix_eig(diag_system, 1) =
+          MIN(ref_matrix_eig(diag_system, 1), eig_ceiling);
+      ref_matrix_eig(diag_system, 2) =
+          MIN(ref_matrix_eig(diag_system, 2), eig_ceiling);
+      RSS(ref_matrix_form_m(diag_system, &(recon[6 * node])), "re-form hess");
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, recon, 6), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
                               REF_RECON_RECONSTRUCTION recon) {
   switch (recon) {
