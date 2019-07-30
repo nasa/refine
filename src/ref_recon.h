@@ -56,6 +56,8 @@ REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node);
 
 /* eliminate */
 REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
+REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
+                                    REF_DBL max_jump);
 
 END_C_DECLORATION
 
