@@ -1782,10 +1782,29 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
     if (nnode > 0 && ncell > 0) {
       if (ref_grid_once(ref_grid)) {
         fprintf(file,
-                "zone t=\"face%d\", nodes=" REF_GLOB_FMT
+                "zone t=\"tri%d\", nodes=" REF_GLOB_FMT
                 ", elements=%ld, datapacking=%s, "
                 "zonetype=%s\n",
                 cell_id, nnode, ncell, "point", "fetriangle");
+      }
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+          "nodes");
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+          "t");
+    }
+    ref_free(l2c);
+
+    ref_cell = ref_grid_qua(ref_grid);
+    RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, cell_id, &nnode,
+                                       &ncell, &l2c),
+        "l2c");
+    if (nnode > 0 && ncell > 0) {
+      if (ref_grid_once(ref_grid)) {
+        fprintf(file,
+                "zone t=\"quad%d\", nodes=" REF_GLOB_FMT
+                ", elements=%ld, datapacking=%s, "
+                "zonetype=%s\n",
+                cell_id, nnode, ncell, "point", "fequadrilateral");
       }
       RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
           "nodes");
