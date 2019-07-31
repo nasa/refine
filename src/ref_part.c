@@ -1268,7 +1268,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   if (0 < nqua) {
     conn_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
-                  (REF_FILEPOS)ntri * 4 * ibyte;
+                  (REF_FILEPOS)ntri * 3 * ibyte;
     faceid_offset = 7 * ibyte + (REF_FILEPOS)nnode * (8 * 3) +
                     (REF_FILEPOS)ntri * 4 * ibyte +
                     (REF_FILEPOS)nqua * 4 * ibyte;
