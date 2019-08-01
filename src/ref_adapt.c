@@ -563,7 +563,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
 static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT pass;
-  REF_BOOL swap = REF_TRUE;
+  REF_BOOL swap = REF_FALSE;
 
   RSS(ref_adapt_parameter(ref_grid, all_done), "param");
 
