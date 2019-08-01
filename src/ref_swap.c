@@ -682,6 +682,10 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
+    RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &allowed),
+        "still triangle side");
+    if (!allowed) continue;
+
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
       continue;
