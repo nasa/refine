@@ -753,9 +753,9 @@ REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
     RSS(ref_swap_edge_twod_mixed(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
 
-    RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
-    if (!allowed) continue;
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
+    if (!allowed) continue;
+    RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
     if (!allowed) continue;
     RSS(ref_swap_quality(ref_grid, node0, node1, &allowed), "qual");
     if (!allowed) continue;
