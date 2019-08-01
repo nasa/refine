@@ -264,11 +264,23 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (node1 == nodes[2] && node0 == nodes[0]) *node3 = nodes[1];
 
   RUB(REF_EMPTY, *node2, "node2 not found", {
+    ref_cell_nodes(ref_cell, cell_to_swap[0], nodes);
+    printf("cell %d node %d %d %d %d\n", cell_to_swap[0], nodes[0], nodes[1],
+           nodes[2], nodes[3]);
+    ref_cell_nodes(ref_cell, cell_to_swap[1], nodes);
+    printf("cell %d node %d %d %d %d\n", cell_to_swap[1], nodes[0], nodes[1],
+           nodes[2], nodes[3]);
     ref_node_location(ref_grid_node(ref_grid), node0);
     ref_node_location(ref_grid_node(ref_grid), node1);
     ref_export_by_extension(ref_grid, "ref_swap_node23.tec");
   });
   RUB(REF_EMPTY, *node3, "node3 not found", {
+    ref_cell_nodes(ref_cell, cell_to_swap[0], nodes);
+    printf("cell %d node %d %d %d %d\n", cell_to_swap[0], nodes[0], nodes[1],
+           nodes[2], nodes[3]);
+    ref_cell_nodes(ref_cell, cell_to_swap[1], nodes);
+    printf("cell %d node %d %d %d %d\n", cell_to_swap[1], nodes[0], nodes[1],
+           nodes[2], nodes[3]);
     ref_node_location(ref_grid_node(ref_grid), node0);
     ref_node_location(ref_grid_node(ref_grid), node1);
     ref_export_by_extension(ref_grid, "ref_swap_node23.tec");
