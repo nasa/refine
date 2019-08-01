@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include "ref_edge.h"
+#include "ref_export.h"
 #include "ref_swap.h"
 #include "ref_twod.h"
 
@@ -227,6 +228,14 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
   }
   return REF_SUCCESS;
 }
+
+/*
+ *      n2
+ *    /   \
+ * n0 ----- n1
+ *    \   /
+ *      n3
+ */
 
 REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                            REF_INT *node2, REF_INT *node3) {
@@ -557,7 +566,7 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
-  REIS(2, ncell, "there should be two triangles for manifold");
+  REIS(2, ncell, "there should be two triangles for manifold twod plane");
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
   RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
   RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
@@ -569,13 +578,14 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   /* opp plane tri */
   ref_cell = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, opp0, opp1, 2, &ncell, cell_to_swap),
       "more then two");
-  REIS(2, ncell, "there should be two triangles for manifold");
+  REIB(2, ncell, "there should be two triangles for manifold opp plane",
+       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
   RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
   RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
@@ -587,14 +597,14 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   nodes[0] = opp1;
   nodes[1] = opp3; /* swapped dir */
   nodes[2] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   /* prism */
   ref_cell = ref_grid_pri(ref_grid);
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
-  REIS(2, ncell, "there should be two triangles for manifold");
-  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
+  REIB(2, ncell, "there should be two triangles for manifold prism",
+       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
   RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
   RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
 
@@ -608,10 +618,10 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   nodes[0] = node1;
   nodes[1] = node3;
   nodes[2] = node2;
-  nodes[0] = opp1;
-  nodes[1] = opp3;
-  nodes[2] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+  nodes[3] = opp1;
+  nodes[4] = opp3;
+  nodes[5] = opp2;
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   return REF_SUCCESS;
 }
