@@ -264,18 +264,22 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (node1 == nodes[2] && node0 == nodes[0]) *node3 = nodes[1];
 
   RUB(REF_EMPTY, *node2, "node2 not found", {
+    REF_DBL normal[3];
+    REF_NODE ref_node = ref_grid_node(ref_grid);
     ref_node_location(ref_grid_node(ref_grid), node0);
     ref_node_location(ref_grid_node(ref_grid), node1);
     printf("node2 %d node3 %d\n", *node2, *node3);
     ref_cell_nodes(ref_cell, cell_to_swap[0], nodes);
-    printf("cell %d node %d %d %d %d\n", cell_to_swap[0], nodes[0], nodes[1],
-           nodes[2], nodes[3]);
+    ref_node_tri_normal(ref_node, nodes, normal);
+    printf("cell %d node %d %d %d %d %f\n", cell_to_swap[0], nodes[0], nodes[1],
+           nodes[2], nodes[3], normal[1]);
     ref_node_location(ref_grid_node(ref_grid), nodes[0]);
     ref_node_location(ref_grid_node(ref_grid), nodes[1]);
     ref_node_location(ref_grid_node(ref_grid), nodes[2]);
     ref_cell_nodes(ref_cell, cell_to_swap[1], nodes);
-    printf("cell %d node %d %d %d %d\n", cell_to_swap[1], nodes[0], nodes[1],
-           nodes[2], nodes[3]);
+    ref_node_tri_normal(ref_node, nodes, normal);
+    printf("cell %d node %d %d %d %d %f\n", cell_to_swap[1], nodes[0], nodes[1],
+           nodes[2], nodes[3], normal[1]);
     ref_node_location(ref_grid_node(ref_grid), nodes[0]);
     ref_node_location(ref_grid_node(ref_grid), nodes[1]);
     ref_node_location(ref_grid_node(ref_grid), nodes[2]);
