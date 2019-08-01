@@ -389,7 +389,7 @@ REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                             REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -664,7 +664,7 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     if (!allowed) continue;
     RSS(ref_swap_ratio(ref_grid, node0, node1, &allowed), "ratio");
     if (!allowed) continue;
-    RSS(ref_swap_normdev(ref_grid, node0, node1, &allowed), "normdev");
+    RSS(ref_swap_conforming(ref_grid, node0, node1, &allowed), "normdev");
     if (!allowed) continue;
 
     /* skip same normal */
