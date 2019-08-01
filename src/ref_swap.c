@@ -355,6 +355,40 @@ REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
+                                 REF_INT node1, REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
+  REF_DBL normal[3];
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+
+  nodes[0] = node0;
+  nodes[1] = node3;
+  nodes[2] = node2;
+  RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
+
+  if ((ref_node_xyz(ref_node, 1, nodes[0]) > 0.5 && normal[1] >= 0.0) ||
+      (ref_node_xyz(ref_node, 1, nodes[0]) < 0.5 && normal[1] <= 0.0))
+    return REF_SUCCESS;
+
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
+
+  if ((ref_node_xyz(ref_node, 1, nodes[0]) > 0.5 && normal[1] >= 0.0) ||
+      (ref_node_xyz(ref_node, 1, nodes[0]) < 0.5 && normal[1] <= 0.0))
+    return REF_SUCCESS;
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                               REF_BOOL *allowed) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -711,6 +745,8 @@ REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
     RSS(ref_swap_edge_twod_mixed(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
 
+    RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
+    if (!allowed) continue;
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
     RSS(ref_swap_quality(ref_grid, node0, node1, &allowed), "qual");
