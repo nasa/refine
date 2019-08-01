@@ -263,8 +263,16 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (node1 == nodes[1] && node0 == nodes[2]) *node3 = nodes[0];
   if (node1 == nodes[2] && node0 == nodes[0]) *node3 = nodes[1];
 
-  RUS(REF_EMPTY, *node2, "node2 not found");
-  RUS(REF_EMPTY, *node3, "node3 not found");
+  RUB(REF_EMPTY, *node2, "node2 not found", {
+    ref_node_location(ref_grid_node(ref_grid), node0);
+    ref_node_location(ref_grid_node(ref_grid), node1);
+    ref_export_by_extension(ref_grid, "ref_swap_node23.tec");
+  });
+  RUB(REF_EMPTY, *node3, "node3 not found", {
+    ref_node_location(ref_grid_node(ref_grid), node0);
+    ref_node_location(ref_grid_node(ref_grid), node1);
+    ref_export_by_extension(ref_grid, "ref_swap_node23.tec");
+  });
 
   return REF_SUCCESS;
 }
