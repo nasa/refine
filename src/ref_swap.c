@@ -291,6 +291,7 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       "more then two", {
         ref_node_location(ref_grid_node(ref_grid), node0);
         ref_node_location(ref_grid_node(ref_grid), node1);
+        ref_export_by_extension(ref_grid, "ref_swap_same_faceid.tec");
       });
 
   if (0 == ncell) { /* away from boundary */
