@@ -236,7 +236,9 @@ REF_STATUS ref_validation_cell_node(REF_GRID ref_grid) {
     has_local = REF_FALSE;
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
-        RSS(REF_FAILURE, "cell with invalid node");
+        RSB(REF_FAILURE, "cell with invalid node", {
+          printf("group %d node_per %d\n", group, ref_cell_node_per(ref_cell));
+        });
       }
       has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
                                 ref_node_part(ref_node, nodes[node]));
