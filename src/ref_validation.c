@@ -359,13 +359,14 @@ REF_STATUS ref_validation_volume_status(REF_GRID ref_grid) {
 
 REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], tri_nodes[3];
   REF_DBL normal[3];
   REF_BOOL valid = REF_TRUE;
 
   if (!ref_grid_twod(ref_grid)) return REF_SUCCESS;
 
+  ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
     if ((ref_node_xyz(ref_node, 1, nodes[0]) >
@@ -377,6 +378,38 @@ REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid) {
       valid = REF_FALSE;
       printf("tri %d %d %d %d %e\n", nodes[0], nodes[1], nodes[2], nodes[3],
              normal[1]);
+    }
+  }
+
+  ref_cell = ref_grid_pri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    tri_nodes[0] = nodes[0];
+    tri_nodes[1] = nodes[1];
+    tri_nodes[2] = nodes[2];
+    RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "norm");
+    if ((ref_node_xyz(ref_node, 1, tri_nodes[0]) >
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] >= 0.0) ||
+        (ref_node_xyz(ref_node, 1, tri_nodes[0]) <
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] <= 0.0)) {
+      valid = REF_FALSE;
+      printf("pri lower %d %d %d %e\n", tri_nodes[0], tri_nodes[1],
+             tri_nodes[2], normal[1]);
+    }
+    tri_nodes[0] = nodes[3];
+    tri_nodes[1] = nodes[5];
+    tri_nodes[2] = nodes[4];
+    RSS(ref_node_tri_normal(ref_node, tri_nodes, normal), "norm");
+    if ((ref_node_xyz(ref_node, 1, tri_nodes[0]) >
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] >= 0.0) ||
+        (ref_node_xyz(ref_node, 1, tri_nodes[0]) <
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] <= 0.0)) {
+      valid = REF_FALSE;
+      printf("pri upper %d %d %d %e\n", tri_nodes[0], tri_nodes[1],
+             tri_nodes[2], normal[1]);
     }
   }
 
