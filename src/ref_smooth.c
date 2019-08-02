@@ -267,8 +267,7 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   RSS(ref_node_metric_get_log(ref_node, n0, log_m0), "get n0 log m");
   RSS(ref_node_metric_get_log(ref_node, n1, log_m1), "get n1 log m");
   RSS(ref_node_metric_get_log(ref_node, node, log_m2), "get node log m");
-  for (i = 0; i < 6; i++)
-    log_m[i] = (1.0 / 3.0) * (log_m0[i] + log_m1[i] + log_m2[i]);
+  for (i = 0; i < 6; i++) log_m[i] = (log_m0[i] + log_m1[i] + log_m2[i]) / 3.0;
   RSS(ref_matrix_exp_m(log_m, m), "exp avg");
 
   length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
