@@ -336,7 +336,11 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
-  REIS(2, ncell, "there should be zero or two triangles for manifold");
+  REIB(2, ncell, "there should be zero or two triangles for manifold", {
+    ref_node_location(ref_grid_node(ref_grid), node0);
+    ref_node_location(ref_grid_node(ref_grid), node1);
+    ref_export_by_extension(ref_grid, "ref_swap_same_faceid.tec");
+  });
 
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
   id0 = nodes[ref_cell_node_per(ref_cell)];
