@@ -686,18 +686,18 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
 
   nodes[0] = node0;
-  nodes[1] = node2;
-  nodes[2] = node3;
-  nodes[3] = opp0;
-  nodes[4] = opp2;
-  nodes[5] = opp3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = node1;
   nodes[1] = node3;
   nodes[2] = node2;
-  nodes[3] = opp1;
+  nodes[3] = opp0;
   nodes[4] = opp3;
   nodes[5] = opp2;
+  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+  nodes[0] = node1;
+  nodes[1] = node2;
+  nodes[2] = node3;
+  nodes[3] = opp1;
+  nodes[4] = opp2;
+  nodes[5] = opp3;
   RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   return REF_SUCCESS;
