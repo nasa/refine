@@ -155,7 +155,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
     if (strcmp(version, "radial-1") == 0) {
       metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node) + 0.5;
-      z = ref_node_xyz(ref_node, 2, node) + 0.5;
+      z = ref_node_xyz(ref_node, 2, node) - 0.5;
       t = atan2(z, x);
       h_y = 1.0;
       h_t = 0.1;
