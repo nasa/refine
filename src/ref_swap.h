@@ -44,16 +44,17 @@ REF_STATUS ref_swap_geom_topo(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                               REF_BOOL *allowed);
 REF_STATUS ref_swap_local_cell(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                REF_BOOL *allowed);
-REF_STATUS ref_swap_normdev(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                            REF_BOOL *allowed);
+REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                               REF_BOOL *allowed);
 REF_STATUS ref_swap_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                           REF_BOOL *allowed);
 REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                             REF_BOOL *allowed);
 
-REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1);
+REF_STATUS ref_swap_surf_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1);
 
 REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid);
+REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

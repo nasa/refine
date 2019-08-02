@@ -39,6 +39,8 @@
 #include "ref_mpi.h"
 #include "ref_sort.h"
 
+#include "ref_fixture.h"
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid;
@@ -64,7 +66,15 @@ int main(int argc, char *argv[]) {
     printf("tec.\n");
     RSS(ref_export_tec(ref_grid, "validate.tec"), "tec");
 
+    RSS(ref_grid_free(ref_grid), "free");
     printf("done.\n");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) {
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "twod brick");
+    RSS(ref_validation_twod_outward_normal(ref_grid),
+        "twod tri outward normal");
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

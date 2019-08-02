@@ -198,8 +198,12 @@ REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
 
     RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
 
-    if ((ref_node_xyz(ref_node, 1, nodes[0]) > 0.5 && normal[1] >= 0.0) ||
-        (ref_node_xyz(ref_node, 1, nodes[0]) < 0.5 && normal[1] <= 0.0))
+    if ((ref_node_xyz(ref_node, 1, nodes[0]) >
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] >= 0.0) ||
+        (ref_node_xyz(ref_node, 1, nodes[0]) <
+             ref_node_twod_mid_plane(ref_node) &&
+         normal[1] <= 0.0))
       return REF_SUCCESS;
   }
 
@@ -263,8 +267,7 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   RSS(ref_node_metric_get_log(ref_node, n0, log_m0), "get n0 log m");
   RSS(ref_node_metric_get_log(ref_node, n1, log_m1), "get n1 log m");
   RSS(ref_node_metric_get_log(ref_node, node, log_m2), "get node log m");
-  for (i = 0; i < 6; i++)
-    log_m[i] = (1.0 / 3.0) * (log_m0[i] + log_m1[i] + log_m2[i]);
+  for (i = 0; i < 6; i++) log_m[i] = (log_m0[i] + log_m1[i] + log_m2[i]) / 3.0;
   RSS(ref_matrix_exp_m(log_m, m), "exp avg");
 
   length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
