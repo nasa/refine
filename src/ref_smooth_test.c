@@ -578,7 +578,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_smooth_tet_ideal(ref_grid, node, cell, ideal), "ideal");
     RWDS(0.5, ideal[0], -1, "ideal x");
     RWDS(1.0 / 6.0 * sqrt(3.0), ideal[1], -1, "ideal y");
-    RWDS(hz * 1.0 / 3.0 * sqrt(6.0), ideal[2], -1, "ideal z");
+    RWDS(0.9709835434146467, ideal[2], -1, "ideal z");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
