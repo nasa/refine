@@ -225,6 +225,12 @@ cd ${source_dir}/acceptance/2d/mixed
 ( ./accept-2d-mixed.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-2d-circle
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/circle
+( ./accept-2d-circle.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-3d-linear-two
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear/two
