@@ -1035,8 +1035,10 @@ REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
   REF_INT tet_node, tri_node;
   REF_INT ixyz;
   REF_DBL dn[3];
+  REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m3[6], log_m[6];
   REF_DBL m[6];
   REF_DBL scale, length_in_metric;
+  REF_INT i;
 
   RSS(ref_cell_nodes(ref_cell, tet, nodes), "get tri");
   tri_nodes[0] = REF_EMPTY;
@@ -1061,8 +1063,16 @@ REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
   RSS(ref_node_tri_normal(ref_node, tri_nodes, dn), "tri normal");
 
   RSS(ref_math_normalize(dn), "normalize direction");
-  /* would an averaged metric be more appropriate? */
-  RSS(ref_node_metric_get(ref_node, node, m), "get node m");
+
+  /* averaged metric */
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], log_m0), "get n0 log m");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], log_m1), "get n1 log m");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], log_m2), "get n2 log m");
+  RSS(ref_node_metric_get_log(ref_node, nodes[3], log_m3), "get n3 log m");
+  for (i = 0; i < 6; i++)
+    log_m[i] = (log_m0[i] + log_m1[i] + log_m2[i] + log_m3[i]) * 0.25;
+  RSS(ref_matrix_exp_m(log_m, m), "exp avg");
+
   length_in_metric = ref_matrix_sqrt_vt_m_v(m, dn);
 
   scale = sqrt(6.0) / 3.0; /* altitude of regular tetrahedra */
