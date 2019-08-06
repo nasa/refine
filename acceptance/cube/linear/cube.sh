@@ -1,7 +1,13 @@
+#!/usr/bin/env bash
 
+set -x # echo commands
+set -e # exit on first error
+set -u # Treat unset variables as error
 
-~/esp/EngSketchPad/bin/serveCSM -batch cube.csm
+serveCSM -batch cube.csm
 
-~/refine/egads/two/ref_geom_test cube.egads cube.meshb
+ref boostrap cube.egads
+
+ref_driver -i cube-vol.meshb -g cube.egads -x cube.meshb
 
 
