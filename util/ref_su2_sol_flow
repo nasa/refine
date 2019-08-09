@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+unless (ARGV[2]) then
+  puts "usage :\n #{$0} restart.sol flow.dat restart.dat"
+  exit 1
+end
+
+lines = IO.readlines(ARGV[0])
+old_dat = IO.readlines(ARGV[1])
+
+File.open(ARGV[2],'w') do |f|
+  f.puts old_dat[0]
+  nnode = lines[5].to_i
+  ldim = lines[6].to_i
+  printf("%d nodes\n",nnode)
+  printf("%d ldim\n",ldim)
+  nnode.times do |i|
+    line = lines[i+7]
+    f.printf( "%d %s", i+1, line )
+  end
+  f.puts `tail -n 8 #{ARGV[1]}`
+end
+
