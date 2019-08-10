@@ -524,6 +524,8 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     ref_cavity->new_tri[1 + 4 * 1] = node2;
     ref_cavity->new_tri[2 + 4 * 1] = node3;
     ref_cavity->new_tri[3 + 4 * 1] = nodes[3];
+
+    /* swap cavity f2n */
   }
 
   return REF_SUCCESS;
