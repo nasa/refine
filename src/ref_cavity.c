@@ -1338,6 +1338,36 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_cavity_edge_swap_topo(REF_GRID ref_grid, REF_INT node0,
+                                            REF_INT node1, REF_BOOL *allowed) {
+  REF_CELL ref_cell;
+  REF_BOOL has_side;
+  REF_INT ntri, tri_list[2];
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side),
+      "not allowed if a side of a edge");
+  if (has_side) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ntri, tri_list),
+      "tri with2");
+  if (ntri > 0) {
+    REIS(2, ntri, "expected two tri for manifold surface");
+    if (ref_cell_c2n(ref_cell, 3, tri_list[0]) !=
+        ref_cell_c2n(ref_cell, 3, tri_list[1])) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+  }
+
+  *allowed = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -1365,33 +1395,35 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         n2 = others[other][2];
         RSS(ref_cell_local_gem(ref_cell, ref_node, nodes[n0], nodes[n1],
                                &allowed),
-            "local");
-        if (allowed) {
-          RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
-              "edge degree");
-          if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
-          RSS(ref_cavity_create(&ref_cavity), "create");
-          RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
-                                        nodes[n1], nodes[n2]),
-              "cavity gem");
-          if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
-            REF_WHERE("enlarge"); /* note but skip cavity failures */
-          if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+            "local gem");
+        if (!allowed) continue;
+        RSS(ref_cavity_edge_swap_topo(ref_grid, nodes[n0], nodes[n1], &allowed),
+            "surface geom and topo");
+        if (!allowed) continue;
+        RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
+            "edge degree");
+        if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
+        RSS(ref_cavity_create(&ref_cavity), "create");
+        RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
+                                      nodes[n1], nodes[n2]),
+            "cavity gem");
+        if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
+          REF_WHERE("enlarge"); /* note but skip cavity failures */
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
             RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
             if (!allowed) {
 	      RSS(ref_cavity_free(ref_cavity), "free");
 	      continue;
 	    }
-            RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-            if (min_add - min_del > 0.0001) {
-              if (best < min_add) {
-                best = min_add;
-                best_other = other;
-              }
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
+          if (min_add - min_del > 0.0001) {
+            if (best < min_add) {
+              best = min_add;
+              best_other = other;
             }
           }
-          RSS(ref_cavity_free(ref_cavity), "free");
         }
+        RSS(ref_cavity_free(ref_cavity), "free");
       }
       if (REF_EMPTY != best_other) {
         RSS(ref_cavity_create(&ref_cavity), "create");
