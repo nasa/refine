@@ -475,7 +475,7 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node) {
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
-  REF_INT ntri, tri_list[2];
+  REF_INT ntri, tri_list[2], other;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -488,6 +488,18 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
       "tri with2");
   if (ntri > 2) {
     REIS(2, ntri, "expected two tri for manifold surface");
+    other = REF_EMPTY;
+    for (cell = 0; cell < ntri; cell++) {
+      for (cell_node = 0; cell_node < 3; cell_node++) {
+        if (ref_cell_c2n(ref_cell, cell_node, cell) != node &&
+            ref_cell_c2n(ref_cell, cell_node, cell) != node0 &&
+            ref_cell_c2n(ref_cell, cell_node, cell) != node1) {
+          REIS(REF_EMPTY, other, "set twice");
+          other = ref_cell_c2n(ref_cell, cell_node, cell);
+        }
+      }
+    }
+    RUS(REF_EMPTY, other, "other not set");
   }
 
   return REF_SUCCESS;
