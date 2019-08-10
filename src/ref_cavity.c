@@ -1306,7 +1306,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         if (allowed) {
           RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
               "edge degree");
-          if (degree > ref_grid_adapt(ref_grid, swap_min_quality)) continue;
+          if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
           RSS(ref_cavity_create(&ref_cavity), "create");
           RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
                                         nodes[n1], nodes[n2]),
