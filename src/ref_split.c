@@ -707,8 +707,7 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
       if (e0 == new_node || e1 == new_node) {
         RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
         if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
-            (!ref_grid_adapt(ref_grid, split_ratio_growth) &&
-             ratio > ref_grid_adapt(ref_grid, post_max_ratio))) {
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
           *allowed = REF_FALSE;
           return REF_SUCCESS;
         }
@@ -728,8 +727,7 @@ REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
       if (e0 == new_node || e1 == new_node) {
         RSS(ref_node_ratio(ref_node, e0, e1, &ratio), "ratio node0");
         if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
-            (!ref_grid_adapt(ref_grid, split_ratio_growth) &&
-             ratio > ref_grid_adapt(ref_grid, post_max_ratio))) {
+            ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
           *allowed = REF_FALSE;
           return REF_SUCCESS;
         }
