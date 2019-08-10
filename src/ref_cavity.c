@@ -473,12 +473,21 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node0, REF_INT node1,
                                      REF_INT node) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
+  REF_INT ntri, tri_list[2];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
+  ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ntri, tri_list),
+      "tri with2");
+  if (ntri > 2) {
+    REIS(2, ntri, "expected two tri for manifold surface");
   }
 
   return REF_SUCCESS;
