@@ -13,16 +13,16 @@ queue=$(./acceptance/k-best-queue.py)
 
 if [[ "$queue" == "K4-"* ]]; then
   nprocs=40
-  walltime=20
+  walltime=30
 elif [[ "$queue" == "K3-"* ]]; then
   nprocs=16
-  walltime=20
+  walltime=30
 elif [[ "$queue" == "K2-"* ]]; then
   nprocs=12
-  walltime=20
+  walltime=30
 elif [[ "$queue" == "K2a-"* ]]; then
   nprocs=12
-  walltime=20
+  walltime=30
 else
   echo "unknown queue requested: $queue"
   exit 1
