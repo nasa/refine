@@ -29,6 +29,7 @@
 #include "ref_adapt.h"
 #include "ref_edge.h"
 #include "ref_sort.h"
+#include "ref_swap.h"
 
 #include "ref_dict.h"
 
@@ -1356,30 +1357,39 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_cavity_edge_swap_topo(REF_GRID ref_grid, REF_INT node0,
-                                            REF_INT node1, REF_BOOL *allowed) {
-  REF_CELL ref_cell;
-  REF_BOOL has_side;
-  REF_INT ntri, tri_list[2];
+static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_BOOL *allowed) {
+  REF_BOOL has_triangle, same_face, conforming, improved;
 
-  ref_cell = ref_grid_edg(ref_grid);
-  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side),
-      "not allowed if a side of a edge");
-  if (has_side) {
+  *allowed = REF_FALSE;
+
+  RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_triangle),
+      "triangle side");
+  if (!has_triangle) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_same_faceid(ref_grid, node0, node1, &same_face),
+      "not allowed if a side of a edge or diff faceid");
+  if (!same_face) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
 
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ntri, tri_list),
-      "tri with2");
-  if (ntri > 0) {
-    REIS(2, ntri, "expected two tri for manifold surface");
-    if (ref_cell_c2n(ref_cell, 3, tri_list[0]) !=
-        ref_cell_c2n(ref_cell, 3, tri_list[1])) {
-      *allowed = REF_FALSE;
-      return REF_SUCCESS;
-    }
+  RSS(ref_swap_conforming(ref_grid, node0, node1, &conforming),
+      "normals and uv area must conform to geom");
+  if (!conforming) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_quality(ref_grid, node0, node1, &improved),
+      "require tri qulaity improvement");
+  if (!improved) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
@@ -1415,7 +1425,8 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
                                &allowed),
             "local gem");
         if (!allowed) continue;
-        RSS(ref_cavity_edge_swap_topo(ref_grid, nodes[n0], nodes[n1], &allowed),
+        RSS(ref_cavity_edge_swap_boundary(ref_grid, nodes[n0], nodes[n1],
+                                          &allowed),
             "surface geom and topo");
         if (!allowed) continue;
         RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
