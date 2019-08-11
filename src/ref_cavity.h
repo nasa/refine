@@ -51,7 +51,7 @@ struct REF_CAVITY_STRUCT {
   REF_INT maxface;
   REF_INT blankface;
   REF_INT *f2n;
-  REF_INT new_tri[8];
+  REF_INT node0, node1; /* for swap */
   REF_LIST tri_list;
   REF_LIST tet_list;
   REF_INT faceid;

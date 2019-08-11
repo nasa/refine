@@ -37,7 +37,7 @@
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;
-  REF_INT seg, face, i;
+  REF_INT seg, face;
 
   ref_malloc(*ref_cavity_ptr, 1, REF_CAVITY_STRUCT);
   ref_cavity = (*ref_cavity_ptr);
@@ -71,7 +71,8 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
   ref_cavity_blankface(ref_cavity) = 0;
 
-  for (i = 0; i < 8; i++) ref_cavity->new_tri[i] = REF_EMPTY;
+  ref_cavity->node0 = REF_EMPTY;
+  ref_cavity->node1 = REF_EMPTY;
 
   RSS(ref_list_create(&(ref_cavity->tri_list)), "tri list");
   RSS(ref_list_create(&(ref_cavity->tet_list)), "tet list");
@@ -478,7 +479,8 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node) {
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
-  REF_INT ntri, tri_list[2], node2, node3, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node2, node3;
+  REF_BOOL has_triangle;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -487,44 +489,14 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   }
 
   ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ntri, tri_list),
-      "tri with2");
-  if (ntri > 0) {
-    REIS(2, ntri, "expected two tri for manifold surface");
-    node2 = REF_EMPTY;
-    node3 = REF_EMPTY;
-    /*
-     *      n2
-     *    /   \
-     * n0 ----- n1
-     *    \   /
-     *      n3
-     */
-    RSS(ref_cell_nodes(ref_cell, tri_list[0], nodes), "nodes tri[0]");
-    if (node0 == nodes[0] && node1 == nodes[1]) node2 = nodes[2];
-    if (node0 == nodes[1] && node1 == nodes[2]) node2 = nodes[0];
-    if (node0 == nodes[2] && node1 == nodes[0]) node2 = nodes[1];
-    if (node1 == nodes[0] && node0 == nodes[1]) node3 = nodes[2];
-    if (node1 == nodes[1] && node0 == nodes[2]) node3 = nodes[0];
-    if (node1 == nodes[2] && node0 == nodes[0]) node3 = nodes[1];
-    RSS(ref_cell_nodes(ref_cell, tri_list[1], nodes), "nodes tri[1]");
-    if (node0 == nodes[0] && node1 == nodes[1]) node2 = nodes[2];
-    if (node0 == nodes[1] && node1 == nodes[2]) node2 = nodes[0];
-    if (node0 == nodes[2] && node1 == nodes[0]) node2 = nodes[1];
-    if (node1 == nodes[0] && node0 == nodes[1]) node3 = nodes[2];
-    if (node1 == nodes[1] && node0 == nodes[2]) node3 = nodes[0];
-    if (node1 == nodes[2] && node0 == nodes[0]) node3 = nodes[1];
+  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_triangle),
+      "triangle side");
+  if (has_triangle) {
+    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
+        "nodes 2 and 3");
 
-    RUS(REF_EMPTY, node2, "node2 not set");
-    RUS(REF_EMPTY, node3, "node3 not set");
-    ref_cavity->new_tri[0 + 4 * 0] = node0;
-    ref_cavity->new_tri[1 + 4 * 0] = node2;
-    ref_cavity->new_tri[2 + 4 * 0] = node3;
-    ref_cavity->new_tri[3 + 4 * 0] = nodes[3];
-    ref_cavity->new_tri[0 + 4 * 1] = node1;
-    ref_cavity->new_tri[1 + 4 * 1] = node2;
-    ref_cavity->new_tri[2 + 4 * 1] = node3;
-    ref_cavity->new_tri[3 + 4 * 1] = nodes[3];
+    ref_cavity->node0 = node0;
+    ref_cavity->node1 = node1;
 
     /* swap cavity f2n */
   }
