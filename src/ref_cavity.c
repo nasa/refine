@@ -1349,7 +1349,10 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
             REF_WHERE("enlarge"); /* note but skip cavity failures */
           if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
             RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
-            if (!allowed) continue;
+            if (!allowed) {
+	      RSS(ref_cavity_free(ref_cavity), "free");
+	      continue;
+	    }
             RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
             if (min_add - min_del > 0.0001) {
               if (best < min_add) {
