@@ -491,6 +491,7 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_DBL normdev0, normdev1, normdev2, normdev3;
   REF_DBL sign_uv_area, uv_area2, uv_area3;
   REF_BOOL normdev_allowed, uv_area_allowed;
+  REF_BOOL supported;
 
   *allowed = REF_FALSE;
 
@@ -514,11 +515,19 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   nodes[0] = node0;
   nodes[1] = node3;
   nodes[2] = node2;
+  RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
+      "allow a swap to");
+  if (!supported) printf("dont\n");
+  if (!supported) return REF_SUCCESS;
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev2), "nd2");
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area2), "uv area");
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
+  RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
+      "allow a swap to");
+  if (!supported) printf("dont\n");
+  if (!supported) return REF_SUCCESS;
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3), "nd3");
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
 
