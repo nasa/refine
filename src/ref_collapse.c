@@ -155,6 +155,10 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
         "col manifold");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_chord_height(ref_grid, node0, node1, &allowed),
+        "col edge chord height");
+    if (!allowed) continue;
+
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
@@ -339,6 +343,63 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
     if (REF_EMPTY != new_cell) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
+    }
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid, REF_INT node0,
+                                          REF_INT node1, REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_BOOL will_be_collapsed;
+  REF_INT i;
+  REF_DBL n0[3], n1[3], cross_prod[3];
+  REF_DBL new_length, cross_length, chord, chord_ratio;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_edg(ref_grid);
+
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node1 == nodes[node]) {
+        /* triangle node0, node1, nodes[node] */
+        /* nodes[node] = node0; */
+        for (i = 0; i < 3; i++) {
+          n0[i] = ref_node_xyz(ref_node, i, node1) -
+                  ref_node_xyz(ref_node, i, node0);
+          n1[i] = ref_node_xyz(ref_node, i, nodes[1 - node]) -
+                  ref_node_xyz(ref_node, i, node0);
+        }
+        new_length = sqrt(ref_math_dot(n1, n1));
+        ref_math_cross_product(n0, n1, cross_prod);
+        cross_length = sqrt(ref_math_dot(cross_prod, cross_prod));
+        /* |n0 x n1| = |n0||n1|sin(t) */
+        if (ref_math_divisible(cross_length, new_length)) {
+          chord = cross_length / new_length;
+          if (ref_math_divisible(chord, new_length)) {
+            chord_ratio = chord / new_length;
+            if (chord_ratio > 0.1) return REF_SUCCESS;
+          } else {
+            return REF_SUCCESS;
+          }
+        } else {
+          return REF_SUCCESS;
+        }
+      }
     }
   }
 

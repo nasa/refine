@@ -1120,6 +1120,40 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_DBL ratio;
+  REF_INT face, face_node;
+  REF_BOOL skip;
+
+  *allowed = REF_TRUE;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    skip = REF_FALSE;
+    /* skip a collapsed triangle that in on the boundary of cavity */
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      if (node == ref_cavity_f2n(ref_cavity, face_node, face)) {
+        skip = REF_TRUE;
+      }
+    }
+    if (skip) continue;
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      RSS(ref_node_ratio(ref_node, node,
+                         ref_cavity_f2n(ref_cavity, face_node, face), &ratio),
+          "ratio");
+      if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
+          ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
+        *allowed = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
                              REF_DBL *min_add) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
@@ -1302,11 +1336,11 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         n2 = others[other][2];
         RSS(ref_cell_local_gem(ref_cell, ref_node, nodes[n0], nodes[n1],
                                &allowed),
-            "split");
+            "local");
         if (allowed) {
           RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
               "edge degree");
-          if (degree > ref_grid_adapt(ref_grid, swap_min_quality)) continue;
+          if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
           RSS(ref_cavity_create(&ref_cavity), "create");
           RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
                                         nodes[n1], nodes[n2]),
@@ -1314,6 +1348,11 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
           if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
             REF_WHERE("enlarge"); /* note but skip cavity failures */
           if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+            RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
+            if (!allowed) {
+	      RSS(ref_cavity_free(ref_cavity), "free");
+	      continue;
+	    }
             RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
             if (min_add - min_del > 0.0001) {
               if (best < min_add) {
