@@ -479,8 +479,8 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node) {
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
-  REF_INT node2, node3;
-  REF_BOOL has_triangle;
+  REF_INT node2, node3, nodes[3], found_face;
+  REF_BOOL has_triangle, reversed;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -497,6 +497,22 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
     ref_cavity->node0 = node0;
     ref_cavity->node1 = node1;
+
+    nodes[0] = node0;
+    nodes[1] = node1;
+    nodes[2] = node2;
+    RSS(ref_cavity_find_face(ref_cavity, nodes, &found_face, &reversed),
+        "find2");
+    RUS(REF_EMPTY, found_face, "face missing");
+    RAS(!reversed, "same orient");
+
+    nodes[0] = node1;
+    nodes[1] = node0;
+    nodes[2] = node3;
+    RSS(ref_cavity_find_face(ref_cavity, nodes, &found_face, &reversed),
+        "find2");
+    RUS(REF_EMPTY, found_face, "face missing");
+    RAS(!reversed, "same orient");
 
     /* swap cavity f2n */
   }
@@ -1411,11 +1427,11 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
           REF_WHERE("enlarge"); /* note but skip cavity failures */
         if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-            RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
-            if (!allowed) {
-	      RSS(ref_cavity_free(ref_cavity), "free");
-	      continue;
-	    }
+          RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
+          if (!allowed) {
+            RSS(ref_cavity_free(ref_cavity), "free");
+            continue;
+          }
           RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
           if (min_add - min_del > 0.0001) {
             if (best < min_add) {
