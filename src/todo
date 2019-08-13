@@ -1,6 +1,6 @@
 
 cavity operator in 2D/3D
-  tet swap on boundary
+  + tet swap on boundary
   replace classic surf swap with cavity
   implement more in cavity
   merge tet and surf-only tri logic for 3D surface and volume
