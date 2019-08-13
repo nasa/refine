@@ -251,10 +251,10 @@ cd ${source_dir}/acceptance/cube-cylinder/uniform
 ( ./accept-cube-cylinder-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
+LOG=${root_dir}/log.accept-cube-cylinder-linear010
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/linear010/two
-( ./accept-cube-cylinder-linear010-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-cylinder/linear010
+( ./accept-cube-cylinder-linear010.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
