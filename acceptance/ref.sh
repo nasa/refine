@@ -277,10 +277,10 @@ cd ${source_dir}/acceptance/cube-sphere/uniform/two
 ( ./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-sphere-ring-two
+LOG=${root_dir}/log.accept-cube-sphere-ring
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-sphere/ring/two
-( ./accept-cube-sphere-ring-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-sphere/ring
+( ./accept-cube-sphere-ring.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-annulus-uniform
