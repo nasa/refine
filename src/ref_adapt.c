@@ -294,7 +294,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   target_normdev = MAX(MIN(0.1, min_normdev), 1.0e-3);
   ref_adapt->post_min_normdev = target_normdev;
 
-  target_quality = MAX(MIN(0.1, min_quality), 1.0e-3);
+  target_quality = MAX(min_quality, 1.0e-3);
+  ref_adapt->split_quality_absolute = target_quality;
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
 
