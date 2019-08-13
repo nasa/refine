@@ -26,7 +26,8 @@ function adapt_cycle {
     ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.metric
     
     rm ref_adapt_test.b8.ugrid
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test
+    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.metric -o ref_adapt_test -t
+    cp ref_gather_movie.tec ${proj}_movie.tec
     
     ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.metric > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
