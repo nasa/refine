@@ -271,10 +271,10 @@ trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
 
-LOG=${root_dir}/log.accept-cube-sphere-uniform-two
+LOG=${root_dir}/log.accept-cube-sphere-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-sphere/uniform/two
-( ./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-sphere/uniform
+( ./accept-cube-sphere-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-sphere-ring
