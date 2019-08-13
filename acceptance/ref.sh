@@ -289,10 +289,10 @@ cd ${source_dir}/acceptance/annulus/uniform
 ( ./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cone-cone-uniform-two
+LOG=${root_dir}/log.accept-cone-cone-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cone-cone/uniform/two
-( ./accept-cone-cone-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cone-cone/uniform
+( ./accept-cone-cone-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cone-cone-recon
