@@ -231,10 +231,10 @@ cd ${source_dir}/acceptance/2d/circle
 ( ./accept-2d-circle.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-linear-two
+LOG=${root_dir}/log.accept-3d-linear
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/linear/two
-( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/linear
+( ./accept-3d-linear.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
@@ -245,42 +245,42 @@ cd ${source_dir}/acceptance/cube-cylinder/gen/aflr3
 ( ./accept-cube-cylinder-aflr3.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-uniform-two
+LOG=${root_dir}/log.accept-cube-cylinder-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-( ./accept-cube-cylinder-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-cylinder/uniform
+( ./accept-cube-cylinder-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-linear010-two
+LOG=${root_dir}/log.accept-cube-cylinder-linear010
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/linear010/two
-( ./accept-cube-cylinder-linear010-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-cylinder/linear010
+( ./accept-cube-cylinder-linear010.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
+LOG=${root_dir}/log.accept-cube-cylinder-polar-2
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-( ./accept-cube-cylinder-polar-2-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-cylinder/polar-2
+( ./accept-cube-cylinder-polar-2.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-polar-1-two
+LOG=${root_dir}/log.accept-3d-polar-1
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/polar-1/two
-( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/polar-1
+( ./accept-3d-polar-1.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
 
-LOG=${root_dir}/log.accept-cube-sphere-uniform-two
+LOG=${root_dir}/log.accept-cube-sphere-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-sphere/uniform/two
-( ./accept-cube-sphere-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-sphere/uniform
+( ./accept-cube-sphere-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-sphere-ring-two
+LOG=${root_dir}/log.accept-cube-sphere-ring
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-sphere/ring/two
-( ./accept-cube-sphere-ring-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-sphere/ring
+( ./accept-cube-sphere-ring.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-annulus-uniform
@@ -289,10 +289,10 @@ cd ${source_dir}/acceptance/annulus/uniform
 ( ./accept-annulus-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cone-cone-uniform-two
+LOG=${root_dir}/log.accept-cone-cone-uniform
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cone-cone/uniform/two
-( ./accept-cone-cone-uniform-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cone-cone/uniform
+( ./accept-cone-cone-uniform.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cone-cone-recon
@@ -356,16 +356,16 @@ trap - EXIT
 wait
 
 # 2 procs
-LOG=${root_dir}/log.accept-3d-linear-two-para
+LOG=${root_dir}/log.accept-3d-linear-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/linear/two
-( ./accept-3d-two-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/linear
+( ./accept-3d-linear-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 1-1-4-4 procs
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
+cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
@@ -407,14 +407,14 @@ wait
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-( ./accept-cube-cylinder-uniform-two-valgrind.sh ${egads_dir} > $LOG 2>&1 || touch FAILED )
+cd ${source_dir}/acceptance/cube-cylinder/uniform
+( ./accept-cube-cylinder-uniform-valgrind.sh ${egads_dir} > $LOG 2>&1 || touch FAILED )
 trap - EXIT
 
 LOG=${root_dir}/log.accept-cube-cylinder-uniform-valgrind-mpi
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/uniform/two
-( ./accept-cube-cylinder-uniform-two-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED )
+cd ${source_dir}/acceptance/cube-cylinder/uniform
+( ./accept-cube-cylinder-uniform-valgrind-mpi.sh ${zoltan_dir} > $LOG 2>&1 || touch FAILED )
 trap - EXIT
 
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary

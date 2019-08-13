@@ -43,7 +43,7 @@ ${two}/ref_acceptance -ugawg ${field} cube-cylinder.meshb cube-cylinder.metric
 adapt_cycle cube-cylinder cycle01 2
 
 cat cycle01.status
-../../../check.rb cycle01.status 0.060 10.0
+../../check.rb cycle01.status 0.060 10.0
 
 
 

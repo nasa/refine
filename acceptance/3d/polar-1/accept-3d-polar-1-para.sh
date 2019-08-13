@@ -42,7 +42,7 @@ adapt_cycle accept-3d-para-04
 adapt_cycle accept-3d-para-05
 
 cat accept-3d-para-05.status
-../../../check.rb accept-3d-para-05.status 0.05 3.0
+../../check.rb accept-3d-para-05.status 0.05 3.0
 
 
 

@@ -19,14 +19,14 @@ h=0.01
 ${two}/ref_acceptance ega.meshb ega.metric ${h}
 ${two}/ref_driver -i ega.meshb -g ega.egads -m ega.metric -o ref_driver1 -l -d
 ${two}/ref_acceptance ref_driver1.meshb ref_driver1.metric ${h}
-${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-linear010-two-01.status
+${two}/ref_metric_test ref_driver1.meshb ref_driver1.metric > accept-cube-cylinder-linear010-01.status
 
 ${two}/ref_driver -i ref_driver1.meshb -g ega.egads -m ref_driver1.metric -o ref_driver2 -l -d
 ${two}/ref_acceptance ref_driver2.meshb ref_driver2.metric ${h}
-${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-linear010-two-02.status
+${two}/ref_metric_test ref_driver2.meshb ref_driver2.metric > accept-cube-cylinder-linear010-02.status
 
-cat accept-cube-cylinder-linear010-two-02.status
-../../../check.rb accept-cube-cylinder-linear010-two-02.status 0.3 3.0
+cat accept-cube-cylinder-linear010-02.status
+../../check.rb accept-cube-cylinder-linear010-02.status 0.3 3.0
 
 
 
