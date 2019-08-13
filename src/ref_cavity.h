@@ -151,6 +151,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face);
 REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename);
 
 REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local);
+REF_STATUS ref_cavity_ratio(REF_CAVITY ref_cavity, REF_BOOL *allowed);
 REF_STATUS ref_cavity_change(REF_CAVITY ref_cavity, REF_DBL *min_del,
                              REF_DBL *min_add);
 REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved);

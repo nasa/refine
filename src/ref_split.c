@@ -233,6 +233,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_quality, allowed_tet_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
+  REF_BOOL allowed_cavity_ratio;
   REF_GLOB global;
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
@@ -341,7 +342,9 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
         REF_WHERE("enlarge"); /* note but skip cavity failures */
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        valid_cavity = REF_TRUE;
+        RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
+            "cavity ratio");
+        valid_cavity = allowed_cavity_ratio;
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");
