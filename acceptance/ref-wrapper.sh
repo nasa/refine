@@ -32,8 +32,8 @@ cd ${build_directory_root} && \
     ./acceptance/ref-qsub.sh
 EOF
 
-scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
-scp fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/refine-\*.tar.gz .
+scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
+scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/refine-\*.tar.gz .
 
 trap "cat cleanup.log" EXIT
 ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF
