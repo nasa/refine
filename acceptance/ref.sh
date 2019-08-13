@@ -257,10 +257,10 @@ cd ${source_dir}/acceptance/cube-cylinder/linear010
 ( ./accept-cube-cylinder-linear010.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-cube-cylinder-polar-2-two
+LOG=${root_dir}/log.accept-cube-cylinder-polar-2
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
-( ./accept-cube-cylinder-polar-2-two.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/cube-cylinder/polar-2
+( ./accept-cube-cylinder-polar-2.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-polar-1
@@ -365,7 +365,7 @@ trap - EXIT
 # 1-1-4-4 procs
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube-cylinder/polar-2/two
+cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
