@@ -32,13 +32,13 @@ function adapt_cycle {
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
-adapt_cycle accept-3d-two-00
-adapt_cycle accept-3d-two-01
-adapt_cycle accept-3d-two-02
-adapt_cycle accept-3d-two-03
+adapt_cycle accept-3d-linear-00
+adapt_cycle accept-3d-linear-01
+adapt_cycle accept-3d-linear-02
+adapt_cycle accept-3d-linear-03
 
-cat accept-3d-two-03.status
-../../../check.rb accept-3d-two-03.status 0.33 3.0
+cat accept-3d-linear-03.status
+../../check.rb accept-3d-linear-03.status 0.33 3.0
 
 
 

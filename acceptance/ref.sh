@@ -231,10 +231,10 @@ cd ${source_dir}/acceptance/2d/circle
 ( ./accept-2d-circle.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-linear-two
+LOG=${root_dir}/log.accept-3d-linear
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/linear/two
-( ./accept-3d-two.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/linear
+( ./accept-3d-linear.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
@@ -356,10 +356,10 @@ trap - EXIT
 wait
 
 # 2 procs
-LOG=${root_dir}/log.accept-3d-linear-two-para
+LOG=${root_dir}/log.accept-3d-linear-para
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/linear/two
-( ./accept-3d-two-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/linear
+( ./accept-3d-linear-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 1-1-4-4 procs
