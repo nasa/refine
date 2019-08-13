@@ -1,5 +1,6 @@
 
 cavity operator in 2D/3D
+  + tet swap on boundary
   replace classic surf swap with cavity
   implement more in cavity
   merge tet and surf-only tri logic for 3D surface and volume
@@ -15,10 +16,13 @@ cavity operator in 2D/3D
     + ref_cavity_form_ball and ref_cavity_form_split_edge
   eliminate sliver
   eliminate short edges
-  full post checks for edge-metric ratio
   extract skip face with node
   2D cavity operator for surf geom edges that allows multiple edge types?
   cavity operator parallel?
+
+full post checks for edge-metric ratio
+  cavity swap
+  node smooth
 
 alternating RCB part
  n-medians
@@ -134,12 +138,10 @@ robustness and metric conformity
   prevent slivers
   smooth after collapse?
  smooth
-  better new smooth location with metric gradation?
+  better new smooth location with metric gradation? Flow/migration?
    ideal tet using principle direction? but faces dissaggree? optimizer?
-  interpolate metric after smooth
   sort worst to best? sort biggest neighbor difference?
     for edge, surface, volume sequence
-  ideal tri/tet use log avg m?
   requeue neighbors with large changes? particulary quality drops
   minmax optimize uv
 
@@ -218,7 +220,7 @@ mixed element in refine/two
 
 +++++++++++++++++
 
-
++ ideal tri/tet smooth use log avg m of element
 
 + continuous metric interpolation
  + pair and store interp at startup
@@ -239,6 +241,7 @@ mixed element in refine/two
  + ref_metric_interpolate no twod, take ref_interp
  + ref_metric_synchronize call twod, if(!cont) reuse and locate ref_interp
  + interpolate metric after split
+ + interpolate metric after smooth
 
 + 1.9.0
 

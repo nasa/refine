@@ -1178,6 +1178,49 @@ REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
+                                       REF_INT type, REF_BOOL *supported) {
+  REF_INT node_per;
+  REF_INT id, geom0, geom1, geom2;
+
+  *supported = REF_TRUE;
+
+  RAS(1 <= type && type <= 2, "type not allowed");
+  node_per = type + 1;
+  id = nodes[node_per];
+
+  switch (type) {
+    case REF_GEOM_EDGE:
+      RSS(ref_geom_find(ref_geom, nodes[0], type, id, &geom0), "not found");
+      RSS(ref_geom_find(ref_geom, nodes[1], type, id, &geom1), "not found");
+
+      if ((0 != ref_geom_jump(ref_geom, geom0) ||
+           0 != ref_geom_degen(ref_geom, geom0)) &&
+          (0 != ref_geom_jump(ref_geom, geom1) ||
+           0 != ref_geom_degen(ref_geom, geom1))) {
+        *supported = REF_FALSE;
+      }
+      break;
+    case REF_GEOM_FACE:
+      RSS(ref_geom_find(ref_geom, nodes[0], type, id, &geom0), "not found");
+      RSS(ref_geom_find(ref_geom, nodes[1], type, id, &geom1), "not found");
+      RSS(ref_geom_find(ref_geom, nodes[2], type, id, &geom2), "not found");
+      if ((0 != ref_geom_jump(ref_geom, geom0) ||
+           0 != ref_geom_degen(ref_geom, geom0)) &&
+          (0 != ref_geom_jump(ref_geom, geom1) ||
+           0 != ref_geom_degen(ref_geom, geom1)) &&
+          (0 != ref_geom_jump(ref_geom, geom2) ||
+           0 != ref_geom_degen(ref_geom, geom2))) {
+        *supported = REF_FALSE;
+      }
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "can't to geom type yet");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
                              REF_INT type, REF_DBL *param, REF_INT *sens) {
 #ifdef HAVE_EGADS

@@ -29,6 +29,7 @@
 #include "ref_adapt.h"
 #include "ref_edge.h"
 #include "ref_sort.h"
+#include "ref_swap.h"
 
 #include "ref_dict.h"
 
@@ -69,6 +70,9 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   }
   ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
   ref_cavity_blankface(ref_cavity) = 0;
+
+  ref_cavity->node0 = REF_EMPTY;
+  ref_cavity->node1 = REF_EMPTY;
 
   RSS(ref_list_create(&(ref_cavity->tri_list)), "tri list");
   RSS(ref_list_create(&(ref_cavity->tet_list)), "tet list");
@@ -228,7 +232,7 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
         /* boundary tri can not be modified until bounday cavity implemented */
         RXS(ref_cell_with(ref_grid_tri(ref_cavity_grid(ref_cavity)), nodes,
                           &cell),
-            REF_NOT_FOUND, "serach for boundary tri");
+            REF_NOT_FOUND, "search for boundary tri");
         if (REF_EMPTY != cell) {
           ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
           return REF_SUCCESS;
@@ -385,6 +389,7 @@ REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet) {
 
 REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_CELL ref_cell;
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_GEOM ref_geom = ref_grid_geom(ref_cavity_grid(ref_cavity));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -437,6 +442,25 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     /* check validity, area? */
   }
 
+  if (REF_EMPTY != ref_cavity->node0) { /* swap tri of boundary tets */
+    REF_INT node0, node1, node2, node3;
+    node0 = ref_cavity->node0;
+    node1 = ref_cavity->node1;
+    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
+        "nodes 2 and 3");
+    REIS(2, ref_list_n(ref_cavity_tri_list(ref_cavity)), "expect two tri");
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), 0);
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes tri0");
+    nodes[0] = node0;
+    nodes[1] = node3;
+    nodes[2] = node2;
+    RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
+    nodes[0] = node1;
+    nodes[1] = node2;
+    nodes[2] = node3;
+    RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
+  }
+
   while (ref_list_n(ref_cavity_tri_list(ref_cavity)) > 0) {
     RSS(ref_list_pop(ref_cavity_tri_list(ref_cavity), &cell), "list");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
@@ -473,12 +497,51 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                                      REF_INT node0, REF_INT node1,
                                      REF_INT node) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
+  REF_INT node2, node3, nodes[3], face;
+  REF_BOOL has_triangle, reversed;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
+  ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_triangle),
+      "triangle side");
+  if (has_triangle) {
+    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
+        "nodes 2 and 3");
+
+    ref_cavity->node0 = node0;
+    ref_cavity->node1 = node1;
+
+    nodes[0] = node0;
+    nodes[1] = node1;
+    nodes[2] = node2;
+    RSS(ref_cavity_find_face(ref_cavity, nodes, &face, &reversed), "find2");
+    RUS(REF_EMPTY, face, "face missing");
+    RAS(!reversed, "same orient");
+    ref_cavity_f2n(ref_cavity, 0, face) = node0;
+    ref_cavity_f2n(ref_cavity, 1, face) = node3;
+    ref_cavity_f2n(ref_cavity, 2, face) = node2;
+
+    nodes[0] = node1;
+    nodes[1] = node0;
+    nodes[2] = node3;
+    RSS(ref_cavity_find_face(ref_cavity, nodes, &face, &reversed), "find2");
+    RUS(REF_EMPTY, face, "face missing");
+    RAS(!reversed, "same orient");
+    ref_cavity_f2n(ref_cavity, 0, face) = node1;
+    ref_cavity_f2n(ref_cavity, 1, face) = node2;
+    ref_cavity_f2n(ref_cavity, 2, face) = node3;
+
+    each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+      RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
+    }
+    REIS(2, ref_list_n(ref_cavity_tri_list(ref_cavity)), "expect two tri");
   }
 
   return REF_SUCCESS;
@@ -871,11 +934,19 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
                face_nodes[1], face_nodes[2], face_nodes[3]);
         ref_cavity_tec(ref_cavity, "ref_cavity_error_too_many_tet.tec");
       });
-  if (REF_EMPTY == tet0) THROW("cavity tets missing");
+  if (REF_EMPTY == tet0) {
+    if (REF_EMPTY == ref_cavity->node0) {
+      THROW("cavity tets missing");
+    }
+    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+    return REF_SUCCESS;
+  }
   if (REF_EMPTY == tet1) {
     REF_INT tri;
-    RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
-        "verify boundary face");
+    if (REF_EMPTY != ref_cavity->node0) {
+      RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
+          "verify boundary face");
+    }
     ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
     return REF_SUCCESS;
   }
@@ -884,7 +955,14 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
       "cell0");
   RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet1, &have_cell1),
       "cell1");
-  if (have_cell0 == have_cell1) THROW("cavity same state");
+  if (REF_EMPTY == ref_cavity->node0) {
+    if (have_cell0 == have_cell1) THROW("cavity same state");
+  } else {
+    if (!have_cell0 && !have_cell1) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
   if (have_cell0) RSS(ref_cavity_add_tet(ref_cavity, tet1), "add c1");
   if (have_cell1) RSS(ref_cavity_add_tet(ref_cavity, tet0), "add c0");
 
@@ -1309,6 +1387,52 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_BOOL *allowed) {
+  REF_BOOL has_triangle, same_face, conforming, improved, in_limits;
+
+  *allowed = REF_FALSE;
+
+  RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_triangle),
+      "triangle side");
+  if (!has_triangle) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_same_faceid(ref_grid, node0, node1, &same_face),
+      "not allowed if a side of a edge or diff faceid");
+  if (!same_face) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_conforming(ref_grid, node0, node1, &conforming),
+      "normals and uv area must conform to geom");
+  if (!conforming) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_quality(ref_grid, node0, node1, &improved),
+      "require tri quality improvement");
+  if (!improved) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_ratio(ref_grid, node0, node1, &in_limits),
+      "require tri ratio in limits");
+  if (!in_limits) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  *allowed = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -1336,33 +1460,36 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         n2 = others[other][2];
         RSS(ref_cell_local_gem(ref_cell, ref_node, nodes[n0], nodes[n1],
                                &allowed),
-            "local");
-        if (allowed) {
-          RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
-              "edge degree");
-          if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
-          RSS(ref_cavity_create(&ref_cavity), "create");
-          RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
-                                        nodes[n1], nodes[n2]),
-              "cavity gem");
-          if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
-            REF_WHERE("enlarge"); /* note but skip cavity failures */
-          if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-            RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
-            if (!allowed) {
-	      RSS(ref_cavity_free(ref_cavity), "free");
-	      continue;
-	    }
-            RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-            if (min_add - min_del > 0.0001) {
-              if (best < min_add) {
-                best = min_add;
-                best_other = other;
-              }
+            "local gem");
+        if (!allowed) continue;
+        RSS(ref_cavity_edge_swap_boundary(ref_grid, nodes[n0], nodes[n1],
+                                          &allowed),
+            "surface geom and topo");
+        if (!allowed) continue;
+        RSS(ref_cell_degree_with2(ref_cell, nodes[n0], nodes[n1], &degree),
+            "edge degree");
+        if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
+        RSS(ref_cavity_create(&ref_cavity), "create");
+        RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
+                                      nodes[n1], nodes[n2]),
+            "cavity gem");
+        if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
+          REF_WHERE("enlarge"); /* note but skip cavity failures */
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
+          if (!allowed) {
+            RSS(ref_cavity_free(ref_cavity), "free");
+            continue;
+          }
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
+          if (min_add - min_del > 0.0001) {
+            if (best < min_add) {
+              best = min_add;
+              best_other = other;
             }
           }
-          RSS(ref_cavity_free(ref_cavity), "free");
         }
+        RSS(ref_cavity_free(ref_cavity), "free");
       }
       if (REF_EMPTY != best_other) {
         RSS(ref_cavity_create(&ref_cavity), "create");

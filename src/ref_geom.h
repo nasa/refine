@@ -190,6 +190,8 @@ REF_STATUS ref_geom_find(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
 REF_STATUS ref_geom_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);
+REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
+                                       REF_INT type, REF_BOOL *supported);
 REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
                              REF_INT type, REF_DBL *param, REF_INT *sens);
 
