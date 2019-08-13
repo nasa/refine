@@ -1,6 +1,6 @@
 #!MC 1410
-$!VarSet |LFDSFN1| = '"ref_gather_movie.tec"'
-$!VarSet |LFDSVL1| = '"x" "y" "z" "n" "s" "l"'
+$!VarSet |LFDSFN1| = '"ref_gather_histo.tec"'
+$!VarSet |LFDSVL1| = '"Edge Length" "Normalized Count"'
 $!SetStyleBase Factory
 $!GlobalPaper 
   PaperSizeInfo
@@ -38,7 +38,7 @@ $!Page
     }
 ### Frame Number 1 ###
 $!ReadDataSet  '|LFDSFN1|'
-  InitialPlotType = Cartesian3D
+  InitialPlotType = Cartesian2D
   IncludeText = No
   IncludeGeom = No
   AssignStrandIDs = Yes
@@ -59,7 +59,7 @@ $!FrameLayout
 $!ThreeDAxis 
   AspectRatioLimit = 25
   BoxAspectRatioLimit = 25
-$!PlotType  = Cartesian3D
+$!PlotType  = Cartesian2D
 $!FrameName  = 'Frame 001'
 $!GlobalTime 
   SolutionTime = 0
@@ -241,7 +241,7 @@ $!FieldMap  [1]
     }
   EdgeLayer
     {
-    Show = Yes
+    Show = No
     Color = Black
     LineThickness = 0.1
     }
@@ -251,7 +251,7 @@ $!FieldMap  [1]
     }
   Surfaces
     {
-    SurfacesToPlot = KPlanes
+    SurfacesToPlot = None
     IRange
       {
       Max = 1
@@ -266,7 +266,11 @@ $!FieldMap  [1]
       ShowStreamtraces = No
       }
     }
-$!ThreeDAxis 
+  Effects
+    {
+    LightingEffect = Gouraud
+    }
+$!TwoDAxis 
   XDetail
     {
     VarNum = 1
@@ -275,51 +279,22 @@ $!ThreeDAxis
     {
     VarNum = 2
     }
-  ZDetail
-    {
-    VarNum = 3
-    }
 $!View Fit
-$!ThreeDAxis 
-  AxisMode = XYZDependent
-  XYDepXToYRatio = 1
+$!TwoDAxis 
   DepXToYRatio = 1
-  DepXToZRatio = 1
-$!ThreeDAxis 
+$!TwoDAxis 
   XDetail
     {
-    ShowAxis = No
-    RangeMin = -0.050000000000000002776
-    RangeMax = 1.0500000000000000444
-    GRSpacing = 0.2
-    AxisLine
-      {
-      Edge = 1
-      }
+    RangeMin = -0.0042234025876919855866
+    RangeMax = 2.5299608870023133633
+    GRSpacing = 0.5
     }
-$!ThreeDAxis 
+$!TwoDAxis 
   YDetail
     {
-    ShowAxis = No
-    RangeMin = -0.050000000000000002776
-    RangeMax = 1.0500000000000000444
-    GRSpacing = 0.2
-    AxisLine
-      {
-      Edge = 1
-      }
-    }
-$!ThreeDAxis 
-  ZDetail
-    {
-    ShowAxis = No
-    RangeMin = -0.050000000000000002776
-    RangeMax = 1.0500000000000000444
-    GRSpacing = 0.2
-    AxisLine
-      {
-      Edge = 2
-      }
+    RangeMin = -0.30595976451157380627
+    RangeMax = 2.0067180464327867284
+    GRSpacing = 0.5
     }
 $!IsoSurfaceAttributes  1
   IsoSurfaceSelection = OneSpecificValue
@@ -420,18 +395,6 @@ $!SliceAttributes  1
     I = 1
     J = 1
     K = 1
-    }
-  StartPosition
-    {
-    X = 0.05
-    Y = 0.05
-    Z = 0.05
-    }
-  EndPosition
-    {
-    X = 0.95
-    Y = 0.95
-    Z = 0.95
     }
   EdgeLayer
     {
@@ -550,47 +513,6 @@ $!StreamAttributes
       }
     }
   MaxSteps = 10000
-$!GlobalThreeD 
-  AxisScaleFact
-    {
-    X = 1
-    Y = 1
-    Z = 1
-    }
-  RotateOrigin
-    {
-    X = 0.5
-    Y = 0.5
-    Z = 0.5
-    }
-  LightSource
-    {
-    XYZDirection
-      {
-      X = -0.2
-      Y = -0.2
-      Z = 0.9591663046625438
-      }
-    Intensity = 75
-    BackgroundLight = 25
-    IncludeSpecular = Yes
-    SpecularIntensity = 40
-    SpecularShininess = 60
-    }
-  LineLiftFraction = 0.2
-  SymbolLiftFraction = 0.6
-  VectorLiftFraction = 0.7
-  NearPlaneFraction = 0.1
-$!ThreeDView 
-  PSIAngle = 45
-  ThetaAngle = 45
-  ViewerPosition
-    {
-    X = -4.479388091426566
-    Y = -4.510711560981229
-    Z = 7.716769123026087
-    }
-  ViewWidth = 1.75808
 $!FieldLayers 
   ShowShade = Yes
   ShowEdge = No
