@@ -1390,7 +1390,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
 static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
                                                 REF_INT node0, REF_INT node1,
                                                 REF_BOOL *allowed) {
-  REF_BOOL has_triangle, same_face, conforming, improved;
+  REF_BOOL has_triangle, same_face, conforming, improved, in_limits;
 
   *allowed = REF_FALSE;
 
@@ -1416,8 +1416,15 @@ static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
   }
 
   RSS(ref_swap_quality(ref_grid, node0, node1, &improved),
-      "require tri qulaity improvement");
+      "require tri quality improvement");
   if (!improved) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_ratio(ref_grid, node0, node1, &in_limits),
+      "require tri ratio in limits");
+  if (!in_limits) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
