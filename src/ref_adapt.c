@@ -484,8 +484,9 @@ static REF_STATUS ref_adapt_threed_swap(REF_GRID ref_grid) {
 
 static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
+  REF_BOOL all_done0, all_done1;
 
-  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
+  RSS(ref_adapt_parameter(ref_grid, &all_done0), "param");
 
   RSS(ref_gather_ngeom(ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                        REF_GEOM_FACE, &ngeom),
@@ -547,7 +548,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
 
-  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
+  RSS(ref_adapt_parameter(ref_grid, &all_done1), "param");
 
   if (ref_grid_surf(ref_grid)) {
     RSS(ref_split_surf_pass(ref_grid), "split surfpass");
@@ -583,6 +584,8 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   if (ngeom > 0)
     RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
+
+  *all_done = (all_done0 && all_done1);
 
   return REF_SUCCESS;
 }
