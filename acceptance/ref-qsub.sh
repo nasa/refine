@@ -50,6 +50,6 @@ cd \$PBS_O_WORKDIR
 
 EOF
 
-trap "cat ${testname}.* ${testname}" EXIT
+trap "sleep 5; cat ${testname}.* ${testname}" EXIT
 qsub -V -Wblock=true ${testname}.pbs
 trap - EXIT
