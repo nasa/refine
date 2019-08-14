@@ -252,6 +252,17 @@ int main(int argc, char *argv[]) {
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "inflate");
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("inflating %d faces\n", ref_dict_n(faceids));
+    printf("mach %f mach angle %f rad %f deg\n", mach, mach_angle_rad,
+           ref_math_in_degrees(mach_angle_rad));
+    printf("first thickness %f\n", first_thickness);
+    printf("total thickness %f\n", total_thickness);
+    printf("rate %f\n", rate);
+    printf("layers %d\n", nlayers);
+    printf("extrusion %d\n", extrude_radially);
+  }
+
   if (REF_EMPTY != scale_pos) {
     if (ref_mpi_once(ref_mpi))
       printf("scale grid after inflation by %f\n", scale);
