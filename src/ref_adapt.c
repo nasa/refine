@@ -562,37 +562,52 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 }
 
 static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
-  REF_INT pass;
 
   RSS(ref_adapt_parameter(ref_grid, all_done), "param");
 
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "twod pass");
 
-  for (pass = 0; pass < ref_grid_adapt(ref_grid, collapse_per_pass); pass++) {
-    RSS(ref_collapse_twod_pass(ref_grid), "col pass");
-    RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    ref_gather_blocking_frame(ref_grid, "collapse");
-  }
+  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "swap");
 
-  for (pass = 0; pass < ref_grid_adapt(ref_grid, split_per_pass); pass++) {
-    RSS(ref_split_twod_pass(ref_grid), "split pass");
-    RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    ref_gather_blocking_frame(ref_grid, "split");
-  }
+  RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "smooth");
 
-  for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
-    RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
-    RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-    if (ref_grid_adapt(ref_grid, watch_param))
-      RSS(ref_adapt_tattle(ref_grid), "tattle");
-    ref_gather_blocking_frame(ref_grid, "smooth");
-  }
+  RSS(ref_collapse_twod_pass(ref_grid), "collapse pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "collapse");
+
+  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "swap");
+
+  RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "smooth");
+
+  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
+
+  RSS(ref_split_twod_pass(ref_grid), "split pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "split");
+
+  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "swap");
+
+  RSS(ref_smooth_twod_pass(ref_grid), "smooth pass");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_gather_blocking_frame(ref_grid, "smooth");
 
   return REF_SUCCESS;
 }
