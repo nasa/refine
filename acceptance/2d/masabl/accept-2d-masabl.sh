@@ -40,6 +40,6 @@ adapt_cycle accept-2d-masabl-04
 adapt_cycle accept-2d-masabl-05
 
 cat accept-2d-masabl-05.status
-../../check.rb accept-2d-masabl-05.status 0.40 2.0
+../../check.rb accept-2d-masabl-05.status 0.30 2.0
 
 
