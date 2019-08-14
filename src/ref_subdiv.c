@@ -142,6 +142,7 @@ REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv_ptr, REF_GRID ref_grid) {
                   REF_INT, REF_EMPTY);
 
   ref_subdiv->allow_geometry = REF_TRUE;
+  ref_subdiv->new_mark_allowed = REF_TRUE;
 
   ref_subdiv->instrument = REF_FALSE;
   ref_subdiv->debug = REF_FALSE;
@@ -2161,15 +2162,19 @@ REF_STATUS ref_subdiv_split(REF_SUBDIV ref_subdiv) {
   }
 
   if (ref_subdiv->allow_geometry) {
-    RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
-    RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
+    if (ref_subdiv_new_mark_allowed(ref_subdiv)) {
+      RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
+      RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
+    }
     RSS(ref_subdiv_new_node(ref_subdiv), "new nodes");
     RSS(ref_subdiv_unmark_neg_tet_relax(ref_subdiv), "geom neg marks");
     RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");
     RSS(ref_subdiv_new_node(ref_subdiv), "new nodes");
   } else {
     RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
-    RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
+    if (ref_subdiv_new_mark_allowed(ref_subdiv)) {
+      RSS(ref_subdiv_mark_relax(ref_subdiv), "relax marks");
+    }
     RSS(ref_subdiv_unmark_geom_support(ref_subdiv), "all geom marks");
     RSS(ref_subdiv_unmark_relax(ref_subdiv), "relax marks");
     RSS(ref_subdiv_test_impossible_marks(ref_subdiv), "possible");

@@ -413,6 +413,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "spl int");
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
+    ref_subdiv_new_mark_allowed(ref_subdiv) = REF_FALSE;
     ref_subdiv->instrument = REF_TRUE;
     each_ref_list_item(para_no_geom, i) {
       edge = ref_list_value(para_no_geom, i);
