@@ -37,6 +37,7 @@ struct REF_SUBDIV_STRUCT {
   REF_INT *mark;
   REF_INT *node;
   REF_INT allow_geometry;
+  REF_INT new_mark_allowed;
   REF_INT instrument;
   REF_INT debug;
 };
@@ -44,6 +45,8 @@ struct REF_SUBDIV_STRUCT {
 #define ref_subdiv_grid(ref_subdiv) ((ref_subdiv)->grid)
 #define ref_subdiv_edge(ref_subdiv) ((ref_subdiv)->edge)
 #define ref_subdiv_mpi(ref_subdiv) ref_grid_mpi(ref_subdiv_grid(ref_subdiv))
+
+#define ref_subdiv_new_mark_allowed(ref_subdiv) ((ref_subdiv)->new_mark_allowed)
 
 REF_STATUS ref_subdiv_create(REF_SUBDIV *ref_subdiv, REF_GRID ref_grid);
 REF_STATUS ref_subdiv_free(REF_SUBDIV ref_subdiv);
