@@ -471,6 +471,17 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_adapt_threed_swap(REF_GRID ref_grid) {
+  REF_INT pass;
+  RSS(ref_cavity_pass(ref_grid), "cavity pass");
+  if (ref_grid_surf(ref_grid)) {
+    for (pass = 0; pass < 3; pass++) {
+      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
   REF_INT pass;
@@ -490,7 +501,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   for (pass = 0; pass < ref_grid_adapt(ref_grid, collapse_per_pass); pass++) {
     RSS(ref_collapse_pass(ref_grid), "col pass");
-    RSS(ref_cavity_pass(ref_grid), "cavity pass");
+    RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "collapse");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "collapse geom topo check");
@@ -510,7 +521,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     } else {
       RSS(ref_split_pass(ref_grid), "split pass");
     }
-    RSS(ref_cavity_pass(ref_grid), "cavity pass");
+    RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "split");
     if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))
@@ -519,23 +530,9 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
   }
 
-  if (ref_grid_surf(ref_grid)) {
-    for (pass = 0; pass < 3; pass++) {
-      RSB(ref_swap_surf_pass(ref_grid), "swap pass",
-          { ref_gather_blocking_frame(ref_grid, "swap error"); });
-      ref_gather_blocking_frame(ref_grid, "swap");
-      if (ngeom > 0)
-        RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");
-      if (ref_grid_adapt(ref_grid, watch_param))
-        RSS(ref_adapt_tattle(ref_grid), "tattle");
-      if (ref_grid_adapt(ref_grid, instrument))
-        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swp");
-    }
-  }
-
   for (pass = 0; pass < ref_grid_adapt(ref_grid, smooth_per_pass); pass++) {
     RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
-    RSS(ref_cavity_pass(ref_grid), "cavity pass");
+    RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
     if (ngeom > 0)
       RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
@@ -545,24 +542,10 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
   }
 
-  if (ref_grid_surf(ref_grid)) {
-    for (pass = 0; pass < 3; pass++) {
-      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
-      ref_gather_blocking_frame(ref_grid, "swap");
-      if (ngeom > 0)
-        RSS(ref_geom_verify_topo(ref_grid), "swap geom topo check");
-      if (ref_grid_adapt(ref_grid, watch_param))
-        RSS(ref_adapt_tattle(ref_grid), "tattle");
-      if (ref_grid_adapt(ref_grid, instrument))
-        ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swp");
-    }
-  }
-
   return REF_SUCCESS;
 }
 
 static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
-
   RSS(ref_adapt_parameter(ref_grid, all_done), "param");
 
   ref_gather_blocking_frame(ref_grid, "twod pass");
