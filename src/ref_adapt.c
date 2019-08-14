@@ -491,9 +491,9 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_gather_ngeom(ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                        REF_GEOM_FACE, &ngeom),
       "count ngeom");
+  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "adapt preflight check");
 
   ref_gather_blocking_frame(ref_grid, "threed pass");
-  if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "adapt preflight check");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
@@ -503,8 +503,6 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_collapse_pass(ref_grid), "col pass");
     RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "collapse");
-    if (ngeom > 0)
-      RSS(ref_geom_verify_topo(ref_grid), "collapse geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))
       RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
@@ -523,7 +521,6 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     }
     RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "split");
-    if (ngeom > 0) RSS(ref_geom_verify_topo(ref_grid), "split geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))
       RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
@@ -534,13 +531,14 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
     RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
     ref_gather_blocking_frame(ref_grid, "smooth");
-    if (ngeom > 0)
-      RSS(ref_geom_verify_topo(ref_grid), "smooth geom topo check");
     if (ref_grid_adapt(ref_grid, watch_param))
       RSS(ref_adapt_tattle(ref_grid), "tattle");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
   }
+
+  if (ngeom > 0)
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
 
   return REF_SUCCESS;
 }
