@@ -25,8 +25,9 @@
 
 BEGIN_C_DECLORATION
 
-/* node1 is removed */
+REF_STATUS ref_collapse_diagnostics(REF_GRID ref_grid);
 
+/* node1 is removed */
 REF_STATUS ref_collapse_pass(REF_GRID ref_grid);
 
 REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid, REF_INT *node0,
