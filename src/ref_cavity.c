@@ -411,6 +411,10 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[3] = ref_cavity_node(ref_cavity);
     if (nodes[3] == nodes[0] || nodes[3] == nodes[1] || nodes[3] == nodes[2])
       continue; /* attached face */
+    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tet nodes 0 not valid");
+    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tet nodes 1 not valid");
+    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tet nodes 2 not valid");
+    RAS(ref_node_valid(ref_node, nodes[3]), "cavity tet nodes 3 not valid");
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
     if (volume <= ref_node_min_volume(ref_node))
@@ -438,6 +442,9 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
     if (nodes[2] == nodes[0] || nodes[2] == nodes[1])
       continue; /* attached seg */
+    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tri nodes 0 not valid");
+    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tri nodes 1 not valid");
+    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tri nodes 2 not valid");
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     /* check validity, area? */
   }
@@ -454,10 +461,16 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[0] = node0;
     nodes[1] = node3;
     nodes[2] = node2;
+    RAS(ref_node_valid(ref_node, nodes[0]), "cavity node0 0 not valid");
+    RAS(ref_node_valid(ref_node, nodes[1]), "cavity node0 1 not valid");
+    RAS(ref_node_valid(ref_node, nodes[2]), "cavity node0 2 not valid");
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     nodes[0] = node1;
     nodes[1] = node2;
     nodes[2] = node3;
+    RAS(ref_node_valid(ref_node, nodes[0]), "cavity node1 0 not valid");
+    RAS(ref_node_valid(ref_node, nodes[1]), "cavity node1 1 not valid");
+    RAS(ref_node_valid(ref_node, nodes[2]), "cavity node1 2 not valid");
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
   }
 
@@ -1195,6 +1208,41 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
   }
 
   *local = REF_TRUE;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
+  REF_BOOL local;
+  REF_INT face, face_node, node;
+  RSS(ref_cavity_local(ref_cavity, &local), "local");
+  RAS(local, "cavity not local");
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    ; /* semi to force format */
+    each_ref_cavity_face_node(ref_cavity, face_node) {
+      node = ref_cavity_f2n(ref_cavity, face_node, face);
+      RAS(ref_node_valid(ref_node, node), "cavity node not valid");
+    }
+  }
+
+  if (REF_EMPTY != ref_cavity->node0) { /* swap tri of boundary tets */
+    REF_INT node0, node1, node2, node3;
+    node0 = ref_cavity->node0;
+    node1 = ref_cavity->node1;
+    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
+        "nodes 2 and 3");
+    RAS(ref_node_valid(ref_node, node0), "cavity node0 not valid");
+    RAS(ref_node_valid(ref_node, node1), "cavity node1 not valid");
+    RAS(ref_node_valid(ref_node, node2), "cavity node2 not valid");
+    RAS(ref_node_valid(ref_node, node3), "cavity node3 not valid");
+    RAS(ref_node_owned(ref_node, node0), "cavity node0 not owned");
+    RAS(ref_node_owned(ref_node, node1), "cavity node1 not owned");
+    RAS(ref_node_owned(ref_node, node2), "cavity node2 not owned");
+    RAS(ref_node_owned(ref_node, node3), "cavity node3 not owned");
+  }
+
   return REF_SUCCESS;
 }
 
