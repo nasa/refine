@@ -27,11 +27,11 @@ typedef struct REF_INTERP_STRUCT REF_INTERP_STRUCT;
 typedef REF_INTERP_STRUCT *REF_INTERP;
 END_C_DECLORATION
 
+#include "ref_search.h"
 #include "ref_agents.h"
 #include "ref_grid.h"
 #include "ref_list.h"
 #include "ref_mpi.h"
-#include "ref_search.h"
 
 BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
