@@ -956,7 +956,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   }
   if (REF_EMPTY == tet1) {
     REF_INT tri;
-    if (REF_EMPTY != ref_cavity->node0) {
+    if (REF_EMPTY == ref_cavity->node0) {
       RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
           "verify boundary face");
     }
