@@ -244,7 +244,7 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
       ref_cavity_nface(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same face twice */
-      return REF_INVALID;
+      RSS(REF_INVALID, "attempt to insert same face twice");
     }
   }
 
