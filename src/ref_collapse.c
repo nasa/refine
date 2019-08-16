@@ -226,20 +226,24 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     valid_cavity = REF_FALSE;
     if (!allowed) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1),
-          "cav col");
-      RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
-      if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
-            "cavity ratio");
-        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
-        valid_cavity =
-            allowed_cavity_ratio &&
-            (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
-      }
-      if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
-        ref_node_age(ref_node, node0)++;
-        ref_node_age(ref_node, node1)++;
+      if (REF_SUCCESS ==
+          ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) {
+        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
+              "cavity ratio");
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add),
+              "cavity change");
+          valid_cavity =
+              allowed_cavity_ratio &&
+              (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
+          if (REF_FALSE && valid_cavity)
+            printf("new %f old %f\n", min_add, min_del);
+        }
+        if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+          ref_node_age(ref_node, node0)++;
+          ref_node_age(ref_node, node1)++;
+        }
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
