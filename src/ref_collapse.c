@@ -576,7 +576,6 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
   REF_DBL quality;
   REF_BOOL will_be_collapsed;
   REF_BOOL has_support;
-  REF_DBL sign_uv_area, uv_area;
 
   *allowed = REF_FALSE;
 
@@ -629,15 +628,6 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
     RSS(ref_node_tri_quality(ref_node, nodes, &quality), "qual");
     if (quality < ref_grid_adapt(ref_grid, collapse_quality_absolute))
       return REF_SUCCESS;
-
-    if (has_support) {
-      RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
-                                &sign_uv_area),
-          "sign");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-      if (sign_uv_area * uv_area < ref_node_min_uv_area(ref_node))
-        return REF_SUCCESS;
-    }
   }
 
   *allowed = REF_TRUE;
@@ -692,9 +682,11 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_BOOL will_be_collapsed;
 
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL node0_support, node1_support;
   REF_DBL orig_dev, new_dev;
+  REF_DBL sign_uv_area, orig_uv_area, new_uv_area;
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
@@ -724,14 +716,20 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
 
     /* see if new config is below limit */
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
-    if (new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) {
-      /* allow if improvement */
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
-      if (new_dev < orig_dev) {
-        *allowed = REF_FALSE;
-        return REF_SUCCESS;
-      }
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
+                              &sign_uv_area),
+        "sign");
+    RSS(ref_geom_uv_area(ref_geom, nodes, &orig_uv_area), "uv area");
+    RSS(ref_geom_uv_area(ref_geom, new_nodes, &new_uv_area), "uv area");
+    /* allow if improvement */
+    if (((new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) &&
+         (new_dev < orig_dev)) ||
+        ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
+         (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area))) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
     }
   }
 
