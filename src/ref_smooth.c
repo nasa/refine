@@ -611,8 +611,7 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
       { printf("nodes %d %d %d\n", node0, node, node1); });
 
   dot = ref_math_dot(tan0, tan1);
-  /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
-  if (dot < (1.0 - 1.0e-8)) {
+  if (dot < ref_node_same_normal_tol(ref_node)) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
@@ -812,8 +811,7 @@ static REF_STATUS ref_smooth_node_same_normal(REF_GRID ref_grid, REF_INT node,
     }
     RSS(status, "new normal length");
     dot = ref_math_dot(first_normal, normal);
-    /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
-    if (dot < (1.0 - 1.0e-8)) {
+    if (dot < ref_node_same_normal_tol(ref_node)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }

@@ -361,6 +361,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
       face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, tet);
       if (!ref_node_owned(ref_node, face_nodes[node])) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
       }
     }
     RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
@@ -956,7 +957,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   }
   if (REF_EMPTY == tet1) {
     REF_INT tri;
-    if (REF_EMPTY != ref_cavity->node0) {
+    if (REF_EMPTY == ref_cavity->node0) {
       RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
           "verify boundary face");
     }

@@ -236,7 +236,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_free(ref_cavity), "free");
   }
 
-  { /* add tet */
+  if (!ref_mpi_para(ref_mpi)) { /* add tet */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
     REF_INT nodes[3];
@@ -252,11 +252,20 @@ int main(int argc, char *argv[]) {
 
       RSS(ref_cavity_add_tet(ref_cavity, 0), "insert first");
 
-      nodes[0] = 0;
-      nodes[1] = 1;
-      nodes[2] = 2;
-      RSS(ref_cavity_find_face(ref_cavity, nodes, &face, &reversed), "find 0");
-      REIS(REF_FALSE, reversed, "not rev");
+      if (ref_node_owned(ref_grid_node(ref_grid), 0) &&
+          ref_node_owned(ref_grid_node(ref_grid), 1) &&
+          ref_node_owned(ref_grid_node(ref_grid), 2) &&
+          ref_node_owned(ref_grid_node(ref_grid), 3)) {
+        nodes[0] = 0;
+        nodes[1] = 1;
+        nodes[2] = 2;
+        RSS(ref_cavity_find_face(ref_cavity, nodes, &face, &reversed),
+            "find 0");
+        REIS(REF_FALSE, reversed, "not rev");
+      } else {
+        REIS(REF_CAVITY_PARTITION_CONSTRAINED, ref_cavity_state(ref_cavity),
+             "expected part constraint");
+      }
 
       RSS(ref_cavity_free(ref_cavity), "free");
     }
@@ -303,7 +312,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* insert tet node */
+  if (!ref_mpi_para(ref_mpi)) { /* insert tet node */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;
@@ -336,7 +345,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* visible three node face */
+  if (!ref_mpi_para(ref_mpi)) { /* visible three node face */
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CAVITY ref_cavity;

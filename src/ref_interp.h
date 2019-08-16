@@ -28,6 +28,7 @@ typedef REF_INTERP_STRUCT *REF_INTERP;
 END_C_DECLORATION
 
 #include "ref_search.h"
+/* ref_search first for an intel icc bug */
 #include "ref_agents.h"
 #include "ref_grid.h"
 #include "ref_list.h"
