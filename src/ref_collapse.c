@@ -465,8 +465,7 @@ REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
     }
     RSS(status, "new normal length")
     dot = ref_math_dot(n0, n1);
-    if (dot < (1.0 - 1.0e-8)) /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
-    {
+    if (dot < ref_node_same_normal_tol(ref_node)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
@@ -1045,8 +1044,7 @@ REF_STATUS ref_collapse_face_same_tangent(REF_GRID ref_grid, REF_INT keep,
       return REF_SUCCESS;
     }
     dot = ref_math_dot(tangent0, tangent1);
-    if (dot < (1.0 - 1.0e-8)) /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
-    {
+    if (dot < ref_node_same_normal_tol(ref_node)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }

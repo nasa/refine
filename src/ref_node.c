@@ -74,6 +74,8 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
   ref_node->twod_mid_plane = 0.5;
   ref_node->min_volume = 1.0e-15;
   ref_node->min_uv_area = 1.0e-12;
+  /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
+  ref_node->same_normal_tol = 1.0 - 1.0e-8;
 
   ref_node->tet_quality = REF_NODE_JAC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
@@ -157,6 +159,7 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
   ref_node->twod_mid_plane = original->twod_mid_plane;
   ref_node->min_volume = original->min_volume;
   ref_node->min_uv_area = original->min_uv_area;
+  ref_node->same_normal_tol = original->same_normal_tol;
 
   ref_node->tet_quality = original->tet_quality;
   ref_node->tri_quality = original->tri_quality;
