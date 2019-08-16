@@ -611,16 +611,68 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
 
+  REF_INT cell_face;
+  REF_INT node, face_nodes[3];
+  REF_BOOL will_be_collapsed, already_have_it;
+  REF_BOOL has_node0, has_node1;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "init form empty");
 
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
-    RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
+    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    if (already_have_it) continue;
+    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
+    has_node0 = REF_FALSE;
+    has_node1 = REF_FALSE;
+    each_ref_cell_cell_node(ref_cell, node) {
+      has_node0 = has_node0 || (node0 == ref_cell_c2n(ref_cell, node, cell));
+      has_node1 = has_node1 || (node1 == ref_cell_c2n(ref_cell, node, cell));
+      if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
+    }
+    will_be_collapsed = has_node0 && has_node1;
+    if (will_be_collapsed) continue;
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      each_ref_cavity_face_node(ref_cavity, node) {
+        face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        if (node1 == face_nodes[node]) face_nodes[node] = node0;
+      }
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
+    }
   }
+
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
-    RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
+    RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    if (already_have_it) continue;
+    RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
+    has_node0 = REF_FALSE;
+    has_node1 = REF_FALSE;
+    each_ref_cell_cell_node(ref_cell, node) {
+      has_node0 = has_node0 || (node0 == ref_cell_c2n(ref_cell, node, cell));
+      has_node1 = has_node1 || (node1 == ref_cell_c2n(ref_cell, node, cell));
+      if (!ref_node_owned(ref_node, ref_cell_c2n(ref_cell, node, cell))) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
+    }
+    will_be_collapsed = has_node0 && has_node1;
+    if (will_be_collapsed) continue;
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      each_ref_cavity_face_node(ref_cavity, node) {
+        face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        if (node1 == face_nodes[node]) face_nodes[node] = node0;
+      }
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
+    }
   }
 
   return REF_SUCCESS;
