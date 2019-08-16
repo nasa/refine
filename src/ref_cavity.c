@@ -361,6 +361,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
       face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, tet);
       if (!ref_node_owned(ref_node, face_nodes[node])) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+	return REF_SUCCESS;
       }
     }
     RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
