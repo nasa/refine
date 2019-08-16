@@ -33,6 +33,8 @@
 #include "ref_gather.h"
 #include "ref_twod.h"
 
+#include "ref_cavity.h"
+
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
@@ -143,7 +145,11 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   REF_INT order[MAX_NODE_LIST];
   REF_DBL ratio_to_collapse[MAX_NODE_LIST];
   REF_INT node0;
-  REF_BOOL allowed, have_geometry_support;
+  REF_BOOL allowed, local, have_geometry_support;
+  REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
+  REF_BOOL valid_cavity;
+  REF_BOOL allowed_cavity_ratio;
+  REF_DBL min_del, min_add;
 
   *actual_node0 = REF_EMPTY;
 
@@ -207,18 +213,52 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
     RSS(ref_collapse_edge_tet_quality(ref_grid, node0, node1, &allowed),
         "tet qual");
-    if (!allowed) continue;
 
-    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
-        "colloc");
-    if (!allowed) {
-      ref_node_age(ref_node, node0)++;
-      ref_node_age(ref_node, node1)++;
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &local), "colloc");
+    if (!local) {
+      if (allowed) {
+        ref_node_age(ref_node, node0)++;
+        ref_node_age(ref_node, node1)++;
+      }
       continue;
     }
 
+    valid_cavity = REF_FALSE;
+    if (!allowed) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      RSS(ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1),
+          "cav col");
+      RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
+      if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+        RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
+            "cavity ratio");
+        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
+        valid_cavity =
+            allowed_cavity_ratio &&
+            (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
+      }
+      if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+        ref_node_age(ref_node, node0)++;
+        ref_node_age(ref_node, node1)++;
+      }
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+      ref_cavity = (REF_CAVITY)NULL;
+    }
+    if (!allowed && !valid_cavity) continue;
+
     *actual_node0 = node0;
     RSS(ref_collapse_edge(ref_grid, node0, node1), "col!");
+
+    if (valid_cavity) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node0), "cav split");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "cav enlarge");
+      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
+           "enlarge not successful");
+      RSS(ref_cavity_replace(ref_cavity), "cav replace");
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+      ref_cavity = (REF_CAVITY)NULL;
+    }
 
     break;
   }
