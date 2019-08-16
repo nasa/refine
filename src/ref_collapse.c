@@ -182,6 +182,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
         "col edge chord height");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed) continue;
+
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
@@ -204,9 +207,6 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
     RSS(ref_collapse_edge_tet_quality(ref_grid, node0, node1, &allowed),
         "tet qual");
-    if (!allowed) continue;
-
-    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
