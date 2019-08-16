@@ -609,28 +609,14 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_INT node1) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
-  REF_INT face;
-  REF_INT node, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_BOOL will_be_collapsed;
+
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "init form empty");
 
-  each_ref_cell_having_node(ref_cell, node1, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
-      if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
-    if (will_be_collapsed) {
-      RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
-      continue;
-    }
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
     RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
   }
-
-  each_ref_cavity_valid_face(ref_cavity, face) {
-    each_ref_cavity_face_node(ref_cavity, node) {
-      if (node1 == ref_cavity_f2n(ref_cavity, node, face)) {
-        ref_cavity_f2n(ref_cavity, node, face) = node0;
-      }
-    }
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cavity_add_tet(ref_cavity, cell), "insert");
   }
 
   return REF_SUCCESS;
