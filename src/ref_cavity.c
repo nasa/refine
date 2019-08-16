@@ -364,7 +364,11 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
         return REF_SUCCESS;
       }
     }
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
+    RSB(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side", {
+      ref_export_tec_surf(ref_cavity_grid(ref_cavity),
+                          "ref_cavity_add_tet_surf.tec");
+      ref_cavity_tec(ref_cavity, "ref_cavity_add_tet_change.tec");
+    });
   }
 
   return REF_SUCCESS;
