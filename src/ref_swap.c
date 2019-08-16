@@ -21,6 +21,7 @@
 
 #include "ref_edge.h"
 #include "ref_export.h"
+#include "ref_math.h"
 #include "ref_swap.h"
 #include "ref_twod.h"
 
@@ -492,21 +493,35 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_DBL sign_uv_area, uv_area2, uv_area3;
   REF_BOOL normdev_allowed, uv_area_allowed;
   REF_BOOL supported;
+  REF_DBL normal0[3], normal1[3], dot;
 
   *allowed = REF_FALSE;
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
-  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
-    *allowed = REF_TRUE;
-    return REF_SUCCESS;
-  }
 
   RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
 
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
   REIS(2, ncell, "there should be two triangles for manifold");
+
+  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+    RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes");
+    RSS(ref_node_tri_normal(ref_node, nodes, normal0), "tri 0 normal");
+    RSS(ref_math_normalize(normal0), "triangle 0 has zero area");
+    RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes");
+    RSS(ref_node_tri_normal(ref_node, nodes, normal1), "tri 1 normal");
+    RSS(ref_math_normalize(normal1), "triangle 1 has zero area");
+    dot = ref_math_dot(normal0, normal1);
+    if (dot < ref_node_same_normal_tol(ref_node)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    } else {
+      *allowed = REF_TRUE;
+      return REF_SUCCESS;
+    }
+  }
 
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
