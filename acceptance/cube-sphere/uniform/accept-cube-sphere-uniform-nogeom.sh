@@ -12,10 +12,10 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_translate cube-sphere.meshb cube-sphere.b8.ugrid
+${two}/ref_translate cube-sphere.meshb nogeom0.b8.ugrid
 
-${two}/ref_acceptance cube-sphere.b8.ugrid cube-sphere-metric.solb 0.1
-${two}/ref_driver -i cube-sphere.b8.ugrid -m cube-sphere-metric.solb -o nogeom1
+${two}/ref_acceptance nogeom0.b8.ugrid nogeom0-metric.solb 0.1
+${two}/ref_driver -i nogeom0.b8.ugrid -m nogeom0-metric.solb -o nogeom1
 ${two}/ref_acceptance nogeom1.b8.ugrid nogeom1-metric.solb 0.1
 ${two}/ref_metric_test nogeom1.b8.ugrid nogeom1-metric.solb > accept-cube-sphere-uniform-nogeom-01.status
 
