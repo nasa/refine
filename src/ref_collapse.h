@@ -56,8 +56,10 @@ REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
                                              REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed);
+REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_BOOL *allowed);
+REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_BOOL *allowed);
 REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
                                    REF_INT node1, REF_BOOL *allowed);
 

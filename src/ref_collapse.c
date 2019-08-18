@@ -33,6 +33,8 @@
 #include "ref_gather.h"
 #include "ref_twod.h"
 
+#include "ref_cavity.h"
+
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
 
@@ -143,7 +145,11 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   REF_INT order[MAX_NODE_LIST];
   REF_DBL ratio_to_collapse[MAX_NODE_LIST];
   REF_INT node0;
-  REF_BOOL allowed, have_geometry_support;
+  REF_BOOL allowed, local, have_geometry_support;
+  REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
+  REF_BOOL valid_cavity;
+  REF_BOOL allowed_cavity_ratio;
+  REF_DBL min_del, min_add;
 
   *actual_node0 = REF_EMPTY;
 
@@ -182,6 +188,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
         "col edge chord height");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed) continue;
+
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
@@ -198,22 +207,62 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       if (!allowed) continue;
     }
 
-    RSS(ref_collapse_edge_quality(ref_grid, node0, node1, &allowed), "qual");
+    RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
+        "tri qual");
     if (!allowed) continue;
 
-    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
-    if (!allowed) continue;
+    RSS(ref_collapse_edge_tet_quality(ref_grid, node0, node1, &allowed),
+        "tet qual");
 
-    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
-        "colloc");
-    if (!allowed) {
-      ref_node_age(ref_node, node0)++;
-      ref_node_age(ref_node, node1)++;
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &local), "colloc");
+    if (!local) {
+      if (allowed) {
+        ref_node_age(ref_node, node0)++;
+        ref_node_age(ref_node, node1)++;
+      }
       continue;
     }
 
+    valid_cavity = REF_FALSE;
+    if (!allowed) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      if (REF_SUCCESS ==
+          ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) {
+        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
+              "cavity ratio");
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add),
+              "cavity change");
+          valid_cavity =
+              allowed_cavity_ratio &&
+              (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
+          if (REF_FALSE && valid_cavity)
+            printf("new %f old %f\n", min_add, min_del);
+        }
+        if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+          ref_node_age(ref_node, node0)++;
+          ref_node_age(ref_node, node1)++;
+        }
+      }
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+      ref_cavity = (REF_CAVITY)NULL;
+    }
+    if (!allowed && !valid_cavity) continue;
+
     *actual_node0 = node0;
     RSS(ref_collapse_edge(ref_grid, node0, node1), "col!");
+
+    if (valid_cavity) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, node0), "cav split");
+      RSS(ref_cavity_enlarge_visible(ref_cavity), "cav enlarge");
+      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
+           "enlarge not successful");
+      RSS(ref_cavity_replace(ref_cavity), "cav replace");
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+      ref_cavity = (REF_CAVITY)NULL;
+    }
 
     break;
   }
@@ -566,17 +615,49 @@ REF_STATUS ref_collapse_edge_cad_constrained(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_BOOL *allowed) {
+REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node;
+  REF_DBL quality;
+  REF_BOOL will_be_collapsed;
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node0 == nodes[node]) {
+        will_be_collapsed = REF_TRUE;
+      }
+    }
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = node0;
+    RSS(ref_node_tri_quality(ref_node, nodes, &quality), "qual");
+    if (quality < ref_grid_adapt(ref_grid, collapse_quality_absolute))
+      return REF_SUCCESS;
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
+                                         REF_INT node1, REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node, ntri;
   REF_DBL quality;
   REF_BOOL will_be_collapsed;
-  REF_BOOL has_support;
-  REF_DBL sign_uv_area, uv_area;
 
   *allowed = REF_FALSE;
 
@@ -607,36 +688,6 @@ REF_STATUS ref_collapse_edge_quality(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_cell_ntri_with_tet_nodes(ref_grid_tri(ref_grid), nodes, &ntri),
           "count boundary triangles");
       if (ntri > 1) return REF_SUCCESS;
-    }
-  }
-
-  RSS(ref_geom_supported(ref_geom, node0, &has_support), "support");
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_having_node(ref_cell, node1, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-
-    will_be_collapsed = REF_FALSE;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (node0 == nodes[node]) {
-        will_be_collapsed = REF_TRUE;
-      }
-    }
-    if (will_be_collapsed) continue;
-
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
-      if (node1 == nodes[node]) nodes[node] = node0;
-    RSS(ref_node_tri_quality(ref_node, nodes, &quality), "qual");
-    if (quality < ref_grid_adapt(ref_grid, collapse_quality_absolute))
-      return REF_SUCCESS;
-
-    if (has_support) {
-      RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
-                                &sign_uv_area),
-          "sign");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-      if (sign_uv_area * uv_area < ref_node_min_uv_area(ref_node))
-        return REF_SUCCESS;
     }
   }
 
@@ -692,9 +743,11 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_BOOL will_be_collapsed;
 
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_BOOL node0_support, node1_support;
   REF_DBL orig_dev, new_dev;
+  REF_DBL sign_uv_area, orig_uv_area, new_uv_area;
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
@@ -724,14 +777,20 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
 
     /* see if new config is below limit */
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
-    if (new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) {
-      /* allow if improvement */
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
-      if (new_dev < orig_dev) {
-        *allowed = REF_FALSE;
-        return REF_SUCCESS;
-      }
+    RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
+                              &sign_uv_area),
+        "sign");
+    RSS(ref_geom_uv_area(ref_geom, nodes, &orig_uv_area), "uv area");
+    RSS(ref_geom_uv_area(ref_geom, new_nodes, &new_uv_area), "uv area");
+    /* allow if improvement */
+    if (((new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) &&
+         (new_dev < orig_dev)) ||
+        ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
+         (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area))) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
     }
   }
 
