@@ -48,17 +48,14 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
 
   ref_adapt = *ref_adapt_ptr;
 
-  ref_adapt->split_per_pass = 1;
   ref_adapt->split_ratio_growth = REF_FALSE;
   ref_adapt->split_ratio = sqrt(2.0);
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
 
-  ref_adapt->collapse_per_pass = 3;
   ref_adapt->collapse_ratio = 1.0 / sqrt(2.0);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
 
-  ref_adapt->smooth_per_pass = 2;
   ref_adapt->smooth_min_quality = 1.0e-3;
 
   ref_adapt->swap_max_degree = 10000;
@@ -81,17 +78,14 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
 
   ref_adapt = *ref_adapt_ptr;
 
-  ref_adapt->split_per_pass = original->split_per_pass;
   ref_adapt->split_ratio_growth = original->split_ratio_growth;
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
 
-  ref_adapt->collapse_per_pass = original->collapse_per_pass;
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
 
-  ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
 
   ref_adapt->swap_max_degree = original->swap_max_degree;
