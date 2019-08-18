@@ -65,6 +65,9 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->post_min_ratio = 1.0e-3;
   ref_adapt->post_max_ratio = 3.0;
 
+  ref_adapt->last_min_ratio = 0.5e-3;
+  ref_adapt->last_max_ratio = 6.0;
+
   ref_adapt->instrument = REF_TRUE;
   ref_adapt->watch_param = REF_TRUE;
 
@@ -94,6 +97,9 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->post_min_normdev = original->post_min_normdev;
   ref_adapt->post_min_ratio = original->post_min_ratio;
   ref_adapt->post_max_ratio = original->post_max_ratio;
+
+  ref_adapt->last_min_ratio = original->last_min_ratio;
+  ref_adapt->last_max_ratio = original->last_max_ratio;
 
   ref_adapt->instrument = original->instrument;
   ref_adapt->watch_param = original->watch_param;
@@ -125,7 +131,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio, old_min_ratio, old_max_ratio;
+  REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
   REF_INT age, max_age;
   REF_BOOL active;
@@ -297,9 +303,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   ref_node->min_volume = MIN(1.0e-15, 0.01 * min_metric_vol);
 
-  old_min_ratio = ref_adapt->post_min_ratio;
-  old_max_ratio = ref_adapt->post_max_ratio;
-
   /* allow edge growth when interpolating metric continuously */
   ref_adapt->split_ratio_growth = REF_FALSE;
   if (NULL != ref_grid_interp(ref_grid)) {
@@ -320,8 +323,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (nodes_per_complexity > 3.0)
     ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
 
-  if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
-      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
+  if (ABS(ref_adapt->last_min_ratio - ref_adapt->post_min_ratio) <
+          1e-2 * ref_adapt->post_min_ratio &&
+      ABS(ref_adapt->last_max_ratio - ref_adapt->post_max_ratio) <
+          1e-2 * ref_adapt->post_max_ratio &&
       (max_age < 50 ||
        (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0)) &&
       1.5 > ref_adapt->split_ratio) {
@@ -333,6 +338,9 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     *all_done = REF_FALSE;
   }
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
+
+  ref_adapt->last_min_ratio = ref_adapt->post_min_ratio;
+  ref_adapt->last_max_ratio = ref_adapt->post_max_ratio;
 
   if (ref_grid_once(ref_grid)) {
     printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f split %6.2f\n",
