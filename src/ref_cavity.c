@@ -1493,7 +1493,8 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    printf("old %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3]);
+    printf("old %d %d %d %d (%d)\n", nodes[0], nodes[1], nodes[2], nodes[3],
+           cell);
   }
 
   each_ref_cavity_valid_face(ref_cavity, face) {
@@ -1504,7 +1505,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
     for (face_node = 0; face_node < 3; face_node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, face_node, face));
     printf(" %d ", node);
-    printf("\n");
+    printf(" (%d)\n", face);
   }
 
   return REF_SUCCESS;
