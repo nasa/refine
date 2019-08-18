@@ -244,7 +244,7 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
       ref_cavity_nface(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same face twice */
-      RSS(REF_INVALID, "attempt to insert same face twice");
+      return REF_INVALID;
     }
   }
 
@@ -671,7 +671,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
         face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
         if (node1 == face_nodes[node]) face_nodes[node] = node0;
       }
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
+      /* need to revisit these failures */
+      RAISE(ref_cavity_insert_face(ref_cavity, face_nodes));
     }
   }
 
