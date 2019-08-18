@@ -48,17 +48,14 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
 
   ref_adapt = *ref_adapt_ptr;
 
-  ref_adapt->split_per_pass = 1;
   ref_adapt->split_ratio_growth = REF_FALSE;
   ref_adapt->split_ratio = sqrt(2.0);
   ref_adapt->split_quality_absolute = 1.0e-3;
   ref_adapt->split_quality_relative = 0.1;
 
-  ref_adapt->collapse_per_pass = 3;
   ref_adapt->collapse_ratio = 1.0 / sqrt(2.0);
   ref_adapt->collapse_quality_absolute = 1.0e-3;
 
-  ref_adapt->smooth_per_pass = 2;
   ref_adapt->smooth_min_quality = 1.0e-3;
 
   ref_adapt->swap_max_degree = 10000;
@@ -67,6 +64,9 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->post_min_normdev = 0.0;
   ref_adapt->post_min_ratio = 1.0e-3;
   ref_adapt->post_max_ratio = 3.0;
+
+  ref_adapt->last_min_ratio = 0.5e-3;
+  ref_adapt->last_max_ratio = 6.0;
 
   ref_adapt->instrument = REF_TRUE;
   ref_adapt->watch_param = REF_TRUE;
@@ -81,17 +81,14 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
 
   ref_adapt = *ref_adapt_ptr;
 
-  ref_adapt->split_per_pass = original->split_per_pass;
   ref_adapt->split_ratio_growth = original->split_ratio_growth;
   ref_adapt->split_ratio = original->split_ratio;
   ref_adapt->split_quality_absolute = original->split_quality_absolute;
   ref_adapt->split_quality_relative = original->split_quality_relative;
 
-  ref_adapt->collapse_per_pass = original->collapse_per_pass;
   ref_adapt->collapse_ratio = original->collapse_ratio;
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
 
-  ref_adapt->smooth_per_pass = original->smooth_per_pass;
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
 
   ref_adapt->swap_max_degree = original->swap_max_degree;
@@ -100,6 +97,9 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->post_min_normdev = original->post_min_normdev;
   ref_adapt->post_min_ratio = original->post_min_ratio;
   ref_adapt->post_max_ratio = original->post_max_ratio;
+
+  ref_adapt->last_min_ratio = original->last_min_ratio;
+  ref_adapt->last_max_ratio = original->last_max_ratio;
 
   ref_adapt->instrument = original->instrument;
   ref_adapt->watch_param = original->watch_param;
@@ -131,7 +131,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT node, nnode;
   REF_DBL nodes_per_complexity;
   REF_INT degree, max_degree;
-  REF_DBL ratio, min_ratio, max_ratio, old_min_ratio, old_max_ratio;
+  REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
   REF_INT age, max_age;
   REF_BOOL active;
@@ -303,9 +303,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   ref_node->min_volume = MIN(1.0e-15, 0.01 * min_metric_vol);
 
-  old_min_ratio = ref_adapt->post_min_ratio;
-  old_max_ratio = ref_adapt->post_max_ratio;
-
   /* allow edge growth when interpolating metric continuously */
   ref_adapt->split_ratio_growth = REF_FALSE;
   if (NULL != ref_grid_interp(ref_grid)) {
@@ -326,8 +323,10 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (nodes_per_complexity > 3.0)
     ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
 
-  if (ABS(old_min_ratio - ref_adapt->post_min_ratio) < 1e-2 * old_min_ratio &&
-      ABS(old_max_ratio - ref_adapt->post_max_ratio) < 1e-2 * old_max_ratio &&
+  if (ABS(ref_adapt->last_min_ratio - ref_adapt->post_min_ratio) <
+          1e-2 * ref_adapt->post_min_ratio &&
+      ABS(ref_adapt->last_max_ratio - ref_adapt->post_max_ratio) <
+          1e-2 * ref_adapt->post_max_ratio &&
       (max_age < 50 ||
        (ref_adapt->post_min_ratio > 0.1 && ref_adapt->post_max_ratio < 3.0)) &&
       1.5 > ref_adapt->split_ratio) {
@@ -339,6 +338,9 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     *all_done = REF_FALSE;
   }
   RSS(ref_mpi_bcast(ref_mpi, all_done, 1, REF_INT_TYPE), "done");
+
+  ref_adapt->last_min_ratio = ref_adapt->post_min_ratio;
+  ref_adapt->last_max_ratio = ref_adapt->post_max_ratio;
 
   if (ref_grid_once(ref_grid)) {
     printf("limit quality %6.4f normdev %6.4f ratio %6.4f %6.2f split %6.2f\n",
@@ -506,20 +508,6 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
 
-  RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
-
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
-  ref_gather_blocking_frame(ref_grid, "swap");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
   if (ref_grid_adapt(ref_grid, watch_param))
@@ -534,12 +522,15 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
 
-  RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  ref_grid_adapt(ref_grid, post_max_ratio) = sqrt(2.0);
+
+  RSS(ref_collapse_pass(ref_grid), "col pass");
+  ref_gather_blocking_frame(ref_grid, "collapse");
   if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+
+  ref_grid_adapt(ref_grid, post_max_ratio) =
+      ref_grid_adapt(ref_grid, last_max_ratio);
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
