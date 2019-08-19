@@ -59,7 +59,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->smooth_min_quality = 1.0e-3;
 
   ref_adapt->swap_max_degree = 10000;
-  ref_adapt->swap_min_quality = 0.8;
+  ref_adapt->swap_min_quality = 0.5;
 
   ref_adapt->post_min_normdev = 0.0;
   ref_adapt->post_min_ratio = 1.0e-3;
