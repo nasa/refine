@@ -758,7 +758,7 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if ((quality > quality0) &&
+      if ((quality > 0.9 * quality0 && quality > 0.4) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
         /* update opposite side: X and Z only */
@@ -917,6 +917,7 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_BOOL allowed;
+  REF_DBL quality, min_ratio, max_ratio;
 
   /* boundary */
   each_ref_node_valid_node(ref_node, node) {
@@ -957,8 +958,14 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
     }
 
     ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
-    /* RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve"); */
+    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+    RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+        "ratio");
+    if (quality < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
+      RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
+    } else {
+      RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve");
+    }
   }
 
   return REF_SUCCESS;
