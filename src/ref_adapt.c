@@ -298,9 +298,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_adapt->collapse_quality_absolute = target_quality;
   ref_adapt->smooth_min_quality = target_quality;
 
-  ref_adapt->swap_max_degree = 10000;
-  ref_adapt->swap_min_quality = 0.4;
-
   ref_node->min_volume = MIN(1.0e-15, 0.01 * min_metric_vol);
 
   /* allow edge growth when interpolating metric continuously */
