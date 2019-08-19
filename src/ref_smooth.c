@@ -598,7 +598,7 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   REF_DBL dot;
   REF_INT i;
 
-  *allowed = REF_FALSE;
+  *allowed = REF_TRUE;
   for (i = 0; i < 3; i++)
     tan0[i] =
         ref_node_xyz(ref_node, i, node) - ref_node_xyz(ref_node, i, node0);
@@ -642,7 +642,6 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_node_ratio(ref_node, node0, node, &r0), "get r0");
   RSS(ref_node_ratio(ref_node, node, node1, &r1), "get r1");
-
   rsum = r1 + r0;
   if (ref_math_divisible(r0, rsum)) {
     s_orig = r0 / rsum;
@@ -673,9 +672,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if ((quality > quality0) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+      if (quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
         /* update opposite side: X and Z only */
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
             "opp");
