@@ -921,18 +921,19 @@ int main(int argc, char *argv[]) {
 
     REIS(1, euler_cons_pos,
          "required args: --euler-cons grid.meshb prim_dual.solb "
-         "complexity output-metric.solb");
-    if (6 > argc) {
+         "gradation complexity output-metric.solb");
+    if (7 > argc) {
       printf(
           "required args: --euler-cons grid.meshb prim_dual.solb "
-          "complexity output-metric.solb");
+          "gradation complexity output-metric.solb");
       return REF_FAILURE;
     }
     if (REF_EMPTY != kexact_pos) {
       reconstruction = REF_RECON_KEXACT;
     }
 
-    complexity = atof(argv[4]);
+    gradation = atof(argv[4]);
+    complexity = atof(argv[5]);
     if (ref_mpi_once(ref_mpi)) {
       printf("p-norm %d\n", p);
       printf("gradation %f\n", gradation);
@@ -972,8 +973,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
 
-    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[5]);
-    RSS(ref_gather_metric(ref_grid, argv[5]), "export opt goal metric");
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[6]);
+    RSS(ref_gather_metric(ref_grid, argv[6]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
@@ -994,12 +995,12 @@ int main(int argc, char *argv[]) {
     REIS(1, viscous_cons_pos,
          "required args: --viscous-cons grid.meshb prim_dual.solb "
          "Mach Re Temperature(Kelvin) "
-         "complexity output-metric.solb");
-    if (9 > argc) {
+         "gradation complexity output-metric.solb");
+    if (10 > argc) {
       printf(
           "required args: --viscous-cons grid.meshb prim_dual.solb "
           "Mach Re Temperature(Kelvin) "
-          "complexity output-metric.solb");
+          "gradation complexity output-metric.solb");
       return REF_FAILURE;
     }
     if (REF_EMPTY != kexact_pos) {
@@ -1009,7 +1010,8 @@ int main(int argc, char *argv[]) {
     mach = atof(argv[4]);
     re = atof(argv[5]);
     temperature = atof(argv[6]);
-    complexity = atof(argv[7]);
+    gradation = atof(argv[7]);
+    complexity = atof(argv[8]);
     if (ref_mpi_once(ref_mpi)) {
       printf("Mach %f\n", mach);
       printf("Re %e\n", re);
@@ -1055,8 +1057,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
     ref_free(metric);
 
-    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
-    RSS(ref_gather_metric(ref_grid, argv[8]), "export opt goal metric");
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[9]);
+    RSS(ref_gather_metric(ref_grid, argv[9]), "export opt goal metric");
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
