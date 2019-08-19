@@ -26,10 +26,7 @@ typedef struct REF_LIST_STRUCT REF_LIST_STRUCT;
 typedef REF_LIST_STRUCT *REF_LIST;
 END_C_DECLORATION
 
-#include "ref_mpi.h"
-
 BEGIN_C_DECLORATION
-
 struct REF_LIST_STRUCT {
   REF_INT n, max;
   REF_INT *value;
