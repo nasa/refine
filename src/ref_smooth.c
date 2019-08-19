@@ -598,7 +598,7 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   REF_DBL dot;
   REF_INT i;
 
-  *allowed = REF_FALSE;
+  *allowed = REF_TRUE;
   for (i = 0; i < 3; i++)
     tan0[i] =
         ref_node_xyz(ref_node, i, node) - ref_node_xyz(ref_node, i, node0);
@@ -623,7 +623,8 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
-  REF_DBL r0, r1, rsum, s_orig, ideal[3], original[3];
+  REF_DBL alpha, force, l4, ratio, norm[3], total_force[3];
+  REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz, opposite;
   REF_BOOL allowed;
@@ -640,25 +641,45 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       "tan");
   if (!allowed) return REF_SUCCESS;
 
-  RSS(ref_node_ratio(ref_node, node0, node, &r0), "get r0");
-  RSS(ref_node_ratio(ref_node, node, node1, &r1), "get r1");
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
 
-  rsum = r1 + r0;
-  if (ref_math_divisible(r0, rsum)) {
-    s_orig = r0 / rsum;
-    /* one percent imblance is good enough */
-    if (ABS(s_orig - 0.5) < 0.01) return REF_SUCCESS;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, node0);
+  RSS(ref_node_ratio(ref_node, node, node0, &ratio), "get r0");
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
   } else {
-    printf("div zero %e r0 %e r1\n", r1, r0);
     return REF_DIV_ZERO;
   }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, node1);
+  RSS(ref_node_ratio(ref_node, node, node1, &ratio), "get r0");
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+  } else {
+    return REF_DIV_ZERO;
+  }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  alpha = 0.2;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal[ixyz] =
+        ref_node_xyz(ref_node, ixyz, node) + alpha * total_force[ixyz];
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    ideal[ixyz] = s_orig * ref_node_xyz(ref_node, ixyz, node1) +
-                  (1.0 - s_orig) * ref_node_xyz(ref_node, ixyz, node0);
 
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
 
@@ -673,9 +694,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if ((quality > quality0) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+      if (quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
         /* update opposite side: X and Z only */
         RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
             "opp");
@@ -699,32 +718,40 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *ideal_location) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ixyz;
-  REF_DBL weight;
   REF_INT max_node = 100, nnode;
   REF_INT node_list[100];
   REF_INT edge;
   REF_DBL ratio, norm[3], l4;
+  REF_DBL alpha, force, total_force[3];
 
   RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
                                 node_list),
       "node list for edges");
 
-  for (ixyz = 0; ixyz < 3; ixyz++) ideal_location[ixyz] = 0.0;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal_location[ixyz] = ref_node_xyz(ref_node, ixyz, node);
 
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
   for (edge = 0; edge < nnode; edge++) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
                    ref_node_xyz(ref_node, ixyz, node_list[edge]);
-    RSS(ref_math_normalize(norm), "normalize edge vector");
     RSS(ref_node_ratio(ref_node, node, node_list[edge], &ratio), "ratio");
     l4 = ratio * ratio * ratio * ratio;
-    weight = 0.01 * (1.0 - l4) * exp(-l4);
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      ideal_location[ixyz] += weight * norm[ixyz];
+    force = (1.0 - l4) * exp(-l4);
+    if (ref_math_divisible(norm[0], ratio) &&
+        ref_math_divisible(norm[1], ratio) &&
+        ref_math_divisible(norm[2], ratio)) {
+      for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+    } else {
+      return REF_DIV_ZERO;
+    }
+    for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
   }
 
+  alpha = 0.2;
   for (ixyz = 0; ixyz < 3; ixyz++)
-    ideal_location[ixyz] += ref_node_xyz(ref_node, ixyz, node);
+    ideal_location[ixyz] += alpha * total_force[ixyz];
 
   return REF_SUCCESS;
 }
@@ -758,7 +785,7 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if ((quality > quality0) &&
+      if ((quality > 0.9 * quality0 && quality > 0.4) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
         /* update opposite side: X and Z only */
@@ -917,6 +944,7 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_BOOL allowed;
+  REF_DBL quality, min_ratio, max_ratio;
 
   /* boundary */
   each_ref_node_valid_node(ref_node, node) {
@@ -957,8 +985,14 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
     }
 
     ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
-    /* RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve"); */
+    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+    RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+        "ratio");
+    if (quality < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
+      RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
+    } else {
+      RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve");
+    }
   }
 
   return REF_SUCCESS;
