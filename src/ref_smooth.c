@@ -717,14 +717,20 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
     for (ixyz = 0; ixyz < 3; ixyz++)
       norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
                    ref_node_xyz(ref_node, ixyz, node_list[edge]);
-    RSS(ref_math_normalize(norm), "normalize edge vector");
     RSS(ref_node_ratio(ref_node, node, node_list[edge], &ratio), "ratio");
     l4 = ratio * ratio * ratio * ratio;
     force = (1.0 - l4) * exp(-l4);
+    if (ref_math_divisible(norm[0], ratio) &&
+        ref_math_divisible(norm[1], ratio) &&
+        ref_math_divisible(norm[2], ratio)) {
+      for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+    } else {
+      return REF_DIV_ZERO;
+    }
     for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
   }
 
-  alpha = 0.02;
+  alpha = 0.2;
   for (ixyz = 0; ixyz < 3; ixyz++)
     ideal_location[ixyz] += alpha * total_force[ixyz];
 
