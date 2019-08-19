@@ -623,7 +623,8 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
-  REF_DBL r0, r1, rsum, s_orig, ideal[3], original[3];
+  REF_DBL alpha, force, l4, ratio, norm[3], total_force[3];
+  REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz, opposite;
   REF_BOOL allowed;
@@ -640,24 +641,45 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       "tan");
   if (!allowed) return REF_SUCCESS;
 
-  RSS(ref_node_ratio(ref_node, node0, node, &r0), "get r0");
-  RSS(ref_node_ratio(ref_node, node, node1, &r1), "get r1");
-  rsum = r1 + r0;
-  if (ref_math_divisible(r0, rsum)) {
-    s_orig = r0 / rsum;
-    /* one percent imblance is good enough */
-    if (ABS(s_orig - 0.5) < 0.01) return REF_SUCCESS;
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, node0);
+  RSS(ref_node_ratio(ref_node, node, node0, &ratio), "get r0");
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
   } else {
-    printf("div zero %e r0 %e r1\n", r1, r0);
     return REF_DIV_ZERO;
   }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, node1);
+  RSS(ref_node_ratio(ref_node, node, node1, &ratio), "get r0");
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+  } else {
+    return REF_DIV_ZERO;
+  }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  alpha = 0.2;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal[ixyz] =
+        ref_node_xyz(ref_node, ixyz, node) + alpha * total_force[ixyz];
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    ideal[ixyz] = s_orig * ref_node_xyz(ref_node, ixyz, node1) +
-                  (1.0 - s_orig) * ref_node_xyz(ref_node, ixyz, node0);
 
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
 
