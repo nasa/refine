@@ -699,18 +699,20 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *ideal_location) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ixyz;
-  REF_DBL weight;
   REF_INT max_node = 100, nnode;
   REF_INT node_list[100];
   REF_INT edge;
   REF_DBL ratio, norm[3], l4;
+  REF_DBL alpha, force, total_force[3];
 
   RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
                                 node_list),
       "node list for edges");
 
-  for (ixyz = 0; ixyz < 3; ixyz++) ideal_location[ixyz] = 0.0;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal_location[ixyz] = ref_node_xyz(ref_node, ixyz, node);
 
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
   for (edge = 0; edge < nnode; edge++) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
@@ -718,13 +720,13 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
     RSS(ref_math_normalize(norm), "normalize edge vector");
     RSS(ref_node_ratio(ref_node, node, node_list[edge], &ratio), "ratio");
     l4 = ratio * ratio * ratio * ratio;
-    weight = 0.01 * (1.0 - l4) * exp(-l4);
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      ideal_location[ixyz] += weight * norm[ixyz];
+    force = (1.0 - l4) * exp(-l4);
+    for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
   }
 
+  alpha = 0.02;
   for (ixyz = 0; ixyz < 3; ixyz++)
-    ideal_location[ixyz] += ref_node_xyz(ref_node, ixyz, node);
+    ideal_location[ixyz] += alpha * total_force[ixyz];
 
   return REF_SUCCESS;
 }
