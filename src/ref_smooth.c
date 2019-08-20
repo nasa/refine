@@ -1311,6 +1311,14 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   dt = ref_math_dot(dxyz, dxyz_dt);
   t_target = t_orig + dt;
 
+  if (r0 > 2.0 && r1 > 2.0) {
+    REF_DBL sr, st;
+    sr = r0 / (r1 + r0);
+    st = (t_orig - t0) / (t1 - t0);
+    st = st + (0.5 - sr);
+    t_target = st * t1 + (1.0 - st) * t0;
+  }
+
   if (ref_grid_surf(ref_grid)) {
     q_orig = 1.0;
   } else {
