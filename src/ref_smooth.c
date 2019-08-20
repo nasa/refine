@@ -1219,11 +1219,14 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_DBL t_orig, t0, t1;
   REF_DBL r0, r1;
   REF_DBL q_orig;
-  REF_DBL s_orig, rsum;
   REF_DBL normdev_orig, normdev;
   REF_DBL min_uv_area;
 
-  REF_DBL t, st, sr, q, backoff, t_target, min_ratio, max_ratio;
+  REF_INT ixyz;
+  REF_DBL alpha, force, l4, ratio, norm[3], total_force[3];
+  REF_DBL dxyz[3], dxyz_dt[3], xyz_orig[3], dt;
+
+  REF_DBL t, q, backoff, t_target, min_ratio, max_ratio;
   REF_INT tries;
   REF_BOOL verbose = REF_FALSE;
   REF_INT edge_nodes[REF_CELL_MAX_SIZE_PER], sense;
@@ -1241,18 +1244,42 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_cell_node_list_around(edg, node, 2, &nnode, nodes), "edge neighbors");
   REIS(2, nnode, "expected two nodes");
 
-  RSS(ref_node_ratio(ref_node, nodes[0], node, &r0), "get r0");
-  RSS(ref_node_ratio(ref_node, nodes[1], node, &r1), "get r1");
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
 
-  rsum = r1 + r0;
-  if (ref_math_divisible(r0, rsum)) {
-    s_orig = r0 / rsum;
-    /* one percent imblance is good enough */
-    if (ABS(s_orig - 0.5) < 0.01) return REF_SUCCESS;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, nodes[0]);
+  RSS(ref_node_ratio(ref_node, node, nodes[0], &ratio), "get r0");
+  r0 = ratio;
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
   } else {
-    printf("div zero %e r0 %e r1\n", r1, r0);
     return REF_DIV_ZERO;
   }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
+                 ref_node_xyz(ref_node, ixyz, nodes[1]);
+  RSS(ref_node_ratio(ref_node, node, nodes[1], &ratio), "get r1");
+  r1 = ratio;
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+  } else {
+    return REF_DIV_ZERO;
+  }
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+
+  alpha = 0.2;
+  for (ixyz = 0; ixyz < 3; ixyz++) dxyz[ixyz] = alpha * total_force[ixyz];
 
   edge_nodes[0] = nodes[0];
   edge_nodes[1] = node;
@@ -1279,6 +1306,11 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
         ref_geom_tattle(ref_geom, nodes[1]);
       });
 
+  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &t_orig, xyz_orig, dxyz_dt),
+      "eval edge derivatives");
+  dt = ref_math_dot(dxyz, dxyz_dt);
+  t_target = t_orig + dt;
+
   if (ref_grid_surf(ref_grid)) {
     q_orig = 1.0;
   } else {
@@ -1296,14 +1328,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     printf("edge %d t %f %f %f r %f %f q %f\n", id, t0, t_orig, t1, r0, r1,
            q_orig);
 
-  sr = r0 / (r1 + r0);
-  st = (t_orig - t0) / (t1 - t0);
-  st = st + (0.5 - sr);
-  t_target = st * t1 + (1.0 - st) * t0;
-
-  if (verbose)
-    printf("t_target %f sr %f st %f %f \n", t_target, sr,
-           (t_orig - t0) / (t1 - t0), st);
+  if (verbose) printf("t_target %f\n", t_target);
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
@@ -1329,8 +1354,6 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
     if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
         (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node))) {
