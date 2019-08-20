@@ -1208,7 +1208,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
   REF_INT ixyz;
   REF_DBL total_force[3];
-  REF_DBL dxyz[3], dxyz_dt[3], xyz_orig[3], dt;
+  REF_DBL dxyz[3], dxyz_dt[6], xyz_orig[3], dt, dt_ds, tangent[3];
 
   REF_DBL t, q, backoff, t_target, min_ratio, max_ratio;
   REF_INT tries;
@@ -1263,8 +1263,26 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &t_orig, xyz_orig, dxyz_dt),
       "eval edge derivatives");
-  dt = ref_math_dot(dxyz, dxyz_dt);
+  for (ixyz = 0; ixyz < 3; ixyz++) tangent[ixyz] = dxyz_dt[ixyz];
+  dt_ds = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));
+  RSS(ref_math_normalize(tangent), "form tangent");
+  dt = ref_math_dot(dxyz, tangent);
+  if (ref_math_divisible(dt, dt_ds)) {
+    dt /= dt_ds;
+  } else {
+    RSS(REF_DIV_ZERO, "unable to invert dt/dxyz");
+  }
   t_target = t_orig + dt;
+
+  /* reject a smooth point canidate outside of trange */
+  if (t_target < MIN(t0, t1) || MAX(t0, t1) < t_target) {
+    return REF_SUCCESS;
+  }
+
+  if (verbose) {
+    printf("dxyz %f %f %f\n", dxyz[0], dxyz[1], dxyz[2]);
+    printf("dxyz_dt %f %f %f\n", dxyz_dt[0], dxyz_dt[1], dxyz_dt[2]);
+  }
 
   if (ref_grid_surf(ref_grid)) {
     q_orig = 1.0;
@@ -1283,7 +1301,10 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     printf("edge %d t %f %f %f r %f %f q %f\n", id, t0, t_orig, t1, r0, r1,
            q_orig);
 
-  if (verbose) printf("t_target %f\n", t_target);
+  if (verbose)
+    printf("t_target %f at %f %f %f\n", t_target,
+           ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+           ref_node_xyz(ref_node, 2, node));
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
