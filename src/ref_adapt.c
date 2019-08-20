@@ -57,6 +57,7 @@ REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   ref_adapt->collapse_quality_absolute = 1.0e-3;
 
   ref_adapt->smooth_min_quality = 1.0e-3;
+  ref_adapt->smooth_pliant_alpha = 0.2;
 
   ref_adapt->swap_max_degree = 10000;
   ref_adapt->swap_min_quality = 0.5;
@@ -90,6 +91,7 @@ REF_STATUS ref_adapt_deep_copy(REF_ADAPT *ref_adapt_ptr, REF_ADAPT original) {
   ref_adapt->collapse_quality_absolute = original->collapse_quality_absolute;
 
   ref_adapt->smooth_min_quality = original->smooth_min_quality;
+  ref_adapt->smooth_pliant_alpha = original->smooth_pliant_alpha;
 
   ref_adapt->swap_max_degree = original->swap_max_degree;
   ref_adapt->swap_min_quality = original->swap_min_quality;

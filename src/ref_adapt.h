@@ -40,6 +40,7 @@ struct REF_ADAPT_STRUCT {
   REF_DBL collapse_quality_absolute;
 
   REF_DBL smooth_min_quality;
+  REF_DBL smooth_pliant_alpha;
 
   REF_INT swap_max_degree;
   REF_DBL swap_min_quality;

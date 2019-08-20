@@ -647,7 +647,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
-  REF_DBL alpha, total_force[3];
+  REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz, opposite;
@@ -669,10 +669,10 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_smooth_add_pliant_force(ref_node, node, node0, total_force), "n0");
   RSS(ref_smooth_add_pliant_force(ref_node, node, node1, total_force), "n1");
 
-  alpha = 0.2;
   for (ixyz = 0; ixyz < 3; ixyz++)
     ideal[ixyz] =
-        ref_node_xyz(ref_node, ixyz, node) + alpha * total_force[ixyz];
+        ref_node_xyz(ref_node, ixyz, node) +
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
