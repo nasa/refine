@@ -33,6 +33,30 @@
 
 #include "ref_malloc.h"
 
+static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
+                                              REF_INT neighbor,
+                                              REF_DBL *total_force_vector) {
+  REF_INT ixyz;
+  REF_DBL norm[3], l4, force, ratio;
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    norm[ixyz] = ref_node_xyz(ref_node, ixyz, center) -
+                 ref_node_xyz(ref_node, ixyz, neighbor);
+  RSS(ref_node_ratio(ref_node, center, neighbor, &ratio), "get r0");
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ref_math_divisible(norm[0], ratio) &&
+      ref_math_divisible(norm[1], ratio) &&
+      ref_math_divisible(norm[2], ratio)) {
+    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
+  } else {
+    return REF_DIV_ZERO;
+  }
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    total_force_vector[ixyz] += force * norm[ixyz];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -623,7 +647,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
-  REF_DBL alpha, force, l4, ratio, norm[3], total_force[3];
+  REF_DBL alpha, total_force[3];
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
   REF_INT ixyz, opposite;
@@ -642,36 +666,8 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   if (!allowed) return REF_SUCCESS;
 
   for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
-                 ref_node_xyz(ref_node, ixyz, node0);
-  RSS(ref_node_ratio(ref_node, node, node0, &ratio), "get r0");
-  l4 = ratio * ratio * ratio * ratio;
-  force = (1.0 - l4) * exp(-l4);
-  if (ref_math_divisible(norm[0], ratio) &&
-      ref_math_divisible(norm[1], ratio) &&
-      ref_math_divisible(norm[2], ratio)) {
-    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
-  } else {
-    return REF_DIV_ZERO;
-  }
-  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    norm[ixyz] = ref_node_xyz(ref_node, ixyz, node) -
-                 ref_node_xyz(ref_node, ixyz, node1);
-  RSS(ref_node_ratio(ref_node, node, node1, &ratio), "get r0");
-  l4 = ratio * ratio * ratio * ratio;
-  force = (1.0 - l4) * exp(-l4);
-  if (ref_math_divisible(norm[0], ratio) &&
-      ref_math_divisible(norm[1], ratio) &&
-      ref_math_divisible(norm[2], ratio)) {
-    for (ixyz = 0; ixyz < 3; ixyz++) norm[ixyz] /= ratio;
-  } else {
-    return REF_DIV_ZERO;
-  }
-  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] += force * norm[ixyz];
+  RSS(ref_smooth_add_pliant_force(ref_node, node, node0, total_force), "n0");
+  RSS(ref_smooth_add_pliant_force(ref_node, node, node1, total_force), "n1");
 
   alpha = 0.2;
   for (ixyz = 0; ixyz < 3; ixyz++)
