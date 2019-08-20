@@ -32,8 +32,7 @@ function adapt_cycle {
 
 adapt_cycle cube cycle01 2
 adapt_cycle cycle01 cycle02 15
-adapt_cycle cycle02 cycle03 15
 
-cat cycle03.status
-../../check.rb cycle03.status 0.3 3.0
+cat cycle02.status
+../../check.rb cycle02.status 0.3 3.0
 

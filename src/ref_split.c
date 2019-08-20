@@ -54,6 +54,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
+  REF_BOOL cad_edge;
   REF_GLOB global;
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
@@ -99,6 +100,11 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                              ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "mixed");
     if (!allowed) continue;
+
+    RSS(ref_cell_has_side(ref_grid_edg(ref_grid),
+                          ref_edge_e2n(ref_edge, 0, edge),
+                          ref_edge_e2n(ref_edge, 1, edge), &cad_edge),
+        "has edg side");
 
     weight_node1 = 0.5;
     RSS(ref_node_ratio(ref_node, ref_edge_e2n(ref_edge, 0, edge),
@@ -148,7 +154,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                  ref_edge_e2n(ref_edge, 1, edge), new_node,
                                  &allowed_tet_ratio),
         "edge tet ratio");
-    if (!allowed_tet_ratio) {
+    if (!allowed_tet_ratio && !cad_edge) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
