@@ -1595,11 +1595,18 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
             "edge degree");
         if (degree > ref_grid_adapt(ref_grid, swap_max_degree)) continue;
         RSS(ref_cavity_create(&ref_cavity), "create");
-        RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
-                                      nodes[n1], nodes[n2]),
-            "cavity gem");
-        if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
+        if (REF_SUCCESS != ref_cavity_form_edge_swap(ref_cavity, ref_grid,
+                                                     nodes[n0], nodes[n1],
+                                                     nodes[n2])) {
+          REF_WHERE("form edge swap"); /* note but skip cavity failures */
+          RSS(ref_cavity_free(ref_cavity), "free");
+          continue;
+        }
+        if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity)) {
           REF_WHERE("enlarge"); /* note but skip cavity failures */
+          RSS(ref_cavity_free(ref_cavity), "free");
+          continue;
+        }
         if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
           RSS(ref_cavity_ratio(ref_cavity, &allowed), "post ratio limits");
           if (!allowed) {
