@@ -119,7 +119,7 @@ ${source_dir}/configure \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check' \
     CC=mpicc > $LOG 2>&1
 trap - EXIT
 
