@@ -1618,37 +1618,44 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename) {
 
   end_of_string = strlen(filename);
 
-  if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
+  if (end_of_string > 10 &&
+      strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_FALSE),
         ".lb8.ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
+  if (end_of_string > 9 &&
+      strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_FALSE),
         ".b8.ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+  if (end_of_string > 11 &&
+      strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
         ".lb8l.ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+  if (end_of_string > 10 &&
+      strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
         ".b8l.ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+  if (end_of_string > 12 &&
+      strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_FALSE, REF_TRUE),
         ".lb8.ugrid64 failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+  if (end_of_string > 11 &&
+      strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
     RSS(ref_gather_bin_ugrid(ref_grid, filename, REF_TRUE, REF_TRUE),
         ".b8.ugrid64 failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
+  if (end_of_string > 6 &&
+      strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_gather_meshb(ref_grid, filename), "meshb failed");
     return REF_SUCCESS;
   }
@@ -1672,7 +1679,7 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
     RNS(file, "unable to open file");
 
     end_of_string = strlen(filename);
-    if (strcmp(&filename[end_of_string - 5], ".solb") == 0)
+    if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0)
       solb_format = REF_TRUE;
   }
   RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &solb_format), "bcast");
@@ -1851,7 +1858,7 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
         "scalar tec");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 5], ".solb") == 0) {
+  if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
     RSS(ref_gather_scalar(ref_grid, ldim, scalar, filename), "scalar solb");
     return REF_SUCCESS;
   }
