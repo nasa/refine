@@ -1428,7 +1428,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if ((REF_SUCCESS == interp_status) &&
+    if ((REF_SUCCESS == interp_status) && (qtri > qtri_orig) &&
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
         (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
