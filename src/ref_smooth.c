@@ -491,6 +491,82 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *ideal_uv) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ixyz, id;
+  REF_INT max_node = 100, nnode;
+  REF_INT node_list[100];
+  REF_INT edge;
+  REF_DBL total_force[3], dxyz[3], xyz_orig[3], dxyz_duv[15];
+  REF_DBL dxyz_duvn[9], duvn_dxyz[9], r[3], s[3], n[3];
+  REF_BOOL self_check = REF_FALSE;
+
+  RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "get id");
+  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, ideal_uv), "get uv_orig");
+
+  RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
+                                node_list),
+      "node list for edges");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+  for (edge = 0; edge < nnode; edge++) {
+    RSS(ref_smooth_add_pliant_force(ref_node, node, node_list[edge],
+                                    total_force),
+        "edge");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    dxyz[ixyz] =
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
+
+  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
+                       dxyz_duv),
+      "eval face derivatives");
+  RSS(ref_geom_face_rsn(ref_geom, id, ideal_uv, r, s, n),
+      "eval orthonormal face system");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dxyz_duvn[ixyz + 0] = dxyz_duv[ixyz + 0];
+    dxyz_duvn[ixyz + 3] = dxyz_duv[ixyz + 3];
+    dxyz_duvn[ixyz + 6] = n[ixyz];
+  }
+
+  RSS(ref_matrix_inv_gen(3, dxyz_duvn, duvn_dxyz), "inverse transformation");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    ideal_uv[0] += duvn_dxyz[0 + 3 * ixyz] * dxyz[ixyz];
+    ideal_uv[1] += duvn_dxyz[1 + 3 * ixyz] * dxyz[ixyz];
+  }
+
+  if (self_check) {
+    REF_DBL du, dv, dn, check_dxyz[3];
+    du = 0;
+    dv = 0;
+    dn = 0;
+    for (ixyz = 0; ixyz < 3; ixyz++) {
+      du += duvn_dxyz[0 + 3 * ixyz] * dxyz[ixyz];
+      dv += duvn_dxyz[1 + 3 * ixyz] * dxyz[ixyz];
+      dn += duvn_dxyz[2 + 3 * ixyz] * dxyz[ixyz];
+    }
+    check_dxyz[0] = du * dxyz_duv[0] + dv * dxyz_duv[3] + dn * n[0];
+    check_dxyz[1] = du * dxyz_duv[1] + dv * dxyz_duv[4] + dn * n[1];
+    check_dxyz[2] = du * dxyz_duv[2] + dv * dxyz_duv[5] + dn * n[2];
+    if (ABS(check_dxyz[0] - dxyz[0]) > 1.0e-12 ||
+        ABS(check_dxyz[1] - dxyz[1]) > 1.0e-12 ||
+        ABS(check_dxyz[2] - dxyz[2]) > 1.0e-12) {
+      printf("du %f dv %f dn %f dxyz %f %f %f\n", du, dv, dn, dxyz[0], dxyz[1],
+             dxyz[2]);
+      printf(" err %e %e %e\n", check_dxyz[0] - dxyz[0],
+             check_dxyz[1] - dxyz[1], check_dxyz[2] - dxyz[2]);
+      ref_node_location(ref_node, node);
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
                                             REF_DBL *ideal_uv) {
   REF_INT item, cell;
@@ -519,59 +595,6 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
   } else {
     printf("normalization = %e\n", normalization);
     return REF_DIV_ZERO;
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
-                                    REF_DBL *ideal_uv) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT ixyz, id;
-  REF_INT max_node = 100, nnode;
-  REF_INT node_list[100];
-  REF_INT edge;
-  REF_DBL total_force[3], dxyz[3], xyz_orig[3], dxyz_duv[15];
-  REF_DBL dxyz_duvn[9], duvn_dxyz[9], r[3], s[3], n[3];
-
-  RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "get id");
-  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, ideal_uv), "get uv_orig");
-
-  RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
-                                node_list),
-      "node list for edges");
-
-  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
-  for (edge = 0; edge < nnode; edge++) {
-    RSS(ref_smooth_add_pliant_force(ref_node, node, node_list[edge],
-                                    total_force),
-        "edge");
-  }
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    dxyz[ixyz] =
-        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
-
-  printf("dxyz %f %f %f\n", dxyz[0], dxyz[1], dxyz[2]);
-
-  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
-                       dxyz_duv),
-      "eval face derivatives");
-  RSS(ref_geom_face_rsn(ref_geom, id, ideal_uv, r, s, n),
-      "eval orthonormal face system");
-
-  for (ixyz = 0; ixyz < 3; ixyz++) {
-    dxyz_duvn[ixyz + 0] = dxyz_duv[ixyz + 0];
-    dxyz_duvn[ixyz + 3] = dxyz_duv[ixyz + 3];
-    dxyz_duvn[ixyz + 6] = n[ixyz];
-  }
-
-  RSS(ref_matrix_inv_gen(3, dxyz_duvn, duvn_dxyz), "inverse transformation");
-
-  for (ixyz = 0; ixyz < 3; ixyz++) {
-    ideal_uv[0] += duvn_dxyz[ixyz + 0] * dxyz[ixyz];
-    ideal_uv[1] += duvn_dxyz[ixyz + 3] * dxyz[ixyz];
   }
 
   return REF_SUCCESS;
