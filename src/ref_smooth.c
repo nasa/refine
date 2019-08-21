@@ -1445,6 +1445,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing = REF_FALSE;
 
   REF_BOOL verbose = REF_FALSE;
 
@@ -1467,6 +1468,10 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   }
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
+  RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+  pliant_smoothing = (qtri_orig > 0.5 || min_ratio > 0.5 || max_ratio < 2.0);
+  pliant_smoothing = REF_FALSE;
   interp_guess = REF_EMPTY;
   if (NULL != ref_interp) {
     if (ref_interp_continuously(ref_interp)) {
@@ -1478,7 +1483,11 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     printf("uv %f %f tri %f tet %f\n", uv_orig[0], uv_orig[1], qtri_orig,
            qtet_orig);
 
-  RSS(ref_smooth_tri_weighted_ideal_uv(ref_grid, node, uv_ideal), "ideal");
+  if (pliant_smoothing) {
+    RSS(ref_smooth_tri_pliant_uv(ref_grid, node, uv_ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_weighted_ideal_uv(ref_grid, node, uv_ideal), "ideal");
+  }
 
   RSS(ref_geom_tri_uv_bounding_box(ref_grid, node, uv_min, uv_max), "bb");
 
@@ -1506,8 +1515,10 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
     if ((REF_SUCCESS == interp_status) && (qtri > qtri_orig) &&
         (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
+        (pliant_smoothing ||
+         min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+        (pliant_smoothing ||
+         max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
         (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
