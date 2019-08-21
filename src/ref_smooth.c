@@ -533,6 +533,7 @@ REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
   REF_INT node_list[100];
   REF_INT edge;
   REF_DBL total_force[3], dxyz[3], xyz_orig[3], dxyz_duv[15];
+  REF_DBL dxyz_duvn[9], duvn_dxyz[9], r[3], s[3], n[3];
 
   RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "get id");
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, ideal_uv), "get uv_orig");
@@ -557,6 +558,21 @@ REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
   RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
                        dxyz_duv),
       "eval face derivatives");
+  RSS(ref_geom_face_rsn(ref_geom, id, ideal_uv, r, s, n),
+      "eval orthonormal face system");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dxyz_duvn[ixyz + 0] = dxyz_duv[ixyz + 0];
+    dxyz_duvn[ixyz + 3] = dxyz_duv[ixyz + 3];
+    dxyz_duvn[ixyz + 6] = n[ixyz];
+  }
+
+  RSS(ref_matrix_inv_gen(3, dxyz_duvn, duvn_dxyz), "inverse transformation");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    ideal_uv[0] += duvn_dxyz[ixyz + 0] * dxyz[ixyz];
+    ideal_uv[1] += duvn_dxyz[ixyz + 3] * dxyz[ixyz];
+  }
 
   return REF_SUCCESS;
 }
