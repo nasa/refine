@@ -1745,41 +1745,48 @@ REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
   end_of_string = strlen(filename);
 
-  if (strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
+  if (end_of_string > 10 &&
+      strcmp(&filename[end_of_string - 10], ".lb8.ugrid") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
                            REF_FALSE),
         "lb8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
+  if (end_of_string > 9 &&
+      strcmp(&filename[end_of_string - 9], ".b8.ugrid") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE,
                            REF_FALSE),
         "b8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
+  if (end_of_string > 11 &&
+      strcmp(&filename[end_of_string - 11], ".lb8l.ugrid") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
                            REF_TRUE),
         "lb8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
+  if (end_of_string > 10 &&
+      strcmp(&filename[end_of_string - 10], ".b8l.ugrid") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE, REF_TRUE),
         "b8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
+  if (end_of_string > 12 &&
+      strcmp(&filename[end_of_string - 12], ".lb8.ugrid64") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_FALSE,
                            REF_TRUE),
         "lb8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
+  if (end_of_string > 11 &&
+      strcmp(&filename[end_of_string - 11], ".b8.ugrid64") == 0) {
     RSS(ref_part_bin_ugrid(ref_grid_ptr, ref_mpi, filename, REF_TRUE, REF_TRUE),
         "b8_ugrid failed");
     return REF_SUCCESS;
   }
-  if (strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
+  if (end_of_string > 6 &&
+      strcmp(&filename[end_of_string - 6], ".meshb") == 0) {
     RSS(ref_part_meshb(ref_grid_ptr, ref_mpi, filename), "meshb failed");
     return REF_SUCCESS;
   }
