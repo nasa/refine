@@ -411,9 +411,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_cavity_create(&ref_cavity), "create");
 
     RSS(ref_node_add(ref_grid_node(ref_grid), 4, &new_node), "new");
-    RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
+    RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 0, 3, new_node),
         "insert edge");
-    REIS(6, ref_cavity_nface(ref_cavity), "n");
+    REIS(2, ref_cavity_nface(ref_cavity), "n");
     REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
@@ -431,7 +431,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_add(ref_grid_node(ref_grid), 5, &new_node), "new");
     RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
         "insert edge");
-    REIS(8, ref_cavity_nface(ref_cavity), "n");
+    REIS(4, ref_cavity_nface(ref_cavity), "n");
     REIS(2, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
