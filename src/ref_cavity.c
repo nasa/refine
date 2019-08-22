@@ -759,29 +759,6 @@ REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
-                                           REF_GRID ref_grid, REF_INT node0,
-                                           REF_INT node1, REF_INT new_node) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT item, cell_node, cell;
-
-  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
-
-  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
-    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
-  }
-
-  /* may have encountered an edge during startup */
-  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
-  }
-
-  REIB(4, ref_cavity_nseg(ref_cavity), "expect 4 seg for surf edge split",
-       { ref_cavity_inspect(ref_cavity); });
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
                                       REF_BOOL *manifold) {
   REF_INT node;
