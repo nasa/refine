@@ -37,7 +37,7 @@ mkdir -p parmetis
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419' \
+    CFLAGS='-DHAVE_MPI -g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-protector-all -fstack-security-check' \
     ) \
     || exit
 
@@ -49,7 +49,7 @@ mkdir -p zoltan
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419' \
+    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -fp-stack-check -fstack-protector-all -fstack-security-check' \
     ) \
     || exit
 
