@@ -72,9 +72,6 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   ref_cavity_f2n(ref_cavity, 1, ref_cavity_maxface(ref_cavity) - 1) = REF_EMPTY;
   ref_cavity_blankface(ref_cavity) = 0;
 
-  ref_cavity->node0 = REF_EMPTY;
-  ref_cavity->node1 = REF_EMPTY;
-
   RSS(ref_list_create(&(ref_cavity->tri_list)), "tri list");
   RSS(ref_list_create(&(ref_cavity->tet_list)), "tet list");
 
@@ -538,8 +535,6 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
         "nodes 2 and 3");
 
     ref_cavity_surf_node(ref_cavity) = node2;
-    ref_cavity->node0 = node0;
-    ref_cavity->node1 = node1;
 
     face_nodes[0] = node0;
     face_nodes[1] = node3;
@@ -1047,7 +1042,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
         ref_cavity_tec(ref_cavity, "ref_cavity_error_too_many_tet.tec");
       });
   if (REF_EMPTY == tet0) {
-    if (REF_EMPTY == ref_cavity->node0) {
+    if (REF_EMPTY == ref_cavity_surf_node(ref_cavity)) {
       THROW("cavity tets missing");
     }
     ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
@@ -1055,7 +1050,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   }
   if (REF_EMPTY == tet1) {
     REF_INT tri;
-    if (REF_EMPTY == ref_cavity->node0) {
+    if (REF_EMPTY == ref_cavity_surf_node(ref_cavity)) {
       RSS(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri),
           "verify boundary face");
     }
@@ -1067,7 +1062,7 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
       "cell0");
   RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet1, &have_cell1),
       "cell1");
-  if (REF_EMPTY == ref_cavity->node0) {
+  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity)) {
     if (have_cell0 == have_cell1) THROW("cavity same state");
   } else {
     if (!have_cell0 && !have_cell1) {
@@ -1311,35 +1306,34 @@ REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
 }
 
 REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
-  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_BOOL local;
-  REF_INT face, face_node, node;
+  REF_INT node;
+  REF_INT face, face_node;
+  REF_INT seg, seg_node;
   RSS(ref_cavity_local(ref_cavity, &local), "local");
   RAS(local, "cavity not local");
+
+  RAS(ref_node_valid(ref_node, ref_cavity_node(ref_cavity)),
+      "cavity node not valid");
+  if (REF_EMPTY != ref_cavity_surf_node(ref_cavity))
+    RAS(ref_node_valid(ref_node, ref_cavity_surf_node(ref_cavity)),
+        "cavity surf node not valid");
 
   each_ref_cavity_valid_face(ref_cavity, face) {
     ; /* semi to force format */
     each_ref_cavity_face_node(ref_cavity, face_node) {
       node = ref_cavity_f2n(ref_cavity, face_node, face);
-      RAS(ref_node_valid(ref_node, node), "cavity node not valid");
+      RAS(ref_node_valid(ref_node, node), "cavity face node not valid");
     }
   }
 
-  if (REF_EMPTY != ref_cavity->node0) { /* swap tri of boundary tets */
-    REF_INT node0, node1, node2, node3;
-    node0 = ref_cavity->node0;
-    node1 = ref_cavity->node1;
-    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
-        "nodes 2 and 3");
-    RAS(ref_node_valid(ref_node, node0), "cavity node0 not valid");
-    RAS(ref_node_valid(ref_node, node1), "cavity node1 not valid");
-    RAS(ref_node_valid(ref_node, node2), "cavity node2 not valid");
-    RAS(ref_node_valid(ref_node, node3), "cavity node3 not valid");
-    RAS(ref_node_owned(ref_node, node0), "cavity node0 not owned");
-    RAS(ref_node_owned(ref_node, node1), "cavity node1 not owned");
-    RAS(ref_node_owned(ref_node, node2), "cavity node2 not owned");
-    RAS(ref_node_owned(ref_node, node3), "cavity node3 not owned");
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    ; /* semi to force format */
+    each_ref_cavity_seg_node(ref_cavity, seg_node) {
+      node = ref_cavity_s2n(ref_cavity, seg_node, face);
+      RAS(ref_node_valid(ref_node, node), "cavity segment node not valid");
+    }
   }
 
   return REF_SUCCESS;
