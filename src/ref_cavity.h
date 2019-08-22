@@ -43,6 +43,7 @@ struct REF_CAVITY_STRUCT {
   REF_CAVITY_STATE state;
   REF_GRID ref_grid;
   REF_INT node;
+  REF_INT surf_node;
   REF_INT nseg;
   REF_INT maxseg;
   REF_INT blankseg;
@@ -64,6 +65,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
 #define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
+#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->node)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
 
 #define ref_cavity_nseg(ref_cavity) ((ref_cavity)->nseg)
