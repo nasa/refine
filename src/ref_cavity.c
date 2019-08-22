@@ -581,7 +581,6 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
   REF_INT faceid2, faceid3;
-  ;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
 
@@ -618,8 +617,6 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   if (has_triangle) {
     RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
         "nodes 2 and 3");
-
-    ref_cavity_surf_node(ref_cavity) = node2;
 
     face_nodes[0] = new_node;
     face_nodes[1] = node0;
