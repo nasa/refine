@@ -180,17 +180,6 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg) {
-  RAS(ref_cavity_valid_seg(ref_cavity, seg), "not valid seg");
-
-  ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
-  ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
-  ref_cavity_blankseg(ref_cavity) = seg;
-  ref_cavity_nseg(ref_cavity)--;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
                                REF_INT *found_seg, REF_BOOL *reversed) {
   REF_INT seg;
@@ -367,24 +356,6 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
                           "ref_cavity_add_tet_surf.tec");
       ref_cavity_tec(ref_cavity, "ref_cavity_add_tet_change.tec");
     });
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet) {
-  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
-  REF_INT cell_face;
-  REF_INT face_nodes[3];
-
-  RSS(ref_list_delete(ref_cavity_tet_list(ref_cavity), tet), "dump tet");
-
-  each_ref_cell_cell_face(ref_cell, cell_face) {
-    /* reverse face nodes orientation */
-    face_nodes[0] = ref_cell_f2n(ref_cell, 1, cell_face, tet);
-    face_nodes[1] = ref_cell_f2n(ref_cell, 0, cell_face, tet);
-    face_nodes[2] = ref_cell_f2n(ref_cell, 2, cell_face, tet);
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
   }
 
   return REF_SUCCESS;
