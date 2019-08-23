@@ -482,16 +482,18 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT item, cell_face, face_node, cell;
   REF_BOOL has_node;
-  REF_BOOL already_have_it, all_local;
-  REF_INT face_nodes[3];
+  REF_BOOL already_have_it, all_local, has_tets;
+  REF_INT face_nodes[3], seg_nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
+  has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
-  each_ref_cell_having_node(ref_grid_tet(ref_grid), node, item, cell) {
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");
     RAS(!already_have_it, "added tet twice?");
+    has_tets = REF_TRUE;
     RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
     if (!all_local) {
@@ -508,6 +510,47 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
       if (!has_node) {
         RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
       }
+    }
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell,
+                          &already_have_it),
+        "have tet?");
+    RAS(!already_have_it, "added tri twice?");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
+    if (!all_local) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+
+    if (has_tets) {
+      face_nodes[0] = ref_cell_c2n(ref_cell, 0, cell);
+      face_nodes[1] = ref_cell_c2n(ref_cell, 1, cell);
+      face_nodes[2] = ref_cell_c2n(ref_cell, 2, cell);
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face on bound");
+    }
+
+    seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 1, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 2, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 2, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 0, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    }
+    seg_nodes[0] = ref_cell_c2n(ref_cell, 0, cell);
+    seg_nodes[1] = ref_cell_c2n(ref_cell, 1, cell);
+    has_node = (node == seg_nodes[0] || node == seg_nodes[1]);
+    if (!has_node) {
+      RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
     }
   }
 

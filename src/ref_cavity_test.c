@@ -494,7 +494,7 @@ int main(int argc, char *argv[]) {
     if (!ref_mpi_para(ref_mpi)) {
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, 0), "insert ball");
 
-      REIS(1, ref_cavity_nface(ref_cavity), "n");
+      REIS(2, ref_cavity_nface(ref_cavity), "n");
       REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
       RSS(ref_cavity_replace(ref_cavity), "replace");
