@@ -491,6 +491,82 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
+                                    REF_DBL *ideal_uv) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ixyz, id;
+  REF_INT max_node = 100, nnode;
+  REF_INT node_list[100];
+  REF_INT edge;
+  REF_DBL total_force[3], dxyz[3], xyz_orig[3], dxyz_duv[15];
+  REF_DBL dxyz_duvn[9], duvn_dxyz[9], r[3], s[3], n[3];
+  REF_BOOL self_check = REF_FALSE;
+
+  RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "get id");
+  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, ideal_uv), "get uv_orig");
+
+  RSS(ref_cell_node_list_around(ref_grid_tri(ref_grid), node, max_node, &nnode,
+                                node_list),
+      "node list for edges");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+  for (edge = 0; edge < nnode; edge++) {
+    RSS(ref_smooth_add_pliant_force(ref_node, node, node_list[edge],
+                                    total_force),
+        "edge");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    dxyz[ixyz] =
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
+
+  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
+                       dxyz_duv),
+      "eval face derivatives");
+  RSS(ref_geom_face_rsn(ref_geom, id, ideal_uv, r, s, n),
+      "eval orthonormal face system");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    dxyz_duvn[ixyz + 0] = dxyz_duv[ixyz + 0];
+    dxyz_duvn[ixyz + 3] = dxyz_duv[ixyz + 3];
+    dxyz_duvn[ixyz + 6] = n[ixyz];
+  }
+
+  RSS(ref_matrix_inv_gen(3, dxyz_duvn, duvn_dxyz), "inverse transformation");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) {
+    ideal_uv[0] += duvn_dxyz[0 + 3 * ixyz] * dxyz[ixyz];
+    ideal_uv[1] += duvn_dxyz[1 + 3 * ixyz] * dxyz[ixyz];
+  }
+
+  if (self_check) {
+    REF_DBL du, dv, dn, check_dxyz[3];
+    du = 0;
+    dv = 0;
+    dn = 0;
+    for (ixyz = 0; ixyz < 3; ixyz++) {
+      du += duvn_dxyz[0 + 3 * ixyz] * dxyz[ixyz];
+      dv += duvn_dxyz[1 + 3 * ixyz] * dxyz[ixyz];
+      dn += duvn_dxyz[2 + 3 * ixyz] * dxyz[ixyz];
+    }
+    check_dxyz[0] = du * dxyz_duv[0] + dv * dxyz_duv[3] + dn * n[0];
+    check_dxyz[1] = du * dxyz_duv[1] + dv * dxyz_duv[4] + dn * n[1];
+    check_dxyz[2] = du * dxyz_duv[2] + dv * dxyz_duv[5] + dn * n[2];
+    if (ABS(check_dxyz[0] - dxyz[0]) > 1.0e-12 ||
+        ABS(check_dxyz[1] - dxyz[1]) > 1.0e-12 ||
+        ABS(check_dxyz[2] - dxyz[2]) > 1.0e-12) {
+      printf("du %f dv %f dn %f dxyz %f %f %f\n", du, dv, dn, dxyz[0], dxyz[1],
+             dxyz[2]);
+      printf(" err %e %e %e\n", check_dxyz[0] - dxyz[0],
+             check_dxyz[1] - dxyz[1], check_dxyz[2] - dxyz[2]);
+      ref_node_location(ref_node, node);
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
                                             REF_DBL *ideal_uv) {
   REF_INT item, cell;
@@ -1138,6 +1214,33 @@ REF_STATUS ref_smooth_tet_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tet_pliant(REF_GRID ref_grid, REF_INT node,
+                                 REF_DBL *ideal_location) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ixyz;
+  REF_INT max_node = 100, nnode;
+  REF_INT node_list[100];
+  REF_INT edge;
+  REF_DBL total_force[3];
+  RSS(ref_cell_node_list_around(ref_grid_tet(ref_grid), node, max_node, &nnode,
+                                node_list),
+      "node list for pliant tet edges");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+  for (edge = 0; edge < nnode; edge++) {
+    RSS(ref_smooth_add_pliant_force(ref_node, node, node_list[edge],
+                                    total_force),
+        "edge");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal_location[ixyz] =
+        ref_node_xyz(ref_node, ixyz, node) +
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
@@ -1147,6 +1250,8 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing;
+  REF_BOOL accept;
 
   /* can't handle boundaries yet */
   if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) ||
@@ -1162,10 +1267,16 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     }
   }
 
-  RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
-
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality0), "q");
+  RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+  pliant_smoothing = (quality0 > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
 
+  if (pliant_smoothing) {
+    RSS(ref_smooth_tet_pliant(ref_grid, node, ideal), "pliant");
+  } else {
+    RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
+  }
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
     for (ixyz = 0; ixyz < 3; ixyz++)
@@ -1176,9 +1287,16 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
-    if ((REF_SUCCESS == interp_status) && (quality > quality0) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+    accept = (REF_SUCCESS == interp_status);
+    accept = accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+    accept = accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+    if (pliant_smoothing) {
+      accept = accept && (quality > 0.9 * quality0);
+      accept = accept && (quality > 0.4);
+    } else {
+      accept = accept && (quality > quality0);
+    }
+    if (accept) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
@@ -1369,6 +1487,8 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing = REF_FALSE;
+  REF_BOOL accept;
 
   REF_BOOL verbose = REF_FALSE;
 
@@ -1391,6 +1511,9 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   }
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri_orig), "q tri");
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
+  RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+  pliant_smoothing = (qtri_orig > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
   interp_guess = REF_EMPTY;
   if (NULL != ref_interp) {
     if (ref_interp_continuously(ref_interp)) {
@@ -1402,7 +1525,11 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     printf("uv %f %f tri %f tet %f\n", uv_orig[0], uv_orig[1], qtri_orig,
            qtet_orig);
 
-  RSS(ref_smooth_tri_weighted_ideal_uv(ref_grid, node, uv_ideal), "ideal");
+  if (pliant_smoothing) {
+    RSS(ref_smooth_tri_pliant_uv(ref_grid, node, uv_ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_weighted_ideal_uv(ref_grid, node, uv_ideal), "ideal");
+  }
 
   RSS(ref_geom_tri_uv_bounding_box(ref_grid, node, uv_min, uv_max), "bb");
 
@@ -1428,14 +1555,24 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if ((REF_SUCCESS == interp_status) && (qtri > qtri_orig) &&
-        (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
-        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev > normdev_orig) &&
-        (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
-        (uv[0] < uv_max[0]) && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {
+
+    accept = (REF_SUCCESS == interp_status);
+    accept = accept && (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+                        normdev > normdev_orig);
+    accept = accept && (min_uv_area > ref_node_min_uv_area(ref_node));
+    accept = accept && (uv_min[0] < uv[0]) && (uv[0] < uv_max[0]);
+    accept = accept && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1]);
+    accept = accept && (qtet > ref_grid_adapt(ref_grid, smooth_min_quality));
+    accept = accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+    accept = accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+    if (pliant_smoothing) {
+      accept = accept && (qtri > 0.9 * qtri_orig);
+      accept = accept && (qtri > 0.4);
+    } else {
+      accept = accept && (qtri > qtri_orig);
+    }
+
+    if (accept) {
       if (verbose) printf("better qtri %f qtet %f\n", qtri, qtet);
       return REF_SUCCESS;
     }
