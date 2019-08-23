@@ -375,7 +375,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
 REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   REF_INT cell_face;
-  REF_INT face_nodes[4];
+  REF_INT face_nodes[3];
 
   RSS(ref_list_delete(ref_cavity_tet_list(ref_cavity), tet), "dump tet");
 
