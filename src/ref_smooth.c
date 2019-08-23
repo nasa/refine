@@ -1446,6 +1446,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
   REF_BOOL pliant_smoothing = REF_FALSE;
+  REF_BOOL accept;
 
   REF_BOOL verbose = REF_FALSE;
 
@@ -1513,17 +1514,24 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_quality_around(ref_grid, node, &qtri), "q tri");
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-    if ((REF_SUCCESS == interp_status) &&
-	(pliant_smoothing || qtri > qtri_orig) &&
-        (qtet > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (pliant_smoothing ||
-         min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (pliant_smoothing ||
-         max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
-        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev > normdev_orig) &&
-        (min_uv_area > ref_node_min_uv_area(ref_node)) && (uv_min[0] < uv[0]) &&
-        (uv[0] < uv_max[0]) && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1])) {
+
+    accept = (REF_SUCCESS == interp_status);
+    accept = accept && (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+                        normdev > normdev_orig);
+    accept = accept && (min_uv_area > ref_node_min_uv_area(ref_node));
+    accept = accept && (uv_min[0] < uv[0]) && (uv[0] < uv_max[0]);
+    accept = accept && (uv_min[1] < uv[1]) && (uv[1] < uv_max[1]);
+    accept = accept && (qtet > ref_grid_adapt(ref_grid, smooth_min_quality));
+    accept = accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+    accept = accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+    if (pliant_smoothing) {
+      accept = accept && (qtri > 0.9 * qtri_orig);
+      accept = accept && (qtri > 0.4);
+    } else {
+      accept = accept && (qtri > qtri_orig);
+    }
+
+    if (accept) {
       if (verbose) printf("better qtri %f qtet %f\n", qtri, qtet);
       return REF_SUCCESS;
     }
