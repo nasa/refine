@@ -1214,6 +1214,33 @@ REF_STATUS ref_smooth_tet_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_tet_pliant(REF_GRID ref_grid, REF_INT node,
+                                 REF_DBL *ideal_location) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT ixyz;
+  REF_INT max_node = 100, nnode;
+  REF_INT node_list[100];
+  REF_INT edge;
+  REF_DBL total_force[3];
+  RSS(ref_cell_node_list_around(ref_grid_tet(ref_grid), node, max_node, &nnode,
+                                node_list),
+      "node list for pliant tet edges");
+
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+  for (edge = 0; edge < nnode; edge++) {
+    RSS(ref_smooth_add_pliant_force(ref_node, node, node_list[edge],
+                                    total_force),
+        "edge");
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal_location[ixyz] =
+        ref_node_xyz(ref_node, ixyz, node) +
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT tries;
@@ -1223,6 +1250,8 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing;
+  REF_BOOL accept;
 
   /* can't handle boundaries yet */
   if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) ||
@@ -1238,10 +1267,16 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     }
   }
 
-  RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
-
   RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality0), "q");
+  RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+  pliant_smoothing = (quality0 > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
 
+  if (pliant_smoothing) {
+    RSS(ref_smooth_tet_pliant(ref_grid, node, ideal), "pliant");
+  } else {
+    RSS(ref_smooth_tet_weighted_ideal(ref_grid, node, ideal), "ideal");
+  }
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
     for (ixyz = 0; ixyz < 3; ixyz++)
@@ -1252,9 +1287,16 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality), "q");
     RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
         "ratio");
-    if ((REF_SUCCESS == interp_status) && (quality > quality0) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+    accept = (REF_SUCCESS == interp_status);
+    accept = accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+    accept = accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+    if (pliant_smoothing) {
+      accept = accept && (quality > 0.9 * quality0);
+      accept = accept && (quality > 0.4);
+    } else {
+      accept = accept && (quality > quality0);
+    }
+    if (accept) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
