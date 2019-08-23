@@ -564,17 +564,19 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
   REF_INT node2, node3, face_node, cell_face;
-  REF_BOOL has_triangle, has_node0, has_node1;
+  REF_BOOL has_triangle, has_node0, has_node1, has_tets;
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
 
+  has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");
     RAS(!already_have_it, "added tet twice?");
+    has_tets = REF_TRUE;
     RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
     if (!all_local) {
@@ -605,15 +607,17 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
     ref_cavity_surf_node(ref_cavity) = node2;
 
-    face_nodes[0] = node0;
-    face_nodes[1] = node3;
-    face_nodes[2] = node2;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+    if (has_tets) {
+      face_nodes[0] = node0;
+      face_nodes[1] = node3;
+      face_nodes[2] = node2;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
 
-    face_nodes[0] = node1;
-    face_nodes[1] = node2;
-    face_nodes[2] = node3;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+      face_nodes[0] = node1;
+      face_nodes[1] = node2;
+      face_nodes[2] = node3;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+    }
 
     seg_nodes[2] = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
@@ -646,19 +650,21 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
   REF_INT node2, node3, face_node, cell_face;
-  REF_BOOL has_triangle, has_node0, has_node1;
+  REF_BOOL has_triangle, has_node0, has_node1, has_tets;
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
   REF_INT faceid2, faceid3;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
 
+  has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
                           &already_have_it),
         "have tet?");
     RAS(!already_have_it, "added tet twice?");
+    has_tets = REF_TRUE;
     RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), cell), "save tet");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
     if (!all_local) {
@@ -687,22 +693,24 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
         "nodes 2 and 3");
 
-    face_nodes[0] = new_node;
-    face_nodes[1] = node0;
-    face_nodes[2] = node3;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
-    face_nodes[0] = new_node;
-    face_nodes[1] = node3;
-    face_nodes[2] = node1;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
-    face_nodes[0] = new_node;
-    face_nodes[1] = node3;
-    face_nodes[2] = node2;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
-    face_nodes[0] = new_node;
-    face_nodes[1] = node2;
-    face_nodes[2] = node0;
-    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+    if (has_tets) {
+      face_nodes[0] = new_node;
+      face_nodes[1] = node0;
+      face_nodes[2] = node3;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+      face_nodes[0] = new_node;
+      face_nodes[1] = node3;
+      face_nodes[2] = node1;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+      face_nodes[0] = new_node;
+      face_nodes[1] = node3;
+      face_nodes[2] = node2;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+      face_nodes[0] = new_node;
+      face_nodes[1] = node2;
+      face_nodes[2] = node0;
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side on bound");
+    }
 
     faceid2 = REF_EMPTY;
     faceid3 = REF_EMPTY;
