@@ -139,7 +139,7 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
       ref_cavity_blankseg(ref_cavity) = seg;
       ref_cavity_nseg(ref_cavity)--;
       if (NULL != ref_grid) {
-        /* changing CAD edg would violate topology, but allowed during setup */
+        /* changing CAD edg would violate topology */
         RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
                           &cell),
             REF_NOT_FOUND, "search for boundary edg");
