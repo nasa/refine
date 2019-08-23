@@ -145,6 +145,8 @@ REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
                                    REF_INT cell, REF_INT *cell_node);
 REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
                          REF_INT *part);
+REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
+                              REF_INT cell, REF_BOOL *all_local_nodes);
 REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
                               REF_INT node0, REF_INT node1, REF_BOOL *local);
 

@@ -43,6 +43,7 @@ struct REF_CAVITY_STRUCT {
   REF_CAVITY_STATE state;
   REF_GRID ref_grid;
   REF_INT node;
+  REF_INT surf_node;
   REF_INT nseg;
   REF_INT maxseg;
   REF_INT blankseg;
@@ -51,7 +52,6 @@ struct REF_CAVITY_STRUCT {
   REF_INT maxface;
   REF_INT blankface;
   REF_INT *f2n;
-  REF_INT node0, node1; /* for swap */
   REF_LIST tri_list;
   REF_LIST tet_list;
   REF_INT faceid;
@@ -64,6 +64,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
 #define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
+#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->node)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
 
 #define ref_cavity_nseg(ref_cavity) ((ref_cavity)->nseg)
@@ -106,7 +107,6 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
   for ((face_node) = 0; (face_node) < 3; (face_node)++)
 
 REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes);
-REF_STATUS ref_cavity_delete_seg(REF_CAVITY ref_cavity, REF_INT seg);
 REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
                                REF_INT *found_seg, REF_BOOL *reversed);
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes);
@@ -116,7 +116,6 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
 REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri);
 
 REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet);
-REF_STATUS ref_cavity_rm_tet(REF_CAVITY ref_cavity, REF_INT tet);
 
 REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity);
 
@@ -133,11 +132,6 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1);
-REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node);
-REF_STATUS ref_cavity_form_surf_edge_split(REF_CAVITY ref_cavity,
-                                           REF_GRID ref_grid, REF_INT node0,
-                                           REF_INT node1, REF_INT new_node);
 
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming);

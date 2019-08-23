@@ -724,6 +724,22 @@ REF_STATUS ref_cell_part(REF_CELL ref_cell, REF_NODE ref_node, REF_INT cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
+                              REF_INT cell, REF_BOOL *all_local_nodes) {
+  REF_INT cell_node;
+
+  *all_local_nodes = REF_TRUE;
+  RAS(ref_cell_valid(ref_cell, cell), "invalid cell");
+
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    *all_local_nodes =
+        *all_local_nodes &&
+        ref_node_owned(ref_node, ref_cell_c2n(ref_cell, cell_node, cell));
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
                               REF_INT node0, REF_INT node1, REF_BOOL *local) {
   REF_INT item, cell, search_node, test_node;
