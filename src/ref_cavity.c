@@ -872,7 +872,6 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node;
   REF_INT seg;
-  REF_BOOL local;
   REF_BOOL conforming, manifold;
   REF_BOOL keep_growing;
 
@@ -888,13 +887,6 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
            ref_cavity_nseg(ref_cavity));
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
-
-  /* make sure all cell nodes to be replaced are owned */
-  RSS(ref_cavity_local(ref_cavity, &local), "locality");
-  if (!local) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-    return REF_SUCCESS;
-  }
 
   keep_growing = REF_TRUE;
   while (keep_growing) {
@@ -965,7 +957,6 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT node = ref_cavity_node(ref_cavity);
   REF_INT face;
-  REF_BOOL local;
   REF_BOOL visible;
   REF_BOOL keep_growing;
 
@@ -977,13 +968,6 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
            ref_cavity_nface(ref_cavity));
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
-
-  /* make sure all cell nodes to be replaced are owned */
-  RSS(ref_cavity_local(ref_cavity, &local), "locality");
-  if (!local) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-    return REF_SUCCESS;
-  }
 
   keep_growing = REF_TRUE;
   while (keep_growing) {
@@ -1333,52 +1317,11 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_local(REF_CAVITY ref_cavity, REF_BOOL *local) {
-  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
-  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
-  REF_INT item, cell, cell_node;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT face, face_node, node;
-
-  *local = REF_FALSE;
-  if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
-    return REF_SUCCESS;
-  }
-
-  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
-    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      if (!ref_node_owned(ref_node, nodes[cell_node])) {
-        *local = REF_FALSE;
-        return REF_SUCCESS;
-      }
-    }
-  }
-
-  each_ref_cavity_valid_face(ref_cavity, face) {
-    ; /* semi to force format */
-    each_ref_cavity_face_node(ref_cavity, face_node) {
-      node = ref_cavity_f2n(ref_cavity, face_node, face);
-      if (!ref_node_owned(ref_node, node)) {
-        *local = REF_FALSE;
-        return REF_SUCCESS;
-      }
-    }
-  }
-
-  *local = REF_TRUE;
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
-  REF_BOOL local;
   REF_INT node;
   REF_INT face, face_node;
   REF_INT seg, seg_node;
-  RSS(ref_cavity_local(ref_cavity, &local), "local");
-  RAS(local, "cavity not local");
 
   RAS(ref_node_valid(ref_node, ref_cavity_node(ref_cavity)),
       "cavity node not valid");
