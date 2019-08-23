@@ -621,7 +621,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &quality1), "q");
 
-    RAS(quality1 > quality0, "expected improvment");
+    RAS(quality1 > quality0, "expected improvement");
     RAS(quality1 > 0, "expected validity");
 
     RSS(ref_grid_free(ref_grid), "free");
