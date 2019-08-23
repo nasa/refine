@@ -819,23 +819,6 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_form_surf_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
-                                     REF_INT node) {
-  REF_INT item, cell;
-  RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
-
-  each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
-    RSS(ref_cavity_add_tri(ref_cavity, cell), "insert");
-  }
-
-  /* may have encountered an edge during startup */
-  if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity)) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
-  }
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
                                       REF_BOOL *manifold) {
   REF_INT node;

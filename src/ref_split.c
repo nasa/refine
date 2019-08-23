@@ -203,8 +203,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
 
     if (valid_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_surf_ball(ref_cavity, ref_grid, new_node),
-          "cav split");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
       RSS(ref_cavity_enlarge_conforming(ref_cavity), "cav enlarge");
       REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
            "enlarge not successful");
