@@ -1471,7 +1471,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
   RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
       "ratio");
-  pliant_smoothing = (qtri_orig > 0.5 || min_ratio > 0.5 || max_ratio < 2.0);
+  pliant_smoothing = (qtri_orig > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
   interp_guess = REF_EMPTY;
   if (NULL != ref_interp) {
     if (ref_interp_continuously(ref_interp)) {
