@@ -111,6 +111,7 @@ REF_STATUS ref_collapse_pass(REF_GRID ref_grid) {
   for (i = 0; i < ntarget; i++) {
     if (ratio[order[i]] > ref_grid_adapt(ref_grid, collapse_ratio)) continue;
     node1 = target[order[i]];
+    if (!ref_node_valid(ref_node, node1)) continue;
     RSS(ref_collapse_to_remove_node1(ref_grid, &node0, node1), "collapse rm");
     if (!ref_node_valid(ref_node, node1)) {
       ref_node_age(ref_node, node0) = 0;
@@ -152,6 +153,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   REF_DBL min_del, min_add;
 
   *actual_node0 = REF_EMPTY;
+  RAS(ref_node_valid(ref_node, node1), "node1 is invalid");
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
