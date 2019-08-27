@@ -107,7 +107,7 @@ int main(int argc, char *argv[]) {
     echo_argv(argc, argv);
   }
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:s:ltdc")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:f:s:ltdc")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -136,6 +136,8 @@ int main(int argc, char *argv[]) {
         snprintf(output_project, 1004, "%s", optarg);
         break;
       case 'x':
+        break;
+      case 'f':
         break;
       case 's':
         passes = atoi(optarg);
@@ -166,6 +168,7 @@ int main(int argc, char *argv[]) {
         printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
         printf("       [-x export_grid.ext]\n");
+        printf("       [-f final-surface.tec]\n");
         printf("       [-l] limit metric change\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
@@ -318,7 +321,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  /* export via -x grid.ext */
+  /* export via -x grid.ext and -f final-surf.tec*/
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
@@ -328,6 +331,11 @@ int main(int argc, char *argv[]) {
         if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
       }
+    }
+    if (strcmp(argv[opt], "-f") == 0) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather final surface status %s\n", argv[opt + 1]);
+      RSS(ref_gather_surf_status_tec(ref_grid, argv[opt + 1]), "gather -f");
     }
   }
 
