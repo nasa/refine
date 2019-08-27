@@ -1843,6 +1843,81 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
+                                      REF_DBL *scalar,
+                                      const char **scalar_names,
+                                      const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  FILE *file;
+  REF_INT i;
+  REF_GLOB nnode, *l2c;
+  REF_LONG ncell;
+  REF_INT min_faceid, max_faceid, cell_id;
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+    fprintf(file, "title=\"tecplot refine gather\"\n");
+    fprintf(file, "variables = \"x\" \"y\" \"z\"");
+    if (NULL != scalar_names) {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"%s\"", scalar_names[i]);
+    } else {
+      for (i = 0; i < ldim; i++) fprintf(file, " \"V%d\"", i + 1);
+    }
+    fprintf(file, "\n");
+  }
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  RSS(ref_geom_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+
+  for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
+    ref_cell = ref_grid_tri(ref_grid);
+    RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, cell_id, &nnode,
+                                       &ncell, &l2c),
+        "l2c");
+    if (nnode > 0 && ncell > 0) {
+      if (ref_grid_once(ref_grid)) {
+        fprintf(file,
+                "zone t=\"tri%d\", nodes=" REF_GLOB_FMT
+                ", elements=%ld, datapacking=%s, "
+                "zonetype=%s\n",
+                cell_id, nnode, ncell, "point", "fetriangle");
+      }
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+          "nodes");
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+          "t");
+    }
+    ref_free(l2c);
+
+    ref_cell = ref_grid_qua(ref_grid);
+    RSS(ref_grid_compact_cell_id_nodes(ref_grid, ref_cell, cell_id, &nnode,
+                                       &ncell, &l2c),
+        "l2c");
+    if (nnode > 0 && ncell > 0) {
+      if (ref_grid_once(ref_grid)) {
+        fprintf(file,
+                "zone t=\"quad%d\", nodes=" REF_GLOB_FMT
+                ", elements=%ld, datapacking=%s, "
+                "zonetype=%s\n",
+                cell_id, nnode, ncell, "point", "fequadrilateral");
+      }
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar, file),
+          "nodes");
+      RSS(ref_gather_cell_id_tec(ref_node, ref_cell, cell_id, ncell, l2c, file),
+          "t");
+    }
+    ref_free(l2c);
+  }
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
                                           REF_DBL *scalar,
                                           const char **scalar_names,
@@ -1865,4 +1940,55 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
   printf("%s: %d: %s %s\n", __FILE__, __LINE__,
          "input file name extension unknown", filename);
   return REF_FAILURE;
+}
+
+REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_DBL *scalar, quality;
+  REF_INT cell, edge, node0, node1, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_EDGE ref_edge;
+  REF_DBL edge_ratio;
+  REF_BOOL active;
+  const char *vars[3];
+  REF_INT ldim = 3;
+
+  vars[0]="q";
+  vars[1]="s";
+  vars[2]="l";
+  ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_quality(ref_node, nodes, &quality), "tri qual");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      scalar[0 + ldim * nodes[cell_node]] =
+          MIN(scalar[0 + ldim * nodes[cell_node]], quality);
+    }
+  }
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edges");
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    node0 = ref_edge_e2n(ref_edge, 0, edge);
+    node1 = ref_edge_e2n(ref_edge, 1, edge);
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_node_edge_twod(ref_node, node0, node1, &active), "act twod edge");
+    } else {
+      active = REF_TRUE;
+    }
+    if (active) {
+      RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
+      scalar[1 + ldim * node0] = MIN(scalar[1 + ldim * node0], edge_ratio);
+      scalar[1 + ldim * node1] = MIN(scalar[1 + ldim * node1], edge_ratio);
+      scalar[2 + ldim * node0] = MAX(scalar[2 + ldim * node0], edge_ratio);
+      scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
+    }
+  }
+  RSS(ref_edge_free(ref_edge), "free edges");
+
+  RSS(ref_gather_scalar_surf_tec(ref_grid, ldim, scalar, vars,
+                                 filename),
+      "dump");
+
+  ref_free(scalar);
+
+  return REF_SUCCESS;
 }
