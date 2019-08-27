@@ -351,11 +351,7 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
         return REF_SUCCESS;
       }
     }
-    RSB(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side", {
-      ref_export_tec_surf(ref_cavity_grid(ref_cavity),
-                          "ref_cavity_add_tet_surf.tec");
-      ref_cavity_tec(ref_cavity, "ref_cavity_add_tet_change.tec");
-    });
+    RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
   }
 
   return REF_SUCCESS;
@@ -1089,7 +1085,6 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
       "found too many tets with face_nodes", {
         printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
                face_nodes[1], face_nodes[2], face_nodes[3]);
-        ref_cavity_tec(ref_cavity, "ref_cavity_error_too_many_tet.tec");
       });
   if (REF_EMPTY == tet0) {
     if (REF_EMPTY == ref_cavity_surf_node(ref_cavity)) {
@@ -1703,7 +1698,6 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
       printf(" %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
-      ref_export_tec_surf(ref_grid, "ref_cavity_surf_geom_edge_pass.tec");
     });
     for (i = 0; i < ncell; i++) {
       tri_cell = edge_tri[i];
