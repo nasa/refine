@@ -1067,47 +1067,17 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL edg = ref_grid_edg(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
-  REF_INT cell, seg_node, node, seg_nodes[3];
   REF_BOOL have_cell0, have_cell1;
   REF_INT ntri, tri_list[2];
 
   RAS(ref_cavity_valid_seg(ref_cavity, seg), "invalid seg");
-
-  /* make sure all seg nodes are owned */
-  each_ref_cavity_seg_node(ref_cavity, seg_node) {
-    node = ref_cavity_s2n(ref_cavity, seg_node, seg);
-    if (!ref_node_owned(ref_node, node)) {
-      ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-      return REF_SUCCESS;
-    }
-  }
-
-  seg_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
-  seg_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
-  seg_nodes[2] = ref_cavity_s2n(ref_cavity, 2, seg);
-
-  /* changing CAD edg would violate topology */
-  RXS(ref_cell_with(edg, seg_nodes, &cell), REF_NOT_FOUND,
-      "search for boundary edg");
-  if (REF_EMPTY != cell) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-    return REF_SUCCESS;
-  }
 
   RSS(ref_cell_list_with2(tri, ref_cavity_s2n(ref_cavity, 0, seg),
                           ref_cavity_s2n(ref_cavity, 1, seg), 2, &ntri,
                           tri_list),
       "tri with2");
   REIS(2, ntri, "cavity segment does not have two tri");
-
-  /* changing faceid would violate topology */
-  REIS(seg_nodes[2], ref_cell_c2n(tri, ref_cell_node_per(tri), tri_list[0]),
-       "do not swap faceids");
-  REIS(seg_nodes[2], ref_cell_c2n(tri, ref_cell_node_per(tri), tri_list[1]),
-       "do not swap faceids");
 
   RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri_list[0],
                         &have_cell0),
