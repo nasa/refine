@@ -497,6 +497,10 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_BOOL already_have_it, all_local, has_tets;
   REF_INT face_nodes[3], seg_nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+  if (!ref_node_owned(ref_node, node)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
@@ -580,6 +584,11 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node), "init form empty");
+  if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1) ||
+      !ref_node_owned(ref_node, node)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
@@ -633,6 +642,12 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
     seg_nodes[2] = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+      RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
+          "local cell");
+      if (!all_local) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
       RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
@@ -668,6 +683,11 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_INT faceid2, faceid3;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
+  if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1) ||
+      !ref_node_owned(ref_node, new_node)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   has_tets = REF_FALSE;
   ref_cell = ref_grid_tet(ref_grid);
@@ -772,6 +792,10 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
   REF_BOOL will_be_collapsed, already_have_it;
   REF_BOOL has_node0, has_node1;
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "init form empty");
+  if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1)) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
