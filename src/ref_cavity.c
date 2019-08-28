@@ -124,8 +124,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
 }
 
 REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
-  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
-  REF_INT node, seg, cell;
+  REF_INT node, seg;
   REF_INT orig, chunk;
   REF_BOOL reversed;
 
@@ -138,15 +137,6 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
         /* mixing faceid would violate topology */
         ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
         return REF_SUCCESS;
-      }
-      if (NULL != ref_grid) {
-        /* changing CAD edg would violate topology */
-        RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
-                          &cell),
-            REF_NOT_FOUND, "search for boundary edg");
-        if (REF_EMPTY != cell) {
-          ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-        }
       }
       ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
       ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
