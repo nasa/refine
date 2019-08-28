@@ -133,6 +133,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1);
 
+REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity);
+
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming);
 REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);

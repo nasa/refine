@@ -828,6 +828,14 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity) {
+  RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge boundary");
+  if (REF_CAVITY_VISIBLE != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+  ref_cavity_state(ref_cavity) = REF_CAVITY_UNKNOWN;
+  RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge volume");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
