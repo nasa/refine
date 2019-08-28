@@ -1179,10 +1179,10 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   }
 
   if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
-    fprintf(
-        f,
-        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    fprintf(f,
+            "zone t=\"old-tet\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
     for (item = 0; item < ref_dict_n(node_dict); item++) {
       local = ref_dict_key(node_dict, item);
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
@@ -1218,10 +1218,10 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   }
 
   if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
-    fprintf(
-        f,
-        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    fprintf(f,
+            "zone t=\"new-tet\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
     for (item = 0; item < ref_dict_n(node_dict); item++) {
       local = ref_dict_key(node_dict, item);
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
@@ -1263,10 +1263,10 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   }
 
   if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
-    fprintf(
-        f,
-        "zone t=\"old\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    fprintf(f,
+            "zone t=\"old-tri\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
     for (item = 0; item < ref_dict_n(node_dict); item++) {
       local = ref_dict_key(node_dict, item);
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
@@ -1302,10 +1302,10 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   }
 
   if (0 < ref_dict_n(node_dict) && 0 < ref_dict_n(face_dict)) {
-    fprintf(
-        f,
-        "zone t=\"new\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
+    fprintf(f,
+            "zone t=\"new-tri\", nodes=%d, elements=%d, datapacking=%s, "
+            "zonetype=%s\n",
+            ref_dict_n(node_dict), ref_dict_n(face_dict), "point", zonetype);
     for (item = 0; item < ref_dict_n(node_dict); item++) {
       local = ref_dict_key(node_dict, item);
       xyz_phys[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, local);
