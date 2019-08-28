@@ -273,7 +273,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* add tri */
+  if (!ref_mpi_para(ref_mpi)) { /* add tri */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
     REF_INT nodes[3];
