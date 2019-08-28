@@ -199,9 +199,54 @@ REF_STATUS ref_cavity_find_seg(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_cavity_face_removal_boundary_constraint(REF_CAVITY ref_cavity,
+                                                       REF_INT face) {
+  REF_INT face_nodes[3], seg_nodes[3], cell, node, seg;
+  REF_BOOL have_seg;
+  RAS(ref_cavity_valid_face(ref_cavity, face), "face invalid");
+
+  face_nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+  face_nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+  face_nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+
+  if (NULL != ref_cavity_grid(ref_cavity)) {
+    RXS(ref_cell_with(ref_grid_tri(ref_cavity_grid(ref_cavity)), face_nodes,
+                      &cell),
+        REF_NOT_FOUND, "search for boundary tri");
+    if (REF_EMPTY != cell) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
+
+  node = ref_cavity_node(ref_cavity);
+  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
+    node = ref_cavity_surf_node(ref_cavity);
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    seg_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
+    seg_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
+    seg_nodes[2] = node;
+    have_seg = REF_TRUE;
+    have_seg = have_seg &&
+               (seg_nodes[0] == face_nodes[0] ||
+                seg_nodes[0] == face_nodes[1] || seg_nodes[0] == face_nodes[2]);
+    have_seg = have_seg &&
+               (seg_nodes[1] == face_nodes[0] ||
+                seg_nodes[1] == face_nodes[1] || seg_nodes[1] == face_nodes[2]);
+    have_seg = have_seg &&
+               (seg_nodes[2] == face_nodes[0] ||
+                seg_nodes[2] == face_nodes[1] || seg_nodes[2] == face_nodes[2]);
+    if (have_seg) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
-  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
-  REF_INT node, face, cell;
+  REF_INT node, face;
   REF_INT orig, chunk;
   REF_BOOL reversed;
 
@@ -210,16 +255,10 @@ REF_STATUS ref_cavity_insert_face(REF_CAVITY ref_cavity, REF_INT *nodes) {
 
   if (REF_EMPTY != face) {
     if (reversed) { /* two faces with opposite orientation destroy each other */
-      if (NULL != ref_grid) {
-        /* boundary tri can not be modified until bounday cavity implemented */
-        RXS(ref_cell_with(ref_grid_tri(ref_cavity_grid(ref_cavity)), nodes,
-                          &cell),
-            REF_NOT_FOUND, "search for boundary tri");
-        if (REF_EMPTY != cell) {
-          ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-          return REF_SUCCESS;
-        }
-      }
+      RSS(ref_cavity_face_removal_boundary_constraint(ref_cavity, face),
+          "test boundary constraint");
+      if (REF_CAVITY_BOUNDARY_CONSTRAINED == ref_cavity_state(ref_cavity))
+        return REF_SUCCESS;
       ref_cavity_f2n(ref_cavity, 0, face) = REF_EMPTY;
       ref_cavity_f2n(ref_cavity, 1, face) = ref_cavity_blankface(ref_cavity);
       ref_cavity_blankface(ref_cavity) = face;
