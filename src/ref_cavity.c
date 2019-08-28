@@ -142,6 +142,7 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
       ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
       ref_cavity_blankseg(ref_cavity) = seg;
       ref_cavity_nseg(ref_cavity)--;
+      /* rm face iftets */
       return REF_SUCCESS;
     } else { /* can't happen, added same seg twice */
       return REF_INVALID;
@@ -171,6 +172,8 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
   ref_cavity_s2n(ref_cavity, 2, seg) = nodes[2]; /* faceid */
 
   ref_cavity_nseg(ref_cavity)++;
+
+  /* add face iftets */
 
   return REF_SUCCESS;
 }
