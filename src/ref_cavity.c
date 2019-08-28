@@ -354,13 +354,19 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT cell_edge, node;
   REF_INT seg_nodes[3];
-  REF_INT already_have_it;
+  REF_INT all_local, already_have_it;
 
   RAS(ref_cell_valid(ref_cell, tri), "invalid tri");
 
   RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), tri, &already_have_it),
       "have tri?");
   if (already_have_it) return REF_SUCCESS;
+
+  RSS(ref_cell_all_local(ref_cell, ref_node, tri, &all_local), "local cell");
+  if (!all_local) {
+    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), tri), "save tri");
   if (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0)
@@ -369,9 +375,6 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   each_ref_cell_cell_edge(ref_cell, cell_edge) {
     each_ref_cavity_seg_node(ref_cavity, node) {
       seg_nodes[node] = ref_cell_e2n(ref_cell, node, cell_edge, tri);
-      if (!ref_node_owned(ref_node, seg_nodes[node])) {
-        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-      }
     }
     seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), tri);
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
