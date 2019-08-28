@@ -134,10 +134,11 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
 
   if (REF_EMPTY != seg) {
     if (reversed) { /* two segs with opposite orientation destroy each other */
-      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
-      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
-      ref_cavity_blankseg(ref_cavity) = seg;
-      ref_cavity_nseg(ref_cavity)--;
+      if (nodes[2] != ref_cavity_s2n(ref_cavity, 2, seg)) {
+        /* mixing faceid would violate topology */
+        ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+        return REF_SUCCESS;
+      }
       if (NULL != ref_grid) {
         /* changing CAD edg would violate topology */
         RXS(ref_cell_with(ref_grid_edg(ref_cavity_grid(ref_cavity)), nodes,
@@ -147,6 +148,10 @@ REF_STATUS ref_cavity_insert_seg(REF_CAVITY ref_cavity, REF_INT *nodes) {
           ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
         }
       }
+      ref_cavity_s2n(ref_cavity, 0, seg) = REF_EMPTY;
+      ref_cavity_s2n(ref_cavity, 1, seg) = ref_cavity_blankseg(ref_cavity);
+      ref_cavity_blankseg(ref_cavity) = seg;
+      ref_cavity_nseg(ref_cavity)--;
       return REF_SUCCESS;
     } else { /* can't happen, added same seg twice */
       return REF_INVALID;
