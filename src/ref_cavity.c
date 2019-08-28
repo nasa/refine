@@ -1007,9 +1007,12 @@ REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL tet = ref_grid_tet(ref_grid);
   REF_INT cell, seg_node, node, seg_nodes[3];
   REF_BOOL have_cell0, have_cell1;
   REF_INT ntri, tri_list[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet0, tet1;
 
   RAS(ref_cavity_valid_seg(ref_cavity, seg), "invalid seg");
 
@@ -1053,8 +1056,28 @@ REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
                         &have_cell1),
       "cell1");
   if (have_cell0 == have_cell1) THROW("cavity same seg-tri state");
-  if (have_cell0) RSS(ref_cavity_add_tri(ref_cavity, tri_list[1]), "add c1");
-  if (have_cell1) RSS(ref_cavity_add_tri(ref_cavity, tri_list[0]), "add c0");
+  if (have_cell0) {
+    RSS(ref_cavity_add_tri(ref_cavity, tri_list[1]), "add c1");
+    if (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0) {
+      RSS(ref_cell_nodes(tri, tri_list[1], nodes), "rm");
+      nodes[3] = nodes[0];
+      RSS(ref_cell_with_face(tet, nodes, &tet0, &tet1), "tet with tri");
+      RUS(REF_EMPTY, tet0, "tet0 missing");
+      RES(REF_EMPTY, tet1, "tet1 should not be found on boundary");
+      RSS(ref_cavity_add_tet(ref_cavity, tet0), "add boundary tet");
+    }
+  }
+  if (have_cell1) {
+    RSS(ref_cavity_add_tri(ref_cavity, tri_list[0]), "add c0");
+    if (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0) {
+      RSS(ref_cell_nodes(tri, tri_list[0], nodes), "rm");
+      nodes[3] = nodes[0];
+      RSS(ref_cell_with_face(tet, nodes, &tet0, &tet1), "tet with tri");
+      RUS(REF_EMPTY, tet0, "tet0 missing");
+      RES(REF_EMPTY, tet1, "tet1 should not be found on boundary");
+      RSS(ref_cavity_add_tet(ref_cavity, tet0), "add boundary tet");
+    }
+  }
 
   return REF_SUCCESS;
 }
