@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
 
-ref-accept-k:
+.ref-accept-k:
   only:
     - merge_requests
   tags:
@@ -13,12 +13,23 @@ ref-accept-k:
       - "refine-*.tar.gz"
     expire_in: 1 week
 
-c2s-accept-k:
+.c2s-accept-k:
   only:
     - merge_requests
   tags:
     - gitlab_runner
   script: ./acceptance/c2s-wrapper.sh
+  artifacts:
+    paths:
+      - "log-*"
+    expire_in: 1 week
+
+cmb-accept-cmb20:
+  only:
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/cmb-wrapper.sh
   artifacts:
     paths:
       - "log-*"
