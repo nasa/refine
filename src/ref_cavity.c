@@ -222,9 +222,7 @@ REF_STATUS ref_cavity_face_removal_boundary_constraint(REF_CAVITY ref_cavity,
     }
   }
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     seg_nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
     seg_nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
@@ -478,9 +476,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
              volume);
   }
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
   ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     nodes[0] = ref_cavity_s2n(ref_cavity, 0, seg);
@@ -905,9 +901,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
 
   *manifold = REF_FALSE;
 
@@ -957,9 +951,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   REF_DBL normdev;
   REF_DBL sign_uv_area, uv_area;
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
 
   *conforming = REF_FALSE;
 
@@ -990,9 +982,7 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity) {
   REF_BOOL conforming, manifold;
   REF_BOOL keep_growing;
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
 
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
@@ -1544,9 +1534,7 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   REF_INT seg, seg_node;
   REF_BOOL skip;
 
-  node = ref_cavity_node(ref_cavity);
-  if (REF_EMPTY == ref_cavity_surf_node(ref_cavity))
-    node = ref_cavity_surf_node(ref_cavity);
+  node = ref_cavity_seg_node(ref_cavity);
 
   *improved = REF_TRUE;
 

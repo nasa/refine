@@ -63,9 +63,13 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
-#define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
-#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->node)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
+#define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
+#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->surf_node)
+#define ref_cavity_seg_node(ref_cavity)          \
+  (REF_EMPTY != ref_cavity_surf_node(ref_cavity) \
+       ? ref_cavity_surf_node(ref_cavity)        \
+       : ref_cavity_node(ref_cavity))
 
 #define ref_cavity_nseg(ref_cavity) ((ref_cavity)->nseg)
 #define ref_cavity_maxseg(ref_cavity) ((ref_cavity)->maxseg)
