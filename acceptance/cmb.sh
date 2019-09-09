@@ -9,7 +9,7 @@ set -u # Treat unset variables as error
 . /usr/local/pkgs/modules/init/bash
 
 module purge
-source acceptance/ref-modules.sh
+source acceptance/cmb-modules.sh
 
 
 root_dir=$(dirname $PWD)

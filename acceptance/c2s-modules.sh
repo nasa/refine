@@ -8,3 +8,6 @@ module load ESP/114
 module load tetgen/1.5.0
 
 module list
+
+export egads_path="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad"
+export parmetis_path="/u/shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-mpt-2.17r14-gcc_6.2.0"
