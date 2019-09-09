@@ -1576,11 +1576,12 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
 }
 
 REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
-  REF_CELL ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
-  REF_INT node = ref_cavity_node(ref_cavity);
-  REF_INT item, cell, face, face_node;
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_INT item, cell, face, face_node, seg;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
+  ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
@@ -1588,6 +1589,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
            cell);
   }
 
+  node = ref_cavity_node(ref_cavity);
   each_ref_cavity_valid_face(ref_cavity, face) {
     if (node == ref_cavity_f2n(ref_cavity, 0, face)) continue;
     if (node == ref_cavity_f2n(ref_cavity, 1, face)) continue;
@@ -1596,7 +1598,27 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
     for (face_node = 0; face_node < 3; face_node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, face_node, face));
     printf(" %d ", node);
-    printf(" (%d)\n", face);
+    printf(" [%d]\n", face);
+  }
+
+  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
+    printf("old tri %d %d %d faceid %d (%d)\n", nodes[0], nodes[1], nodes[2],
+           nodes[3], cell);
+  }
+
+  node = ref_cavity_seg_node(ref_cavity);
+  each_ref_cavity_valid_seg(ref_cavity, seg) {
+    if (node == ref_cavity_s2n(ref_cavity, 0, seg)) continue;
+    if (node == ref_cavity_s2n(ref_cavity, 1, seg)) continue;
+    printf("new tri ");
+    printf(" %d ", ref_cavity_s2n(ref_cavity, 0, seg));
+    printf(" %d ", ref_cavity_s2n(ref_cavity, 1, seg));
+    printf(" %d ", node);
+    printf(" faceid %d ", ref_cavity_s2n(ref_cavity, 2, seg));
+    printf(" [%d]\n", seg);
   }
 
   return REF_SUCCESS;
