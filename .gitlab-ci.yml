@@ -32,6 +32,7 @@ cmb-accept-cmb20:
   script: ./acceptance/cmb-wrapper.sh
   artifacts:
     paths:
-      - "log-*"
+      - "log.*"
+      - "refine-*.tar.gz"
     expire_in: 1 week
 
