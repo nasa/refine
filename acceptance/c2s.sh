@@ -16,26 +16,27 @@ log=`pwd`/../log-build.txt
 ./bootstrap > $log 2>&1
 mkdir -p egads
 ( cd egads && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
-    CFLAGS="-g -O2" \
-    CC=gcc >> $log 2>&1 \
-    && make -j >> $log 2>&1 \
-    && make install >> $log 2>&1 \
+      ../configure \
+	  --prefix=`pwd` \
+	  --with-EGADS=${egads_path} \
+	  CFLAGS="-g -O2" \
+	  CC=gcc >> $log 2>&1 \
+      && make -j >> $log 2>&1 \
+      && make install >> $log 2>&1 \
     ) \
     || exit 1
+
 mkdir -p parmetis
 ( cd parmetis && \
     ../configure \
-    --prefix=`pwd` \
-    --with-parmetis="/u/shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-mpt-2.17r14-gcc_6.2.0" \
-    --with-EGADS="/u/shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad" \
-    --enable-lite \
-    CFLAGS="-DHAVE_MPI -g -O2" \
-    CC=mpicc >> $log 2>&1 \
-    && make -j >> $log 2>&1 \
-    && make install >> $log 2>&1 \
+	--prefix=`pwd` \
+	--with-parmetis=${parmetis_path} \
+	--with-EGADS=${egads_path} \
+	--enable-lite \
+	CFLAGS="-DHAVE_MPI -g -O2" \
+	CC=mpicc >> $log 2>&1 \
+      && make -j >> $log 2>&1 \
+      && make install >> $log 2>&1 \
     ) \
     || exit 1
 
