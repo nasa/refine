@@ -350,7 +350,6 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       }
     }
 
-    valid_cavity = REF_FALSE;
     if (try_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid,
@@ -370,18 +369,22 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         valid_cavity =
             (allowed_cavity_ratio || has_edge) &&
             (min_add > ref_grid_adapt(ref_grid, split_quality_absolute));
+        if (valid_cavity) {
+          RSS(ref_cavity_replace(ref_cavity), "cav replace");
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+          ref_cavity = (REF_CAVITY)NULL;
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
+          RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
+              "smooth after split");
+          continue;
+        }
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
-    }
-
-    if (!valid_cavity && try_cavity) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
     }
 
     RSS(ref_cell_local_gem(ref_cell, ref_node, ref_edge_e2n(ref_edge, 0, edge),
@@ -407,17 +410,6 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
     RSS(status, "tet edge split");
-
-    if (valid_cavity) {
-      RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
-      RSS(ref_cavity_enlarge_combined(ref_cavity), "cav enlarge");
-      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
-           "enlarge not successful");
-      RSS(ref_cavity_replace(ref_cavity), "cav replace");
-      RSS(ref_cavity_free(ref_cavity), "cav free");
-      ref_cavity = (REF_CAVITY)NULL;
-    }
 
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
