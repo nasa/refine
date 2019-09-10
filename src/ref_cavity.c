@@ -106,7 +106,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
     printf("\n");
   }
   RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
-  printf("nseg = %d maxseg = %d blankseg = %d\n", ref_cavity_nseg(ref_cavity),
+  printf("seg node %d nseg = %d maxseg = %d blankseg = %d\n",
+         ref_cavity_seg_node(ref_cavity), ref_cavity_nseg(ref_cavity),
          ref_cavity_maxseg(ref_cavity), ref_cavity_blankseg(ref_cavity));
   for (face = 0; face < ref_cavity_maxseg(ref_cavity); face++) {
     printf(" s2n[%d] = ", face);
