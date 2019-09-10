@@ -17,12 +17,12 @@ geomfile=annulus.egads
 # ${two}/ref_geom_test ${geomfile} annulus.meshb
 
 ${two}/ref_acceptance -ugawg polar-2 annulus.meshb annulus-metric.solb
-${two}/ref_driver -i annulus.meshb -g ${geomfile} -m annulus-metric.solb -o ref_driver1 -t
+${two}/ref_driver -i annulus.meshb -g ${geomfile} -m annulus-metric.solb -o ref_driver1 -t -f ref_driver1-final.tec
 mv ref_gather_movie.tec ref_driver1_movie.tec
 ${two}/ref_acceptance -ugawg polar-2 ref_driver1.meshb ref_driver1-metric.solb
 ${two}/ref_metric_test ref_driver1.meshb ref_driver1-metric.solb > accept-annulus-uniform-01.status
 
-${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1-metric.solb -o ref_driver2 -t
+${two}/ref_driver -i ref_driver1.meshb -g ${geomfile} -m ref_driver1-metric.solb -o ref_driver2 -t -f ref_driver2-final.tec
 mv ref_gather_movie.tec ref_driver2_movie.tec
 ${two}/ref_acceptance -ugawg polar-2 ref_driver2.meshb ref_driver2-metric.solb
 ${two}/ref_metric_test ref_driver2.meshb ref_driver2-metric.solb > accept-annulus-uniform-02.status
