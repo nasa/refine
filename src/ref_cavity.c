@@ -106,7 +106,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
     printf("\n");
   }
   RSS(ref_list_inspect(ref_cavity_tet_list(ref_cavity)), "insp");
-  printf("seg node %d nseg = %d maxseg = %d blankseg = %d\n",
+  printf("seg node %d\nnseg = %d maxseg = %d blankseg = %d\n",
          ref_cavity_seg_node(ref_cavity), ref_cavity_nseg(ref_cavity),
          ref_cavity_maxseg(ref_cavity), ref_cavity_blankseg(ref_cavity));
   for (face = 0; face < ref_cavity_maxseg(ref_cavity); face++) {
@@ -1587,7 +1587,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    printf("old %d %d %d %d (%d)\n", nodes[0], nodes[1], nodes[2], nodes[3],
+    printf("old tet %d %d %d %d (%d)\n", nodes[0], nodes[1], nodes[2], nodes[3],
            cell);
   }
 
@@ -1596,7 +1596,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
     if (node == ref_cavity_f2n(ref_cavity, 0, face)) continue;
     if (node == ref_cavity_f2n(ref_cavity, 1, face)) continue;
     if (node == ref_cavity_f2n(ref_cavity, 2, face)) continue;
-    printf("new ");
+    printf("new tet ");
     for (face_node = 0; face_node < 3; face_node++)
       printf(" %d ", ref_cavity_f2n(ref_cavity, face_node, face));
     printf(" %d ", node);
