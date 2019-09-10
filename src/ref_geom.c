@@ -1246,7 +1246,10 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   }
   RAS(REF_EMPTY != node_index, "node not found in nodes");
 
-  RSS(ref_geom_find(ref_geom, node, type, id, &geom), "not found");
+  RSB(ref_geom_find(ref_geom, node, type, id, &geom), "not found", {
+    printf(" %d type %d id\n", type, id);
+    ref_geom_tattle(ref_geom, node);
+  });
 
   if (0 == ref_geom_jump(ref_geom, geom) &&
       0 == ref_geom_degen(ref_geom, geom)) {
