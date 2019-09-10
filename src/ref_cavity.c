@@ -1825,10 +1825,12 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
         RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "insert ball");
         RSS(ref_cavity_add_tri(ref_cavity, tri_cell), "insert tri");
         RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
-        RSS(ref_cavity_normdev(ref_cavity, &improved), "normdev tri");
-        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity) && improved) {
-          RSS(ref_cavity_replace(ref_cavity), "replace tri");
-        }
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+	  RSS(ref_cavity_normdev(ref_cavity, &improved), "normdev tri");
+	  if (improved) {
+	    RSS(ref_cavity_replace(ref_cavity), "replace tri");
+	  }
+	}
         RSS(ref_cavity_free(ref_cavity), "free");
       }
     }
