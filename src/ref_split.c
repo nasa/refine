@@ -237,7 +237,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_INT *edges, *order;
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity, allowed_tet_quality;
-  REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
+  REF_BOOL allowed, allowed_local, geom_support, valid_cavity, try_cavity;
   REF_BOOL allowed_cavity_ratio, has_edge;
   REF_DBL min_del, min_add;
   REF_GLOB global;
@@ -321,37 +321,37 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
-    RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                 ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                 &allowed_tet_ratio),
-        "edge tet ratio");
-    if (transcript && !allowed_tet_ratio) printf("not allowed tet ratio\n");
-    if (!allowed_tet_ratio) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
-    }
-
-    RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                      ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                      &allowed_tri_conformity),
-        "edge tri qual");
-    if (transcript && !allowed_tri_conformity)
-      printf("not allowed tri conformity\n");
-    if (!allowed_tri_conformity) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
-    }
-
     RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                    ref_edge_e2n(ref_edge, 1, edge), new_node,
                                    &allowed_tet_quality),
         "edge tet qual");
     if (transcript && !allowed_tet_quality) printf("tet quality poor\n");
 
+    RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                 ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                 &allowed_tet_ratio),
+        "edge tet ratio");
+    if (transcript && !allowed_tet_ratio) printf("tet ratio poor\n");
+
+    RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                      ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                      &allowed_tri_conformity),
+        "edge tri qual");
+    if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
+
+    try_cavity = REF_FALSE;
+    if (!allowed_tet_quality || !allowed_tet_ratio || !allowed_tri_conformity) {
+      if (geom_support) {
+        try_cavity = REF_TRUE;
+      } else {
+        RSS(ref_node_remove(ref_node, new_node), "remove new node");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+        continue;
+      }
+    }
+
     valid_cavity = REF_FALSE;
-    if (!allowed_tet_quality && geom_support) {
+    if (try_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid,
                                      ref_edge_e2n(ref_edge, 0, edge),
@@ -378,7 +378,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       ref_cavity = (REF_CAVITY)NULL;
     }
 
-    if (!valid_cavity && !allowed_tet_quality) {
+    if (!valid_cavity && try_cavity) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
