@@ -26,8 +26,8 @@ mv ref_gather_movie.tec cube-wire02-movie.tec
 ${two}/ref_histogram_test cube-wire03.meshb cube-wire03-final-metric.solb \
  > accept-cube-wire-curvature.status
 
-cat accept-skinny-cylinder-curvature.status
-../../check.rb accept-skinny-cylinder-curvature.status 0.1 2.2
+cat accept-cube-wire-curvature.status
+../../check.rb accept-cube-wire-curvature.status 0.2 2.2
 
 
 
