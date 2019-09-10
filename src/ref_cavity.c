@@ -403,7 +403,7 @@ REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
                         &already_have_it),
       "have tet0?");
   if (already_have_it) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
     return REF_SUCCESS;
   }
 
