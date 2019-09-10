@@ -54,7 +54,6 @@ struct REF_CAVITY_STRUCT {
   REF_INT *f2n;
   REF_LIST tri_list;
   REF_LIST tet_list;
-  REF_INT faceid;
   REF_BOOL debug;
 };
 
