@@ -1,7 +1,7 @@
 variables:
   GIT_STRATEGY: clone
 
-.ref-accept-k:
+ref-accept-k:
   only:
     - merge_requests
   tags:
@@ -13,7 +13,7 @@ variables:
       - "refine-*.tar.gz"
     expire_in: 1 week
 
-.c2s-accept-k:
+c2s-accept-k:
   only:
     - merge_requests
   tags:
@@ -24,7 +24,7 @@ variables:
       - "log-*"
     expire_in: 1 week
 
-cmb-accept-cmb20:
+.cmb-accept-cmb20:
   only:
     - merge_requests
   tags:
