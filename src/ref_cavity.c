@@ -395,7 +395,7 @@ REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
     return REF_SUCCESS;
   }
-  RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), tet0), "save tri");
+  RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
   each_ref_cell_cell_face(ref_grid_tet(ref_cavity_grid(ref_cavity)),
                           cell_face) {
     each_ref_cavity_face_node(ref_cavity, face_node) {
