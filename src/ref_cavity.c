@@ -1559,7 +1559,8 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell");
-    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev),
+        "old tri normdev");
     min_normdev = MIN(min_normdev, normdev);
     RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
     RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
@@ -1587,7 +1588,8 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
     }
     nodes[2] = node;
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
-    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev),
+        "new tri normdev");
     min_normdev = MIN(min_normdev, normdev);
     RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
     RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
