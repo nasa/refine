@@ -378,51 +378,6 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
-  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tet0, tet1;
-  REF_INT face_nodes[3], cell_face, face_node;
-  REF_BOOL all_local, is_tri;
-
-  RSS(ref_cell_nodes(ref_grid_tri(ref_cavity_grid(ref_cavity)), tri, nodes),
-      "rm");
-  nodes[3] = nodes[0];
-  RSS(ref_cell_with_face(ref_grid_tet(ref_cavity_grid(ref_cavity)), nodes,
-                         &tet0, &tet1),
-      "tet with tri");
-  RUS(REF_EMPTY, tet0, "tet0 missing");
-  RES(REF_EMPTY, tet1, "tet1 should not be found on boundary");
-  RSS(ref_cell_all_local(ref_grid_tet(ref_cavity_grid(ref_cavity)), ref_node,
-                         tet0, &all_local),
-      "local cell");
-  if (!all_local) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-    return REF_SUCCESS;
-  }
-  RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), tet0), "save tri");
-  each_ref_cell_cell_face(ref_grid_tet(ref_cavity_grid(ref_cavity)),
-                          cell_face) {
-    each_ref_cavity_face_node(ref_cavity, face_node) {
-      face_nodes[face_node] =
-          ref_cell_f2n(ref_grid_tet(ref_cavity_grid(ref_cavity)), face_node,
-                       cell_face, tet0);
-    }
-    is_tri = REF_TRUE;
-    is_tri = is_tri && (nodes[0] == face_nodes[0] ||
-                        nodes[0] == face_nodes[1] || nodes[0] == face_nodes[2]);
-    is_tri = is_tri && (nodes[1] == face_nodes[0] ||
-                        nodes[1] == face_nodes[1] || nodes[1] == face_nodes[2]);
-    is_tri = is_tri && (nodes[2] == face_nodes[0] ||
-                        nodes[2] == face_nodes[1] || nodes[2] == face_nodes[2]);
-
-    if (!is_tri) {
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
-    }
-  }
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
@@ -443,8 +398,6 @@ REF_STATUS ref_cavity_add_tri(REF_CAVITY ref_cavity, REF_INT tri) {
   }
 
   RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), tri), "save tri");
-  if (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0)
-    RSS(ref_cavity_add_tri_tet(ref_cavity, tri), "tri tet");
 
   each_ref_cell_cell_edge(ref_cell, cell_edge) {
     each_ref_cavity_seg_node(ref_cavity, node) {
