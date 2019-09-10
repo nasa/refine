@@ -539,11 +539,14 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     RSS(ref_list_pop(ref_cavity_tet_list(ref_cavity), &cell), "list");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
-    for (i = 0; i < 4; i++)
+    for (i = 0; i < 4; i++) {
       if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-        RSS(ref_node_remove(ref_node, nodes[i]), "remove");
-        RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
+	if (ref_node_valid(ref_node, nodes[i])) {
+	  RSS(ref_node_remove(ref_node, nodes[i]), "remove");
+	  RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
+	}
       }
+    }
   }
 
   ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
@@ -551,11 +554,14 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     RSS(ref_list_pop(ref_cavity_tri_list(ref_cavity), &cell), "list");
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
-    for (i = 0; i < 3; i++)
+    for (i = 0; i < 3; i++) {
       if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-        RSS(ref_node_remove(ref_node, nodes[i]), "remove");
-        RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
+	if (ref_node_valid(ref_node, nodes[i])) {
+	  RSS(ref_node_remove(ref_node, nodes[i]), "remove");
+	  RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
+	}
       }
+    }
   }
 
   if (ref_cavity->split_node0 != REF_EMPTY &&
