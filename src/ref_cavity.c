@@ -1403,8 +1403,9 @@ REF_STATUS ref_cavity_validate(REF_CAVITY ref_cavity) {
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     ; /* semi to force format */
     each_ref_cavity_seg_node(ref_cavity, seg_node) {
-      node = ref_cavity_s2n(ref_cavity, seg_node, face);
-      RAS(ref_node_valid(ref_node, node), "cavity segment node not valid");
+      node = ref_cavity_s2n(ref_cavity, seg_node, seg);
+      RAB(ref_node_valid(ref_node, node), "cavity segment node not valid",
+          { printf("for node %d\n", node); });
     }
   }
 
