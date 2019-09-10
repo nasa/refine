@@ -77,6 +77,9 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
   ref_cavity->debug = REF_FALSE;
 
+  ref_cavity->split_node0 = REF_EMPTY;
+  ref_cavity->split_node1 = REF_EMPTY;
+
   return REF_SUCCESS;
 }
 
@@ -488,7 +491,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_INT face, seg;
-  REF_INT cell;
+  REF_INT cell, new_cell;
   REF_INT i;
   REF_DBL volume;
 
@@ -553,6 +556,24 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
         RSS(ref_node_remove(ref_node, nodes[i]), "remove");
         RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
       }
+  }
+
+  if (ref_cavity->split_node0 != REF_EMPTY &&
+      ref_cavity->split_node1 != REF_EMPTY) {
+    nodes[0] = ref_cavity->split_node0;
+    nodes[1] = ref_cavity->split_node1;
+    ref_cell = ref_grid_edg(ref_cavity_grid(ref_cavity));
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND, "find edg");
+    if (REF_EMPTY != cell) {
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      RSS(ref_cell_remove(ref_cell, cell), "remove");
+      nodes[0] = ref_cavity->split_node0;
+      nodes[1] = ref_cavity_seg_node(ref_cavity);
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
+      nodes[0] = ref_cavity_seg_node(ref_cavity);
+      nodes[1] = ref_cavity->split_node1;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
+    }
   }
 
   return REF_SUCCESS;
@@ -737,6 +758,9 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
     return REF_SUCCESS;
   }
+
+  ref_cavity->split_node0 = node0;
+  ref_cavity->split_node1 = node1;
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
