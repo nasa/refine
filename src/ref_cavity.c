@@ -140,12 +140,7 @@ REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
   RSS(ref_cavity_find_face(ref_cavity, face_nodes, &face, &reversed),
       "find existing face for segment");
   RUS(REF_EMPTY, face, "face for a segment missing");
-  RAS(!reversed, "face for a segment added backwards");
-
-  /* swap orientation */
-  face_nodes[0] = seg_nodes[1];
-  face_nodes[1] = seg_nodes[0];
-  face_nodes[2] = ref_cavity_seg_node(ref_cavity);
+  RAS(reversed, "face for a segment removal should be backwards");
 
   RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "add destructively");
 
