@@ -381,7 +381,7 @@ REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tet0, tet1;
   REF_INT face_nodes[3], cell_face, face_node;
-  REF_BOOL all_local, is_tri;
+  REF_BOOL all_local, is_tri, already_have_it;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_cavity_grid(ref_cavity)), tri, nodes),
       "rm");
@@ -398,6 +398,12 @@ REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
     return REF_SUCCESS;
   }
+
+  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0,
+                        &already_have_it),
+      "have tet0?");
+  if (already_have_it) return REF_SUCCESS;
+
   RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
   each_ref_cell_cell_face(ref_grid_tet(ref_cavity_grid(ref_cavity)),
                           cell_face) {
