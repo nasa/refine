@@ -554,7 +554,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_INT node;
   REF_INT face, seg;
   REF_INT cell, new_cell;
-  REF_INT i;
+  REF_INT i, item;
   REF_DBL volume;
 
   if (ref_cavity_debug(ref_cavity))
@@ -644,6 +644,16 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
       nodes[0] = ref_cavity_seg_node(ref_cavity);
       nodes[1] = ref_cavity->split_node1;
       RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
+    }
+  }
+
+  node = ref_cavity_node(ref_cavity);
+  ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "");
+    for (i = 0; i < 4; i++) {
+      RAS(ref_node_valid(ref_node, nodes[i]),
+          "cavity replaced tet nodes not valid");
     }
   }
 
