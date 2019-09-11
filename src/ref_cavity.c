@@ -622,13 +622,13 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     for (i = 0; i < 3; i++) {
       if (ref_node_valid(ref_node, nodes[i])) {
         if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-          RAB(ref_adj_empty(
-                  ref_cell_adj(ref_grid_tet(ref_cavity_grid(ref_cavity))),
-                  nodes[i]),
-              "tet found for removed tri node",
-              { ref_geom_tattle(ref_geom, nodes[i]); });
-          RSS(ref_node_remove(ref_node, nodes[i]), "remove");
           RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
+          /* may still be used by tet so only remove geom */
+          if (ref_adj_empty(
+                  ref_cell_adj(ref_grid_tet(ref_cavity_grid(ref_cavity))),
+                  nodes[i])) {
+            RSS(ref_node_remove(ref_node, nodes[i]), "remove");
+          }
         }
       }
     }
@@ -652,6 +652,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     }
   }
 
+  /* self check to catch invlaid node early */
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cell_having_node(ref_cell, node, item, cell) {
