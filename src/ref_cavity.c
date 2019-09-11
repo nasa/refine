@@ -622,10 +622,11 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     for (i = 0; i < 3; i++) {
       if (ref_node_valid(ref_node, nodes[i])) {
         if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-          RAS(ref_adj_empty(
+          RAB(ref_adj_empty(
                   ref_cell_adj(ref_grid_tet(ref_cavity_grid(ref_cavity))),
                   nodes[i]),
-              "tet found for removed tri node");
+              "tet found for removed tri node",
+              { ref_geom_tattle(ref_geom, nodes[i]); });
           RSS(ref_node_remove(ref_node, nodes[i]), "remove");
           RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
         }
