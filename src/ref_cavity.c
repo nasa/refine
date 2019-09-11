@@ -564,13 +564,14 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
        "attempt to replace cavity that is not visible");
 
+  node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_face(ref_cavity, face) {
     nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
     nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
     nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-    nodes[3] = ref_cavity_node(ref_cavity);
-    if (nodes[3] == nodes[0] || nodes[3] == nodes[1] || nodes[3] == nodes[2])
+    nodes[3] = node;
+    if (node == nodes[0] || node == nodes[1] || node == nodes[2])
       continue; /* attached face */
     RAS(ref_node_valid(ref_node, nodes[0]), "cavity tet nodes 0 not valid");
     RAS(ref_node_valid(ref_node, nodes[1]), "cavity tet nodes 1 not valid");
@@ -590,8 +591,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[1] = ref_cavity_s2n(ref_cavity, 1, seg);
     nodes[2] = node;
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
-    if (nodes[2] == nodes[0] || nodes[2] == nodes[1])
-      continue; /* attached seg */
+    if (node == nodes[0] || node == nodes[1]) continue; /* attached seg */
     RAS(ref_node_valid(ref_node, nodes[0]), "cavity tri nodes 0 not valid");
     RAS(ref_node_valid(ref_node, nodes[1]), "cavity tri nodes 1 not valid");
     RAS(ref_node_valid(ref_node, nodes[2]), "cavity tri nodes 2 not valid");
