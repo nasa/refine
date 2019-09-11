@@ -1415,9 +1415,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     }
   }
 
-  if (verbose)
-    printf("edge %d t %f %f %f r %f %f q %f\n", id, t0, t_orig, t1, r0, r1,
-           q_orig);
+  if (verbose) printf("edge %d t %f %f %f q %f\n", id, t0, t_orig, t1, q_orig);
 
   if (verbose)
     printf("t_target %f at %f %f %f\n", t_target,
