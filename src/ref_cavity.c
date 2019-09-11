@@ -652,7 +652,7 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     }
   }
 
-  /* self check to catch invlaid node early */
+  /* self check to catch invalid node early */
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cell_having_node(ref_cell, node, item, cell) {
