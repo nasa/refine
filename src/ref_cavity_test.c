@@ -334,6 +334,7 @@ int main(int argc, char *argv[]) {
       ref_node_xyz(ref_node, 1, node) = 0.2;
       ref_node_xyz(ref_node, 2, node) = 0.3;
 
+      ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE; /* test fixture */
       RSS(ref_cavity_replace(ref_cavity), "replace");
 
       REIS(5, ref_node_n(ref_grid_node(ref_grid)), "nodes");
@@ -497,6 +498,7 @@ int main(int argc, char *argv[]) {
       REIS(2, ref_cavity_nface(ref_cavity), "n");
       REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
+      ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE; /* test fixture */
       RSS(ref_cavity_replace(ref_cavity), "replace");
     }
 
@@ -520,6 +522,7 @@ int main(int argc, char *argv[]) {
       REIS(3, ref_cavity_nseg(ref_cavity), "n");
       REIS(1, ref_list_n(ref_cavity_tri_list(ref_cavity)), "l");
 
+      ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE; /* test fixture */
       RSS(ref_cavity_replace(ref_cavity), "replace");
     }
 
