@@ -605,8 +605,8 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
     for (i = 0; i < 4; i++) {
-      if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-        if (ref_node_valid(ref_node, nodes[i])) {
+      if (ref_node_valid(ref_node, nodes[i])) {
+        if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
           RSS(ref_node_remove(ref_node, nodes[i]), "remove");
           RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
         }
@@ -620,8 +620,8 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
     for (i = 0; i < 3; i++) {
-      if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-        if (ref_node_valid(ref_node, nodes[i])) {
+      if (ref_node_valid(ref_node, nodes[i])) {
+        if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
           RSS(ref_node_remove(ref_node, nodes[i]), "remove");
           RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
         }
