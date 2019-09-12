@@ -274,7 +274,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (1 == argc || 1 == help_pos) {
-    usage(argv[0]);
+    if (ref_mpi_once(ref_mpi)) usage(argv[0]);
     goto shutdown;
   }
 
@@ -282,28 +282,28 @@ int main(int argc, char *argv[]) {
     if (REF_EMPTY == help_pos) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
-      bootstrap_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "f", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(fill(ref_mpi, argc, argv), "fill");
     } else {
-      fill_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(location(ref_mpi, argc, argv), "location");
     } else {
-      location_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) location_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "t", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
-      translate_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
       goto shutdown;
     }
   } else {
