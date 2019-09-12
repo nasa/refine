@@ -164,7 +164,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  bootstrap_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) bootstrap_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -192,7 +192,7 @@ static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  fill_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) fill_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -222,7 +222,7 @@ static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  location_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) location_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -269,7 +269,7 @@ static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  surface_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) surface_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -308,7 +308,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  translate_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) translate_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -368,7 +368,7 @@ int main(int argc, char *argv[]) {
       goto shutdown;
     }
   } else {
-    usage(argv[0]);
+    if (ref_mpi_para(ref_mpi)) usage(argv[0]);
     goto shutdown;
   }
 
