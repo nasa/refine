@@ -64,7 +64,7 @@ static void location_help(const char *name) {
   printf("\n");
 }
 static void translate_help(const char *name) {
-  printf("usage: \n %s input_mesh.extension output_mesh.extension \n", name);
+  printf("usage: \n %s translate input_mesh.extension output_mesh.extension \n", name);
   printf("\n");
 }
 
