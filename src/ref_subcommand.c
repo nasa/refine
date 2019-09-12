@@ -35,7 +35,9 @@
 #include "ref_validation.h"
 
 #include "ref_export.h"
+#include "ref_gather.h"
 #include "ref_import.h"
+#include "ref_part.h"
 
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
@@ -44,6 +46,8 @@ static void usage(const char *name) {
   printf("  bootstrap Create initial grid from EGADS file\n");
   printf("  fill      Fill a surface shell mesh with a volume.\n");
   printf("  location  Report the locations of verticies in the mesh.\n");
+  printf("  surface   Extract mesh surface.\n");
+  printf("  translate Convert mesh formats.\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
@@ -58,6 +62,16 @@ static void fill_help(const char *name) {
 static void location_help(const char *name) {
   printf("usage: \n %s location input.meshb node_index node_index ...\n", name);
   printf("  node_index is zero-based\n");
+  printf("\n");
+}
+static void surface_help(const char *name) {
+  printf("usage: \n %s surface input_mesh.extension [surface_mesh.tec] \n",
+         name);
+  printf("\n");
+}
+static void translate_help(const char *name) {
+  printf("usage: \n %s translate input_mesh.extension output_mesh.extension \n",
+         name);
   printf("\n");
 }
 
@@ -150,7 +164,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  bootstrap_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) bootstrap_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -178,7 +192,7 @@ static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  fill_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) fill_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -208,7 +222,93 @@ static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  location_help(argv[0]);
+  if (ref_mpi_para(ref_mpi)) location_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_file;
+  char *in_file;
+  char filename[1024];
+  REF_GRID ref_grid = NULL;
+
+  if (argc < 3) goto shutdown;
+  in_file = argv[2];
+  if (argc < 4) {
+    RAS(strlen(in_file) < 1014, "input filename too long (>1014)");
+    sprintf(filename, "%s-surf.tec", in_file);
+    out_file = filename;
+  } else {
+    out_file = argv[3];
+  }
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
+    RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL, out_file),
+        "gather surf tec");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("export %s\n", out_file);
+    RSS(ref_export_tec_surf(ref_grid, out_file), "export tec surf");
+    ref_mpi_stopwatch_stop(ref_mpi, "export");
+  }
+
+  RSS(ref_grid_free(ref_grid), "free grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_para(ref_mpi)) surface_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_file;
+  char *in_file;
+  REF_GRID ref_grid = NULL;
+
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+  out_file = argv[3];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
+    RSS(ref_gather_by_extension(ref_grid, out_file), "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("export %s\n", out_file);
+    RSS(ref_export_by_extension(ref_grid, out_file), "export");
+    ref_mpi_stopwatch_stop(ref_mpi, "export");
+  }
+
+  RSS(ref_grid_free(ref_grid), "free grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_para(ref_mpi)) translate_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -228,7 +328,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (1 == argc || 1 == help_pos) {
-    usage(argv[0]);
+    if (ref_mpi_once(ref_mpi)) usage(argv[0]);
     goto shutdown;
   }
 
@@ -236,25 +336,39 @@ int main(int argc, char *argv[]) {
     if (REF_EMPTY == help_pos) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
-      bootstrap_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "f", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(fill(ref_mpi, argc, argv), "fill");
     } else {
-      fill_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(location(ref_mpi, argc, argv), "location");
     } else {
-      location_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) location_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "s", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(surface(ref_mpi, argc, argv), "surface");
+    } else {
+      if (ref_mpi_once(ref_mpi)) surface_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "t", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(translate(ref_mpi, argc, argv), "translate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
       goto shutdown;
     }
   } else {
-    usage(argv[0]);
+    if (ref_mpi_para(ref_mpi)) usage(argv[0]);
     goto shutdown;
   }
 
