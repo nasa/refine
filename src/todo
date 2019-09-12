@@ -14,8 +14,6 @@ ref_partition diffusion
 configure with metis only, when parmetis not provided
 64bit metis/parmetis?
 
-remove sanitize_metric option from ref_driver
-
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
 
@@ -201,6 +199,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ remove sanitize_metric option from ref_driver
 
 + pliant vertex smoothing
 
