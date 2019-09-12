@@ -104,7 +104,6 @@ optimized 4th tet node placement
 
 robustness and metric conformity
  report threshold means
- pliant vertex smoothing
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
  process complete criteria (early termination when no more likely progress)
@@ -202,6 +201,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ pliant vertex smoothing
 
 + ideal tri/tet smooth use log avg m of element
 
