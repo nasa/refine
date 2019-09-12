@@ -1,25 +1,8 @@
 
 cavity operator in 2D/3D
-  + tet swap on boundary
   replace classic surf swap with cavity
-  implement more in cavity
-  merge tet and surf-only tri logic for 3D surface and volume
-  check cell boundary face topo for added tets
-  + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
-  + ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
   use lexigraph comparison
-  + topo checks for tri replacment
-  + store triangle replacement too (triangle sides?)
-  + tri and geom handling
-  + use faceid to center cavity on edge and span faces
-  + add node and grid into REF_CAVITY_STRUCT
-    + ref_cavity_form_ball and ref_cavity_form_split_edge
-  eliminate sliver
-  eliminate short edges
-  extract skip face with node
-  2D cavity operator for surf geom edges that allows multiple edge types?
-  cavity operator parallel?
-
+ 
 full post checks for edge-metric ratio
   cavity swap
   node smooth
@@ -221,6 +204,25 @@ mixed element in refine/two
 +++++++++++++++++
 
 + ideal tri/tet smooth use log avg m of element
+
++ cavity operator in 2D/3D
+  + tet swap on boundary
+  + implement more in cavity
+  + merge tet and surf-only tri logic for 3D surface and volume
+  + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
+  + ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
+  + topo checks for tri replacment
+  + store triangle replacement too (triangle sides?)
+  + tri and geom handling
+  + use faceid to center cavity on edge and span faces
+  + add node and grid into REF_CAVITY_STRUCT
+    + ref_cavity_form_ball and ref_cavity_form_split_edge
+  + 2D cavity operator for surf geom edges that allows multiple edge types?
+  + cavity operator parallel?
+  + eliminate sliver
+  + eliminate short edges
+  + extract skip face with node
+  + check cell boundary face topo for added tets
 
 + continuous metric interpolation
  + pair and store interp at startup
