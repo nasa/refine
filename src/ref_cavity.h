@@ -54,8 +54,8 @@ struct REF_CAVITY_STRUCT {
   REF_INT *f2n;
   REF_LIST tri_list;
   REF_LIST tet_list;
-  REF_INT faceid;
   REF_BOOL debug;
+  REF_BOOL split_node0, split_node1;
 };
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
@@ -63,9 +63,13 @@ REF_STATUS ref_cavity_free(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 
 #define ref_cavity_state(ref_cavity) ((ref_cavity)->state)
-#define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
-#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->node)
 #define ref_cavity_grid(ref_cavity) ((ref_cavity)->ref_grid)
+#define ref_cavity_node(ref_cavity) ((ref_cavity)->node)
+#define ref_cavity_surf_node(ref_cavity) ((ref_cavity)->surf_node)
+#define ref_cavity_seg_node(ref_cavity)          \
+  (REF_EMPTY != ref_cavity_surf_node(ref_cavity) \
+       ? ref_cavity_surf_node(ref_cavity)        \
+       : ref_cavity_node(ref_cavity))
 
 #define ref_cavity_nseg(ref_cavity) ((ref_cavity)->nseg)
 #define ref_cavity_maxseg(ref_cavity) ((ref_cavity)->maxseg)
@@ -132,6 +136,8 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1);
+
+REF_STATUS ref_cavity_enlarge_combined(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
                                  REF_BOOL *conforming);

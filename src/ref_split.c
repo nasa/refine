@@ -53,7 +53,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT *edges, *order;
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity;
-  REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
+  REF_BOOL allowed, allowed_local, geom_support;
   REF_BOOL cad_edge;
   REF_GLOB global;
   REF_INT new_node;
@@ -165,7 +165,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                       &allowed_tri_conformity),
         "edge tri qual");
 
-    valid_cavity = REF_FALSE;
     if (!allowed_tri_conformity && geom_support) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid,
@@ -174,15 +173,15 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
           "form edge split cav");
       RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        valid_cavity = REF_TRUE;
+        RSS(ref_cavity_replace(ref_cavity), "cav replace");
+        ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
+        ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
+      } else {
+        RSS(ref_node_remove(ref_node, new_node), "remove new node");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
-    }
-
-    if (!valid_cavity && !allowed_tri_conformity) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
@@ -200,17 +199,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
     RSS(ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                        ref_edge_e2n(ref_edge, 1, edge), new_node),
         "split edge on surf");
-
-    if (valid_cavity) {
-      RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
-      RSS(ref_cavity_enlarge_conforming(ref_cavity), "cav enlarge");
-      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
-           "enlarge not successful");
-      RSS(ref_cavity_replace(ref_cavity), "cav replace");
-      RSS(ref_cavity_free(ref_cavity), "cav free");
-      ref_cavity = (REF_CAVITY)NULL;
-    }
 
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
@@ -237,8 +225,8 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_INT *edges, *order;
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity, allowed_tet_quality;
-  REF_BOOL allowed, allowed_local, geom_support, valid_cavity;
-  REF_BOOL allowed_cavity_ratio;
+  REF_BOOL allowed, allowed_local, geom_support, valid_cavity, try_cavity;
+  REF_BOOL allowed_cavity_ratio, has_edge;
   REF_DBL min_del, min_add;
   REF_GLOB global;
   REF_INT new_node;
@@ -248,6 +236,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_LIST para_cavity = NULL;
   REF_SUBDIV ref_subdiv = NULL;
   REF_STATUS status;
+  REF_BOOL transcript = REF_FALSE;
 
   RAS(!ref_grid_twod(ref_grid), "only 3D");
   RAS(!ref_grid_surf(ref_grid), "only 3D");
@@ -281,19 +270,26 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   for (i = n - 1; i >= 0; i--) {
     edge = edges[order[i]];
 
+    /* transcript = (ratio[order[i]] > 3.0); */
+    if (transcript) printf("transcript on ratio %f\n", ratio[order[i]]);
+
     RSS(ref_cell_has_side(ref_cell, ref_edge_e2n(ref_edge, 0, edge),
                           ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "has side");
+    if (transcript && !allowed) printf("not a side anymore\n");
     if (!allowed) continue;
 
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, ref_edge_e2n(ref_edge, 0, edge)) &&
-        !ref_node_owned(ref_node, ref_edge_e2n(ref_edge, 1, edge)))
+        !ref_node_owned(ref_node, ref_edge_e2n(ref_edge, 1, edge))) {
+      if (transcript) printf("neither node is local\n");
       continue;
+    }
 
     RSS(ref_split_edge_mixed(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                              ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "mixed");
+    if (transcript && !allowed) printf("mixed edge\n");
     if (!allowed) continue;
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
@@ -313,56 +309,70 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
+    RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                   ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                   &allowed_tet_quality),
+        "edge tet qual");
+    if (transcript && !allowed_tet_quality) printf("tet quality poor\n");
+
     RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                  ref_edge_e2n(ref_edge, 1, edge), new_node,
                                  &allowed_tet_ratio),
         "edge tet ratio");
-    if (!allowed_tet_ratio) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
-    }
+    if (transcript && !allowed_tet_ratio) printf("tet ratio poor\n");
 
     RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                       ref_edge_e2n(ref_edge, 1, edge), new_node,
                                       &allowed_tri_conformity),
         "edge tri qual");
-    if (!allowed_tri_conformity) {
-      RSS(ref_node_remove(ref_node, new_node), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
-      continue;
+    if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
+
+    try_cavity = REF_FALSE;
+    if (!allowed_tet_quality || !allowed_tet_ratio || !allowed_tri_conformity) {
+      if (geom_support) {
+        try_cavity = REF_TRUE;
+      } else {
+        RSS(ref_node_remove(ref_node, new_node), "remove new node");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+        continue;
+      }
     }
 
-    RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                   ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                   &allowed_tet_quality),
-        "edge tet qual");
-
-    valid_cavity = REF_FALSE;
-    if (!allowed_tet_quality && geom_support) {
+    if (try_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid,
                                      ref_edge_e2n(ref_edge, 0, edge),
                                      ref_edge_e2n(ref_edge, 1, edge), new_node),
           "form edge split cav");
-      if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity))
+      if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity))
         REF_WHERE("enlarge"); /* note but skip cavity failures */
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+        RSS(ref_cell_has_side(ref_grid_edg(ref_grid),
+                              ref_edge_e2n(ref_edge, 0, edge),
+                              ref_edge_e2n(ref_edge, 1, edge), &has_edge),
+            "check for an edge");
         RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
             "cavity ratio");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
         valid_cavity =
-            allowed_cavity_ratio &&
+            (allowed_cavity_ratio || has_edge) &&
             (min_add > ref_grid_adapt(ref_grid, split_quality_absolute));
+        if (valid_cavity) {
+          RSS(ref_cavity_replace(ref_cavity), "cav replace");
+          RSS(ref_cavity_free(ref_cavity), "cav free");
+          ref_cavity = (REF_CAVITY)NULL;
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
+          RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
+              "smooth after split");
+          continue;
+        }
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
-    }
-
-    if (!valid_cavity && !allowed_tet_quality) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
@@ -391,17 +401,6 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
     RSS(status, "tet edge split");
-
-    if (valid_cavity) {
-      RSS(ref_cavity_create(&ref_cavity), "cav create");
-      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, new_node), "cav split");
-      RSS(ref_cavity_enlarge_visible(ref_cavity), "cav enlarge");
-      REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
-           "enlarge not successful");
-      RSS(ref_cavity_replace(ref_cavity), "cav replace");
-      RSS(ref_cavity_free(ref_cavity), "cav free");
-      ref_cavity = (REF_CAVITY)NULL;
-    }
 
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;

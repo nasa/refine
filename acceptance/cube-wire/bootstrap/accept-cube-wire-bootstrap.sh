@@ -12,7 +12,10 @@ else
     two=${HOME}/refine/egads/src
 fi
 
-${two}/ref_geom_test --tetgen ../geom/cube-wire.egads cube-wire01.meshb 1.0 0.1 30
+rm -f cube-wire.egads
+ln -s ../geom/cube-wire.egads .
+
+${two}/ref boostrap cube-wire.egads
 
 
 
