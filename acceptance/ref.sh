@@ -257,12 +257,6 @@ cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-polar-1
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/polar-1
-( ./accept-3d-polar-1.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-cube-sphere-uniform-nogeom
@@ -327,10 +321,10 @@ cd ${source_dir}/acceptance/sphere-cube/tetgen
 ( ./accept-sphere-cube-init.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-3d-u5
+LOG=${root_dir}/log.accept-3d-sinfun3
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/u5
-( ./accept-3d-u5.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/3d/sinfun3
+( ./accept-3d-sinfun3.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
