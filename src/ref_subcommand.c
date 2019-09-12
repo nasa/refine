@@ -35,7 +35,9 @@
 #include "ref_validation.h"
 
 #include "ref_export.h"
+#include "ref_gather.h"
 #include "ref_import.h"
+#include "ref_part.h"
 
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
@@ -44,6 +46,7 @@ static void usage(const char *name) {
   printf("  bootstrap Create initial grid from EGADS file\n");
   printf("  fill      Fill a surface shell mesh with a volume.\n");
   printf("  location  Report the locations of verticies in the mesh.\n");
+  printf("  translate Convert mesh formats.\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
@@ -58,6 +61,10 @@ static void fill_help(const char *name) {
 static void location_help(const char *name) {
   printf("usage: \n %s location input.meshb node_index node_index ...\n", name);
   printf("  node_index is zero-based\n");
+  printf("\n");
+}
+static void translate_help(const char *name) {
+  printf("usage: \n %s input_mesh.extension output_mesh.extension \n", name);
   printf("\n");
 }
 
@@ -212,6 +219,45 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_file;
+  char *in_file;
+  REF_GRID ref_grid = NULL;
+
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+  out_file = argv[3];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
+    RSS(ref_gather_by_extension(ref_grid, out_file), "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("export %s\n", out_file);
+    RSS(ref_export_by_extension(ref_grid, out_file), "export");
+    ref_mpi_stopwatch_stop(ref_mpi, "export");
+  }
+
+  RSS(ref_grid_free(ref_grid), "free grid");
+
+  return REF_SUCCESS;
+shutdown:
+  translate_help(argv[0]);
+  return REF_FAILURE;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
@@ -251,6 +297,13 @@ int main(int argc, char *argv[]) {
       RSS(location(ref_mpi, argc, argv), "location");
     } else {
       location_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "t", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(translate(ref_mpi, argc, argv), "translate");
+    } else {
+      translate_help(argv[0]);
       goto shutdown;
     }
   } else {
