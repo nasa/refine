@@ -14,16 +14,6 @@ fi
 
 field=ring
 
-function adapt_cycle_sant {
-    inproj=$1
-    outproj=$2
-    sweeps=$3
-
-    ${two}/ref_driver -i ${inproj}.meshb -g cube-sphere.egads -m ${inproj}.metric -o ${outproj} -s ${sweeps} -l
-    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}.metric
-    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric > ${outproj}.status
-
-}
 function adapt_cycle {
     inproj=$1
     outproj=$2
