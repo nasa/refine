@@ -1,4 +1,5 @@
 
+- curvature metric is applied to background metric once at initialization
 - remove ref_driver -l limit metric change, sanitizing metric option
 - continuous metric interpolation in parallel with background migration
 - pliant vertex smoothing near metric conformity

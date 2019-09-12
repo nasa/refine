@@ -3,13 +3,10 @@ cavity operator in 2D/3D
   replace classic surf swap with cavity
   use lexigraph comparison
  
-full post checks for edge-metric ratio
-  cavity swap
-  node smooth
-
 alternating RCB part
- n-medians
-ref_partition diffusion
+ n-median over-decomposition with random odd/even combine and age awareness
+ INRIA space filling curve
+ diffusion
 
 configure with metis only, when parmetis not provided
 64bit metis/parmetis?
@@ -32,6 +29,7 @@ check that post conditions are implemented completely for all ops
   extract/combine post adaptation operator checks and status
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
+  full post checks for edge-metric ratio: cavity swap, node smooth
 
 tess
  high order geometry visualization
@@ -45,6 +43,7 @@ C2S
  how/when to fail fast?
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
+ command line interface
 
 improve CI test
  make check stack fuzz
@@ -54,6 +53,7 @@ improve CI test
 
 ref_recon
   twod l2projection
+  implicit reconstruction (Hiro)
 
 bleme
  spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
@@ -77,8 +77,6 @@ ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
 
 get rid of aux and interp instead
-cache curvature metric or apply to input (too much refinment of coarse grids)
-always limit implied metric distance after every interp?
 
 start meshlink geode support?
 
@@ -104,7 +102,6 @@ robustness and metric conformity
  report threshold means
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
- process complete criteria (early termination when no more likely progress)
  smarter adapt parameters
   increase required improvement to settle
   adjustable parameters
@@ -113,7 +110,6 @@ robustness and metric conformity
  split
   insert optimized node location (uv,xyz) with validity constraint
  collapse
-  cavity operator
   examine triangle MR
   prevent slivers
   smooth after collapse?
@@ -138,10 +134,6 @@ performance
  freeze regions
   unfreeze when areas need help
   zero partition cost
- implement native partitioner
-  recursive bisection (age awareness?) (odd/even?)
-  INRIA space filling curve
-  diffusion
  
 viz/debug/status
  ellipsoid metric or something cheaper
@@ -199,6 +191,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ cache curvature metric or apply to input (too much refinement of coarse grids)
 
 + remove sanitize_metric option from ref_driver
 
