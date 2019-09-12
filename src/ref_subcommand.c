@@ -39,15 +39,18 @@
 #include "ref_import.h"
 #include "ref_part.h"
 
+#include "ref_malloc.h"
+
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
   printf("\n");
   printf("ref commands:\n");
-  printf("  bootstrap Create initial grid from EGADS file\n");
-  printf("  fill      Fill a surface shell mesh with a volume.\n");
-  printf("  location  Report the locations of verticies in the mesh.\n");
-  printf("  surface   Extract mesh surface.\n");
-  printf("  translate Convert mesh formats.\n");
+  printf("  bootstrap   Create initial grid from EGADS file\n");
+  printf("  fill        Fill a surface shell mesh with a volume.\n");
+  printf("  location    Report the locations of verticies in the mesh.\n");
+  printf("  multiscale  Extract mesh surface.\n");
+  printf("  surface     Extract mesh surface.\n");
+  printf("  translate   Convert mesh formats.\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
@@ -62,6 +65,13 @@ static void fill_help(const char *name) {
 static void location_help(const char *name) {
   printf("usage: \n %s location input.meshb node_index node_index ...\n", name);
   printf("  node_index is zero-based\n");
+  printf("\n");
+}
+static void multiscale_help(const char *name) {
+  printf(
+      "usage: \n %s multiscale input_mesh.extension scalar.solb metric.solb "
+      "complexity\n",
+      name);
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -245,11 +255,11 @@ static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
     ref_mpi_stopwatch_stop(ref_mpi, "part");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
@@ -273,6 +283,85 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_metric;
+  char *in_mesh;
+  char *in_scalar;
+  REF_GRID ref_grid = NULL;
+  REF_INT ldim;
+  REF_DBL *scalar, *metric;
+  REF_INT p;
+  REF_DBL gradation, complexity, current_complexity, hmin, hmax;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+  hmin = -1.0;
+  hmax = -1.0;
+  p = 2;
+  gradation = -1;
+
+  if (argc < 6) goto shutdown;
+  in_mesh = argv[2];
+  in_scalar = argv[3];
+  out_metric = argv[4];
+  complexity = atof(argv[5]);
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("complexity %f\n", complexity);
+    printf("reconstruction %d\n", (int)reconstruction);
+    printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
+  }
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, in_scalar),
+      "part scalar");
+  REIS(1, ldim, "expected one scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                    gradation, complexity),
+      "lp norm");
+  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+
+  if (hmin > 0.0 || hmax > 0.0) {
+    RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
+                                         complexity),
+        "limit at complexity");
+  }
+  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (ref_mpi_once(ref_mpi))
+    printf("actual complexity %e\n", current_complexity);
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+
+  ref_free(metric);
+  ref_free(scalar);
+
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_metric);
+  RSS(ref_gather_metric(ref_grid, out_metric), "gather metric");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather metric");
+
+  RSS(ref_grid_free(ref_grid), "free grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_para(ref_mpi)) multiscale_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
@@ -285,11 +374,11 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_file), "part");
     ref_mpi_stopwatch_stop(ref_mpi, "part");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_file);
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
@@ -351,6 +440,13 @@ int main(int argc, char *argv[]) {
       RSS(location(ref_mpi, argc, argv), "location");
     } else {
       if (ref_mpi_once(ref_mpi)) location_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "m", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(multiscale(ref_mpi, argc, argv), "multiscale");
+    } else {
+      if (ref_mpi_once(ref_mpi)) multiscale_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "s", 1) == 0) {
