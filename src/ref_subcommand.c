@@ -45,12 +45,20 @@ static void usage(const char *name) {
   printf("usage: \n %s [--help] <command> [<args>]\n", name);
   printf("\n");
   printf("ref commands:\n");
-  printf("  bootstrap   Create initial grid from EGADS file\n");
-  printf("  fill        Fill a surface shell mesh with a volume.\n");
-  printf("  location    Report the locations of verticies in the mesh.\n");
-  printf("  multiscale  Extract mesh surface.\n");
+  printf("  adapt       Adapt a mesh\n");
+  printf("  bootstrap   Create initial mesh from EGADS file\n");
+  printf("  fill        Fill a surface shell mesh with a volume\n");
+  printf("  location    Report the locations of verticies in the mesh\n");
+  printf("  multiscale  Compute a multiscale metric.\n");
   printf("  surface     Extract mesh surface.\n");
   printf("  translate   Convert mesh formats.\n");
+}
+static void adapt_help(const char *name) {
+  printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
+  printf("  -g  geometry.egads\n");
+  printf("  -m  metric.solb (geometry feature metric when missing)\n");
+  printf("  -x  output_mesh.extension\n");
+  printf("\n");
 }
 static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
@@ -85,6 +93,140 @@ static void translate_help(const char *name) {
   printf("\n");
 }
 
+static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_mesh = NULL;
+  char *in_metric = NULL;
+  char *in_egads = NULL;
+  REF_GRID ref_grid = NULL;
+  REF_BOOL curvature_metric = REF_TRUE;
+  REF_BOOL all_done = REF_FALSE;
+  REF_BOOL all_done0 = REF_FALSE;
+  REF_BOOL all_done1 = REF_FALSE;
+  REF_INT pass, passes = 30;
+  REF_INT opt;
+
+  if (argc < 3) goto shutdown;
+  in_mesh = argv[2];
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  RAS(!ref_grid_twod(ref_grid), "2D adaptation not implemented");
+  RAS(!ref_grid_surf(ref_grid), "Surface adaptation not implemented");
+
+  RXS(ref_args_char(argc, argv, "-g", &in_egads), REF_NOT_FOUND,
+      "egads arg search");
+  if (NULL != in_egads) {
+    if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+  } else {
+    if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
+      if (ref_mpi_once(ref_mpi))
+        printf("load egadslite from .meshb byte stream\n");
+    } else {
+      THROW("No geometry available via .meshb or -g option");
+    }
+  }
+  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+  RSS(ref_geom_verify_param(ref_grid), "geom param");
+  ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+
+  RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
+      "metric arg search");
+  if (NULL != in_metric) {
+    if (ref_mpi_once(ref_mpi)) printf("part metric %s\n", in_metric);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), in_metric), "part metric");
+    curvature_metric = REF_FALSE;
+    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+  }
+
+  if (curvature_metric) {
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+  } else {
+    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+    RSS(ref_grid_cache_background(ref_grid), "cache");
+    ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
+    ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
+  }
+
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
+  RSS(ref_histogram_quality(ref_grid), "gram");
+  RSS(ref_histogram_ratio(ref_grid), "gram");
+  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+
+  RSS(ref_migrate_to_balance(ref_grid), "balance");
+  RSS(ref_grid_pack(ref_grid), "pack");
+  ref_mpi_stopwatch_stop(ref_mpi, "pack");
+
+  for (pass = 0; !all_done && pass < passes; pass++) {
+    if (ref_mpi_once(ref_mpi))
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+             ref_mpi_n(ref_mpi));
+    all_done1 = all_done0;
+    RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
+    all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
+    ref_mpi_stopwatch_stop(ref_mpi, "pass");
+    if (curvature_metric) {
+      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+    } else {
+      RSS(ref_metric_synchronize(ref_grid), "sync with background");
+      ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
+    }
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
+
+  RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
+      "implicit global");
+  ref_mpi_stopwatch_stop(ref_mpi, "implicit global");
+
+  RSS(ref_geom_verify_param(ref_grid), "final params");
+  ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
+
+  /* export via -x grid.ext and -f final-surf.tec*/
+  for (opt = 0; opt < argc - 1; opt++) {
+    if (strcmp(argv[opt], "-x") == 0) {
+      if (ref_mpi_para(ref_mpi)) {
+        if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[opt + 1]);
+        RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
+      } else {
+        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[opt + 1]);
+        RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
+      }
+    }
+    if (strcmp(argv[opt], "-f") == 0) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather final surface status %s\n", argv[opt + 1]);
+      RSS(ref_gather_surf_status_tec(ref_grid, argv[opt + 1]), "gather -f");
+    }
+  }
+
+  if (NULL != ref_grid) RSS(ref_grid_free(ref_grid), "free");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   char project[1000];
@@ -113,8 +255,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
   RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
-  sprintf(filename, "%s-init.meshb", project);
-  RSS(ref_export_by_extension(ref_grid, filename), "tess export");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
@@ -148,12 +288,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-adapt-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
-  sprintf(filename, "%s-adapt-surf.meshb", project);
-  printf("export %s\n", filename);
-  RSS(ref_export_by_extension(ref_grid, filename), "surf export");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+  RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
+    sprintf(filename, "%s-adapt-surf.meshb", project);
+    printf("export %s\n", filename);
+    ref_export_by_extension(ref_grid, filename);
+  });
   ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
 
   RSS(ref_split_edge_geometry(ref_grid), "split geom");
@@ -174,7 +315,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) bootstrap_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -202,7 +343,7 @@ static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) fill_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -232,7 +373,7 @@ static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) location_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) location_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -279,7 +420,7 @@ static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) surface_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) surface_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -368,7 +509,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) multiscale_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) multiscale_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -407,7 +548,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_para(ref_mpi)) translate_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -431,7 +572,14 @@ int main(int argc, char *argv[]) {
     goto shutdown;
   }
 
-  if (strncmp(argv[1], "b", 1) == 0) {
+  if (strncmp(argv[1], "a", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(adapt(ref_mpi, argc, argv), "adapt");
+    } else {
+      if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "b", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
@@ -474,7 +622,7 @@ int main(int argc, char *argv[]) {
       goto shutdown;
     }
   } else {
-    if (ref_mpi_para(ref_mpi)) usage(argv[0]);
+    if (ref_mpi_once(ref_mpi)) usage(argv[0]);
     goto shutdown;
   }
 

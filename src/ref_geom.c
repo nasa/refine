@@ -2597,10 +2597,12 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  char *ugrid_name = "ref_geom_test.ugrid";
-  char *poly_name = "ref_geom_test.poly";
-  char *node_name = "ref_geom_test.1.node";
-  char *ele_name = "ref_geom_test.1.ele";
+  char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
+  char *poly_name = "ref_geom_test_tetgen.poly";
+  char *node_name = "ref_geom_test_tetgen.1.node";
+  char *ele_name = "ref_geom_test_tetgen.1.ele";
+  char *face_name = "ref_geom_test_tetgen.1.face";
+  char *edge_name = "ref_geom_test_tetgen.1.edge";
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -2614,51 +2616,19 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  printf("tec360 ref_geom_test_tetgen_geom.tec\n");
-  RSS(ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec"), "dbg geom");
-  printf("tec360 ref_geom_test_tetgen_surf.tec\n");
-  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec"),
-      "dbg surf");
-  RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
 
-  if (REF_FALSE) {
-    char *mtr_name = "ref_geom_test.mtr";
-    char *b_name = "ref_geom_test.b.node";
-
-    file = fopen(mtr_name, "w");
-    if (NULL == (void *)file) printf("unable to open %s\n", mtr_name);
-    RNS(file, "unable to open file");
-    fprintf(file, "%d 1\n", ref_node_n(ref_node));
-    each_ref_node_valid_node(ref_node, node) {
-      REF_DBL m[6], d[12], h;
-      RSS(ref_node_metric_get(ref_node, node, m), "get");
-      RSS(ref_matrix_diag_m(m, d), "diag");
-      h = 1.0 / sqrt(MAX(MAX(d[0], d[1]), d[2]));
-      fprintf(file, "%e\n", h);
-    }
-    fclose(file);
-
-    file = fopen(b_name, "w");
-    if (NULL == (void *)file) printf("unable to open %s\n", b_name);
-    RNS(file, "unable to open file");
-    fprintf(file, "%d 3 0 0\n", ref_node_n(ref_node));
-    nnode_surface = 0;
-    each_ref_node_valid_node(ref_node, node) {
-      nnode_surface++;
-      fprintf(file, "%d %e %e %e\n", nnode_surface,
-              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-              ref_node_xyz(ref_node, 2, node));
-    }
-    fclose(file);
-  }
-
-  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s.out",
-          poly_name, poly_name);
+  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s", poly_name,
+          stdout_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
-  REIS(0, system_status, "tetgen failed");
+  REIB(0, system_status, "tetgen failed", {
+    printf("tec360 ref_geom_test_tetgen_geom.tec\n");
+    ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec");
+    printf("tec360 ref_geom_test_tetgen_surf.tec\n");
+    ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec");
+  });
 
   file = fopen(node_name, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", node_name);
@@ -2735,6 +2705,13 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   fclose(file);
 
   ref_grid_surf(ref_grid) = REF_FALSE;
+
+  REIS(0, remove(edge_name), "rm .edge tetgen output file");
+  REIS(0, remove(face_name), "rm .face tetgen output file");
+  REIS(0, remove(node_name), "rm .node tetgen output file");
+  REIS(0, remove(ele_name), "rm .ele tetgen output file");
+  REIS(0, remove(poly_name), "rm .poly tetgen input file");
+  REIS(0, remove(stdout_name), "rm stdout tetgen output file");
 
   return REF_SUCCESS;
 }
@@ -2877,6 +2854,7 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
          "EG load");
   }
 #else
+  RNS(filename, "filename NULL for EGADS(full) load");
   REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
   {
