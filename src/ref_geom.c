@@ -2597,10 +2597,11 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  char *ugrid_name = "ref_geom_test.ugrid";
-  char *poly_name = "ref_geom_test.poly";
-  char *node_name = "ref_geom_test.1.node";
-  char *ele_name = "ref_geom_test.1.ele";
+  char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
+  char *ugrid_name = "ref_geom_test_tetgen.ugrid";
+  char *poly_name = "ref_geom_test_tetgen.poly";
+  char *node_name = "ref_geom_test_tetgen.1.node";
+  char *ele_name = "ref_geom_test_tetgen.1.ele";
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -2653,8 +2654,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
     fclose(file);
   }
 
-  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s.out",
-          poly_name, poly_name);
+  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s",
+          poly_name, stdout_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
