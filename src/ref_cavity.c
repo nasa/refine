@@ -1214,6 +1214,35 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity) {
+  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
+  REF_INT node = ref_cavity_node(ref_cavity);
+  REF_INT face;
+  REF_BOOL visible;
+
+  RAS(ref_node_owned(ref_node, node), "cavity part must own node");
+
+  if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    /* skip a face attached to node */
+    if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
+        node == ref_cavity_f2n(ref_cavity, 1, face) ||
+        node == ref_cavity_f2n(ref_cavity, 2, face))
+      continue;
+
+    RSS(ref_cavity_visible(ref_cavity, face, &visible), "free");
+    if (!visible) {
+      ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
+      return REF_SUCCESS;
+    }
+  }
+
+  ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_CELL tri = ref_grid_tri(ref_grid);
@@ -1816,8 +1845,8 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
           RSS(ref_cavity_free(ref_cavity), "free");
           continue;
         }
-        if (REF_SUCCESS != ref_cavity_enlarge_visible(ref_cavity)) {
-          REF_WHERE("enlarge"); /* note but skip cavity failures */
+        if (REF_SUCCESS != ref_cavity_check_visible(ref_cavity)) {
+          REF_WHERE("check visible"); /* note but skip cavity failures */
           RSS(ref_cavity_free(ref_cavity), "free");
           continue;
         }
@@ -1845,7 +1874,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
         RSS(ref_cavity_form_edge_swap(ref_cavity, ref_grid, nodes[n0],
                                       nodes[n1], nodes[n2]),
             "cavity gem");
-        RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge viz");
+        RSS(ref_cavity_check_visible(ref_cavity), "enlarge viz");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
         if (ref_cavity_debug(ref_cavity))
           printf("cavity accepted %f -> %f\n", min_del, min_add);
