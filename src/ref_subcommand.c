@@ -291,13 +291,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT ldim;
   REF_DBL *scalar, *metric;
   REF_INT p;
-  REF_DBL gradation, complexity, current_complexity, hmin, hmax;
+  REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-
-  hmin = -1.0;
-  hmax = -1.0;
-  p = 2;
-  gradation = -1;
+  REF_INT pos;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -305,12 +301,31 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   out_metric = argv[4];
   complexity = atof(argv[5]);
 
+  p = 2;
+  RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: -p <norm power>\n");
+      goto shutdown;
+    }
+    p = atoi(argv[pos + 1]);
+  }
+
+  gradation = -1.0;
+  RXS(ref_args_find(argc, argv, "-g", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: -g <gradation>\n");
+      goto shutdown;
+    }
+    gradation = atof(argv[pos + 1]);
+  }
+
   if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
-    printf("complexity %f\n", complexity);
     printf("reconstruction %d\n", (int)reconstruction);
-    printf("hmin %f hmax %f (negative is inactive)\n", hmin, hmax);
   }
 
   ref_mpi_stopwatch_start(ref_mpi);
@@ -337,11 +352,6 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       "lp norm");
   ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
 
-  if (hmin > 0.0 || hmax > 0.0) {
-    RSS(ref_metric_limit_h_at_complexity(metric, ref_grid, hmin, hmax,
-                                         complexity),
-        "limit at complexity");
-  }
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (ref_mpi_once(ref_mpi))
     printf("actual complexity %e\n", current_complexity);
