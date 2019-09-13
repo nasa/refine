@@ -1953,9 +1953,9 @@ REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
   const char *vars[3];
   REF_INT ldim = 3;
 
-  vars[0]="q";
-  vars[1]="s";
-  vars[2]="l";
+  vars[0] = "q";
+  vars[1] = "s";
+  vars[2] = "l";
   ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -1984,8 +1984,7 @@ REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
   }
   RSS(ref_edge_free(ref_edge), "free edges");
 
-  RSS(ref_gather_scalar_surf_tec(ref_grid, ldim, scalar, vars,
-                                 filename),
+  RSS(ref_gather_scalar_surf_tec(ref_grid, ldim, scalar, vars, filename),
       "dump");
 
   ref_free(scalar);
