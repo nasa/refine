@@ -2615,11 +2615,6 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  printf("tec360 ref_geom_test_tetgen_geom.tec\n");
-  RSS(ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec"), "dbg geom");
-  printf("tec360 ref_geom_test_tetgen_surf.tec\n");
-  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec"),
-      "dbg surf");
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
 
@@ -2628,7 +2623,12 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
-  REIS(0, system_status, "tetgen failed");
+  REIB(0, system_status, "tetgen failed", {
+    printf("tec360 ref_geom_test_tetgen_geom.tec\n");
+    ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec");
+    printf("tec360 ref_geom_test_tetgen_surf.tec\n");
+    ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec");
+  });
 
   file = fopen(node_name, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", node_name);
