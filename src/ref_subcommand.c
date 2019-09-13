@@ -112,7 +112,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
 
-  RXS(ref_args_char(argc, argv, "-g", &in_metric), REF_NOT_FOUND,
+  RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
       "metric arg search");
   if (NULL != in_metric) {
     if (ref_mpi_once(ref_mpi)) printf("part metric %s\n", in_metric);
