@@ -51,7 +51,7 @@ REF_STATUS ref_args_char(REF_INT n, char **args, const char *target,
   REF_INT pos;
   *value = NULL;
   RAISE(ref_args_find(n, args, target, &pos));
-  RAB(pos >= n - 1, "missing value", { printf("for option %s", target); });
+  RAB(pos < n - 1, "missing value", { printf("for option %s", target); });
   *value = args[pos + 1];
   return REF_SUCCESS;
 }
