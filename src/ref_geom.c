@@ -2854,6 +2854,7 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
          "EG load");
   }
 #else
+  RNS(filename, "filename NULL for EGADS(full) load");
   REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
   {
