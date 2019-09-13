@@ -96,6 +96,7 @@ static void translate_help(const char *name) {
 static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_mesh = NULL;
   char *in_metric = NULL;
+  char *in_egads = NULL;
   REF_GRID ref_grid = NULL;
   REF_BOOL curvature_metric = REF_TRUE;
 
@@ -110,6 +111,22 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  RXS(ref_args_char(argc, argv, "-g", &in_egads), REF_NOT_FOUND,
+      "egads arg search");
+  if (NULL != in_egads) {
+    if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+  } else {
+    if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
+      if (ref_mpi_once(ref_mpi))
+        printf("load egadslite from .meshb byte stream\n");
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("No geometry available via .meshb or -g option\n");
+    }
   }
 
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
