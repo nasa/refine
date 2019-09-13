@@ -146,6 +146,7 @@ REF_STATUS ref_cavity_enlarge_conforming(REF_CAVITY ref_cavity);
 REF_STATUS ref_cavity_visible(REF_CAVITY ref_cavity, REF_INT face,
                               REF_BOOL *visible);
 REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity);
+REF_STATUS ref_cavity_check_visible(REF_CAVITY ref_cavity);
 
 REF_STATUS ref_cavity_enlarge_seg(REF_CAVITY ref_cavity, REF_INT seg);
 
