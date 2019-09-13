@@ -2598,10 +2598,11 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
-  char *ugrid_name = "ref_geom_test_tetgen.ugrid";
   char *poly_name = "ref_geom_test_tetgen.poly";
   char *node_name = "ref_geom_test_tetgen.1.node";
   char *ele_name = "ref_geom_test_tetgen.1.ele";
+  char *face_name = "ref_geom_test_tetgen.1.face";
+  char *edge_name = "ref_geom_test_tetgen.1.edge";
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -2615,7 +2616,6 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
 
   sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s", poly_name,
@@ -2705,6 +2705,13 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   fclose(file);
 
   ref_grid_surf(ref_grid) = REF_FALSE;
+
+  REIS(0, remove(edge_name), "rm .edge tetgen output file");
+  REIS(0, remove(face_name), "rm .face tetgen output file");
+  REIS(0, remove(node_name), "rm .node tetgen output file");
+  REIS(0, remove(ele_name), "rm .ele tetgen output file");
+  REIS(0, remove(poly_name), "rm .poly tetgen input file");
+  REIS(0, remove(stdout_name), "rm stdout tetgen output file");
 
   return REF_SUCCESS;
 }
