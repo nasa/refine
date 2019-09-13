@@ -2623,39 +2623,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   RSS(ref_export_by_extension(ref_grid, ugrid_name), "ugrid");
   RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
 
-  if (REF_FALSE) {
-    char *mtr_name = "ref_geom_test.mtr";
-    char *b_name = "ref_geom_test.b.node";
-
-    file = fopen(mtr_name, "w");
-    if (NULL == (void *)file) printf("unable to open %s\n", mtr_name);
-    RNS(file, "unable to open file");
-    fprintf(file, "%d 1\n", ref_node_n(ref_node));
-    each_ref_node_valid_node(ref_node, node) {
-      REF_DBL m[6], d[12], h;
-      RSS(ref_node_metric_get(ref_node, node, m), "get");
-      RSS(ref_matrix_diag_m(m, d), "diag");
-      h = 1.0 / sqrt(MAX(MAX(d[0], d[1]), d[2]));
-      fprintf(file, "%e\n", h);
-    }
-    fclose(file);
-
-    file = fopen(b_name, "w");
-    if (NULL == (void *)file) printf("unable to open %s\n", b_name);
-    RNS(file, "unable to open file");
-    fprintf(file, "%d 3 0 0\n", ref_node_n(ref_node));
-    nnode_surface = 0;
-    each_ref_node_valid_node(ref_node, node) {
-      nnode_surface++;
-      fprintf(file, "%d %e %e %e\n", nnode_surface,
-              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-              ref_node_xyz(ref_node, 2, node));
-    }
-    fclose(file);
-  }
-
-  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s",
-          poly_name, stdout_name);
+  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s", poly_name,
+          stdout_name);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
