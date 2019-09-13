@@ -600,8 +600,8 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   }
 
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
-  while (ref_list_n(ref_cavity_tet_list(ref_cavity)) > 0) {
-    RSS(ref_list_pop(ref_cavity_tet_list(ref_cavity), &cell), "list");
+  each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
     for (i = 0; i < 4; i++) {
@@ -615,8 +615,8 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   }
 
   ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
-  while (ref_list_n(ref_cavity_tri_list(ref_cavity)) > 0) {
-    RSS(ref_list_pop(ref_cavity_tri_list(ref_cavity), &cell), "list");
+  each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
+    cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
     RSS(ref_cell_remove(ref_cell, cell), "rm");
     for (i = 0; i < 3; i++) {
