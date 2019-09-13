@@ -113,8 +113,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
   RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
-  sprintf(filename, "%s-init.meshb", project);
-  RSS(ref_export_by_extension(ref_grid, filename), "tess export");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
@@ -148,12 +146,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-adapt-surf.tec", project);
   RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
-  sprintf(filename, "%s-adapt-surf.meshb", project);
-  printf("export %s\n", filename);
-  RSS(ref_export_by_extension(ref_grid, filename), "surf export");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+  RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
+    sprintf(filename, "%s-adapt-surf.meshb", project);
+    printf("export %s\n", filename);
+    ref_export_by_extension(ref_grid, filename);
+  });
   ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
 
   RSS(ref_split_edge_geometry(ref_grid), "split geom");
