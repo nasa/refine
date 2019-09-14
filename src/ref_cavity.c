@@ -547,15 +547,17 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
 }
 
 REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell;
-  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
-  REF_GEOM ref_geom = ref_grid_geom(ref_cavity_grid(ref_cavity));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_INT face, seg;
   REF_INT cell, new_cell;
   REF_INT i, item;
   REF_DBL volume;
+  REF_LIST ref_list;
 
   if (ref_cavity_debug(ref_cavity))
     RSS(ref_cavity_tec(ref_cavity, "ref_cavity_replace.tec"),
@@ -599,40 +601,38 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     /* check validity, area? */
   }
 
+  RSS(ref_list_create(&ref_list), "create removed node list");
+
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
-    RSS(ref_cell_remove(ref_cell, cell), "rm");
-    for (i = 0; i < 4; i++) {
-      if (ref_node_valid(ref_node, nodes[i])) {
-        if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-          RSS(ref_node_remove(ref_node, nodes[i]), "remove");
-          RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
-        }
-      }
-    }
+    for (i = 0; i < 4; i++) RSS(ref_list_push(ref_list, nodes[i]), "tet list");
+    RSS(ref_cell_remove(ref_cell, cell), "rm tet");
   }
 
   ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
-    RSS(ref_cell_remove(ref_cell, cell), "rm");
-    for (i = 0; i < 3; i++) {
-      if (ref_node_valid(ref_node, nodes[i])) {
-        if (ref_adj_empty(ref_cell_adj(ref_cell), nodes[i])) {
-          RSS(ref_geom_remove_all(ref_geom, nodes[i]), "remove");
-          /* may still be used by tet so only remove geom */
-          if (ref_adj_empty(
-                  ref_cell_adj(ref_grid_tet(ref_cavity_grid(ref_cavity))),
-                  nodes[i])) {
-            RSS(ref_node_remove(ref_node, nodes[i]), "remove");
-          }
-        }
+    for (i = 0; i < 3; i++) RSS(ref_list_push(ref_list, nodes[i]), "tri list");
+    RSS(ref_cell_remove(ref_cell, cell), "rm tri");
+  }
+
+  each_ref_list_item(ref_list, item) {
+    node = ref_list_value(ref_list, item);
+    if (ref_node_valid(ref_node, node)) {
+      if (ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
+        RSS(ref_geom_remove_all(ref_geom, node), "remove geom");
+      }
+      if (ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
+          ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+        RSS(ref_node_remove(ref_node, node), "remove node");
       }
     }
   }
+
+  RSS(ref_list_free(ref_list), "list free");
 
   if (ref_cavity->split_node0 != REF_EMPTY &&
       ref_cavity->split_node1 != REF_EMPTY) {
