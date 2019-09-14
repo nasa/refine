@@ -27,6 +27,27 @@
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 
+REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT node;
+  REF_BOOL problem;
+
+  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
+    ref_cell = ref_grid_tri(ref_grid);
+
+  problem = REF_FALSE;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_cell_node_empty(ref_cell, node)) {
+      problem = REF_TRUE;
+      RSS(ref_node_location(ref_node, node), "location");
+    }
+  }
+
+  return (problem ? REF_FAILURE : REF_SUCCESS);
+}
+
 REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   REF_INT node;
   REF_BOOL problem;

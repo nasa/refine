@@ -40,6 +40,7 @@
 #include "ref_gather.h"
 #include "ref_histogram.h"
 #include "ref_metric.h"
+#include "ref_validation.h"
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {
   REF_ADAPT ref_adapt;
@@ -499,6 +500,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt start");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
@@ -506,6 +508,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
@@ -513,6 +516,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
@@ -520,6 +524,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   ref_grid_adapt(ref_grid, post_max_ratio) = sqrt(2.0);
 
@@ -527,6 +532,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_gather_blocking_frame(ref_grid, "collapse");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   ref_grid_adapt(ref_grid, post_max_ratio) =
       ref_grid_adapt(ref_grid, last_max_ratio);
@@ -537,6 +543,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
   ref_gather_blocking_frame(ref_grid, "smooth");
@@ -544,6 +551,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
@@ -551,6 +559,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_parameter(ref_grid, &all_done1), "param");
 
@@ -564,6 +573,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
@@ -571,6 +581,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
   ref_gather_blocking_frame(ref_grid, "smooth");
@@ -578,6 +589,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
@@ -585,6 +597,7 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   if (ngeom > 0)
     RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
