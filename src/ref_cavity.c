@@ -913,7 +913,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                                          REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell;
   REF_INT item, cell;
 
   REF_INT cell_face;
@@ -929,6 +929,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
 
   ref_cavity->collapse_node0 = node0;
   ref_cavity->collapse_node1 = node1;
+
+  ref_cell = ref_grid_tet(ref_grid);
 
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
