@@ -575,10 +575,10 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[3] = node;
     if (node == nodes[0] || node == nodes[1] || node == nodes[2])
       continue; /* attached face */
-    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tet nodes 0 not valid");
-    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tet nodes 1 not valid");
-    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tet nodes 2 not valid");
-    RAS(ref_node_valid(ref_node, nodes[3]), "cavity tet nodes 3 not valid");
+    for (i = 0; i < 4; i++) {
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity tet nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity tet nodes not local");
+    }
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
     if (volume <= ref_node_min_volume(ref_node))
@@ -594,9 +594,10 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[2] = node;
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
     if (node == nodes[0] || node == nodes[1]) continue; /* attached seg */
-    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tri nodes 0 not valid");
-    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tri nodes 1 not valid");
-    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tri nodes 2 not valid");
+    for (i = 0; i < 3; i++) {
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity tri nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity tri nodes not local");
+    }
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     /* check validity, area? */
   }
@@ -607,7 +608,11 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   each_ref_list_item(ref_cavity_tet_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tet_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
-    for (i = 0; i < 4; i++) RSS(ref_list_push(ref_list, nodes[i]), "tet list");
+    for (i = 0; i < 4; i++) {
+      RSS(ref_list_push(ref_list, nodes[i]), "tet list");
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity rm tet nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity rm tet nodes not local");
+    }
     RSS(ref_cell_remove(ref_cell, cell), "rm tet");
   }
 
@@ -615,7 +620,11 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   each_ref_list_item(ref_cavity_tri_list(ref_cavity), item) {
     cell = ref_list_value(ref_cavity_tri_list(ref_cavity), item);
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "rm");
-    for (i = 0; i < 3; i++) RSS(ref_list_push(ref_list, nodes[i]), "tri list");
+    for (i = 0; i < 3; i++) {
+      RSS(ref_list_push(ref_list, nodes[i]), "tri list");
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity rm tri nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity rm tri nodes not local");
+    }
     RSS(ref_cell_remove(ref_cell, cell), "rm tri");
   }
 
@@ -631,8 +640,6 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
       }
     }
   }
-
-  RSS(ref_list_free(ref_list), "list free");
 
   if (ref_cavity->split_node0 != REF_EMPTY &&
       ref_cavity->split_node1 != REF_EMPTY) {
@@ -662,6 +669,20 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
           "cavity replaced tet nodes not valid");
     }
   }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
+    ref_cell = ref_grid_tri(ref_grid);
+
+  each_ref_list_item(ref_list, item) {
+    node = ref_list_value(ref_list, item);
+    if (ref_node_valid(ref_node, node)) {
+      RAS(!ref_cell_node_empty(ref_cell, node),
+          "element missing for valid node");
+    }
+  }
+
+  RSS(ref_list_free(ref_list), "list free");
 
   return REF_SUCCESS;
 }
