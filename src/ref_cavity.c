@@ -575,10 +575,10 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[3] = node;
     if (node == nodes[0] || node == nodes[1] || node == nodes[2])
       continue; /* attached face */
-    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tet nodes 0 not valid");
-    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tet nodes 1 not valid");
-    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tet nodes 2 not valid");
-    RAS(ref_node_valid(ref_node, nodes[3]), "cavity tet nodes 3 not valid");
+    for (i = 0; i < 4; i++) {
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity tet nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity tet nodes not local");
+    }
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     RSS(ref_node_tet_vol(ref_node, nodes, &volume), "norm");
     if (volume <= ref_node_min_volume(ref_node))
@@ -594,9 +594,10 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     nodes[2] = node;
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
     if (node == nodes[0] || node == nodes[1]) continue; /* attached seg */
-    RAS(ref_node_valid(ref_node, nodes[0]), "cavity tri nodes 0 not valid");
-    RAS(ref_node_valid(ref_node, nodes[1]), "cavity tri nodes 1 not valid");
-    RAS(ref_node_valid(ref_node, nodes[2]), "cavity tri nodes 2 not valid");
+    for (i = 0; i < 3; i++) {
+      RAS(ref_node_valid(ref_node, nodes[i]), "cavity tri nodes not valid");
+      RAS(ref_node_owned(ref_node, nodes[i]), "cavity tri nodes not local");
+    }
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add");
     /* check validity, area? */
   }
