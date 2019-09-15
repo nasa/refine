@@ -79,6 +79,8 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
 
   ref_cavity->split_node0 = REF_EMPTY;
   ref_cavity->split_node1 = REF_EMPTY;
+  ref_cavity->collapse_node0 = REF_EMPTY;
+  ref_cavity->collapse_node1 = REF_EMPTY;
 
   return REF_SUCCESS;
 }
@@ -611,6 +613,21 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     }
   }
 
+  if (ref_cavity->collapse_node0 != REF_EMPTY &&
+      ref_cavity->collapse_node1 != REF_EMPTY) {
+    nodes[0] = ref_cavity->collapse_node0;
+    nodes[1] = ref_cavity->collapse_node1;
+    ref_cell = ref_grid_edg(ref_cavity_grid(ref_cavity));
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND, "find edg");
+    if (REF_EMPTY != cell) {
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      RSS(ref_cell_remove(ref_cell, cell), "remove");
+      RSS(ref_cell_replace_node(ref_cell, ref_cavity->collapse_node1,
+                                ref_cavity->collapse_node0),
+          "replace node");
+    }
+  }
+
   /* self check to catch invalid node early */
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
@@ -905,11 +922,13 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
   REF_BOOL has_node0, has_node1;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, node0), "init form empty");
-
   if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1)) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
     return REF_SUCCESS;
   }
+
+  ref_cavity->collapse_node0 = node0;
+  ref_cavity->collapse_node1 = node1;
 
   each_ref_cell_having_node(ref_cell, node0, item, cell) {
     RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell,
