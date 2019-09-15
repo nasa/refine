@@ -641,8 +641,6 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     }
   }
 
-  RSS(ref_list_free(ref_list), "list free");
-
   if (ref_cavity->split_node0 != REF_EMPTY &&
       ref_cavity->split_node1 != REF_EMPTY) {
     nodes[0] = ref_cavity->split_node0;
@@ -671,6 +669,18 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
           "cavity replaced tet nodes not valid");
     }
   }
+
+  each_ref_list_item(ref_list, item) {
+    node = ref_list_value(ref_list, item);
+    if (ref_node_valid(ref_node, node)) {
+      if (ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
+          ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+        THROW("valid node without cell");
+      }
+    }
+  }
+
+  RSS(ref_list_free(ref_list), "list free");
 
   return REF_SUCCESS;
 }
