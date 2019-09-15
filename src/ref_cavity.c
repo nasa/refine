@@ -978,11 +978,13 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
     will_be_collapsed = has_node0 && has_node1;
     if (will_be_collapsed) continue;
     each_ref_cell_cell_face(ref_cell, cell_face) {
+      has_node0 = REF_FALSE;
       each_ref_cavity_face_node(ref_cavity, node) {
         face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
-        if (node1 == face_nodes[node]) face_nodes[node] = node0;
+        has_node0 = has_node0 || (node0 == face_nodes[node]);
       }
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
+      if (!has_node0)
+        RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
     }
   }
 
@@ -1005,11 +1007,13 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
     will_be_collapsed = has_node0 && has_node1;
     if (will_be_collapsed) continue;
     each_ref_cell_cell_face(ref_cell, cell_face) {
+      has_node1 = REF_FALSE;
       each_ref_cavity_face_node(ref_cavity, node) {
         face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
-        if (node1 == face_nodes[node]) face_nodes[node] = node0;
+        has_node1 = has_node1 || (node1 == face_nodes[node]);
       }
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes));
+      if (!has_node1)
+        RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet face");
     }
   }
 
