@@ -1009,8 +1009,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
         face_nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
         if (node1 == face_nodes[node]) face_nodes[node] = node0;
       }
-      /* need to revisit these failures */
-      RAISE(ref_cavity_insert_face(ref_cavity, face_nodes));
+      RSS(ref_cavity_insert_face(ref_cavity, face_nodes));
     }
   }
 
