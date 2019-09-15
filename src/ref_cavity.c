@@ -670,23 +670,15 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
     }
   }
 
+  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
+    ref_cell = ref_grid_tri(ref_grid);
+
   each_ref_list_item(ref_list, item) {
     node = ref_list_value(ref_list, item);
     if (ref_node_valid(ref_node, node)) {
-      if (ref_grid_surf(ref_grid)) {
-        if (ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-          THROW("valid node without surf tri");
-        }
-      } else {
-        if (ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
-            ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
-          THROW("valid 3D node without cell (tet or tri)");
-        }
-        if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
-            ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
-          THROW("valid 3D node with tri node without tet node");
-        }
-      }
+      RAS(!ref_cell_node_empty(ref_cell, node),
+          "element missing for valid node");
     }
   }
 
