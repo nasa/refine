@@ -500,6 +500,43 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cavity_check_faces(REF_CAVITY ref_cavity) {
+  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT face_node, face, node, tet0, tet1, tri_cell;
+  REF_INT face_nodes[4];
+  REF_INT cell_face;
+
+  node = ref_cavity_node(ref_cavity);
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+    nodes[3] = node;
+    if (node == nodes[0] || node == nodes[1] || node == nodes[2])
+      continue; /* attached face */
+    each_ref_cell_cell_face(ref_cell, cell_face) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        face_nodes[face_node] =
+            nodes[ref_cell_f2n_gen(ref_cell, face_node, cell_face)];
+      }
+      RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
+          "found too many tets with face_nodes");
+      RAS(REF_EMPTY != tet0, "no tet for cavity face");
+      if (REF_EMPTY == tet1) {
+        RSB(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri_cell),
+            "no tri for missing tet1", {
+              printf("%d face %d cell face %d %d %d nodes\n", face, cell_face,
+                     face_nodes[0], face_nodes[1], face_nodes[2]);
+              ref_cavity_inspect(ref_cavity);
+            });
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
