@@ -407,14 +407,20 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
     REF_INT new_node;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "pri");
+    nodes[0] = 1;
+    nodes[1] = 3;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
     RSS(ref_cavity_create(&ref_cavity), "create");
 
     RSS(ref_node_add(ref_grid_node(ref_grid), 4, &new_node), "new");
-    RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 0, 3, new_node),
+    RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
         "insert edge");
-    REIS(2, ref_cavity_nface(ref_cavity), "n");
+    REIS(6, ref_cavity_nface(ref_cavity), "n");
     REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
@@ -425,14 +431,25 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
     REF_INT new_node;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_fixture_tet2_grid(&ref_grid, ref_mpi), "pri");
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    nodes[0] = 2;
+    nodes[1] = 1;
+    nodes[2] = 4;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
     RSS(ref_cavity_create(&ref_cavity), "create");
 
     RSS(ref_node_add(ref_grid_node(ref_grid), 5, &new_node), "new");
     RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, 1, 2, new_node),
         "insert edge");
-    REIS(4, ref_cavity_nface(ref_cavity), "n");
+    REIS(8, ref_cavity_nface(ref_cavity), "n");
     REIS(2, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
     RSS(ref_cavity_free(ref_cavity), "free");
@@ -488,14 +505,25 @@ int main(int argc, char *argv[]) {
   { /* replace tet */
     REF_GRID ref_grid;
     REF_CAVITY ref_cavity;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "pri");
+    nodes[0] = 0;
+    nodes[1] = 2;
+    nodes[2] = 3;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
+    nodes[0] = 0;
+    nodes[1] = 3;
+    nodes[2] = 1;
+    nodes[3] = 10;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &cell), "add tri");
     RSS(ref_cavity_create(&ref_cavity), "create");
 
     if (!ref_mpi_para(ref_mpi)) {
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, 0), "insert ball");
 
-      REIS(2, ref_cavity_nface(ref_cavity), "n");
+      REIS(4, ref_cavity_nface(ref_cavity), "n");
       REIS(1, ref_list_n(ref_cavity_tet_list(ref_cavity)), "l");
 
       ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE; /* test fixture */
