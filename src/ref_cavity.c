@@ -383,6 +383,51 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity, REF_INT node0,
+                                          REF_INT node1, REF_INT *found_face) {
+  REF_INT face;
+
+  *found_face = REF_EMPTY;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    if ((node0 == ref_cavity_f2n(ref_cavity, 0, face) &&
+         node1 == ref_cavity_f2n(ref_cavity, 1, face)) ||
+        (node0 == ref_cavity_f2n(ref_cavity, 1, face) &&
+         node1 == ref_cavity_f2n(ref_cavity, 2, face)) ||
+        (node0 == ref_cavity_f2n(ref_cavity, 2, face) &&
+         node1 == ref_cavity_f2n(ref_cavity, 0, face))) {
+      REIS(REF_EMPTY, *found_face, "face found twice with side");
+      *found_face = face;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
+  REF_INT face, found_face;
+
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    RSS(ref_cavity_find_face_with_side(
+            ref_cavity, ref_cavity_f2n(ref_cavity, 1, face),
+            ref_cavity_f2n(ref_cavity, 0, face), &found_face),
+        "find side 01");
+    RUS(REF_EMPTY, found_face, "side 01 missing");
+    RSS(ref_cavity_find_face_with_side(
+            ref_cavity, ref_cavity_f2n(ref_cavity, 2, face),
+            ref_cavity_f2n(ref_cavity, 1, face), &found_face),
+        "find side 12");
+    RUS(REF_EMPTY, found_face, "side 12 missing");
+    RSS(ref_cavity_find_face_with_side(
+            ref_cavity, ref_cavity_f2n(ref_cavity, 0, face),
+            ref_cavity_f2n(ref_cavity, 2, face), &found_face),
+        "find side 20");
+    RUS(REF_EMPTY, found_face, "side 20 missing");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
   REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -1295,6 +1340,8 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "initial manifold check");
+  
   keep_growing = REF_TRUE;
   while (keep_growing) {
     keep_growing = REF_FALSE;
@@ -1329,6 +1376,8 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "final manifold check");
+  
   return REF_SUCCESS;
 }
 
