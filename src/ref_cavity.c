@@ -161,6 +161,9 @@ REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity, REF_INT *seg_nodes) {
 
   if (ref_list_n(ref_cavity_tet_list(ref_cavity)) == 0) return REF_SUCCESS;
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
+  if (seg_nodes[0] == ref_cavity_seg_node(ref_cavity) ||
+      seg_nodes[1] == ref_cavity_seg_node(ref_cavity))
+    return REF_SUCCESS;
 
   face_nodes[0] = seg_nodes[0];
   face_nodes[1] = seg_nodes[1];
@@ -917,7 +920,12 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     seg_nodes[0] = node3;
     seg_nodes[1] = node1;
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
-    /* skip seg attached to node2 ref_cavity_surf_node */
+    seg_nodes[0] = node1;
+    seg_nodes[1] = node2;
+    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    seg_nodes[0] = node2;
+    seg_nodes[1] = node0;
+    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
   }
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "swap face manifold");
