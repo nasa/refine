@@ -602,6 +602,8 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
   REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
        "attempt to replace cavity that is not visible");
 
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "replace manifold check");
+
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_face(ref_cavity, face) {
@@ -818,6 +820,8 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     }
   }
 
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "ball manifold check");
+
   return REF_SUCCESS;
 }
 
@@ -895,6 +899,8 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
     /* skip seg attached to node2 ref_cavity_surf_node */
   }
+
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "swap manifold check");
 
   return REF_SUCCESS;
 }
@@ -987,6 +993,8 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     seg_nodes[2] = faceid2;
     RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
   }
+
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "split manifold check");
 
   return REF_SUCCESS;
 }
@@ -1155,6 +1163,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
       RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri 1 side 20");
     }
   }
+
+  RSS(ref_cavity_verify_face_manifold(ref_cavity), "collapse manifold check");
 
   return REF_SUCCESS;
 }
@@ -1341,7 +1351,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "initial manifold check");
-  
+
   keep_growing = REF_TRUE;
   while (keep_growing) {
     keep_growing = REF_FALSE;
@@ -1377,7 +1387,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "final manifold check");
-  
+
   return REF_SUCCESS;
 }
 
