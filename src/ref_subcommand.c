@@ -45,13 +45,14 @@ static void usage(const char *name) {
   printf("usage: \n %s [--help] <subcommand> [<args>]\n", name);
   printf("\n");
   printf("ref subcommands:\n");
-  printf("  adapt       Adapt a mesh\n");
-  printf("  bootstrap   Create initial mesh from EGADS file\n");
-  printf("  fun3d       Extract a scalar from the primitive solution\n");
-  printf("  location    Report the locations of verticies in the mesh\n");
-  printf("  multiscale  Compute a multiscale metric.\n");
-  printf("  surface     Extract mesh surface.\n");
-  printf("  translate   Convert mesh formats.\n");
+  printf("  adapt        Adapt a mesh\n");
+  printf("  bootstrap    Create initial mesh from EGADS file\n");
+  printf("  fun3d        Extract a scalar from the primitive solution\n");
+  printf("  interpolate  Interpolate a field from one mesh to another\n");
+  printf("  location     Report the locations of verticies in the mesh\n");
+  printf("  multiscale   Compute a multiscale metric.\n");
+  printf("  surface      Extract mesh surface.\n");
+  printf("  translate    Convert mesh formats.\n");
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -79,6 +80,13 @@ static void fun3d_help(const char *name) {
          name);
   printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
   printf("   in fun3d nondimensionalization\n");
+  printf("\n");
+}
+static void interpolate_help(const char *name) {
+  printf(
+      "usage: \n %s interpolate donor.meshb donor.solb receptor.meshb "
+      "receptor.solb\n",
+      name);
   printf("\n");
 }
 static void location_help(const char *name) {
@@ -370,9 +378,6 @@ static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT ldim, node;
   REF_DBL *solution, *scalar;
 
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref fill is not parallel");
-  }
   if (argc < 6) goto shutdown;
   scalar_name = argv[2];
   in_meshb = argv[3];
@@ -426,6 +431,89 @@ static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(scalar);
   ref_free(solution);
   RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *receipt_solb;
+  char *receipt_meshb;
+  char *donor_solb;
+  char *donor_meshb;
+  REF_GRID donor_grid = NULL;
+  REF_GRID receipt_grid = NULL;
+  REF_INT ldim;
+  REF_DBL *donor_solution, *receipt_solution;
+  REF_INTERP ref_interp;
+
+  if (argc < 6) goto shutdown;
+  donor_meshb = argv[2];
+  donor_solb = argv[3];
+  receipt_meshb = argv[4];
+  receipt_solb = argv[5];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", donor_meshb);
+    RSS(ref_part_by_extension(&donor_grid, ref_mpi, donor_meshb), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", donor_meshb);
+    RSS(ref_import_by_extension(&donor_grid, ref_mpi, donor_meshb), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", donor_solb);
+  RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
+                      donor_solb),
+      "part solution");
+  ref_mpi_stopwatch_stop(ref_mpi, "donor part solution");
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", donor_meshb);
+    RSS(ref_part_by_extension(&receipt_grid, ref_mpi, receipt_meshb), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "receptor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", donor_meshb);
+    RSS(ref_import_by_extension(&receipt_grid, ref_mpi, receipt_meshb),
+        "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "receptor import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
+           " receptor nodes\n",
+           ldim, ref_node_n_global(ref_grid_node(donor_grid)),
+           ref_node_n_global(ref_grid_node(receipt_grid)));
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
+  RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid), "make interp");
+  RSS(ref_interp_locate(ref_interp), "map");
+  ref_mpi_stopwatch_stop(ref_mpi, "locate");
+
+  if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
+  ref_malloc(receipt_solution, ldim * ref_node_max(ref_grid_node(receipt_grid)),
+             REF_DBL);
+  RSS(ref_interp_scalar(ref_interp, ldim, donor_solution, receipt_solution),
+      "interp scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+  if (ref_mpi_once(ref_mpi))
+    printf("writing receptor solution %s\n", receipt_solb);
+  RSS(ref_gather_scalar(receipt_grid, ldim, receipt_solution, receipt_solb),
+      "gather recept");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+
+  ref_free(receipt_solution);
+  ref_interp_free(ref_interp);
+  RSS(ref_grid_free(receipt_grid), "receipt");
+  ref_free(donor_solution);
+  RSS(ref_grid_free(donor_grid), "donor");
 
   return REF_SUCCESS;
 shutdown:
@@ -677,6 +765,13 @@ int main(int argc, char *argv[]) {
       RSS(fun3d(ref_mpi, argc, argv), "fun3d");
     } else {
       if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "i", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(interpolate(ref_mpi, argc, argv), "interpolate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) interpolate_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
