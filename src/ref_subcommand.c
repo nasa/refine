@@ -40,18 +40,29 @@
 #include "ref_part.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define VERSION "not available"
+#endif
 
 static void usage(const char *name) {
-  printf("usage: \n %s [--help] <command> [<args>]\n", name);
+  printf("usage: \n %s [--help] <subcommand> [<args>]\n", name);
   printf("\n");
-  printf("ref commands:\n");
-  printf("  adapt       Adapt a mesh\n");
-  printf("  bootstrap   Create initial mesh from EGADS file\n");
-  printf("  fill        Fill a surface shell mesh with a volume\n");
-  printf("  location    Report the locations of verticies in the mesh\n");
-  printf("  multiscale  Compute a multiscale metric.\n");
-  printf("  surface     Extract mesh surface.\n");
-  printf("  translate   Convert mesh formats.\n");
+  printf("ref subcommands:\n");
+  printf("  adapt        Adapt a mesh\n");
+  printf("  bootstrap    Create initial mesh from EGADS file\n");
+  printf("  fun3d        Extract a scalar from the primitive solution\n");
+  printf("  interpolate  Interpolate a field from one mesh to another\n");
+  printf("  location     Report the locations of verticies in the mesh\n");
+  printf("  multiscale   Compute a multiscale metric.\n");
+  printf("  surface      Extract mesh surface.\n");
+  printf("  translate    Convert mesh formats.\n");
+  printf("  whole        Multiscale metric, adapt, and interpolation.\n");
+  printf("\n");
+  printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
 static void adapt_help(const char *name) {
   printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
@@ -66,8 +77,24 @@ static void bootstrap_help(const char *name) {
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("\n");
 }
+/*
 static void fill_help(const char *name) {
   printf("usage: \n %s fill surface.meshb volume.meshb\n", name);
+  printf("\n");
+}
+*/
+static void fun3d_help(const char *name) {
+  printf("usage: \n %s fun3d mach project.meshb primitive.solb mach.solb\n",
+         name);
+  printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
+  printf("   in fun3d nondimensionalization\n");
+  printf("\n");
+}
+static void interpolate_help(const char *name) {
+  printf(
+      "usage: \n %s interpolate donor.meshb donor.solb receptor.meshb "
+      "receptor.solb\n",
+      name);
   printf("\n");
 }
 static void location_help(const char *name) {
@@ -77,9 +104,10 @@ static void location_help(const char *name) {
 }
 static void multiscale_help(const char *name) {
   printf(
-      "usage: \n %s multiscale input_mesh.extension scalar.solb metric.solb "
-      "complexity\n",
+      "usage: \n %s multiscale input_mesh.extension scalar.solb "
+      "complexity metric.solb\n",
       name);
+  printf("   complexity is approximately half the target number of vertices\n");
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -90,6 +118,42 @@ static void surface_help(const char *name) {
 static void translate_help(const char *name) {
   printf("usage: \n %s translate input_mesh.extension output_mesh.extension \n",
          name);
+  printf("\n");
+}
+static void whole_help(const char *name) {
+  printf(
+      "usage: \n %s whole input_project_name output_project_name"
+      " complexity [<options>]\n",
+      name);
+  printf("\n");
+  printf("  expects:\n");
+  printf(
+      "   input_project_name.meshb is"
+      " mesh with geometry association and model.\n");
+  printf(
+      "   input_project_name_volume.solb is"
+      " [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
+  printf("    in FUN3D nondimensionalization.\n");
+  printf("   complexity is half of the target number of vertices.\n");
+  printf("\n");
+  printf("  creates:\n");
+  printf(
+      "   output_project_name.meshb is"
+      " mesh with geometry association and model.\n");
+  printf(
+      "   output_project_name.lb8.ugrid is"
+      " FUN3D compatible little-endian mesh.\n");
+  printf(
+      "   output_project_name-restart.solb is"
+      " an interpolated solution.\n");
+  printf("\n");
+  printf("  options:\n");
+  printf("   --norm-power <power> multiscale metric norm power (default 2)\n");
+  printf("   --gradation <gradation> (default -1)\n");
+  printf("       positive: metric-space gradation stretching ratio.\n");
+  printf("       negative: mixed-space gradation.\n");
+  printf("   --buffer coarsens the metric appraoching the x max boundary.\n");
+
   printf("\n");
 }
 
@@ -131,6 +195,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
       if (ref_mpi_once(ref_mpi))
         printf("load egadslite from .meshb byte stream\n");
+      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+      ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       THROW("No geometry available via .meshb or -g option");
     }
@@ -319,6 +385,7 @@ shutdown:
   return REF_FAILURE;
 }
 
+/*
 static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
@@ -344,6 +411,160 @@ static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
+  return REF_FAILURE;
+}
+*/
+
+static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *scalar_name;
+  char *out_solb;
+  char *in_solb;
+  char *in_meshb;
+  REF_GRID ref_grid = NULL;
+  REF_DBL gamma = 1.4;
+  REF_INT ldim, node;
+  REF_DBL *solution, *scalar;
+
+  if (argc < 6) goto shutdown;
+  scalar_name = argv[2];
+  in_meshb = argv[3];
+  in_solb = argv[4];
+  out_solb = argv[5];
+
+  if (strncmp(scalar_name, "mach", 4) != 0) {
+    printf("scalar %s not implemented\n", scalar_name);
+    goto shutdown;
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("gamma %f\n", gamma);
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_meshb);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_meshb), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_meshb);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_meshb), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", in_solb);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, in_solb),
+      "part solution");
+  RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  ref_mpi_stopwatch_stop(ref_mpi, "part solution");
+
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", scalar_name);
+  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL rho, u, v, w, p, temp;
+    rho = solution[0 + ldim * node];
+    u = solution[1 + ldim * node];
+    v = solution[2 + ldim * node];
+    w = solution[3 + ldim * node];
+    p = solution[4 + ldim * node];
+    temp = gamma * p / rho;
+    scalar[node] = sqrt((u * u + v * v + w * w) / temp);
+  }
+  ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
+
+  if (ref_mpi_once(ref_mpi))
+    printf("writing %s to %s\n", scalar_name, out_solb);
+  RSS(ref_gather_scalar(ref_grid, 1, scalar, out_solb), "export mach");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
+
+  ref_free(scalar);
+  ref_free(solution);
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *receipt_solb;
+  char *receipt_meshb;
+  char *donor_solb;
+  char *donor_meshb;
+  REF_GRID donor_grid = NULL;
+  REF_GRID receipt_grid = NULL;
+  REF_INT ldim;
+  REF_DBL *donor_solution, *receipt_solution;
+  REF_INTERP ref_interp;
+
+  if (argc < 6) goto shutdown;
+  donor_meshb = argv[2];
+  donor_solb = argv[3];
+  receipt_meshb = argv[4];
+  receipt_solb = argv[5];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", donor_meshb);
+    RSS(ref_part_by_extension(&donor_grid, ref_mpi, donor_meshb), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", donor_meshb);
+    RSS(ref_import_by_extension(&donor_grid, ref_mpi, donor_meshb), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "donor import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", donor_solb);
+  RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
+                      donor_solb),
+      "part solution");
+  ref_mpi_stopwatch_stop(ref_mpi, "donor part solution");
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", donor_meshb);
+    RSS(ref_part_by_extension(&receipt_grid, ref_mpi, receipt_meshb), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "receptor part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", donor_meshb);
+    RSS(ref_import_by_extension(&receipt_grid, ref_mpi, receipt_meshb),
+        "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "receptor import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
+           " receptor nodes\n",
+           ldim, ref_node_n_global(ref_grid_node(donor_grid)),
+           ref_node_n_global(ref_grid_node(receipt_grid)));
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
+  RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid), "make interp");
+  RSS(ref_interp_locate(ref_interp), "map");
+  ref_mpi_stopwatch_stop(ref_mpi, "locate");
+
+  if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
+  ref_malloc(receipt_solution, ldim * ref_node_max(ref_grid_node(receipt_grid)),
+             REF_DBL);
+  RSS(ref_interp_scalar(ref_interp, ldim, donor_solution, receipt_solution),
+      "interp scalar");
+  ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+  if (ref_mpi_once(ref_mpi))
+    printf("writing receptor solution %s\n", receipt_solb);
+  RSS(ref_gather_scalar(receipt_grid, ldim, receipt_solution, receipt_solb),
+      "gather recept");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+
+  ref_free(receipt_solution);
+  ref_interp_free(ref_interp);
+  RSS(ref_grid_free(receipt_grid), "receipt");
+  ref_free(donor_solution);
+  RSS(ref_grid_free(donor_grid), "donor");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -435,12 +656,13 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
+  REF_BOOL buffer;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
   in_scalar = argv[3];
-  out_metric = argv[4];
-  complexity = atof(argv[5]);
+  complexity = atof(argv[4]);
+  out_metric = argv[5];
 
   p = 2;
   RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
@@ -462,11 +684,18 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
+  buffer = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    buffer = REF_TRUE;
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
+    printf("buffer %d (zero is inactive)\n", buffer);
   }
 
   ref_mpi_stopwatch_start(ref_mpi);
@@ -487,11 +716,19 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REIS(1, ldim, "expected one scalar");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
+  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                     gradation, complexity),
       "lp norm");
   ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+
+  if (buffer) {
+    if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
+    RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+        "buffer at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+  }
 
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (ref_mpi_once(ref_mpi))
@@ -552,6 +789,233 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS whole(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_project = NULL;
+  char *out_project = NULL;
+  char filename[1024];
+  REF_GRID ref_grid = NULL;
+  REF_GRID initial_grid = NULL;
+  REF_BOOL all_done = REF_FALSE;
+  REF_BOOL all_done0 = REF_FALSE;
+  REF_BOOL all_done1 = REF_FALSE;
+  REF_INT pass, passes = 30;
+  REF_DBL gamma = 1.4;
+  REF_INT ldim, node;
+  REF_DBL *initial_field, *ref_field, *scalar, *metric;
+  REF_INT p = 2;
+  REF_DBL gradation = -1.0, complexity;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+  REF_BOOL buffer = REF_FALSE;
+  REF_INTERP ref_interp;
+  REF_INT pos;
+
+  if (argc < 5) goto shutdown;
+  in_project = argv[2];
+  out_project = argv[3];
+  complexity = atof(argv[4]);
+
+  p = 2;
+  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: --norm-power <norm power>\n");
+      goto shutdown;
+    }
+    p = atoi(argv[pos + 1]);
+  }
+
+  gradation = -1.0;
+  RXS(ref_args_find(argc, argv, "--gradation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: --gradation <gradation>\n");
+      goto shutdown;
+    }
+    gradation = atof(argv[pos + 1]);
+  }
+
+  buffer = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    buffer = REF_TRUE;
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+    printf("buffer %d (zero is inactive)\n", buffer);
+  }
+
+  sprintf(filename, "%s.meshb", in_project);
+  if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
+  RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
+  ref_mpi_stopwatch_stop(ref_mpi, "part");
+
+  RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
+      "project.meshb is missing the geometry model record");
+  RAS(!ref_grid_twod(ref_grid), "2D adaptation not implemented");
+  RAS(!ref_grid_surf(ref_grid), "Surface adaptation not implemented");
+  RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
+
+  sprintf(filename, "%s_volume.solb", in_project);
+  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field, filename),
+      "part scalar");
+  RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+  if (ref_mpi_once(ref_mpi)) printf("compute mach\n");
+  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL rho, u, v, w, press, temp, u2, mach2;
+    rho = initial_field[0 + ldim * node];
+    u = initial_field[1 + ldim * node];
+    v = initial_field[2 + ldim * node];
+    w = initial_field[3 + ldim * node];
+    press = initial_field[4 + ldim * node];
+    RAB(ref_math_divisible(press, rho), "can not divide by rho", {
+      printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
+             press);
+    });
+    temp = gamma * (press / rho);
+    u2 = u * u + v * v + w * w;
+    RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+      printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+             u, v, w, press, temp);
+    });
+    mach2 = u2 / temp;
+    RAB(mach2 > 0, "negative mach2", {
+      printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+             u, v, w, press, temp);
+    });
+    scalar[node] = sqrt(mach2);
+  }
+  ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
+
+  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                    gradation, complexity),
+      "lp norm");
+  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+
+  ref_free(scalar);
+
+  if (buffer) {
+    if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
+    RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+        "buffer at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+  }
+
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+  ref_free(metric);
+
+  if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
+  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+  RSS(ref_geom_verify_param(ref_grid), "geom param");
+  ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+
+  RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
+  ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  RSS(ref_grid_cache_background(ref_grid), "cache");
+  ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
+  ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
+
+  RSS(ref_histogram_quality(ref_grid), "gram");
+  RSS(ref_histogram_ratio(ref_grid), "gram");
+  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+
+  RSS(ref_migrate_to_balance(ref_grid), "balance");
+  RSS(ref_grid_pack(ref_grid), "pack");
+  ref_mpi_stopwatch_stop(ref_mpi, "pack");
+
+  for (pass = 0; !all_done && pass < passes; pass++) {
+    if (ref_mpi_once(ref_mpi))
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+             ref_mpi_n(ref_mpi));
+    all_done1 = all_done0;
+    RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
+    all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
+    ref_mpi_stopwatch_stop(ref_mpi, "pass");
+    RSS(ref_metric_synchronize(ref_grid), "sync with background");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
+
+  RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
+      "implicit global");
+  ref_mpi_stopwatch_stop(ref_mpi, "implicit global");
+
+  RSS(ref_geom_verify_param(ref_grid), "final params");
+  ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
+
+  sprintf(filename, "%s.meshb", out_project);
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
+
+  sprintf(filename, "%s.lb8.ugrid", out_project);
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
+           " receptor nodes\n",
+           ldim, ref_node_n_global(ref_grid_node(initial_grid)),
+           ref_node_n_global(ref_grid_node(ref_grid)));
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
+  RSS(ref_interp_create(&ref_interp, initial_grid, ref_grid), "make interp");
+  RSS(ref_interp_locate(ref_interp), "map");
+  ref_mpi_stopwatch_stop(ref_mpi, "locate");
+
+  if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
+  ref_malloc(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_interp_scalar(ref_interp, ldim, initial_field, ref_field),
+      "interp scalar");
+  RSS(ref_interp_free(ref_interp), "free");
+  ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+  sprintf(filename, "%s-restart.solb", out_project);
+  if (ref_mpi_once(ref_mpi))
+    printf("writing interpolated field %s\n", filename);
+  RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename), "gather recept");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+
+  ref_free(ref_field) ref_free(initial_field)
+      RSS(ref_grid_free(initial_grid), "free");
+  RSS(ref_grid_free(ref_grid), "free");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static void echo_argv(int argc, char *argv[]) {
+  int pos;
+  printf("\n");
+  for (pos = 0; pos < argc; pos++) printf(" %s", argv[pos]);
+  printf("\n\n");
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
@@ -559,6 +1023,11 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
   ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("version %s, on or after 1.9.0\n", VERSION);
+    echo_argv(argc, argv);
+  }
 
   RXS(ref_args_find(argc, argv, "--help", &help_pos), REF_NOT_FOUND,
       "arg search");
@@ -588,9 +1057,16 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "f", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(fill(ref_mpi, argc, argv), "fill");
+      RSS(fun3d(ref_mpi, argc, argv), "fun3d");
     } else {
-      if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "i", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(interpolate(ref_mpi, argc, argv), "interpolate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) interpolate_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "l", 1) == 0) {
@@ -619,6 +1095,13 @@ int main(int argc, char *argv[]) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "w", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(whole(ref_mpi, argc, argv), "whole");
+    } else {
+      if (ref_mpi_once(ref_mpi)) whole_help(argv[0]);
       goto shutdown;
     }
   } else {
