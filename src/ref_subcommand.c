@@ -667,6 +667,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REIS(1, ldim, "expected one scalar");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
+  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                     gradation, complexity),
