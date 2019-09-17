@@ -157,6 +157,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
       if (ref_mpi_once(ref_mpi))
         printf("load egadslite from .meshb byte stream\n");
+    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       THROW("No geometry available via .meshb or -g option");
     }
