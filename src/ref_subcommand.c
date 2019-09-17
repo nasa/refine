@@ -59,6 +59,7 @@ static void usage(const char *name) {
   printf("  multiscale   Compute a multiscale metric.\n");
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
+  printf("  whole        Multiscale metric, adapt, and interpolation.\n");
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -116,6 +117,27 @@ static void surface_help(const char *name) {
 static void translate_help(const char *name) {
   printf("usage: \n %s translate input_mesh.extension output_mesh.extension \n",
          name);
+  printf("\n");
+}
+static void whole_help(const char *name) {
+  printf("usage: \n %s whole input_project_name output_project_name"
+	 " complexity\n",name);
+  printf("\n");
+  printf("  expects:\n");
+  printf("   input_project_name.meshb is"
+	 " mesh with geometry association and model.\n");
+  printf("   input_project_name_volume.solb is"
+	 " [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
+  printf("    in FUN3D nondimensionalization.\n");
+  printf("   complexity is half of the target number of vertices.\n");
+  printf("\n");
+  printf("  creates:\n");
+  printf("   output_project_name.meshb is"
+	 " mesh with geometry association and model.\n");
+  printf("   output_project_name.lb8.ugrid is"
+	 " FUN3D compatible little-endian mesh.\n");
+  printf("   output_project_name-restart.solb is"
+	 " an interpolated solution.\n");
   printf("\n");
 }
 
@@ -837,6 +859,12 @@ int main(int argc, char *argv[]) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "w", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+    } else {
+      if (ref_mpi_once(ref_mpi)) whole_help(argv[0]);
       goto shutdown;
     }
   } else {
