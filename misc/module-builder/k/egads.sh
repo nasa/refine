@@ -14,11 +14,10 @@ echo Build ${PACKAGE} ${VERSION}
 # https://acdl.mit.edu/ESP/PreBuilts/
 # https://acdl.mit.edu/ESP/archive/
 
-echo wget https://acdl.mit.edu/ESP/PreBuilts/ESP${VERSION}Lin.tgz
-
-echo ${MODULE_DEST}
-
-exit
+rm -f ESP${VERSION}Lin.tgz
+wget https://acdl.mit.edu/ESP/PreBuilts/ESP${VERSION}Lin.tgz
+mkdir ${MODULE_DEST}
+tar xzf ESP${VERSION}Lin.tgz -C ${MODULE_DEST} --strip-components=1
 
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
