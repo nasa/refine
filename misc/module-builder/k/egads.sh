@@ -43,9 +43,13 @@ if { \$modmode != "switch3" } {
   system  "\$logr/logger -p local2.info envmodule \$modmode \$modname"
 }
 
+setenv ESP_ROOT \$base/\$version/EngSketchPad
+setenv CASROOT \$base/\$version/OpenCASCADE-7.3.1
+
 prepend-path PATH \$base/\$version/EngSketchPad/bin
+
 prepend-path LD_LIBRARY_PATH \$base/\$version/EngSketchPad/lib
-prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-6.8.1/Linux/lib
+prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-7.3.1/Linux/lib
 
 EOF
 
