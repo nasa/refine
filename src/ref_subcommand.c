@@ -40,6 +40,7 @@
 #include "ref_part.h"
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -120,24 +121,31 @@ static void translate_help(const char *name) {
   printf("\n");
 }
 static void whole_help(const char *name) {
-  printf("usage: \n %s whole input_project_name output_project_name"
-	 " complexity\n",name);
+  printf(
+      "usage: \n %s whole input_project_name output_project_name"
+      " complexity\n",
+      name);
   printf("\n");
   printf("  expects:\n");
-  printf("   input_project_name.meshb is"
-	 " mesh with geometry association and model.\n");
-  printf("   input_project_name_volume.solb is"
-	 " [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
+  printf(
+      "   input_project_name.meshb is"
+      " mesh with geometry association and model.\n");
+  printf(
+      "   input_project_name_volume.solb is"
+      " [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
   printf("    in FUN3D nondimensionalization.\n");
   printf("   complexity is half of the target number of vertices.\n");
   printf("\n");
   printf("  creates:\n");
-  printf("   output_project_name.meshb is"
-	 " mesh with geometry association and model.\n");
-  printf("   output_project_name.lb8.ugrid is"
-	 " FUN3D compatible little-endian mesh.\n");
-  printf("   output_project_name-restart.solb is"
-	 " an interpolated solution.\n");
+  printf(
+      "   output_project_name.meshb is"
+      " mesh with geometry association and model.\n");
+  printf(
+      "   output_project_name.lb8.ugrid is"
+      " FUN3D compatible little-endian mesh.\n");
+  printf(
+      "   output_project_name-restart.solb is"
+      " an interpolated solution.\n");
   printf("\n");
 }
 
@@ -773,6 +781,190 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS whole(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_project = NULL;
+  char *out_project = NULL;
+  char filename[1024];
+  REF_GRID ref_grid = NULL;
+  REF_GRID initial_grid = NULL;
+  REF_BOOL all_done = REF_FALSE;
+  REF_BOOL all_done0 = REF_FALSE;
+  REF_BOOL all_done1 = REF_FALSE;
+  REF_INT pass, passes = 30;
+  REF_DBL gamma = 1.4;
+  REF_INT ldim, node;
+  REF_DBL *initial_field, *ref_field, *scalar, *metric;
+  REF_INT p = 2;
+  REF_DBL gradation = -1.0, complexity;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+  REF_BOOL buffer = REF_FALSE;
+  REF_INTERP ref_interp;
+
+  if (argc < 5) goto shutdown;
+  in_project = argv[2];
+  out_project = argv[3];
+  complexity = atof(argv[4]);
+
+  sprintf(filename, "%s.meshb", in_project);
+  if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
+  RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
+  ref_mpi_stopwatch_stop(ref_mpi, "part");
+
+  RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
+      "project.meshb is missing the geometry model record");
+  RAS(!ref_grid_twod(ref_grid), "2D adaptation not implemented");
+  RAS(!ref_grid_surf(ref_grid), "Surface adaptation not implemented");
+  RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
+
+  sprintf(filename, "%s_volume.solb", in_project);
+  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field, filename),
+      "part scalar");
+  RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+  if (ref_mpi_once(ref_mpi)) printf("compute mach\n");
+  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    REF_DBL rho, u, v, w, p, temp;
+    rho = initial_field[0 + ldim * node];
+    u = initial_field[1 + ldim * node];
+    v = initial_field[2 + ldim * node];
+    w = initial_field[3 + ldim * node];
+    p = initial_field[4 + ldim * node];
+    RAB(ref_math_divisible(gamma * p, rho), "negative rho", {
+      printf("rho = %e  u = %e  v = %e  w = %e  p = %e\n", rho, u, v, w, p);
+    });
+    temp = gamma * p / rho;
+    RAB(temp > 0.0, "non-positive temp", {
+      printf("rho = %e  u = %e  v = %e  w = %e  p = %e  temp = %e\n", rho, u, v,
+             w, p, temp);
+    });
+    scalar[node] = sqrt((u * u + v * v + w * w) / temp);
+  }
+  ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+    printf("buffer %d (zero is inactive)\n", buffer);
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                    gradation, complexity),
+      "lp norm");
+  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+
+  ref_free(scalar);
+
+  if (buffer) {
+    if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
+    RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+        "buffer at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+  }
+
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+  ref_free(metric);
+
+  if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
+  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+  RSS(ref_geom_verify_param(ref_grid), "geom param");
+  ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+
+  RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
+  ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  RSS(ref_grid_cache_background(ref_grid), "cache");
+  ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
+  ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
+
+  RSS(ref_histogram_quality(ref_grid), "gram");
+  RSS(ref_histogram_ratio(ref_grid), "gram");
+  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+
+  RSS(ref_migrate_to_balance(ref_grid), "balance");
+  RSS(ref_grid_pack(ref_grid), "pack");
+  ref_mpi_stopwatch_stop(ref_mpi, "pack");
+
+  for (pass = 0; !all_done && pass < passes; pass++) {
+    if (ref_mpi_once(ref_mpi))
+      printf("\n pass %d of %d with %d ranks\n", pass + 1, passes,
+             ref_mpi_n(ref_mpi));
+    all_done1 = all_done0;
+    RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
+    all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
+    ref_mpi_stopwatch_stop(ref_mpi, "pass");
+    RSS(ref_metric_synchronize(ref_grid), "sync with background");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
+    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_migrate_to_balance(ref_grid), "balance");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
+
+  RSS(ref_node_implicit_global_from_local(ref_grid_node(ref_grid)),
+      "implicit global");
+  ref_mpi_stopwatch_stop(ref_mpi, "implicit global");
+
+  RSS(ref_geom_verify_param(ref_grid), "final params");
+  ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
+
+  sprintf(filename, "%s.meshb", out_project);
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
+
+  sprintf(filename, "%s.lb8.ugrid", out_project);
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
+           " receptor nodes\n",
+           ldim, ref_node_n_global(ref_grid_node(initial_grid)),
+           ref_node_n_global(ref_grid_node(ref_grid)));
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
+  RSS(ref_interp_create(&ref_interp, initial_grid, ref_grid), "make interp");
+  RSS(ref_interp_locate(ref_interp), "map");
+  ref_mpi_stopwatch_stop(ref_mpi, "locate");
+
+  if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
+  ref_malloc(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_interp_scalar(ref_interp, ldim, initial_field, ref_field),
+      "interp scalar");
+  RSS(ref_interp_free(ref_interp), "free");
+  ref_mpi_stopwatch_stop(ref_mpi, "interp");
+
+  sprintf(filename, "%s-restart.solb", out_project);
+  if (ref_mpi_once(ref_mpi))
+    printf("writing interpolated field %s\n", filename);
+  RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename), "gather recept");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+
+  ref_free(ref_field) ref_free(initial_field)
+      RSS(ref_grid_free(initial_grid), "free");
+  RSS(ref_grid_free(ref_grid), "free");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static void echo_argv(int argc, char *argv[]) {
   int pos;
   printf("\n");
@@ -863,6 +1055,7 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "w", 1) == 0) {
     if (REF_EMPTY == help_pos) {
+      RSS(whole(ref_mpi, argc, argv), "whole");
     } else {
       if (ref_mpi_once(ref_mpi)) whole_help(argv[0]);
       goto shutdown;
