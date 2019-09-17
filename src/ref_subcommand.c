@@ -123,7 +123,7 @@ static void translate_help(const char *name) {
 static void whole_help(const char *name) {
   printf(
       "usage: \n %s whole input_project_name output_project_name"
-      " complexity\n",
+      " complexity [<options>]\n",
       name);
   printf("\n");
   printf("  expects:\n");
@@ -146,6 +146,14 @@ static void whole_help(const char *name) {
   printf(
       "   output_project_name-restart.solb is"
       " an interpolated solution.\n");
+  printf("\n");
+  printf("  options:\n");
+  printf("   --norm-power <power> multiscale metric norm power (default 2)\n");
+  printf("   --gradation <gradation> (default -1)\n");
+  printf("       positive: metric-space gradation stretching ratio.\n");
+  printf("       negative: mixed-space gradation.\n");
+  printf("   --buffer coarsens the metric appraoching the x max boundary.\n");
+
   printf("\n");
 }
 
@@ -799,11 +807,48 @@ static REF_STATUS whole(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
   REF_INTERP ref_interp;
+  REF_INT pos;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
   out_project = argv[3];
   complexity = atof(argv[4]);
+
+  p = 2;
+  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: --norm-power <norm power>\n");
+      goto shutdown;
+    }
+    p = atoi(argv[pos + 1]);
+  }
+
+  gradation = -1.0;
+  RXS(ref_args_find(argc, argv, "--gradation", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (pos >= argc - 1) {
+      printf("option missing value: --gradation <gradation>\n");
+      goto shutdown;
+    }
+    gradation = atof(argv[pos + 1]);
+  }
+
+  buffer = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    buffer = REF_TRUE;
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+    printf("buffer %d (zero is inactive)\n", buffer);
+  }
 
   sprintf(filename, "%s.meshb", in_project);
   if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
@@ -850,14 +895,6 @@ static REF_STATUS whole(REF_MPI ref_mpi, int argc, char *argv[]) {
     scalar[node] = sqrt(mach2);
   }
   ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
-
-  if (ref_mpi_once(ref_mpi)) {
-    printf("complexity %f\n", complexity);
-    printf("Lp=%d\n", p);
-    printf("gradation %f\n", gradation);
-    printf("reconstruction %d\n", (int)reconstruction);
-    printf("buffer %d (zero is inactive)\n", buffer);
-  }
 
   if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
