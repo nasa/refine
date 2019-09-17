@@ -7,7 +7,7 @@ set -x
 module_path="/u/shared/fun3d/fun3d_users/modules"
 zoltan_path="${module_path}/Zoltan/3.82-mpt-2.19-intel_2018.3.222"
 parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.19-intel_2018.3.222"
-egads_path="${module_path}/ESP/114/EngSketchPad"
+egads_path="${module_path}/ESP/116/EngSketchPad"
 
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"
