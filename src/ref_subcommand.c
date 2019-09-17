@@ -42,9 +42,9 @@
 #include "ref_malloc.h"
 
 static void usage(const char *name) {
-  printf("usage: \n %s [--help] <command> [<args>]\n", name);
+  printf("usage: \n %s [--help] <subcommand> [<args>]\n", name);
   printf("\n");
-  printf("ref commands:\n");
+  printf("ref subcommands:\n");
   printf("  adapt       Adapt a mesh\n");
   printf("  bootstrap   Create initial mesh from EGADS file\n");
   printf("  fill        Fill a surface shell mesh with a volume\n");
@@ -52,6 +52,8 @@ static void usage(const char *name) {
   printf("  multiscale  Compute a multiscale metric.\n");
   printf("  surface     Extract mesh surface.\n");
   printf("  translate   Convert mesh formats.\n");
+  printf("\n");
+  printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
 static void adapt_help(const char *name) {
   printf("usage: \n %s adapt input_mesh.extension [<options>]\n", name);
