@@ -157,8 +157,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
       if (ref_mpi_once(ref_mpi))
         printf("load egadslite from .meshb byte stream\n");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
-    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+      ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       THROW("No geometry available via .meshb or -g option");
     }
@@ -618,6 +618,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
+  REF_BOOL buffer;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -645,11 +646,18 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     gradation = atof(argv[pos + 1]);
   }
 
+  buffer = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--buffer", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    buffer = REF_TRUE;
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
+    printf("buffer %d (zero is inactive)\n", buffer);
   }
 
   ref_mpi_stopwatch_start(ref_mpi);
@@ -676,6 +684,13 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
                     gradation, complexity),
       "lp norm");
   ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+
+  if (buffer) {
+    if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
+    RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+        "buffer at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+  }
 
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (ref_mpi_once(ref_mpi))
@@ -755,7 +770,7 @@ int main(int argc, char *argv[]) {
     printf("version %s, on or after 1.9.0\n", VERSION);
     echo_argv(argc, argv);
   }
-  
+
   RXS(ref_args_find(argc, argv, "--help", &help_pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY == help_pos) {
