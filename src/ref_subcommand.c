@@ -102,9 +102,10 @@ static void location_help(const char *name) {
 }
 static void multiscale_help(const char *name) {
   printf(
-      "usage: \n %s multiscale input_mesh.extension scalar.solb metric.solb "
-      "complexity\n",
+      "usage: \n %s multiscale input_mesh.extension scalar.solb "
+      "complexity metric.solb\n",
       name);
+  printf("   complexity is approximately half the target number of vertices\n");
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -619,8 +620,8 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
   in_scalar = argv[3];
-  out_metric = argv[4];
-  complexity = atof(argv[5]);
+  complexity = atof(argv[4]);
+  out_metric = argv[5];
 
   p = 2;
   RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
