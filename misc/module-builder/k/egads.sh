@@ -49,7 +49,7 @@ setenv CASROOT \$base/\$version/OpenCASCADE-7.3.1
 prepend-path PATH \$base/\$version/EngSketchPad/bin
 
 prepend-path LD_LIBRARY_PATH \$base/\$version/EngSketchPad/lib
-prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-7.3.1/Linux/lib
+prepend-path LD_LIBRARY_PATH \$base/\$version/OpenCASCADE-7.3.1/lib
 
 EOF
 
