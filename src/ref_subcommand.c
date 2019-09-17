@@ -826,19 +826,20 @@ static REF_STATUS whole(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("compute mach\n");
   ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    REF_DBL rho, u, v, w, p, temp;
+    REF_DBL rho, u, v, w, press, temp;
     rho = initial_field[0 + ldim * node];
     u = initial_field[1 + ldim * node];
     v = initial_field[2 + ldim * node];
     w = initial_field[3 + ldim * node];
-    p = initial_field[4 + ldim * node];
-    RAB(ref_math_divisible(gamma * p, rho), "negative rho", {
-      printf("rho = %e  u = %e  v = %e  w = %e  p = %e\n", rho, u, v, w, p);
+    press = initial_field[4 + ldim * node];
+    RAB(ref_math_divisible(gamma * press, rho), "negative rho", {
+      printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
+             press);
     });
-    temp = gamma * p / rho;
+    temp = gamma * press / rho;
     RAB(temp > 0.0, "non-positive temp", {
       printf("rho = %e  u = %e  v = %e  w = %e  p = %e  temp = %e\n", rho, u, v,
-             w, p, temp);
+             w, press, temp);
     });
     scalar[node] = sqrt((u * u + v * v + w * w) / temp);
   }
