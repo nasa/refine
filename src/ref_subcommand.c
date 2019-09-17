@@ -41,6 +41,12 @@
 
 #include "ref_malloc.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#else
+#define VERSION "not available"
+#endif
+
 static void usage(const char *name) {
   printf("usage: \n %s [--help] <subcommand> [<args>]\n", name);
   printf("\n");
@@ -726,6 +732,13 @@ shutdown:
   return REF_FAILURE;
 }
 
+static void echo_argv(int argc, char *argv[]) {
+  int pos;
+  printf("\n");
+  for (pos = 0; pos < argc; pos++) printf(" %s", argv[pos]);
+  printf("\n\n");
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT help_pos = REF_EMPTY;
@@ -734,6 +747,11 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
   ref_mpi_stopwatch_start(ref_mpi);
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("version %s, on or after 1.9.0\n", VERSION);
+    echo_argv(argc, argv);
+  }
+  
   RXS(ref_args_find(argc, argv, "--help", &help_pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY == help_pos) {
