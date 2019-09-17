@@ -71,6 +71,9 @@ if { \$modmode != "switch3" } {
 }
 
 prepend-path PATH \$base/\$version/bin
+
+setenv MPI_ADJUST_ALLREDUCE 1
+
 EOF
 
 echo Set group ownership and permssions
