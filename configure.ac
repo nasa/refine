@@ -21,8 +21,53 @@ AC_PROG_CC
 AC_HEADER_STDC
 AM_PROG_CC_C_O
 
-dnl placeholder for mpi autostuff
-AC_SUBST([mpi_ldadd])
+dnl mpi autostuff
+AC_ARG_WITH(mpi,
+        [[  --with-mpi[=ARG]        Path to MPI library installation [ARG=no]]],
+        [with_mpi="$withval"],      [with_mpi="no"] )
+AC_ARG_WITH(mpicc,
+        [[  --with-mpicc[=ARG]      MPI C compiler wrapper absolute path [with_mpi/bin/mpicc]]],
+        [with_mpicc="$withval"],    [with_mpicc="with_mpi/bin/mpicc"] )
+AC_ARG_WITH(mpiinc,
+        [[  --with-mpiinc[=ARG]     MPI include absolute path for mpif.h [with_mpi/include]]],
+        [with_mpiinc="$withval"],   [with_mpiinc="with_mpi/include"] )
+if test "$with_mpi" != 'no'
+then
+  AC_MSG_NOTICE([checking MPI installation])
+  if test "$with_mpiinc" != 'no'
+  then
+    if test "$with_mpiinc" = 'with_mpi/include'
+    then
+      mpi_include="-I${with_mpi}/include"
+    else
+      mpi_include="-I${with_mpiinc}"
+    fi
+  else
+    mpi_include=""
+  fi
+  AC_SUBST([mpi_include])
+
+  if test "$with_mpicc" != 'no'
+  then
+    if test "$with_mpicc" = 'with_mpi/bin/mpicc'
+    then
+      MPICC="${with_mpi}/bin/mpicc"
+    else
+      MPICC="${with_mpicc}"
+    fi
+    mpi_ldadd=""
+  else
+    MPICC="${CC}"
+    mpi_ldadd="-L${with_mpi}/lib -lmpi"
+  fi
+  AC_SUBST([MPICC])
+  AC_SUBST([mpi_ldadd])
+
+  AM_CONDITIONAL(BUILD_MPI,true)
+else
+  AM_CONDITIONAL(BUILD_MPI,false)
+fi
+
 
 AC_ARG_WITH(zoltan,
 	[  --with-zoltan[=ARG]       use Zoltan partitioner [ARG=no]],
