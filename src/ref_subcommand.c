@@ -699,7 +699,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
              u, v, w, press, temp);
     });
     mach2 = u2 / temp;
-    RAB(mach2 > 0, "negative mach2", {
+    RAB(mach2 >= 0, "negative mach2", {
       printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
              u, v, w, press, temp);
     });
