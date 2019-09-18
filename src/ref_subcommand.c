@@ -105,29 +105,29 @@ static void location_help(const char *name) {
 */
 static void loop_help(const char *name) {
   printf(
-      "usage: \n %s loop input_project_name output_project_name"
+      "usage: \n %s loop <input_project_name> <output_project_name>"
       " complexity [<options>]\n",
       name);
   printf("\n");
   printf("  expects:\n");
   printf(
-      "   input_project_name.meshb is"
+      "   <input_project_name>.meshb is"
       " mesh with geometry association and model.\n");
   printf(
-      "   input_project_name_volume.solb is"
+      "   <input_project_name>_volume.solb is"
       " [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
   printf("    in FUN3D nondimensionalization.\n");
   printf("   complexity is half of the target number of vertices.\n");
   printf("\n");
   printf("  creates:\n");
   printf(
-      "   output_project_name.meshb is"
+      "   <output_project_name>.meshb is"
       " mesh with geometry association and model.\n");
   printf(
-      "   output_project_name.lb8.ugrid is"
+      "   <output_project_name>.lb8.ugrid is"
       " FUN3D compatible little-endian mesh.\n");
   printf(
-      "   output_project_name-restart.solb is"
+      "   <output_project_name>-restart.solb is"
       " an interpolated solution.\n");
   printf("\n");
   printf("  options:\n");
