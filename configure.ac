@@ -15,106 +15,59 @@ AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
 	[enable_exec=$enableval],    [enable_exec="yes"])
 
-AC_ARG_WITH(SDK,
-	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=no]],
-	[with_SDK=$withval],         [with_SDK="no"])
-
-AC_ARG_WITH(CAPRI,
-	[  --with-CAPRI[=ARG]        use CAPRI package [ARG=no]],
-	[with_CAPRI=$withval],       [with_CAPRI="no"])
-
 AC_PROG_RANLIB
 
 AC_PROG_CC
 AC_HEADER_STDC
 AM_PROG_CC_C_O
 
-arch=`uname`
-
-dnl special arch libs
-
-if test "$arch" = 'Linux'
-then  
-  ARCHlibrary=
-  dynamicFlag="-rdynamic"
-else
-  ARCHlibrary="-lgen"
-  dynamicFlag=
-fi
-AC_SUBST([ARCHlibrary])
-AC_SUBST([dynamicFlag])
-
-dnl Enable stand alone executable build
-
-if test "$enable_exec" != 'no'
+dnl mpi autostuff
+AC_ARG_WITH(mpi,
+        [[  --with-mpi[=ARG]        Path to MPI library installation [ARG=no]]],
+        [with_mpi="$withval"],      [with_mpi="no"] )
+AC_ARG_WITH(mpicc,
+        [[  --with-mpicc[=ARG]      MPI C compiler wrapper absolute path [with_mpi/bin/mpicc]]],
+        [with_mpicc="$withval"],    [with_mpicc="with_mpi/bin/mpicc"] )
+AC_ARG_WITH(mpiinc,
+        [[  --with-mpiinc[=ARG]     MPI include absolute path for mpif.h [with_mpi/include]]],
+        [with_mpiinc="$withval"],   [with_mpiinc="with_mpi/include"] )
+if test "$with_mpi" != 'no'
 then
-  AM_CONDITIONAL(BUILD_EXECUTABLES,true)
-else
-  AM_CONDITIONAL(BUILD_EXECUTABLES,false)
-fi
-
-dnl turn off mpi stuff in stand alone refine (set by fun3d)
-AM_CONDITIONAL(BUILD_MPI,false)
-AC_SUBST([MPIINC])
-AC_SUBST([mpi_ldadd])
-
-dnl Check for SDK
-
-have_SDK='no'
-if test "$with_SDK" != 'no' 
-then
-  AC_CHECK_FILE([$with_SDK/include/MeatLib/Common.h],
-                 [have_SDK='yes'],[have_SDK='no'])
-fi
-
-if test "$have_SDK" != 'no'
-then
-  AC_DEFINE([HAVE_SDK],[1],[Geometry Laboratory SDK available])
-  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,true)
-  SDKheader=-I$with_SDK/include
-  SDKlibrary=-L$with_SDK/lib
-else
-  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,false)
-  SDKheader=
-  SDKlibrary=
-fi
-AC_SUBST([SDKheader])
-AC_SUBST([SDKlibrary])
-
-dnl Check for X header
-
-AC_PATH_X
-if test "$x_includes" != ''
-then
-  Xheader=-I$x_includes
-  Xlibrary=-L$x_libraries
-else
-  Xheader=
-  Xlibrary=
-fi
-AC_SUBST([Xheader])
-AC_SUBST([Xlibrary])
-
-dnl Check for CAPRI header
-
-have_CAPRI='no'
-if test "$with_CAPRI" != 'no'
-then
-  CAPRIinclude=$with_CAPRI/include
-  AC_CHECK_FILE([$CAPRIinclude/capri.h],
-                [have_CAPRI='yes'],[have_CAPRI='no'])
-
-  if test "$have_CAPRI" != 'no'
+  AC_MSG_NOTICE([checking MPI installation])
+  if test "$with_mpiinc" != 'no'
   then
-    AC_DEFINE([HAVE_CAPRI],[3],[CAPrI 3.0 API])
-    CAPRIheader=-I$CAPRIinclude
-    CAPRIlibrary="-L$with_CAPRI/lib -lcapriDyn -ldcapri"
-    AC_SUBST([CAPRIlibrary])
-    AC_SUBST([CAPRIheader])
+    if test "$with_mpiinc" = 'with_mpi/include'
+    then
+      mpi_include="-I${with_mpi}/include"
+    else
+      mpi_include="-I${with_mpiinc}"
+    fi
   else
-    AC_MSG_ERROR([capri.h not found in $with_CAPRI/include])
+    mpi_include=""
   fi
+  AC_SUBST([mpi_include])
+
+  if test "$with_mpicc" != 'no'
+  then
+    if test "$with_mpicc" = 'with_mpi/bin/mpicc'
+    then
+      MPICC="${with_mpi}/bin/mpicc"
+    else
+      MPICC="${with_mpicc}"
+    fi
+    mpi_ldadd="-L${with_mpi}/lib -lmpi"
+  else
+    MPICC="${CC}"
+    mpi_ldadd="-L${with_mpi}/lib -lmpi"
+  fi
+  AC_SUBST([MPICC])
+  AC_SUBST([mpi_ldadd])
+
+  AM_CONDITIONAL(BUILD_MPI,true)
+else
+  AM_CONDITIONAL(BUILD_MPI,false)
 fi
+
 
 AC_ARG_WITH(zoltan,
 	[  --with-zoltan[=ARG]       use Zoltan partitioner [ARG=no]],
@@ -315,18 +268,6 @@ then
 
   AC_CHECK_FILE([$with_egads/include/egads.h],
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
-
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.a],
-                [egads_a_path=$with_egads/lib],[egads_a_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.so],
-                [egads_so_path=$with_egads/lib],[egads_so_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
-                [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
-                [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
-  AC_CHECK_FILE([$with_egads/bin/${egads_lib_root}.dll],
-                [egads_dll_path=$with_egads/bin],[egads_dll_path='no'])
-
   if test "$egads_h_path" != 'no'
   then
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
@@ -338,6 +279,17 @@ then
   else
     AC_MSG_ERROR([egads.h not found in ${with_egads}/include])
   fi
+
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.a],
+                [egads_a_path=$with_egads/lib],[egads_a_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.so],
+                [egads_so_path=$with_egads/lib],[egads_so_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
+                [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
+                [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
+  AC_CHECK_FILE([$with_egads/bin/${egads_lib_root}.dll],
+                [egads_dll_path=$with_egads/bin],[egads_dll_path='no'])
 
   egads_ldadd=""
   if test "$egads_a_path" != 'no'
@@ -367,6 +319,47 @@ then
 
   AC_SUBST([egads_include])
   AC_SUBST([egads_ldadd])
+
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.a],
+                [egadslite_a_path=$with_egads/lib],[egadslite_a_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.so],
+                [egadslite_so_path=$with_egads/lib],[egadslite_so_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.dylib],
+                [egadslite_dylib_path=$with_egads/lib],[egadslite_dylib_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.dll],
+                [egadslite_libdll_path=$with_egads/lib],[egadslite_libdll_path='no'])
+  AC_CHECK_FILE([$with_egads/bin/egadslite.dll],
+                [egadslite_dll_path=$with_egads/bin],[egadslite_dll_path='no'])
+
+  egadslite_ldadd=""
+  if test "$egadslite_a_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_a_path} -legadslite"
+  fi
+  if test "$egadslite_so_path" != 'no'
+  then
+      egadslite_ldadd="-Wl,-rpath,${egadslite_so_path} -L${egadslite_so_path} -legadslite"
+  fi
+  if test "$egadslite_dylib_path" != 'no'
+  then
+      egadslite_ldadd="-Wl,-rpath,${egadslite_dylib_path} -L${egadslite_dylib_path} -legadslite"
+  fi
+  if test "$egadslite_libdll_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_libdll_path} -legadslite"
+  fi
+  if test "$egadslite_dll_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_dll_path} -legadslite"
+  fi
+  if test "empty$egadslite_ldadd" == 'empty'
+  then
+    AC_MSG_ERROR([libegadslite.{a,so,dylib} not found in $with_egads/lib])
+  fi
+
+  AC_SUBST([egadslite_include])
+  AC_SUBST([egadslite_ldadd])
+
 fi
 
 AC_ARG_WITH(OpenCASCADE,
