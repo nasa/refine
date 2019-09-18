@@ -11,7 +11,6 @@ fi
 
 TOPDIR='../../..'
 PARMETIS="ParMETIS/${PARMETIS_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
-ZOLTAN="Zoltan/${ZOLTAN_VERSION}-mpt-${MPT_VERSION}-intel_${INTEL_VERSION}"
 ESP="ESP/${ESP_VERSION}"
 
 echo Build ${PACKAGE} ${VERSION}
@@ -28,6 +27,9 @@ cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
  --prefix=${MODULE_DEST} \
+ --with-mpi=/opt/hpe/hpc/mpt/mpt-2.19 \
+ --with-metis=${MODULE_ROOT}/${PARMETIS} \
+ --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
  --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
  CC=icc \
