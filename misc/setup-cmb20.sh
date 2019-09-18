@@ -25,9 +25,11 @@ mkdir -p egads
     ../configure \
     --prefix=`pwd` \
     --with-mpi=${mpi_path} \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CC=icc \
+    CFLAGS='-g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
     ) \
     || exit
 
@@ -40,7 +42,7 @@ mkdir -p parmetis
     --with-EGADS=${egads_path} \
     --enable-lite \
     CC=mpicc \
-    CFLAGS='-DHAVE_MPI -g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-protector-all -fstack-security-check' \
+    CFLAGS='-DHAVE_MPI -g -O3 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,1419 -fp-stack-check -fstack-security-check' \
     ) \
     || exit
 
