@@ -320,6 +320,10 @@ then
 
   AC_SUBST([egads_include])
   AC_SUBST([egads_ldadd])
+
+  AM_CONDITIONAL(BUILD_EGADS,true)
+else
+  AM_CONDITIONAL(BUILD_EGADS,false)
 fi
 
 AC_ARG_WITH(OpenCASCADE,
