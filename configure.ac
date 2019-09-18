@@ -320,9 +320,46 @@ then
   AC_SUBST([egads_include])
   AC_SUBST([egads_ldadd])
 
-  AM_CONDITIONAL(BUILD_EGADS,true)
-else
-  AM_CONDITIONAL(BUILD_EGADS,false)
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.a],
+                [egadslite_a_path=$with_egads/lib],[egadslite_a_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.so],
+                [egadslite_so_path=$with_egads/lib],[egadslite_so_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.dylib],
+                [egadslite_dylib_path=$with_egads/lib],[egadslite_dylib_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/libegadslite.dll],
+                [egadslite_libdll_path=$with_egads/lib],[egadslite_libdll_path='no'])
+  AC_CHECK_FILE([$with_egads/bin/egadslite.dll],
+                [egadslite_dll_path=$with_egads/bin],[egadslite_dll_path='no'])
+
+  egadslite_ldadd=""
+  if test "$egadslite_a_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_a_path} -legadslite"
+  fi
+  if test "$egadslite_so_path" != 'no'
+  then
+      egadslite_ldadd="-Wl,-rpath,${egadslite_so_path} -L${egadslite_so_path} -legadslite"
+  fi
+  if test "$egadslite_dylib_path" != 'no'
+  then
+      egadslite_ldadd="-Wl,-rpath,${egadslite_dylib_path} -L${egadslite_dylib_path} -legadslite"
+  fi
+  if test "$egadslite_libdll_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_libdll_path} -legadslite"
+  fi
+  if test "$egadslite_dll_path" != 'no'
+  then
+      egadslite_ldadd="-L${egadslite_dll_path} -legadslite"
+  fi
+  if test "empty$egadslite_ldadd" == 'empty'
+  then
+    AC_MSG_ERROR([libegadslite.{a,so,dylib} not found in $with_egads/lib])
+  fi
+
+  AC_SUBST([egadslite_include])
+  AC_SUBST([egadslite_ldadd])
+
 fi
 
 AC_ARG_WITH(OpenCASCADE,
