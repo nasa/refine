@@ -55,7 +55,7 @@ then
     else
       MPICC="${with_mpicc}"
     fi
-    mpi_ldadd=""
+    mpi_ldadd="-L${with_mpi}/lib -lmpi"
   else
     MPICC="${CC}"
     mpi_ldadd="-L${with_mpi}/lib -lmpi"

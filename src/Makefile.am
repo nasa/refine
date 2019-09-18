@@ -69,7 +69,7 @@ libref2_a_SOURCES = \
 	ref_validation.c
 libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
 
-default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 
 bin_PROGRAMS =
@@ -77,6 +77,15 @@ bin_PROGRAMS =
 bin_PROGRAMS += ref
 ref_SOURCES = ref_subcommand.c
 ref_LDADD = $(default_ldadd)
+
+if BUILD_MPI
+bin_PROGRAMS += refmpi
+refmpi_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
+refmpi_CFLAGS = \
+	-DHAVE_MPI -DHAVE_EGADS_LITE \
+	@zoltan_include@ @parmetis_include@ @egads_include@ @mpi_include@
+refmpi_LDADD = @egads_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+endif
 
 bin_PROGRAMS += ref_driver
 ref_driver_SOURCES = ref_driver.c
