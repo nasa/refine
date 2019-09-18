@@ -268,18 +268,6 @@ then
 
   AC_CHECK_FILE([$with_egads/include/egads.h],
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
-
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.a],
-                [egads_a_path=$with_egads/lib],[egads_a_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.so],
-                [egads_so_path=$with_egads/lib],[egads_so_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
-                [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
-  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
-                [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
-  AC_CHECK_FILE([$with_egads/bin/${egads_lib_root}.dll],
-                [egads_dll_path=$with_egads/bin],[egads_dll_path='no'])
-
   if test "$egads_h_path" != 'no'
   then
     AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
@@ -291,6 +279,17 @@ then
   else
     AC_MSG_ERROR([egads.h not found in ${with_egads}/include])
   fi
+
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.a],
+                [egads_a_path=$with_egads/lib],[egads_a_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.so],
+                [egads_so_path=$with_egads/lib],[egads_so_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dylib],
+                [egads_dylib_path=$with_egads/lib],[egads_dylib_path='no'])
+  AC_CHECK_FILE([$with_egads/lib/lib${egads_lib_root}.dll],
+                [egads_libdll_path=$with_egads/lib],[egads_libdll_path='no'])
+  AC_CHECK_FILE([$with_egads/bin/${egads_lib_root}.dll],
+                [egads_dll_path=$with_egads/bin],[egads_dll_path='no'])
 
   egads_ldadd=""
   if test "$egads_a_path" != 'no'
