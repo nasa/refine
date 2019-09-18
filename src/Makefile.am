@@ -16,10 +16,9 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h
 
-lib_LIBRARIES =
+noinst_LIBRARIES =
 
-lib_LIBRARIES += librefbase.a
-
+noinst_LIBRARIES += librefbase.a
 librefbase_a_SOURCES = \
 	ref_adapt.c \
 	ref_adj.c \
@@ -67,14 +66,18 @@ librefbase_a_SOURCES = \
 	ref_swap.c \
 	ref_twod.c \
 	ref_validation.c
-
 librefbase_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
 
-lib_LIBRARIES += librefgeom.a
-
+noinst_LIBRARIES += librefgeom.a
 librefgeom_a_SOURCES = \
 	ref_geom.c
 librefgeom_a_CFLAGS = @egads_include@
+
+lib_LIBRARIES =
+
+lib_LIBRARIES += libref2.a
+libref2_a_SOURCES =
+libref2_a_LIBADD = librefbase.a librefgeom.a
 
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
 
