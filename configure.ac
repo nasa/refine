@@ -15,106 +15,14 @@ AC_ARG_ENABLE(exec,
 	[  --enable-exec[=ARG]       build stand alone executables [ARG=yes]],
 	[enable_exec=$enableval],    [enable_exec="yes"])
 
-AC_ARG_WITH(SDK,
-	[  --with-SDK[=ARG]          use GEOLAB SDK package [ARG=no]],
-	[with_SDK=$withval],         [with_SDK="no"])
-
-AC_ARG_WITH(CAPRI,
-	[  --with-CAPRI[=ARG]        use CAPRI package [ARG=no]],
-	[with_CAPRI=$withval],       [with_CAPRI="no"])
-
 AC_PROG_RANLIB
 
 AC_PROG_CC
 AC_HEADER_STDC
 AM_PROG_CC_C_O
 
-arch=`uname`
-
-dnl special arch libs
-
-if test "$arch" = 'Linux'
-then  
-  ARCHlibrary=
-  dynamicFlag="-rdynamic"
-else
-  ARCHlibrary="-lgen"
-  dynamicFlag=
-fi
-AC_SUBST([ARCHlibrary])
-AC_SUBST([dynamicFlag])
-
-dnl Enable stand alone executable build
-
-if test "$enable_exec" != 'no'
-then
-  AM_CONDITIONAL(BUILD_EXECUTABLES,true)
-else
-  AM_CONDITIONAL(BUILD_EXECUTABLES,false)
-fi
-
-dnl turn off mpi stuff in stand alone refine (set by fun3d)
-AM_CONDITIONAL(BUILD_MPI,false)
-AC_SUBST([MPIINC])
+dnl placeholder for mpi autostuff
 AC_SUBST([mpi_ldadd])
-
-dnl Check for SDK
-
-have_SDK='no'
-if test "$with_SDK" != 'no' 
-then
-  AC_CHECK_FILE([$with_SDK/include/MeatLib/Common.h],
-                 [have_SDK='yes'],[have_SDK='no'])
-fi
-
-if test "$have_SDK" != 'no'
-then
-  AC_DEFINE([HAVE_SDK],[1],[Geometry Laboratory SDK available])
-  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,true)
-  SDKheader=-I$with_SDK/include
-  SDKlibrary=-L$with_SDK/lib
-else
-  AM_CONDITIONAL(BUILD_SDK_DEPENDENTS,false)
-  SDKheader=
-  SDKlibrary=
-fi
-AC_SUBST([SDKheader])
-AC_SUBST([SDKlibrary])
-
-dnl Check for X header
-
-AC_PATH_X
-if test "$x_includes" != ''
-then
-  Xheader=-I$x_includes
-  Xlibrary=-L$x_libraries
-else
-  Xheader=
-  Xlibrary=
-fi
-AC_SUBST([Xheader])
-AC_SUBST([Xlibrary])
-
-dnl Check for CAPRI header
-
-have_CAPRI='no'
-if test "$with_CAPRI" != 'no'
-then
-  CAPRIinclude=$with_CAPRI/include
-  AC_CHECK_FILE([$CAPRIinclude/capri.h],
-                [have_CAPRI='yes'],[have_CAPRI='no'])
-
-  if test "$have_CAPRI" != 'no'
-  then
-    AC_DEFINE([HAVE_CAPRI],[3],[CAPrI 3.0 API])
-    CAPRIheader=-I$CAPRIinclude
-    CAPRIlibrary="-L$with_CAPRI/lib -lcapriDyn -ldcapri"
-    AC_SUBST([CAPRIlibrary])
-    AC_SUBST([CAPRIheader])
-  else
-    AC_MSG_ERROR([capri.h not found in $with_CAPRI/include])
-  fi
-fi
 
 AC_ARG_WITH(zoltan,
 	[  --with-zoltan[=ARG]       use Zoltan partitioner [ARG=no]],

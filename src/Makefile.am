@@ -70,9 +70,6 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 partioner_ldadd = @zoltan_ldadd@ @parmetis_ldadd@
 
 libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
-if BUILD_MPI
-libref2_a_CFLAGS += -I@MPIINC@
-endif # BUILD_MPI
 
 bin_PROGRAMS =
 
