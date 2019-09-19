@@ -60,7 +60,7 @@ REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
                            REF_DBL *xyz3, REF_DBL *normal);
 
 REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                              REF_DBL *xyz3, REF_INT *open_node);
+                              REF_DBL *xyz3, REF_INT *open_node, REF_DBL *dot);
 
 END_C_DECLORATION
 

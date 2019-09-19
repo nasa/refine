@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
       REF_INT faceid;
       REF_INT open_node0, open_node1;
       REF_INT face_marks, hex_marks;
+      REF_DBL dot;
 
       if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
         RSS(ref_mpi_free(ref_mpi), "mpi free");
@@ -108,18 +109,22 @@ int main(int argc, char *argv[]) {
       ref_cell = ref_grid_qua(ref_grid);
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         faceid = nodes[4];
-        if (atoi(argv[2]) == faceid) {
+        if (atoi(argv[2]) == faceid ||
+            (-1 == atoi(argv[2]) && (1 == faceid || 2 == faceid))) {
           RSS(ref_face_open_node(&ref_node_xyz(ref_node, 0, nodes[0]),
                                  &ref_node_xyz(ref_node, 0, nodes[1]),
                                  &ref_node_xyz(ref_node, 0, nodes[2]),
                                  &ref_node_xyz(ref_node, 0, nodes[3]),
-                                 &open_node0),
+                                 &open_node0, &dot),
               "find open");
-          open_node1 = open_node0 + 2;
-          if (open_node1 >= 4) open_node1 -= 4;
-          RSS(ref_shard_mark_to_split(ref_shard, nodes[open_node0],
-                                      nodes[open_node1]),
-              "mark");
+          if ((-1 != atoi(argv[2])) || (dot > 0.99)) {
+            printf("dot %f\n", dot);
+            open_node1 = open_node0 + 2;
+            if (open_node1 >= 4) open_node1 -= 4;
+            RSS(ref_shard_mark_to_split(ref_shard, nodes[open_node0],
+                                        nodes[open_node1]),
+                "mark");
+          }
         }
       }
       RSS(ref_shard_mark_n(ref_shard, &face_marks, &hex_marks), "count marks");
@@ -129,6 +134,11 @@ int main(int argc, char *argv[]) {
       printf("relaxed faces %d hexes %d\n", face_marks, hex_marks);
       RSS(ref_shard_split(ref_shard), "split hex to prism");
       RSS(ref_shard_free(ref_shard), "free");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split");
+      RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
+                                     "ref_shard_test_surf.tec"),
+          "gather surf tec");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "surf");
     } else {
       RSS(ref_shard_prism_into_tet(ref_grid, atoi(argv[2]), REF_EMPTY), "shrd");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shard");

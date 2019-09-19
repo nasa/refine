@@ -224,7 +224,7 @@ REF_STATUS ref_face_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
 }
 
 REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                              REF_DBL *xyz3, REF_INT *open_node) {
+                              REF_DBL *xyz3, REF_INT *open_node, REF_DBL *dot) {
   REF_DBL edge1[3], edge2[3];
   REF_DBL open_dot;
 
@@ -236,8 +236,11 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   edge2[1] = xyz1[1] - xyz0[1];
   edge2[2] = xyz1[2] - xyz0[2];
 
+  RSS(ref_math_normalize(edge1), "e1");
+  RSS(ref_math_normalize(edge2), "e2");
   open_dot = ref_math_dot(edge2, edge1);
   *open_node = 0;
+  *dot = open_dot;
 
   edge1[0] = xyz1[0] - xyz0[0];
   edge1[1] = xyz1[1] - xyz0[1];
@@ -247,9 +250,12 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   edge2[1] = xyz2[1] - xyz1[1];
   edge2[2] = xyz2[2] - xyz1[2];
 
+  RSS(ref_math_normalize(edge1), "e1");
+  RSS(ref_math_normalize(edge2), "e2");
   if (ref_math_dot(edge2, edge1) > open_dot) {
     open_dot = ref_math_dot(edge2, edge1);
     *open_node = 1;
+    *dot = open_dot;
   }
 
   edge1[0] = xyz2[0] - xyz1[0];
@@ -260,9 +266,12 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   edge2[1] = xyz3[1] - xyz2[1];
   edge2[2] = xyz3[2] - xyz2[2];
 
+  RSS(ref_math_normalize(edge1), "e1");
+  RSS(ref_math_normalize(edge2), "e2");
   if (ref_math_dot(edge2, edge1) > open_dot) {
     open_dot = ref_math_dot(edge2, edge1);
     *open_node = 2;
+    *dot = open_dot;
   }
 
   edge1[0] = xyz3[0] - xyz2[0];
@@ -273,9 +282,12 @@ REF_STATUS ref_face_open_node(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   edge2[1] = xyz0[1] - xyz3[1];
   edge2[2] = xyz0[2] - xyz3[2];
 
+  RSS(ref_math_normalize(edge1), "e1");
+  RSS(ref_math_normalize(edge2), "e2");
   if (ref_math_dot(edge2, edge1) > open_dot) {
     open_dot = ref_math_dot(edge2, edge1);
     *open_node = 3;
+    *dot = open_dot;
   }
 
   return REF_SUCCESS;
