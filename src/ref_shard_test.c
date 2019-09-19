@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
       REF_INT faceid;
       REF_INT open_node0, open_node1;
       REF_INT face_marks, hex_marks;
+      REF_DBL dot;
 
       if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
         RSS(ref_mpi_free(ref_mpi), "mpi free");
@@ -113,7 +114,7 @@ int main(int argc, char *argv[]) {
                                  &ref_node_xyz(ref_node, 0, nodes[1]),
                                  &ref_node_xyz(ref_node, 0, nodes[2]),
                                  &ref_node_xyz(ref_node, 0, nodes[3]),
-                                 &open_node0),
+                                 &open_node0, &dot),
               "find open");
           open_node1 = open_node0 + 2;
           if (open_node1 >= 4) open_node1 -= 4;

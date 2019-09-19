@@ -171,10 +171,13 @@ int main(int argc, char *argv[]) {
     REF_DBL xyz2[3] = {1.0, 0.0, 0.0};
     REF_DBL xyz3[3] = {0.0, 1.0, 0.0};
     REF_INT open_node;
+    REF_DBL dot;
 
-    RSS(ref_face_open_node(xyz0, xyz1, xyz2, xyz3, &open_node), "open node");
+    RSS(ref_face_open_node(xyz0, xyz1, xyz2, xyz3, &open_node, &dot),
+        "open node");
 
     REIS(1, open_node, "expect 180 deg node");
+    RWDS(1.0, dot, -1, "unity dot");
   }
 
   { /* quad open node 2 */
@@ -183,10 +186,13 @@ int main(int argc, char *argv[]) {
     REF_DBL xyz2[3] = {0.5, 0.5, 0.0};
     REF_DBL xyz3[3] = {0.0, 1.0, 0.0};
     REF_INT open_node;
+    REF_DBL dot;
 
-    RSS(ref_face_open_node(xyz0, xyz1, xyz2, xyz3, &open_node), "open node");
+    RSS(ref_face_open_node(xyz0, xyz1, xyz2, xyz3, &open_node, &dot),
+        "open node");
 
-    REIS(2, open_node, "expect 180 deg node");
+    REIS(1, open_node, "expect 180 deg node");
+    RWDS(0.62469504755, dot, 1e-8, "unity dot");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
