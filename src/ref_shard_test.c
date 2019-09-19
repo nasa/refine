@@ -129,6 +129,11 @@ int main(int argc, char *argv[]) {
       printf("relaxed faces %d hexes %d\n", face_marks, hex_marks);
       RSS(ref_shard_split(ref_shard), "split hex to prism");
       RSS(ref_shard_free(ref_shard), "free");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split");
+      RSS(ref_gather_scalar_surf_tec(ref_grid, 0, NULL, NULL,
+                                     "ref_shard_test_surf.tec"),
+          "gather surf tec");
+      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "surf");
     } else {
       RSS(ref_shard_prism_into_tet(ref_grid, atoi(argv[2]), REF_EMPTY), "shrd");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "shard");
