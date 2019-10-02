@@ -1,4 +1,12 @@
 
+exchange surrogate geomtry
+
+estimate h and AR for metric
+
+reject insertion based on near tree
+
+boundry topo edge steps to prioritize edge length smooth
+
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   use lexigraph comparison
