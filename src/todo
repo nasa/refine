@@ -1,4 +1,10 @@
 
+estimate h and AR for metric
+
+reject insertion based on near tree
+
+use graph distance from boundary (and edge, node) to prioritize smoothing
+
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   use lexigraph comparison
@@ -80,7 +86,10 @@ get rid of aux and interp instead
 
 start meshlink geode support?
 
-surrogate surface reconstruction when EGADS not available
+surrogate surface
+  when EGADS not available
+  support virtual topology
+  share via meshb
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
