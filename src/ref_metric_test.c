@@ -74,6 +74,7 @@ int main(int argc, char *argv[]) {
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT wlp_pos = REF_EMPTY;
+  REF_INT explore_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
   REF_INT no_goal_pos = REF_EMPTY;
@@ -105,6 +106,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--wlp", &wlp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--explore", &explore_pos), REF_NOT_FOUND,
+      "arg search");
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--no-goal", &no_goal_pos), REF_NOT_FOUND,
@@ -365,6 +368,98 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (explore_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *field, *scalar, *metric, *output;
+    REF_INT p;
+    REF_DBL gradation, complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim, node, var;
+    REF_DBL h0, multiscale_system[12];
+
+    REIS(1, explore_pos,
+         "required args: --explore grid.meshb scalars.solb p gradation "
+         "complexity metric-h.tec");
+    if (8 > argc) {
+      printf(
+          "required args: --explore grid.meshb scalars.solb p gradation "
+          "complexity metric-h.tec\n");
+      return REF_FAILURE;
+    }
+
+    p = atoi(argv[4]);
+    gradation = atof(argv[5]);
+    complexity = atof(argv[6]);
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+      printf("buffer %d (negative is inactive)\n", buffer_pos);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mash");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    }
+
+    if (ref_mpi_once(ref_mpi))
+      printf("reading field with scalars %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
+        "unable to load scalar in position 3");
+    RAS(ldim > 0, "expected at least one scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+
+    ref_malloc(output, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    for (var = 0; var < ldim; var++) {
+      if (ref_mpi_once(ref_mpi)) printf("scalar %d of %d\n", var, ldim);
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        scalar[node] = field[node + ldim * var];
+      }
+      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                        gradation, complexity),
+          "lp norm");
+      ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+      if (REF_EMPTY != buffer_pos) {
+        RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
+            "buffer at complexity");
+      }
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system),
+            "decomp");
+        RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+        if (multiscale_system[0] < 0.0) RSS(REF_DIV_ZERO, "sqrt(-1)");
+        h0 = sqrt(multiscale_system[0]);
+        if (!ref_math_divisible(1.0, h0)) RSS(REF_DIV_ZERO, "inf h0");
+        output[node + var * ldim] = 1.0 / h0;
+      }
+    }
+    ref_free(metric);
+    ref_free(scalar);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing sizes %s\n", argv[7]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, output, NULL, argv[7]),
+        "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+    ref_free(output);
 
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
