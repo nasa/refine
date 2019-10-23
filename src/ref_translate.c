@@ -41,6 +41,7 @@ static int print_usage(const char *name) {
   printf("     [--zero-y-face faceid]\n");
   printf("     [--compact-faceids]\n");
   printf("     [--drop-volume]\n");
+  printf("     [--map-face [old new] ...]\n");
   return 0;
 }
 
@@ -156,6 +157,37 @@ int main(int argc, char *argv[]) {
         }
       }
       printf("dropped %d quadrilaterals from face %d\n", ndrop, faceid);
+    }
+    if (strcmp(argv[pos], "--map-face") == 0) {
+      REF_DICT ref_dict;
+      REF_INT old_id, new_id;
+      printf("%d: --map-face\n", pos);
+      pos++;
+      RSS(ref_dict_create(&ref_dict), "create");
+      while (pos < argc - 1) {
+        old_id = (REF_INT)strtol(argv[pos], &endptr, 10);
+        pos++;
+        new_id = (REF_INT)strtol(argv[pos], &endptr, 10);
+        pos++;
+        printf("map bc id %d to %d\n", old_id, new_id);
+        RSS(ref_dict_store(ref_dict, old_id, new_id), "store");
+      }
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        old_id = nodes[ref_cell_node_per(ref_cell)];
+        if (REF_SUCCESS == ref_dict_value(ref_dict, old_id, &new_id)) {
+          ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = new_id;
+        }
+      }
+      ref_cell = ref_grid_qua(ref_grid);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        old_id = nodes[ref_cell_node_per(ref_cell)];
+        if (REF_SUCCESS == ref_dict_value(ref_dict, old_id, &new_id)) {
+          ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = new_id;
+        }
+      }
+      RSS(ref_dict_free(ref_dict), "free");
+      break;
     }
     if (strcmp(argv[pos], "--zero-y-face") == 0) {
       REF_DBL deviation;
