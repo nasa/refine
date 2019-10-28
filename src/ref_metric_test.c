@@ -584,12 +584,12 @@ int main(int argc, char *argv[]) {
     REF_DBL current_complexity, hmin, hmax;
 
     REIS(1, opt_goal_pos,
-         "required args: --opt-goal grid.meshb solution.solb complexity p "
-         "gradation output-metric.solb");
+         "required args: --opt-goal grid.meshb solution.solb p "
+         "gradation complexity output-metric.solb");
     if (8 > argc) {
       printf(
-          "required args: --opt-goal grid.meshb solution.solb complexity p "
-          "gradation output-metric.solb\n");
+          "required args: --opt-goal grid.meshb solution.solb p "
+          "gradation complexity output-metric.solb\n");
       return REF_FAILURE;
     }
     hmin = -1.0;
