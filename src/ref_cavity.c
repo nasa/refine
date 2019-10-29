@@ -1970,7 +1970,7 @@ REF_STATUS ref_cavity_topo(REF_CAVITY ref_cavity) {
 static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
                                                 REF_INT node0, REF_INT node1,
                                                 REF_BOOL *allowed) {
-  REF_BOOL has_triangle, same_face, conforming, improved, in_limits;
+  REF_BOOL has_triangle, same_face, manifold, conforming, improved, in_limits;
 
   *allowed = REF_FALSE;
 
@@ -1984,6 +1984,13 @@ static REF_STATUS ref_cavity_edge_swap_boundary(REF_GRID ref_grid,
   RSS(ref_swap_same_faceid(ref_grid, node0, node1, &same_face),
       "not allowed if a side of a edge or diff faceid");
   if (!same_face) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_swap_manifold(ref_grid, node0, node1, &manifold),
+      "not allowed if creates a triangle or edge that exists");
+  if (!manifold) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
