@@ -308,6 +308,19 @@ REF_STATUS ref_swap_node23(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+static void ref_swap_tattle_nodes(REF_CELL ref_cell, REF_INT node0,
+                                  REF_INT node1) {
+  REF_INT item, cell_node, cell, cell_node2;
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    printf("cell %d cell id %d\n", cell,
+           ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell));
+    each_ref_cell_cell_node(ref_cell, cell_node2) {
+      printf(" %d", ref_cell_c2n(ref_cell, cell_node2, cell));
+    }
+    printf(" %d\n", ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell));
+  }
+}
+
 REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_BOOL *allowed) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -325,11 +338,11 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
-
   RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two", {
         ref_node_location(ref_grid_node(ref_grid), node0);
         ref_node_location(ref_grid_node(ref_grid), node1);
+        ref_swap_tattle_nodes(ref_cell, node0, node1);
         ref_export_by_extension(ref_grid, "ref_swap_same_faceid.tec");
       });
 
