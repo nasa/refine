@@ -681,9 +681,9 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid) {
+REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
   REF_BOOL all_done = REF_FALSE;
-  int passes = 15, pass;
+  REF_INT pass;
 
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
 
