@@ -377,6 +377,7 @@ REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
   REF_INT new_cell;
+  REF_BOOL has_side;
 
   *allowed = REF_FALSE;
 
@@ -402,6 +403,12 @@ REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   RXS(ref_cell_with(ref_cell, nodes, &new_cell), REF_NOT_FOUND,
       "with node1 failed");
   if (REF_EMPTY != new_cell) {
+    *allowed = REF_FALSE;
+    return REF_SUCCESS;
+  }
+
+  RSS(ref_cell_has_side(ref_cell, node2, node3, &has_side), "find edge swap");
+  if (has_side) { /* would create an edge that already exists */
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
