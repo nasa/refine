@@ -301,6 +301,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_DBL params[3];
   REF_INT t_pos = REF_EMPTY;
+  REF_INT s_pos = REF_EMPTY;
+  REF_INT passes = 15;
 
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
@@ -344,7 +346,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
 
-  RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
+  RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != s_pos && s_pos < argc - 1) {
+    passes = atoi(argv[s_pos + 1]);
+  }
+
+  RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
   RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
   printf("verify topo\n");
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");

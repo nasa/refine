@@ -423,7 +423,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_verify_param(ref_grid), "original params");
 
     if (REF_EMPTY != surf_pos) {
-      RSS(ref_adapt_surf_to_geom(ref_grid), "ad");
+      RSS(ref_adapt_surf_to_geom(ref_grid, 15), "ad");
       RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
       printf("verify topo\n");
       RSS(ref_geom_verify_topo(ref_grid), "original params");
