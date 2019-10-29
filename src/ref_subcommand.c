@@ -96,13 +96,13 @@ static void interpolate_help(const char *name) {
       name);
   printf("\n");
 }
-/*
-static void location_help(const char *name) {
-  printf("usage: \n %s location input.meshb node_index node_index ...\n", name);
-  printf("  node_index is zero-based\n");
+
+static void vertex_help(const char *name) {
+  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n", name);
+  printf("  vertex_index is zero-based\n");
   printf("\n");
 }
-*/
+
 static void loop_help(const char *name) {
   printf(
       "usage: \n %s loop <input_project_name> <output_project_name>"
@@ -577,14 +577,14 @@ shutdown:
   if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
   return REF_FAILURE;
 }
-/*
-static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
+
+static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_file;
   REF_INT pos, global, local;
   REF_GRID ref_grid = NULL;
 
   if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref location is not parallel");
+    RSS(REF_IMPLEMENT, "ref vertex is not parallel");
   }
   if (argc < 4) goto shutdown;
   in_file = argv[2];
@@ -604,10 +604,9 @@ static REF_STATUS location(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) location_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
   return REF_FAILURE;
 }
-*/
 
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
@@ -1106,6 +1105,13 @@ int main(int argc, char *argv[]) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "v", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(vertex(ref_mpi, argc, argv), "translate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
       goto shutdown;
     }
   } else {
