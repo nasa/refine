@@ -24,16 +24,73 @@
 #include "ref_cell.h"
 #include "ref_grid.h"
 
-#include "ref_search.h"
+#include "ref_edge.h"
+
+static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1, REF_INT *nodes) {
+  if (node0 == nodes[0] && node1 == nodes[1]) return REF_TRUE;
+  if (node0 == nodes[1] && node1 == nodes[2]) return REF_TRUE;
+  if (node0 == nodes[2] && node1 == nodes[0]) return REF_TRUE;
+
+  if (node1 == nodes[0] && node0 == nodes[1]) return REF_TRUE;
+  if (node1 == nodes[1] && node0 == nodes[2]) return REF_TRUE;
+  if (node1 == nodes[2] && node0 == nodes[0]) return REF_TRUE;
+
+  return REF_FALSE;
+}
 
 REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
                                REF_INT *n_collisions) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_SEARCH ref_search;
-  *n_collisions = 0;
-  if (report) printf("ntri %d\n", ref_cell_n(ref_cell));
-  RSS(ref_search_create(&ref_search, ref_cell_n(ref_cell)), "create search");
+  REF_EDGE ref_edge;
+  REF_INT edge;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL vol0, vol1;
+  REF_DBL side0, side1, side2;
 
-  RSS(ref_search_free(ref_search), "free");
+  *n_collisions = 0;
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+
+  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (ref_dist_exclude(ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), nodes))
+        continue;
+      tet_nodes[0] = nodes[0];
+      tet_nodes[1] = nodes[1];
+      tet_nodes[2] = nodes[2];
+      tet_nodes[3] = ref_edge_e2n(ref_edge, 0, edge);
+      RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol0), "vol0");
+      tet_nodes[3] = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol1), "vol1");
+      if ((vol0 >= 0.0 && vol1 <= 0.0) ||
+          (vol0 <= 0.0 && vol1 >= 0.0)) { /* canidate, above and below */
+        tet_nodes[2] = ref_edge_e2n(ref_edge, 0, edge);
+        tet_nodes[3] = ref_edge_e2n(ref_edge, 1, edge);
+        tet_nodes[0] = nodes[1];
+        tet_nodes[1] = nodes[2];
+        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side0), "side0");
+        tet_nodes[0] = nodes[2];
+        tet_nodes[1] = nodes[0];
+        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side1), "side1");
+        tet_nodes[0] = nodes[0];
+        tet_nodes[1] = nodes[1];
+        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side2), "side2");
+        if ((side0 > 0.0 && side1 > 0.0 && side2 > 0.0) ||
+            (side0 < 0.0 && side1 < 0.0 && side2 < 0.0)) { /* inside */
+          (*n_collisions) += 1;
+          if (report) {
+            RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 0, edge)),
+                "edge0");
+            RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 1, edge)),
+                "edge1");
+          }
+        }
+      }
+    }
+  }
+
+  RSS(ref_edge_free(ref_edge), "free");
   return REF_SUCCESS;
 }
