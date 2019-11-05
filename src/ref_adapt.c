@@ -705,6 +705,9 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
     RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+    if (self_intersections > 0)
+      printf("%d segment-triangle intersections detected.\n",
+             self_intersections);
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
   }
 
