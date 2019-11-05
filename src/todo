@@ -1,5 +1,11 @@
 
-estimate h and AR for metric
+- set tparams on faces or edges? may need to do in egads with cad feature size?
+
+- antenna like geom boostrap, diamond extrusion with round edges
+- thin wavy training edge bootstrap
+- edge off surface testcase or surface gap testcase?
+- cusp geom testcase
+- acceptance test with bootstrap of C608, JSM, etc.
 
 reject insertion based on near tree
 
@@ -200,6 +206,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ estimate h and AR for metric with ref_metric_test --explore
 
 + cache curvature metric or apply to input (too much refinement of coarse grids)
 
