@@ -1,6 +1,4 @@
 
-estimate h and AR for metric
-
 reject insertion based on near tree
 
 use graph distance from boundary (and edge, node) to prioritize smoothing
@@ -200,6 +198,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ estimate h and AR for metric with ref_metric_test --explore
 
 + cache curvature metric or apply to input (too much refinement of coarse grids)
 
