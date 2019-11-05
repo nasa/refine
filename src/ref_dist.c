@@ -37,6 +37,42 @@ static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1, REF_INT *nodes) {
 
   return REF_FALSE;
 }
+static REF_STATUS ref_dist_pierce(REF_NODE ref_node, REF_INT node0,
+                                  REF_INT node1, REF_INT *nodes,
+                                  REF_BOOL *pierce) {
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL vol0, vol1;
+  REF_DBL side0, side1, side2;
+  *pierce = REF_FALSE;
+  tet_nodes[0] = nodes[0];
+  tet_nodes[1] = nodes[1];
+  tet_nodes[2] = nodes[2];
+  tet_nodes[3] = node0;
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol0), "vol0");
+  tet_nodes[3] = node1;
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol1), "vol1");
+  if ((vol0 > 0.0 && vol1 > 0.0) || (vol0 < 0.0 && vol1 < 0.0)) {
+    /* segment above or below triangle */
+    return REF_SUCCESS;
+  }
+  tet_nodes[2] = node0;
+  tet_nodes[3] = node1;
+  tet_nodes[0] = nodes[1];
+  tet_nodes[1] = nodes[2];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &side0), "side0");
+  tet_nodes[0] = nodes[2];
+  tet_nodes[1] = nodes[0];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &side1), "side1");
+  tet_nodes[0] = nodes[0];
+  tet_nodes[1] = nodes[1];
+  RSS(ref_node_tet_vol(ref_node, tet_nodes, &side2), "side2");
+  if ((side0 > 0.0 && side1 > 0.0 && side2 > 0.0) ||
+      (side0 < 0.0 && side1 < 0.0 && side2 < 0.0)) { /* inside */
+    *pierce = REF_TRUE;
+  }
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
                                REF_INT *n_collisions) {
@@ -45,9 +81,7 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
   REF_EDGE ref_edge;
   REF_INT edge;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL vol0, vol1;
-  REF_DBL side0, side1, side2;
+  REF_BOOL pierce;
 
   *n_collisions = 0;
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
@@ -57,35 +91,16 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
       if (ref_dist_exclude(ref_edge_e2n(ref_edge, 0, edge),
                            ref_edge_e2n(ref_edge, 1, edge), nodes))
         continue;
-      tet_nodes[0] = nodes[0];
-      tet_nodes[1] = nodes[1];
-      tet_nodes[2] = nodes[2];
-      tet_nodes[3] = ref_edge_e2n(ref_edge, 0, edge);
-      RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol0), "vol0");
-      tet_nodes[3] = ref_edge_e2n(ref_edge, 1, edge);
-      RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol1), "vol1");
-      if ((vol0 >= 0.0 && vol1 <= 0.0) ||
-          (vol0 <= 0.0 && vol1 >= 0.0)) { /* canidate, above and below */
-        tet_nodes[2] = ref_edge_e2n(ref_edge, 0, edge);
-        tet_nodes[3] = ref_edge_e2n(ref_edge, 1, edge);
-        tet_nodes[0] = nodes[1];
-        tet_nodes[1] = nodes[2];
-        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side0), "side0");
-        tet_nodes[0] = nodes[2];
-        tet_nodes[1] = nodes[0];
-        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side1), "side1");
-        tet_nodes[0] = nodes[0];
-        tet_nodes[1] = nodes[1];
-        RSS(ref_node_tet_vol(ref_node, tet_nodes, &side2), "side2");
-        if ((side0 > 0.0 && side1 > 0.0 && side2 > 0.0) ||
-            (side0 < 0.0 && side1 < 0.0 && side2 < 0.0)) { /* inside */
-          (*n_collisions) += 1;
-          if (report) {
-            RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 0, edge)),
-                "edge0");
-            RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 1, edge)),
-                "edge1");
-          }
+      RSS(ref_dist_pierce(ref_node, ref_edge_e2n(ref_edge, 0, edge),
+                          ref_edge_e2n(ref_edge, 1, edge), nodes, &pierce),
+          "hits?");
+      if (pierce) {
+        (*n_collisions) += 1;
+        if (report) {
+          RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 0, edge)),
+              "edge0");
+          RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 1, edge)),
+              "edge1");
         }
       }
     }
