@@ -66,6 +66,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL *uv_area_sign;
   REF_DBL segments_per_radian_of_curvature;
   REF_DBL tolerance_protection;
+  REF_DBL gap_protection;
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   void *context;
@@ -109,6 +110,7 @@ struct REF_GEOM_STRUCT {
   (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
 #define ref_geom_tolerance_protection(ref_geom) \
   ((ref_geom)->tolerance_protection)
+#define ref_geom_gap_protection(ref_geom) ((ref_geom)->gap_protection)
 
 #define each_ref_type(refx_geom, type) for ((type) = 0; (type) < 3; (type)++)
 #define each_ref_descr(ref_geom, item) \
@@ -245,6 +247,7 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
                                  REF_DBL *h2, REF_DBL *dir2);
 REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                               REF_DBL *tolerance);
+REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
 
 REF_STATUS ref_geom_egads_suggest_tess_params(REF_GRID ref_grid,
                                               REF_DBL *params);
