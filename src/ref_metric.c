@@ -1084,7 +1084,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL drad;
   REF_DBL hmax;
   REF_DBL rlimit;
-  REF_DBL hr, hs, hn, tol;
+  REF_DBL hr, hs, hn, tol, gap;
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
 
@@ -1140,6 +1140,12 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
         hs < ref_geom_tolerance_protection(ref_geom) * tol)
       continue;
 
+    RSS(ref_geom_gap(ref_grid, ref_geom_node(ref_geom, geom), &gap),
+        "edge gap");
+    if (hr < ref_geom_gap_protection(ref_geom) * gap ||
+        hs < ref_geom_gap_protection(ref_geom) * gap)
+      continue;
+
     /* cross the tangent vectors to get the (inward or outward) normal */
     ref_math_cross_product(r, s, n);
     for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
@@ -1171,6 +1177,10 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
                            ref_geom_id(ref_geom, geom), &tol),
         "edge tol");
     if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
+
+    RSS(ref_geom_gap(ref_grid, ref_geom_node(ref_geom, geom), &gap),
+        "edge gap");
+    if (hr < ref_geom_gap_protection(ref_geom) * gap) continue;
 
     RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
     if (crease_dot_prod < -0.8) {

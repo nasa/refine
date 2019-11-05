@@ -83,6 +83,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->uv_area_sign = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
   ref_geom->tolerance_protection = 100.0;
+  ref_geom->gap_protection = 10.0;
 
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
@@ -146,6 +147,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
   ref_geom->tolerance_protection = original->tolerance_protection;
+  ref_geom->gap_protection = original->gap_protection;
 
   for (geom = 0; geom < ref_geom_max(ref_geom); geom++)
     for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)
@@ -3189,6 +3191,25 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   SUPRESS_UNUSED_COMPILER_WARNING(id);
   *tolerance = -1.0;
 #endif
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT item, geom;
+  REF_DBL dist, xyz[3];
+  *gap = 0.0;
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_geom_eval(ref_geom, geom, xyz, NULL), "eval");
+      dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                  pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                  pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+      (*gap) = MAX((*gap), dist);
+    }
+  }
   return REF_SUCCESS;
 }
 
