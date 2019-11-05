@@ -37,6 +37,7 @@
 #include "ref_matrix.h"
 #include "ref_node.h"
 
+#include "ref_dist.h"
 #include "ref_gather.h"
 #include "ref_histogram.h"
 #include "ref_metric.h"
@@ -684,6 +685,7 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
   REF_BOOL all_done = REF_FALSE;
   REF_INT pass;
+  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
 
@@ -702,6 +704,8 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
     RSS(ref_histogram_ratio(ref_grid), "gram");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
+    RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
   }
 
   return REF_SUCCESS;
