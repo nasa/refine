@@ -21,16 +21,19 @@
 
 #include "ref_dist.h"
 
-#include "ref_grid.h"
 #include "ref_cell.h"
+#include "ref_grid.h"
 
 #include "ref_search.h"
 
-REF_STATUS ref_dist_collisions(REF_GRID ref_grid) {
+REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
+                               REF_INT *n_collisions) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_SEARCH ref_search;
+  *n_collisions = 0;
+  if (report) printf("ntri %d\n", ref_cell_n(ref_cell));
   RSS(ref_search_create(&ref_search, ref_cell_n(ref_cell)), "create search");
 
-  RSS(ref_search_free(ref_search), "free");    
+  RSS(ref_search_free(ref_search), "free");
   return REF_SUCCESS;
 }
