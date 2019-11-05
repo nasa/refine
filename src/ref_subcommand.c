@@ -98,7 +98,8 @@ static void interpolate_help(const char *name) {
 }
 
 static void vertex_help(const char *name) {
-  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n", name);
+  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n",
+         name);
   printf("  vertex_index is zero-based\n");
   printf("\n");
 }
