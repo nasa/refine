@@ -147,7 +147,7 @@ REF_STATUS ref_dist_collisions(REF_GRID ref_grid, REF_BOOL report,
       if (pierce) {
         (*n_collisions) += 1;
         if (report) {
-          printf("%5d face with %f %f %f vertex\n",
+          printf("%5d faceid near %f %f %f\n",
                  nodes[ref_cell_id_index(ref_cell)],
                  ref_node_xyz(ref_node, 0, nodes[0]),
                  ref_node_xyz(ref_node, 1, nodes[0]),
