@@ -1,4 +1,12 @@
 
+- set tparams on faces or edges? may need to do in egads with cad feature size?
+
+- antenna like geom boostrap, diamond extrusion with round edges
+- thin wavy training edge bootstrap
+- edge off surface testcase or surface gap testcase?
+- cusp geom testcase
+- acceptance test with bootstrap of C608, JSM, etc.
+
 reject insertion based on near tree
 
 use graph distance from boundary (and edge, node) to prioritize smoothing
