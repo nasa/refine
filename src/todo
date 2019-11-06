@@ -1,7 +1,9 @@
 
-- set tparams on faces or edges? may need to do in egads with cad feature size?
+- set tparams on faces or edges? may need to do in EGADS with cad feature size?
+- detect thickness or use attributes to set curve constraints
 
-- antenna like geom boostrap, diamond extrusion with round edges
+- thin cylinder/sphere shell test for thickness geom constraint
+- antenna like geom bootstrap, diamond extrusion with round edges
 - thin wavy training edge bootstrap
 - edge off surface testcase or surface gap testcase?
 - cusp geom testcase
