@@ -1,4 +1,8 @@
 
+- attribute to set segments per radian
+- always export surface.meshb before volume
+- bring back fill command with aflr option
+
 - set tparams on faces or edges? may need to do in EGADS with cad feature size?
 - detect thickness or use attributes to set curve constraints
 
