@@ -359,6 +359,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   printf("verify param\n");
   RSS(ref_geom_verify_param(ref_grid), "adapt params");
   ref_mpi_stopwatch_stop(ref_mpi, "surf verification");
+  sprintf(filename, "%s-adapt-surf.meshb", project);
+  RSS(ref_gather_by_extension(ref_grid, filename), "gather surf meshb");
   sprintf(filename, "%s-adapt-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-adapt-surf.tec", project);
@@ -367,11 +369,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
-    sprintf(filename, "%s-adapt-surf.meshb", project);
-    printf("export %s\n", filename);
-    ref_export_by_extension(ref_grid, filename);
-  });
+  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
   ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
 
   RSS(ref_split_edge_geometry(ref_grid), "split geom");
