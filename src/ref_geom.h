@@ -64,8 +64,8 @@ struct REF_GEOM_STRUCT {
   REF_INT *descr;
   REF_DBL *param;
   REF_DBL *uv_area_sign;
-  REF_DBL segments_per_radian_of_curvature;
   REF_DBL *face_seg_per_rad;
+  REF_DBL segments_per_radian_of_curvature;
   REF_DBL tolerance_protection;
   REF_DBL gap_protection;
   REF_ADJ ref_adj;
