@@ -1,0 +1,11 @@
+
+cylinder -1 0 0 1 0 0 1
+cylinder -1 0 0 1 0 0 0.95
+subtract
+box -2 -2 -2 4 2 4
+subtract
+sphere 0 0.975 0 0.02
+subtract
+
+dump blister.egads
+dump blister.ugrid
