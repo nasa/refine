@@ -1,5 +1,6 @@
 
 - single pass near-tree for grid size gradation of gaps
+  - blister across from plate test case
 
 - attribute to set segments per radian
 - bring back fill command with aflr option
