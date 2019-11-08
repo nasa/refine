@@ -1083,7 +1083,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_INT i;
   REF_DBL drad, lrad;
   REF_DBL hmax;
-  REF_DBL rlimit;
+  REF_DBL rlimit, llimit;
   REF_DBL hr, hs, hn, tol, gap;
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
@@ -1132,6 +1132,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       lrad =
           1.0 / ref_geom_face_segments_per_radian_of_curvature(ref_geom, face);
     }
+    llimit = hmax / lrad; /* h = r*drad, r = h/drad */
     RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
     /* ignore sign, curvature is 1 / radius */
     kr = ABS(kr);
@@ -1140,9 +1141,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     kr = MAX(kr, curvature_ratio * ks);
     ks = MAX(ks, curvature_ratio * kr);
     hr = hmax;
-    if (1.0 / rlimit < kr) hr = lrad / kr;
+    if (1.0 / llimit < kr) hr = lrad / kr;
     hs = hmax;
-    if (1.0 / rlimit < ks) hs = lrad / ks;
+    if (1.0 / llimit < ks) hs = lrad / ks;
 
     RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
                            ref_geom_id(ref_geom, geom), &tol),
