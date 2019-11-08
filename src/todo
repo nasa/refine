@@ -1,5 +1,6 @@
 
-- cavity opertor failure location
+- single pass near-tree for grid size gradation of gaps
+
 - attribute to set segments per radian
 - bring back fill command with aflr option
 
@@ -54,7 +55,7 @@ tess
  volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
  try gmsh
- near-tree for grid size gradation of thin shells
+ near-tree for reducing geometry metric of thin shells
  edge chord height warning/constraint?
 
 C2S
@@ -212,6 +213,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ cavity opertor failure location
 
 + estimate h and AR for metric with ref_metric_test --explore
 
