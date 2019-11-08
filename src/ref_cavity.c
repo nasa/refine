@@ -1194,8 +1194,18 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
     }
   }
 
-  RSS(ref_cavity_verify_face_manifold(ref_cavity), "collapse face manifold");
-  RSS(ref_cavity_verify_seg_manifold(ref_cavity), "collapse seg manifold");
+  RSB(ref_cavity_verify_face_manifold(ref_cavity), "collapse face manifold", {
+    printf("at %f %f %f\n",
+           ref_node_xyz(ref_node, 0, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 1, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 2, ref_cavity_node(ref_cavity)));
+  });
+  RSB(ref_cavity_verify_seg_manifold(ref_cavity), "collapse seg manifold", {
+    printf("at %f %f %f\n",
+           ref_node_xyz(ref_node, 0, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 1, ref_cavity_node(ref_cavity)),
+           ref_node_xyz(ref_node, 2, ref_cavity_node(ref_cavity)));
+  });
 
   return REF_SUCCESS;
 }
