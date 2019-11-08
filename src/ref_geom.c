@@ -2943,7 +2943,6 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
                                          "seg_per_rad", &atype, &len, &pints,
                                          &preals, &string)) {
       if (ATTRREAL == atype && len == 1) {
-        printf("face id %d seg per rad attribute %f\n", face + 1, preals[0]);
         ref_geom->face_seg_per_rad[face] = preals[0];
       }
     }
