@@ -1,0 +1,7 @@
+cylinder -1 0 0 1 0 0 1
+cylinder -1 0 0 1 0 0 0.5
+subtract
+select face 1
+attribute seg_per_rad 10
+
+dump attr.egads
