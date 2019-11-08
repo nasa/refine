@@ -4,7 +4,7 @@ cylinder -1 0 0 1 0 0 0.15
 subtract
 box -2 -2 -2 4 2 4
 subtract
-sphere 0 0.185 0 0.01
+sphere 0 0.165 0 0.01
 attribute .tParams  "0.005; 0.0005; 15.0;"
 subtract
 
