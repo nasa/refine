@@ -105,6 +105,11 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_param(ref_geom, dimension, geom) \
   ((ref_geom)->param[(dimension) + 2 * (geom)])
 
+#define ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) \
+  (((face) >= 0 && (face) < (ref_geom)->nface &&                       \
+    NULL != (ref_geom)->face_seg_per_rad)                              \
+       ? (ref_geom)->face_seg_per_rad[(face)]                          \
+       : -999.0)
 #define ref_geom_segments_per_radian_of_curvature(ref_geom) \
   ((ref_geom)->segments_per_radian_of_curvature)
 #define ref_geom_curvature_unlimited(ref_geom) \

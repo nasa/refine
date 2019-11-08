@@ -1076,12 +1076,12 @@ REF_STATUS ref_metric_avoid_geom(REF_GEOM ref_geom, REF_INT query_geom,
 REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT geom, node;
+  REF_INT geom, node, face;
   REF_DBL kr, r[3], ks, s[3], n[3];
   REF_DBL diagonal_system[12];
   REF_DBL previous_metric[6], curvature_metric[6];
   REF_INT i;
-  REF_DBL drad;
+  REF_DBL drad, lrad;
   REF_DBL hmax;
   REF_DBL rlimit;
   REF_DBL hr, hs, hn, tol, gap;
@@ -1121,6 +1121,17 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   }
 
   each_ref_geom_face(ref_geom, geom) {
+    lrad = drad;
+    face = ref_geom_id(ref_geom, geom) - 1;
+    /* -999 marks not set */
+    if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) >
+        -990.0) {
+      /* less than 0.1 marks do not use */
+      if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) < 0.1)
+        continue;
+      lrad =
+          1.0 / ref_geom_face_segments_per_radian_of_curvature(ref_geom, face);
+    }
     RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
     /* ignore sign, curvature is 1 / radius */
     kr = ABS(kr);
@@ -1129,9 +1140,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     kr = MAX(kr, curvature_ratio * ks);
     ks = MAX(ks, curvature_ratio * kr);
     hr = hmax;
-    if (1.0 / rlimit < kr) hr = drad / kr;
+    if (1.0 / rlimit < kr) hr = lrad / kr;
     hs = hmax;
-    if (1.0 / rlimit < ks) hs = drad / ks;
+    if (1.0 / rlimit < ks) hs = lrad / ks;
 
     RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
                            ref_geom_id(ref_geom, geom), &tol),
