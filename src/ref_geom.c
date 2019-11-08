@@ -81,6 +81,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   RSS(ref_geom_initialize(ref_geom), "init geom list");
 
   ref_geom->uv_area_sign = NULL;
+  ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
   ref_geom->tolerance_protection = 100.0;
   ref_geom->gap_protection = 10.0;
@@ -121,6 +122,7 @@ REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
     REIS(EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
 #endif
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
+  ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->uv_area_sign);
   ref_free(ref_geom->param);
   ref_free(ref_geom->descr);
@@ -144,6 +146,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
              REF_INT);
   ref_malloc(ref_geom->param, 2 * ref_geom_max(ref_geom), REF_DBL);
   ref_geom->uv_area_sign = NULL;
+  ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
   ref_geom->tolerance_protection = original->tolerance_protection;
@@ -2927,6 +2930,21 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
       default:
         printf("mtype %d\n", mtype);
         RSS(REF_IMPLEMENT, "unknown face type, expected SFORWARD or SREVERSE");
+    }
+  }
+
+  ref_malloc_init(ref_geom->face_seg_per_rad, ref_geom->nface, REF_DBL, -999.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "seg_per_rad", &atype, &len, &pints,
+                                         &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        ref_geom->face_seg_per_rad[face] = preals[0];
+      }
     }
   }
 
