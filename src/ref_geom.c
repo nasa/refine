@@ -2933,6 +2933,22 @@ REF_STATUS ref_geom_egads_load(REF_GEOM ref_geom, const char *filename) {
     }
   }
 
+  ref_malloc_init(ref_geom->face_seg_per_rad, ref_geom->nface, REF_DBL, -1.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "seg_per_rad", &atype, &len, &pints,
+                                         &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        printf("face id %d seg per rad attribute %f\n", face + 1, preals[0]);
+        ref_geom->face_seg_per_rad[face] = preals[0];
+      }
+    }
+  }
+
 #else
   printf("returning empty grid from %s, No EGADS linked for %s\n", __func__,
          filename);
