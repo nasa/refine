@@ -1,8 +1,11 @@
 
+- protect surface sliver topo
+  - surf
+  - with volume
+
 - single pass near-tree for grid size gradation of gaps
   + pearl in curved plate test case for blister
 
-- attribute to set segments per radian
 - bring back fill command with aflr option
 
 - set tparams on faces or edges? may need to do in EGADS with cad feature size?
@@ -214,6 +217,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ attribute to set segments per radian
 
 + cavity opertor failure location
 
