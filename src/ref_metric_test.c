@@ -1,4 +1,3 @@
-
 /* Copyright 2014 United States Government as represented by the
  * Administrator of the National Aeronautics and Space
  * Administration. No copyright is claimed in the United States under
@@ -412,7 +411,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_para(ref_mpi)) {
       if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
       RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
-      ref_mpi_stopwatch_stop(ref_mpi, "part mash");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mesh");
     } else {
       if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
       RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
