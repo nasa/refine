@@ -434,13 +434,13 @@ REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
   nodes[1] = node3;
   nodes[2] = node2;
   RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-  if(!valid) return REF_SUCCESS;
+  if (!valid) return REF_SUCCESS;
 
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
   RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-  if(!valid) return REF_SUCCESS;
+  if (!valid) return REF_SUCCESS;
 
   *allowed = REF_TRUE;
 

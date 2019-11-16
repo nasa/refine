@@ -476,9 +476,9 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
       for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
         RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
             "grow");
-        status = ref_recon_kexact_with_aux(
-            ref_node_global(ref_node, node), ref_cloud, ref_grid_twod(ref_grid),
-            node_gradient, node_hessian);
+        status = ref_recon_kexact_with_aux(ref_node_global(ref_node, node),
+                                           ref_cloud, ref_grid_twod(ref_grid),
+                                           node_gradient, node_hessian);
         if (REF_DIV_ZERO == status && layer > 4) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",

@@ -390,8 +390,9 @@ REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid) {
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &correct_orientation), "valid");
-    if(!correct_orientation) {
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &correct_orientation),
+        "valid");
+    if (!correct_orientation) {
       valid = REF_FALSE;
       printf("tri %d %d %d %d\n", nodes[0], nodes[1], nodes[2], nodes[3]);
     }

@@ -220,8 +220,7 @@ REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
- if(!valid)
-      return REF_SUCCESS;
+    if (!valid) return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
@@ -994,7 +993,6 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* boundary */
   each_ref_node_valid_node(ref_node, node) {
-
     /* boundaries only */
     allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (allowed) continue;
@@ -1013,7 +1011,6 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* interior */
   each_ref_node_valid_node(ref_node, node) {
-
     /* already did boundaries */
     allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (!allowed) continue;

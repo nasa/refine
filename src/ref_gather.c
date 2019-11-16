@@ -1958,11 +1958,11 @@ REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
-      RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
-      scalar[1 + ldim * node0] = MIN(scalar[1 + ldim * node0], edge_ratio);
-      scalar[1 + ldim * node1] = MIN(scalar[1 + ldim * node1], edge_ratio);
-      scalar[2 + ldim * node0] = MAX(scalar[2 + ldim * node0], edge_ratio);
-      scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
+    RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
+    scalar[1 + ldim * node0] = MIN(scalar[1 + ldim * node0], edge_ratio);
+    scalar[1 + ldim * node1] = MIN(scalar[1 + ldim * node1], edge_ratio);
+    scalar[2 + ldim * node0] = MAX(scalar[2 + ldim * node0], edge_ratio);
+    scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
   }
   RSS(ref_edge_free(ref_edge), "free edges");
 

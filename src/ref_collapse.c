@@ -1013,7 +1013,7 @@ REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
     }
 
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    if (!valid)      return REF_SUCCESS;
+    if (!valid) return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;

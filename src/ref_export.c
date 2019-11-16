@@ -2269,9 +2269,9 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-      o2n[node] = nnode;
-      n2o[nnode] = node;
-      nnode++;
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
   }
 
   fprintf(f, "\nVertices\n%d\n", nnode);
@@ -2285,8 +2285,7 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   nedge = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     nedge++;
-    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[1]] + 1,
-            nodes[2]);
+    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[1]] + 1, nodes[2]);
   }
   REIS(nedge, ref_cell_n(ref_cell), "edge/quad miscount");
 
@@ -2325,9 +2324,9 @@ REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-      o2n[node] = nnode;
-      n2o[nnode] = node;
-      nnode++;
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
   }
 
   fprintf(f, "%d %d\n", nnode, 3);
@@ -2361,9 +2360,9 @@ REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-      o2n[node] = nnode;
-      n2o[nnode] = node;
-      nnode++;
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
   }
 
   fprintf(f, "MeshVersionFormatted 2\n\n");

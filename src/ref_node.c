@@ -1119,7 +1119,7 @@ REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_node)
   SUPRESS_UNUSED_COMPILER_WARNING(node)
   *twod = REF_TRUE;
-  
+
   return REF_SUCCESS;
 }
 
@@ -2026,8 +2026,7 @@ REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node, REF_INT *nodes,
 
   RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm inside of area");
 
-  if (normal[2] > 0.0)
-    *valid = REF_TRUE;
+  if (normal[2] > 0.0) *valid = REF_TRUE;
 
   return REF_SUCCESS;
 }
