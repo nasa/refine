@@ -1618,9 +1618,8 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
         RSS(ref_node_metric_form(ref_node, local, metric[0 + 3 * node],
-                                 metric[1 + 3 * node], 0, 
-                                 metric[2 + 3 * node]), 0, 1,
-            "set local node met");
+                                 metric[1 + 3 * node], 0, metric[2 + 3 * node],
+                                 0, 1), "set local node met");
       }
     }
     nnode_read += section_size;
