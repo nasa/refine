@@ -2307,11 +2307,11 @@ REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
   xyz2 = ref_node_xyz_ptr(ref_node, nodes[2]);
 
   RSS(ref_node_xyz_normal(xyz, xyz1, xyz2, normal), "n0");
-  bary[0] = normal[1];
+  bary[0] = normal[2];
   RSS(ref_node_xyz_normal(xyz0, xyz, xyz2, normal), "n1");
-  bary[1] = normal[1];
+  bary[1] = normal[2];
   RSS(ref_node_xyz_normal(xyz0, xyz1, xyz, normal), "n2");
-  bary[2] = normal[1];
+  bary[2] = normal[2];
 
   total = bary[0] + bary[1] + bary[2];
 
