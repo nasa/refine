@@ -16,18 +16,17 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_histogram.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_edge.h"
-#include "ref_histogram.h"
-#include "ref_malloc.h"
-#include "ref_mpi.h"
-
-#include "ref_math.h"
-
 #include "ref_adapt.h"
+#include "ref_edge.h"
+#include "ref_malloc.h"
+#include "ref_math.h"
+#include "ref_mpi.h"
 
 REF_STATUS ref_histogram_create(REF_HISTOGRAM *ref_histogram_ptr) {
   REF_HISTOGRAM ref_histogram;

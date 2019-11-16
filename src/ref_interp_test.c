@@ -16,14 +16,15 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_interp.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_interp.h"
-
 #include "ref_adapt.h"
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cavity.h"
 #include "ref_cell.h"
 #include "ref_clump.h"
@@ -37,6 +38,7 @@
 #include "ref_grid.h"
 #include "ref_import.h"
 #include "ref_list.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
@@ -48,9 +50,6 @@
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_twod.h"
-
-#include "ref_args.h"
-#include "ref_malloc.h"
 
 static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
                                    REF_MPI ref_mpi) {

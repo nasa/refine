@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_twod.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_twod.h"
 
 REF_STATUS ref_twod_opposite_node(REF_CELL pri, REF_INT node,
                                   REF_INT *opposite) {

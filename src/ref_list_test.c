@@ -16,12 +16,13 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_list.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_list.h"
 #include "ref_mpi.h"
 
 int main(int argc, char *argv[]) {

@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_comprow.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,10 +29,10 @@
 #include "ref_cell.h"
 #include "ref_clump.h"
 #include "ref_collapse.h"
-#include "ref_comprow.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
 #include "ref_export.h"
+#include "ref_fixture.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
@@ -44,8 +46,6 @@
 #include "ref_split.h"
 #include "ref_subdiv.h"
 #include "ref_twod.h"
-
-#include "ref_fixture.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;

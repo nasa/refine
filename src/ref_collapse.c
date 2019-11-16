@@ -16,24 +16,22 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_collapse.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_adapt.h"
+#include "ref_cavity.h"
 #include "ref_cell.h"
-#include "ref_collapse.h"
 #include "ref_edge.h"
+#include "ref_gather.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
-
-#include "ref_adapt.h"
-
-#include "ref_gather.h"
 #include "ref_twod.h"
-
-#include "ref_cavity.h"
 
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)

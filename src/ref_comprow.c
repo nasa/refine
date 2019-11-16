@@ -16,15 +16,15 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_comprow.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_comprow.h"
 #include "ref_edge.h"
 #include "ref_grid.h"
-#include "ref_node.h"
-
 #include "ref_malloc.h"
+#include "ref_node.h"
 
 REF_STATUS ref_comprow_create(REF_COMPROW *ref_comprow_ptr, REF_GRID ref_grid) {
   REF_COMPROW ref_comprow;

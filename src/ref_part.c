@@ -16,23 +16,19 @@
  * permissions and limitations under the License.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <string.h>
-
-#include "ref_endian.h"
-#include "ref_mpi.h"
 #include "ref_part.h"
 
-#include "ref_malloc.h"
-
-#include "ref_migrate.h"
-
-#include "ref_export.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "ref_dict.h"
+#include "ref_endian.h"
+#include "ref_export.h"
 #include "ref_import.h"
+#include "ref_malloc.h"
+#include "ref_migrate.h"
+#include "ref_mpi.h"
 #include "ref_twod.h"
 
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,

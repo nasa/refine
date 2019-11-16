@@ -25,10 +25,9 @@
 #include "ref_export.h"
 #include "ref_import.h"
 #include "ref_list.h"
-#include "ref_sort.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_sort.h"
 
 static int print_usage(const char *name) {
   printf("usage:\n");

@@ -16,24 +16,20 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_cavity.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_cavity.h"
-
+#include "ref_adapt.h"
+#include "ref_dict.h"
+#include "ref_edge.h"
+#include "ref_export.h"
 #include "ref_list.h"
 #include "ref_malloc.h"
-
-#include "ref_twod.h"
-
-#include "ref_adapt.h"
-#include "ref_edge.h"
 #include "ref_sort.h"
 #include "ref_swap.h"
-
-#include "ref_dict.h"
-
-#include "ref_export.h"
+#include "ref_twod.h"
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;

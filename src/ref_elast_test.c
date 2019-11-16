@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_elast.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,8 +31,8 @@
 #include "ref_collapse.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
-#include "ref_elast.h"
 #include "ref_export.h"
+#include "ref_fixture.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
@@ -39,14 +41,12 @@
 #include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_part.h"
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_subdiv.h"
 #include "ref_twod.h"
-
-#include "ref_fixture.h"
-#include "ref_part.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;

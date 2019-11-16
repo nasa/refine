@@ -20,7 +20,6 @@
 #define REF_PART_H
 
 #include "ref_defs.h"
-
 #include "ref_grid.h"
 #include "ref_mpi.h"
 #include "ref_node.h"

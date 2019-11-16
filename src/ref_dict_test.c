@@ -16,12 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_dict.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_dict.h"
 
 int main(void) {
   REF_DICT ref_dict;

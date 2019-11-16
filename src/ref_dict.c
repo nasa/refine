@@ -16,10 +16,10 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_dict.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_dict.h"
 
 #include "ref_malloc.h"
 

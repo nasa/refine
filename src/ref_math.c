@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_math.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_math.h"
 
 REF_STATUS ref_math_normalize(REF_DBL *normal) {
   REF_DBL length;

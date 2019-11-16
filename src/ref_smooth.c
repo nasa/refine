@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_smooth.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,14 +26,12 @@
 #include "ref_cell.h"
 #include "ref_clump.h"
 #include "ref_geom.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
-#include "ref_smooth.h"
 #include "ref_twod.h"
-
-#include "ref_malloc.h"
 
 static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,

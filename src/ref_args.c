@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_args.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_args.h"
 
 REF_STATUS ref_args_inspect(REF_INT n, char **args) {
   REF_INT i;

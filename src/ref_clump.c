@@ -16,10 +16,10 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_clump.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_clump.h"
 
 #include "ref_adapt.h"
 #include "ref_cell.h"

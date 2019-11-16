@@ -16,24 +16,22 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_fortran.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_fortran.h"
-
-#include "ref_export.h"
-#include "ref_grid.h"
-#include "ref_malloc.h"
-#include "ref_mpi.h"
-#include "ref_subdiv.h"
-
 #include "ref_adapt.h"
+#include "ref_export.h"
+#include "ref_gather.h"
+#include "ref_grid.h"
+#include "ref_histogram.h"
+#include "ref_malloc.h"
 #include "ref_metric.h"
 #include "ref_migrate.h"
+#include "ref_mpi.h"
+#include "ref_subdiv.h"
 #include "ref_validation.h"
-
-#include "ref_gather.h"
-#include "ref_histogram.h"
 
 static REF_MPI ref_mpi = NULL;
 static REF_GRID ref_grid = NULL;

@@ -16,16 +16,16 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_inflate.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ref_cell.h"
-#include "ref_inflate.h"
+#include "ref_export.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
-
-#include "ref_export.h"
 
 REF_STATUS ref_inflate_pri_min_dot(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *min_dot) {

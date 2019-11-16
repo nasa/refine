@@ -16,17 +16,16 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_interp.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_interp.h"
-
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_search.h"
-
-#include "ref_malloc.h"
 
 #define MAX_NODE_LIST (200)
 

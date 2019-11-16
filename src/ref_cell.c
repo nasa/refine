@@ -16,10 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_cell.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_cell.h"
 #include "ref_malloc.h"
 #include "ref_sort.h"
 

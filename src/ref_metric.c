@@ -16,26 +16,23 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_metric.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_metric.h"
-
 #include "ref_cell.h"
+#include "ref_dict.h"
 #include "ref_edge.h"
 #include "ref_grid.h"
-#include "ref_node.h"
-
 #include "ref_interp.h"
-#include "ref_phys.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
-
-#include "ref_dict.h"
+#include "ref_node.h"
+#include "ref_phys.h"
 #include "ref_twod.h"
 
 #define REF_METRIC_MAX_DEGREE (1000)

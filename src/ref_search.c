@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_search.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_search.h"
 
 #include "ref_malloc.h"
 

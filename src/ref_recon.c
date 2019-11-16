@@ -16,21 +16,19 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_recon.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_recon.h"
-
 #include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_grid.h"
-#include "ref_node.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
-
+#include "ref_node.h"
 #include "ref_twod.h"
 
 #define REF_RECON_MAX_DEGREE (1000)

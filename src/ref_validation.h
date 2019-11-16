@@ -20,7 +20,6 @@
 #define REF_VALIDATION_H
 
 #include "ref_defs.h"
-
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION

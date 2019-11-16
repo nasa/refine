@@ -16,18 +16,16 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_axi.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_axi.h"
-
-#include "ref_math.h"
-
 #include "ref_cell.h"
-#include "ref_node.h"
-
 #include "ref_malloc.h"
+#include "ref_math.h"
+#include "ref_node.h"
 #include "ref_sort.h"
 
 REF_STATUS ref_axi_wedge(REF_GRID ref_grid) {

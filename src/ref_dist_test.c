@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_dist.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_dist.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;

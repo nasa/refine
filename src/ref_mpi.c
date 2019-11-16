@@ -28,10 +28,9 @@
 #include "mpi.h"
 #endif
 
-#include "ref_mpi.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_mpi.h"
 
 #ifdef HAVE_MPI
 

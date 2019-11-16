@@ -16,15 +16,15 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_layer.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_layer.h"
-#include "ref_split.h"
 
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
+#include "ref_split.h"
 #include "ref_validation.h"
 
 REF_STATUS ref_layer_create(REF_LAYER *ref_layer_ptr, REF_MPI ref_mpi) {

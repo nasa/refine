@@ -16,16 +16,15 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_dist.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_dist.h"
-
 #include "ref_cell.h"
-#include "ref_grid.h"
-
 #include "ref_edge.h"
+#include "ref_grid.h"
 
 static REF_BOOL ref_dist_exclude(REF_INT node0, REF_INT node1, REF_INT *nodes) {
   if (node0 == nodes[0] && node1 == nodes[1]) return REF_TRUE;

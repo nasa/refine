@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_validation.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_validation.h"
 
 #include "ref_export.h"
 #include "ref_face.h"

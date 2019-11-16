@@ -16,25 +16,23 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_cell.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ref_adj.h"
-#include "ref_cell.h"
-
+#include "ref_fixture.h"
+#include "ref_grid.h"
 #include "ref_list.h"
+#include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_sort.h"
-
-#include "ref_fixture.h"
-#include "ref_grid.h"
-
-#include "ref_malloc.h"
-#include "ref_math.h"
 
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, 2, REF_TRUE);

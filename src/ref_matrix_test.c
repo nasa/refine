@@ -16,12 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_matrix.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_matrix.h"
 
 int main(void) {
   { /* sqrt ( v^t M v ) */
