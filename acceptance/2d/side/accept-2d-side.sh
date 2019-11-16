@@ -22,7 +22,7 @@ function adapt_cycle {
     ${two}/ref_translate ${proj}.meshb ${proj}.tec
 
     ${two}/ref_acceptance -twod side ${proj}.meshb ${proj}.solb
-    ${two}/ref_driver -i ${proj}.meshb -m ${proj}.solb -x ref_adapt_test.meshb -t | tee ${proj}.out || exit 1
+    ${two}/ref_driver -i ${proj}.meshb -s 1 -m ${proj}.solb -x ref_adapt_test.meshb -t | tee ${proj}.out || exit 1
 
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
@@ -32,6 +32,9 @@ function adapt_cycle {
 }
 
 adapt_cycle accept-2d-side-00
+
+exit
+
 adapt_cycle accept-2d-side-01
 adapt_cycle accept-2d-side-02
 adapt_cycle accept-2d-side-03
