@@ -948,9 +948,9 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_cell_local_gem(ref_grid_pri(ref_grid), ref_node, node0, node1,
+    RSS(ref_cell_local_gem(ref_grid_tri(ref_grid), ref_node, node0, node1,
                            &allowed),
-        "local pri");
+        "local tri");
     if (!allowed) {
       ref_node_age(ref_node, node0)++;
       ref_node_age(ref_node, node1)++;
@@ -973,11 +973,9 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_INT new_node0, REF_INT node2, REF_INT node3,
-                               REF_INT new_node1) {
-  REF_CELL pri = ref_grid_pri(ref_grid);
+                               REF_INT new_node) {
   REF_CELL tri = ref_grid_tri(ref_grid);
-  REF_CELL qua = ref_grid_qua(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
 
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[2];
@@ -985,30 +983,6 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell, node;
 
-  RSS(ref_cell_list_with2(pri, node0, node1, 2, &ncell, cell_to_split),
-      "more than two");
-
-  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
-    cell = cell_to_split[cell_in_list];
-    RSS(ref_cell_nodes(pri, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(pri, cell), "remove");
-
-    for (node = 0; node < ref_cell_node_per(pri); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    RSS(ref_cell_add(pri, new_nodes, &new_cell), "add node0-node2 version");
-
-    for (node = 0; node < ref_cell_node_per(pri); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    RSS(ref_cell_add(pri, new_nodes, &new_cell), "add node1-node3 version");
-  }
-
-  tri = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(tri, node0, node1, 2, &ncell, cell_to_split),
       "more then two");
 
@@ -1019,69 +993,40 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
     for (node = 0; node < ref_cell_node_per(tri); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
+      if (node0 == orig_nodes[node]) new_nodes[node] = new_node;
     }
     new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
     RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node0 version");
 
     for (node = 0; node < ref_cell_node_per(tri); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
+      if (node1 == orig_nodes[node]) new_nodes[node] = new_node;
     }
     new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
     RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node1 version");
   }
 
-  tri = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(tri, node2, node3, 2, &ncell, cell_to_split),
-      "more then two");
+  RSS(ref_cell_list_with2(edg, node0, node1, 1, &ncell, cell_to_split),
+      "more then one");
 
   for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
     cell = cell_to_split[cell_in_list];
-    RSS(ref_cell_nodes(tri, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(tri, cell), "remove");
+    RSS(ref_cell_nodes(edg, cell, orig_nodes), "cell nodes");
+    RSS(ref_cell_remove(edg, cell), "remove");
 
-    for (node = 0; node < ref_cell_node_per(tri); node++) {
+    for (node = 0; node < ref_cell_node_per(edg); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
+      if (node0 == orig_nodes[node]) new_nodes[node] = new_node;
     }
-    new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
-    RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node0 version");
+    new_nodes[ref_cell_node_per(edg)] = orig_nodes[ref_cell_node_per(edg)];
+    RSS(ref_cell_add(edg, new_nodes, &new_cell), "add node0 version");
 
-    for (node = 0; node < ref_cell_node_per(tri); node++) {
+    for (node = 0; node < ref_cell_node_per(edg); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
+      if (node1 == orig_nodes[node]) new_nodes[node] = new_node;
     }
-    new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
-    RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node1 version");
-  }
-
-  qua = ref_grid_qua(ref_grid);
-  orig_nodes[0] = node0;
-  orig_nodes[1] = node1;
-  orig_nodes[2] = node3;
-  orig_nodes[3] = node2;
-  RXS(ref_cell_with(qua, orig_nodes, &cell), REF_NOT_FOUND, "qua with");
-
-  if (REF_EMPTY != cell) {
-    RSS(ref_cell_nodes(qua, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(qua, cell), "remove");
-
-    for (node = 0; node < ref_cell_node_per(qua); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    new_nodes[ref_cell_node_per(qua)] = orig_nodes[ref_cell_node_per(qua)];
-    RSS(ref_cell_add(qua, new_nodes, &new_cell), "add node0-node3 version");
-
-    for (node = 0; node < ref_cell_node_per(qua); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    new_nodes[ref_cell_node_per(qua)] = orig_nodes[ref_cell_node_per(qua)];
-    RSS(ref_cell_add(qua, new_nodes, &new_cell), "add node1-node2 version");
+    new_nodes[ref_cell_node_per(edg)] = orig_nodes[ref_cell_node_per(edg)];
+    RSS(ref_cell_add(edg, new_nodes, &new_cell), "add node1 version");
   }
 
   return REF_SUCCESS;

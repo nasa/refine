@@ -239,22 +239,17 @@ int main(int argc, char *argv[]) {
 
   { /* split twod prism in two */
     REF_GRID ref_grid;
-    REF_INT node0, node1, node2, node3, new_node0, new_node1;
+    REF_INT node0, node1, new_node;
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
     node0 = 1;
     node1 = 2;
-    node2 = 4;
-    node3 = 5;
 
-    RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node0), "new");
-    RSS(ref_node_add(ref_grid_node(ref_grid), 7, &new_node1), "new");
+    RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node), "new");
 
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node0, node2, node3,
-                            new_node1),
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node),
         "split");
 
-    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(1, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
 
@@ -263,22 +258,17 @@ int main(int argc, char *argv[]) {
 
   { /* split twod prism in two with quad */
     REF_GRID ref_grid;
-    REF_INT node0, node1, node2, node3, new_node0, new_node1;
+    REF_INT node0, node1, new_node;
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
     node0 = 0;
     node1 = 1;
-    node2 = 3;
-    node3 = 4;
 
-    RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node0), "new");
-    RSS(ref_node_add(ref_grid_node(ref_grid), 7, &new_node1), "new");
+    RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node), "new");
 
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node0, node2, node3,
-                            new_node1),
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node),
         "split");
 
-    REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "tet");
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
 
