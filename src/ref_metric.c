@@ -134,8 +134,8 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       h0 = 0.1;
       h = 0.01;
       hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
-      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0, 1.0, 0,
-                               1.0 / (hh * hh)),
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                               1.0 / (hh * hh), 0, 1.0),
           "set node met");
       continue;
     }
@@ -279,9 +279,9 @@ REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
 
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_node_metric_get(ref_node, node, m), "get");
-    m[1] = 0.0;
-    m[3] = 1.0;
+    m[2] = 0.0;
     m[4] = 0.0;
+    m[5] = 1.0;
     RSS(ref_node_metric_set(ref_node, node, m), "set");
   }
 
@@ -388,8 +388,8 @@ static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
       interpolated_xyz[ixyz] +=
           bary[ibary] * ref_node_real(parent_node, ixyz, nodes[ibary]);
   }
-  /* override y for fake twod */
-  interpolated_xyz[1] = ref_node_xyz(ref_node, 1, node);
+  /* override z for fake twod */
+  interpolated_xyz[2] = ref_node_xyz(ref_node, 2, node);
   for (ixyz = 0; ixyz < 3; ixyz++)
     RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
   for (ibary = 0; ibary < 3; ibary++)
