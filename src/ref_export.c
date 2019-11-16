@@ -2253,9 +2253,7 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   REF_INT nnode;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node0, node1;
   REF_INT nedge;
-  REF_BOOL twod_edge;
   REF_INT ntri;
 
   RAS(ref_grid_twod(ref_grid), "expected twod convention grid");
@@ -2272,12 +2270,9 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &twod_node), "twod node");
-    if (twod_node) {
       o2n[node] = nnode;
       n2o[nnode] = node;
       nnode++;
-    }
   }
 
   fprintf(f, "\nVertices\n%d\n", nnode);
@@ -2286,21 +2281,13 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
             ref_node_xyz(ref_node, 2, n2o[node]), 1);
   }
 
-  ref_cell = ref_grid_qua(ref_grid);
+  ref_cell = ref_grid_edg(ref_grid);
   fprintf(f, "\nEdges\n%d\n", ref_cell_n(ref_cell));
   nedge = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    for (node0 = 0; node0 < 4; node0++) {
-      node1 = node0 + 1;
-      if (node1 > 3) node1 = 0;
-      RSS(ref_node_edge_twod(ref_node, nodes[node0], nodes[node1], &twod_edge),
-          "twod edge");
-      if (twod_edge) {
-        nedge++;
-        fprintf(f, "%d %d %d\n", o2n[nodes[node0]] + 1, o2n[nodes[node1]] + 1,
-                nodes[4]);
-      }
-    }
+    nedge++;
+    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[1]] + 1,
+            nodes[2]);
   }
   REIS(nedge, ref_cell_n(ref_cell), "edge/quad miscount");
 
@@ -2309,13 +2296,11 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_node_twod(ref_node, nodes[0], &twod_node), "twod node");
-    if (twod_node) {
-      ntri++;
-      fprintf(f, "%d %d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[2]] + 1,
-              o2n[nodes[1]] + 1, nodes[3]);
-    }
+    ntri++;
+    fprintf(f, "%d %d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[2]] + 1,
+            o2n[nodes[1]] + 1, nodes[3]);
   }
-  REIS(ntri, ref_cell_n(ref_cell) / 2, "triangle miscount");
+  REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
 
   ref_free(n2o);
   ref_free(o2n);
