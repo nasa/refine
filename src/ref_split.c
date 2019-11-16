@@ -939,8 +939,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node,
-                                    &allowed),
+    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node, &allowed),
         "quality of new tri");
     if (!allowed) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
@@ -958,6 +957,8 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
+
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node), "split");
 
     ref_node_age(ref_node, node0) = 0;
     ref_node_age(ref_node, node1) = 0;
