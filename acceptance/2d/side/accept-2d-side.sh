@@ -36,7 +36,8 @@ adapt_cycle accept-2d-side-01
 adapt_cycle accept-2d-side-02
 adapt_cycle accept-2d-side-03
 adapt_cycle accept-2d-side-04
+adapt_cycle accept-2d-side-05
 
-cat accept-2d-side-04.status
-../../check.rb accept-2d-side-04.status 0.40 1.6
+cat accept-2d-side-05.status
+../../check.rb accept-2d-side-05.status 0.40 1.6
 
