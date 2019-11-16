@@ -605,7 +605,7 @@ REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
       if (node == ref_cell_e2n(ref_cell, 0, cell_edge, cell)) {
         other = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       } else if (node == ref_cell_e2n(ref_cell, 1, cell_edge, cell)) {
-        other = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        other = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
       } else {
         continue;
       }
