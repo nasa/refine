@@ -1197,7 +1197,6 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
 
   ref_grid_twod(ref_grid) = REF_TRUE;
 
-  
   /*
   y   3 --- 2
   ^   |     |
@@ -1221,50 +1220,50 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
 
   edg[2] = 1;
   j = 0;
-  for (i = 0; i < m-1; i++) {
+  for (i = 0; i < m - 1; i++) {
     edg[0] = ij2node(i, j, m, n);
-    edg[1] = ij2node(i+1, j, m, n);
+    edg[1] = ij2node(i + 1, j, m, n);
     RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "qua");
   }
 
   edg[2] = 2;
-  i = m-1;
-  for (j = 0; j < n-1; j++) {
+  i = m - 1;
+  for (j = 0; j < n - 1; j++) {
     edg[0] = ij2node(i, j, m, n);
-    edg[1] = ij2node(i, j+1, m, n);
+    edg[1] = ij2node(i, j + 1, m, n);
     RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
   }
 
   edg[2] = 3;
-  j = n-1;
-  for (i = m-2; i >= 0; i--) {
-    edg[0] = ij2node(i+1, j, m, n);
+  j = n - 1;
+  for (i = m - 2; i >= 0; i--) {
+    edg[0] = ij2node(i + 1, j, m, n);
     edg[1] = ij2node(i, j, m, n);
     RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
   }
 
   edg[2] = 4;
   i = 0;
-  for (j = n-2; j >=0 ; j--) {
-    edg[0] = ij2node(i, j+1, m, n);
+  for (j = n - 2; j >= 0; j--) {
+    edg[0] = ij2node(i, j + 1, m, n);
     edg[1] = ij2node(i, j, m, n);
     RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
   }
 
   tri[3] = 1;
   j = 1;
-  for (j = 0; j < n-1; j++) {
-    for (i = 0; i < m-1; i++) {
+  for (j = 0; j < n - 1; j++) {
+    for (i = 0; i < m - 1; i++) {
       tri[0] = ij2node(i, j, m, n);
-      tri[1] = ij2node(i+1, j, m, n);
-      tri[2] = ij2node(i+1, j+1, m, n);
+      tri[1] = ij2node(i + 1, j, m, n);
+      tri[2] = ij2node(i + 1, j + 1, m, n);
       RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "tri");
       tri[0] = ij2node(i, j, m, n);
-      tri[1] = ij2node(i+1, j+1, m, n);
-      tri[2] = ij2node(i, j+1, m, n);
+      tri[1] = ij2node(i + 1, j + 1, m, n);
+      tri[2] = ij2node(i, j + 1, m, n);
       RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "tri");
     }
   }
-  
+
   return REF_SUCCESS;
 }
