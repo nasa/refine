@@ -1775,7 +1775,7 @@ static REF_STATUS ref_node_tri_jac_quality(REF_NODE ref_node, REF_INT *nodes,
 }
 REF_STATUS ref_node_tri_quality(REF_NODE ref_node, REF_INT *nodes,
                                 REF_DBL *quality) {
-  if (REF_TRUE) {
+  if (REF_FALSE) {
     REF_DBL epic, jac;
     RSS(ref_node_tri_epic_quality(ref_node, nodes, &epic), "epic");
     RSS(ref_node_tri_jac_quality(ref_node, nodes, &jac), "epic");
