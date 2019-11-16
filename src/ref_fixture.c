@@ -1236,7 +1236,7 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
   }
 
   edg[2] = 3;
-  j = 0;
+  j = n-1;
   for (i = m-2; i >= 0; i--) {
     edg[0] = ij2node(i+1, j, m, n);
     edg[1] = ij2node(i, j, m, n);
