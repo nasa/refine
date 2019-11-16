@@ -887,7 +887,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
   REF_INT *edges, *order;
   REF_INT edge, n, i;
   REF_BOOL allowed;
-  REF_INT node0, node1, node2, node3, new_node0, new_node1;
+  REF_INT node0, node1, new_node;
   REF_GLOB global;
 
   RAS(ref_grid_twod(ref_grid), "only 2D");
@@ -922,29 +922,29 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &new_node0), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node0),
+    RSS(ref_node_add(ref_node, global, &new_node), "new node");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
         "interp new node");
-    RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node0),
+    RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node),
         "geom new node");
-    RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
-    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node0),
+    RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
+    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node),
         "interp new node0");
 
-    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0, &allowed),
+    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node, &allowed),
         "ratio of new tri sides");
     if (!allowed) {
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
-    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node0,
+    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node,
                                     &allowed),
         "quality of new tri");
     if (!allowed) {
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
@@ -954,28 +954,10 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     if (!allowed) {
       ref_node_age(ref_node, node0)++;
       ref_node_age(ref_node, node1)++;
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
-
-    RSS(ref_twod_opposite_edge(ref_grid_pri(ref_grid), node0, node1, &node2,
-                               &node3),
-        "opp");
-
-    RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &new_node1), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node2, node3, 0.5, new_node1),
-        "interp new node");
-    RSS(ref_geom_add_between(ref_grid, node2, node3, 0.5, new_node1),
-        "geom new node");
-    RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");
-    RSS(ref_metric_interpolate_between(ref_grid, node2, node3, new_node1),
-        "interp new node1");
-
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node0, node2, node3,
-                            new_node1),
-        "split face");
 
     ref_node_age(ref_node, node0) = 0;
     ref_node_age(ref_node, node1) = 0;
