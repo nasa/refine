@@ -12,22 +12,22 @@ else
     two=${HOME}/refine/strict/src
 fi
 
-${two}/ref_acceptance 2 ref_adapt_test.b8.ugrid
+${two}/ref_acceptance 2 ref_adapt_test.meshb
 
 function adapt_cycle {
     proj=$1
 
-    cp ref_adapt_test.b8.ugrid ${proj}.b8.ugrid
+    cp ref_adapt_test.meshb ${proj}.meshb
 
-    ${two}/ref_translate ${proj}.b8.ugrid ${proj}.tec
+    ${two}/ref_translate ${proj}.meshb ${proj}.tec
 
-    ${two}/ref_acceptance -twod side ${proj}.b8.ugrid ${proj}.solb
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb -x ref_adapt_test.b8.ugrid -t | tee ${proj}.out || exit 1
+    ${two}/ref_acceptance -twod side ${proj}.meshb ${proj}.solb
+    ${two}/ref_driver -i ${proj}.meshb -m ${proj}.solb -x ref_adapt_test.meshb -t | tee ${proj}.out || exit 1
 
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
 
-    ${two}/ref_metric_test ${proj}.b8.ugrid ${proj}.solb > ${proj}.status
+    ${two}/ref_metric_test ${proj}.meshb ${proj}.solb > ${proj}.status
     cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
 }
 
