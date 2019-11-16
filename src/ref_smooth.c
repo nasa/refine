@@ -798,7 +798,7 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL allowed;
 
   /* can't handle boundaries yet */
-  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
