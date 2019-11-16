@@ -869,9 +869,6 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
   REF_INT status;
   REF_INT elem, nelem, type, flag, three, zero;
-  REF_INT faceid1 = 1;
-  REF_INT faceid2 = 2;
-  REF_INT cell, candidate;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = (*ref_grid_ptr);
@@ -895,13 +892,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         ref_node_xyz(ref_node, 1, new_node) = 0.0;
         ref_node_xyz(ref_node, 2, new_node) = y;
       }
-      for (node = 0; node < nnode; node++) {
-        RSS(ref_node_add(ref_node, nnode + node, &new_node), "add node");
-        ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 1, new_node) = 1.0;
-        ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(ref_node, 2, node);
-      }
-      RSS(ref_node_initialize_n_global(ref_node, 2 * nnode), "init glob");
+      RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
     }
 
     if (0 == strcmp("Edges", line)) {
@@ -912,101 +903,44 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         n1--;
         nodes[0] = n0;
         nodes[1] = n1;
-        nodes[2] = n1 + nnode;
-        nodes[3] = n0 + nnode;
-        nodes[4] = id;
-        RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
+        nodes[2] = id;
+        RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
             "quad face for an edge");
-      }
-
-      faceid1 = REF_EMPTY;
-      faceid2 = REF_EMPTY;
-      candidate = 1;
-      while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2) {
-        REF_BOOL not_used = REF_TRUE;
-        each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell,
-                                            nodes) {
-          if (candidate == nodes[4]) {
-            not_used = REF_FALSE;
-            break;
-          }
-        }
-        if (not_used) {
-          if (REF_EMPTY == faceid1) {
-            faceid1 = candidate;
-          } else {
-            faceid2 = candidate;
-          }
-        }
-        candidate++;
       }
     }
 
     if (0 == strcmp("Triangles", line)) {
-      printf("y=1 symmetry faceid is %d, y=0 symmetry faceid is %d\n", faceid1,
-             faceid2);
       REIS(1, fscanf(file, "%d", &ntri), "read ntri");
       for (tri = 0; tri < ntri; tri++) {
-        REIS(4, fscanf(file, "%d %d %d %d", &n0, &n1, &n2, &dummy), "read tri");
+        REIS(4, fscanf(file, "%d %d %d %d", &n0, &n1, &n2, &id), "read tri");
         n0--;
         n1--;
         n2--;
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
-        nodes[3] = faceid1;
-        RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
-            "tri face for tri");
         nodes[0] = n0;
-        nodes[1] = n2;
-        nodes[2] = n1;
-        nodes[3] = faceid2;
+        nodes[1] = n1;
+        nodes[2] = n2;
+        nodes[3] = id;
         RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
             "tri face for tri");
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
-        nodes[3] = n0;
-        nodes[4] = n1;
-        nodes[5] = n2;
-        RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell),
-            "prism for tri");
       }
     }
 
     if (0 == strcmp("Quadrilaterals", line)) {
       REIS(1, fscanf(file, "%d", &ntri), "read ntri");
       for (tri = 0; tri < ntri; tri++) {
-        REIS(5, fscanf(file, "%d %d %d %d %d", &n0, &n1, &n2, &n3, &dummy),
+        REIS(5, fscanf(file, "%d %d %d %d %d", &n0, &n1, &n2, &n3, &id),
              "read quad");
         n0--;
         n1--;
         n2--;
         n3--;
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
-        nodes[3] = n3 + nnode;
-        nodes[4] = 1;
+        nodes[0] = n0;
+        nodes[1] = n1;
+        nodes[2] = n2;
+        nodes[3] = n3;
+        nodes[4] = id;
         RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
             "qua face for qua");
-        nodes[0] = n3;
-        nodes[1] = n2;
-        nodes[2] = n1;
-        nodes[3] = n0;
-        nodes[4] = 2;
-        RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
-            "qua face for qua");
-        nodes[0] = n0 + nnode;
-        nodes[1] = n1 + nnode;
-        nodes[2] = n2 + nnode;
-        nodes[3] = n3 + nnode;
-        nodes[4] = n0;
-        nodes[5] = n1;
-        nodes[6] = n2;
-        nodes[7] = n3;
-        RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell),
-            "hex for qua");
       }
     }
 
@@ -1193,10 +1127,6 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_DBL param[2];
   REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
-  REF_INT faceid1 = 1;
-  REF_INT faceid2 = 2;
-  REF_INT candidate;
-  REF_DBL normal[3];
 
   if (verbose) printf("header %s\n", filename);
   RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
@@ -1250,19 +1180,8 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     /* ref_node_location(ref_node, node ); */
   }
   REIS(next_position, ftello(file), "end location");
-  if (2 == dim)
-    for (node = 0; node < nnode; node++) {
-      RSS(ref_node_add(ref_node, nnode + node, &new_node), "add node");
-      ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(ref_node, 0, node);
-      ref_node_xyz(ref_node, 1, new_node) = 1.0;
-      ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(ref_node, 2, node);
-    }
 
-  if (3 == dim) {
-    RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
-  } else {
-    RSS(ref_node_initialize_n_global(ref_node, 2 * nnode), "init glob");
-  }
+  RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
 
   RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
                             &next_position),
@@ -1277,46 +1196,13 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       REIS(1, fread(&(id), sizeof(id), 1, file), "id");
       n0--;
       n1--;
-      if (2 == dim) {
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = n1 + nnode;
-        nodes[3] = n0 + nnode;
-        nodes[4] = id;
-        RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
-            "quad face for an edge");
-      } else {
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = id;
-        RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
-            "edg for edge");
-      }
+      nodes[0] = n0;
+      nodes[1] = n1;
+      nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+          "edg for edge");
     }
     REIS(next_position, ftello(file), "end location");
-  }
-
-  if (2 == dim) {
-    faceid1 = REF_EMPTY;
-    faceid2 = REF_EMPTY;
-    candidate = 1;
-    while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2) {
-      REF_BOOL not_used = REF_TRUE;
-      each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
-        if (candidate == nodes[4]) {
-          not_used = REF_FALSE;
-          break;
-        }
-      }
-      if (not_used) {
-        if (REF_EMPTY == faceid1) {
-          faceid1 = candidate;
-        } else {
-          faceid2 = candidate;
-        }
-      }
-      candidate++;
-    }
   }
 
   RSS(ref_import_meshb_jump(file, version, key_pos, 6, &available,
@@ -1325,9 +1211,6 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (available) {
     REIS(1, fread((unsigned char *)&ntri, 4, 1, file), "ntri");
     if (verbose) printf("ntri %d\n", ntri);
-    if (2 == dim)
-      printf("y=1 symmetry faceid is %d, y=0 symmetry faceid is %d\n", faceid1,
-             faceid2);
 
     for (tri = 0; tri < ntri; tri++) {
       REIS(1, fread(&(n0), sizeof(n0), 1, file), "n0");
@@ -1337,45 +1220,12 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       n0--;
       n1--;
       n2--;
-      if (2 == dim) {
-        /* test for orientation, flip if x-z normal positive y */
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = n2;
-        RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-        if (normal[1] < 0.0) {
-          n2 = nodes[0];
-          n1 = nodes[1];
-          n0 = nodes[2];
-        }
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = n2;
-        nodes[3] = faceid1;
-        RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
-            "tri face for tri");
-        nodes[0] = n0 + nnode;
-        nodes[1] = n2 + nnode;
-        nodes[2] = n1 + nnode;
-        nodes[3] = faceid2;
-        RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
-            "tri face for tri");
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = n2;
-        nodes[3] = n0 + nnode;
-        nodes[4] = n1 + nnode;
-        nodes[5] = n2 + nnode;
-        RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell),
-            "prism for tri");
-      } else {
-        nodes[0] = n0;
-        nodes[1] = n1;
-        nodes[2] = n2;
-        nodes[3] = id;
-        RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
-            "tri face for tri");
-      }
+      nodes[0] = n0;
+      nodes[1] = n1;
+      nodes[2] = n2;
+      nodes[3] = id;
+      RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell),
+          "tri face for tri");
     }
     REIS(next_position, ftello(file), "end location");
   }
