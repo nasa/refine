@@ -2249,7 +2249,6 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_BOOL twod_node;
   REF_INT nnode;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2295,7 +2294,6 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   fprintf(f, "\nTriangles\n%d\n", ref_cell_n(ref_cell) / 2);
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_node_node_twod(ref_node, nodes[0], &twod_node), "twod node");
     ntri++;
     fprintf(f, "%d %d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[2]] + 1,
             o2n[nodes[1]] + 1, nodes[3]);
@@ -2315,7 +2313,6 @@ REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_BOOL twod_node;
   REF_INT nnode;
   REF_DBL m[6];
 
@@ -2328,12 +2325,9 @@ REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &twod_node), "twod node");
-    if (twod_node) {
       o2n[node] = nnode;
       n2o[nnode] = node;
       nnode++;
-    }
   }
 
   fprintf(f, "%d %d\n", nnode, 3);
@@ -2355,7 +2349,6 @@ REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
   REF_INT *o2n, *n2o;
-  REF_BOOL twod_node;
   REF_INT nnode;
   REF_DBL m[6];
 
@@ -2368,12 +2361,9 @@ REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &twod_node), "twod node");
-    if (twod_node) {
       o2n[node] = nnode;
       n2o[nnode] = node;
       nnode++;
-    }
   }
 
   fprintf(f, "MeshVersionFormatted 2\n\n");

@@ -1136,7 +1136,6 @@ REF_STATUS ref_collapse_twod_pass(REF_GRID ref_grid) {
   REF_INT i, edge;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL edge_ratio;
-  REF_BOOL active;
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
 
@@ -1146,8 +1145,6 @@ REF_STATUS ref_collapse_twod_pass(REF_GRID ref_grid) {
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &active), "act");
-    if (!active) continue;
 
     RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
     ratio[node0] = MIN(ratio[node0], edge_ratio);

@@ -595,37 +595,30 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
 
 REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
                                           REF_INT *node0, REF_INT *node1) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_qua(ref_grid);
-  REF_INT item, cell, cell_edge, n0, n1;
-  REF_BOOL twod;
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT item, cell, cell_edge, other;
+
   *node0 = REF_EMPTY;
   *node1 = REF_EMPTY;
-  RSS(ref_node_node_twod(ref_node, node, &twod), "node twod");
-  RAS(twod, "expected twod node");
+
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     each_ref_cell_cell_edge(ref_cell, cell_edge) {
       if (node == ref_cell_e2n(ref_cell, 0, cell_edge, cell)) {
-        n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
-        n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        other = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       } else if (node == ref_cell_e2n(ref_cell, 1, cell_edge, cell)) {
-        n0 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-        n1 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        other = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       } else {
         continue;
       }
-      RSS(ref_node_edge_twod(ref_node, n0, n1, &twod), "edge twod");
-      if (twod) {
-        if (REF_EMPTY == *node0) {
-          *node0 = n1;
-          continue;
-        }
-        if (REF_EMPTY == *node1) {
-          *node1 = n1;
-          continue;
-        }
-        THROW("found more than two boundary edges");
+      if (REF_EMPTY == *node0) {
+        *node0 = other;
+        continue;
       }
+      if (REF_EMPTY == *node1) {
+        *node1 = other;
+        continue;
+      }
+      THROW("found more than two boundary edges");
     }
   }
 
@@ -723,9 +716,9 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL allowed;
 
   /* boundaries only */
-  if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
-  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
 
   RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
       "edge nodes");
@@ -1001,11 +994,9 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* boundary */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
-    if (!allowed) continue;
 
     /* boundaries only */
-    allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (allowed) continue;
 
     RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
@@ -1022,11 +1013,9 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* interior */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
-    if (!allowed) continue;
 
     /* already did boundaries */
-    allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (!allowed) continue;
 
     RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,

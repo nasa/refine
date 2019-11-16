@@ -818,9 +818,6 @@ REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &allowed), "act");
-    if (!allowed) continue;
-
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
       continue;

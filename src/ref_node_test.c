@@ -534,35 +534,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* twod edge */
-    REF_NODE ref_node;
-    REF_INT node0, node1, global;
-    REF_BOOL twod;
-
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-
-    global = 0;
-    RSS(ref_node_add(ref_node, global, &node0), "add");
-    ref_node_xyz(ref_node, 0, node0) = 0.0;
-    ref_node_xyz(ref_node, 1, node0) = 0.0;
-    ref_node_xyz(ref_node, 2, node0) = 0.0;
-    global = 1;
-    RSS(ref_node_add(ref_node, global, &node1), "add");
-    ref_node_xyz(ref_node, 0, node1) = 1.0;
-    ref_node_xyz(ref_node, 1, node1) = 0.0;
-    ref_node_xyz(ref_node, 2, node1) = 0.0;
-
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &twod), "twod");
-    REIS(REF_TRUE, twod, "twod");
-
-    ref_node_xyz(ref_node, 1, node1) = 1.0;
-
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &twod), "twod");
-    REIS(REF_FALSE, twod, "twod");
-
-    RSS(ref_node_free(ref_node), "free");
-  }
-
   { /* add initializes metric */
     REF_NODE ref_node;
     REF_INT global, node;

@@ -886,7 +886,7 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT edge, n, i;
-  REF_BOOL active, allowed;
+  REF_BOOL allowed;
   REF_INT node0, node1, node2, node3, new_node0, new_node1;
   REF_GLOB global;
 
@@ -900,11 +900,6 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 
   n = 0;
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    RSS(ref_node_edge_twod(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "act");
-    if (!active) continue;
-
     RSS(ref_split_edge_twod_mixed(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                   ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "act");

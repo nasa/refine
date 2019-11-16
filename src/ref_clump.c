@@ -363,7 +363,6 @@ REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
   REF_INT node, node0, node1;
   REF_INT edge;
   REF_DBL edge_ratio;
-  REF_BOOL active;
 
   char filename[1024];
 
@@ -375,8 +374,6 @@ REF_STATUS ref_clump_short_edges_twod(REF_GRID ref_grid) {
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &active), "act");
-    if (!active) continue;
 
     RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
     ratio[node0] = MIN(ratio[node0], edge_ratio);
