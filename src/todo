@@ -170,6 +170,8 @@ Marshall
  provide 2D api
   overhaul to make twod only triangle and bar
 
+- rm ref_node_edge_twod ref_node_node_twod
+
 create a standard --with-mpi configure flag
 
 validation:

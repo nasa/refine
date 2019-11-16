@@ -1603,43 +1603,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* clone a twod node  */
-    REF_NODE ref_node;
-    REF_INT node0, node1;
-    REF_GLOB global;
-    REF_DBL m[6];
-
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-
-    ref_node_naux(ref_node) = 2;
-    RSS(ref_node_resize_aux(ref_node), "resize aux");
-
-    RSS(ref_node_next_global(ref_node, &global), "next_global");
-    RSS(ref_node_add(ref_node, global, &node0), "add");
-    ref_node_xyz(ref_node, 0, node0) = 0.1;
-    ref_node_xyz(ref_node, 1, node0) = 0.0;
-    ref_node_xyz(ref_node, 2, node0) = 0.3;
-    RSS(ref_node_metric_form(ref_node, node0, 1.1, 0.2, 0.3, 1.4, 0.5, 1.6),
-        "set gen metric");
-
-    ref_node_aux(ref_node, 0, node0) = 1.0;
-    ref_node_aux(ref_node, 1, node0) = 20.0;
-
-    RSS(ref_node_twod_clone(ref_node, node0, &node1), "clone");
-
-    RWDS(1.0, ref_node_aux(ref_node, 0, node1), -1.0, "a");
-    RWDS(20.0, ref_node_aux(ref_node, 1, node1), -1.0, "a");
-
-    RWDS(0.1, ref_node_xyz(ref_node, 0, node1), -1.0, "x");
-    RWDS(1.0, ref_node_xyz(ref_node, 1, node1), -1.0, "y");
-    RWDS(0.3, ref_node_xyz(ref_node, 2, node1), -1.0, "z");
-
-    RSS(ref_node_metric_get(ref_node, node1, m), "get");
-    RWDS(1.4, m[3], -1.0, "m[3]");
-
-    RSS(ref_node_free(ref_node), "free");
-  }
-
   { /* interpolate aux */
     REF_NODE ref_node;
     REF_INT node0, node1, new_node;

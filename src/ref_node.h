@@ -45,7 +45,6 @@ struct REF_NODE_STRUCT {
   REF_INT n_unused, max_unused;
   REF_GLOB *unused_global;
   REF_GLOB old_n_global, new_n_global;
-  REF_DBL twod_mid_plane;
   REF_DBL min_volume;
   REF_DBL min_uv_area;
   REF_DBL same_normal_tol;
@@ -100,7 +99,6 @@ struct REF_NODE_STRUCT {
 #define ref_node_n_unused(ref_node) ((ref_node)->n_unused)
 #define ref_node_max_unused(ref_node) ((ref_node)->max_unused)
 
-#define ref_node_twod_mid_plane(ref_node) ((ref_node)->twod_mid_plane)
 #define ref_node_min_volume(ref_node) ((ref_node)->min_volume)
 #define ref_node_min_uv_area(ref_node) ((ref_node)->min_uv_area)
 #define ref_node_same_normal_tol(ref_node) ((ref_node)->same_normal_tol)
@@ -200,8 +198,6 @@ REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                         REF_DBL *quality,
                                         REF_DBL *dquality_dnode0);
 
-REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
-                               REF_INT *clone);
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
                                      REF_INT node1, REF_DBL node1_weight,
                                      REF_INT new_node);

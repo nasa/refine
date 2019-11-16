@@ -990,8 +990,7 @@ REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
-  REF_DBL normal[3];
-  REF_BOOL will_be_collapsed;
+  REF_BOOL will_be_collapsed, valid;
 
   *allowed = REF_FALSE;
 
@@ -1013,15 +1012,8 @@ REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
       }
     }
 
-    RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-
-    if ((ref_node_xyz(ref_node, 1, nodes[0]) >
-             ref_node_twod_mid_plane(ref_node) &&
-         normal[1] >= 0.0) ||
-        (ref_node_xyz(ref_node, 1, nodes[0]) <
-             ref_node_twod_mid_plane(ref_node) &&
-         normal[1] <= 0.0))
-      return REF_SUCCESS;
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    if (!valid)      return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
