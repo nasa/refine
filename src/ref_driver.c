@@ -248,21 +248,11 @@ int main(int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
 
   if (strcmp(output_project, "") != 0) {
-    if (!ref_grid_twod(ref_grid)) {
-      snprintf(output_filename, 1024, "%s.meshb", output_project);
-      if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
-      RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
-      ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
-    } else {
-      /* single core, not mixed element, 2D */
-      if (!ref_mpi_para(ref_mpi) && 0 == ref_cell_n(ref_grid_hex(ref_grid))) {
-        snprintf(output_filename, 1024, "%s.meshb", output_project);
-        if (ref_mpi_once(ref_mpi))
-          printf("export 2D meshb %s\n", output_filename);
-        RSS(ref_export_twod_meshb(ref_grid, output_filename), "export");
-        ref_mpi_stopwatch_stop(ref_mpi, "gather 2D meshb");
-      }
-    }
+    snprintf(output_filename, 1024, "%s.meshb", output_project);
+    if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
+    RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
+
     snprintf(output_filename, 1024, "%s.b8.ugrid", output_project);
     if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "b8.ugrid");
