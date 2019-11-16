@@ -16,10 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_list.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_list.h"
 #include "ref_malloc.h"
 
 REF_STATUS ref_list_create(REF_LIST *ref_list_ptr) {

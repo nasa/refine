@@ -16,25 +16,22 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_phys.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_phys.h"
-
 #include "ref_args.h"
-#include "ref_mpi.h"
-
-#include "ref_grid.h"
-
 #include "ref_export.h"
 #include "ref_fixture.h"
 #include "ref_gather.h"
-#include "ref_malloc.h"
-#include "ref_part.h"
-
+#include "ref_grid.h"
 #include "ref_histogram.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_mpi.h"
+#include "ref_part.h"
 #include "ref_recon.h"
 
 static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,

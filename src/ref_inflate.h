@@ -20,7 +20,6 @@
 #define REF_INFLATE_H
 
 #include "ref_defs.h"
-
 #include "ref_dict.h"
 #include "ref_grid.h"
 #include "ref_node.h"

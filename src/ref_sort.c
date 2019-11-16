@@ -16,10 +16,10 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_sort.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "ref_sort.h"
 
 REF_STATUS ref_sort_insertion_int(REF_INT n, REF_INT *original,
                                   REF_INT *sorted) {

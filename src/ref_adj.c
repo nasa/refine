@@ -16,10 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_adj.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_adj.h"
 #include "ref_malloc.h"
 
 REF_STATUS ref_adj_create(REF_ADJ *ref_adj_ptr) {

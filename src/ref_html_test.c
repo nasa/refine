@@ -16,12 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_html.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_html.h"
 
 int main(int argc, char *argv[]) {
   if (2 == argc) {

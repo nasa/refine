@@ -16,13 +16,12 @@
  * permissions and limitations under the License.
  */
 
-#include <math.h>
-
 #include "ref_phys.h"
+
+#include <math.h>
 
 #include "ref_malloc.h"
 #include "ref_math.h"
-
 #include "ref_recon.h"
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive) {

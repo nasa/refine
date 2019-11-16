@@ -16,28 +16,25 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_axi.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ref_adj.h"
-#include "ref_grid.h"
-#include "ref_list.h"
-#include "ref_matrix.h"
-#include "ref_node.h"
-
 #include "ref_cell.h"
-#include "ref_sort.h"
-
-#include "ref_axi.h"
-
-#include "ref_export.c"
-#include "ref_import.c"
-
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_export.c"
+#include "ref_grid.h"
+#include "ref_import.c"
+#include "ref_list.h"
+#include "ref_matrix.h"
 #include "ref_mpi.h"
+#include "ref_node.h"
+#include "ref_sort.h"
 
 static REF_STATUS ref_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 REF_DBL z0, REF_DBL z1) {

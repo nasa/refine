@@ -19,9 +19,8 @@
 #ifndef REF_TWOD_H
 #define REF_TWOD_H
 
-#include "ref_defs.h"
-
 #include "ref_cell.h"
+#include "ref_defs.h"
 
 BEGIN_C_DECLORATION
 

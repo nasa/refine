@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_swap.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,17 +25,13 @@
 
 #include "ref_adj.h"
 #include "ref_cell.h"
+#include "ref_fixture.h"
 #include "ref_grid.h"
 #include "ref_list.h"
 #include "ref_matrix.h"
+#include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_sort.h"
-
-#include "ref_mpi.h"
-
-#include "ref_swap.h"
-
-#include "ref_fixture.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;

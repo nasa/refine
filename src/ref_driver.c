@@ -21,49 +21,35 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ref_adj.h"
-#include "ref_cell.h"
-#include "ref_grid.h"
-#include "ref_list.h"
-#include "ref_matrix.h"
-#include "ref_node.h"
-
-#include "ref_sort.h"
-
-#include "ref_migrate.h"
-
-#include "ref_dict.h"
-#include "ref_export.h"
-#include "ref_fixture.h"
-#include "ref_import.h"
-
-#include "ref_mpi.h"
-#include "ref_part.h"
-
 #include "ref_adapt.h"
-#include "ref_gather.h"
-
+#include "ref_adj.h"
+#include "ref_cavity.h"
+#include "ref_cell.h"
 #include "ref_collapse.h"
+#include "ref_dict.h"
 #include "ref_edge.h"
-#include "ref_smooth.h"
-#include "ref_split.h"
-#include "ref_twod.h"
-
+#include "ref_export.h"
 #include "ref_face.h"
-#include "ref_subdiv.h"
-#include "ref_validation.h"
-
+#include "ref_fixture.h"
+#include "ref_gather.h"
+#include "ref_grid.h"
+#include "ref_histogram.h"
+#include "ref_import.h"
+#include "ref_list.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 #include "ref_metric.h"
-
-#include "ref_histogram.h"
-
-#include "ref_cavity.h"
-
-#include "ref_gather.h"
+#include "ref_migrate.h"
 #include "ref_mpi.h"
+#include "ref_node.h"
 #include "ref_part.h"
+#include "ref_smooth.h"
+#include "ref_sort.h"
+#include "ref_split.h"
+#include "ref_subdiv.h"
+#include "ref_twod.h"
+#include "ref_validation.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

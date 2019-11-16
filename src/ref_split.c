@@ -16,31 +16,27 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_split.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_adapt.h"
+#include "ref_cavity.h"
 #include "ref_cell.h"
 #include "ref_edge.h"
+#include "ref_gather.h"
+#include "ref_geom.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
-#include "ref_mpi.h"
-#include "ref_sort.h"
-#include "ref_split.h"
-
-#include "ref_adapt.h"
-
-#include "ref_gather.h"
-#include "ref_twod.h"
-
-#include "ref_cavity.h"
-#include "ref_geom.h"
-
-#include "ref_smooth.h"
-#include "ref_subdiv.h"
-
 #include "ref_matrix.h"
 #include "ref_metric.h"
+#include "ref_mpi.h"
+#include "ref_smooth.h"
+#include "ref_sort.h"
+#include "ref_subdiv.h"
+#include "ref_twod.h"
 
 #define MAX_CELL_SPLIT (100)
 

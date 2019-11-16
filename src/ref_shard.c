@@ -16,15 +16,14 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_shard.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "ref_export.h"
-#include "ref_shard.h"
-
-#include "ref_mpi.h"
-
 #include "ref_malloc.h"
+#include "ref_mpi.h"
 
 REF_STATUS ref_shard_create(REF_SHARD *ref_shard_ptr, REF_GRID ref_grid) {
   REF_SHARD ref_shard;

@@ -16,12 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_math.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_math.h"
 
 int main(void) {
   { /* same 1 */

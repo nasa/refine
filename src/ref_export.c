@@ -16,26 +16,22 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_export.h"
+
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_export.h"
-
 #include "ref_dict.h"
-#include "ref_endian.h"
-
-#include "ref_mpi.h"
-
-#include "ref_matrix.h"
-
 #include "ref_edge.h"
-#include "ref_node.h"
-
+#include "ref_endian.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
+#include "ref_mpi.h"
+#include "ref_node.h"
 
 #define VTK_TRIANGLE (5)
 #define VTK_QUAD (9)

@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_node.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +26,6 @@
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_mpi.h"
-#include "ref_node.h"
 #include "ref_sort.h"
 
 /* REF_EMPTY is terminatior, next avalable is shifted by 2*/

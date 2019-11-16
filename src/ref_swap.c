@@ -16,13 +16,14 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_swap.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "ref_edge.h"
 #include "ref_export.h"
 #include "ref_math.h"
-#include "ref_swap.h"
 #include "ref_twod.h"
 
 /* parallel requirement, all local */

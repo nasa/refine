@@ -16,17 +16,16 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_subdiv.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_subdiv.h"
-
 #include "ref_adj.h"
 #include "ref_malloc.h"
-#include "ref_mpi.h"
-
 #include "ref_metric.h"
+#include "ref_mpi.h"
 #include "ref_part.h"
 
 static REF_INT ref_subdiv_c2e(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,

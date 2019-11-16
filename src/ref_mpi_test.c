@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_mpi.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_mpi.h"
 
 #include "ref_malloc.h"
 

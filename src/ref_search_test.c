@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_search.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_search.h"
 
 #include "ref_adapt.h"
 #include "ref_adj.h"

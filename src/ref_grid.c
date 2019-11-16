@@ -16,13 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_grid.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_grid.h"
-
 #include "ref_edge.h"
-
 #include "ref_malloc.h"
 
 REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {

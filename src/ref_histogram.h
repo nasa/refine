@@ -27,6 +27,7 @@ typedef REF_HISTOGRAM_STRUCT *REF_HISTOGRAM;
 END_C_DECLORATION
 
 #include <stdio.h>
+
 #include "ref_grid.h"
 #include "ref_mpi.h"
 

@@ -16,17 +16,16 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_gather.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_gather.h"
-
-#include "ref_export.h"
-#include "ref_histogram.h"
-
 #include "ref_edge.h"
 #include "ref_endian.h"
+#include "ref_export.h"
+#include "ref_histogram.h"
 #include "ref_malloc.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"

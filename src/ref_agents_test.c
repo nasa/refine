@@ -16,11 +16,11 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_agents.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_agents.h"
 
 #include "ref_mpi.h"
 

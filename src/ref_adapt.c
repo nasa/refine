@@ -16,31 +16,28 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_adapt.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_adapt.h"
-#include "ref_edge.h"
-
-#include "ref_malloc.h"
-#include "ref_math.h"
-#include "ref_mpi.h"
-
 #include "ref_cavity.h"
 #include "ref_collapse.h"
+#include "ref_dist.h"
+#include "ref_edge.h"
+#include "ref_gather.h"
+#include "ref_histogram.h"
+#include "ref_malloc.h"
+#include "ref_math.h"
+#include "ref_matrix.h"
+#include "ref_metric.h"
+#include "ref_mpi.h"
+#include "ref_node.h"
 #include "ref_smooth.h"
 #include "ref_split.h"
 #include "ref_swap.h"
-
-#include "ref_matrix.h"
-#include "ref_node.h"
-
-#include "ref_dist.h"
-#include "ref_gather.h"
-#include "ref_histogram.h"
-#include "ref_metric.h"
 #include "ref_validation.h"
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt_ptr) {

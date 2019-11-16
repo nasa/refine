@@ -16,12 +16,13 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_html.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_html.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"

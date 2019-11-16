@@ -44,16 +44,13 @@
 #endif
 #endif
 
-#include "ref_migrate.h"
-
-#include "ref_malloc.h"
-#include "ref_mpi.h"
-
-#include "ref_node.h"
-#include "ref_sort.h"
-
 #include "ref_export.h"
+#include "ref_malloc.h"
+#include "ref_migrate.h"
+#include "ref_mpi.h"
+#include "ref_node.h"
 #include "ref_part.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
   REF_MIGRATE ref_migrate;

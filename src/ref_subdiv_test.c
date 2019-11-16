@@ -16,6 +16,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_subdiv.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,29 +25,22 @@
 
 #include "ref_adj.h"
 #include "ref_cell.h"
-#include "ref_grid.h"
-#include "ref_list.h"
-#include "ref_matrix.h"
-#include "ref_node.h"
-
-#include "ref_face.h"
-#include "ref_sort.h"
-
-#include "ref_subdiv.h"
-
 #include "ref_dict.h"
 #include "ref_export.h"
+#include "ref_face.h"
 #include "ref_fixture.h"
-#include "ref_mpi.h"
-#include "ref_validation.h"
-
 #include "ref_gather.h"
+#include "ref_grid.h"
+#include "ref_import.h"
+#include "ref_list.h"
+#include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_migrate.h"
+#include "ref_mpi.h"
+#include "ref_node.h"
 #include "ref_part.h"
-
-#include "ref_export.h"
-#include "ref_import.h"
+#include "ref_sort.h"
+#include "ref_validation.h"
 
 static REF_STATUS set_up_tet_for_subdiv(REF_SUBDIV *ref_subdiv_ptr,
                                         REF_MPI ref_mpi) {

@@ -16,13 +16,14 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_matrix.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #include "ref_malloc.h"
 #include "ref_math.h"
-#include "ref_matrix.h"
 
 REF_STATUS ref_matrix_sqrt_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
                                         REF_DBL *df_dv) {

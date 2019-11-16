@@ -21,26 +21,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_defs.h"
-
 #include "ref_args.h"
-#include "ref_mpi.h"
-
-#include "ref_geom.h"
-#include "ref_grid.h"
-
-#include "ref_histogram.h"
-#include "ref_metric.h"
-#include "ref_split.h"
-#include "ref_validation.h"
-
+#include "ref_defs.h"
 #include "ref_export.h"
 #include "ref_gather.h"
+#include "ref_geom.h"
+#include "ref_grid.h"
+#include "ref_histogram.h"
 #include "ref_import.h"
-#include "ref_part.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_metric.h"
+#include "ref_mpi.h"
+#include "ref_part.h"
+#include "ref_split.h"
+#include "ref_validation.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"

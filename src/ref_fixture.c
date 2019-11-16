@@ -16,11 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_fixture.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_fixture.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
 #include "ref_part.h"

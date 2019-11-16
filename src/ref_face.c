@@ -16,14 +16,14 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_face.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_face.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_sort.h"
-
-#include "ref_malloc.h"
 
 REF_STATUS ref_face_create(REF_FACE *ref_face_ptr, REF_GRID ref_grid) {
   REF_FACE ref_face;

@@ -30,22 +30,18 @@
 #include "egads.h"
 #endif
 
-#include "ref_geom.h"
-
 #include "ref_cell.h"
+#include "ref_dict.h"
 #include "ref_export.h"
 #include "ref_gather.h"
+#include "ref_geom.h"
 #include "ref_grid.h"
-#include "ref_node.h"
-
-#include "ref_dict.h"
-#include "ref_sort.h"
-
 #include "ref_malloc.h"
 #include "ref_math.h"
-#include "ref_mpi.h"
-
 #include "ref_matrix.h"
+#include "ref_mpi.h"
+#include "ref_node.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_geom_initialize(REF_GEOM ref_geom) {
   REF_INT geom;

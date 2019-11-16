@@ -16,12 +16,12 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_cloud.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ref_cloud.h"
 
 int main(void) {
   REF_CLOUD ref_cloud;
