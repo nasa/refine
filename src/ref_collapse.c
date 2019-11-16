@@ -999,7 +999,7 @@ REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
 
 REF_STATUS ref_collapse_face_geometry(REF_GRID ref_grid, REF_INT keep,
                                       REF_INT remove, REF_BOOL *allowed) {
-  REF_CELL ref_cell = ref_grid_qua(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT deg, degree1;
   REF_INT id, ids1[2];
@@ -1031,7 +1031,7 @@ REF_STATUS ref_collapse_face_geometry(REF_GRID ref_grid, REF_INT keep,
       *allowed = REF_FALSE;
       break;
     case 1:
-      RSS(ref_cell_has_side(ref_grid_hex(ref_grid), keep, remove, &mixed),
+      RSS(ref_cell_has_side(ref_grid_qua(ref_grid), keep, remove, &mixed),
           "not allowed if a side of a hex, mixed");
       if (mixed) {
         *allowed = REF_FALSE;
