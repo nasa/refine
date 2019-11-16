@@ -667,14 +667,8 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
   REF_INT new_cell;
-  REF_INT opp0, opp1, opp2, opp3;
 
   RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
-
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node0, &opp0), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node1, &opp1), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node2, &opp2), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node3, &opp3), "opp");
 
   /* twod plane tri */
   ref_cell = ref_grid_tri(ref_grid);
@@ -692,49 +686,6 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
-
-  /* opp plane tri */
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, opp0, opp1, 2, &ncell, cell_to_swap),
-      "more then two");
-  REIB(2, ncell, "there should be two triangles for manifold opp plane",
-       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
-  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
-
-  nodes[0] = opp0;
-  nodes[1] = opp2; /* swapped dir */
-  nodes[2] = opp3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = opp1;
-  nodes[1] = opp3; /* swapped dir */
-  nodes[2] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
-
-  /* prism */
-  ref_cell = ref_grid_pri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
-      "more then two");
-  REIB(2, ncell, "there should be two triangles for manifold prism",
-       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
-
-  nodes[0] = node0;
-  nodes[1] = node3;
-  nodes[2] = node2;
-  nodes[3] = opp0;
-  nodes[4] = opp3;
-  nodes[5] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = node1;
-  nodes[1] = node2;
-  nodes[2] = node3;
-  nodes[3] = opp1;
-  nodes[4] = opp2;
-  nodes[5] = opp3;
   RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   return REF_SUCCESS;

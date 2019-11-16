@@ -1574,7 +1574,7 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   REF_DBL *metric;
   REF_INT file_nnode, section_size;
   REF_GLOB nnode, nnode_read, global;
-  REF_INT node, local, opposite;
+  REF_INT node, local;
   REF_INT nterm;
 
   nnode = ref_node_n_global(ref_node) / 2;
@@ -1617,15 +1617,9 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
       global = node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
-        RSS(ref_node_metric_form(ref_node, local, metric[0 + 3 * node], 0,
-                                 metric[1 + 3 * node], 1, 0,
-                                 metric[2 + 3 * node]),
-            "set local node met");
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), local, &opposite),
-            "opposite twod node on other plane missing");
-        RSS(ref_node_metric_form(ref_node, opposite, metric[0 + 3 * node], 0,
-                                 metric[1 + 3 * node], 1, 0,
-                                 metric[2 + 3 * node]),
+        RSS(ref_node_metric_form(ref_node, local, metric[0 + 3 * node],
+                                 metric[1 + 3 * node], 0, 
+                                 metric[2 + 3 * node]), 0, 1,
             "set local node met");
       }
     }

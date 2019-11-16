@@ -629,7 +629,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* can't handle boundaries yet */
@@ -656,12 +656,6 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
       if ((quality > quality0) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
@@ -711,7 +705,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* boundaries only */
@@ -752,12 +746,6 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
       if (quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
@@ -806,7 +794,7 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* can't handle boundaries yet */
@@ -833,12 +821,6 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
       if ((quality > 0.9 * quality0 && quality > 0.4) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
