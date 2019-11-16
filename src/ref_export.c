@@ -2086,13 +2086,14 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
   RSS(ref_export_meshb_next_position(file, version, next_position), "next pos");
   dim = 3;
+  if (ref_grid_twod(ref_grid)) dim = 2;
   REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
   REIS(next_position, ftell(file), "dim inconsistent");
 
   if (ref_node_n(ref_node) > 0) {
     next_position =
         (REF_FILEPOS)header_size +
-        (REF_FILEPOS)ref_node_n(ref_node) * (REF_FILEPOS)(3 * 8 + 4) +
+        (REF_FILEPOS)ref_node_n(ref_node) * (REF_FILEPOS)(dim * 8 + 4) +
         ftell(file);
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
@@ -2107,10 +2108,11 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
            fwrite(&(ref_node_xyz(ref_node, 1, n2o[node])), sizeof(double), 1,
                   file),
            "y");
-      REIS(1,
-           fwrite(&(ref_node_xyz(ref_node, 2, n2o[node])), sizeof(double), 1,
-                  file),
-           "z");
+      if (!ref_grid_twod(ref_grid))
+        REIS(1,
+             fwrite(&(ref_node_xyz(ref_node, 2, n2o[node])), sizeof(double), 1,
+                    file),
+             "z");
       id = REF_EXPORT_MESHB_VERTEX_ID;
       REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
     }
