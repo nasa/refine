@@ -870,12 +870,12 @@ REF_STATUS ref_split_edge_tri_complexity(REF_GRID ref_grid, REF_INT node0,
 
 static REF_STATUS ref_split_edge_twod_mixed(REF_GRID ref_grid, REF_INT node0,
                                             REF_INT node1, REF_BOOL *allowed) {
-  REF_BOOL hex_side;
+  REF_BOOL qua_side;
 
-  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),
-      "hex");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+      "qua");
 
-  *allowed = (!hex_side);
+  *allowed = (!qua_side);
 
   return REF_SUCCESS;
 }

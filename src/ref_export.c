@@ -2137,7 +2137,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
           nodes[node] = o2n[nodes[node]] + 1;
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "ele");
         }
-        REIS(1, fwrite(&(nodes[2]), sizeof(REF_INT), 1, file), "ele id");
+        REIS(1, fwrite(&(nodes[node_per]), sizeof(REF_INT), 1, file), "ele id");
       }
     REIS(next_position, ftell(file), "edge inconsistent");
   }
@@ -2161,7 +2161,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
           nodes[node] = o2n[nodes[node]] + 1;
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "ele");
         }
-        REIS(1, fwrite(&(nodes[3]), sizeof(REF_INT), 1, file), "ele id");
+        REIS(1, fwrite(&(nodes[node_per]), sizeof(REF_INT), 1, file), "ele id");
       }
     REIS(next_position, ftell(file), "tri inconsistent");
   }
@@ -2172,7 +2172,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     node_per = ref_cell_node_per(ref_cell);
     next_position =
         (REF_FILEPOS)header_size + ftell(file) +
-        (REF_FILEPOS)ref_cell_n(ref_cell) * (REF_FILEPOS)(5 * (node_per + 1));
+        (REF_FILEPOS)ref_cell_n(ref_cell) * (REF_FILEPOS)(4 * (node_per + 1));
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
@@ -2185,7 +2185,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
           nodes[node] = o2n[nodes[node]] + 1;
           REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "ele");
         }
-        REIS(1, fwrite(&(nodes[3]), sizeof(REF_INT), 1, file), "ele id");
+        REIS(1, fwrite(&(nodes[node_per]), sizeof(REF_INT), 1, file), "ele id");
       }
     REIS(next_position, ftell(file), "qua inconsistent");
   }
