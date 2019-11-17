@@ -124,11 +124,23 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
                                          const char *version) {
   REF_INT node;
   REF_DBL x = 0, y = 0, r, t;
-  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh;
+  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1;
   REF_DBL d[12], m[6];
   REF_BOOL metric_recognized = REF_FALSE;
 
   each_ref_node_valid_node(ref_node, node) {
+    if (strcmp(version, "masabl-1") == 0) {
+      metric_recognized = REF_TRUE;
+      hx = 0.01 +
+           0.2 * cos(ref_math_pi * (ref_node_xyz(ref_node, 0, node) - 0.5));
+      c = 0.001;
+      k1 = 6.0;
+      hy = c * exp(k1 * ref_node_xyz(ref_node, 1, node));
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (hx * hx), 0, 0,
+                               1.0 / (hy * hy), 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "side") == 0) {
       metric_recognized = REF_TRUE;
       h0 = 0.1;

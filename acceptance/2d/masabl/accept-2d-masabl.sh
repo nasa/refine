@@ -12,34 +12,37 @@ else
     two=${HOME}/refine/strict/src
 fi
 
-${two}/ref_acceptance 2 ref_adapt_test.meshb
+tecplot=-t
+metric="-twod masabl-1"
 
 function adapt_cycle {
-    proj=$1
+    inproj=$1
+    outproj=$2
+    sweeps=$3
 
-    cp ref_adapt_test.meshb ${proj}.meshb
+    ${two}/ref_acceptance ${metric} ${inproj}.meshb \
+	  ${inproj}.solb
 
-    ${two}/ref_translate ${proj}.meshb ${proj}.html
-    ${two}/ref_translate ${proj}.meshb ${proj}.tec
+    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+          -x ${outproj}.meshb \
+	  -s ${sweeps} ${tecplot}
 
-    ${two}/ref_acceptance ${proj}.meshb ${proj}.metric -masabl
-    ${two}/ref_driver -i ${proj}.meshb -m ${proj}.metric -x ref_adapt_test.meshb -t | tee ${proj}.out || exit 1
-
-    cp ref_gather_movie.tec ${proj}_movie.tec
-    cp ref_gather_histo.tec ${proj}_histo.tec
-
-    ${two}/ref_metric_test ${proj}.meshb ${proj}.metric > ${proj}.status
-    cp ref_metric_test_s00_n1_p0_ellipse.tec ${proj}_metric_ellipse.tec
+    mv ref_gather_histo.tec ${outproj}_histo.tec
+    mv ref_gather_movie.tec ${outproj}_movie.tec
+    ${two}/ref_acceptance ${metric} ${outproj}.meshb \
+	  ${outproj}.solb
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.solb \
+	  > ${outproj}.status
 }
 
-adapt_cycle accept-2d-masabl-00
-adapt_cycle accept-2d-masabl-01
-adapt_cycle accept-2d-masabl-02
-adapt_cycle accept-2d-masabl-03
-adapt_cycle accept-2d-masabl-04
-adapt_cycle accept-2d-masabl-05
+inproj=cycle00
+${two}/ref_acceptance 2 cycle00.meshb
 
-cat accept-2d-masabl-05.status
-../../check.rb accept-2d-masabl-05.status 0.30 2.0
+adapt_cycle cycle00 cycle01 10
+adapt_cycle cycle01 cycle02 10
+adapt_cycle cycle02 cycle03 10
+adapt_cycle cycle03 cycle04 10
 
+cat cycle04.status
+../../check.rb cycle04.status 0.40 1.6
 
