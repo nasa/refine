@@ -1092,13 +1092,13 @@ REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_INT e0, e1, cell_edge;
   REF_DBL ratio;
-  REF_BOOL qua_side;
+  REF_BOOL edg_side;
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &edg_side),
       "qua");
-  if (qua_side) {
+  if (edg_side) {
     RSS(ref_node_ratio(ref_node, node0, new_node, &ratio), "ratio node0");
     if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
         ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {
