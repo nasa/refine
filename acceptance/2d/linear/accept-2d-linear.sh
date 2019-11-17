@@ -19,11 +19,10 @@ function adapt_cycle {
 
     cp ref_adapt_test.meshb ${proj}.meshb
 
-    ${two}/ref_translate ${proj}.meshb ${proj}.html
     ${two}/ref_translate ${proj}.meshb ${proj}.tec
 
-    ${two}/ref_acceptance ${proj}.meshb ${proj}.metric 0.0001
-    ${two}/ref_driver -i ${proj}.meshb -m ${proj}.metric -o ref_adapt_test -t | tee ${proj}.out || exit 1
+    ${two}/ref_acceptance -twod linear0001 ${proj}.meshb ${proj}.metric
+    ${two}/ref_driver -i ${proj}.meshb -m ${proj}.metric -x ref_adapt_test.meshb -t | tee ${proj}.out || exit 1
 
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec

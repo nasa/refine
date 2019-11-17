@@ -139,6 +139,16 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
           "set node met");
       continue;
     }
+    if (strcmp(version, "linear0001") == 0) {
+      metric_recognized = REF_TRUE;
+      h0 = 0.1;
+      h = 0.0001;
+      hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 1, node) - 0.5) / 0.5;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                               1.0 / (hh * hh), 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "polar-2") == 0) {
       metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node);
