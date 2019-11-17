@@ -1152,6 +1152,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     printf("dim %d not supported\n", dim);
     THROW("dim");
   }
+  if (2 == dim) ref_grid_twod(ref_grid) = REF_TRUE;
 
   RSS(ref_import_meshb_jump(file, version, key_pos, 4, &available,
                             &next_position),
@@ -1165,9 +1166,9 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (2 == dim) {
       RSS(meshb_real(file, version, &(ref_node_xyz(ref_node, 0, new_node))),
           "x");
-      ref_node_xyz(ref_node, 1, new_node) = 0.0;
-      RSS(meshb_real(file, version, &(ref_node_xyz(ref_node, 2, new_node))),
+      RSS(meshb_real(file, version, &(ref_node_xyz(ref_node, 1, new_node))),
           "y");
+      ref_node_xyz(ref_node, 2, new_node) = 0.0;
     } else {
       RSS(meshb_real(file, version, &(ref_node_xyz(ref_node, 0, new_node))),
           "x");
