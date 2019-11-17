@@ -236,9 +236,15 @@ int main(int argc, char *argv[]) {
     }
 
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load target grid in position 2");
-    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+    if (ref_mpi_para(ref_mpi)) {
+      if (ref_mpi_once(ref_mpi)) printf("part %s\n", argv[2]);
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+      ref_mpi_stopwatch_stop(ref_mpi, "part mesh");
+    } else {
+      if (ref_mpi_once(ref_mpi)) printf("import %s\n", argv[2]);
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+      ref_mpi_stopwatch_stop(ref_mpi, "import mesh");
+    }
 
     if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),

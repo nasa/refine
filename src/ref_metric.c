@@ -124,7 +124,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
                                          const char *version) {
   REF_INT node;
   REF_DBL x = 0, y = 0, r, t;
-  REF_DBL h_z = 0, h_t = 0, h_r = 0, h0, h, hh;
+  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh;
   REF_DBL d[12], m[6];
   REF_BOOL metric_recognized = REF_FALSE;
 
@@ -167,6 +167,16 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       h_z = 1.0;
       h_t = 0.1;
       h_r = 0.01;
+    }
+    if (strcmp(version, "circle-1") == 0) {
+      metric_recognized = REF_TRUE;
+      x = ref_node_xyz(ref_node, 0, node) + 0.5;
+      y = ref_node_xyz(ref_node, 1, node) - 0.5;
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      h_z = 1.0;
+      h_r = 0.0005 + 1.5 * ABS(1.0 - r);
+      h_t = 0.1 * r + 1.5 * ABS(1.0 - r);
     }
     t = atan2(y, x);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
