@@ -329,13 +329,17 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT id0, id1;
-  REF_BOOL has_edge;
+  REF_BOOL has_edg, has_tri, has_qua;
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edge),
-      "edge side");
-  if (has_edge) {
+  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edg),
+      "edg side");
+  RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_tri),
+      "tri side");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &has_qua),
+      "qua side");
+  if (has_edg || (has_tri && has_qua)) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }

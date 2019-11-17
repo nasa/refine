@@ -889,8 +889,8 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         REIS(3, fscanf(file, "%lf %lf %d", &x, &y, &dummy), "read xy");
         RSS(ref_node_add(ref_node, node, &new_node), "add node");
         ref_node_xyz(ref_node, 0, new_node) = x;
-        ref_node_xyz(ref_node, 1, new_node) = 0.0;
-        ref_node_xyz(ref_node, 2, new_node) = y;
+        ref_node_xyz(ref_node, 1, new_node) = y;
+        ref_node_xyz(ref_node, 2, new_node) = 0.0;
       }
       RSS(ref_node_initialize_n_global(ref_node, nnode), "init glob");
     }
