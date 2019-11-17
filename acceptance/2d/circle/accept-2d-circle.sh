@@ -22,12 +22,18 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
+    ${two}/ref_acceptance ${metric} ${inproj}.meshb \
+	  ${inproj}-orig.solb
+    ${two}/ref_metric_test --gradation ${inproj}.meshb \
+	  ${inproj}-orig.solb ${inproj}.solb \
+	  ${gradation}
+
     ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
     
-    mv ref_gather_histo.tec ${inproj}_histo.tec
-    mv ref_gather_movie.tec ${inproj}_movie.tec
+    mv ref_gather_histo.tec ${outproj}_histo.tec
+    mv ref_gather_movie.tec ${outproj}_movie.tec
     ${two}/ref_acceptance ${metric} ${outproj}.meshb \
 	  ${outproj}-orig.solb
     ${two}/ref_metric_test --gradation ${outproj}.meshb \
@@ -39,10 +45,6 @@ function adapt_cycle {
 
 inproj=cycle00
 ${two}/ref_acceptance 2 cycle00.meshb
-${two}/ref_acceptance ${metric} ${inproj}.meshb ${inproj}-orig.solb
-${two}/ref_metric_test --gradation ${inproj}.meshb \
-      ${inproj}-orig.solb ${inproj}.solb \
-      ${gradation}
 
 adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10
