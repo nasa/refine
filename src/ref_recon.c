@@ -153,7 +153,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   /* solve A with QR factorization size m x n */
   m = ref_cloud_n(ref_cloud) - 1; /* skip self */
-  if (twod) m += 4;                  /* add z node node */
+  if (twod) m += 4;               /* add z node node */
   n = 9;
   if (verbose)
     printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);

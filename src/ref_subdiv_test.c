@@ -434,7 +434,7 @@ int main(int argc, char *argv[]) {
       REIS(4, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
       REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "no tri");
       REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "no qua");
-     }
+    }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
