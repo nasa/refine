@@ -139,7 +139,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
           "set node met");
       continue;
     }
-    if (strcmp(version, "linear0001") == 0) {
+    if (strcmp(version, "linear-0001") == 0) {
       metric_recognized = REF_TRUE;
       h0 = 0.1;
       h = 0.0001;
