@@ -22,26 +22,26 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.metric \
+    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
     
     mv ref_gather_histo.tec ${inproj}_histo.tec
     mv ref_gather_movie.tec ${inproj}_movie.tec
     ${two}/ref_acceptance ${metric} ${outproj}.meshb \
-	  ${outproj}-orig.metric
+	  ${outproj}-orig.solb
     ${two}/ref_metric_test --gradation ${outproj}.meshb \
-	  ${outproj}-orig.metric ${outproj}.metric \
+	  ${outproj}-orig.solb ${outproj}.solb \
 	  ${gradation}
-    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.metric \
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.solb \
 	  > ${outproj}.status
 }
 
 inproj=cycle00
 ${two}/ref_acceptance 2 cycle00.meshb
-${two}/ref_acceptance ${metric} ${inproj}.meshb ${inproj}-orig.metric
+${two}/ref_acceptance ${metric} ${inproj}.meshb ${inproj}-orig.solb
 ${two}/ref_metric_test --gradation ${inproj}.meshb \
-      ${inproj}-orig.metric ${inproj}.metric \
+      ${inproj}-orig.solb ${inproj}.solb \
       ${gradation}
 
 adapt_cycle cycle00 cycle01 10
