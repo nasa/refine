@@ -260,29 +260,18 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[3];
     REF_INT tri;
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "fix");
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "fix");
 
     xyz[0] = 0.2;
-    xyz[1] = 0.0;
-    xyz[2] = 0.3;
+    xyz[1] = 0.3;
+    xyz[2] = 0.0;
     tri = 0;
     RSS(ref_grid_enclosing_tri(ref_grid, xyz, &tri, bary), "enclose");
 
     REIS(0, tri, "tri");
     RWDS(0.5, bary[0], -1, "b0");
-    RWDS(0.2, bary[1], -1, "b1");
-    RWDS(0.3, bary[2], -1, "b2");
-
-    xyz[0] = 0.2;
-    xyz[1] = 0.0;
-    xyz[2] = 0.3;
-    tri = REF_EMPTY;
-    RSS(ref_grid_enclosing_tri(ref_grid, xyz, &tri, bary), "enclose");
-
-    REIS(0, tri, "tri");
-    RWDS(0.5, bary[0], -1, "b0");
-    RWDS(0.2, bary[1], -1, "b1");
-    RWDS(0.3, bary[2], -1, "b2");
+    RWDS(0.3, bary[1], -1, "b1");
+    RWDS(0.2, bary[2], -1, "b2");
 
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
@@ -294,14 +283,14 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "fix");
 
     xyz[0] = 0.5;
-    xyz[1] = 0.0;
-    xyz[2] = 0.5;
+    xyz[1] = 0.5;
+    xyz[2] = 0.0;
     tri = REF_EMPTY;
     RSS(ref_grid_enclosing_tri(ref_grid, xyz, &tri, bary), "enclose");
 
     REIS(8, tri, "tri");
-    RWDS(0.0, bary[0], -1, "b0");
-    RWDS(0.5, bary[1], -1, "b1");
+    RWDS(0.5, bary[0], -1, "b0");
+    RWDS(0.0, bary[1], -1, "b1");
     RWDS(0.5, bary[2], -1, "b2");
 
     RSS(ref_grid_free(ref_grid), "cleanup");

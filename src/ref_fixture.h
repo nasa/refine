@@ -31,8 +31,10 @@ REF_STATUS ref_fixture_tet2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_pyr_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
+REF_STATUS ref_fixture_tri_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+
 REF_STATUS ref_fixture_pri_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
-REF_STATUS ref_fixture_pri2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_pri_tet_cap_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 

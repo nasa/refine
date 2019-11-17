@@ -399,7 +399,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in two with bcs */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in two */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
@@ -411,14 +411,14 @@ int main(int argc, char *argv[]) {
 
     if (!ref_mpi_para(ref_mpi)) {
       REIS(2, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
-      REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
-      REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
+      REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "no tri");
+      REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "no qua");
     }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in four with bcs */
+  if (ref_mpi_n(ref_mpi) <= 6) { /* split prism in four */
     REF_SUBDIV ref_subdiv;
     REF_GRID ref_grid;
     RSS(set_up_prism_for_subdiv(&ref_subdiv, ref_mpi), "set up");
@@ -432,9 +432,9 @@ int main(int argc, char *argv[]) {
 
     if (!ref_mpi_para(ref_mpi)) {
       REIS(4, ref_cell_n(ref_grid_pri(ref_grid)), "two pri");
-      REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "two qua");
-      REIS(8, ref_cell_n(ref_grid_tri(ref_grid)), "four tri");
-    }
+      REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "no tri");
+      REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "no qua");
+     }
 
     RSS(tear_down(ref_subdiv), "tear down");
   }

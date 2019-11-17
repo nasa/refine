@@ -1029,51 +1029,43 @@ int main(int argc, char *argv[]) {
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 2.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 2.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 2.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS(2.0, area, -1.0, "expected area");
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(-2.0, area, -1.0, "expected area");
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS(0.5, area, -1.0, "expected area");
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(-0.5, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    RAS(!valid, "expected invalid");
+    RAS(valid, "expected valid");
 
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS(0.0, norm[0], -1.0, "nx");
-    RWDS(-1.0, norm[1], -1.0, "ny");
-    RWDS(0.0, norm[2], -1.0, "nz");
+    RWDS(0.0, norm[1], -1.0, "ny");
+    RWDS(1.0, norm[2], -1.0, "nz");
 
     RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "norm");
     RWDS(1.0 / 3.0, centroid[0], -1.0, "cx");
-    RWDS(0, centroid[1], -1.0, "cy");
-    RWDS(1.0 / 3.0, centroid[2], -1.0, "cz");
+    RWDS(1.0 / 3.0, centroid[1], -1.0, "cy");
+    RWDS(0, centroid[2], -1.0, "cz");
 
     global = nodes[2];
     nodes[2] = nodes[1];
     nodes[1] = global;
 
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(0.5, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    RAS(valid, "expected valid");
+    RAS(!valid, "expected invalid");
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS(0.0, norm[0], -1.0, "nx");
-    RWDS(1.0, norm[1], -1.0, "ny");
-    RWDS(0.0, norm[2], -1.0, "nz");
+    RWDS(0.0, norm[1], -1.0, "ny");
+    RWDS(-1.0, norm[2], -1.0, "nz");
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 0.5;
-    ref_node_xyz(ref_node, 2, nodes[1]) = 0.0;
+    ref_node_xyz(ref_node, 1, nodes[1]) = 0.0;
 
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(0.0, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
     RAS(!valid, "expected zero area is invalid");
 
@@ -1635,7 +1627,7 @@ int main(int argc, char *argv[]) {
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
 
     xyz[0] = 0.0;
     xyz[1] = 0.0;
@@ -1656,8 +1648,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, bary[2], -1.0, "b2");
 
     xyz[0] = 0.0;
-    xyz[1] = 0.0;
-    xyz[2] = 1.0;
+    xyz[1] = 1.0;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(0.0, bary[0], -1.0, "b0");
@@ -1665,8 +1657,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, bary[2], -1.0, "b2");
 
     xyz[0] = 0.5;
-    xyz[1] = 0.0;
-    xyz[2] = 0.5;
+    xyz[1] = 0.5;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(0.0, bary[0], -1.0, "b0");
@@ -1674,8 +1666,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.5, bary[2], -1.0, "b2");
 
     xyz[0] = 1.0 / 3.0;
-    xyz[1] = 0.0;
-    xyz[2] = 1.0 / 3.0;
+    xyz[1] = 1.0 / 3.0;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(1.0 / 3.0, bary[0], -1.0, "b0");

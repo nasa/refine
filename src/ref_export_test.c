@@ -174,10 +174,10 @@ int main(int argc, char *argv[]) {
   { /* face id flag range */
     REF_GRID ref_grid;
     REF_INT min_faceid, max_faceid;
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
     REIS(10, min_faceid, "min");
-    REIS(101, max_faceid, "max");
+    REIS(10, max_faceid, "max");
     RSS(ref_grid_free(ref_grid), "free");
   }
 

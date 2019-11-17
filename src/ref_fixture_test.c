@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
   {
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri2_grid(&ref_grid, ref_mpi), "fix");
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "fix");
 
     RSS(ref_validation_cell_node(ref_grid), "invalid pri");
 
@@ -82,25 +82,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_fixture_tet2_grid(&ref_grid, ref_mpi), "fix");
 
     RSS(ref_validation_cell_node(ref_grid), "invalid pri");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  {
-    REF_GRID ref_grid;
-    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-    REF_BOOL valid;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "fix");
-
-    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), 0, nodes), "tri0");
-    RSS(ref_node_tri_twod_orientation(ref_grid_node(ref_grid), nodes, &valid),
-        "valid");
-    RAS(valid, "expected valid");
-    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), 1, nodes), "tri0");
-    RSS(ref_node_tri_twod_orientation(ref_grid_node(ref_grid), nodes, &valid),
-        "valid");
-    RAS(valid, "expected valid");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
