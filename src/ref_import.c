@@ -1234,7 +1234,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_import_meshb_jump(file, version, key_pos, 7, &available,
                             &next_position),
       "jump");
-  if (3 == dim && available) {
+  if (available) {
     REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ncell");
     if (verbose) printf("nquad %d\n", ncell);
 

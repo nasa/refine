@@ -2166,6 +2166,30 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(next_position, ftell(file), "tri inconsistent");
   }
 
+  ref_cell = ref_grid_qua(ref_grid);
+  keyword_code = 7;
+  if (ref_cell_n(ref_cell) > 0) {
+    node_per = ref_cell_node_per(ref_cell);
+    next_position =
+        (REF_FILEPOS)header_size + ftell(file) +
+        (REF_FILEPOS)ref_cell_n(ref_cell) * (REF_FILEPOS)(5 * (node_per + 1));
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++)
+      each_ref_cell_valid_cell_with_nodes(
+          ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
+        for (node = 0; node < node_per; node++) {
+          nodes[node] = o2n[nodes[node]] + 1;
+          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "ele");
+        }
+        REIS(1, fwrite(&(nodes[3]), sizeof(REF_INT), 1, file), "ele id");
+      }
+    REIS(next_position, ftell(file), "qua inconsistent");
+  }
+
   ref_cell = ref_grid_tet(ref_grid);
   if (ref_cell_n(ref_cell) > 0) {
     node_per = ref_cell_node_per(ref_cell);
