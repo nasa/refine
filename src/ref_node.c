@@ -72,7 +72,6 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
   ref_node->old_n_global = REF_EMPTY;
   ref_node->new_n_global = REF_EMPTY;
 
-  ref_node->twod_mid_plane = 0.5;
   ref_node->min_volume = 1.0e-15;
   ref_node->min_uv_area = 1.0e-12;
   /* acos(1.0-1.0e-8) ~ 0.0001 radian, 0.01 deg */
@@ -157,7 +156,6 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
   ref_node->old_n_global = original->old_n_global;
   ref_node->new_n_global = original->new_n_global;
 
-  ref_node->twod_mid_plane = original->twod_mid_plane;
   ref_node->min_volume = original->min_volume;
   ref_node->min_uv_area = original->min_uv_area;
   ref_node->same_normal_tol = original->same_normal_tol;
@@ -1109,18 +1107,18 @@ REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
 
 REF_STATUS ref_node_edge_twod(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                               REF_BOOL *twod) {
-  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
-
-  *twod = ((ref_node_xyz(ref_node, 1, node0) < mid_plane) &&
-           (ref_node_xyz(ref_node, 1, node1) < mid_plane));
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_node)
+  SUPRESS_UNUSED_COMPILER_WARNING(node0)
+  SUPRESS_UNUSED_COMPILER_WARNING(node1)
+  *twod = REF_TRUE;
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
-  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
-
-  *twod = (ref_node_xyz(ref_node, 1, node) < mid_plane);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_node)
+  SUPRESS_UNUSED_COMPILER_WARNING(node)
+  *twod = REF_TRUE;
 
   return REF_SUCCESS;
 }
@@ -2009,29 +2007,15 @@ REF_STATUS ref_node_tri_centroid(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tri_y_projection(REF_NODE ref_node, REF_INT *nodes,
-                                     REF_DBL *y_projection) {
-  REF_DBL normal[3];
-
-  RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm inside of area");
-
-  *y_projection = 0.5 * normal[1];
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node, REF_INT *nodes,
                                          REF_BOOL *valid) {
-  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
   REF_DBL normal[3];
 
   *valid = REF_FALSE;
 
   RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm inside of area");
 
-  if ((ref_node_xyz(ref_node, 1, nodes[0]) > mid_plane && normal[1] < 0.0) ||
-      (ref_node_xyz(ref_node, 1, nodes[0]) < mid_plane && normal[1] > 0.0))
-    *valid = REF_TRUE;
+  if (normal[2] > 0.0) *valid = REF_TRUE;
 
   return REF_SUCCESS;
 }
@@ -2222,32 +2206,6 @@ REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_twod_clone(REF_NODE ref_node, REF_INT original,
-                               REF_INT *clone_ptr) {
-  REF_DBL mid_plane = ref_node_twod_mid_plane(ref_node);
-  REF_GLOB global;
-  REF_INT clone;
-  REF_INT i;
-  REF_DBL m[6];
-
-  RSS(ref_node_next_global(ref_node, &global), "next global");
-  RSS(ref_node_add(ref_node, global, clone_ptr), "new node");
-  clone = *clone_ptr;
-
-  ref_node_xyz(ref_node, 0, clone) = ref_node_xyz(ref_node, 0, original);
-  ref_node_xyz(ref_node, 1, clone) =
-      2 * mid_plane - ref_node_xyz(ref_node, 1, original);
-  ref_node_xyz(ref_node, 2, clone) = ref_node_xyz(ref_node, 2, original);
-
-  for (i = 0; i < ref_node_naux(ref_node); i++)
-    ref_node_aux(ref_node, i, clone) = ref_node_aux(ref_node, i, original);
-
-  RSS(ref_node_metric_get(ref_node, original, m), "get original m");
-  RSS(ref_node_metric_set(ref_node, clone, m), "set clone m");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_node_interpolate_edge(REF_NODE ref_node, REF_INT node0,
                                      REF_INT node1, REF_DBL node1_weight,
                                      REF_INT new_node) {
@@ -2338,11 +2296,11 @@ REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
   xyz2 = ref_node_xyz_ptr(ref_node, nodes[2]);
 
   RSS(ref_node_xyz_normal(xyz, xyz1, xyz2, normal), "n0");
-  bary[0] = normal[1];
+  bary[0] = normal[2];
   RSS(ref_node_xyz_normal(xyz0, xyz, xyz2, normal), "n1");
-  bary[1] = normal[1];
+  bary[1] = normal[2];
   RSS(ref_node_xyz_normal(xyz0, xyz1, xyz, normal), "n2");
-  bary[2] = normal[1];
+  bary[2] = normal[2];
 
   total = bary[0] + bary[1] + bary[2];
 

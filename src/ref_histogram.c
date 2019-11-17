@@ -370,18 +370,12 @@ REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
   REF_EDGE ref_edge;
   REF_INT edge, part;
   REF_DBL ratio;
-  REF_BOOL active;
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
-    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
-                           ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "twod edge");
-    active = (active || !ref_grid_twod(ref_grid));
-    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid))) {
       RSS(ref_node_ratio(ref_grid_node(ref_grid),
                          ref_edge_e2n(ref_edge, 0, edge),
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),
@@ -394,12 +388,7 @@ REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
 
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
-    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
-                           ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "twod edge");
-    active = (active || !ref_grid_twod(ref_grid));
-    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid))) {
       RSS(ref_node_ratio(ref_grid_node(ref_grid),
                          ref_edge_e2n(ref_edge, 0, edge),
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),
@@ -421,7 +410,6 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
-  REF_BOOL active_twod;
 
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -431,13 +419,7 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (ref_node_part(ref_grid_node(ref_grid), nodes[0]) ==
         ref_mpi_rank(ref_grid_mpi(ref_grid))) {
-      if (ref_grid_twod(ref_grid)) {
-        RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
-            "active twod tri");
-        if (!active_twod) continue;
-        RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
-            "qual");
-      } else if (ref_grid_surf(ref_grid)) {
+      if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
         RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
             "qual");
       } else {

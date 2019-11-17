@@ -659,6 +659,34 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   return REF_SUCCESS;
 }
 
+#define fill_ab3(row, n1, n0)                                          \
+  ab[(row) + 0 * 3] = ((n1)[0] - (n0)[0]) * ((n1)[0] - (n0)[0]);       \
+  ab[(row) + 1 * 3] = 2.0 * ((n1)[0] - (n0)[0]) * ((n1)[1] - (n0)[1]); \
+  ab[(row) + 2 * 3] = ((n1)[1] - (n0)[1]) * ((n1)[1] - (n0)[1]);
+
+REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
+                               REF_DBL *xyz2) {
+  REF_DBL ab[12];
+  REF_INT i;
+
+  fill_ab3(0, xyz0, xyz1);
+  fill_ab3(1, xyz1, xyz2);
+  fill_ab3(2, xyz2, xyz0);
+
+  for (i = 0; i < 3; i++) ab[i + 3 * 3] = 1.0;
+
+  RSS(ref_matrix_solve_ab(3, 4, ab), "matrix singular");
+
+  m[0] = ab[0 + 3 * 3];
+  m[1] = ab[1 + 3 * 3];
+  m[2] = 0.0;
+  m[3] = ab[2 + 3 * 3];
+  m[4] = 0.0;
+  m[5] = 1.0;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
                                REF_DBL *r) {
   REF_INT row, col;

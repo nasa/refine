@@ -212,23 +212,15 @@ REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL normal[3];
+  REF_BOOL valid;
 
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-
-    RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-
-    if ((ref_node_xyz(ref_node, 1, nodes[0]) >
-             ref_node_twod_mid_plane(ref_node) &&
-         normal[1] >= 0.0) ||
-        (ref_node_xyz(ref_node, 1, nodes[0]) <
-             ref_node_twod_mid_plane(ref_node) &&
-         normal[1] <= 0.0))
-      return REF_SUCCESS;
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    if (!valid) return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
@@ -602,37 +594,30 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
 
 REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
                                           REF_INT *node0, REF_INT *node1) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_qua(ref_grid);
-  REF_INT item, cell, cell_edge, n0, n1;
-  REF_BOOL twod;
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT item, cell, cell_edge, other;
+
   *node0 = REF_EMPTY;
   *node1 = REF_EMPTY;
-  RSS(ref_node_node_twod(ref_node, node, &twod), "node twod");
-  RAS(twod, "expected twod node");
+
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     each_ref_cell_cell_edge(ref_cell, cell_edge) {
       if (node == ref_cell_e2n(ref_cell, 0, cell_edge, cell)) {
-        n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
-        n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        other = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       } else if (node == ref_cell_e2n(ref_cell, 1, cell_edge, cell)) {
-        n0 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
-        n1 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        other = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
       } else {
         continue;
       }
-      RSS(ref_node_edge_twod(ref_node, n0, n1, &twod), "edge twod");
-      if (twod) {
-        if (REF_EMPTY == *node0) {
-          *node0 = n1;
-          continue;
-        }
-        if (REF_EMPTY == *node1) {
-          *node1 = n1;
-          continue;
-        }
-        THROW("found more than two boundary edges");
+      if (REF_EMPTY == *node0) {
+        *node0 = other;
+        continue;
       }
+      if (REF_EMPTY == *node1) {
+        *node1 = other;
+        continue;
+      }
+      THROW("found more than two boundary edges");
     }
   }
 
@@ -644,7 +629,7 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* can't handle boundaries yet */
@@ -671,12 +656,6 @@ REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
       if ((quality > quality0) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
@@ -726,13 +705,13 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* boundaries only */
-  if (ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
-  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
 
   RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
       "edge nodes");
@@ -767,12 +746,6 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
       if (quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
@@ -821,11 +794,11 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz, opposite;
+  REF_INT ixyz;
   REF_BOOL allowed;
 
   /* can't handle boundaries yet */
-  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
@@ -848,12 +821,6 @@ REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
       if ((quality > 0.9 * quality0 && quality > 0.4) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
           (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        /* update opposite side: X and Z only */
-        RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node, &opposite),
-            "opp");
-        ref_node_xyz(ref_node, 0, opposite) = ref_node_xyz(ref_node, 0, node);
-        ref_node_xyz(ref_node, 2, opposite) = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_metric_interpolate_node(ref_grid, opposite), "interp opposite");
         return REF_SUCCESS;
       }
     }
@@ -1008,11 +975,8 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* boundary */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
-    if (!allowed) continue;
-
     /* boundaries only */
-    allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (allowed) continue;
 
     RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
@@ -1029,11 +993,8 @@ REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
 
   /* interior */
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_node_node_twod(ref_node, node, &allowed), "twod");
-    if (!allowed) continue;
-
     /* already did boundaries */
-    allowed = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
     if (!allowed) continue;
 
     RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,

@@ -380,19 +380,19 @@ int main(int argc, char *argv[]) {
     ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL x = ref_node_xyz(ref_node, 0, node);
-      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
       scalar[node] =
-          0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * z + 0.06 * (0.5 * z * z);
+          0.5 + 0.01 * (0.5 * x * x) + 0.02 * x * y + 0.06 * (0.5 * y * y);
     }
     RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_KEXACT),
         "k-exact hess");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.01, hessian[0 + 6 * node], tol, "m[0] xx");
-      RWDS(0.00, hessian[1 + 6 * node], tol, "m[1] xy");
-      RWDS(0.02, hessian[2 + 6 * node], tol, "m[2] xz");
-      RWDS(0.00, hessian[3 + 6 * node], tol, "m[3] yy");
+      RWDS(0.02, hessian[1 + 6 * node], tol, "m[1] xy");
+      RWDS(0.00, hessian[2 + 6 * node], tol, "m[2] xz");
+      RWDS(0.06, hessian[3 + 6 * node], tol, "m[3] yy");
       RWDS(0.00, hessian[4 + 6 * node], tol, "m[4] yz");
-      RWDS(0.06, hessian[5 + 6 * node], tol, "m[5] zz");
+      RWDS(0.00, hessian[5 + 6 * node], tol, "m[5] zz");
     }
 
     ref_free(hessian);

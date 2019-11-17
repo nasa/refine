@@ -498,38 +498,30 @@ int main(int argc, char *argv[]) {
 
   { /* collapse prism, keep qua */
     REF_GRID ref_grid;
-    REF_INT keep0, remove0;
-    REF_INT keep1, remove1;
+    REF_INT keep, remove;
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    keep0 = 1;
-    remove0 = 2;
-    keep1 = 4;
-    remove1 = 5;
+    keep = 1;
+    remove = 2;
 
-    RSS(ref_collapse_face(ref_grid, keep0, remove0, keep1, remove1), "split");
+    RSS(ref_collapse_face(ref_grid, keep, remove), "split");
 
-    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "pri");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(1, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
+    REIS(0, ref_cell_n(ref_grid_edg(ref_grid)), "qua");
 
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   { /* collapse prism and qua */
     REF_GRID ref_grid;
-    REF_INT keep0, remove0;
-    REF_INT keep1, remove1;
+    REF_INT keep, remove;
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    keep0 = 0;
-    remove0 = 1;
-    keep1 = 3;
-    remove1 = 4;
+    keep = 0;
+    remove = 1;
 
-    RSS(ref_collapse_face(ref_grid, keep0, remove0, keep1, remove1), "split");
+    RSS(ref_collapse_face(ref_grid, keep, remove), "split");
 
-    REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "pri");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
 
@@ -566,8 +558,7 @@ int main(int argc, char *argv[]) {
     REF_INT keep, remove;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    RSS(ref_cell_remove(ref_grid_qua(ref_grid), 0), "remove qua");
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
     keep = 0;
     remove = 1;
@@ -579,40 +570,21 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  { /* face tangent: collapse allowed? */
+  { /* edge tangent: collapse allowed? */
     REF_GRID ref_grid;
-    REF_INT node0, node1, keep, remove;
-    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT keep, remove;
     REF_BOOL allowed;
 
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    RSS(ref_node_add(ref_grid_node(ref_grid), 6, &node0), "add node");
-    ref_node_xyz(ref_grid_node(ref_grid), 0, node0) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid), 1, node0) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid), 2, node0) = 2.0;
-    RSS(ref_node_add(ref_grid_node(ref_grid), 7, &node1), "add node");
-    ref_node_xyz(ref_grid_node(ref_grid), 0, node1) = 0.0;
-    ref_node_xyz(ref_grid_node(ref_grid), 1, node1) = 1.0;
-    ref_node_xyz(ref_grid_node(ref_grid), 2, node1) = 2.0;
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "set up");
 
-    nodes[0] = 6;
-    nodes[1] = 7;
-    nodes[2] = 4;
-    nodes[3] = 1;
-    nodes[4] = 10;
-    RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &cell), "add qua");
-
-    keep = node0;
-    remove = 1;
+    keep = 2;
+    remove = 0;
     RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_TRUE, allowed, "straight tangent collapse allowed?");
 
-    ref_node_xyz(ref_grid_node(ref_grid), 0, node0) = 0.5;
-    ref_node_xyz(ref_grid_node(ref_grid), 0, node1) = 0.5;
+    ref_node_xyz(ref_grid_node(ref_grid), 1, remove) = 0.5;
 
-    keep = node0;
-    remove = 0;
     RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_FALSE, allowed, "curved boundary collapse allowed?");
@@ -623,13 +595,12 @@ int main(int argc, char *argv[]) {
   { /* no collapse, close enough, twod */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
     RSS(ref_collapse_twod_pass(ref_grid), "pass");
 
-    REIS(6, ref_node_n(ref_grid_node(ref_grid)), "nodes");
-    REIS(1, ref_cell_n(ref_grid_pri(ref_grid)), "tets");
-    REIS(2, ref_cell_n(ref_grid_tri(ref_grid)), "tets");
+    REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
+    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
 
     RSS(ref_grid_free(ref_grid), "free grid");
   }
@@ -637,18 +608,15 @@ int main(int argc, char *argv[]) {
   { /* top big, twod */
     REF_GRID ref_grid;
 
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 1, 1, 0, 0, 1, 0,
-                             1.0 / (10.0 * 10.0)),
-        "set top z big");
-    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 4, 1, 0, 0, 1, 0,
-                             1.0 / (10.0 * 10.0)),
+    RSS(ref_node_metric_form(ref_grid_node(ref_grid), 1, 1, 0, 0,
+                             1.0 / (10.0 * 10.0), 0, 1),
         "set top z big");
 
     RSS(ref_collapse_twod_pass(ref_grid), "pass");
 
-    REIS(4, ref_node_n(ref_grid_node(ref_grid)), "nodes");
+    REIS(2, ref_node_n(ref_grid_node(ref_grid)), "nodes");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(0, ref_cell_n(ref_grid_pri(ref_grid)), "pri");
 

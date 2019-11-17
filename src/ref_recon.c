@@ -136,7 +136,6 @@ static REF_STATUS ref_recon_l2_projection_hessian(REF_GRID ref_grid,
 
 static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
                                             REF_CLOUD ref_cloud, REF_BOOL twod,
-                                            REF_DBL mid_plane,
                                             REF_DBL *gradient,
                                             REF_DBL *hessian) {
   REF_DBL geom[9], ab[90];
@@ -154,7 +153,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   /* solve A with QR factorization size m x n */
   m = ref_cloud_n(ref_cloud) - 1; /* skip self */
-  if (twod) m++;                  /* add mid node */
+  if (twod) m += 4;               /* add z node node */
   n = 9;
   if (verbose)
     printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
@@ -167,8 +166,8 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   i = 0;
   if (twod) {
     dx = 0;
-    dy = mid_plane - xyzs[1];
-    dz = 0;
+    dy = 0;
+    dz = 1;
     geom[0] = 0.5 * dx * dx;
     geom[1] = dx * dy;
     geom[2] = dx * dz;
@@ -180,7 +179,63 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
     geom[8] = dz;
     for (j = 0; j < n; j++) {
       a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
     }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 0;
+    dy = 0;
+    dz = 2;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 1;
+    dy = 0;
+    dz = 1;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 0;
+    dy = 1;
+    dz = 1;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
     i++;
   }
   each_ref_cloud_global(ref_cloud, item, cloud_global) {
@@ -215,6 +270,21 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   i = 0;
   if (twod) {
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
     dq = 0;
     for (j = 0; j < 9; j++) {
       ab[j + 9 * 9] += q[i + m * j] * dq;
@@ -458,7 +528,7 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
   REF_CLOUD *one_layer;
   REF_INT layer;
 
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_pri(ref_grid);
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
 
   ref_malloc_init(one_layer, ref_node_max(ref_node), REF_CLOUD, NULL);
   each_ref_node_valid_node(ref_node, node) {
@@ -477,9 +547,9 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
       for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
         RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
             "grow");
-        status = ref_recon_kexact_with_aux(
-            ref_node_global(ref_node, node), ref_cloud, ref_grid_twod(ref_grid),
-            ref_node_twod_mid_plane(ref_node), node_gradient, node_hessian);
+        status = ref_recon_kexact_with_aux(ref_node_global(ref_node, node),
+                                           ref_cloud, ref_grid_twod(ref_grid),
+                                           node_gradient, node_hessian);
         if (REF_DIV_ZERO == status && layer > 4) {
           ref_node_location(ref_node, node);
           printf(" caught %s, for %d layers to kexact cloud; retry\n",
@@ -494,7 +564,7 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
       RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
       if (NULL != gradient) {
         if (ref_grid_twod(ref_grid)) {
-          node_gradient[1] = 0.0;
+          node_gradient[2] = 0.0;
         }
         for (im = 0; im < 3; im++) {
           gradient[im + 3 * node] = node_gradient[im];
@@ -502,9 +572,9 @@ static REF_STATUS ref_recon_kexact_gradient_hessian(REF_GRID ref_grid,
       }
       if (NULL != hessian) {
         if (ref_grid_twod(ref_grid)) {
-          node_hessian[1] = 0.0;
-          node_hessian[3] = 0.0;
+          node_hessian[2] = 0.0;
           node_hessian[4] = 0.0;
+          node_hessian[5] = 0.0;
         }
         for (im = 0; im < 6; im++) {
           hessian[im + 6 * node] = node_hessian[im];

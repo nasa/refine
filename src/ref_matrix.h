@@ -70,6 +70,8 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab);
 
 REF_STATUS ref_matrix_imply_m(REF_DBL *m_upper_tri, REF_DBL *xyz0,
                               REF_DBL *xyz1, REF_DBL *xyz2, REF_DBL *xyz3);
+REF_STATUS ref_matrix_imply_m3(REF_DBL *m_upper_tri, REF_DBL *xyz0,
+                               REF_DBL *xyz1, REF_DBL *xyz2);
 
 REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
                                REF_DBL *r);

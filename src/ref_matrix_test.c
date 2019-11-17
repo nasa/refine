@@ -771,6 +771,23 @@ m=[
     RWDS(100.0, m[5], tol, "m[5]");
   }
 
+  { /* imply m from from right tri nodes */
+    REF_DBL tol = -1.0;
+    REF_DBL m[6];
+    REF_DBL xyz0[] = {0.0, 0.0, 0.0};
+    REF_DBL xyz1[] = {1.0, 0.0, 0.0};
+    REF_DBL xyz2[] = {0.0, 1.0, 0.0};
+
+    RSS(ref_matrix_imply_m3(m, xyz0, xyz1, xyz2), "imply");
+
+    RWDS(1.0, m[0], tol, "m[0]");
+    RWDS(0.5, m[1], tol, "m[1]");
+    RWDS(0.0, m[2], tol, "m[2]");
+    RWDS(1.0, m[3], tol, "m[3]");
+    RWDS(0.0, m[4], tol, "m[4]");
+    RWDS(1.0, m[5], tol, "m[5]");
+  }
+
   { /* qr wiki 3 */
     REF_DBL tol = -1.0;
     REF_INT n = 3;

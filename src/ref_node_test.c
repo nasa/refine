@@ -534,35 +534,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* twod edge */
-    REF_NODE ref_node;
-    REF_INT node0, node1, global;
-    REF_BOOL twod;
-
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-
-    global = 0;
-    RSS(ref_node_add(ref_node, global, &node0), "add");
-    ref_node_xyz(ref_node, 0, node0) = 0.0;
-    ref_node_xyz(ref_node, 1, node0) = 0.0;
-    ref_node_xyz(ref_node, 2, node0) = 0.0;
-    global = 1;
-    RSS(ref_node_add(ref_node, global, &node1), "add");
-    ref_node_xyz(ref_node, 0, node1) = 1.0;
-    ref_node_xyz(ref_node, 1, node1) = 0.0;
-    ref_node_xyz(ref_node, 2, node1) = 0.0;
-
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &twod), "twod");
-    REIS(REF_TRUE, twod, "twod");
-
-    ref_node_xyz(ref_node, 1, node1) = 1.0;
-
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &twod), "twod");
-    REIS(REF_FALSE, twod, "twod");
-
-    RSS(ref_node_free(ref_node), "free");
-  }
-
   { /* add initializes metric */
     REF_NODE ref_node;
     REF_INT global, node;
@@ -1058,51 +1029,43 @@ int main(int argc, char *argv[]) {
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 2.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 2.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 2.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS(2.0, area, -1.0, "expected area");
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(-2.0, area, -1.0, "expected area");
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
 
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS(0.5, area, -1.0, "expected area");
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(-0.5, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    RAS(!valid, "expected invalid");
+    RAS(valid, "expected valid");
 
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS(0.0, norm[0], -1.0, "nx");
-    RWDS(-1.0, norm[1], -1.0, "ny");
-    RWDS(0.0, norm[2], -1.0, "nz");
+    RWDS(0.0, norm[1], -1.0, "ny");
+    RWDS(1.0, norm[2], -1.0, "nz");
 
     RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "norm");
     RWDS(1.0 / 3.0, centroid[0], -1.0, "cx");
-    RWDS(0, centroid[1], -1.0, "cy");
-    RWDS(1.0 / 3.0, centroid[2], -1.0, "cz");
+    RWDS(1.0 / 3.0, centroid[1], -1.0, "cy");
+    RWDS(0, centroid[2], -1.0, "cz");
 
     global = nodes[2];
     nodes[2] = nodes[1];
     nodes[1] = global;
 
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(0.5, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    RAS(valid, "expected valid");
+    RAS(!valid, "expected invalid");
     RSS(ref_node_tri_normal(ref_node, nodes, norm), "norm");
     RWDS(0.0, norm[0], -1.0, "nx");
-    RWDS(1.0, norm[1], -1.0, "ny");
-    RWDS(0.0, norm[2], -1.0, "nz");
+    RWDS(0.0, norm[1], -1.0, "ny");
+    RWDS(-1.0, norm[2], -1.0, "nz");
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 0.5;
-    ref_node_xyz(ref_node, 2, nodes[1]) = 0.0;
+    ref_node_xyz(ref_node, 1, nodes[1]) = 0.0;
 
-    RSS(ref_node_tri_y_projection(ref_node, nodes, &area), "area");
-    RWDS(0.0, area, -1.0, "expected area");
     RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
     RAS(!valid, "expected zero area is invalid");
 
@@ -1603,43 +1566,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* clone a twod node  */
-    REF_NODE ref_node;
-    REF_INT node0, node1;
-    REF_GLOB global;
-    REF_DBL m[6];
-
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-
-    ref_node_naux(ref_node) = 2;
-    RSS(ref_node_resize_aux(ref_node), "resize aux");
-
-    RSS(ref_node_next_global(ref_node, &global), "next_global");
-    RSS(ref_node_add(ref_node, global, &node0), "add");
-    ref_node_xyz(ref_node, 0, node0) = 0.1;
-    ref_node_xyz(ref_node, 1, node0) = 0.0;
-    ref_node_xyz(ref_node, 2, node0) = 0.3;
-    RSS(ref_node_metric_form(ref_node, node0, 1.1, 0.2, 0.3, 1.4, 0.5, 1.6),
-        "set gen metric");
-
-    ref_node_aux(ref_node, 0, node0) = 1.0;
-    ref_node_aux(ref_node, 1, node0) = 20.0;
-
-    RSS(ref_node_twod_clone(ref_node, node0, &node1), "clone");
-
-    RWDS(1.0, ref_node_aux(ref_node, 0, node1), -1.0, "a");
-    RWDS(20.0, ref_node_aux(ref_node, 1, node1), -1.0, "a");
-
-    RWDS(0.1, ref_node_xyz(ref_node, 0, node1), -1.0, "x");
-    RWDS(1.0, ref_node_xyz(ref_node, 1, node1), -1.0, "y");
-    RWDS(0.3, ref_node_xyz(ref_node, 2, node1), -1.0, "z");
-
-    RSS(ref_node_metric_get(ref_node, node1, m), "get");
-    RWDS(1.4, m[3], -1.0, "m[3]");
-
-    RSS(ref_node_free(ref_node), "free");
-  }
-
   { /* interpolate aux */
     REF_NODE ref_node;
     REF_INT node0, node1, new_node;
@@ -1701,7 +1627,7 @@ int main(int argc, char *argv[]) {
     }
 
     ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
-    ref_node_xyz(ref_node, 2, nodes[2]) = 1.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
 
     xyz[0] = 0.0;
     xyz[1] = 0.0;
@@ -1722,8 +1648,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, bary[2], -1.0, "b2");
 
     xyz[0] = 0.0;
-    xyz[1] = 0.0;
-    xyz[2] = 1.0;
+    xyz[1] = 1.0;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(0.0, bary[0], -1.0, "b0");
@@ -1731,8 +1657,8 @@ int main(int argc, char *argv[]) {
     RWDS(1.0, bary[2], -1.0, "b2");
 
     xyz[0] = 0.5;
-    xyz[1] = 0.0;
-    xyz[2] = 0.5;
+    xyz[1] = 0.5;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(0.0, bary[0], -1.0, "b0");
@@ -1740,8 +1666,8 @@ int main(int argc, char *argv[]) {
     RWDS(0.5, bary[2], -1.0, "b2");
 
     xyz[0] = 1.0 / 3.0;
-    xyz[1] = 0.0;
-    xyz[2] = 1.0 / 3.0;
+    xyz[1] = 1.0 / 3.0;
+    xyz[2] = 0.0;
 
     RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
     RWDS(1.0 / 3.0, bary[0], -1.0, "b0");

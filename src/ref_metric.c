@@ -123,28 +123,60 @@ REF_STATUS ref_metric_ring_node(REF_NODE ref_node) {
 REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
                                          const char *version) {
   REF_INT node;
-  REF_DBL x = 0, z = 0, r, t;
-  REF_DBL h_y = 0, h_t = 0, h_r = 0, h0, h, hh;
+  REF_DBL x = 0, y = 0, r, t;
+  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1;
   REF_DBL d[12], m[6];
   REF_BOOL metric_recognized = REF_FALSE;
 
   each_ref_node_valid_node(ref_node, node) {
+    if (strcmp(version, "masabl-1") == 0) {
+      metric_recognized = REF_TRUE;
+      hx = 0.01 +
+           0.2 * cos(ref_math_pi * (ref_node_xyz(ref_node, 0, node) - 0.5));
+      c = 0.001;
+      k1 = 6.0;
+      hy = c * exp(k1 * ref_node_xyz(ref_node, 1, node));
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (hx * hx), 0, 0,
+                               1.0 / (hy * hy), 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "side") == 0) {
       metric_recognized = REF_TRUE;
       h0 = 0.1;
       h = 0.01;
-      hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
-      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0, 1.0, 0,
-                               1.0 / (hh * hh)),
+      hh = h + (h0 - h) * ref_node_xyz(ref_node, 1, node);
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                               1.0 / (hh * hh), 0, 1.0),
+          "set node met");
+      continue;
+    }
+    if (strcmp(version, "linear-0001") == 0) {
+      metric_recognized = REF_TRUE;
+      h0 = 0.1;
+      h = 0.0001;
+      hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 1, node) - 0.5) / 0.5;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                               1.0 / (hh * hh), 0, 1.0),
+          "set node met");
+      continue;
+    }
+    if (strcmp(version, "linear-01") == 0) {
+      metric_recognized = REF_TRUE;
+      h0 = 0.1;
+      h = 0.01;
+      hh = h + (0.1 - h) * ABS(ref_node_xyz(ref_node, 1, node) - 0.5) / 0.5;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
+                               1.0 / (hh * hh), 0, 1.0),
           "set node met");
       continue;
     }
     if (strcmp(version, "polar-2") == 0) {
       metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node);
-      z = ref_node_xyz(ref_node, 2, node);
-      r = sqrt(x * x + z * z);
-      h_y = 1.0;
+      y = ref_node_xyz(ref_node, 1, node);
+      r = sqrt(x * x + y * y);
+      h_z = 1.0;
       h_t = 0.1;
       h0 = 0.001;
       h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
@@ -152,25 +184,35 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
     if (strcmp(version, "radial-1") == 0) {
       metric_recognized = REF_TRUE;
       x = ref_node_xyz(ref_node, 0, node) + 0.5;
-      z = ref_node_xyz(ref_node, 2, node) - 0.5;
-      t = atan2(z, x);
-      h_y = 1.0;
+      y = ref_node_xyz(ref_node, 1, node) - 0.5;
+      t = atan2(y, x);
+      h_z = 1.0;
       h_t = 0.1;
       h_r = 0.01;
     }
-    t = atan2(z, x);
+    if (strcmp(version, "circle-1") == 0) {
+      metric_recognized = REF_TRUE;
+      x = ref_node_xyz(ref_node, 0, node) + 0.5;
+      y = ref_node_xyz(ref_node, 1, node) - 0.5;
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      h_z = 1.0;
+      h_r = 0.0005 + 1.5 * ABS(1.0 - r);
+      h_t = 0.1 * r + 1.5 * ABS(1.0 - r);
+    }
+    t = atan2(y, x);
     ref_matrix_eig(d, 0) = 1.0 / (h_r * h_r);
     ref_matrix_eig(d, 1) = 1.0 / (h_t * h_t);
-    ref_matrix_eig(d, 2) = 1.0 / (h_y * h_y);
+    ref_matrix_eig(d, 2) = 1.0 / (h_z * h_z);
     ref_matrix_vec(d, 0, 0) = cos(t);
-    ref_matrix_vec(d, 1, 0) = 0.0;
-    ref_matrix_vec(d, 2, 0) = sin(t);
+    ref_matrix_vec(d, 1, 0) = sin(t);
+    ref_matrix_vec(d, 2, 0) = 0.0;
     ref_matrix_vec(d, 0, 1) = -sin(t);
-    ref_matrix_vec(d, 1, 1) = 0.0;
-    ref_matrix_vec(d, 2, 1) = cos(t);
+    ref_matrix_vec(d, 1, 1) = cos(t);
+    ref_matrix_vec(d, 2, 1) = 0.0;
     ref_matrix_vec(d, 0, 2) = 0.0;
-    ref_matrix_vec(d, 1, 2) = 1.0;
-    ref_matrix_vec(d, 2, 2) = 0.0;
+    ref_matrix_vec(d, 1, 2) = 0.0;
+    ref_matrix_vec(d, 2, 2) = 1.0;
     ref_matrix_form_m(d, m);
     RSS(ref_node_metric_set(ref_node, node, m), "set node met");
   }
@@ -279,9 +321,9 @@ REF_STATUS ref_metric_twod_node(REF_NODE ref_node) {
 
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_node_metric_get(ref_node, node, m), "get");
-    m[1] = 0.0;
-    m[3] = 1.0;
+    m[2] = 0.0;
     m[4] = 0.0;
+    m[5] = 1.0;
     RSS(ref_node_metric_set(ref_node, node, m), "set");
   }
 
@@ -388,8 +430,8 @@ static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
       interpolated_xyz[ixyz] +=
           bary[ibary] * ref_node_real(parent_node, ixyz, nodes[ibary]);
   }
-  /* override y for fake twod */
-  interpolated_xyz[1] = ref_node_xyz(ref_node, 1, node);
+  /* override z for fake twod */
+  interpolated_xyz[2] = ref_node_xyz(ref_node, 2, node);
   for (ixyz = 0; ixyz < 3; ixyz++)
     RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
   for (ibary = 0; ibary < 3; ibary++)
@@ -1257,6 +1299,36 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
   return REF_SUCCESS;
 }
 
+static REF_STATUS add_sub_tri(REF_INT n0, REF_INT n1, REF_INT n2,
+                              REF_INT *nodes, REF_DBL *metric,
+                              REF_DBL *total_node_volume, REF_NODE ref_node,
+                              REF_CELL ref_cell) {
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL m[6], log_m[6];
+  REF_DBL tri_area;
+  REF_INT node, im;
+  REF_STATUS status;
+  tri_nodes[0] = nodes[(n0)];
+  tri_nodes[1] = nodes[(n1)];
+  tri_nodes[2] = nodes[(n2)];
+  status = ref_matrix_imply_m3(m, ref_node_xyz_ptr(ref_node, tri_nodes[0]),
+                               ref_node_xyz_ptr(ref_node, tri_nodes[1]),
+                               ref_node_xyz_ptr(ref_node, tri_nodes[2]));
+  if (REF_SUCCESS == status) {
+    RSS(ref_matrix_log_m(m, log_m), "log");
+    RSS(ref_node_tri_area(ref_node, tri_nodes, &tri_area), "area");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      total_node_volume[nodes[node]] += tri_area;
+      for (im = 0; im < 6; im++)
+        metric[im + 6 * nodes[node]] += tri_area * log_m[im];
+    }
+  } else {
+    REF_WHERE("imply contrib skipped");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL m[6], log_m[6];
@@ -1270,6 +1342,15 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     for (im = 0; im < 6; im++) metric[im + 6 * node] = 0.0;
+
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(add_sub_tri(0, 1, 2, nodes, metric, total_node_volume, ref_node,
+                      ref_cell),
+          "tet sub tet");
+    }
+  }
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {

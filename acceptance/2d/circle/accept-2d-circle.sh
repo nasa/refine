@@ -13,7 +13,7 @@ else
 fi
 
 tecplot=-t
-metric=circle
+metric="-twod circle-1"
 gradation="metric 1.5"
 gradation="mixed 1.5 -1.0"
 
@@ -22,26 +22,29 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -m ${inproj}.metric -o ${outproj} \
+    ${two}/ref_acceptance ${metric} ${inproj}.meshb \
+	  ${inproj}-orig.solb
+    ${two}/ref_metric_test --gradation ${inproj}.meshb \
+	  ${inproj}-orig.solb ${inproj}.solb \
+	  ${gradation}
+
+    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+          -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
     
-    mv ref_gather_histo.tec ${inproj}_histo.tec
-    mv ref_gather_movie.tec ${inproj}_movie.tec
-    ${two}/ref_acceptance -ugawg ${metric} ${outproj}.b8.ugrid \
-	  ${outproj}-orig.metric
-    ${two}/ref_metric_test --gradation ${outproj}.b8.ugrid \
-	  ${outproj}-orig.metric ${outproj}.metric \
+    mv ref_gather_histo.tec ${outproj}_histo.tec
+    mv ref_gather_movie.tec ${outproj}_movie.tec
+    ${two}/ref_acceptance ${metric} ${outproj}.meshb \
+	  ${outproj}-orig.solb
+    ${two}/ref_metric_test --gradation ${outproj}.meshb \
+	  ${outproj}-orig.solb ${outproj}.solb \
 	  ${gradation}
-    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric \
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.solb \
 	  > ${outproj}.status
 }
 
 inproj=cycle00
-${two}/ref_acceptance 2 cycle00.b8.ugrid
-${two}/ref_acceptance -ugawg circle ${inproj}.b8.ugrid ${inproj}-orig.metric
-${two}/ref_metric_test --gradation ${inproj}.b8.ugrid \
-      ${inproj}-orig.metric ${inproj}.metric \
-      ${gradation}
+${two}/ref_acceptance 2 cycle00.meshb
 
 adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10

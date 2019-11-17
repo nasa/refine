@@ -870,12 +870,12 @@ REF_STATUS ref_split_edge_tri_complexity(REF_GRID ref_grid, REF_INT node0,
 
 static REF_STATUS ref_split_edge_twod_mixed(REF_GRID ref_grid, REF_INT node0,
                                             REF_INT node1, REF_BOOL *allowed) {
-  REF_BOOL hex_side;
+  REF_BOOL qua_side;
 
-  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),
-      "hex");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+      "qua");
 
-  *allowed = (!hex_side);
+  *allowed = (!qua_side);
 
   return REF_SUCCESS;
 }
@@ -886,8 +886,8 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT edge, n, i;
-  REF_BOOL active, allowed;
-  REF_INT node0, node1, node2, node3, new_node0, new_node1;
+  REF_BOOL allowed;
+  REF_INT node0, node1, new_node;
   REF_GLOB global;
 
   RAS(ref_grid_twod(ref_grid), "only 2D");
@@ -900,11 +900,6 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 
   n = 0;
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    RSS(ref_node_edge_twod(ref_node, ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "act");
-    if (!active) continue;
-
     RSS(ref_split_edge_twod_mixed(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                   ref_edge_e2n(ref_edge, 1, edge), &allowed),
         "act");
@@ -927,60 +922,43 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &new_node0), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node0),
+    RSS(ref_node_add(ref_node, global, &new_node), "new node");
+    RSS(ref_node_interpolate_edge(ref_node, node0, node1, 0.5, new_node),
         "interp new node");
-    RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node0),
+    RSS(ref_geom_add_between(ref_grid, node0, node1, 0.5, new_node),
         "geom new node");
-    RSS(ref_geom_constrain(ref_grid, new_node0), "geom constraint");
-    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node0),
+    RSS(ref_geom_constrain(ref_grid, new_node), "geom constraint");
+    RSS(ref_metric_interpolate_between(ref_grid, node0, node1, new_node),
         "interp new node0");
 
-    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node0, &allowed),
+    RSS(ref_split_prism_tri_ratio(ref_grid, node0, node1, new_node, &allowed),
         "ratio of new tri sides");
     if (!allowed) {
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
-    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node0,
-                                    &allowed),
+    RSS(ref_split_prism_tri_quality(ref_grid, node0, node1, new_node, &allowed),
         "quality of new tri");
     if (!allowed) {
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
-    RSS(ref_cell_local_gem(ref_grid_pri(ref_grid), ref_node, node0, node1,
+    RSS(ref_cell_local_gem(ref_grid_tri(ref_grid), ref_node, node0, node1,
                            &allowed),
-        "local pri");
+        "local tri");
     if (!allowed) {
       ref_node_age(ref_node, node0)++;
       ref_node_age(ref_node, node1)++;
-      RSS(ref_node_remove(ref_node, new_node0), "remove new node");
-      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node0), "rm");
+      RSS(ref_node_remove(ref_node, new_node), "remove new node");
+      RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
     }
 
-    RSS(ref_twod_opposite_edge(ref_grid_pri(ref_grid), node0, node1, &node2,
-                               &node3),
-        "opp");
-
-    RSS(ref_node_next_global(ref_node, &global), "next global");
-    RSS(ref_node_add(ref_node, global, &new_node1), "new node");
-    RSS(ref_node_interpolate_edge(ref_node, node2, node3, 0.5, new_node1),
-        "interp new node");
-    RSS(ref_geom_add_between(ref_grid, node2, node3, 0.5, new_node1),
-        "geom new node");
-    RSS(ref_geom_constrain(ref_grid, new_node1), "geom constraint");
-    RSS(ref_metric_interpolate_between(ref_grid, node2, node3, new_node1),
-        "interp new node1");
-
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node0, node2, node3,
-                            new_node1),
-        "split face");
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node), "split");
 
     ref_node_age(ref_node, node0) = 0;
     ref_node_age(ref_node, node1) = 0;
@@ -996,11 +974,9 @@ REF_STATUS ref_split_twod_pass(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_INT new_node0, REF_INT node2, REF_INT node3,
-                               REF_INT new_node1) {
-  REF_CELL pri = ref_grid_pri(ref_grid);
+                               REF_INT new_node) {
   REF_CELL tri = ref_grid_tri(ref_grid);
-  REF_CELL qua = ref_grid_qua(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
 
   REF_INT ncell, cell_in_list;
   REF_INT cell_to_split[2];
@@ -1008,30 +984,6 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell, node;
 
-  RSS(ref_cell_list_with2(pri, node0, node1, 2, &ncell, cell_to_split),
-      "more than two");
-
-  for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
-    cell = cell_to_split[cell_in_list];
-    RSS(ref_cell_nodes(pri, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(pri, cell), "remove");
-
-    for (node = 0; node < ref_cell_node_per(pri); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    RSS(ref_cell_add(pri, new_nodes, &new_cell), "add node0-node2 version");
-
-    for (node = 0; node < ref_cell_node_per(pri); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    RSS(ref_cell_add(pri, new_nodes, &new_cell), "add node1-node3 version");
-  }
-
-  tri = ref_grid_tri(ref_grid);
   RSS(ref_cell_list_with2(tri, node0, node1, 2, &ncell, cell_to_split),
       "more then two");
 
@@ -1042,69 +994,40 @@ REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 
     for (node = 0; node < ref_cell_node_per(tri); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
+      if (node0 == orig_nodes[node]) new_nodes[node] = new_node;
     }
     new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
     RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node0 version");
 
     for (node = 0; node < ref_cell_node_per(tri); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
+      if (node1 == orig_nodes[node]) new_nodes[node] = new_node;
     }
     new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
     RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node1 version");
   }
 
-  tri = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(tri, node2, node3, 2, &ncell, cell_to_split),
-      "more then two");
+  RSS(ref_cell_list_with2(edg, node0, node1, 1, &ncell, cell_to_split),
+      "more then one");
 
   for (cell_in_list = 0; cell_in_list < ncell; cell_in_list++) {
     cell = cell_to_split[cell_in_list];
-    RSS(ref_cell_nodes(tri, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(tri, cell), "remove");
+    RSS(ref_cell_nodes(edg, cell, orig_nodes), "cell nodes");
+    RSS(ref_cell_remove(edg, cell), "remove");
 
-    for (node = 0; node < ref_cell_node_per(tri); node++) {
+    for (node = 0; node < ref_cell_node_per(edg); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
+      if (node0 == orig_nodes[node]) new_nodes[node] = new_node;
     }
-    new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
-    RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node0 version");
+    new_nodes[ref_cell_node_per(edg)] = orig_nodes[ref_cell_node_per(edg)];
+    RSS(ref_cell_add(edg, new_nodes, &new_cell), "add node0 version");
 
-    for (node = 0; node < ref_cell_node_per(tri); node++) {
+    for (node = 0; node < ref_cell_node_per(edg); node++) {
       new_nodes[node] = orig_nodes[node];
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
+      if (node1 == orig_nodes[node]) new_nodes[node] = new_node;
     }
-    new_nodes[ref_cell_node_per(tri)] = orig_nodes[ref_cell_node_per(tri)];
-    RSS(ref_cell_add(tri, new_nodes, &new_cell), "add node1 version");
-  }
-
-  qua = ref_grid_qua(ref_grid);
-  orig_nodes[0] = node0;
-  orig_nodes[1] = node1;
-  orig_nodes[2] = node3;
-  orig_nodes[3] = node2;
-  RXS(ref_cell_with(qua, orig_nodes, &cell), REF_NOT_FOUND, "qua with");
-
-  if (REF_EMPTY != cell) {
-    RSS(ref_cell_nodes(qua, cell, orig_nodes), "cell nodes");
-    RSS(ref_cell_remove(qua, cell), "remove");
-
-    for (node = 0; node < ref_cell_node_per(qua); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node0 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node2 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    new_nodes[ref_cell_node_per(qua)] = orig_nodes[ref_cell_node_per(qua)];
-    RSS(ref_cell_add(qua, new_nodes, &new_cell), "add node0-node3 version");
-
-    for (node = 0; node < ref_cell_node_per(qua); node++) {
-      new_nodes[node] = orig_nodes[node];
-      if (node1 == orig_nodes[node]) new_nodes[node] = new_node0;
-      if (node3 == orig_nodes[node]) new_nodes[node] = new_node1;
-    }
-    new_nodes[ref_cell_node_per(qua)] = orig_nodes[ref_cell_node_per(qua)];
-    RSS(ref_cell_add(qua, new_nodes, &new_cell), "add node1-node2 version");
+    new_nodes[ref_cell_node_per(edg)] = orig_nodes[ref_cell_node_per(edg)];
+    RSS(ref_cell_add(edg, new_nodes, &new_cell), "add node1 version");
   }
 
   return REF_SUCCESS;
@@ -1169,13 +1092,13 @@ REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_INT e0, e1, cell_edge;
   REF_DBL ratio;
-  REF_BOOL qua_side;
+  REF_BOOL edg_side;
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &edg_side),
       "qua");
-  if (qua_side) {
+  if (edg_side) {
     RSS(ref_node_ratio(ref_node, node0, new_node, &ratio), "ratio node0");
     if (ratio < ref_grid_adapt(ref_grid, post_min_ratio) ||
         ratio > ref_grid_adapt(ref_grid, post_max_ratio)) {

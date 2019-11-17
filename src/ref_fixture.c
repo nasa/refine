@@ -283,6 +283,140 @@ REF_STATUS ref_fixture_pyr_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_fixture_tri_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnodesg = 3;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 2;
+  global[3] = 101;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 0.0, 1.0, 0.0);
+    add_that_node(2, 1.0, 0.0, 0.0);
+    local[3] = global[3];
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 10;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1])) {
+    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
+    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
+    local[2] = global[2];
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), local, &cell), "add edg");
+  }
+
+  return REF_SUCCESS;
+}
+
+/*
+     1
+   / |  \
+ 3 - 0 - 2
+ */
+
+REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnodesg = 4;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 2;
+  global[3] = 101;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 0.0, 1.0, 0.0);
+    add_that_node(2, 1.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 3;
+  global[3] = 101;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 0.0, 1.0, 0.0);
+    add_that_node(2, -1.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
+
+  global[0] = 0;
+  global[1] = 2;
+  global[2] = 10;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1])) {
+    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
+    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
+    local[2] = global[2];
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), local, &cell), "add edg");
+  }
+
+  global[0] = 3;
+  global[1] = 0;
+  global[2] = 10;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1])) {
+    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
+    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
+    local[2] = global[2];
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), local, &cell), "add edg");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_fixture_pri_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -295,7 +429,7 @@ REF_STATUS ref_fixture_pri_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
 
-  ref_grid_twod(ref_grid) = REF_TRUE;
+  ref_grid_twod(ref_grid) = REF_FALSE;
 
   global[0] = 0;
   global[1] = 1;
@@ -326,249 +460,6 @@ REF_STATUS ref_fixture_pri_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   }
 
   RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
-
-  global[0] = 0;
-  global[1] = 3;
-  global[2] = 4;
-  global[3] = 1;
-  global[4] = 10;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
-    RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
-  }
-
-  global[0] = 3;
-  global[1] = 5;
-  global[2] = 4;
-  global[3] = 100;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
-
-  global[0] = 0;
-  global[1] = 1;
-  global[2] = 2;
-  global[3] = 101;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
-
-  return REF_SUCCESS;
-}
-
-/*
-     14
-   / |  \
-67 - 03 - 25
- */
-
-REF_STATUS ref_fixture_pri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-  REF_INT global[REF_CELL_MAX_SIZE_PER];
-  REF_INT local[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell;
-  REF_INT nnodesg = 8;
-
-  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
-  ref_grid = *ref_grid_ptr;
-  ref_node = ref_grid_node(ref_grid);
-
-  ref_grid_twod(ref_grid) = REF_TRUE;
-
-  global[0] = 0;
-  global[1] = 1;
-  global[2] = 2;
-  global[3] = 3;
-  global[4] = 4;
-  global[5] = 5;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[4]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[5])) {
-    add_that_node(0, 0.0, 0.0, 0.0);
-    add_that_node(1, 0.0, 0.0, 1.0);
-    add_that_node(2, 1.0, 0.0, 0.0);
-    add_that_node(3, 0.0, 1.0, 0.0);
-    add_that_node(4, 0.0, 1.0, 1.0);
-    add_that_node(5, 1.0, 1.0, 0.0);
-
-    RSS(ref_cell_add(ref_grid_pri(ref_grid), local, &cell), "add prism");
-  }
-
-  global[0] = 0;
-  global[1] = 6;
-  global[2] = 1;
-  global[3] = 3;
-  global[4] = 7;
-  global[5] = 4;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[4]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[5])) {
-    add_that_node(0, 0.0, 0.0, 0.0);
-    add_that_node(1, -1.0, 0.0, 0.0);
-    add_that_node(2, 0.0, 0.0, 1.0);
-    add_that_node(3, 0.0, 1.0, 0.0);
-    add_that_node(4, -1.0, 1.0, 0.0);
-    add_that_node(5, 0.0, 1.0, 1.0);
-
-    RSS(ref_cell_add(ref_grid_pri(ref_grid), local, &cell), "add prism");
-  }
-
-  RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
-
-  global[0] = 2;
-  global[1] = 5;
-  global[2] = 3;
-  global[3] = 0;
-  global[4] = 10;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
-    RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
-  }
-  global[0] = 0;
-  global[1] = 3;
-  global[2] = 7;
-  global[3] = 6;
-  global[4] = 10;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    RSS(ref_node_local(ref_node, global[3], &(local[3])), "loc");
-    local[4] = global[4];
-    RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add quad");
-  }
-
-  global[0] = 3;
-  global[1] = 5;
-  global[2] = 4;
-  global[3] = 100;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
-  global[0] = 3;
-  global[1] = 4;
-  global[2] = 7;
-  global[3] = 100;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
-
-  global[0] = 0;
-  global[1] = 1;
-  global[2] = 2;
-  global[3] = 101;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
-  global[0] = 0;
-  global[1] = 6;
-  global[2] = 1;
-  global[3] = 101;
-  if (ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
-      ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
-    RSS(ref_node_local(ref_node, global[0], &(local[0])), "loc");
-    RSS(ref_node_local(ref_node, global[1], &(local[1])), "loc");
-    RSS(ref_node_local(ref_node, global[2], &(local[2])), "loc");
-    local[3] = global[3];
-    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
-  }
 
   return REF_SUCCESS;
 }
@@ -1172,11 +1063,11 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
                                        REF_MPI ref_mpi) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
-  REF_INT global, node, hex[8], pri[6], cell;
-  REF_INT qua[5], tri[4];
+  REF_INT global, node, cell;
+  REF_INT edg[3], tri[4];
 
-  REF_INT l = 4, m = 2, n = 4;
-  REF_INT i, j, k;
+  REF_INT m = 4, n = 4;
+  REF_INT i, j;
 
   REF_DBL x0 = 0.0;
   REF_DBL x1 = 1.0;
@@ -1184,14 +1075,12 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
   REF_DBL y0 = 0.0;
   REF_DBL y1 = 1.0;
 
-  REF_DBL z0 = 0.0;
-  REF_DBL z1 = 1.0;
+  REF_DBL z = 0.0;
 
-  REF_DBL dx, dy, dz;
+  REF_DBL dx, dy;
 
-  dx = (x1 - x0) / ((REF_DBL)(l - 1));
+  dx = (x1 - x0) / ((REF_DBL)(n - 1));
   dy = (y1 - y0) / ((REF_DBL)(m - 1));
-  dz = (z1 - z0) / ((REF_DBL)(n - 1));
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
   ref_grid = *ref_grid_ptr;
@@ -1200,158 +1089,72 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
   ref_grid_twod(ref_grid) = REF_TRUE;
 
   /*
-                               inode7-----11-----inode6
-                                 /.                /|
-                                / .               / |
-                               /  .              /  |
-                              /   .             /   |
-                             9    .        /  10    6
-                            /     7           /     |
-                           /      .          /      |
-                          /       .         /       |
-                       inode4-8----------inode5     |
-                         |      inode3.....|...5..inode2
-                         |       .         |       /
-                         |      .          |      /
-                         |     .           |     /
-                         2    1    /       4    3
-  z                       |   .             |   /
-  ^   y                   |  .              |  /
-  |  /                    | .               | /
-  | /                     |.                |/
-  |/                    inode0------0-----inode1
+  y   3 --- 2
+  ^   |     |
+  |   |     |
+  |   0 --- 1
+  |
   +----> x
   */
 
-#define ijk2node(i, j, k, l, m, n) ((i) + (j) * (l) + (k) * (l) * (m))
+#define ij2node(i, j, m, n) ((i) + (j) * (m))
 
-  for (k = 0; k < n; k++)
-    for (j = 0; j < m; j++)
-      for (i = 0; i < l; i++) {
-        global = ijk2node(i, j, k, l, m, n);
-        RSS(ref_node_add(ref_node, global, &node), "node");
-        ref_node_xyz(ref_node, 0, node) = x0 + dx * (REF_DBL)i;
-        ref_node_xyz(ref_node, 1, node) = y0 + dy * (REF_DBL)j;
-        ref_node_xyz(ref_node, 2, node) = z0 + dz * (REF_DBL)k;
-      }
-
-#define ijk2hex(i, j, k, l, m, n, hex)                     \
-  (hex)[0] = ijk2node((i)-1, (j)-1, (k)-1, (l), (m), (n)); \
-  (hex)[1] = ijk2node((i), (j)-1, (k)-1, (l), (m), (n));   \
-  (hex)[2] = ijk2node((i), (j), (k)-1, (l), (m), (n));     \
-  (hex)[3] = ijk2node((i)-1, (j), (k)-1, (l), (m), (n));   \
-  (hex)[4] = ijk2node((i)-1, (j)-1, (k), (l), (m), (n));   \
-  (hex)[5] = ijk2node((i), (j)-1, (k), (l), (m), (n));     \
-  (hex)[6] = ijk2node((i), (j), (k), (l), (m), (n));       \
-  (hex)[7] = ijk2node((i)-1, (j), (k), (l), (m), (n));
-
-  for (k = 1; k < n; k++)
-    for (j = 1; j < m; j++)
-      for (i = 1; i < l; i++) {
-        ijk2hex(i, j, k, l, m, n, hex);
-        pri[0] = hex[0];
-        pri[1] = hex[4];
-        pri[2] = hex[5];
-        pri[3] = hex[3];
-        pri[4] = hex[7];
-        pri[5] = hex[6];
-        RSS(ref_cell_add(ref_grid_pri(ref_grid), pri, &cell), "pri");
-        pri[0] = hex[0];
-        pri[1] = hex[5];
-        pri[2] = hex[1];
-        pri[3] = hex[3];
-        pri[4] = hex[6];
-        pri[5] = hex[2];
-        RSS(ref_cell_add(ref_grid_pri(ref_grid), pri, &cell), "pri");
-      }
-
-  qua[4] = 3;
-  i = 1;
-  for (k = 1; k < n; k++)
-    for (j = 1; j < m; j++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[0];
-      qua[1] = hex[3];
-      qua[2] = hex[7];
-      qua[3] = hex[4];
-      RSS(ref_cell_add(ref_grid_qua(ref_grid), qua, &cell), "qua");
+  for (j = 0; j < n; j++) {
+    for (i = 0; i < m; i++) {
+      global = ij2node(i, j, m, n);
+      RSS(ref_node_add(ref_node, global, &node), "node");
+      ref_node_xyz(ref_node, 0, node) = x0 + dx * (REF_DBL)i;
+      ref_node_xyz(ref_node, 1, node) = y0 + dy * (REF_DBL)j;
+      ref_node_xyz(ref_node, 2, node) = z;
     }
+  }
 
-  qua[4] = 4;
-  i = l - 1;
-  for (k = 1; k < n; k++)
-    for (j = 1; j < m; j++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[2];
-      qua[1] = hex[1];
-      qua[2] = hex[5];
-      qua[3] = hex[6];
-      RSS(ref_cell_add(ref_grid_qua(ref_grid), qua, &cell), "qua");
-    }
+  edg[2] = 1;
+  j = 0;
+  for (i = 0; i < m - 1; i++) {
+    edg[0] = ij2node(i, j, m, n);
+    edg[1] = ij2node(i + 1, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "qua");
+  }
 
-  qua[4] = 1;
-  tri[3] = qua[4];
+  edg[2] = 2;
+  i = m - 1;
+  for (j = 0; j < n - 1; j++) {
+    edg[0] = ij2node(i, j, m, n);
+    edg[1] = ij2node(i, j + 1, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  edg[2] = 3;
+  j = n - 1;
+  for (i = m - 2; i >= 0; i--) {
+    edg[0] = ij2node(i + 1, j, m, n);
+    edg[1] = ij2node(i, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  edg[2] = 4;
+  i = 0;
+  for (j = n - 2; j >= 0; j--) {
+    edg[0] = ij2node(i, j + 1, m, n);
+    edg[1] = ij2node(i, j, m, n);
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), edg, &cell), "edg");
+  }
+
+  tri[3] = 1;
   j = 1;
-  for (k = 1; k < n; k++)
-    for (i = 1; i < l; i++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[1];
-      qua[1] = hex[0];
-      qua[2] = hex[4];
-      qua[3] = hex[5];
-      tri[0] = qua[0];
-      tri[1] = qua[1];
-      tri[2] = qua[3];
-      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "qua");
-      tri[0] = qua[1];
-      tri[1] = qua[2];
-      tri[2] = qua[3];
-      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "qua");
+  for (j = 0; j < n - 1; j++) {
+    for (i = 0; i < m - 1; i++) {
+      tri[0] = ij2node(i, j, m, n);
+      tri[1] = ij2node(i + 1, j, m, n);
+      tri[2] = ij2node(i + 1, j + 1, m, n);
+      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "tri");
+      tri[0] = ij2node(i, j, m, n);
+      tri[1] = ij2node(i + 1, j + 1, m, n);
+      tri[2] = ij2node(i, j + 1, m, n);
+      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "tri");
     }
-
-  qua[4] = 2;
-  tri[3] = qua[4];
-  j = m - 1;
-  for (k = 1; k < n; k++)
-    for (i = 1; i < l; i++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[3];
-      qua[1] = hex[2];
-      qua[2] = hex[6];
-      qua[3] = hex[7];
-      tri[0] = qua[0];
-      tri[1] = qua[2];
-      tri[2] = qua[3];
-      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "qua");
-      tri[0] = qua[0];
-      tri[1] = qua[1];
-      tri[2] = qua[2];
-      RSS(ref_cell_add(ref_grid_tri(ref_grid), tri, &cell), "qua");
-    }
-
-  qua[4] = 5;
-  k = 1;
-  for (j = 1; j < m; j++)
-    for (i = 1; i < l; i++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[0];
-      qua[1] = hex[1];
-      qua[2] = hex[2];
-      qua[3] = hex[3];
-      RSS(ref_cell_add(ref_grid_qua(ref_grid), qua, &cell), "qua");
-    }
-
-  qua[4] = 6;
-  k = n - 1;
-  for (j = 1; j < m; j++)
-    for (i = 1; i < l; i++) {
-      ijk2hex(i, j, k, l, m, n, hex);
-      qua[0] = hex[5];
-      qua[1] = hex[4];
-      qua[2] = hex[7];
-      qua[3] = hex[6];
-      RSS(ref_cell_add(ref_grid_qua(ref_grid), qua, &cell), "qua");
-    }
+  }
 
   return REF_SUCCESS;
 }

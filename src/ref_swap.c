@@ -329,13 +329,17 @@ REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT id0, id1;
-  REF_BOOL has_edge;
+  REF_BOOL has_edg, has_tri, has_qua;
 
   *allowed = REF_FALSE;
 
-  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edge),
-      "edge side");
-  if (has_edge) {
+  RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edg),
+      "edg side");
+  RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_tri),
+      "tri side");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &has_qua),
+      "qua side");
+  if (has_edg || (has_tri && has_qua)) {
     *allowed = REF_FALSE;
     return REF_SUCCESS;
   }
@@ -424,7 +428,7 @@ REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
-  REF_DBL normal[3];
+  REF_BOOL valid;
 
   *allowed = REF_FALSE;
 
@@ -433,24 +437,14 @@ REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
   nodes[0] = node0;
   nodes[1] = node3;
   nodes[2] = node2;
-  RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-
-  if ((ref_node_xyz(ref_node, 1, nodes[0]) >
-           ref_node_twod_mid_plane(ref_node) &&
-       normal[1] >= 0.0) ||
-      (ref_node_xyz(ref_node, 1, nodes[0]) <
-           ref_node_twod_mid_plane(ref_node) &&
-       normal[1] <= 0.0))
-    return REF_SUCCESS;
+  RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+  if (!valid) return REF_SUCCESS;
 
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
-  RSS(ref_node_tri_normal(ref_node, nodes, normal), "norm");
-
-  if ((ref_node_xyz(ref_node, 1, nodes[0]) > 0.5 && normal[1] >= 0.0) ||
-      (ref_node_xyz(ref_node, 1, nodes[0]) < 0.5 && normal[1] <= 0.0))
-    return REF_SUCCESS;
+  RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+  if (!valid) return REF_SUCCESS;
 
   *allowed = REF_TRUE;
 
@@ -677,14 +671,8 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
   REF_INT new_cell;
-  REF_INT opp0, opp1, opp2, opp3;
 
   RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
-
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node0, &opp0), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node1, &opp1), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node2, &opp2), "opp");
-  RSS(ref_twod_opposite_node(ref_grid_pri(ref_grid), node3, &opp3), "opp");
 
   /* twod plane tri */
   ref_cell = ref_grid_tri(ref_grid);
@@ -702,49 +690,6 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   nodes[0] = node1;
   nodes[1] = node2;
   nodes[2] = node3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
-
-  /* opp plane tri */
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, opp0, opp1, 2, &ncell, cell_to_swap),
-      "more then two");
-  REIB(2, ncell, "there should be two triangles for manifold opp plane",
-       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
-  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
-
-  nodes[0] = opp0;
-  nodes[1] = opp2; /* swapped dir */
-  nodes[2] = opp3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = opp1;
-  nodes[1] = opp3; /* swapped dir */
-  nodes[2] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
-
-  /* prism */
-  ref_cell = ref_grid_pri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
-      "more then two");
-  REIB(2, ncell, "there should be two triangles for manifold prism",
-       { ref_export_by_extension(ref_grid, "ref_swap_twod_edge.tec"); });
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
-
-  nodes[0] = node0;
-  nodes[1] = node3;
-  nodes[2] = node2;
-  nodes[3] = opp0;
-  nodes[4] = opp3;
-  nodes[5] = opp2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = node1;
-  nodes[1] = node2;
-  nodes[2] = node3;
-  nodes[3] = opp1;
-  nodes[4] = opp2;
-  nodes[5] = opp3;
   RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
 
   return REF_SUCCESS;
@@ -827,9 +772,6 @@ REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
-
-    RSS(ref_node_edge_twod(ref_node, node0, node1, &allowed), "act");
-    if (!allowed) continue;
 
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))

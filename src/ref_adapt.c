@@ -126,7 +126,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_DBL quality, min_quality;
   REF_DBL normdev, min_normdev;
   REF_DBL volume, min_volume, max_volume;
-  REF_BOOL active_twod;
   REF_DBL target_quality, target_normdev;
   REF_INT cell_node;
   REF_INT node, nnode;
@@ -135,7 +134,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
   REF_INT age, max_age;
-  REF_BOOL active;
   REF_EDGE ref_edge;
   REF_DBL m[6];
 
@@ -153,9 +151,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
-          "active twod tri");
-      if (!active_twod) continue;
       RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
       RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &volume), "vol");
@@ -232,7 +227,6 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
     }
   }
   RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
-  if (ref_grid_twod(ref_grid)) nnode = nnode / 2;
 
   nodes_per_complexity = (REF_DBL)nnode / complexity;
 
@@ -270,12 +264,7 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
-    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
-                           ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "twod edge");
-    active = (active || !ref_grid_twod(ref_grid));
-    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid))) {
       RSS(ref_node_ratio(ref_grid_node(ref_grid),
                          ref_edge_e2n(ref_edge, 0, edge),
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),
@@ -364,11 +353,9 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality, min_quality;
   REF_DBL normdev, min_normdev;
-  REF_BOOL active_twod;
   REF_INT node, nnode;
   REF_DBL ratio, min_ratio, max_ratio;
   REF_INT edge, part;
-  REF_BOOL active;
   REF_EDGE ref_edge;
   char is_ok = ' ';
   char not_ok = '*';
@@ -383,9 +370,6 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   min_quality = 1.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_node_node_twod(ref_grid_node(ref_grid), nodes[0], &active_twod),
-          "active twod tri");
-      if (!active_twod) continue;
       RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
     } else if (ref_grid_surf(ref_grid)) {
@@ -408,7 +392,6 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
     }
   }
   RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
-  if (ref_grid_twod(ref_grid)) nnode = nnode / 2;
 
   min_normdev = 2.0;
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
@@ -427,12 +410,7 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_edge_create(&ref_edge, ref_grid), "make edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     RSS(ref_edge_part(ref_edge, edge, &part), "edge part");
-    RSS(ref_node_edge_twod(ref_grid_node(ref_grid),
-                           ref_edge_e2n(ref_edge, 0, edge),
-                           ref_edge_e2n(ref_edge, 1, edge), &active),
-        "twod edge");
-    active = (active || !ref_grid_twod(ref_grid));
-    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid)) && active) {
+    if (part == ref_mpi_rank(ref_grid_mpi(ref_grid))) {
       RSS(ref_node_ratio(ref_grid_node(ref_grid),
                          ref_edge_e2n(ref_edge, 0, edge),
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),

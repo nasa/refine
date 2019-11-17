@@ -174,10 +174,10 @@ int main(int argc, char *argv[]) {
   { /* face id flag range */
     REF_GRID ref_grid;
     REF_INT min_faceid, max_faceid;
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
     REIS(10, min_faceid, "min");
-    REIS(101, max_faceid, "max");
+    REIS(10, max_faceid, "max");
     RSS(ref_grid_free(ref_grid), "free");
   }
 
@@ -226,11 +226,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* export .2d.meshb */
+  { /* export twod .meshb */
     REF_GRID ref_grid;
-    char file[] = "ref_export_test.2d.meshb";
+    char file[] = "ref_export_test.meshb";
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "set up pri brick");
-    RSS(ref_export_twod_meshb(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }

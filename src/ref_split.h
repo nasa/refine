@@ -51,12 +51,7 @@ REF_STATUS ref_split_edge_tri_complexity(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_split_twod_pass(REF_GRID ref_grid);
 
 REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_INT new_node0, REF_INT node2, REF_INT node3,
-                               REF_INT new_node1);
-
-REF_STATUS ref_split_opposite_edge(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_INT *node2,
-                                   REF_INT *node3);
+                               REF_INT new_node);
 
 REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
                                        REF_INT node1, REF_INT new_node,
