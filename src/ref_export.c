@@ -2316,7 +2316,7 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   REIS(nedge, ref_cell_n(ref_cell), "edge/quad miscount");
 
   ref_cell = ref_grid_tri(ref_grid);
-  fprintf(f, "\nTriangles\n%d\n", ref_cell_n(ref_cell) / 2);
+  fprintf(f, "\nTriangles\n%d\n", ref_cell_n(ref_cell));
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     ntri++;
