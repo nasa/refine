@@ -13,36 +13,36 @@ else
 fi
 
 tecplot=-t
+metric="-twod polar-2"
 
 function adapt_cycle {
     inproj=$1
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.b8.ugrid -m ${inproj}.metric -o ${outproj} -s ${sweeps} ${tecplot}
-    cp ref_gather_histo.tec ${inproj}_histo.tec
-    cp ref_gather_movie.tec ${inproj}_movie.tec
-    ${two}/ref_acceptance -twod polar-2 ${outproj}.b8.ugrid ${outproj}.metric
-    ${two}/ref_metric_test ${outproj}.b8.ugrid ${outproj}.metric > ${outproj}.status
+    ${two}/ref_acceptance ${metric} ${inproj}.meshb \
+	  ${inproj}.solb
 
+    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+          -x ${outproj}.meshb \
+	  -s ${sweeps} ${tecplot}
+
+    mv ref_gather_histo.tec ${outproj}_histo.tec
+    mv ref_gather_movie.tec ${outproj}_movie.tec
+    ${two}/ref_acceptance ${metric} ${outproj}.meshb \
+	  ${outproj}.solb
+    ${two}/ref_metric_test ${outproj}.meshb ${outproj}.solb \
+	  > ${outproj}.status
 }
 
-# ./cube.sh
+inproj=cycle00
+${two}/ref_acceptance 2 cycle00.meshb
 
-${two}/ref_acceptance 2 cycle00.b8.ugrid
-${two}/ref_acceptance -twod polar-2 cycle00.b8.ugrid cycle00.metric
-
-adapt_cycle cycle00 cycle01 2
-adapt_cycle cycle01 cycle02 2
+adapt_cycle cycle00 cycle01 10
+adapt_cycle cycle01 cycle02 10
 adapt_cycle cycle02 cycle03 10
 adapt_cycle cycle03 cycle04 10
-adapt_cycle cycle04 cycle05 10
-adapt_cycle cycle05 cycle06 10
-adapt_cycle cycle06 cycle07 10
-adapt_cycle cycle07 cycle08 10
-adapt_cycle cycle08 cycle09 10
-adapt_cycle cycle09 cycle10 10
 
-cat cycle10.status
-../../check.rb cycle10.status 0.30 2.2
+cat cycle04.status
+../../check.rb cycle04.status 0.30 2.2
 
