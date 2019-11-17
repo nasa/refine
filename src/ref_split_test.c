@@ -247,8 +247,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node), "new");
 
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node),
-        "split");
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node), "split");
 
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(1, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
@@ -266,8 +265,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_add(ref_grid_node(ref_grid), 6, &new_node), "new");
 
-    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node),
-        "split");
+    RSS(ref_split_twod_edge(ref_grid, node0, node1, new_node), "split");
 
     REIS(4, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(2, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
