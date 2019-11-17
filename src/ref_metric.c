@@ -1299,6 +1299,36 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
   return REF_SUCCESS;
 }
 
+static REF_STATUS add_sub_tri(REF_INT n0, REF_INT n1, REF_INT n2,
+                              REF_INT *nodes, REF_DBL *metric,
+                              REF_DBL *total_node_volume, REF_NODE ref_node,
+                              REF_CELL ref_cell) {
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL m[6], log_m[6];
+  REF_DBL tri_area;
+  REF_INT node, im;
+  REF_STATUS status;
+  tri_nodes[0] = nodes[(n0)];
+  tri_nodes[1] = nodes[(n1)];
+  tri_nodes[2] = nodes[(n2)];
+  status = ref_matrix_imply_m3(m, ref_node_xyz_ptr(ref_node, tri_nodes[0]),
+                               ref_node_xyz_ptr(ref_node, tri_nodes[1]),
+                               ref_node_xyz_ptr(ref_node, tri_nodes[2]));
+  if (REF_SUCCESS == status) {
+    RSS(ref_matrix_log_m(m, log_m), "log");
+    RSS(ref_node_tri_area(ref_node, tri_nodes, &tri_area), "area");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      total_node_volume[nodes[node]] += tri_area;
+      for (im = 0; im < 6; im++)
+        metric[im + 6 * nodes[node]] += tri_area * log_m[im];
+    }
+  } else {
+    REF_WHERE("imply contrib skipped");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL m[6], log_m[6];
@@ -1312,6 +1342,15 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
 
   for (node = 0; node < ref_node_max(ref_node); node++)
     for (im = 0; im < 6; im++) metric[im + 6 * node] = 0.0;
+
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(add_sub_tri(0, 1, 2, nodes, metric, total_node_volume, ref_node,
+                      ref_cell),
+          "tet sub tet");
+    }
+  }
 
   ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
