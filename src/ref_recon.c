@@ -153,7 +153,7 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   /* solve A with QR factorization size m x n */
   m = ref_cloud_n(ref_cloud) - 1; /* skip self */
-  if (twod) m++;                  /* add z node node */
+  if (twod) m += 4;                  /* add z node node */
   n = 9;
   if (verbose)
     printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
@@ -179,7 +179,63 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
     geom[8] = dz;
     for (j = 0; j < n; j++) {
       a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
     }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 0;
+    dy = 0;
+    dz = 2;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 1;
+    dy = 0;
+    dz = 1;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
+    i++;
+    dx = 0;
+    dy = 1;
+    dz = 1;
+    geom[0] = 0.5 * dx * dx;
+    geom[1] = dx * dy;
+    geom[2] = dx * dz;
+    geom[3] = 0.5 * dy * dy;
+    geom[4] = dy * dz;
+    geom[5] = 0.5 * dz * dz;
+    geom[6] = dx;
+    geom[7] = dy;
+    geom[8] = dz;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %f %d\n", dx, dy, dz, i);
     i++;
   }
   each_ref_cloud_global(ref_cloud, item, cloud_global) {
@@ -214,6 +270,21 @@ static REF_STATUS ref_recon_kexact_with_aux(REF_GLOB center_global,
   }
   i = 0;
   if (twod) {
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
+    dq = 0;
+    for (j = 0; j < 9; j++) {
+      ab[j + 9 * 9] += q[i + m * j] * dq;
+    }
+    i++;
     dq = 0;
     for (j = 0; j < 9; j++) {
       ab[j + 9 * 9] += q[i + m * j] * dq;
