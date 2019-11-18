@@ -1,4 +1,19 @@
 
+surrogate surface
+  support twod geom
+  share via meshb
+  when EGADS not available
+  support virtual topology
+
+ref_geom
+ refactor ref_geom to remove methods and tests, how is it used, what is needed?
+ extract init tess
+ add EGADS model builder fixture to ref_geom_tests
+ rename ref_geom to ref_egads?
+ create native version of inverse evalute with guess
+  use newton with discrete grid to constrain
+ many-to-many association virtual topology
+
 - protect sliver geom topo with lower bound on angle, short edge
   - surf
   - with volume
@@ -110,21 +125,6 @@ get rid of aux and interp instead
 
 start meshlink geode support?
 
-surrogate surface
-  when EGADS not available
-  support virtual topology
-  support twod geom
-  share via meshb
-
-ref_geom
- refactor ref_geom to remove methods and tests, how is it used, what is needed?
- extract init tess
- add EGADS model builder fixture to ref_geom_tests
- rename ref_geom to ref_egads?
- create native version of inverse evalute with guess
-  use newton with discrete grid to constrain
- many-to-many association
-
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 input means for all these parameters for optimizer setting
@@ -143,6 +143,7 @@ robustness and metric conformity
   rigorous way to set these
  split
   insert optimized node location (uv,xyz) with validity constraint
+  protect nearby vertex
  collapse
   examine triangle MR
   prevent slivers
@@ -173,8 +174,6 @@ viz/debug/status
  ellipsoid metric or something cheaper
  register faceid list (plus neighbors?) in gather movie to reduce file size
  report locations of extremely long ratio edges?
-
-create a standard --with-mpi configure flag
 
 validation:
 validaiton_all: turn on
@@ -221,6 +220,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ create a standard --with-mpi configure flag and make refmpi
 
 + overhaul twod, only triangle and bar
 
