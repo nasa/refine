@@ -1,4 +1,5 @@
 
+- configure --with-mpi creates refmpi
 - ideal tet and tri smoothing uses log average of vertex metrics
 - cavity operator extended to simultaneous volume and surface changes
 - gaps between surfaces at edges are used to limit curvature metric size
