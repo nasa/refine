@@ -1,22 +1,15 @@
 
-- protect surface sliver topo
+- protect sliver geom topo with lower bound on angle, short edge
   - surf
   - with volume
+  - exclude from statistics?
+
+- merge threed, twod, surf paths
 
 - single pass near-tree for grid size gradation of gaps
   + pearl in curved plate test case for blister
 
-- bring back fill command with aflr option
-
-- set tparams on faces or edges? may need to do in EGADS with cad feature size?
-- detect thickness or use attributes to set curve constraints
-
-- thin cylinder/sphere shell test for thickness geom constraint
-- antenna like geom bootstrap, diamond extrusion with round edges
-- thin wavy training edge bootstrap
-- edge off surface testcase or surface gap testcase?
-- cusp geom testcase
-- acceptance test with bootstrap of C608, JSM, etc.
+- bring back ref fill subcommand with aflr option
 
 reject insertion based on near tree
 
@@ -32,7 +25,7 @@ alternating RCB part
  diffusion
 
 configure with metis only, when parmetis not provided
-64bit metis/parmetis?
+warn about 64bit metis/parmetis?
 
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
@@ -47,50 +40,64 @@ minimize duration of lazy global delete
 
 protect geom constraint metric from surface folds and high curvature
  filter based on neighborhood
+ descrete curvature estimate (triangle based?)
 
 check that post conditions are implemented completely for all ops
+  consistent naming for operation pre-condition function names and tasks
   extract/combine post adaptation operator checks and status
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
   full post checks for edge-metric ratio: cavity swap, node smooth
+  standardize execptions (edge priority over tri, tri priority over tet)
 
 tess
  high order geometry visualization
  volume fill: merge import grid, remove specialized readers
  unfreeze edges for AFLR volume
  try gmsh
- near-tree for reducing geometry metric of thin shells
+ thin shells
+  - near-tree for reducing geometry metric across thickness
+  - auto bump curvature based?
  edge chord height warning/constraint?
+ automatically set and increase tess parametters
+  - faces without tris
+  - self intersecting uv edge segments
+
+boostrap
+  - thin cylinder/sphere shell test for thickness geom constraint
+  - antenna like geom bootstrap, diamond extrusion with round edges
+  - thin wavy (along training edge) training edge bootstrap
+  - edge off surface testcase or surface gap testcase?
+  - cusp geom topolpogy testcase
+  - acceptance test with bootstrap of C608, JSM, etc.
+  - validate normal deviation (make metric big across cylinder)
 
 C2S
  how/when to fail fast?
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
+ README and FUN3D doc update and sync
  command line interface
 
 improve CI test
  make check stack fuzz
  big acceptance test
- validate normal deviation (make metric big across cylinder)
  checks interp error for functions
+ clean up ref_acceptance uses without a flag
+ ref_acceptance should use two dashes
+ try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 ref_recon
   twod l2projection
   implicit reconstruction (Hiro)
 
-bleme
+bleme and cons visc
  spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
  strong bc lambda reconstruction: use constant term of quadratic fit
 
 multiscale entropy and/or entropy adjoint (for heating)
 ref_interp_test nondimensionalization of entropy equation and entropy adjoint
 ref_phys_test extraction from ref_interp
-
-consistent naming for operation pre-condition function names and tasks
-
-clean up ref_acceptance uses without a flag
-ref_acceptance should use two dashes
-try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 integrate complexity more accurately (Josh)
  extract ref_quadrature from ref_interp_integrate
@@ -106,6 +113,7 @@ start meshlink geode support?
 surrogate surface
   when EGADS not available
   support virtual topology
+  support twod geom
   share via meshb
 
 ref_geom
@@ -166,10 +174,6 @@ viz/debug/status
  register faceid list (plus neighbors?) in gather movie to reduce file size
  report locations of extremely long ratio edges?
 
-Marshall
- provide 2D api
-  overhaul to make twod only triangle and bar
-
 create a standard --with-mpi configure flag
 
 validation:
@@ -217,6 +221,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ overhaul twod, only triangle and bar
 
 + attribute to set segments per radian
 
