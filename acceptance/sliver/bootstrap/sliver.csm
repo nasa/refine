@@ -1,0 +1,9 @@
+
+box 0 0 0 1 1 1
+box 0 0 0 0.5 1.0 1
+rotatez -1 0 0
+translate 0 0.25 0 
+union
+
+dump sliver.egads
+dump sliver.ugrid
