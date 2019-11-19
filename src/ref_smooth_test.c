@@ -47,7 +47,6 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 #include "ref_split.h"
-#include "ref_twod.h"
 #include "ref_validation.h"
 
 static REF_STATUS ref_smooth_tri_single_fixture(REF_GRID *ref_grid_ptr,

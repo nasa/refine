@@ -31,7 +31,6 @@
 #include "ref_math.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
-#include "ref_twod.h"
 
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)

@@ -49,7 +49,6 @@
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_split.h"
-#include "ref_twod.h"
 
 static REF_STATUS ref_interp_setup(REF_INTERP *ref_interp_ptr,
                                    REF_MPI ref_mpi) {

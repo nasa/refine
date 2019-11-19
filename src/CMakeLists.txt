@@ -49,7 +49,6 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_split.h
         ${REFINE_SRC_PATH}/ref_subdiv.h
         ${REFINE_SRC_PATH}/ref_swap.h
-        ${REFINE_SRC_PATH}/ref_twod.h
         ${REFINE_SRC_PATH}/ref_validation.h
         )
 
@@ -98,7 +97,6 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_split.c"
   "${REFINE_SRC_PATH}/ref_subdiv.c"
   "${REFINE_SRC_PATH}/ref_swap.c"
-  "${REFINE_SRC_PATH}/ref_twod.c"
   "${REFINE_SRC_PATH}/ref_validation.c"
 )
 

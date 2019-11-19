@@ -43,7 +43,6 @@
 #include "ref_node.h"
 #include "ref_smooth.h"
 #include "ref_sort.h"
-#include "ref_twod.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;

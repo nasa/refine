@@ -14,7 +14,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_phys.h ref_recon.h \
 	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
-	ref_subdiv.h ref_swap.h ref_twod.h ref_validation.h
+	ref_subdiv.h ref_swap.h ref_validation.h
 
 lib_LIBRARIES =
 
@@ -66,7 +66,6 @@ libref2_a_SOURCES = \
 	ref_split.c \
 	ref_subdiv.c \
 	ref_swap.c \
-	ref_twod.c \
 	ref_validation.c
 libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
 
@@ -347,11 +346,6 @@ TESTS += ref_swap_test
 noinst_PROGRAMS += ref_swap_test
 ref_swap_test_SOURCES = ref_swap_test.c
 ref_swap_test_LDADD = $(default_ldadd)
-
-TESTS += ref_twod_test
-noinst_PROGRAMS += ref_twod_test
-ref_twod_test_SOURCES = ref_twod_test.c
-ref_twod_test_LDADD = $(default_ldadd)
 
 TESTS += ref_validation_test
 noinst_PROGRAMS += ref_validation_test

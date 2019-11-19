@@ -29,7 +29,6 @@
 #include "ref_malloc.h"
 #include "ref_migrate.h"
 #include "ref_mpi.h"
-#include "ref_twod.h"
 
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
                                 REF_BOOL has_id, REF_NODE ref_node,
