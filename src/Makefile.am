@@ -4,7 +4,8 @@ EXTRA_DIST = test.sh
 include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_cavity.h ref_cell.h ref_cloud.h \
 	ref_clump.h ref_collapse.h ref_comprow.h \
-	ref_dict.h ref_dist.h ref_defs.h ref_edge.h ref_elast.h ref_export.h \
+	ref_dict.h ref_dist.h ref_defs.h \
+	ref_edge.h ref_egads.h ref_elast.h ref_export.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h \
@@ -34,6 +35,7 @@ libref2_a_SOURCES = \
 	ref_dict.c \
 	ref_dist.c \
 	ref_edge.c \
+	ref_egads.c \
 	ref_elast.c \
 	ref_endian.h \
 	ref_export.c \
@@ -191,6 +193,11 @@ TESTS += ref_edge_test
 noinst_PROGRAMS += ref_edge_test
 ref_edge_test_SOURCES = ref_edge_test.c
 ref_edge_test_LDADD = $(default_ldadd)
+
+TESTS += ref_egads_test
+noinst_PROGRAMS += ref_egads_test
+ref_egads_test_SOURCES = ref_egads_test.c
+ref_egads_test_LDADD = $(default_ldadd)
 
 TESTS += ref_elast_test
 noinst_PROGRAMS += ref_elast_test

@@ -32,6 +32,7 @@
 
 #include "ref_cell.h"
 #include "ref_dict.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
@@ -86,15 +87,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
   ref_geom->context = NULL;
-#ifdef HAVE_EGADS
-  {
-    ego context;
-    REIS(EGADS_SUCCESS, EG_open(&context), "EG open");
-    /* Success returns the old output level. (0-silent to 3-debug) */
-    RAS(EG_setOutLevel(context, 0) >= 0, "make silent");
-    ref_geom->context = (void *)context;
-  }
-#endif
+  RSS(ref_egads_open(ref_geom), "open egads");
   ref_geom->solid = NULL;
   ref_geom->faces = NULL;
   ref_geom->edges = NULL;
