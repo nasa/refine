@@ -36,7 +36,6 @@
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_subdiv.h"
-#include "ref_twod.h"
 
 #define MAX_CELL_SPLIT (100)
 

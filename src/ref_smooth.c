@@ -31,7 +31,6 @@
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
-#include "ref_twod.h"
 
 static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,

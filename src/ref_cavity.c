@@ -29,7 +29,6 @@
 #include "ref_malloc.h"
 #include "ref_sort.h"
 #include "ref_swap.h"
-#include "ref_twod.h"
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   REF_CAVITY ref_cavity;

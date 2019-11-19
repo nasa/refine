@@ -24,7 +24,6 @@
 #include "ref_edge.h"
 #include "ref_export.h"
 #include "ref_math.h"
-#include "ref_twod.h"
 
 /* parallel requirement, all local */
 REF_STATUS ref_swap_remove_two_face_cell(REF_GRID ref_grid, REF_INT cell) {

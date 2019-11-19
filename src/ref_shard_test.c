@@ -43,7 +43,6 @@
 #include "ref_sort.h"
 #include "ref_subdiv.h"
 #include "ref_swap.h"
-#include "ref_twod.h"
 
 static REF_STATUS set_up_hex_for_shard(REF_SHARD *ref_shard_ptr,
                                        REF_MPI ref_mpi) {

@@ -46,7 +46,6 @@
 #include "ref_sort.h"
 #include "ref_split.h"
 #include "ref_subdiv.h"
-#include "ref_twod.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
