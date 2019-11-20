@@ -28,6 +28,7 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_fixture.h"
 #include "ref_gather.h"
@@ -59,8 +60,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "get metric");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read metric");
     if (argc > 3) {
-      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]),
-          "load egads geom");
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "load egads geom");
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load geom");
     }
 

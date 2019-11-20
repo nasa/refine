@@ -30,6 +30,7 @@
 #include "ref_collapse.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_face.h"
 #include "ref_fixture.h"
@@ -138,7 +139,7 @@ int main(int argc, char *argv[]) {
         "unable to load target grid in position 1");
     RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
         "unable to load parent metric in position 2");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[4]),
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[4]),
         "unable to load egads in position 3");
 
     RSS(ref_metric_constrain_curvature(ref_grid), "crv const");

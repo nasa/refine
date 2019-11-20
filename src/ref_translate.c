@@ -22,6 +22,7 @@
 #include <string.h>
 
 #include "ref_dict.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_import.h"
 #include "ref_list.h"
@@ -129,7 +130,7 @@ int main(int argc, char *argv[]) {
       if (pos + 2 > argc) return (print_usage(argv[0]));
       pos++;
       printf("%d: %s\n", pos, argv[pos]);
-      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[pos]), "ld e");
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos]), "ld e");
     }
     if (strcmp(argv[pos], "--drop-face") == 0) {
       printf("%d: --drop-face\n", pos);

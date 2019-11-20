@@ -23,6 +23,7 @@
 
 #include "ref_args.h"
 #include "ref_defs.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
@@ -186,13 +187,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       "egads arg search");
   if (NULL != in_egads) {
     if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
     ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   } else {
     if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
       if (ref_mpi_once(ref_mpi))
         printf("load egadslite from .meshb byte stream\n");
-      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       THROW("No geometry available via .meshb or -g option");
@@ -313,7 +314,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
-  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   printf("initial tessellation\n");
@@ -729,7 +730,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(metric);
 
   if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
-  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
   ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
