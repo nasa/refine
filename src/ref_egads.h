@@ -25,6 +25,7 @@
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_egads_open(REF_GEOM ref_geom);
+REF_STATUS ref_egads_close(REF_GEOM ref_geom);
 
 END_C_DECLORATION
 

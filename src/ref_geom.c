@@ -102,14 +102,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
   ref_free(ref_geom->cad_data);
-#ifdef HAVE_EGADS
-  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
-  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
-  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
-  /* solid is not freeable */
-  if (NULL != ref_geom->context)
-    REIS(EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
-#endif
+  RSS(ref_egads_close(ref_geom), "open egads");
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
   ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->uv_area_sign);

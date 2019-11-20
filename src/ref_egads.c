@@ -42,3 +42,21 @@ REF_STATUS ref_egads_open(REF_GEOM ref_geom) {
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
+#ifdef HAVE_EGADS
+  if (NULL != ref_geom->faces) EG_free((ego *)(ref_geom->faces));
+  if (NULL != ref_geom->edges) EG_free((ego *)(ref_geom->edges));
+  if (NULL != ref_geom->nodes) EG_free((ego *)(ref_geom->nodes));
+  if (NULL != ref_geom->context)
+    REIS(EGADS_SUCCESS, EG_close((ego)(ref_geom->context)), "EG close");
+#endif
+
+  ref_geom->context = NULL;
+  ref_geom->solid = NULL;
+  ref_geom->faces = NULL;
+  ref_geom->edges = NULL;
+  ref_geom->nodes = NULL;
+
+  return REF_SUCCESS;
+}
