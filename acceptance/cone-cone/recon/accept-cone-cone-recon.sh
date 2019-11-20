@@ -14,6 +14,6 @@ fi
 
 geomfile=cone-cone.egads
 
-${two}/ref_geom_test --recon cone-cone-no-geom.meshb ${geomfile} > accept-cone-cone-recon.status
+${two}/ref_egads_test --recon cone-cone-no-geom.meshb ${geomfile} > accept-cone-cone-recon.status
 
-../../recon.rb accept-cone-cone-recon.status 
+../../recon.rb accept-cone-cone-recon.status
