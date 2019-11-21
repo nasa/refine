@@ -25,12 +25,13 @@ BEGIN_C_DECLORATION
 typedef struct REF_CELL_STRUCT REF_CELL_STRUCT;
 typedef REF_CELL_STRUCT *REF_CELL;
 typedef enum REF_CELL_TYPES { /* 0 */ REF_CELL_EDG,
-                              /* 1 */ REF_CELL_TRI,
-                              /* 2 */ REF_CELL_QUA,
-                              /* 3 */ REF_CELL_TET,
-                              /* 4 */ REF_CELL_PYR,
-                              /* 5 */ REF_CELL_PRI,
-                              /* 6 */ REF_CELL_HEX } REF_CELL_TYPE;
+                              /* 1 */ REF_CELL_ED3,
+                              /* 2 */ REF_CELL_TRI,
+                              /* 3 */ REF_CELL_QUA,
+                              /* 4 */ REF_CELL_TET,
+                              /* 5 */ REF_CELL_PYR,
+                              /* 6 */ REF_CELL_PRI,
+                              /* 7 */ REF_CELL_HEX } REF_CELL_TYPE;
 END_C_DECLORATION
 
 #include "ref_adj.h"
@@ -282,4 +283,6 @@ boundary elements right hand normal point into element, see f2n
                          |.                |/
                        inode0------0-----inode1
 
+
+                inode0---m2--m3--inode1
 */
