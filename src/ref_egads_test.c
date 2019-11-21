@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
     printf("geometry source %s\n", argv[3]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
-    RSS(ref_geom_recon(ref_grid), "geom recon");
+    RSS(ref_egads_recon(ref_grid), "geom recon");
     printf("verify topo and params\n");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo conflict");
     RSS(ref_geom_verify_param(ref_grid), "test constrained params");

@@ -24,20 +24,6 @@
 BEGIN_C_DECLORATION
 typedef struct REF_GEOM_STRUCT REF_GEOM_STRUCT;
 typedef REF_GEOM_STRUCT *REF_GEOM;
-typedef enum REF_GEOM_SURFACES {
-  /* 0 */ REF_GEOM_PLANE,
-  /* 1 */ REF_GEOM_SPHERICAL,
-  /* 2 */ REF_GEOM_CYLINDRICAL,
-  /* 3 */ REF_GEOM_REVOLUTION,
-  /* 4 */ REF_GEOM_TOROIDAL,
-  /* 5 */ REF_GEOM_TRIMMED,
-  /* 6 */ REF_GEOM_BEZIER,
-  /* 7 */ REF_GEOM_BSPLINE,
-  /* 8 */ REF_GEOM_OFFSET,
-  /* 9 */ REF_GEOM_CONICAL,
-  /*10 */ REF_GEOM_EXTRUSION,
-  /*11 */ REF_GEOM_SURFACE_LAST
-} REF_GEOM_SURFACE;
 
 #define REF_GEOM_NODE (0)
 #define REF_GEOM_EDGE (1)
@@ -165,9 +151,7 @@ REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj);
 REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_faces);
 REF_STATUS ref_geom_face_nedge(REF_GEOM ref_geom, REF_INT faceid,
                                REF_INT *nedge);
-REF_STATUS ref_geom_face_surface(REF_GEOM ref_geom, REF_INT faceid,
-                                 REF_GEOM_SURFACE *surface);
-REF_STATUS ref_geom_recon(REF_GRID ref_grid);
+
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid);
 
 REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
