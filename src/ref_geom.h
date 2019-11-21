@@ -246,8 +246,6 @@ REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid);
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_grid, REF_INT node,
                              REF_BOOL *has_jump);
 
-REF_STATUS ref_geom_egads_tess_repair_topo(REF_GRID ref_grid);
-
 REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid);
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid);
 
