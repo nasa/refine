@@ -70,6 +70,7 @@ static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
   printf("  -t  tecplot movie of surface curvature adaptation\n");
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
+  printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("\n");
 }
 /*
@@ -299,6 +300,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL params[3];
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
+  REF_INT mesher_pos = REF_EMPTY;
+  char *mesher = "tetgen";
   REF_INT passes = 15;
 
   if (ref_mpi_para(ref_mpi)) {
@@ -343,9 +346,17 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
 
+  RXS(ref_args_find(argc, argv, "--mesher", &mesher_pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != mesher_pos && mesher_pos < argc - 1) {
+    mesher = argv[mesher_pos + 1];
+    printf("--mesher %s requested\n", mesher);
+  }
+
   RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != s_pos && s_pos < argc - 1) {
     passes = atoi(argv[s_pos + 1]);
+    printf("-s %d surface adpatation passes\n", passes);
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
@@ -365,8 +376,18 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
-  ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
+  if (strncmp(mesher, "t", 1) == 0) {
+    printf("fill volume with TetGen\n");
+    RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+    ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
+  } else if (strncmp(mesher, "a", 1) == 0) {
+    printf("fill volume with AFLR3\n");
+    RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+    ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
+  } else {
+    printf("mesher '%s' not implemented\n", mesher);
+    goto shutdown;
+  }
 
   RSS(ref_split_edge_geometry(ref_grid), "split geom");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
