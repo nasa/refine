@@ -24,12 +24,52 @@
 #include "ref_malloc.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_INT node_per,
-                               REF_BOOL last_node_is_an_id) {
-  ref_cell_last_node_is_an_id(ref_cell) = last_node_is_an_id;
+REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
+  ref_cell_type(ref_cell) = type;
+  
+  ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
+  switch (ref_cell_type(ref_cell)) {
+  case REF_CELL_EDG:
+  case REF_CELL_TRI:
+  case REF_CELL_QUA:
+    ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
+    break;
+  case REF_CELL_TET:
+  case REF_CELL_PYR:
+  case REF_CELL_PRI:
+  case REF_CELL_HEX:
+    ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
+    break;
+  }
 
-  ref_cell_node_per(ref_cell) = node_per;
-  ref_cell_size_per(ref_cell) = node_per + (last_node_is_an_id ? 1 : 0);
+  switch (ref_cell_type(ref_cell)) {
+  case REF_CELL_EDG:
+    ref_cell_node_per(ref_cell) = 2;
+        break;
+  case REF_CELL_TRI:
+    ref_cell_node_per(ref_cell) = 3;
+        break;
+  case REF_CELL_QUA:
+    ref_cell_node_per(ref_cell) = 4;
+        break;
+  case REF_CELL_TET:
+    ref_cell_node_per(ref_cell) = 4;
+        break;
+  case REF_CELL_PYR:
+    ref_cell_node_per(ref_cell) = 5;
+        break;
+  case REF_CELL_PRI:
+    ref_cell_node_per(ref_cell) = 6;
+        break;
+  case REF_CELL_HEX:
+    ref_cell_node_per(ref_cell) = 8;    
+    break;
+  default:
+    return REF_IMPLEMENT;
+    break;
+  }
+
+  ref_cell_size_per(ref_cell) =   ref_cell_node_per(ref_cell) + (ref_cell_last_node_is_an_id(ref_cell) ? 1 : 0);
 
   if (ref_cell_last_node_is_an_id(ref_cell)) {
     switch (ref_cell_node_per(ref_cell)) {
@@ -315,23 +355,18 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_INT node_per,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_create(REF_CELL *ref_cell_ptr, REF_INT node_per,
-                           REF_BOOL last_node_is_an_id) {
+REF_STATUS ref_cell_create(REF_CELL *ref_cell_ptr, REF_CELL_TYPE type) {
   REF_INT cell;
   REF_INT max;
   REF_CELL ref_cell;
 
   (*ref_cell_ptr) = NULL;
 
-  if (node_per + (last_node_is_an_id ? 1 : 0) > REF_CELL_MAX_SIZE_PER) {
-    RSS(REF_FAILURE, "node_per limited to REF_CELL_MAX_SIZE_PER");
-  }
-
   ref_malloc(*ref_cell_ptr, 1, REF_CELL_STRUCT);
 
   ref_cell = (*ref_cell_ptr);
 
-  RSS(ref_cell_initialize(ref_cell, node_per, last_node_is_an_id), "init");
+  RSS(ref_cell_initialize(ref_cell, type), "init");
 
   max = 100;
 
@@ -371,8 +406,7 @@ REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr, REF_CELL original) {
 
   ref_cell = (*ref_cell_ptr);
 
-  RSS(ref_cell_initialize(ref_cell, original->node_per,
-                          original->last_node_is_an_id),
+  RSS(ref_cell_initialize(ref_cell, ref_cell_type(original)),
       "init");
 
   max = ref_cell_max(original);
