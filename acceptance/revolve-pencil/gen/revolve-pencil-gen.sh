@@ -5,15 +5,12 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/one
-    two=$1/src
+    src=$1/src
 else
-    one=${HOME}/refine/egads/one
-    two=${HOME}/refine/egads/src
+    src=${HOME}/refine/egads/src
 fi
 
-${two}/ref_geom_test --tetgen \
+${src}/ref bootstrap \
     pencil.egads \
-    pencil.meshb \
-    5 5 90 | tee revolve-pencil-gen.out
+    | tee revolve-pencil-gen.out
 
