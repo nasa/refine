@@ -14,6 +14,8 @@ ref_geom
   use newton with discrete grid to constrain
  many-to-many association virtual topology
 
+report face ids with poor normdev, short edges, and poor shape measure
+
 - protect sliver geom topo with lower bound on angle, short edge
   - surf
   - with volume
