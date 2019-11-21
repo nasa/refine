@@ -276,6 +276,45 @@ REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
+                                 REF_INT *max_faceid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  if (ref_mpi_para(ref_mpi)) {
+    REF_INT global;
+
+    RSS(ref_mpi_min(ref_mpi, min_faceid, &global, REF_INT_TYPE),
+        "mpi min face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
+    *min_faceid = global;
+
+    RSS(ref_mpi_max(ref_mpi, max_faceid, &global, REF_INT_TYPE),
+        "mpi max face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
+    *max_faceid = global;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_tri_qua_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
                                      REF_INT *nnode, REF_INT *ncell,
                                      REF_INT **g2l, REF_INT **l2g) {
