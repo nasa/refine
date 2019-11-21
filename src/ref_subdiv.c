@@ -1032,8 +1032,7 @@ static REF_STATUS ref_subdiv_split_qua(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
 
-  RSS(ref_cell_create(&ref_cell_split, ref_cell_node_per(ref_cell),
-                      ref_cell_last_node_is_an_id(ref_cell)),
+  RSS(ref_cell_create(&ref_cell_split, ref_cell_type(ref_cell)),
       "temp cell");
 
   each_ref_cell_valid_cell(ref_cell, cell) {
@@ -1132,13 +1131,11 @@ static REF_STATUS ref_subdiv_split_tri(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(tri), REF_INT, 0);
 
-  RSS(ref_cell_create(&tri_split, ref_cell_node_per(tri),
-                      ref_cell_last_node_is_an_id(tri)),
+  RSS(ref_cell_create(&tri_split, ref_cell_type(tri)),
       "temp tri");
 
   qua = ref_grid_qua(ref_subdiv_grid(ref_subdiv));
-  RSS(ref_cell_create(&qua_split, ref_cell_node_per(qua),
-                      ref_cell_last_node_is_an_id(qua)),
+  RSS(ref_cell_create(&qua_split, ref_cell_type(qua)),
       "temp qua");
 
   each_ref_cell_valid_cell(tri, cell) {
@@ -1357,8 +1354,7 @@ static REF_STATUS ref_subdiv_split_edg(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(edg), REF_INT, 0);
 
-  RSS(ref_cell_create(&edg_split, ref_cell_node_per(edg),
-                      ref_cell_last_node_is_an_id(edg)),
+  RSS(ref_cell_create(&edg_split, ref_cell_type(edg)),
       "temp edg");
 
   each_ref_cell_valid_cell(edg, cell) {
@@ -1410,8 +1406,7 @@ static REF_STATUS ref_subdiv_split_pri(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
 
-  RSS(ref_cell_create(&ref_cell_split, ref_cell_node_per(ref_cell),
-                      ref_cell_last_node_is_an_id(ref_cell)),
+  RSS(ref_cell_create(&ref_cell_split, ref_cell_type(ref_cell)),
       "temp cell");
   each_ref_cell_valid_cell(ref_cell, cell) {
     map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
@@ -1646,8 +1641,7 @@ static REF_STATUS ref_subdiv_split_tet(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(ref_cell), REF_INT, 0);
 
-  RSS(ref_cell_create(&ref_cell_split, ref_cell_node_per(ref_cell),
-                      ref_cell_last_node_is_an_id(ref_cell)),
+  RSS(ref_cell_create(&ref_cell_split, ref_cell_type(ref_cell)),
       "temp cell");
   each_ref_cell_valid_cell(ref_cell, cell) {
     map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
@@ -1817,18 +1811,15 @@ static REF_STATUS ref_subdiv_split_pyr(REF_SUBDIV ref_subdiv) {
 
   ref_malloc_init(marked_for_removal, ref_cell_max(pyr), REF_INT, 0);
 
-  RSS(ref_cell_create(&pyr_split, ref_cell_node_per(pyr),
-                      ref_cell_last_node_is_an_id(pyr)),
+  RSS(ref_cell_create(&pyr_split, ref_cell_type(pyr)),
       "temp pyr");
 
   pri = ref_grid_pri(ref_subdiv_grid(ref_subdiv));
-  RSS(ref_cell_create(&pri_split, ref_cell_node_per(pri),
-                      ref_cell_last_node_is_an_id(pri)),
+  RSS(ref_cell_create(&pri_split, ref_cell_type(pri)),
       "temp pri");
 
   tet = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
-  RSS(ref_cell_create(&tet_split, ref_cell_node_per(tet),
-                      ref_cell_last_node_is_an_id(tet)),
+  RSS(ref_cell_create(&tet_split, ref_cell_type(tet)),
       "temp pri");
 
   each_ref_cell_valid_cell(pyr, cell) {

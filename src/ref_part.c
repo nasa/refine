@@ -906,7 +906,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   }
 
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
-  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
+  RSS(ref_cell_create(&ref_grid_edg(ref_grid), REF_CELL_EDG), "edg");
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,

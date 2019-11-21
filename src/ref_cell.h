@@ -24,6 +24,13 @@
 BEGIN_C_DECLORATION
 typedef struct REF_CELL_STRUCT REF_CELL_STRUCT;
 typedef REF_CELL_STRUCT *REF_CELL;
+typedef enum REF_CELL_TYPES { /* 0 */ REF_CELL_EDG,
+                              /* 1 */ REF_CELL_TRI,
+                              /* 2 */ REF_CELL_QUA,
+                              /* 3 */ REF_CELL_TET,
+                              /* 4 */ REF_CELL_PYR,
+                              /* 5 */ REF_CELL_PRI,
+                              /* 6 */ REF_CELL_HEX } REF_CELL_TYPE;
 END_C_DECLORATION
 
 #include "ref_adj.h"
@@ -35,6 +42,7 @@ BEGIN_C_DECLORATION
 #define REF_CELL_MAX_FACE_PER (6)
 
 struct REF_CELL_STRUCT {
+  REF_CELL_TYPE type;
   REF_BOOL last_node_is_an_id;
   REF_INT size_per, node_per, edge_per, face_per;
   REF_INT *e2n;
@@ -45,6 +53,7 @@ struct REF_CELL_STRUCT {
   REF_ADJ ref_adj;
 };
 
+#define ref_cell_type(ref_cell) ((ref_cell)->type)
 #define ref_cell_last_node_is_an_id(ref_cell) ((ref_cell)->last_node_is_an_id)
 #define ref_cell_id_index(ref_cell) ((ref_cell)->node_per)
 
@@ -117,8 +126,7 @@ struct REF_CELL_STRUCT {
   for ((cell_face) = 0; (cell_face) < ref_cell_face_per(ref_cell); \
        (cell_face)++)
 
-REF_STATUS ref_cell_create(REF_CELL *ref_cell, REF_INT size_per,
-                           REF_BOOL last_node_is_an_id);
+REF_STATUS ref_cell_create(REF_CELL *ref_cell, REF_CELL_TYPE type);
 REF_STATUS ref_cell_free(REF_CELL ref_cell);
 
 REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell, REF_CELL original);

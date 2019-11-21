@@ -468,7 +468,7 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
   /* to allow recon after meshb load times */
   RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
-  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg");
+  RSS(ref_cell_create(&ref_grid_edg(ref_grid), REF_CELL_EDG), "edg");
 
   RSS(ref_egads_recon_nodes(ref_grid, &cad_nodes), "recover nodes");
 

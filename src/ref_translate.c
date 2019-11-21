@@ -216,10 +216,10 @@ int main(int argc, char *argv[]) {
       RSS(ref_cell_free(ref_grid_pri(ref_grid)), "pri free");
       RSS(ref_cell_free(ref_grid_pyr(ref_grid)), "pyr free");
       RSS(ref_cell_free(ref_grid_tet(ref_grid)), "tet free");
-      RSS(ref_cell_create(&ref_grid_tet(ref_grid), 4, REF_FALSE), "tet create");
-      RSS(ref_cell_create(&ref_grid_pyr(ref_grid), 5, REF_FALSE), "pyr create");
-      RSS(ref_cell_create(&ref_grid_pri(ref_grid), 6, REF_FALSE), "pri create");
-      RSS(ref_cell_create(&ref_grid_hex(ref_grid), 8, REF_FALSE), "hex create");
+      RSS(ref_cell_create(&ref_grid_tet(ref_grid), REF_CELL_TET), "tet create");
+      RSS(ref_cell_create(&ref_grid_pyr(ref_grid), REF_CELL_PYR), "pyr create");
+      RSS(ref_cell_create(&ref_grid_pri(ref_grid), REF_CELL_PRI), "pri create");
+      RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
       ref_mpi_stopwatch_stop(ref_mpi, "dump vol cells");
       each_ref_node_valid_node(ref_node, node) {
         if (ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&

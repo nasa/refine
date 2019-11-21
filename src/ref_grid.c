@@ -36,16 +36,16 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   RSS(ref_node_create(&ref_grid_node(ref_grid), ref_grid_mpi(ref_grid)),
       "node create");
 
-  RSS(ref_cell_create(&ref_grid_tet(ref_grid), 4, REF_FALSE), "tet create");
-  RSS(ref_cell_create(&ref_grid_pyr(ref_grid), 5, REF_FALSE), "pyr create");
-  RSS(ref_cell_create(&ref_grid_pri(ref_grid), 6, REF_FALSE), "pri create");
-  RSS(ref_cell_create(&ref_grid_hex(ref_grid), 8, REF_FALSE), "hex create");
+  RSS(ref_cell_create(&ref_grid_tet(ref_grid), REF_CELL_TET), "tet create");
+  RSS(ref_cell_create(&ref_grid_pyr(ref_grid), REF_CELL_PYR), "pyr create");
+  RSS(ref_cell_create(&ref_grid_pri(ref_grid), REF_CELL_PRI), "pri create");
+  RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
 
   ref_grid_cell(ref_grid, 4) = NULL;
 
-  RSS(ref_cell_create(&ref_grid_edg(ref_grid), 2, REF_TRUE), "edg create");
-  RSS(ref_cell_create(&ref_grid_tri(ref_grid), 3, REF_TRUE), "tri create");
-  RSS(ref_cell_create(&ref_grid_qua(ref_grid), 4, REF_TRUE), "qua create");
+  RSS(ref_cell_create(&ref_grid_edg(ref_grid), REF_CELL_EDG), "edg create");
+  RSS(ref_cell_create(&ref_grid_tri(ref_grid), REF_CELL_TRI), "tri create");
+  RSS(ref_cell_create(&ref_grid_qua(ref_grid), REF_CELL_QUA), "qua create");
 
   RSS(ref_geom_create(&ref_grid_geom(ref_grid)), "geom create");
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
