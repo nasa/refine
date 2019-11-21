@@ -207,143 +207,147 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       break;
   }
 
-  switch (ref_cell_node_per(ref_cell)) {
-    case 4:
-      ref_cell_face_per(ref_cell) = 4;
-      break;
-    case 5:
-      ref_cell_face_per(ref_cell) = 5;
-      break;
-    case 6:
-      ref_cell_face_per(ref_cell) = 5;
-      break;
-    case 8:
-      ref_cell_face_per(ref_cell) = 6;
-      break;
-    default:
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
       ref_cell_face_per(ref_cell) = 0;
       break;
-  }
-  if (ref_cell_last_node_is_an_id(ref_cell)) ref_cell_face_per(ref_cell) = 1;
-
-  /* geometry edges do not have faces */
-  if (2 == ref_cell_node_per(ref_cell)) {
-    ref_cell->f2n = NULL;
-    return REF_SUCCESS;
+    case REF_CELL_TRI:
+      ref_cell_face_per(ref_cell) = 1;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_face_per(ref_cell) = 1;
+      break;
+    case REF_CELL_TET:
+      ref_cell_face_per(ref_cell) = 4;
+      break;
+    case REF_CELL_PYR:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case REF_CELL_HEX:
+      ref_cell_face_per(ref_cell) = 6;
+      break;
   }
 
   ref_cell->f2n = NULL;
   if (ref_cell_face_per(ref_cell) > 0)
     ref_malloc(ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
 
-  if (ref_cell_last_node_is_an_id(ref_cell)) {
-    ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-    ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
-    ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-    ref_cell_f2n_gen(ref_cell, 3, 0) = 3;
-    if (3 == ref_cell_node_per(ref_cell))
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+      break;
+    case REF_CELL_TRI:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 0;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 3;
+      break;
+    case REF_CELL_TET:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
       ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-  } else {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 1;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
-        break;
-      case 5:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = 1;
-        break;
-      case 6:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 1;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      break;
+    case REF_CELL_PYR:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = 1;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
 
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
 
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
 
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 3;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 5;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = ref_cell_f2n_gen(ref_cell, 0, 4);
-        break;
-      case 8:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 5;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = ref_cell_f2n_gen(ref_cell, 0, 4);
+      break;
+    case REF_CELL_HEX:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
 
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 5;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 6;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 5;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 6;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
 
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 6;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 7;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 6;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 7;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 7;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = 4;
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 7;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = 4;
 
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 5) = 4;
-        ref_cell_f2n_gen(ref_cell, 1, 5) = 7;
-        ref_cell_f2n_gen(ref_cell, 2, 5) = 6;
-        ref_cell_f2n_gen(ref_cell, 3, 5) = 5;
+      ref_cell_f2n_gen(ref_cell, 0, 5) = 4;
+      ref_cell_f2n_gen(ref_cell, 1, 5) = 7;
+      ref_cell_f2n_gen(ref_cell, 2, 5) = 6;
+      ref_cell_f2n_gen(ref_cell, 3, 5) = 5;
 
-        break;
-    }
+      break;
   }
 
   return REF_SUCCESS;
