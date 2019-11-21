@@ -5,15 +5,13 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/one
-    two=$1/src
+    src=$1/src
 else
-    one=${HOME}/refine/egads/one
-    two=${HOME}/refine/egads/src
+    src=${HOME}/refine/egads/src
 fi
 
-geomfile=../csm/cube-cylinder.egads
+cp ../csm/cube-cylinder.egads .
 
-${two}/ref_geom_test --tetgen ${geomfile} cube-cylinder.meshb 0.2 0.01 15.0
+${src}/ref bootstrap cube-cylinder.egads
 
 
