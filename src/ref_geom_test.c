@@ -52,7 +52,6 @@ int main(int argc, char *argv[]) {
   REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
   REF_INT surf_pos = REF_EMPTY;
-  REF_INT conforming_pos = REF_EMPTY;
   REF_INT triage_pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
@@ -67,8 +66,6 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
-      "arg search");
-  RXS(ref_args_find(argc, argv, "--conforming", &conforming_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--triage", &triage_pos), REF_NOT_FOUND,
       "arg search");
@@ -103,40 +100,6 @@ int main(int argc, char *argv[]) {
     printf("write tec %s\n", "ref_geom_viz.tec");
     RSS(ref_geom_tec(ref_grid, "ref_geom_viz.tec"), "geom tec");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom tec");
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
-  if (conforming_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    if (4 > argc) {
-      printf("required args: --conforming grid.ext geom.egads [metric.solb]");
-      RSS(ref_mpi_free(ref_mpi), "free");
-      RSS(ref_mpi_stop(), "stop");
-      return REF_FAILURE;
-    }
-    REIS(1, conforming_pos,
-         "required args: --conforming grid.ext geom.egads [metric.solb]");
-    printf("grid source %s\n", argv[2]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
-    RSS(ref_validation_volume_status(ref_grid), "report volume range");
-    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
-    if (4 < argc) {
-      RSS(ref_part_metric(ref_grid_node(ref_grid), argv[4]), "part m");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part metric");
-    } else {
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature metric");
-    }
-    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
-        "movie on");
-    ref_gather_low_quality_zone(ref_grid_gather(ref_grid)) = REF_TRUE;
-    RSS(ref_gather_tec_movie_frame(ref_grid, "conforming"), "movie frame");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
