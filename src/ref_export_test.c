@@ -235,11 +235,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* export .meshb */
+  { /* export binary tecplot .plt */
     REF_GRID ref_grid;
     char file[] = "ref_export_test.plt";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     RSS(ref_export_plt(ref_grid, file), "export");
+    REIS(0, remove(file), "test clean up");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* export cubic edge .meshb */
+    REF_GRID ref_grid;
+    char file[] = "ref_export_test.meshb";
+    RSS(ref_fixture_twod_cubic_edge(&ref_grid, ref_mpi), "set up tet");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }

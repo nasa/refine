@@ -44,6 +44,7 @@ struct REF_GRID_STRUCT {
   REF_CELL cell[5];
 
   REF_CELL edg;
+  REF_CELL ed3;
   REF_CELL tri;
   REF_CELL qua;
 
@@ -78,6 +79,7 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_hex(ref_grid) ref_grid_cell(ref_grid, 3)
 
 #define ref_grid_edg(ref_grid) ((ref_grid)->edg)
+#define ref_grid_ed3(ref_grid) ((ref_grid)->ed3)
 #define ref_grid_tri(ref_grid) ((ref_grid)->tri)
 #define ref_grid_qua(ref_grid) ((ref_grid)->qua)
 
