@@ -30,6 +30,7 @@
 #include "ref_collapse.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_face.h"
 #include "ref_fixture.h"
@@ -59,8 +60,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[1]), "examine header");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]),
-        "load egads geom");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "load egads geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "load geom");
     /* RSS(ref_part_metric(ref_grid_node(ref_grid), argv[2]), "get metric"); */
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");

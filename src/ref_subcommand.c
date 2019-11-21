@@ -23,6 +23,7 @@
 
 #include "ref_args.h"
 #include "ref_defs.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
 #include "ref_geom.h"
@@ -69,6 +70,7 @@ static void bootstrap_help(const char *name) {
   printf("usage: \n %s boostrap project.egads [-t]\n", name);
   printf("  -t  tecplot movie of surface curvature adaptation\n");
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
+  printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("\n");
 }
 /*
@@ -186,13 +188,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       "egads arg search");
   if (NULL != in_egads) {
     if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
     ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   } else {
     if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
       if (ref_mpi_once(ref_mpi))
         printf("load egadslite from .meshb byte stream\n");
-      RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
       THROW("No geometry available via .meshb or -g option");
@@ -295,9 +297,10 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   char project[1000];
   char filename[1024];
   REF_GRID ref_grid = NULL;
-  REF_DBL params[3];
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
+  REF_INT mesher_pos = REF_EMPTY;
+  char *mesher = "tetgen";
   REF_INT passes = 15;
 
   if (ref_mpi_para(ref_mpi)) {
@@ -313,12 +316,11 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
   printf("loading %s.egads\n", project);
-  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
+  RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   printf("initial tessellation\n");
-  RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
-  RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+  RSS(ref_egads_tess(ref_grid), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
@@ -342,9 +344,17 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
 
+  RXS(ref_args_find(argc, argv, "--mesher", &mesher_pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != mesher_pos && mesher_pos < argc - 1) {
+    mesher = argv[mesher_pos + 1];
+    printf("--mesher %s requested\n", mesher);
+  }
+
   RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != s_pos && s_pos < argc - 1) {
     passes = atoi(argv[s_pos + 1]);
+    printf("-s %d surface adpatation passes\n", passes);
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
@@ -364,8 +374,18 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
-  ref_mpi_stopwatch_stop(ref_mpi, "fill volume");
+  if (strncmp(mesher, "t", 1) == 0) {
+    printf("fill volume with TetGen\n");
+    RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+    ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
+  } else if (strncmp(mesher, "a", 1) == 0) {
+    printf("fill volume with AFLR3\n");
+    RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+    ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
+  } else {
+    printf("mesher '%s' not implemented\n", mesher);
+    goto shutdown;
+  }
 
   RSS(ref_split_edge_geometry(ref_grid), "split geom");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
@@ -729,7 +749,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(metric);
 
   if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
-  RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
   ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");

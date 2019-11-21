@@ -5,17 +5,14 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/one
-    two=$1/src
+    src=$1/src
 else
-    one=${HOME}/refine/egads/one
-    two=${HOME}/refine/egads/src
+    src=${HOME}/refine/egads/src
 fi
 
 serveCSM -batch revolve-cylinder-sphere.csm
 
-${two}/ref_geom_test --tess \
+${src}/ref boostrap \
     revolve-cylinder-sphere.egads \
-    revolve-cylinder-sphere.meshb \
-    5 5 90 | tee revolve-cylinder-sphere-vol.out
+    | tee revolve-cylinder-sphere-vol.out
 

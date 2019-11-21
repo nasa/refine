@@ -28,6 +28,7 @@
 #include "ref_collapse.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_face.h"
 #include "ref_fixture.h"
@@ -103,7 +104,7 @@ int main(int argc, char *argv[]) {
         break;
       case 'g':
         RNS(ref_grid, "input grid must be loaded before geom");
-        RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), optarg), "ld e");
+        RSS(ref_egads_load(ref_grid_geom(ref_grid), optarg), "ld e");
         ref_mpi_stopwatch_stop(ref_mpi, "load egads");
         break;
       case 'r':

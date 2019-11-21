@@ -29,6 +29,7 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_fixture.h"
 #include "ref_grid.h"
@@ -46,31 +47,19 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_INT recon_pos = REF_EMPTY;
   REF_INT viz_pos = REF_EMPTY;
-  REF_INT tess_pos = REF_EMPTY;
-  REF_INT tetgen_pos = REF_EMPTY;
   REF_INT face_pos = REF_EMPTY;
   REF_INT surf_pos = REF_EMPTY;
-  REF_INT conforming_pos = REF_EMPTY;
   REF_INT triage_pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--recon", &recon_pos), REF_NOT_FOUND,
-      "arg search");
   RXS(ref_args_find(argc, argv, "--viz", &viz_pos), REF_NOT_FOUND,
-      "arg search");
-  RXS(ref_args_find(argc, argv, "--tess", &tess_pos), REF_NOT_FOUND,
-      "arg search");
-  RXS(ref_args_find(argc, argv, "--tetgen", &tetgen_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--surf", &surf_pos), REF_NOT_FOUND,
-      "arg search");
-  RXS(ref_args_find(argc, argv, "--conforming", &conforming_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--triage", &triage_pos), REF_NOT_FOUND,
       "arg search");
@@ -83,7 +72,7 @@ int main(int argc, char *argv[]) {
     printf("grid source %s\n", argv[2]);
     printf("geometry source %s\n", argv[3]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     RSS(ref_geom_face_match(ref_grid), "geom recon");
     RSS(ref_export_by_extension(ref_grid, "ref_geom_face.meshb"), "export");
     RSS(ref_grid_free(ref_grid), "free");
@@ -100,45 +89,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
     printf("load geom %s\n", argv[3]);
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
     printf("write tec %s\n", "ref_geom_viz.tec");
     RSS(ref_geom_tec(ref_grid, "ref_geom_viz.tec"), "geom tec");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom tec");
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
-  if (conforming_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    if (4 > argc) {
-      printf("required args: --conforming grid.ext geom.egads [metric.solb]");
-      RSS(ref_mpi_free(ref_mpi), "free");
-      RSS(ref_mpi_stop(), "stop");
-      return REF_FAILURE;
-    }
-    REIS(1, conforming_pos,
-         "required args: --conforming grid.ext geom.egads [metric.solb]");
-    printf("grid source %s\n", argv[2]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
-    RSS(ref_validation_volume_status(ref_grid), "report volume range");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
-    if (4 < argc) {
-      RSS(ref_part_metric(ref_grid_node(ref_grid), argv[4]), "part m");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part metric");
-    } else {
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature metric");
-    }
-    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
-        "movie on");
-    ref_gather_low_quality_zone(ref_grid_gather(ref_grid)) = REF_TRUE;
-    RSS(ref_gather_tec_movie_frame(ref_grid, "conforming"), "movie frame");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "movie frame");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
@@ -157,7 +112,7 @@ int main(int argc, char *argv[]) {
     printf("grid source %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
@@ -330,129 +285,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     return 0;
-  }
-
-  if (recon_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-    REF_INT node;
-    REIS(4, argc, "required args: --recon grid.ext geom.egads");
-    REIS(1, recon_pos, "required args: --recon grid.ext geom.egads");
-    printf("reconstruct geometry association\n");
-    printf("grid source %s\n", argv[2]);
-    printf("geometry source %s\n", argv[3]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
-    RSS(ref_geom_recon(ref_grid), "geom recon");
-    printf("verify topo and params\n");
-    RSS(ref_geom_verify_topo(ref_grid), "geom topo conflict");
-    RSS(ref_geom_verify_param(ref_grid), "test constrained params");
-    printf("validate\n");
-    RSS(ref_validation_all(ref_grid), "validate");
-    printf("constrain\n");
-    RSS(ref_export_tec_surf(ref_grid, "ref_geom_orig.tec"), "tec");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_geom_constrain(ref_grid, node), "original params");
-    }
-    RSS(ref_geom_tec(ref_grid, "ref_geom_recon.tec"), "geom export");
-    printf("validate\n");
-    RSS(ref_validation_all(ref_grid), "validate");
-    RSS(ref_export_by_extension(ref_grid, "ref_geom_recon.meshb"), "export");
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    return 0;
-  }
-
-  if (tess_pos != REF_EMPTY || tetgen_pos != REF_EMPTY) { /* egads to grid */
-    REF_GRID ref_grid;
-    REF_INT node;
-    REF_DBL params[3], suggestion[3];
-    REF_BOOL aflr_over_tetgen = REF_TRUE;
-
-    if (tess_pos != REF_EMPTY) {
-      REIS(1, tess_pos,
-           "required args: --tess input.egads output.meshb edge chord angle");
-      if (7 > argc) {
-        printf(
-            "required args: --tess input.egads output.meshb edge chord angle");
-        return REF_FAILURE;
-      }
-      aflr_over_tetgen = REF_TRUE;
-    }
-
-    if (tetgen_pos != REF_EMPTY) {
-      REIS(1, tetgen_pos,
-           "required args: --tetgen input.egads output.meshb edge chord angle");
-      if (7 > argc) {
-        printf(
-            "required args: --tetgen input.egads output.meshb edge chord "
-            "angle");
-        return REF_FAILURE;
-      }
-      aflr_over_tetgen = REF_FALSE;
-    }
-
-    params[0] = atof(argv[4]);
-    params[1] = atof(argv[5]);
-    params[2] = atof(argv[6]);
-
-    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-
-    RSS(ref_geom_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
-    RSS(ref_geom_egads_suggest_tess_params(ref_grid, suggestion),
-        "suggest params");
-    printf("suggested params %f %f %f\n", suggestion[0], suggestion[1],
-           suggestion[2]);
-    printf("   actual params %f %f %f\n", params[0], params[1], params[2]);
-    RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
-    RSS(ref_export_by_extension(ref_grid, "ref_geom_test_tess.meshb"),
-        "meshb export");
-    RSS(ref_geom_tec(ref_grid, "ref_geom_test_tess.tec"), "geom export");
-
-    RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
-    printf("verify topo\n");
-    RSS(ref_geom_verify_topo(ref_grid), "original params");
-    printf("verify param\n");
-    RSS(ref_geom_verify_param(ref_grid), "original params");
-    printf("constrain\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_geom_constrain(ref_grid, node), "original params");
-    }
-    printf("verify param\n");
-    RSS(ref_geom_verify_param(ref_grid), "original params");
-
-    if (REF_EMPTY != surf_pos) {
-      RSS(ref_adapt_surf_to_geom(ref_grid, 15), "ad");
-      RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
-      printf("verify topo\n");
-      RSS(ref_geom_verify_topo(ref_grid), "original params");
-      printf("verify param\n");
-    }
-
-    printf("generate volume\n");
-    if (aflr_over_tetgen) {
-      RSS(ref_geom_aflr_volume(ref_grid), "surface to volume ");
-    } else {
-      RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
-    }
-    RSS(ref_grid_inspect(ref_grid), "report size");
-
-    RSS(ref_export_by_extension(ref_grid, argv[3]), "argv export");
-    RSS(ref_geom_tec(ref_grid, "ref_geom_test_vol_geom.tec"), "geom export");
-
-    RSS(ref_validation_volume_status(ref_grid), "report volume range");
-    printf("validate\n");
-    RSS(ref_validation_all(ref_grid), "original validation");
-    printf("constrain\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_geom_constrain(ref_grid, node), "original params");
-    }
-    printf("verify topo\n");
-    RSS(ref_geom_verify_topo(ref_grid), "original params");
-    printf("verify param\n");
-    RSS(ref_geom_verify_param(ref_grid), "constrained params");
-    printf("validate\n");
-    RSS(ref_validation_all(ref_grid), "constrained validation");
-    RSS(ref_grid_free(ref_grid), "free");
   }
 
   REIS(REF_NULL, ref_geom_free(NULL), "dont free NULL");
