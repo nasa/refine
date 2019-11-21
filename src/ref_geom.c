@@ -2320,10 +2320,10 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT min_id, max_id;
-  RSS(ref_geom_faceid_range(ref_grid, &min_id, &max_id), "face range");
+  RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid), &min_id, &max_id), "face range");
   REIS(1, min_id, "first face id not 1");
   ref_geom->nface = max_id;
-  RSS(ref_geom_edgeid_range(ref_grid, &min_id, &max_id), "edge range");
+  RSS(ref_cell_id_range(ref_grid_edg(ref_grid), ref_grid_mpi(ref_grid), &min_id, &max_id), "edge range");
   REIS(1, min_id, "first edge id not 1");
   ref_geom->nedge = max_id;
   return REF_SUCCESS;
@@ -3308,78 +3308,6 @@ REF_STATUS ref_geom_ghost(REF_GEOM ref_geom, REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
-                                 REF_INT *max_faceid) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_faceid = REF_INT_MAX;
-  *max_faceid = REF_INT_MIN;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
-  }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
-  }
-
-  if (ref_mpi_para(ref_mpi)) {
-    REF_INT global;
-
-    RSS(ref_mpi_min(ref_mpi, min_faceid, &global, REF_INT_TYPE),
-        "mpi min face");
-    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
-    *min_faceid = global;
-
-    RSS(ref_mpi_max(ref_mpi, max_faceid, &global, REF_INT_TYPE),
-        "mpi max face");
-    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
-    *max_faceid = global;
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
-                                 REF_INT *max_edgeid) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_edgeid = REF_INT_MAX;
-  *max_edgeid = REF_INT_MIN;
-
-  ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_edgeid = MIN(*min_edgeid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_edgeid = MAX(*max_edgeid, nodes[ref_cell_node_per(ref_cell)]);
-  }
-
-  if (ref_mpi_para(ref_mpi)) {
-    REF_INT global;
-
-    RSS(ref_mpi_min(ref_mpi, min_edgeid, &global, REF_INT_TYPE),
-        "mpi min edge");
-    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min edge");
-    *min_edgeid = global;
-
-    RSS(ref_mpi_max(ref_mpi, max_edgeid, &global, REF_INT_TYPE),
-        "mpi max edge");
-    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max edge");
-    *max_edgeid = global;
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
 #if defined(HAVE_EGADS) && !defined(HAVE_EGADS_LITE)
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3415,7 +3343,8 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
     cad_cga[3 + 4 * face] = massprop[1];
   }
 
-  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "id range");
+  RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid),
+                        &min_faceid, &max_faceid), "id range");
   nfaceid = max_faceid - min_faceid + 1;
   ref_malloc(face_box, 6 * nfaceid, double);
   ref_malloc(face_cga, 4 * nfaceid, double);

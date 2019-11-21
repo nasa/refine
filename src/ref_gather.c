@@ -1561,7 +1561,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   RSS(ref_gather_node(ref_node, swap_endian, always_id, file), "nodes");
 
-  RSS(ref_geom_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_TRUE;
@@ -1769,7 +1769,7 @@ REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_geom_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -1861,7 +1861,7 @@ REF_STATUS ref_gather_scalar_surf_tec(REF_GRID ref_grid, REF_INT ldim,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_geom_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   for (cell_id = min_faceid; cell_id <= max_faceid; cell_id++) {
     ref_cell = ref_grid_tri(ref_grid);

@@ -2129,7 +2129,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_export_edgeid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_faceid, &max_faceid), "range");
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(
           ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
@@ -2665,6 +2665,7 @@ REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file) {
 
 REF_STATUS ref_export_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
                                    REF_INT *max_faceid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -2684,24 +2685,20 @@ REF_STATUS ref_export_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
     *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
   }
 
-  return REF_SUCCESS;
-}
+  if (ref_mpi_para(ref_mpi)) {
+    REF_INT global;
 
-REF_STATUS ref_export_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
-                                   REF_INT *max_edgeid) {
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+    RSS(ref_mpi_min(ref_mpi, min_faceid, &global, REF_INT_TYPE),
+        "mpi min face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
+    *min_faceid = global;
 
-  *min_edgeid = REF_INT_MAX;
-  *max_edgeid = REF_INT_MIN;
-
-  ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_edgeid = MIN(*min_edgeid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_edgeid = MAX(*max_edgeid, nodes[ref_cell_node_per(ref_cell)]);
+    RSS(ref_mpi_max(ref_mpi, max_faceid, &global, REF_INT_TYPE),
+        "mpi max face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
+    *max_faceid = global;
   }
-
+  
   return REF_SUCCESS;
 }
 

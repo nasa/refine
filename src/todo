@@ -51,8 +51,6 @@ mpi allmin allmax
 
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 
-extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
-
 minimize duration of lazy global delete
 
 protect geom constraint metric from surface folds and high curvature
@@ -222,6 +220,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 
 + create a standard --with-mpi configure flag and make refmpi
 

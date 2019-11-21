@@ -903,6 +903,38 @@ REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi, REF_INT *min_id,
+                             REF_INT *max_id) {
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_id = REF_INT_MAX;
+  *max_id = REF_INT_MIN;
+
+  RAS(ref_cell_last_node_is_an_id(ref_cell), "cell does not have ids");
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_id = MIN(*min_id, nodes[ref_cell_id_index(ref_cell)]);
+    *max_id = MAX(*max_id, nodes[ref_cell_id_index(ref_cell)]);
+  }
+
+  if (ref_mpi_para(ref_mpi)) {
+    REF_INT global;
+
+    RSS(ref_mpi_min(ref_mpi, min_id, &global, REF_INT_TYPE),
+        "mpi min face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
+    *min_id = global;
+
+    RSS(ref_mpi_max(ref_mpi, max_id, &global, REF_INT_TYPE),
+        "mpi max face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
+    *max_id = global;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
                               REF_INT *cell0, REF_INT *cell1) {
   REF_INT item, node, same, cell_face, cell;
