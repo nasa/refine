@@ -236,10 +236,6 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                               REF_DBL *tolerance);
 REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
 
-REF_STATUS ref_geom_egads_suggest_tess_params(REF_GRID ref_grid,
-                                              REF_DBL *params);
-REF_STATUS ref_geom_egads_tess(REF_GRID ref_grid, REF_DBL *params);
-
 REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid);
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_grid, REF_INT node,
                              REF_BOOL *has_jump);

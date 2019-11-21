@@ -28,6 +28,8 @@ REF_STATUS ref_egads_open(REF_GEOM ref_geom);
 REF_STATUS ref_egads_close(REF_GEOM ref_geom);
 REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
 
+REF_STATUS ref_egads_tess(REF_GRID ref_grid);
+
 REF_STATUS ref_egads_recon(REF_GRID ref_grid);
 
 END_C_DECLORATION

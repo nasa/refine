@@ -297,7 +297,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   char project[1000];
   char filename[1024];
   REF_GRID ref_grid = NULL;
-  REF_DBL params[3];
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
   REF_INT mesher_pos = REF_EMPTY;
@@ -321,8 +320,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
   printf("initial tessellation\n");
-  RSS(ref_geom_egads_suggest_tess_params(ref_grid, params), "suggest params");
-  RSS(ref_geom_egads_tess(ref_grid, params), "tess egads");
+  RSS(ref_egads_tess(ref_grid), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
