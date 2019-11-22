@@ -35,8 +35,8 @@ typedef enum REF_CELL_TYPES { /* 0 */ REF_CELL_EDG,
 END_C_DECLORATION
 
 #include "ref_adj.h"
-#include "ref_node.h"
 #include "ref_mpi.h"
+#include "ref_node.h"
 
 BEGIN_C_DECLORATION
 
@@ -167,8 +167,8 @@ REF_STATUS ref_cell_has_side(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
 
 REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
                                 REF_INT id, REF_BOOL *has_id);
-REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi, REF_INT *min_id,
-                             REF_INT *max_id);
+REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
+                             REF_INT *min_id, REF_INT *max_id);
 
 REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
                               REF_INT *cell0, REF_INT *cell1);

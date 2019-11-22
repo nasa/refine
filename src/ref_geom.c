@@ -2320,10 +2320,14 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT min_id, max_id;
-  RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid), &min_id, &max_id), "face range");
+  RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid), &min_id,
+                        &max_id),
+      "face range");
   REIS(1, min_id, "first face id not 1");
   ref_geom->nface = max_id;
-  RSS(ref_cell_id_range(ref_grid_edg(ref_grid), ref_grid_mpi(ref_grid), &min_id, &max_id), "edge range");
+  RSS(ref_cell_id_range(ref_grid_edg(ref_grid), ref_grid_mpi(ref_grid), &min_id,
+                        &max_id),
+      "edge range");
   REIS(1, min_id, "first edge id not 1");
   ref_geom->nedge = max_id;
   return REF_SUCCESS;
@@ -3344,7 +3348,8 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
   }
 
   RSS(ref_cell_id_range(ref_grid_tri(ref_grid), ref_grid_mpi(ref_grid),
-                        &min_faceid, &max_faceid), "id range");
+                        &min_faceid, &max_faceid),
+      "id range");
   nfaceid = max_faceid - min_faceid + 1;
   ref_malloc(face_box, 6 * nfaceid, double);
   ref_malloc(face_cga, 4 * nfaceid, double);
