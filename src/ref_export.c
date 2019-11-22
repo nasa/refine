@@ -2215,9 +2215,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_faceid,
-                          &max_faceid),
-        "range");
+    RSS(ref_cell_id_range(ref_cell, NULL, &min_faceid, &max_faceid), "range");
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(
           ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
