@@ -39,6 +39,7 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename);
 
+REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file);
