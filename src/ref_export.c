@@ -152,6 +152,31 @@
     brick[7] = nodes[7];            \
   }
 
+static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
+                                          REF_INT *min_faceid,
+                                          REF_INT *max_faceid) {
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  return REF_SUCCESS;
+}
+
 /* https://www.vtk.org/VTK/img/file-formats.pdf */
 REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   FILE *file;
@@ -2129,7 +2154,32 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_export_edgeid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_faceid,
+                          &max_faceid),
+        "range");
+    for (faceid = min_faceid; faceid <= max_faceid; faceid++)
+      each_ref_cell_valid_cell_with_nodes(
+          ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
+        for (node = 0; node < node_per; node++) {
+          nodes[node] = o2n[nodes[node]] + 1;
+          REIS(1, fwrite(&(nodes[node]), sizeof(REF_INT), 1, file), "ele");
+        }
+        REIS(1, fwrite(&(nodes[node_per]), sizeof(REF_INT), 1, file), "ele id");
+      }
+    REIS(next_position, ftell(file), "edge inconsistent");
+  }
+
+  ref_cell = ref_grid_ed3(ref_grid);
+  keyword_code = 25; /* 78 - 23 */
+  if (ref_cell_n(ref_cell) > 0) {
+    node_per = ref_cell_node_per(ref_cell);
+    next_position =
+        (REF_FILEPOS)header_size + ftell(file) +
+        (REF_FILEPOS)ref_cell_n(ref_cell) * (REF_FILEPOS)(4 * (node_per + 1));
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
+    RSS(ref_cell_id_range(ref_cell, NULL, &min_faceid, &max_faceid), "range");
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(
           ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
@@ -2658,48 +2708,6 @@ REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file) {
 
     ref_free(l2g);
     ref_free(g2l);
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_faceid_range(REF_GRID ref_grid, REF_INT *min_faceid,
-                                   REF_INT *max_faceid) {
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_faceid = REF_INT_MAX;
-  *max_faceid = REF_INT_MIN;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
-  }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
-                                   REF_INT *max_edgeid) {
-  REF_CELL ref_cell;
-  REF_INT cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-
-  *min_edgeid = REF_INT_MAX;
-  *max_edgeid = REF_INT_MIN;
-
-  ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    *min_edgeid = MIN(*min_edgeid, nodes[ref_cell_node_per(ref_cell)]);
-    *max_edgeid = MAX(*max_edgeid, nodes[ref_cell_node_per(ref_cell)]);
   }
 
   return REF_SUCCESS;

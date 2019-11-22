@@ -1206,6 +1206,34 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(next_position, ftello(file), "end location");
   }
 
+  RSS(ref_import_meshb_jump(file, version, key_pos, 25, &available,
+                            &next_position),
+      "jump");
+  if (available) {
+    REIS(1, fread((unsigned char *)&nedge, 4, 1, file), "nedge");
+    if (verbose) printf("nedge P2 %d\n", nedge);
+
+    for (edge = 0; edge < nedge; edge++) {
+      REIS(1, fread(&(n0), sizeof(n0), 1, file), "n0");
+      REIS(1, fread(&(n1), sizeof(n1), 1, file), "n1");
+      REIS(1, fread(&(n2), sizeof(n2), 1, file), "n2");
+      REIS(1, fread(&(n3), sizeof(n3), 1, file), "n3");
+      REIS(1, fread(&(id), sizeof(id), 1, file), "id");
+      n0--;
+      n1--;
+      n2--;
+      n3--;
+      nodes[0] = n0;
+      nodes[1] = n1;
+      nodes[2] = n2;
+      nodes[3] = n3;
+      nodes[4] = id;
+      RSS(ref_cell_add(ref_grid_ed3(ref_grid), nodes, &new_cell),
+          "edg for edge");
+    }
+    REIS(next_position, ftello(file), "end location");
+  }
+
   RSS(ref_import_meshb_jump(file, version, key_pos, 6, &available,
                             &next_position),
       "jump");

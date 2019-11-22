@@ -26,96 +26,100 @@
 
 REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
   ref_cell_type(ref_cell) = type;
-  
+
   ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
   switch (ref_cell_type(ref_cell)) {
-  case REF_CELL_EDG:
-  case REF_CELL_TRI:
-  case REF_CELL_QUA:
-    ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
-    break;
-  case REF_CELL_TET:
-  case REF_CELL_PYR:
-  case REF_CELL_PRI:
-  case REF_CELL_HEX:
-    ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
-    break;
+    case REF_CELL_EDG:
+    case REF_CELL_TRI:
+    case REF_CELL_QUA:
+    case REF_CELL_ED3:
+      ref_cell_last_node_is_an_id(ref_cell) = REF_TRUE;
+      break;
+    case REF_CELL_TET:
+    case REF_CELL_PYR:
+    case REF_CELL_PRI:
+    case REF_CELL_HEX:
+      ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
+      break;
   }
 
   switch (ref_cell_type(ref_cell)) {
-  case REF_CELL_EDG:
-    ref_cell_node_per(ref_cell) = 2;
-        break;
-  case REF_CELL_TRI:
-    ref_cell_node_per(ref_cell) = 3;
-        break;
-  case REF_CELL_QUA:
-    ref_cell_node_per(ref_cell) = 4;
-        break;
-  case REF_CELL_TET:
-    ref_cell_node_per(ref_cell) = 4;
-        break;
-  case REF_CELL_PYR:
-    ref_cell_node_per(ref_cell) = 5;
-        break;
-  case REF_CELL_PRI:
-    ref_cell_node_per(ref_cell) = 6;
-        break;
-  case REF_CELL_HEX:
-    ref_cell_node_per(ref_cell) = 8;    
-    break;
-  default:
-    return REF_IMPLEMENT;
-    break;
+    case REF_CELL_EDG:
+      ref_cell_node_per(ref_cell) = 2;
+      break;
+    case REF_CELL_ED3:
+      ref_cell_node_per(ref_cell) = 4;
+      break;
+    case REF_CELL_TRI:
+      ref_cell_node_per(ref_cell) = 3;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_node_per(ref_cell) = 4;
+      break;
+    case REF_CELL_TET:
+      ref_cell_node_per(ref_cell) = 4;
+      break;
+    case REF_CELL_PYR:
+      ref_cell_node_per(ref_cell) = 5;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_node_per(ref_cell) = 6;
+      break;
+    case REF_CELL_HEX:
+      ref_cell_node_per(ref_cell) = 8;
+      break;
+    default:
+      return REF_IMPLEMENT;
+      break;
   }
 
-  ref_cell_size_per(ref_cell) =   ref_cell_node_per(ref_cell) + (ref_cell_last_node_is_an_id(ref_cell) ? 1 : 0);
+  ref_cell_size_per(ref_cell) = ref_cell_node_per(ref_cell) +
+                                (ref_cell_last_node_is_an_id(ref_cell) ? 1 : 0);
 
-  if (ref_cell_last_node_is_an_id(ref_cell)) {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 2:
-        ref_cell_edge_per(ref_cell) = 1;
-        break;
-      case 3:
-        ref_cell_edge_per(ref_cell) = 3;
-        break;
-      case 4:
-        ref_cell_edge_per(ref_cell) = 4;
-        break;
-      default:
-        ref_cell_edge_per(ref_cell) = 0;
-        break;
-    }
-  } else {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        ref_cell_edge_per(ref_cell) = 6;
-        break;
-      case 5:
-        ref_cell_edge_per(ref_cell) = 8;
-        break;
-      case 6:
-        ref_cell_edge_per(ref_cell) = 9;
-        break;
-      case 8:
-        ref_cell_edge_per(ref_cell) = 12;
-        break;
-      default:
-        ref_cell_edge_per(ref_cell) = 0;
-        break;
-    }
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+      ref_cell_edge_per(ref_cell) = 1;
+      break;
+    case REF_CELL_ED3:
+      ref_cell_edge_per(ref_cell) = 1;
+      break;
+    case REF_CELL_TRI:
+      ref_cell_edge_per(ref_cell) = 3;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_edge_per(ref_cell) = 4;
+      break;
+    case REF_CELL_TET:
+      ref_cell_edge_per(ref_cell) = 6;
+      break;
+    case REF_CELL_PYR:
+      ref_cell_edge_per(ref_cell) = 8;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_edge_per(ref_cell) = 9;
+      break;
+    case REF_CELL_HEX:
+      ref_cell_edge_per(ref_cell) = 12;
+      break;
+    default:
+      ref_cell_edge_per(ref_cell) = 0;
+      break;
   }
 
   ref_cell->e2n = NULL;
   if (ref_cell_edge_per(ref_cell) > 0)
     ref_malloc(ref_cell->e2n, 2 * ref_cell_edge_per(ref_cell), REF_INT);
 
-  switch (ref_cell_edge_per(ref_cell)) {
-    case 1:
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       break;
-    case 3:
+    case REF_CELL_ED3:
+      ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
+      break;
+    case REF_CELL_TRI:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 1;
@@ -123,7 +127,7 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 2) = 2;
       ref_cell_e2n_gen(ref_cell, 1, 2) = 0;
       break;
-    case 4:
+    case REF_CELL_QUA:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 1;
@@ -133,7 +137,7 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 3) = 3;
       ref_cell_e2n_gen(ref_cell, 1, 3) = 0;
       break;
-    case 6:
+    case REF_CELL_TET:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -147,7 +151,7 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 5) = 2;
       ref_cell_e2n_gen(ref_cell, 1, 5) = 3;
       break;
-    case 8:
+    case REF_CELL_PYR:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -165,7 +169,8 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 7) = 3;
       ref_cell_e2n_gen(ref_cell, 1, 7) = 4;
       break;
-    case 9:
+
+    case REF_CELL_PRI:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -185,7 +190,7 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       ref_cell_e2n_gen(ref_cell, 0, 8) = 4;
       ref_cell_e2n_gen(ref_cell, 1, 8) = 5;
       break;
-    case 12:
+    case REF_CELL_HEX:
       ref_cell_e2n_gen(ref_cell, 0, 0) = 0;
       ref_cell_e2n_gen(ref_cell, 1, 0) = 1;
       ref_cell_e2n_gen(ref_cell, 0, 1) = 0;
@@ -213,143 +218,151 @@ REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       break;
   }
 
-  switch (ref_cell_node_per(ref_cell)) {
-    case 4:
-      ref_cell_face_per(ref_cell) = 4;
-      break;
-    case 5:
-      ref_cell_face_per(ref_cell) = 5;
-      break;
-    case 6:
-      ref_cell_face_per(ref_cell) = 5;
-      break;
-    case 8:
-      ref_cell_face_per(ref_cell) = 6;
-      break;
-    default:
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
       ref_cell_face_per(ref_cell) = 0;
       break;
-  }
-  if (ref_cell_last_node_is_an_id(ref_cell)) ref_cell_face_per(ref_cell) = 1;
-
-  /* geometry edges do not have faces */
-  if (2 == ref_cell_node_per(ref_cell)) {
-    ref_cell->f2n = NULL;
-    return REF_SUCCESS;
+    case REF_CELL_ED3:
+      ref_cell_face_per(ref_cell) = 0;
+      break;
+    case REF_CELL_TRI:
+      ref_cell_face_per(ref_cell) = 1;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_face_per(ref_cell) = 1;
+      break;
+    case REF_CELL_TET:
+      ref_cell_face_per(ref_cell) = 4;
+      break;
+    case REF_CELL_PYR:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_face_per(ref_cell) = 5;
+      break;
+    case REF_CELL_HEX:
+      ref_cell_face_per(ref_cell) = 6;
+      break;
   }
 
   ref_cell->f2n = NULL;
   if (ref_cell_face_per(ref_cell) > 0)
     ref_malloc(ref_cell->f2n, 4 * ref_cell_face_per(ref_cell), REF_INT);
 
-  if (ref_cell_last_node_is_an_id(ref_cell)) {
-    ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-    ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
-    ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-    ref_cell_f2n_gen(ref_cell, 3, 0) = 3;
-    if (3 == ref_cell_node_per(ref_cell))
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+    case REF_CELL_ED3:
+      break;
+    case REF_CELL_TRI:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 0;
+      break;
+    case REF_CELL_QUA:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 3;
+      break;
+    case REF_CELL_TET:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
       ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-  } else {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 1;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
-        break;
-      case 5:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 3;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = 1;
-        break;
-      case 6:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 1;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      break;
+    case REF_CELL_PYR:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = ref_cell_f2n_gen(ref_cell, 0, 0);
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = ref_cell_f2n_gen(ref_cell, 0, 1);
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = ref_cell_f2n_gen(ref_cell, 0, 2);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 3;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = 1;
+      break;
+    case REF_CELL_PRI:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
 
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
 
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = ref_cell_f2n_gen(ref_cell, 0, 3);
 
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 3;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 5;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = ref_cell_f2n_gen(ref_cell, 0, 4);
-        break;
-      case 8:
-        ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
-        ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
-        ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 5;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 4;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = ref_cell_f2n_gen(ref_cell, 0, 4);
+      break;
+    case REF_CELL_HEX:
+      ref_cell_f2n_gen(ref_cell, 0, 0) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 0) = 4;
+      ref_cell_f2n_gen(ref_cell, 2, 0) = 5;
+      ref_cell_f2n_gen(ref_cell, 3, 0) = 1;
 
-        ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
-        ref_cell_f2n_gen(ref_cell, 1, 1) = 5;
-        ref_cell_f2n_gen(ref_cell, 2, 1) = 6;
-        ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
+      ref_cell_f2n_gen(ref_cell, 0, 1) = 1;
+      ref_cell_f2n_gen(ref_cell, 1, 1) = 5;
+      ref_cell_f2n_gen(ref_cell, 2, 1) = 6;
+      ref_cell_f2n_gen(ref_cell, 3, 1) = 2;
 
-        ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
-        ref_cell_f2n_gen(ref_cell, 1, 2) = 6;
-        ref_cell_f2n_gen(ref_cell, 2, 2) = 7;
-        ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 2) = 2;
+      ref_cell_f2n_gen(ref_cell, 1, 2) = 6;
+      ref_cell_f2n_gen(ref_cell, 2, 2) = 7;
+      ref_cell_f2n_gen(ref_cell, 3, 2) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 3) = 3;
-        ref_cell_f2n_gen(ref_cell, 2, 3) = 7;
-        ref_cell_f2n_gen(ref_cell, 3, 3) = 4;
+      ref_cell_f2n_gen(ref_cell, 0, 3) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 3) = 3;
+      ref_cell_f2n_gen(ref_cell, 2, 3) = 7;
+      ref_cell_f2n_gen(ref_cell, 3, 3) = 4;
 
-        ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
-        ref_cell_f2n_gen(ref_cell, 1, 4) = 1;
-        ref_cell_f2n_gen(ref_cell, 2, 4) = 2;
-        ref_cell_f2n_gen(ref_cell, 3, 4) = 3;
+      ref_cell_f2n_gen(ref_cell, 0, 4) = 0;
+      ref_cell_f2n_gen(ref_cell, 1, 4) = 1;
+      ref_cell_f2n_gen(ref_cell, 2, 4) = 2;
+      ref_cell_f2n_gen(ref_cell, 3, 4) = 3;
 
-        ref_cell_f2n_gen(ref_cell, 0, 5) = 4;
-        ref_cell_f2n_gen(ref_cell, 1, 5) = 7;
-        ref_cell_f2n_gen(ref_cell, 2, 5) = 6;
-        ref_cell_f2n_gen(ref_cell, 3, 5) = 5;
+      ref_cell_f2n_gen(ref_cell, 0, 5) = 4;
+      ref_cell_f2n_gen(ref_cell, 1, 5) = 7;
+      ref_cell_f2n_gen(ref_cell, 2, 5) = 6;
+      ref_cell_f2n_gen(ref_cell, 3, 5) = 5;
 
-        break;
-    }
+      break;
   }
 
   return REF_SUCCESS;
@@ -406,8 +419,7 @@ REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr, REF_CELL original) {
 
   ref_cell = (*ref_cell_ptr);
 
-  RSS(ref_cell_initialize(ref_cell, ref_cell_type(original)),
-      "init");
+  RSS(ref_cell_initialize(ref_cell, ref_cell_type(original)), "init");
 
   max = ref_cell_max(original);
   ref_cell_n(ref_cell) = ref_cell_n(original);
@@ -886,6 +898,36 @@ REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
                                                   cell)) {
     *has_id = REF_TRUE;
     return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
+                             REF_INT *min_id, REF_INT *max_id) {
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_id = REF_INT_MAX;
+  *max_id = REF_INT_MIN;
+
+  RAS(ref_cell_last_node_is_an_id(ref_cell), "cell does not have ids");
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_id = MIN(*min_id, nodes[ref_cell_id_index(ref_cell)]);
+    *max_id = MAX(*max_id, nodes[ref_cell_id_index(ref_cell)]);
+  }
+
+  if (NULL != ref_mpi && ref_mpi_para(ref_mpi)) {
+    REF_INT global;
+
+    RSS(ref_mpi_min(ref_mpi, min_id, &global, REF_INT_TYPE), "mpi min face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
+    *min_id = global;
+
+    RSS(ref_mpi_max(ref_mpi, max_id, &global, REF_INT_TYPE), "mpi max face");
+    RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
+    *max_id = global;
   }
 
   return REF_SUCCESS;

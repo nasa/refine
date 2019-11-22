@@ -37,6 +37,9 @@
 static REF_STATUS ref_edg(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_EDG);
 }
+static REF_STATUS ref_ed3(REF_CELL *ref_cell_ptr) {
+  return ref_cell_create(ref_cell_ptr, REF_CELL_ED3);
+}
 static REF_STATUS ref_tri(REF_CELL *ref_cell_ptr) {
   return ref_cell_create(ref_cell_ptr, REF_CELL_TRI);
 }
@@ -571,6 +574,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_cell_free(ref_cell), "cleanup");
 
     RSS(ref_edg(&ref_cell), "create");
+    REIS(1, ref_cell_edge_per(ref_cell), "edge_per");
+    RSS(ref_cell_free(ref_cell), "cleanup");
+
+    RSS(ref_ed3(&ref_cell), "create");
     REIS(1, ref_cell_edge_per(ref_cell), "edge_per");
     RSS(ref_cell_free(ref_cell), "cleanup");
 

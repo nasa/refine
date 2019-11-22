@@ -238,7 +238,7 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(argv[pos], "--compact-faceids") == 0) {
       printf("%d: --compact-faceids\n", pos);
-      RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid),
+      RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid),
           "min max faceid");
       printf(" faceid range %d %d\n", min_faceid, max_faceid);
       ref_malloc_init(new_faceid, max_faceid - min_faceid + 1, REF_INT,
