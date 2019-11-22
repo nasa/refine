@@ -328,7 +328,7 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
   REF_INT *g2l, *l2g;
   REF_INT nedge;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT cell;
+  REF_INT cell, cell_node;
   REF_INT nnode;
   REF_DICT ref_dict;
   REF_INT boundary_tag, boundary_index;
@@ -338,8 +338,10 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
   RSS(ref_dict_create(&ref_dict), "create dict");
 
   ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes)
-      RSS(ref_dict_store(ref_dict, nodes[2], REF_EMPTY), "mark tri");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+        "mark tri");
+  }
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
     RSS(ref_grid_cell_id_nodes(ref_grid, ref_cell, boundary_tag, &nnode, &nedge,
@@ -357,11 +359,10 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
               ref_node_xyz(ref_node, 1, l2g[node]),
               ref_node_xyz(ref_node, 2, l2g[node]));
 
-    ref_cell = ref_grid_edg(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (boundary_tag == nodes[2]) {
-        for (node = 0; node < 2; node++) {
-          fprintf(file, " %d", g2l[nodes[node]] + 1);
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          fprintf(file, " %d", g2l[nodes[cell_node]] + 1);
         }
         fprintf(file, "\n");
       }
@@ -393,12 +394,14 @@ REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
   RSS(ref_dict_create(&ref_dict), "create dict");
 
   ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes)
-      RSS(ref_dict_store(ref_dict, nodes[3], REF_EMPTY), "mark tri");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark tri");
 
   ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes)
-      RSS(ref_dict_store(ref_dict, nodes[4], REF_EMPTY), "mark qua");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) RSS(
+      ref_dict_store(ref_dict, nodes[ref_cell_id_index(ref_cell)], REF_EMPTY),
+      "mark qua");
 
   each_ref_dict_key(ref_dict, boundary_index, boundary_tag) {
     RSS(ref_grid_tri_qua_id_nodes(ref_grid, boundary_tag, &nnode, &nface, &g2l,
@@ -417,21 +420,23 @@ REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
               ref_node_xyz(ref_node, 2, l2g[node]));
 
     ref_cell = ref_grid_tri(ref_grid);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (boundary_tag == nodes[3]) {
-      nodes[3] = nodes[2];
-      for (node = 0; node < 4; node++) {
-        fprintf(file, " %d", g2l[nodes[node]] + 1);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        nodes[3] = nodes[2];
+        for (node = 0; node < 4; node++) {
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        }
+        fprintf(file, "\n");
       }
-      fprintf(file, "\n");
     }
 
     ref_cell = ref_grid_qua(ref_grid);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell,
-                                        nodes) if (boundary_tag == nodes[4]) {
-      for (node = 0; node < 4; node++)
-        fprintf(file, " %d", g2l[nodes[node]] + 1);
-      fprintf(file, "\n");
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (boundary_tag == nodes[ref_cell_id_index(ref_cell)]) {
+        for (node = 0; node < 4; node++)
+          fprintf(file, " %d", g2l[nodes[node]] + 1);
+        fprintf(file, "\n");
+      }
     }
 
     ref_free(l2g);
