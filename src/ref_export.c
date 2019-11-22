@@ -152,6 +152,31 @@
     brick[7] = nodes[7];            \
   }
 
+static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
+                                          REF_INT *min_faceid,
+                                          REF_INT *max_faceid) {
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+
+  *min_faceid = REF_INT_MAX;
+  *max_faceid = REF_INT_MIN;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  ref_cell = ref_grid_qua(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    *min_faceid = MIN(*min_faceid, nodes[ref_cell_node_per(ref_cell)]);
+    *max_faceid = MAX(*max_faceid, nodes[ref_cell_node_per(ref_cell)]);
+  }
+
+  return REF_SUCCESS;
+}
+
 /* https://www.vtk.org/VTK/img/file-formats.pdf */
 REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   FILE *file;
@@ -1061,7 +1086,7 @@ REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
     REF_INT faceid, min_faceid, max_faceid;
     REF_INT nhole, largest_triangle;
     REF_DBL area, max_area, normal[3], offset, center[3], hole[3];
-    RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
     nhole = 0;
     for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
       max_area = -1.0;
@@ -1307,7 +1332,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
     }
   }
 
-  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
   fprintf(file, "NMARK= %d\n", max_faceid - min_faceid + 1);
 
   for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
@@ -1401,7 +1426,7 @@ static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
             ref_node_xyz(ref_node, 1, n2o[node]),
             ref_node_xyz(ref_node, 2, n2o[node]));
 
-  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -1531,7 +1556,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
     REIS(1, fwrite(&swapped_dbl, sizeof(REF_DBL), 1, file), "z");
   }
 
-  RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+  RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -2154,9 +2179,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_faceid,
-                          &max_faceid),
-        "range");
+    RSS(ref_cell_id_range(ref_cell, NULL, &min_faceid, &max_faceid), "range");
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(
           ref_cell, cell, nodes) if (nodes[node_per] == faceid) {
@@ -2179,7 +2202,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(
@@ -2203,7 +2226,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     REIS(1, fwrite(&(ref_cell_n(ref_cell)), sizeof(int), 1, file), "nnode");
-    RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
+    RSS(ref_export_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
 
     for (faceid = min_faceid; faceid <= max_faceid; faceid++)
       each_ref_cell_valid_cell_with_nodes(

@@ -903,8 +903,8 @@ REF_STATUS ref_cell_side_has_id(REF_CELL ref_cell, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi, REF_INT *min_id,
-                             REF_INT *max_id) {
+REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi,
+                             REF_INT *min_id, REF_INT *max_id) {
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -918,16 +918,14 @@ REF_STATUS ref_cell_id_range(REF_CELL ref_cell, REF_MPI ref_mpi, REF_INT *min_id
     *max_id = MAX(*max_id, nodes[ref_cell_id_index(ref_cell)]);
   }
 
-  if (ref_mpi_para(ref_mpi)) {
+  if (NULL != ref_mpi && ref_mpi_para(ref_mpi)) {
     REF_INT global;
 
-    RSS(ref_mpi_min(ref_mpi, min_id, &global, REF_INT_TYPE),
-        "mpi min face");
+    RSS(ref_mpi_min(ref_mpi, min_id, &global, REF_INT_TYPE), "mpi min face");
     RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi min face");
     *min_id = global;
 
-    RSS(ref_mpi_max(ref_mpi, max_id, &global, REF_INT_TYPE),
-        "mpi max face");
+    RSS(ref_mpi_max(ref_mpi, max_id, &global, REF_INT_TYPE), "mpi max face");
     RSS(ref_mpi_bcast(ref_mpi, &global, 1, REF_INT_TYPE), "mpi max face");
     *max_id = global;
   }
