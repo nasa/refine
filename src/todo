@@ -11,15 +11,15 @@ ref_geom
  automatically set and increase tess parametters
   - faces without tris
   - self intersecting uv edge segments
- add EGADS model builder fixture to ref_geom_tests
- rename ref_geom to ref_egads?
+ volume fill: merge import grid, remove specialized readers
+ user adjustable volume tetgen and aflr mesher options
+ add EGADS model builder fixture to ref_egads_tests
  create native version of inverse evalute with guess
   use newton with discrete grid to constrain
+  allow inv eval to hop objects
  many-to-many association virtual topology
 
 report face ids with poor normdev, short edges, and poor shape measure
-
-rename and cleanup ref bootstrap IO
 
 protect geom constraint metric from surface folds and high curvature
  descrete curvature estimate (triangle-center based?)
@@ -30,6 +30,7 @@ C2S
   gradation, reconstruction, parallel, field for speed regime
  README and FUN3D doc update and sync
  command line interface
+ rename and cleanup ref bootstrap IO
  tutorials
 
 - protect sliver geom topo with lower bound on angle, short edge
@@ -74,11 +75,10 @@ check that post conditions are implemented completely for all ops
   ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
   full post checks for edge-metric ratio: cavity swap, node smooth
-  standardize execptions (edge priority over tri, tri priority over tet)
+  standardize exceptions (edge priority over tri, tri priority over tet)
 
 tess
- high order geometry visualization
- volume fill: merge import grid, remove specialized readers
+ high order geometry visualization with cubic patches
  unfreeze edges for AFLR volume
  try gmsh
  thin shells
@@ -91,7 +91,7 @@ boostrap
   - antenna like geom bootstrap, diamond extrusion with round edges
   - thin wavy (along training edge) training edge bootstrap
   - edge off surface testcase or surface gap testcase?
-  - cusp geom topolpogy testcase
+  - cusp geom topology testcase
   - acceptance test with bootstrap of C608, JSM, etc.
   - validate normal deviation (make metric big across cylinder)
 
@@ -108,7 +108,7 @@ ref_recon
   implicit reconstruction (Hiro)
 
 bleme and cons visc
- spectral radisu MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
+ spectral radius MAX(eig, min(1e-30*max(det^-1/3)) for all equ lambda
  strong bc lambda reconstruction: use constant term of quadratic fit
 
 multiscale entropy and/or entropy adjoint (for heating)
@@ -120,7 +120,7 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-ref_node_shift_new_globals ref_node_eliminate_unused_globals para test
+ref_node_shift_new_globals ref_node_eliminate_unused_globals parallel tests
 
 get rid of aux and interp instead
 
