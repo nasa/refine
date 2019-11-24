@@ -324,6 +324,7 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
                                         REF_BOOL *rebuild) {
+  ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
@@ -333,20 +334,46 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
   const int *pints;
   const char *string;
 
+  double params[3], diag, box[6];
+
   *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
+    faceobj = ((ego *)(ref_geom->faces))[face];
     REIS(EGADS_SUCCESS,
          EG_getTessFace(tess, face + 1, &plen, &points, &uv, &ptype, &pindex,
                         &tlen, &tris, &tric),
          "tess query face");
     if (0 == plen || 0 == tlen) {
       printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
-      if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
-                                           ".tParams", &atype, &len, &pints,
-                                           &preals, &string)) {
+      if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
+                                           &pints, &preals, &string)) {
+        if (ATTRREAL == atype && len == 3) {
+          printf("  current .tParams %f %f %f\n", preals[0], preals[1],
+                 preals[2]);
+        } else {
+          printf("  wrong format .tParams atype %d len %d\n", atype, len);
+        }
       } else {
         printf("  no .tParams set for face %d\n", face + 1);
       }
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
+
+      params[0] = 0.1 * diag;
+      params[1] = 0.001 * diag;
+      params[2] = 15.0;
+      printf("  new .tParams %f %f %f\n", params[0], params[1], params[2]);
+#ifdef HAVE_EGADS_LITE
+      RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
+#else
+      REIS(
+          EGADS_SUCCESS,
+          EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params, NULL),
+          "set .tParams");
+#endif
+      *rebuild = REF_TRUE;
     }
   }
   return REF_SUCCESS;
@@ -359,8 +386,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   int tess_status, nvert;
   double params[3], diag, box[6];
   REF_BOOL rebuild;
+  REF_INT tries;
   solid = (ego)(ref_geom->solid);
-
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
@@ -376,13 +403,18 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   params[2] = 15.0;
 
   rebuild = REF_TRUE;
-  while (rebuild) {
+  tries = 0;
+  while (rebuild && tries < 3) {
+    tries++;
     REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
     REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
     RSS(ref_egads_tess_adjust(ref_geom, *tess, &rebuild), "adjust params");
+    if (rebuild)
+      printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
+             tries);
   }
 
   return REF_SUCCESS;
