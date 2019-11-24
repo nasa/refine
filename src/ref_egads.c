@@ -328,6 +328,11 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
   const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
 
+  int len, atype;
+  const double *preals;
+  const int *pints;
+  const char *string;
+
   *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
@@ -336,6 +341,12 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
          "tess query face");
     if (0 == plen || 0 == tlen) {
       printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
+      if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                           ".tParams", &atype, &len, &pints,
+                                           &preals, &string)) {
+      } else {
+        printf("  no .tParams set for face %d\n", face + 1);
+      }
     }
   }
   return REF_SUCCESS;
