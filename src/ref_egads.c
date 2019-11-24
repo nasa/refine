@@ -192,9 +192,37 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
   return REF_SUCCESS;
 }
 
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
+                                             int nvert) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+
+  int node, new_node, pty, pin;
+  double verts[3];
+
+  for (node = 0; node < nvert; node++) {
+    REIS(EGADS_SUCCESS, EG_getGlobal(tess, node + 1, &pty, &pin, verts),
+         "global node info");
+    RSS(ref_node_add(ref_node, node, &new_node), "new_node");
+    REIS(node, new_node, "node index");
+    ref_node_xyz(ref_node, 0, node) = verts[0];
+    ref_node_xyz(ref_node, 1, node) = verts[1];
+    ref_node_xyz(ref_node, 2, node) = verts[2];
+    /* pty: point type (-) Face local index, (0) Node, (+) Edge local index */
+    if (0 == pty) {
+      RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, pin, NULL), "node");
+    }
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nvert), "init glob");
+
+  return REF_SUCCESS;
+}
+#endif
+
 REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
-  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri, new_cell;
@@ -202,11 +230,9 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
   ego geom;
   ego solid, tess;
   int tess_status, nvert;
-  int face, edge, plen, tlen;
+  int node, face, edge, plen, tlen;
   const double *points, *uv, *t;
   const int *ptype, *pindex, *tris, *tric;
-  int node, new_node, pty, pin;
-  double verts[3];
   double params[3], diag, box[6];
 
   solid = (ego)(ref_geom->solid);
@@ -230,20 +256,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
        "EG tess");
   REIS(1, tess_status, "tess not closed");
 
-  for (node = 0; node < nvert; node++) {
-    REIS(EGADS_SUCCESS, EG_getGlobal(tess, node + 1, &pty, &pin, verts),
-         "global node info");
-    RSS(ref_node_add(ref_node, node, &new_node), "new_node");
-    REIS(node, new_node, "node index");
-    ref_node_xyz(ref_node, 0, node) = verts[0];
-    ref_node_xyz(ref_node, 1, node) = verts[1];
-    ref_node_xyz(ref_node, 2, node) = verts[2];
-    /* pty: point type (-) Face local index, (0) Node, (+) Edge local index */
-    if (0 == pty) {
-      RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, pin, NULL), "node");
-    }
-  }
-  RSS(ref_node_initialize_n_global(ref_node, nvert), "init glob");
+  RSS(ref_egads_tess_fill_vertex(ref_grid, tess, nvert), "fill tess vertex");
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
