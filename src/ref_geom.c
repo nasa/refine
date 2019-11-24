@@ -295,45 +295,6 @@ REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_arg) {
 #endif
 }
 
-REF_STATUS ref_geom_face_nedge(REF_GEOM ref_geom, REF_INT faceid,
-                               REF_INT *nedge) {
-#ifdef HAVE_EGADS
-  ego esurf, *eloops;
-  int oclass, mtype, nloop, *senses;
-  double data[18];
-  int iloop, iedge;
-  ego ecurve, *eedges;
-  int n_loop_edge;
-
-  *nedge = 0;
-
-  RNS(ref_geom->faces, "faces not loaded");
-  if (faceid < 1 || faceid > ref_geom->nface) return REF_INVALID;
-
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf, &oclass,
-                      &mtype, data, &nloop, &eloops, &senses),
-       "topo");
-  for (iloop = 0; iloop < nloop; iloop++) {
-    /* loop through all Edges associated with this Loop */
-    REIS(EGADS_SUCCESS,
-         EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data,
-                        &n_loop_edge, &eedges, &senses),
-         "topo");
-    for (iedge = 0; iedge < n_loop_edge; iedge++) {
-      (*nedge)++;
-    }
-  }
-
-  return REF_SUCCESS;
-#else
-  if (REF_EMPTY == ref_geom->nnode) printf("No EGADS loaded face %d\n", faceid);
-  *nedge = REF_EMPTY;
-  printf("No EGADS linked for %s\n", __func__);
-  return REF_IMPLEMENT;
-#endif
-}
-
 REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
                             REF_DBL *uv_area) {
   REF_DBL uv0[2], uv1[2], uv2[2];
