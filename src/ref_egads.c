@@ -242,9 +242,6 @@ static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
          EG_getTessFace(tess, face + 1, &plen, &points, &uv, &ptype, &pindex,
                         &tlen, &tris, &tric),
          "tess query face");
-    if (0 == plen || 0 == tlen) {
-      printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
-    }
     for (node = 0; node < plen; node++) {
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, node + 1, &(nodes[0])), "l2g0");
@@ -325,10 +322,33 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_create(ego solid, ego *tess) {
-  ego geom;
+static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
+                                        REF_BOOL *rebuild) {
+  int face, tlen, plen;
+  const double *points, *uv;
+  const int *ptype, *pindex, *tris, *tric;
+
+  *rebuild = REF_FALSE;
+  for (face = 0; face < (ref_geom->nface); face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTessFace(tess, face + 1, &plen, &points, &uv, &ptype, &pindex,
+                        &tlen, &tris, &tric),
+         "tess query face");
+    if (0 == plen || 0 == tlen) {
+      printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
+    }
+  }
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
+  ego solid, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
+  REF_BOOL rebuild;
+  solid = (ego)(ref_geom->solid);
 
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
@@ -344,10 +364,15 @@ static REF_STATUS ref_egads_tess_create(ego solid, ego *tess) {
   params[1] = 0.001 * diag;
   params[2] = 15.0;
 
-  REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
-  REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
-       "EG tess");
-  REIS(1, tess_status, "tess not closed");
+  rebuild = REF_TRUE;
+  while (rebuild) {
+    REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
+    REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
+         "EG tess");
+    REIS(1, tess_status, "tess not closed");
+
+    RSS(ref_egads_tess_adjust(ref_geom, *tess, &rebuild), "adjust params");
+  }
 
   return REF_SUCCESS;
 }
@@ -355,11 +380,10 @@ static REF_STATUS ref_egads_tess_create(ego solid, ego *tess) {
 
 REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
-  ego solid, tess;
+  ego tess;
 
-  solid = (ego)(ref_grid_geom(ref_grid)->solid);
-
-  RSS(ref_egads_tess_create(solid, &tess), "create tess object");
+  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess),
+      "create tess object");
 
   RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
   RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
