@@ -7,14 +7,12 @@ surrogate surface
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
- extract init tess
  automatically set and increase tess parametters
-  - faces without tris
   - self intersecting uv edge segments
  volume fill: merge import grid, remove specialized readers
  user adjustable volume tetgen and aflr mesher options
  add EGADS model builder fixture to ref_egads_tests
- create native version of inverse evalute with guess
+ create native version of inverse evaluate with guess
   use newton with discrete grid to constrain
   allow inv eval to hop objects
  many-to-many association virtual topology
@@ -221,6 +219,10 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ extract init tess
++ automatically set and increase tess parametters
+  + faces without tris
 
 + extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
 

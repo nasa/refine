@@ -1,4 +1,5 @@
 
+- set or overwrite EGADS .tParams for face tessellation without triangles
 - configure --with-mpi creates refmpi
 - ideal tet and tri smoothing uses log average of vertex metrics
 - cavity operator extended to simultaneous volume and surface changes
