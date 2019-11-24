@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -314,7 +315,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
       }
   }
 
-  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps");
+  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps");
   ref_grid_surf(ref_grid) = REF_TRUE;
 
 #else
@@ -322,6 +323,126 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT node, geom, edge, face, cad_node;
+  REF_INT nfound, node_geom, edge_geom, face_geom;
+  ego eref;
+  int oclass, mtype, *senses;
+  double trange[2];
+  double uv[2];
+  ego *echilds;
+  int nchild;
+  int *e2f;
+  REF_DBL du, dv;
+  REF_DBL xyz[3], dxyz_duv[15];
+  REF_INT geom_node_id, degen;
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->edges))[edge], &eref, &oclass,
+                        &mtype, trange, &nchild, &echilds, &senses),
+         "edge topo");
+    if (mtype == ONENODE) {
+      REIS(1, nchild, "ONENODE should have one node");
+      cad_node = EG_indexBodyTopo(ref_geom->solid, echilds[0]);
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is ONENODE at geom node %d\n", edge + 1, cad_node);
+      }
+      node = REF_EMPTY;
+      each_ref_geom_node(ref_geom, geom) {
+        if (cad_node == ref_geom_id(ref_geom, geom)) {
+          node = ref_geom_node(ref_geom, geom);
+        }
+      }
+      nfound = 0;
+      each_ref_geom_edge(ref_geom, geom) {
+        if (node == ref_geom_node(ref_geom, geom) &&
+            edge + 1 == ref_geom_id(ref_geom, geom)) {
+          ref_geom_jump(ref_geom, geom) = edge + 1;
+          REIS(0, nfound, "edge geom already found");
+          nfound++;
+        }
+      }
+    }
+  }
+
+  RSS(ref_geom_edge_faces(ref_grid, &e2f), "edge2face");
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->edges))[edge], &eref, &oclass,
+                        &mtype, trange, &nchild, &echilds, &senses),
+         "edge topo");
+    if (mtype == DEGENERATE) {
+      geom_node_id = EG_indexBodyTopo((ego)(ref_geom->solid), echilds[0]);
+      face = e2f[0 + 2 * edge] - 1;
+      REIS(REF_EMPTY, e2f[1 + 2 * edge], "DEGENERATE edge has two faces");
+
+      face_geom = REF_EMPTY;
+      each_ref_geom_node(ref_geom, node_geom) {
+        if (geom_node_id == ref_geom_id(ref_geom, node_geom)) {
+          node = ref_geom_node(ref_geom, node_geom);
+          RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, face + 1,
+                            &face_geom),
+              "face for degen edge at node not found");
+        }
+      }
+
+      /* in parallel, may not have this node */
+      if (REF_EMPTY != face_geom) {
+        uv[0] = ref_geom_param(ref_geom, 0, face_geom);
+        uv[1] = ref_geom_param(ref_geom, 1, face_geom);
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uv, xyz,
+                             dxyz_duv),
+            "eval at");
+        du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
+        dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
+        if (du > dv) {
+          degen = (edge + 1); /* positive edge, trust uv[0], larger dxyz/du */
+        } else {
+          degen = -(edge + 1); /* negative edge, trust uv[1], larger dxyz/dv */
+        }
+        ref_geom_degen(ref_geom, face_geom) = degen;
+      }
+
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is degen for face id %d\n", edge + 1, face + 1);
+      }
+    }
+  }
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    if (e2f[0 + 2 * edge] == e2f[1 + 2 * edge]) {
+      nfound = 0;
+      each_ref_geom_edge(ref_geom, edge_geom) {
+        if (edge + 1 == ref_geom_id(ref_geom, edge_geom)) {
+          each_ref_geom_face(ref_geom, face_geom) {
+            if (e2f[0 + 2 * edge] == ref_geom_id(ref_geom, face_geom) &&
+                ref_geom_node(ref_geom, edge_geom) ==
+                    ref_geom_node(ref_geom, face_geom)) {
+              ref_geom_jump(ref_geom, face_geom) = edge + 1;
+              nfound++;
+            }
+          }
+        }
+      }
+      if (ref_grid_once(ref_grid)) {
+        printf("edge id %d is used twice by face id %d\n", edge + 1,
+               e2f[0 + 2 * edge]);
+      }
+    }
+  }
+
+  ref_free(e2f);
+#else
+  printf("unable to %s, No EGADS linked.\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
   return REF_SUCCESS;
 }
 

@@ -174,7 +174,7 @@ int main(int argc, char *argv[]) {
       THROW("geometry association without EGADS");
     }
     curvature_constraint = REF_TRUE;
-    RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
