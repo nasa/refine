@@ -221,42 +221,16 @@ static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tri, new_cell;
-  REF_DBL param[2];
-  ego geom;
-  ego solid, tess;
-  int tess_status, nvert;
-  int node, face, edge, plen, tlen;
-  const double *points, *uv, *t;
+
+  int face, tlen, plen;
+  REF_INT node, tri, new_cell;
+  const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
-  double params[3], diag, box[6];
-
-  solid = (ego)(ref_geom->solid);
-
-  /* maximum length of an EDGE segment or triangle side (in physical space) */
-  /* curvature-based value that looks locally at the deviation between
-     the centroid of the discrete object and the underlying geometry */
-  /* maximum interior dihedral angle (in degrees) */
-
-  REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
-  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-              (box[1] - box[4]) * (box[1] - box[4]) +
-              (box[2] - box[5]) * (box[2] - box[5]));
-
-  params[0] = 0.25 * diag;
-  params[1] = 0.001 * diag;
-  params[2] = 15.0;
-
-  REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
-  REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
-       "EG tess");
-  REIS(1, tess_status, "tess not closed");
-
-  RSS(ref_egads_tess_fill_vertex(ref_grid, tess, nvert), "fill tess vertex");
+  REF_DBL param[2];
 
   for (face = 0; face < (ref_geom->nface); face++) {
     REIS(EGADS_SUCCESS,
@@ -293,6 +267,47 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
       RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell), "new tri");
     }
   }
+
+  return REF_SUCCESS;
+}
+#endif
+
+REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL param[2];
+  ego geom;
+  ego solid, tess;
+  int tess_status, nvert;
+  int node, edge, plen;
+  const double *points, *t;
+  double params[3], diag, box[6];
+  REF_INT new_cell;
+
+  solid = (ego)(ref_geom->solid);
+
+  /* maximum length of an EDGE segment or triangle side (in physical space) */
+  /* curvature-based value that looks locally at the deviation between
+     the centroid of the discrete object and the underlying geometry */
+  /* maximum interior dihedral angle (in degrees) */
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
+  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+              (box[1] - box[4]) * (box[1] - box[4]) +
+              (box[2] - box[5]) * (box[2] - box[5]));
+
+  params[0] = 0.25 * diag;
+  params[1] = 0.001 * diag;
+  params[2] = 15.0;
+
+  REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
+  REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
+       "EG tess");
+  REIS(1, tess_status, "tess not closed");
+
+  RSS(ref_egads_tess_fill_vertex(ref_grid, tess, nvert), "fill tess vertex");
+  RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     int egads_status;
