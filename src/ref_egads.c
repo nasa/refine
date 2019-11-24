@@ -193,13 +193,18 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
-                                             int nvert) {
+static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
 
   int node, new_node, pty, pin;
   double verts[3];
+  int tess_status, nvert;
+  ego geom;
+
+  REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
+       "EG tess");
+  REIS(1, tess_status, "tess not closed");
 
   for (node = 0; node < nvert; node++) {
     REIS(EGADS_SUCCESS, EG_getGlobal(tess, node + 1, &pty, &pin, verts),
@@ -319,14 +324,11 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_tess_create(ego solid, ego *tess) {
   ego geom;
-  ego solid, tess;
   int tess_status, nvert;
   double params[3], diag, box[6];
-
-  solid = (ego)(ref_grid_geom(ref_grid)->solid);
 
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
@@ -342,12 +344,24 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
   params[1] = 0.001 * diag;
   params[2] = 15.0;
 
-  REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, &tess), "EG tess");
-  REIS(EGADS_SUCCESS, EG_statusTessBody(tess, &geom, &tess_status, &nvert),
+  REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
+  REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
        "EG tess");
   REIS(1, tess_status, "tess not closed");
 
-  RSS(ref_egads_tess_fill_vertex(ref_grid, tess, nvert), "fill tess vertex");
+  return REF_SUCCESS;
+}
+#endif
+
+REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
+#ifdef HAVE_EGADS
+  ego solid, tess;
+
+  solid = (ego)(ref_grid_geom(ref_grid)->solid);
+
+  RSS(ref_egads_tess_create(solid, &tess), "create tess object");
+
+  RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
   RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
   RSS(ref_egads_tess_fill_edg(ref_grid, tess), "fill tess edges");
 
