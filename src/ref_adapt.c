@@ -449,6 +449,76 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL quality, min_quality;
+  REF_DBL normdev, min_normdev;
+  REF_DBL ratio, min_ratio, max_ratio;
+  REF_INT edge, n0, n1;
+  REF_INT id, min_id, max_id;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "id range");
+  for (id = min_id; id <= max_id; id++) {
+    min_quality = 1.0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
+      RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
+          "qual");
+      min_quality = MIN(min_quality, quality);
+    }
+    quality = min_quality;
+    RSS(ref_mpi_min(ref_mpi, &quality, &min_quality, REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &quality, 1, REF_DBL_TYPE), "min");
+
+    min_normdev = 2.0;
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      ref_cell = ref_grid_tri(ref_grid);
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
+        RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+        min_normdev = MIN(min_normdev, normdev);
+      }
+    }
+    normdev = min_normdev;
+    RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
+
+    min_ratio = REF_DBL_MAX;
+    max_ratio = REF_DBL_MIN;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
+      for (edge = 0; edge < 3; edge++) {
+        n0 = edge;
+        n1 = edge + 1;
+        if (n1 > 2) n1 -= 3;
+        RSS(ref_node_ratio(ref_grid_node(ref_grid), nodes[n0], nodes[n1],
+                           &ratio),
+            "rat");
+        min_ratio = MIN(min_ratio, ratio);
+        max_ratio = MAX(max_ratio, ratio);
+      }
+      min_quality = MIN(min_quality, quality);
+    }
+    ratio = min_ratio;
+    RSS(ref_mpi_min(ref_mpi, &ratio, &min_ratio, REF_DBL_TYPE), "mpi min");
+    RSS(ref_mpi_bcast(ref_mpi, &min_ratio, 1, REF_DBL_TYPE), "min");
+    ratio = max_ratio;
+    RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
+
+    if (min_quality < 0.1 || min_ratio < 0.1 || max_ratio > 4.0 ||
+        min_normdev < 0.5)
+      printf("face %d quality %6.4f ratio %6.4f %6.2f normdev %6.4f\n", id,
+             min_quality, min_ratio, max_ratio, min_normdev);
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_adapt_threed_swap(REF_GRID ref_grid) {
   REF_INT pass;
   RSS(ref_cavity_pass(ref_grid), "cavity pass");
@@ -684,6 +754,8 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
       printf("%d segment-triangle intersections detected.\n",
              self_intersections);
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+    RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
   }
 
   return REF_SUCCESS;
