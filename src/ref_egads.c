@@ -327,7 +327,8 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 }
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_arg) {
+static REF_STATUS ref_egads_edge_faces(REF_GRID ref_grid,
+                                       REF_INT **edge_face_arg) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT *e2f, *nface;
   REF_INT face, edge;
@@ -368,7 +369,8 @@ static REF_STATUS ref_egads_edge_faces(REF_GRID ref_grid, REF_INT **edge_face_ar
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj_arg) {
+static REF_STATUS ref_egads_node_faces(REF_GRID ref_grid,
+                                       REF_ADJ *ref_adj_arg) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_ADJ ref_adj;
   REF_INT *e2f, id, toponode;
