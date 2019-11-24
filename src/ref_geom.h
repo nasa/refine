@@ -147,11 +147,6 @@ REF_STATUS ref_geom_free(REF_GEOM ref_geom);
 REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom, REF_GEOM original);
 REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n);
 
-REF_STATUS ref_geom_node_faces(REF_GRID ref_grid, REF_ADJ *ref_adj);
-REF_STATUS ref_geom_edge_faces(REF_GRID ref_grid, REF_INT **edge_faces);
-REF_STATUS ref_geom_face_nedge(REF_GEOM ref_geom, REF_INT faceid,
-                               REF_INT *nedge);
-
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid);
 
 REF_STATUS ref_geom_uv_area(REF_GEOM ref_geom, REF_INT *nodes,
@@ -236,7 +231,6 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                               REF_DBL *tolerance);
 REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
 
-REF_STATUS ref_geom_mark_jump_degen(REF_GRID ref_grid);
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_grid, REF_INT node,
                              REF_BOOL *has_jump);
 

@@ -1091,26 +1091,6 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_avoid_geom(REF_GEOM ref_geom, REF_INT query_geom,
-                                 REF_BOOL *avoid) {
-  REF_INT node = ref_geom_node(ref_geom, query_geom);
-  REF_INT nedge;
-  REF_INT item, geom;
-  *avoid = REF_FALSE;
-
-  each_ref_geom_having_node(ref_geom, node, item, geom) {
-    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_geom_face_nedge(ref_geom, ref_geom_id(ref_geom, geom), &nedge),
-          "face edge count");
-      if (3 == nedge) {
-        *avoid = REF_TRUE;
-        return REF_SUCCESS;
-      }
-    }
-  }
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);

@@ -200,7 +200,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       THROW("No geometry available via .meshb or -g option");
     }
   }
-  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
@@ -751,7 +751,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
   RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
   ref_mpi_stopwatch_stop(ref_mpi, "load egads");
-  RSS(ref_geom_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
