@@ -362,7 +362,7 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
                   (box[2] - box[5]) * (box[2] - box[5]));
 
       params[0] = 0.1 * diag;
-      params[1] = 0.001 * diag;
+      params[1] = 0.01 * diag;
       params[2] = 15.0;
       printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
              params[0], params[1], params[2]);
@@ -375,6 +375,60 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
           "set .tParams");
 #endif
       *rebuild = REF_TRUE;
+    } else {
+      REF_INT tri, side, n0, n1, i;
+      const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
+      REF_DBL uvm[2], xyz[3], dside[3], dmid[3];
+      REF_DBL length, offset, max_chord;
+      max_chord = 0.0;
+      for (tri = 0; tri < tlen; tri++) {
+        for (side = 0; side < 3; side++) {
+          n0 = side;
+          n1 = side + 1;
+          if (n1 > 2) n1 -= 3;
+          n0 = tris[n0 + 3 * tri] - 1;
+          n1 = tris[n1 + 3 * tri] - 1;
+          xyz0 = &(points[3 * n0]);
+          xyz1 = &(points[3 * n1]);
+          uv0 = &(uv[2 * n0]);
+          uv1 = &(uv[2 * n1]);
+          for (i = 0; i < 2; i++) uvm[i] = 0.5 * (uv0[i] + uv1[i]);
+          RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uvm, xyz,
+                               NULL),
+              "eval mid uv");
+          for (i = 0; i < 3; i++) dside[i] = xyz1[i] - xyz0[i];
+          for (i = 0; i < 3; i++) dmid[i] = xyz[i] - 0.5 * (xyz1[i] + xyz0[i]);
+          length = sqrt(dside[0] * dside[0] + dside[1] * dside[1] +
+                        dside[2] * dside[2]);
+          offset =
+              sqrt(dmid[0] * dmid[0] + dmid[1] * dmid[1] + dmid[2] * dmid[2]);
+          if (ref_math_divisible(offset, length)) {
+            max_chord = MAX(max_chord, offset / length);
+          }
+        }
+      }
+      printf("face %d max chord %f\n", face + 1, max_chord);
+      if (max_chord > 0.2) {
+        REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+        diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                    (box[1] - box[4]) * (box[1] - box[4]) +
+                    (box[2] - box[5]) * (box[2] - box[5]));
+
+        params[0] = 0.1 * diag;
+        params[1] = 0.001 * diag;
+        params[2] = 15.0;
+        printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
+               params[0], params[1], params[2]);
+#ifdef HAVE_EGADS_LITE
+        RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
+#else
+        REIS(EGADS_SUCCESS,
+             EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params,
+                             NULL),
+             "set .tParams");
+#endif
+        *rebuild = REF_TRUE;
+      }
     }
   }
   return REF_SUCCESS;
