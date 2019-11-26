@@ -364,7 +364,8 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
       params[0] = 0.1 * diag;
       params[1] = 0.001 * diag;
       params[2] = 15.0;
-      printf("  new .tParams %f %f %f\n", params[0], params[1], params[2]);
+      printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
+             params[0], params[1], params[2]);
 #ifdef HAVE_EGADS_LITE
       RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
 #else
