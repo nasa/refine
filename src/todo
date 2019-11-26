@@ -8,6 +8,9 @@ surrogate surface
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  automatically set and increase tess parametters
+  - refactor to use remaketess, not attributes
+  - large, relative edge chord heights
+  - feature size (immune to short edges)
   - self intersecting uv edge segments
  volume fill: merge import grid, remove specialized readers
  user adjustable volume tetgen and aflr mesher options
