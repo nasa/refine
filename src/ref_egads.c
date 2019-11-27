@@ -378,7 +378,6 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   double len, xyz0[18], xyz1[18], dx[3], param[2], s;
   REF_INT it, tsamples = 3;
   REF_INT ineligible_cad_node0, ineligible_cad_node1, cad_node0, cad_node1;
-  int surface_type;
   ego edgeobj0, edgeobj1;
   ego *cadnodes0, *cadnodes1;
   ego *edges0, *edges1;
@@ -400,9 +399,6 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
               (box[1] - box[4]) * (box[1] - box[4]) +
               (box[2] - box[5]) * (box[2] - box[5]));
-
-  RSS(ref_egads_face_surface_type(ref_geom, faceid, &surface_type), "styp");
-  if (surface_type == PLANE) return REF_SUCCESS; /* skip planes */
 
   REIS(EGADS_SUCCESS,
        EG_getTopology(faceobj, &ref, &oclass, &mtype, data, &nloop, &loops,
