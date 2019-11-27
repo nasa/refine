@@ -324,6 +324,8 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
+                                        REF_CLOUD tparams_original,
+                                        REF_CLOUD tparams_augment,
                                         REF_BOOL *rebuild) {
   ego faceobj;
   int face, tlen, plen;
@@ -336,6 +338,9 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
   const char *string;
 
   double params[3], diag, box[6];
+
+  SUPRESS_UNUSED_COMPILER_WARNING(tparams_original);
+  SUPRESS_UNUSED_COMPILER_WARNING(tparams_augment);
 
   *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
@@ -438,7 +443,7 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
-                                          REF_CLOUD tparams_orig) {
+                                          REF_CLOUD tparams_original) {
   ego faceobj;
   int face, i;
   int len, atype;
@@ -453,8 +458,8 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
                                          &pints, &preals, &string)) {
       if (ATTRREAL == atype && len == 3) {
         for (i = 0; i < 3; i++) params[i] = preals[i];
-        RSS(ref_cloud_store(tparams_orig, (REF_GLOB)(face + 1), params),
-            "cache orig .tParams");
+        RSS(ref_cloud_store(tparams_original, (REF_GLOB)(face + 1), params),
+            "cache original .tParams");
       } else {
         printf("  wrong format .tParams atype %d len %d\n", atype, len);
       }
@@ -472,15 +477,16 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   double params[3], diag, box[6];
   REF_BOOL rebuild;
   REF_INT tries;
-  REF_CLOUD tparams_orig;
+  REF_CLOUD tparams_original, tparams_augment;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
   /* maximum interior dihedral angle (in degrees) */
 
-  RSS(ref_cloud_create(&tparams_orig, 3), "create tparams cache");
-  RSS(ref_egads_cache_tparams(ref_geom, tparams_orig), "tparams cache");
+  RSS(ref_cloud_create(&tparams_original, 3), "create tparams cache");
+  RSS(ref_cloud_create(&tparams_augment, 3), "create tparams augment");
+  RSS(ref_egads_cache_tparams(ref_geom, tparams_original), "tparams cache");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -500,13 +506,16 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
-    RSS(ref_egads_tess_adjust(ref_geom, *tess, &rebuild), "adjust params");
+    RSS(ref_egads_tess_adjust(ref_geom, *tess, tparams_original,
+                              tparams_augment, &rebuild),
+        "adjust params");
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
   }
 
-  RSS(ref_cloud_free(tparams_orig), "free tparams cache");
+  RSS(ref_cloud_free(tparams_augment), "free tparams augment");
+  RSS(ref_cloud_free(tparams_original), "free tparams cache");
 
   return REF_SUCCESS;
 }
