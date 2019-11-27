@@ -194,6 +194,29 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 }
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
+                                              int *surface_type) {
+  ego esurf, *eloops, eref;
+  int oclass, mtype, nloop, *senses, *pinfo;
+  double data[18], *preal;
+
+  RNS(ref_geom->faces, "faces not loaded");
+  if (faceid < 1 || faceid > ref_geom->nface) return REF_INVALID;
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf, &oclass,
+                      &mtype, data, &nloop, &eloops, &senses),
+       "topo");
+  REIS(EGADS_SUCCESS,
+       EG_getGeometry(esurf, &oclass, surface_type, &eref, &pinfo, &preal),
+       "geom");
+  EG_free(pinfo);
+  EG_free(preal);
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -351,6 +374,23 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
                                        REF_DBL *width) {
   ego faceobj;
   double diag, box[6];
+
+  double len, xyz0[18], xyz1[18], dx[3], param[2], s;
+  REF_INT it, tsamples = 3;
+  REF_INT ineligible_cad_node0, ineligible_cad_node1, cad_node0, cad_node1;
+  int surface_type;
+  ego edgeobj0, edgeobj1;
+  ego *cadnodes0, *cadnodes1;
+  ego *edges0, *edges1;
+  ego *loops, ref;
+  int nloop;
+  int ncadnode0, ncadnode1;
+  int nedge0, nedge1;
+  int *senses, mtype, oclass;
+  double trange0[2], trange1[2], data[18];
+  REF_INT edge0, edge1;
+  REF_INT loop0, loop1;
+
   RAS(0 < faceid && faceid <= (ref_geom->nface), "invalid faceid");
   faceobj = ((ego *)(ref_geom->faces))[faceid - 1];
   REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
@@ -358,6 +398,80 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
               (box[1] - box[4]) * (box[1] - box[4]) +
               (box[2] - box[5]) * (box[2] - box[5]));
   *width = diag;
+
+  RSS(ref_egads_face_surface_type(ref_geom, faceid, &surface_type), "styp");
+  if (surface_type == PLANE) return REF_SUCCESS; /* skip planes */
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(faceobj, &ref, &oclass, &mtype, data, &nloop, &loops,
+                      &senses),
+       "topo");
+  for (loop0 = 0; loop0 < nloop; loop0++) {
+    /* loop through all Edges associated with this Loop */
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(loops[loop0], &ref, &oclass, &mtype, data, &nedge0,
+                        &edges0, &senses),
+         "topo");
+    for (edge0 = 0; edge0 < nedge0; edge0++) {
+      edgeobj0 = edges0[edge0];
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(edgeobj0, &ref, &oclass, &mtype, trange0, &ncadnode0,
+                          &cadnodes0, &senses),
+           "EG topo edge0");
+      if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+      RAS(0 < ncadnode0 && ncadnode0 < 3, "edge children");
+      ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes0[0]);
+      if (2 == ncadnode0) {
+        ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes0[1]);
+      } else {
+        ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
+      }
+      for (loop1 = 0; loop1 < nloop; loop1++) {
+        /* loop through all Edges associated with this Loop */
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(loops[loop1], &ref, &oclass, &mtype, data, &nedge1,
+                            &edges1, &senses),
+             "topo");
+        for (edge1 = 0; edge1 < nedge1; edge1++) {
+          edgeobj1 = edges1[edge1];
+          REIS(EGADS_SUCCESS,
+               EG_getTopology(edgeobj1, &ref, &oclass, &mtype, trange1,
+                              &ncadnode1, &cadnodes1, &senses),
+               "EG topo edge0");
+          if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+          RAS(0 < ncadnode1 && ncadnode1 < 3, "edge children");
+          cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes1[0]);
+          if (2 == ncadnode1) {
+            cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes1[1]);
+          } else {
+            cad_node1 = cad_node0; /* ONENODE edge */
+          }
+          if (cad_node0 == ineligible_cad_node0 ||
+              cad_node0 == ineligible_cad_node1 ||
+              cad_node1 == ineligible_cad_node0 ||
+              cad_node1 == ineligible_cad_node1)
+            continue;
+          for (it = 0; it < tsamples; it++) {
+            s = (REF_DBL)(it + 1) / (REF_DBL)(tsamples + 1);
+            param[0] = s * trange0[1] + (1.0 - s) * trange0[0];
+            REIS(EGADS_SUCCESS, EG_evaluate(edgeobj0, param, xyz0),
+                 "sample edge");
+            /* inverse projections */
+            REIS(EGADS_SUCCESS, EG_invEvaluate(edgeobj1, xyz0, param, xyz1),
+                 "inv eval other edge");
+            dx[0] = xyz1[0] - xyz0[0];
+            dx[1] = xyz1[1] - xyz0[1];
+            dx[2] = xyz1[2] - xyz0[2];
+            len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+            *width = MIN(*width, len);
+          }
+        }
+      }
+    }
+  }
+
+  printf("face %d diag %f width %f\n", faceid, diag, *width);
+
   return REF_SUCCESS;
 }
 #endif
@@ -444,7 +558,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
     }
     /* face width parameter to all */
     RSS(ref_egads_face_width(ref_geom, face + 1, &width), "face width");
-    params[0] = 4.0 * width;
+    params[0] = 10.0 * width;
     params[1] = 0.1 * params[0];
     params[2] = 15.0;
     RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
@@ -916,28 +1030,6 @@ static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
   ref_free(cad_faceids);
   ref_free(grid_faceids);
   ref_adj_free(n2f);
-  return REF_SUCCESS;
-}
-#endif
-#ifdef HAVE_EGADS
-static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
-                                              int *surface_type) {
-  ego esurf, *eloops, eref;
-  int oclass, mtype, nloop, *senses, *pinfo;
-  double data[18], *preal;
-
-  RNS(ref_geom->faces, "faces not loaded");
-  if (faceid < 1 || faceid > ref_geom->nface) return REF_INVALID;
-
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf, &oclass,
-                      &mtype, data, &nloop, &eloops, &senses),
-       "topo");
-  REIS(EGADS_SUCCESS,
-       EG_getGeometry(esurf, &oclass, surface_type, &eref, &pinfo, &preal),
-       "geom");
-  EG_free(pinfo);
-  EG_free(preal);
   return REF_SUCCESS;
 }
 #endif
