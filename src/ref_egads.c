@@ -570,10 +570,13 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_update_tparams_attributes(
-    REF_GEOM ref_geom, REF_CLOUD face_tp_original, REF_CLOUD face_tp_augment,
-    REF_BOOL *rebuild) {
+    REF_GEOM ref_geom, REF_CLOUD face_tp_original, REF_CLOUD edge_tp_original,
+    REF_CLOUD face_tp_augment, REF_CLOUD edge_tp_augment, REF_BOOL *rebuild) {
   ego faceobj;
-  int face, i, item;
+  int face;
+  ego edgeobj;
+  int edge;
+  int i, item;
   int len, atype;
   const double *preals;
   const int *pints;
@@ -616,6 +619,45 @@ static REF_STATUS ref_egads_update_tparams_attributes(
                              NULL),
              "set new .tParams");
         printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
+               params[0], params[1], params[2]);
+#endif
+        *rebuild = REF_TRUE;
+      }
+    }
+  }
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    /* respect manually set .tParams */
+    if (ref_cloud_has_global(edge_tp_original, (REF_GLOB)(edge + 1))) continue;
+    /* merge update with existing attributes */
+    if (ref_cloud_has_global(edge_tp_augment, (REF_GLOB)(edge + 1))) {
+      needs_update = REF_FALSE;
+      RSS(ref_cloud_item(edge_tp_augment, (REF_GLOB)(edge + 1), &item),
+          "find existing entry");
+      each_ref_cloud_aux(edge_tp_augment, i) {
+        params[i] = ref_cloud_aux(edge_tp_augment, i, item);
+      }
+      if (EGADS_SUCCESS == EG_attributeRet(edgeobj, ".tParams", &atype, &len,
+                                           &pints, &preals, &string)) {
+        /* examine exisiting .tParams and detect change within tol */
+        if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
+        each_ref_cloud_aux(edge_tp_augment, i) {
+          needs_update =
+              needs_update || (ABS(params[i] - preals[i]) > tol * params[i]);
+        }
+      } else {
+        /* create new .tParams attribute */
+        needs_update = REF_TRUE;
+      }
+      if (needs_update) {
+#ifdef HAVE_EGADS_LITE
+        RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
+#else
+        REIS(EGADS_SUCCESS,
+             EG_attributeAdd(edgeobj, ".tParams", ATTRREAL, 3, NULL, params,
+                             NULL),
+             "set new .tParams");
+        printf("select edge %d\nattribute .tParams  %f;%f;%f\n", edge + 1,
                params[0], params[1], params[2]);
 #endif
         *rebuild = REF_TRUE;
@@ -679,7 +721,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   REF_BOOL rebuild;
   REF_INT tries;
   REF_CLOUD face_tp_original, face_tp_augment;
-  REF_CLOUD edge_tp_original;
+  REF_CLOUD edge_tp_original, edge_tp_augment;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
@@ -689,6 +731,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   RSS(ref_cloud_create(&face_tp_original, 3), "create tparams cache");
   RSS(ref_cloud_create(&edge_tp_original, 3), "create tparams cache");
   RSS(ref_cloud_create(&face_tp_augment, 3), "create tparams augment");
+  RSS(ref_cloud_create(&edge_tp_augment, 3), "create tparams augment");
   RSS(ref_egads_cache_tparams(ref_geom, face_tp_original, edge_tp_original),
       "tparams cache");
 
@@ -713,7 +756,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
     RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment),
         "adjust params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
-                                            face_tp_augment, &rebuild),
+                                            edge_tp_original, face_tp_augment,
+                                            edge_tp_augment, &rebuild),
         "adjust params");
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
