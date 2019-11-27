@@ -346,22 +346,22 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_merge_tparams(REF_CLOUD face_tp_augment,
-                                          REF_INT faceid, REF_DBL *new_params) {
+static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
+                                          REF_INT id, REF_DBL *new_params) {
   REF_DBL params[3];
   REF_INT i, item;
 
-  if (ref_cloud_has_global(face_tp_augment, (REF_GLOB)faceid)) {
-    RSS(ref_cloud_item(face_tp_augment, (REF_GLOB)faceid, &item),
+  if (ref_cloud_has_global(object_tp_augment, (REF_GLOB)id)) {
+    RSS(ref_cloud_item(object_tp_augment, (REF_GLOB)id, &item),
         "find existing entry");
-    each_ref_cloud_aux(face_tp_augment, i) {
-      params[i] = ref_cloud_aux(face_tp_augment, i, item);
+    each_ref_cloud_aux(object_tp_augment, i) {
+      params[i] = ref_cloud_aux(object_tp_augment, i, item);
       params[i] = MIN(params[i], new_params[i]);
     }
-    RSS(ref_cloud_store(face_tp_augment, (REF_GLOB)faceid, params),
+    RSS(ref_cloud_store(object_tp_augment, (REF_GLOB)id, params),
         "cache merged .tParams");
   } else {
-    RSS(ref_cloud_store(face_tp_augment, (REF_GLOB)faceid, new_params),
+    RSS(ref_cloud_store(object_tp_augment, (REF_GLOB)id, new_params),
         "cache new .tParams");
   }
 
@@ -371,7 +371,7 @@ static REF_STATUS ref_egads_merge_tparams(REF_CLOUD face_tp_augment,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_DBL *width) {
+                                       REF_CLOUD edge_tp_augment) {
   ego faceobj;
   double diag, box[6];
 
@@ -390,6 +390,9 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   double trange0[2], trange1[2], data[18];
   REF_INT edge0, edge1;
   REF_INT loop0, loop1;
+  REF_DBL width;
+  double params[3];
+  int edgeid;
 
   RAS(0 < faceid && faceid <= (ref_geom->nface), "invalid faceid");
   faceobj = ((ego *)(ref_geom->faces))[faceid - 1];
@@ -397,7 +400,6 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
               (box[1] - box[4]) * (box[1] - box[4]) +
               (box[2] - box[5]) * (box[2] - box[5]));
-  *width = diag;
 
   RSS(ref_egads_face_surface_type(ref_geom, faceid, &surface_type), "styp");
   if (surface_type == PLANE) return REF_SUCCESS; /* skip planes */
@@ -426,6 +428,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
       } else {
         ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
       }
+      width = diag;
       for (loop1 = 0; loop1 < nloop; loop1++) {
         /* loop through all Edges associated with this Loop */
         REIS(EGADS_SUCCESS,
@@ -463,14 +466,18 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
             dx[1] = xyz1[1] - xyz0[1];
             dx[2] = xyz1[2] - xyz0[2];
             len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
-            *width = MIN(*width, len);
+            width = MIN(width, len);
           }
         }
       }
+      edgeid = EG_indexBodyTopo(ref_geom->solid, edgeobj0);
+      params[0] = 10.0 * width;
+      params[1] = 0.1 * params[0];
+      params[2] = 15.0;
+      RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
+          "update tparams");
     }
   }
-
-  printf("face %d diag %f width %f\n", faceid, diag, *width);
 
   return REF_SUCCESS;
 }
@@ -478,13 +485,14 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
-                                           REF_CLOUD face_tp_augment) {
+                                           REF_CLOUD face_tp_augment,
+                                           REF_CLOUD edge_tp_augment) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
 
-  double params[3], diag, box[6], width;
+  double params[3], diag, box[6];
 
   for (face = 0; face < (ref_geom->nface); face++) {
     faceobj = ((ego *)(ref_geom->faces))[face];
@@ -556,13 +564,10 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
             "update tparams");
       }
     }
-    /* face width parameter to all */
-    RSS(ref_egads_face_width(ref_geom, face + 1, &width), "face width");
-    params[0] = 10.0 * width;
-    params[1] = 0.1 * params[0];
-    params[2] = 15.0;
-    RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
-        "update tparams");
+
+    /* face width parameter to all edges */
+    RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment),
+        "face width");
   }
   return REF_SUCCESS;
 }
@@ -753,7 +758,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
-    RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment),
+    RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment,
+                                 edge_tp_augment),
         "adjust params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
