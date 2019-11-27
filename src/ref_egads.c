@@ -347,25 +347,15 @@ static REF_STATUS ref_egads_merge_tparams(REF_CLOUD tparams_augment,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
-                                        REF_CLOUD tparams_original,
-                                        REF_CLOUD tparams_augment,
-                                        REF_BOOL *rebuild) {
+static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
+                                           REF_CLOUD tparams_augment) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
 
-  int len, atype;
-  const double *preals;
-  const int *pints;
-  const char *string;
-
   double params[3], diag, box[6];
 
-  SUPRESS_UNUSED_COMPILER_WARNING(tparams_original);
-
-  *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
     faceobj = ((ego *)(ref_geom->faces))[face];
     REIS(EGADS_SUCCESS,
@@ -374,17 +364,6 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
          "tess query face");
     if (0 == plen || 0 == tlen) {
       printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
-      if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
-                                           &pints, &preals, &string)) {
-        if (ATTRREAL == atype && len == 3) {
-          printf("  current .tParams %f %f %f\n", preals[0], preals[1],
-                 preals[2]);
-        } else {
-          printf("  wrong format .tParams atype %d len %d\n", atype, len);
-        }
-      } else {
-        printf("  no .tParams set for face %d\n", face + 1);
-      }
       REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
       diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                   (box[1] - box[4]) * (box[1] - box[4]) +
@@ -395,17 +374,6 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
       params[2] = 15.0;
       RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
           "update tparams");
-      printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
-             params[0], params[1], params[2]);
-#ifdef HAVE_EGADS_LITE
-      RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
-#else
-      REIS(
-          EGADS_SUCCESS,
-          EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params, NULL),
-          "set .tParams");
-#endif
-      *rebuild = REF_TRUE;
     } else {
       REF_INT tri, side, n0, n1, i;
       const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
@@ -444,21 +412,67 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
         diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                     (box[1] - box[4]) * (box[1] - box[4]) +
                     (box[2] - box[5]) * (box[2] - box[5]));
-
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;
         params[2] = 15.0;
         RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
             "update tparams");
-        printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
-               params[0], params[1], params[2]);
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_update_tparams_attributes(
+    REF_GEOM ref_geom, REF_CLOUD tparams_original, REF_CLOUD tparams_augment,
+    REF_BOOL *rebuild) {
+  ego faceobj;
+  int face, i, item;
+  int len, atype;
+  const double *preals;
+  const int *pints;
+  const char *string;
+  double params[3];
+  REF_BOOL needs_update;
+  REF_DBL tol = 1.0e-7;
+
+  *rebuild = REF_FALSE;
+  for (face = 0; face < (ref_geom->nface); face++) {
+    faceobj = ((ego *)(ref_geom->faces))[face];
+    /* respect manually set .tParams */
+    if (ref_cloud_has_global(tparams_original, (REF_GLOB)(face + 1))) continue;
+    /* merge update with existing attributes */
+    if (ref_cloud_has_global(tparams_augment, (REF_GLOB)(face + 1))) {
+      needs_update = REF_FALSE;
+      RSS(ref_cloud_item(tparams_augment, (REF_GLOB)(face + 1), &item),
+          "find existing entry");
+      each_ref_cloud_aux(tparams_augment, i) {
+        params[i] = ref_cloud_aux(tparams_augment, i, item);
+      }
+      if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
+                                           &pints, &preals, &string)) {
+        /* examine exisiting .tParams and detect change within tol */
+        if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
+        each_ref_cloud_aux(tparams_augment, i) {
+          needs_update =
+              needs_update || (ABS(params[i] - preals[i]) > tol * params[i]);
+        }
+      } else {
+        /* create new .tParams attribute */
+        needs_update = REF_TRUE;
+      }
+      if (needs_update) {
 #ifdef HAVE_EGADS_LITE
         RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
 #else
         REIS(EGADS_SUCCESS,
              EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params,
                              NULL),
-             "set .tParams");
+             "set new .tParams");
+        printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
+               params[0], params[1], params[2]);
 #endif
         *rebuild = REF_TRUE;
       }
@@ -533,8 +547,10 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
-    RSS(ref_egads_tess_adjust(ref_geom, *tess, tparams_original,
-                              tparams_augment, &rebuild),
+    RSS(ref_egads_adjust_tparams(ref_geom, *tess, tparams_augment),
+        "adjust params");
+    RSS(ref_egads_update_tparams_attributes(ref_geom, tparams_original,
+                                            tparams_augment, &rebuild),
         "adjust params");
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
