@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ref_cloud.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 
@@ -436,17 +437,50 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
+                                          REF_CLOUD tparams_orig) {
+  ego faceobj;
+  int face, i;
+  int len, atype;
+  const double *preals;
+  const int *pints;
+  const char *string;
+  double params[3];
+
+  for (face = 0; face < (ref_geom->nface); face++) {
+    faceobj = ((ego *)(ref_geom->faces))[face];
+    if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRREAL == atype && len == 3) {
+        for (i = 0; i < 3; i++) params[i] = preals[i];
+        RSS(ref_cloud_store(tparams_orig, (REF_GLOB)(face + 1), params),
+            "cache orig .tParams");
+      } else {
+        printf("  wrong format .tParams atype %d len %d\n", atype, len);
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   ego solid, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
   REF_BOOL rebuild;
   REF_INT tries;
+  REF_CLOUD tparams_orig;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
   /* maximum interior dihedral angle (in degrees) */
+
+  RSS(ref_cloud_create(&tparams_orig, 3), "create tparams cache");
+  RSS(ref_egads_cache_tparams(ref_geom, tparams_orig), "tparams cache");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -471,6 +505,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
   }
+
+  RSS(ref_cloud_free(tparams_orig), "free tparams cache");
 
   return REF_SUCCESS;
 }
