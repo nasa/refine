@@ -628,9 +628,11 @@ static REF_STATUS ref_egads_update_tparams_attributes(
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
-                                          REF_CLOUD face_tp_original) {
-  ego faceobj;
-  int face, i;
+                                          REF_CLOUD face_tp_original,
+                                          REF_CLOUD edge_tp_original) {
+  ego faceobj, edgeobj;
+  int face, edge;
+  int i;
   int len, atype;
   const double *preals;
   const int *pints;
@@ -651,6 +653,20 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
     }
   }
 
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    if (EGADS_SUCCESS == EG_attributeRet(edgeobj, ".tParams", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRREAL == atype && len == 3) {
+        for (i = 0; i < 3; i++) params[i] = preals[i];
+        RSS(ref_cloud_store(edge_tp_original, (REF_GLOB)(edge + 1), params),
+            "cache original .tParams");
+      } else {
+        printf("  wrong format .tParams atype %d len %d\n", atype, len);
+      }
+    }
+  }
+
   return REF_SUCCESS;
 }
 #endif
@@ -663,6 +679,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   REF_BOOL rebuild;
   REF_INT tries;
   REF_CLOUD face_tp_original, face_tp_augment;
+  REF_CLOUD edge_tp_original;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
@@ -670,8 +687,10 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   /* maximum interior dihedral angle (in degrees) */
 
   RSS(ref_cloud_create(&face_tp_original, 3), "create tparams cache");
+  RSS(ref_cloud_create(&edge_tp_original, 3), "create tparams cache");
   RSS(ref_cloud_create(&face_tp_augment, 3), "create tparams augment");
-  RSS(ref_egads_cache_tparams(ref_geom, face_tp_original), "tparams cache");
+  RSS(ref_egads_cache_tparams(ref_geom, face_tp_original, edge_tp_original),
+      "tparams cache");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -702,6 +721,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   }
 
   RSS(ref_cloud_free(face_tp_augment), "free tparams augment");
+  RSS(ref_cloud_free(edge_tp_original), "free tparams cache");
   RSS(ref_cloud_free(face_tp_original), "free tparams cache");
 
   return REF_SUCCESS;
