@@ -378,8 +378,10 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
       REF_INT tri, side, n0, n1, i;
       const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
       REF_DBL uvm[2], xyz[3], dside[3], dmid[3];
-      REF_DBL length, offset, max_chord;
+      REF_DBL length, offset, max_chord, max_chord_length, max_chord_offset;
       max_chord = 0.0;
+      max_chord_length = 0.0;
+      max_chord_offset = 0.0;
       for (tri = 0; tri < tlen; tri++) {
         for (side = 0; side < 3; side++) {
           n0 = side;
@@ -402,16 +404,21 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
           offset =
               sqrt(dmid[0] * dmid[0] + dmid[1] * dmid[1] + dmid[2] * dmid[2]);
           if (ref_math_divisible(offset, length)) {
-            max_chord = MAX(max_chord, offset / length);
+            if (max_chord < offset / length) {
+              max_chord = offset / length;
+              max_chord_length = length;
+              max_chord_offset = offset;
+            }
           }
         }
       }
-      printf("face %d max chord %f\n", face + 1, max_chord);
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
+      printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
+             max_chord, max_chord_length, max_chord_offset, diag);
       if (max_chord > 0.2) {
-        REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
-        diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                    (box[1] - box[4]) * (box[1] - box[4]) +
-                    (box[2] - box[5]) * (box[2] - box[5]));
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;
         params[2] = 15.0;
