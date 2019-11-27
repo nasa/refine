@@ -323,6 +323,30 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_merge_tparams(REF_CLOUD tparams_augment,
+                                          REF_INT faceid, REF_DBL *new_params) {
+  REF_DBL params[3];
+  REF_INT i, item;
+
+  if (ref_cloud_has_global(tparams_augment, (REF_GLOB)faceid)) {
+    RSS(ref_cloud_item(tparams_augment, (REF_GLOB)faceid, &item),
+        "find existing entry");
+    each_ref_cloud_aux(tparams_augment, i) {
+      params[i] = ref_cloud_aux(tparams_augment, i, item);
+      params[i] = MIN(params[i], new_params[i]);
+    }
+    RSS(ref_cloud_store(tparams_augment, (REF_GLOB)faceid, params),
+        "cache merged .tParams");
+  } else {
+    RSS(ref_cloud_store(tparams_augment, (REF_GLOB)faceid, new_params),
+        "cache new .tParams");
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
                                         REF_CLOUD tparams_original,
                                         REF_CLOUD tparams_augment,
@@ -340,7 +364,6 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
   double params[3], diag, box[6];
 
   SUPRESS_UNUSED_COMPILER_WARNING(tparams_original);
-  SUPRESS_UNUSED_COMPILER_WARNING(tparams_augment);
 
   *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
@@ -370,6 +393,8 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
       params[0] = 0.1 * diag;
       params[1] = 0.01 * diag;
       params[2] = 15.0;
+      RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
+          "update tparams");
       printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
              params[0], params[1], params[2]);
 #ifdef HAVE_EGADS_LITE
@@ -423,6 +448,8 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;
         params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
+            "update tparams");
         printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
                params[0], params[1], params[2]);
 #ifdef HAVE_EGADS_LITE
