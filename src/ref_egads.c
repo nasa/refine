@@ -346,22 +346,22 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_merge_tparams(REF_CLOUD tparams_augment,
+static REF_STATUS ref_egads_merge_tparams(REF_CLOUD face_tp_augment,
                                           REF_INT faceid, REF_DBL *new_params) {
   REF_DBL params[3];
   REF_INT i, item;
 
-  if (ref_cloud_has_global(tparams_augment, (REF_GLOB)faceid)) {
-    RSS(ref_cloud_item(tparams_augment, (REF_GLOB)faceid, &item),
+  if (ref_cloud_has_global(face_tp_augment, (REF_GLOB)faceid)) {
+    RSS(ref_cloud_item(face_tp_augment, (REF_GLOB)faceid, &item),
         "find existing entry");
-    each_ref_cloud_aux(tparams_augment, i) {
-      params[i] = ref_cloud_aux(tparams_augment, i, item);
+    each_ref_cloud_aux(face_tp_augment, i) {
+      params[i] = ref_cloud_aux(face_tp_augment, i, item);
       params[i] = MIN(params[i], new_params[i]);
     }
-    RSS(ref_cloud_store(tparams_augment, (REF_GLOB)faceid, params),
+    RSS(ref_cloud_store(face_tp_augment, (REF_GLOB)faceid, params),
         "cache merged .tParams");
   } else {
-    RSS(ref_cloud_store(tparams_augment, (REF_GLOB)faceid, new_params),
+    RSS(ref_cloud_store(face_tp_augment, (REF_GLOB)faceid, new_params),
         "cache new .tParams");
   }
 
@@ -478,7 +478,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
-                                           REF_CLOUD tparams_augment) {
+                                           REF_CLOUD face_tp_augment) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
@@ -502,7 +502,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
       params[0] = 0.1 * diag;
       params[1] = 0.01 * diag;
       params[2] = 15.0;
-      RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
+      RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
           "update tparams");
     } else {
       REF_INT tri, side, n0, n1, i;
@@ -552,7 +552,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;
         params[2] = 15.0;
-        RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
+        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
             "update tparams");
       }
     }
@@ -561,7 +561,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
     params[0] = 10.0 * width;
     params[1] = 0.1 * params[0];
     params[2] = 15.0;
-    RSS(ref_egads_merge_tparams(tparams_augment, face + 1, params),
+    RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
         "update tparams");
   }
   return REF_SUCCESS;
@@ -570,7 +570,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_update_tparams_attributes(
-    REF_GEOM ref_geom, REF_CLOUD tparams_original, REF_CLOUD tparams_augment,
+    REF_GEOM ref_geom, REF_CLOUD face_tp_original, REF_CLOUD face_tp_augment,
     REF_BOOL *rebuild) {
   ego faceobj;
   int face, i, item;
@@ -586,20 +586,20 @@ static REF_STATUS ref_egads_update_tparams_attributes(
   for (face = 0; face < (ref_geom->nface); face++) {
     faceobj = ((ego *)(ref_geom->faces))[face];
     /* respect manually set .tParams */
-    if (ref_cloud_has_global(tparams_original, (REF_GLOB)(face + 1))) continue;
+    if (ref_cloud_has_global(face_tp_original, (REF_GLOB)(face + 1))) continue;
     /* merge update with existing attributes */
-    if (ref_cloud_has_global(tparams_augment, (REF_GLOB)(face + 1))) {
+    if (ref_cloud_has_global(face_tp_augment, (REF_GLOB)(face + 1))) {
       needs_update = REF_FALSE;
-      RSS(ref_cloud_item(tparams_augment, (REF_GLOB)(face + 1), &item),
+      RSS(ref_cloud_item(face_tp_augment, (REF_GLOB)(face + 1), &item),
           "find existing entry");
-      each_ref_cloud_aux(tparams_augment, i) {
-        params[i] = ref_cloud_aux(tparams_augment, i, item);
+      each_ref_cloud_aux(face_tp_augment, i) {
+        params[i] = ref_cloud_aux(face_tp_augment, i, item);
       }
       if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
                                            &pints, &preals, &string)) {
         /* examine exisiting .tParams and detect change within tol */
         if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
-        each_ref_cloud_aux(tparams_augment, i) {
+        each_ref_cloud_aux(face_tp_augment, i) {
           needs_update =
               needs_update || (ABS(params[i] - preals[i]) > tol * params[i]);
         }
@@ -628,7 +628,7 @@ static REF_STATUS ref_egads_update_tparams_attributes(
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
-                                          REF_CLOUD tparams_original) {
+                                          REF_CLOUD face_tp_original) {
   ego faceobj;
   int face, i;
   int len, atype;
@@ -643,7 +643,7 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
                                          &pints, &preals, &string)) {
       if (ATTRREAL == atype && len == 3) {
         for (i = 0; i < 3; i++) params[i] = preals[i];
-        RSS(ref_cloud_store(tparams_original, (REF_GLOB)(face + 1), params),
+        RSS(ref_cloud_store(face_tp_original, (REF_GLOB)(face + 1), params),
             "cache original .tParams");
       } else {
         printf("  wrong format .tParams atype %d len %d\n", atype, len);
@@ -662,16 +662,16 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
   double params[3], diag, box[6];
   REF_BOOL rebuild;
   REF_INT tries;
-  REF_CLOUD tparams_original, tparams_augment;
+  REF_CLOUD face_tp_original, face_tp_augment;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
   /* maximum interior dihedral angle (in degrees) */
 
-  RSS(ref_cloud_create(&tparams_original, 3), "create tparams cache");
-  RSS(ref_cloud_create(&tparams_augment, 3), "create tparams augment");
-  RSS(ref_egads_cache_tparams(ref_geom, tparams_original), "tparams cache");
+  RSS(ref_cloud_create(&face_tp_original, 3), "create tparams cache");
+  RSS(ref_cloud_create(&face_tp_augment, 3), "create tparams augment");
+  RSS(ref_egads_cache_tparams(ref_geom, face_tp_original), "tparams cache");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -691,18 +691,18 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
-    RSS(ref_egads_adjust_tparams(ref_geom, *tess, tparams_augment),
+    RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment),
         "adjust params");
-    RSS(ref_egads_update_tparams_attributes(ref_geom, tparams_original,
-                                            tparams_augment, &rebuild),
+    RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
+                                            face_tp_augment, &rebuild),
         "adjust params");
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
   }
 
-  RSS(ref_cloud_free(tparams_augment), "free tparams augment");
-  RSS(ref_cloud_free(tparams_original), "free tparams cache");
+  RSS(ref_cloud_free(face_tp_augment), "free tparams augment");
+  RSS(ref_cloud_free(face_tp_original), "free tparams cache");
 
   return REF_SUCCESS;
 }
