@@ -1,4 +1,8 @@
 
+tunnel restart
+  extract a subset of grid and solb straddling x plane with fuzz
+  interpolate a single faceid of receptor from a donor
+
 surrogate surface
   support twod geom
   share via meshb

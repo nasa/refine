@@ -395,6 +395,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  /* entirely inside the donor, different topology */
   if (REF_EMPTY != subset_pos) {
     REF_GRID old_grid, new_grid;
     REF_DBL *old_subset, *new_subset;
@@ -455,6 +456,8 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  /* can be outside of the donor, different topology, zeroth-order extrapolation
+   */
   if (REF_EMPTY != nearest_pos) {
     REF_GRID old_grid, new_grid;
     REF_DBL *old_subset, *new_subset;
@@ -515,6 +518,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  /* requires same topology */
   if (REF_EMPTY != field_pos) {
     REF_GRID old_grid, new_grid;
     REF_DBL *old_field, *new_field;
