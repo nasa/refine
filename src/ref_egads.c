@@ -747,7 +747,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
 
   rebuild = REF_TRUE;
   tries = 0;
-  while (rebuild && tries < 3) {
+  while (rebuild && tries < 5) {
     tries++;
     REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
     REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
