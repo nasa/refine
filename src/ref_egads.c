@@ -486,7 +486,8 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
                                            REF_CLOUD face_tp_augment,
-                                           REF_CLOUD edge_tp_augment) {
+                                           REF_CLOUD edge_tp_augment,
+                                           REF_INT auto_tparams) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
@@ -502,16 +503,17 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
          "tess query face");
     if (0 == plen || 0 == tlen) {
       printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
-      REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
-      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-                  (box[1] - box[4]) * (box[1] - box[4]) +
-                  (box[2] - box[5]) * (box[2] - box[5]));
-
-      params[0] = 0.1 * diag;
-      params[1] = 0.01 * diag;
-      params[2] = 15.0;
-      RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
-          "update tparams");
+      if (auto_tparams & REF_EGADS_MISSING_TPARAM) {
+        REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+        diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                    (box[1] - box[4]) * (box[1] - box[4]) +
+                    (box[2] - box[5]) * (box[2] - box[5]));
+        params[0] = 0.1 * diag;
+        params[1] = 0.01 * diag;
+        params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+            "update tparams");
+      }
     } else {
       REF_INT tri, side, n0, n1, i;
       const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
@@ -556,7 +558,7 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
                   (box[2] - box[5]) * (box[2] - box[5]));
       printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
              max_chord, max_chord_length, max_chord_offset, diag);
-      if (max_chord > 0.2) {
+      if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;
         params[2] = 15.0;
@@ -566,8 +568,10 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
     }
 
     /* face width parameter to all edges */
-    RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment),
-        "face width");
+    if (auto_tparams & REF_EGADS_WIDTH_TPARAM) {
+      RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment),
+          "face width");
+    }
   }
   return REF_SUCCESS;
 }
@@ -719,7 +723,8 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
+static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
+                                        REF_INT auto_tparams) {
   ego solid, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
@@ -759,12 +764,13 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
     REIS(1, tess_status, "tess not closed");
 
     RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment,
-                                 edge_tp_augment),
+                                 edge_tp_augment, auto_tparams),
         "adjust params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
         "adjust params");
+
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
@@ -778,11 +784,11 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
+REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
 #ifdef HAVE_EGADS
   ego tess;
 
-  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess),
+  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
       "create tess object");
 
   RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
@@ -795,6 +801,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(auto_tparams);
 #endif
 
   return REF_SUCCESS;
