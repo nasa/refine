@@ -389,7 +389,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   double trange0[2], trange1[2], data[18];
   REF_INT edge0, edge1;
   REF_INT loop0, loop1;
-  REF_DBL width;
+  REF_DBL width, aspect_ratio, adjusted;
   double params[3];
   int edgeid;
 
@@ -467,11 +467,15 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
         }
       }
       edgeid = EG_indexBodyTopo(ref_geom->solid, edgeobj0);
-      params[0] = 10.0 * width;
-      params[1] = 0.1 * params[0];
-      params[2] = 15.0;
-      RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
-          "update tparams");
+      if (ref_math_divisible(diag, width)) {
+        aspect_ratio = diag / width;
+        adjusted = MIN(MAX(1.0, aspect_ratio - 10.0), 10.0) * width;
+        params[0] = adjusted;
+        params[1] = 0.1 * params[0];
+        params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
+            "update tparams");
+      }
     }
   }
 
