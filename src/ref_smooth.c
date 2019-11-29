@@ -771,7 +771,7 @@ REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
+REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid, REF_LIST ref_list) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -844,6 +844,8 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
                ref_node_xyz(ref_node, 2, node));
         RSS(ref_smooth_move_edge_to(ref_grid, node1, xyz1), "move node1");
         RSS(ref_smooth_move_edge_to(ref_grid, node2, xyz2), "move node2");
+        RSS(ref_list_push(ref_list, node1), "mark node1");
+        RSS(ref_list_push(ref_list, node2), "mark node2");
       }
     }
   }
@@ -1709,8 +1711,11 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, interior;
+  REF_LIST ref_list;
+  REF_BOOL is_sliver;
 
-  RSS(ref_smooth_sliver_node(ref_grid), "sliver");
+  RSS(ref_list_create(&ref_list), "create list");
+  RSS(ref_smooth_sliver_node(ref_grid, ref_list), "sliver");
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -1724,6 +1729,9 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     /* don't move geom nodes */
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
     if (geom_node) continue;
+    /* skip nodes set by sliver protection */
+    RSS(ref_list_contains(ref_list, node, &is_sliver), "create list");
+    if (is_sliver) continue;
     /* next to ghost node, can't move */
     RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
@@ -1734,6 +1742,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_smooth_geom_edge(ref_grid, node), "ideal node for edge");
     ref_node_age(ref_node, node) = 0;
   }
+  RSS(ref_list_free(ref_list), "free list");
 
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
