@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ref_cloud.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 
@@ -193,6 +194,29 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 }
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
+                                              int *surface_type) {
+  ego esurf, *eloops, eref;
+  int oclass, mtype, nloop, *senses, *pinfo;
+  double data[18], *preal;
+
+  RNS(ref_geom->faces, "faces not loaded");
+  if (faceid < 1 || faceid > ref_geom->nface) return REF_INVALID;
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf, &oclass,
+                      &mtype, data, &nloop, &eloops, &senses),
+       "topo");
+  REIS(EGADS_SUCCESS,
+       EG_getGeometry(esurf, &oclass, surface_type, &eref, &pinfo, &preal),
+       "geom");
+  EG_free(pinfo);
+  EG_free(preal);
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -322,21 +346,155 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
-                                        REF_BOOL *rebuild) {
+static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
+                                          REF_INT id, REF_DBL *new_params) {
+  REF_DBL params[3];
+  REF_INT i, item;
+
+  if (ref_cloud_has_global(object_tp_augment, (REF_GLOB)id)) {
+    RSS(ref_cloud_item(object_tp_augment, (REF_GLOB)id, &item),
+        "find existing entry");
+    each_ref_cloud_aux(object_tp_augment, i) {
+      params[i] = ref_cloud_aux(object_tp_augment, i, item);
+      params[i] = MIN(params[i], new_params[i]);
+    }
+    RSS(ref_cloud_store(object_tp_augment, (REF_GLOB)id, params),
+        "cache merged .tParams");
+  } else {
+    RSS(ref_cloud_store(object_tp_augment, (REF_GLOB)id, new_params),
+        "cache new .tParams");
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
+                                       REF_CLOUD edge_tp_augment) {
+  ego faceobj;
+  double diag, box[6];
+
+  double len, xyz0[18], xyz1[18], dx[3], param[2], s;
+  REF_INT it, tsamples = 3;
+  REF_INT ineligible_cad_node0, ineligible_cad_node1, cad_node0, cad_node1;
+  ego edgeobj0, edgeobj1;
+  ego *cadnodes0, *cadnodes1;
+  ego *edges0, *edges1;
+  ego *loops, ref;
+  int nloop;
+  int ncadnode0, ncadnode1;
+  int nedge0, nedge1;
+  int *senses, mtype, oclass;
+  double trange0[2], trange1[2], data[18];
+  REF_INT edge0, edge1;
+  REF_INT loop0, loop1;
+  REF_DBL width, aspect_ratio, adjusted;
+  double params[3];
+  int edgeid;
+
+  RAS(0 < faceid && faceid <= (ref_geom->nface), "invalid faceid");
+  faceobj = ((ego *)(ref_geom->faces))[faceid - 1];
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+  diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+              (box[1] - box[4]) * (box[1] - box[4]) +
+              (box[2] - box[5]) * (box[2] - box[5]));
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(faceobj, &ref, &oclass, &mtype, data, &nloop, &loops,
+                      &senses),
+       "topo");
+  for (loop0 = 0; loop0 < nloop; loop0++) {
+    /* loop through all Edges associated with this Loop */
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(loops[loop0], &ref, &oclass, &mtype, data, &nedge0,
+                        &edges0, &senses),
+         "topo");
+    for (edge0 = 0; edge0 < nedge0; edge0++) {
+      edgeobj0 = edges0[edge0];
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(edgeobj0, &ref, &oclass, &mtype, trange0, &ncadnode0,
+                          &cadnodes0, &senses),
+           "EG topo edge0");
+      if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+      RAS(0 < ncadnode0 && ncadnode0 < 3, "edge children");
+      ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes0[0]);
+      if (2 == ncadnode0) {
+        ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes0[1]);
+      } else {
+        ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
+      }
+      width = diag;
+      for (loop1 = 0; loop1 < nloop; loop1++) {
+        /* loop through all Edges associated with this Loop */
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(loops[loop1], &ref, &oclass, &mtype, data, &nedge1,
+                            &edges1, &senses),
+             "topo");
+        for (edge1 = 0; edge1 < nedge1; edge1++) {
+          edgeobj1 = edges1[edge1];
+          REIS(EGADS_SUCCESS,
+               EG_getTopology(edgeobj1, &ref, &oclass, &mtype, trange1,
+                              &ncadnode1, &cadnodes1, &senses),
+               "EG topo edge0");
+          if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+          RAS(0 < ncadnode1 && ncadnode1 < 3, "edge children");
+          cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes1[0]);
+          if (2 == ncadnode1) {
+            cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes1[1]);
+          } else {
+            cad_node1 = cad_node0; /* ONENODE edge */
+          }
+          if (cad_node0 == ineligible_cad_node0 ||
+              cad_node0 == ineligible_cad_node1 ||
+              cad_node1 == ineligible_cad_node0 ||
+              cad_node1 == ineligible_cad_node1)
+            continue;
+          for (it = 0; it < tsamples; it++) {
+            s = (REF_DBL)(it + 1) / (REF_DBL)(tsamples + 1);
+            param[0] = s * trange0[1] + (1.0 - s) * trange0[0];
+            REIS(EGADS_SUCCESS, EG_evaluate(edgeobj0, param, xyz0),
+                 "sample edge");
+            /* inverse projections */
+            REIS(EGADS_SUCCESS, EG_invEvaluate(edgeobj1, xyz0, param, xyz1),
+                 "inv eval other edge");
+            dx[0] = xyz1[0] - xyz0[0];
+            dx[1] = xyz1[1] - xyz0[1];
+            dx[2] = xyz1[2] - xyz0[2];
+            len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+            width = MIN(width, len);
+          }
+        }
+      }
+      edgeid = EG_indexBodyTopo(ref_geom->solid, edgeobj0);
+      if (ref_math_divisible(diag, width)) {
+        aspect_ratio = diag / width;
+        adjusted = MIN(MAX(1.0, aspect_ratio - 10.0), 10.0) * width;
+        params[0] = adjusted;
+        params[1] = 0.1 * params[0];
+        params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
+            "update tparams");
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
+                                           REF_CLOUD face_tp_augment,
+                                           REF_CLOUD edge_tp_augment,
+                                           REF_INT auto_tparams) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
   const int *ptype, *pindex, *tris, *tric;
 
-  int len, atype;
-  const double *preals;
-  const int *pints;
-  const char *string;
-
   double params[3], diag, box[6];
 
-  *rebuild = REF_FALSE;
   for (face = 0; face < (ref_geom->nface); face++) {
     faceobj = ((ego *)(ref_geom->faces))[face];
     REIS(EGADS_SUCCESS,
@@ -345,36 +503,74 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
          "tess query face");
     if (0 == plen || 0 == tlen) {
       printf("face %d has %d nodes and %d triangles\n", face + 1, plen, tlen);
-      if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
-                                           &pints, &preals, &string)) {
-        if (ATTRREAL == atype && len == 3) {
-          printf("  current .tParams %f %f %f\n", preals[0], preals[1],
-                 preals[2]);
-        } else {
-          printf("  wrong format .tParams atype %d len %d\n", atype, len);
+      if (auto_tparams & REF_EGADS_MISSING_TPARAM) {
+        REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
+        diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                    (box[1] - box[4]) * (box[1] - box[4]) +
+                    (box[2] - box[5]) * (box[2] - box[5]));
+        params[0] = 0.1 * diag;
+        params[1] = 0.01 * diag;
+        params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+            "update tparams");
+      }
+    } else {
+      REF_INT tri, side, n0, n1, i;
+      const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
+      REF_DBL uvm[2], xyz[3], dside[3], dmid[3];
+      REF_DBL length, offset, max_chord, max_chord_length, max_chord_offset;
+      max_chord = 0.0;
+      max_chord_length = 0.0;
+      max_chord_offset = 0.0;
+      for (tri = 0; tri < tlen; tri++) {
+        for (side = 0; side < 3; side++) {
+          n0 = side;
+          n1 = side + 1;
+          if (n1 > 2) n1 -= 3;
+          n0 = tris[n0 + 3 * tri] - 1;
+          n1 = tris[n1 + 3 * tri] - 1;
+          xyz0 = &(points[3 * n0]);
+          xyz1 = &(points[3 * n1]);
+          uv0 = &(uv[2 * n0]);
+          uv1 = &(uv[2 * n1]);
+          for (i = 0; i < 2; i++) uvm[i] = 0.5 * (uv0[i] + uv1[i]);
+          RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uvm, xyz,
+                               NULL),
+              "eval mid uv");
+          for (i = 0; i < 3; i++) dside[i] = xyz1[i] - xyz0[i];
+          for (i = 0; i < 3; i++) dmid[i] = xyz[i] - 0.5 * (xyz1[i] + xyz0[i]);
+          length = sqrt(dside[0] * dside[0] + dside[1] * dside[1] +
+                        dside[2] * dside[2]);
+          offset =
+              sqrt(dmid[0] * dmid[0] + dmid[1] * dmid[1] + dmid[2] * dmid[2]);
+          if (ref_math_divisible(offset, length)) {
+            if (max_chord < offset / length) {
+              max_chord = offset / length;
+              max_chord_length = length;
+              max_chord_offset = offset;
+            }
+          }
         }
-      } else {
-        printf("  no .tParams set for face %d\n", face + 1);
       }
       REIS(EGADS_SUCCESS, EG_getBoundingBox(faceobj, box), "EG bounding box");
       diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                   (box[1] - box[4]) * (box[1] - box[4]) +
                   (box[2] - box[5]) * (box[2] - box[5]));
+      printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
+             max_chord, max_chord_length, max_chord_offset, diag);
+      if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
+        params[0] = 0.1 * diag;
+        params[1] = 0.001 * diag;
+        params[2] = 15.0;
+        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+            "update tparams");
+      }
+    }
 
-      params[0] = 0.1 * diag;
-      params[1] = 0.001 * diag;
-      params[2] = 15.0;
-      printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
-             params[0], params[1], params[2]);
-#ifdef HAVE_EGADS_LITE
-      RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
-#else
-      REIS(
-          EGADS_SUCCESS,
-          EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params, NULL),
-          "set .tParams");
-#endif
-      *rebuild = REF_TRUE;
+    /* face width parameter to all edges */
+    if (auto_tparams & REF_EGADS_WIDTH_TPARAM) {
+      RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment),
+          "face width");
     }
   }
   return REF_SUCCESS;
@@ -382,17 +578,172 @@ static REF_STATUS ref_egads_tess_adjust(REF_GEOM ref_geom, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
+static REF_STATUS ref_egads_update_tparams_attributes(
+    REF_GEOM ref_geom, REF_CLOUD face_tp_original, REF_CLOUD edge_tp_original,
+    REF_CLOUD face_tp_augment, REF_CLOUD edge_tp_augment, REF_BOOL *rebuild) {
+  ego faceobj;
+  int face;
+  ego edgeobj;
+  int edge;
+  int i, item;
+  int len, atype;
+  const double *preals;
+  const int *pints;
+  const char *string;
+  double params[3];
+  REF_BOOL needs_update;
+  REF_DBL tol = 1.0e-7;
+
+  *rebuild = REF_FALSE;
+  for (face = 0; face < (ref_geom->nface); face++) {
+    faceobj = ((ego *)(ref_geom->faces))[face];
+    /* respect manually set .tParams */
+    if (ref_cloud_has_global(face_tp_original, (REF_GLOB)(face + 1))) continue;
+    /* merge update with existing attributes */
+    if (ref_cloud_has_global(face_tp_augment, (REF_GLOB)(face + 1))) {
+      needs_update = REF_FALSE;
+      RSS(ref_cloud_item(face_tp_augment, (REF_GLOB)(face + 1), &item),
+          "find existing entry");
+      each_ref_cloud_aux(face_tp_augment, i) {
+        params[i] = ref_cloud_aux(face_tp_augment, i, item);
+      }
+      if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
+                                           &pints, &preals, &string)) {
+        /* examine exisiting .tParams and detect change within tol */
+        if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
+        each_ref_cloud_aux(face_tp_augment, i) {
+          needs_update =
+              needs_update || (ABS(params[i] - preals[i]) > tol * params[i]);
+        }
+      } else {
+        /* create new .tParams attribute */
+        needs_update = REF_TRUE;
+      }
+      if (needs_update) {
+#ifdef HAVE_EGADS_LITE
+        RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
+#else
+        REIS(EGADS_SUCCESS,
+             EG_attributeAdd(faceobj, ".tParams", ATTRREAL, 3, NULL, params,
+                             NULL),
+             "set new .tParams");
+        printf("select face %d\nattribute .tParams  %f;%f;%f\n", face + 1,
+               params[0], params[1], params[2]);
+#endif
+        *rebuild = REF_TRUE;
+      }
+    }
+  }
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    /* respect manually set .tParams */
+    if (ref_cloud_has_global(edge_tp_original, (REF_GLOB)(edge + 1))) continue;
+    /* merge update with existing attributes */
+    if (ref_cloud_has_global(edge_tp_augment, (REF_GLOB)(edge + 1))) {
+      needs_update = REF_FALSE;
+      RSS(ref_cloud_item(edge_tp_augment, (REF_GLOB)(edge + 1), &item),
+          "find existing entry");
+      each_ref_cloud_aux(edge_tp_augment, i) {
+        params[i] = ref_cloud_aux(edge_tp_augment, i, item);
+      }
+      if (EGADS_SUCCESS == EG_attributeRet(edgeobj, ".tParams", &atype, &len,
+                                           &pints, &preals, &string)) {
+        /* examine exisiting .tParams and detect change within tol */
+        if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
+        each_ref_cloud_aux(edge_tp_augment, i) {
+          needs_update =
+              needs_update || (ABS(params[i] - preals[i]) > tol * params[i]);
+        }
+      } else {
+        /* create new .tParams attribute */
+        needs_update = REF_TRUE;
+      }
+      if (needs_update) {
+#ifdef HAVE_EGADS_LITE
+        RSS(REF_IMPLEMENT, "full EGADS required to adjust .tParams");
+#else
+        REIS(EGADS_SUCCESS,
+             EG_attributeAdd(edgeobj, ".tParams", ATTRREAL, 3, NULL, params,
+                             NULL),
+             "set new .tParams");
+        printf("select edge %d\nattribute .tParams  %f;%f;%f\n", edge + 1,
+               params[0], params[1], params[2]);
+#endif
+        *rebuild = REF_TRUE;
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
+                                          REF_CLOUD face_tp_original,
+                                          REF_CLOUD edge_tp_original) {
+  ego faceobj, edgeobj;
+  int face, edge;
+  int i;
+  int len, atype;
+  const double *preals;
+  const int *pints;
+  const char *string;
+  double params[3];
+
+  for (face = 0; face < (ref_geom->nface); face++) {
+    faceobj = ((ego *)(ref_geom->faces))[face];
+    if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRREAL == atype && len == 3) {
+        for (i = 0; i < 3; i++) params[i] = preals[i];
+        RSS(ref_cloud_store(face_tp_original, (REF_GLOB)(face + 1), params),
+            "cache original .tParams");
+      } else {
+        printf("  wrong format .tParams atype %d len %d\n", atype, len);
+      }
+    }
+  }
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    if (EGADS_SUCCESS == EG_attributeRet(edgeobj, ".tParams", &atype, &len,
+                                         &pints, &preals, &string)) {
+      if (ATTRREAL == atype && len == 3) {
+        for (i = 0; i < 3; i++) params[i] = preals[i];
+        RSS(ref_cloud_store(edge_tp_original, (REF_GLOB)(edge + 1), params),
+            "cache original .tParams");
+      } else {
+        printf("  wrong format .tParams atype %d len %d\n", atype, len);
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
+                                        REF_INT auto_tparams) {
   ego solid, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
   REF_BOOL rebuild;
   REF_INT tries;
+  REF_CLOUD face_tp_original, face_tp_augment;
+  REF_CLOUD edge_tp_original, edge_tp_augment;
   solid = (ego)(ref_geom->solid);
   /* maximum length of an EDGE segment or triangle side (in physical space) */
   /* curvature-based value that looks locally at the deviation between
      the centroid of the discrete object and the underlying geometry */
   /* maximum interior dihedral angle (in degrees) */
+
+  RSS(ref_cloud_create(&face_tp_original, 3), "create tparams cache");
+  RSS(ref_cloud_create(&edge_tp_original, 3), "create tparams cache");
+  RSS(ref_cloud_create(&face_tp_augment, 3), "create tparams augment");
+  RSS(ref_cloud_create(&edge_tp_augment, 3), "create tparams augment");
+  RSS(ref_egads_cache_tparams(ref_geom, face_tp_original, edge_tp_original),
+      "tparams cache");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -405,28 +756,39 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess) {
 
   rebuild = REF_TRUE;
   tries = 0;
-  while (rebuild && tries < 3) {
+  while (rebuild && tries < 5) {
     tries++;
     REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
     REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
          "EG tess");
     REIS(1, tess_status, "tess not closed");
 
-    RSS(ref_egads_tess_adjust(ref_geom, *tess, &rebuild), "adjust params");
+    RSS(ref_egads_adjust_tparams(ref_geom, *tess, face_tp_augment,
+                                 edge_tp_augment, auto_tparams),
+        "adjust params");
+    RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
+                                            edge_tp_original, face_tp_augment,
+                                            edge_tp_augment, &rebuild),
+        "adjust params");
+
     if (rebuild)
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
   }
 
+  RSS(ref_cloud_free(face_tp_augment), "free tparams augment");
+  RSS(ref_cloud_free(edge_tp_original), "free tparams cache");
+  RSS(ref_cloud_free(face_tp_original), "free tparams cache");
+
   return REF_SUCCESS;
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
+REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
 #ifdef HAVE_EGADS
   ego tess;
 
-  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess),
+  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
       "create tess object");
 
   RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
@@ -439,6 +801,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid) {
 #else
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(auto_tparams);
 #endif
 
   return REF_SUCCESS;
@@ -744,28 +1107,6 @@ static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
   ref_free(cad_faceids);
   ref_free(grid_faceids);
   ref_adj_free(n2f);
-  return REF_SUCCESS;
-}
-#endif
-#ifdef HAVE_EGADS
-static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
-                                              int *surface_type) {
-  ego esurf, *eloops, eref;
-  int oclass, mtype, nloop, *senses, *pinfo;
-  double data[18], *preal;
-
-  RNS(ref_geom->faces, "faces not loaded");
-  if (faceid < 1 || faceid > ref_geom->nface) return REF_INVALID;
-
-  REIS(EGADS_SUCCESS,
-       EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &esurf, &oclass,
-                      &mtype, data, &nloop, &eloops, &senses),
-       "topo");
-  REIS(EGADS_SUCCESS,
-       EG_getGeometry(esurf, &oclass, surface_type, &eref, &pinfo, &preal),
-       "geom");
-  EG_free(pinfo);
-  EG_free(preal);
   return REF_SUCCESS;
 }
 #endif

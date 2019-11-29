@@ -20,6 +20,15 @@
 #define REF_EGADS_H
 
 #include "ref_defs.h"
+BEGIN_C_DECLORATION
+
+#define REF_EGADS_MISSING_TPARAM (1)
+#define REF_EGADS_CHORD_TPARAM (2)
+#define REF_EGADS_WIDTH_TPARAM (4)
+#define REF_EGADS_ALL_TPARAM (4 + 2 + 1)
+
+END_C_DECLORATION
+
 #include "ref_geom.h"
 
 BEGIN_C_DECLORATION
@@ -28,7 +37,7 @@ REF_STATUS ref_egads_open(REF_GEOM ref_geom);
 REF_STATUS ref_egads_close(REF_GEOM ref_geom);
 REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename);
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid);
+REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams);
 
 REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
 

@@ -71,6 +71,8 @@ static void bootstrap_help(const char *name) {
   printf("  -t  tecplot movie of surface curvature adaptation\n");
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("  --mesher {tetgen|aflr} volume mesher\n");
+  printf("  --auto-tparams {or combination of options} adjust .tParams\n");
+  printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
   printf("\n");
 }
 /*
@@ -300,6 +302,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
   REF_INT mesher_pos = REF_EMPTY;
+  REF_INT auto_tparams_pos = REF_EMPTY;
+  REF_INT auto_tparams = 0; /* REF_EGADS_ALL_TPARAM; */
   char *mesher = "tetgen";
   REF_INT passes = 15;
 
@@ -319,8 +323,19 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
+  RXS(ref_args_find(argc, argv, "--auto-tparams", &auto_tparams_pos),
+      REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != auto_tparams_pos && auto_tparams_pos < argc - 1) {
+    auto_tparams = atoi(argv[auto_tparams_pos + 1]);
+    printf("--auto-tparams %d requested\n", auto_tparams);
+    if ( auto_tparams < 0) {
+      auto_tparams = REF_EGADS_ALL_TPARAM;
+      printf("--auto-tparams %d set to all\n", auto_tparams);
+    }
+  }
+
   printf("initial tessellation\n");
-  RSS(ref_egads_tess(ref_grid), "tess egads");
+  RSS(ref_egads_tess(ref_grid, auto_tparams), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   RSS(ref_geom_tec(ref_grid, filename), "geom export");
