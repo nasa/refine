@@ -698,6 +698,55 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT i, geom, node, item, cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT node1, node2;
+  REF_DBL dx1[3], dx2[3], dot;
+
+  each_ref_geom_node(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    each_ref_cell_having_node(ref_cell, node, item, cell) {
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      node1 = REF_EMPTY;
+      node2 = REF_EMPTY;
+      if (node == nodes[0]) {
+        node1 = nodes[1];
+        node2 = nodes[2];
+      }
+      if (node == nodes[1]) {
+        node1 = nodes[2];
+        node2 = nodes[0];
+      }
+      if (node == nodes[2]) {
+        node1 = nodes[0];
+        node2 = nodes[1];
+      }
+      RUS(REF_EMPTY, node1, "node1 not set");
+      RUS(REF_EMPTY, node2, "node2 not set");
+      for (i = 0; i < 3; i++) {
+        dx1[i] =
+            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+      }
+      for (i = 0; i < 3; i++) {
+        dx2[i] =
+            ref_node_xyz(ref_node, i, node2) - ref_node_xyz(ref_node, i, node);
+      }
+      RSS(ref_math_normalize(dx1), "dx1");
+      RSS(ref_math_normalize(dx2), "dx2");
+      dot = ref_math_dot(dx1, dx2);
+      if (dot > 0.99)
+        printf("dot %f at %f %f %f\n", dot, ref_node_xyz(ref_node, 0, node),
+               ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node));
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
@@ -1557,6 +1606,8 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, interior;
+
+  RSS(ref_smooth_sliver_node(ref_grid), "sliver");
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
