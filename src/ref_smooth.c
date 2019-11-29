@@ -698,6 +698,15 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_move_node_to(REF_GRID ref_grid, REF_INT node,
+                                   REF_DBL *xyz) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  printf("dxyz %f %f %f\n", xyz[0] - ref_node_xyz(ref_node, 0, node),
+         xyz[1] - ref_node_xyz(ref_node, 1, node),
+         xyz[2] - ref_node_xyz(ref_node, 2, node));
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -706,6 +715,13 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node1, node2;
   REF_DBL dx1[3], dx2[3], dot;
+  REF_DBL xyz1[3], xyz2[3];
+  REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m[6];
+  REF_DBL m[6];
+  REF_DBL length_in_metric;
+
+  /* not implemented for parallel, yet */
+  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
 
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
@@ -730,18 +746,32 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
       for (i = 0; i < 3; i++) {
         dx1[i] =
             ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
-      }
-      for (i = 0; i < 3; i++) {
         dx2[i] =
             ref_node_xyz(ref_node, i, node2) - ref_node_xyz(ref_node, i, node);
       }
       RSS(ref_math_normalize(dx1), "dx1");
       RSS(ref_math_normalize(dx2), "dx2");
       dot = ref_math_dot(dx1, dx2);
-      if (dot > 0.99)
+      if (dot > 0.99) {
         printf("dot %f at %f %f %f\n", dot, ref_node_xyz(ref_node, 0, node),
                ref_node_xyz(ref_node, 1, node),
                ref_node_xyz(ref_node, 2, node));
+        /* averaged metric */
+        RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "get n1 log m");
+        RSS(ref_node_metric_get_log(ref_node, node2, log_m2), "get n2 log m");
+        RSS(ref_node_metric_get_log(ref_node, node, log_m0), "get node log m");
+        for (i = 0; i < 6; i++)
+          log_m[i] = (log_m0[i] + log_m1[i] + log_m2[i]) / 3.0;
+        RSS(ref_matrix_exp_m(log_m, m), "exp avg");
+        length_in_metric = 0.5 * (ref_matrix_sqrt_vt_m_v(m, dx1) +
+                                  ref_matrix_sqrt_vt_m_v(m, dx2));
+        for (i = 0; i < 3; i++) {
+          xyz1[i] = dx1[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
+          xyz2[i] = dx2[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
+        }
+        RSS(ref_smooth_move_node_to(ref_grid, node1, xyz1), "move node1");
+        RSS(ref_smooth_move_node_to(ref_grid, node2, xyz2), "move node2");
+      }
     }
   }
   return REF_SUCCESS;
