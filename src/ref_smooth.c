@@ -752,7 +752,7 @@ REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node,
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
 
-    if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+    if ((q > 0.1 * ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
         (min_uv_area > ref_node_min_uv_area(ref_node))) {
@@ -782,6 +782,7 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
   REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m[6];
   REF_DBL m[6];
   REF_DBL length_in_metric;
+  REF_BOOL has_side1, has_side2;
 
   /* not implemented for parallel, yet */
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
@@ -806,6 +807,13 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
       }
       RUS(REF_EMPTY, node1, "node1 not set");
       RUS(REF_EMPTY, node2, "node2 not set");
+      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node1, &has_side1),
+          "has edge node-node1");
+      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node2, &has_side2),
+          "has edge node-node2");
+      /* skip if not bound by edges */
+      if (!has_side1 || !has_side2) continue;
+
       for (i = 0; i < 3; i++) {
         dx1[i] =
             ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
