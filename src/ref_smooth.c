@@ -698,12 +698,75 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_move_node_to(REF_GRID ref_grid, REF_INT node,
+REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node,
                                    REF_DBL *xyz) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BOOL geom_node, geom_edge;
+  REF_INT id, geom;
+  REF_DBL t, t_orig, t_target;
+  REF_DBL q, normdev, normdev_orig, min_uv_area;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_DBL backoff;
+  REF_INT tries;
+
   printf("dxyz %f %f %f\n", xyz[0] - ref_node_xyz(ref_node, 0, node),
          xyz[1] - ref_node_xyz(ref_node, 1, node),
          xyz[2] - ref_node_xyz(ref_node, 2, node));
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
+  RAS(!geom_node, "geom node not allowed");
+  RAS(geom_edge, "geom edge required");
+
+  RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_EDGE, &id), "get id");
+  RSS(ref_geom_find(ref_geom, node, REF_GEOM_EDGE, id, &geom), "get geom");
+
+  RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "get t_orig");
+  RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id, xyz, &t_target),
+      "inv");
+
+  RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
+
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++) {
+    t = backoff * t_target + (1.0 - backoff) * t_orig;
+
+    RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t), "set t");
+    RSS(ref_geom_constrain(ref_grid, node), "constrain");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
+    if (ref_grid_surf(ref_grid)) {
+      q = 1.0;
+    } else {
+      RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
+    }
+    RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
+    RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
+
+    if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+         normdev > normdev_orig) &&
+        (min_uv_area > ref_node_min_uv_area(ref_node))) {
+      return REF_SUCCESS;
+    }
+    backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
+  }
+
+  RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "set t");
+  RSS(ref_geom_constrain(ref_grid, node), "constrain");
+  RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
+
   return REF_SUCCESS;
 }
 
@@ -769,8 +832,8 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
           xyz1[i] = dx1[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
           xyz2[i] = dx2[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
         }
-        RSS(ref_smooth_move_node_to(ref_grid, node1, xyz1), "move node1");
-        RSS(ref_smooth_move_node_to(ref_grid, node2, xyz2), "move node2");
+        RSS(ref_smooth_move_edge_to(ref_grid, node1, xyz1), "move node1");
+        RSS(ref_smooth_move_edge_to(ref_grid, node2, xyz2), "move node2");
       }
     }
   }
