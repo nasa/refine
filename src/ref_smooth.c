@@ -751,7 +751,8 @@ REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node,
     }
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
-
+    printf("backoff %f q %e normdev %f area %e\n", backoff, q, normdev,
+           min_uv_area);
     if ((q > 0.1 * ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev > normdev_orig) &&
@@ -824,9 +825,6 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
       RSS(ref_math_normalize(dx2), "dx2");
       dot = ref_math_dot(dx1, dx2);
       if (dot > 0.99) {
-        printf("dot %f at %f %f %f\n", dot, ref_node_xyz(ref_node, 0, node),
-               ref_node_xyz(ref_node, 1, node),
-               ref_node_xyz(ref_node, 2, node));
         /* averaged metric */
         RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "get n1 log m");
         RSS(ref_node_metric_get_log(ref_node, node2, log_m2), "get n2 log m");
@@ -840,6 +838,10 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid) {
           xyz1[i] = dx1[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
           xyz2[i] = dx2[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
         }
+        printf("face %d angle %f at %f %f %f\n", nodes[3],
+               ref_math_in_degrees(acos(dot)), ref_node_xyz(ref_node, 0, node),
+               ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node));
         RSS(ref_smooth_move_edge_to(ref_grid, node1, xyz1), "move node1");
         RSS(ref_smooth_move_edge_to(ref_grid, node2, xyz2), "move node2");
       }
