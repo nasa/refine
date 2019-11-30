@@ -784,6 +784,7 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid, REF_LIST ref_list) {
   REF_DBL m[6];
   REF_DBL length_in_metric;
   REF_BOOL has_side1, has_side2;
+  REF_BOOL geom_node1, geom_node2;
 
   /* not implemented for parallel, yet */
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
@@ -808,12 +809,18 @@ REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid, REF_LIST ref_list) {
       }
       RUS(REF_EMPTY, node1, "node1 not set");
       RUS(REF_EMPTY, node2, "node2 not set");
+      /* skip if not bound by edges */
       RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node1, &has_side1),
           "has edge node-node1");
       RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node2, &has_side2),
           "has edge node-node2");
-      /* skip if not bound by edges */
       if (!has_side1 || !has_side2) continue;
+      /* skip if fixed by geom nodes */
+      RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_NODE, &geom_node1),
+          "node1 check");
+      RSS(ref_geom_is_a(ref_geom, node2, REF_GEOM_NODE, &geom_node2),
+          "node2 check");
+      if (geom_node1 || geom_node2) continue;
 
       for (i = 0; i < 3; i++) {
         dx1[i] =
