@@ -43,6 +43,7 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
   RSS(ref_node_ratio(ref_node, center, neighbor, &ratio), "get r0");
   l4 = ratio * ratio * ratio * ratio;
   force = (1.0 - l4) * exp(-l4);
+  if (ratio < 1.0) force += (1.0-ratio)*(1.0-ratio);
   if (ref_math_divisible(norm[0], ratio) &&
       ref_math_divisible(norm[1], ratio) &&
       ref_math_divisible(norm[2], ratio)) {
