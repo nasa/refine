@@ -148,6 +148,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   REF_BOOL valid_cavity;
   REF_BOOL allowed_cavity_ratio;
   REF_DBL min_del, min_add;
+  REF_BOOL audit = REF_FALSE;
 
   *actual_node0 = REF_EMPTY;
   RAS(ref_node_valid(ref_node, node1), "node1 is invalid");
@@ -169,53 +170,69 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
   RSS(ref_sort_heap_dbl(nnode, ratio_to_collapse, order), "sort lengths");
 
+  /* audit = (nnode > 0 && ratio_to_collapse[order[0]] < 0.2); */
+  if (audit) {
+    printf("node1 %d %f %f %f\n", node1, ref_node_xyz(ref_node, 0, node1),
+           ref_node_xyz(ref_node, 1, node1), ref_node_xyz(ref_node, 2, node1));
+  }
+
   for (node = 0; node < nnode; node++) {
     node0 = node_to_collapse[order[node]];
+    if (audit)
+      printf(" %d node0 %d ratio %f\n", nnode - node, node0,
+             ratio_to_collapse[order[node]]);
 
     RSS(ref_collapse_edge_mixed(ref_grid, node0, node1, &allowed), "col mixed");
+    if (!allowed && audit) printf("   mixed\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
         "col geom");
+    if (!allowed && audit) printf("   geom\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_manifold(ref_grid, node0, node1, &allowed),
         "col manifold");
+    if (!allowed && audit) printf("   manifold\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_chord_height(ref_grid, node0, node1, &allowed),
         "col edge chord height");
+    if (!allowed && audit) printf("   chord\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed && audit) printf("   ratio\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_surf_ratio(ref_grid, node0, node1, &allowed),
         "surf ratio");
+    if (!allowed && audit) printf("   ratio (surf)\n");
     if (!allowed) continue;
 
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
     if (have_geometry_support) {
-      RSS(ref_collapse_edge_cad_constrained(ref_grid, node0, node1, &allowed),
-          "cad constrained");
-      if (!allowed) continue;
       RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed),
           "normdev");
+      if (!allowed && audit) printf("   normdev\n");
       if (!allowed) continue;
     } else {
       RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
           "normal deviation");
+      if (!allowed && audit) printf("   same normal\n");
       if (!allowed) continue;
     }
 
     RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
         "tri qual");
+    if (!allowed && audit) printf("   tri qual\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_tet_quality(ref_grid, node0, node1, &allowed),
         "tet qual");
+    if (!allowed && audit) printf("   tet qual\n");
 
     RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &local), "colloc");
     if (!local) {
@@ -256,6 +273,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
+      if (!allowed && audit) printf("   cav unsuccessful\n");
       continue;
     }
 
@@ -329,6 +347,7 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
 
   REF_BOOL geom_node1;
   REF_BOOL geom_edge1;
+  REF_BOOL edge_side;
 
   *allowed = REF_FALSE;
 
@@ -343,10 +362,11 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
   RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_EDGE, &geom_edge1),
       "edge check 1");
   if (geom_edge1) {
-    RSS(ref_cell_has_side(ref_edg, node0, node1, allowed),
+    RSS(ref_cell_has_side(ref_edg, node0, node1, &edge_side),
         "allowed if a side of a triangle");
-    if (!(*allowed)) return REF_SUCCESS;
-    *allowed = REF_FALSE;
+    if (!edge_side) return REF_SUCCESS;
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
   }
 
   /* ids1 is a list of degree1 face ids for node1 */
@@ -701,6 +721,7 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
   REF_INT node;
   REF_BOOL will_be_collapsed;
   REF_DBL edge_ratio;
+  REF_DBL old_max, old_min, new_max, new_min;
 
   *allowed = REF_FALSE;
 
@@ -710,8 +731,20 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
     ref_cell = ref_grid_tet(ref_grid);
   }
 
+  old_max = -1.0;
+  old_min = REF_DBL_MAX;
+  new_max = -1.0;
+  new_min = REF_DBL_MAX;
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node1 != nodes[node]) {
+        RSS(ref_node_ratio(ref_node, node1, nodes[node], &edge_ratio), "ratio");
+        old_max = MAX(old_max, edge_ratio);
+        old_min = MIN(old_min, edge_ratio);
+      }
+    }
 
     will_be_collapsed = REF_FALSE;
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
@@ -721,13 +754,19 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
       if (node1 != nodes[node]) {
         RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
-        if ((edge_ratio < ref_grid_adapt(ref_grid, post_min_ratio)) ||
-            (edge_ratio > ref_grid_adapt(ref_grid, post_max_ratio)))
-          return REF_SUCCESS;
+        new_max = MAX(new_max, edge_ratio);
+        new_min = MIN(new_min, edge_ratio);
       }
   }
 
-  *allowed = REF_TRUE;
+  if ((new_min >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+      (new_max <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+    *allowed = REF_TRUE;
+  }
+
+  if (new_min >= old_min && new_max <= old_max) {
+    *allowed = REF_TRUE;
+  }
 
   return REF_SUCCESS;
 }
