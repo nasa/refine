@@ -43,7 +43,7 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
   RSS(ref_node_ratio(ref_node, center, neighbor, &ratio), "get r0");
   l4 = ratio * ratio * ratio * ratio;
   force = (1.0 - l4) * exp(-l4);
-  if (ratio < 1.0) force += (1.0-ratio)*(1.0-ratio);
+  if (ratio < 1.0) force += (1.0 - ratio) * (1.0 - ratio);
   if (ref_math_divisible(norm[0], ratio) &&
       ref_math_divisible(norm[1], ratio) &&
       ref_math_divisible(norm[2], ratio)) {
@@ -780,8 +780,8 @@ REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node1,
     RSS(ref_smooth_tri_normdev_around(ref_grid, node2, &normdev2), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node2, &min_uv_area2), "a");
 
-    printf("boff %f nd %8.4f area %8.3e nd %8.4f area %8.3e\n",
-           backoff, normdev1, min_uv_area1, normdev2, min_uv_area2);
+    printf("boff %f nd %8.4f area %8.3e nd %8.4f area %8.3e\n", backoff,
+           normdev1, min_uv_area1, normdev2, min_uv_area2);
     if ((q1 > 0.1 * ref_grid_adapt(ref_grid, smooth_min_quality)) &&
         (normdev1 > ref_grid_adapt(ref_grid, post_min_normdev) ||
          normdev1 > normdev_orig1) &&
@@ -1756,11 +1756,6 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, interior;
-  REF_LIST ref_list;
-  REF_BOOL is_sliver;
-
-  RSS(ref_list_create(&ref_list), "create list");
-  RSS(ref_smooth_sliver_node(ref_grid, ref_list), "sliver");
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -1774,9 +1769,6 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     /* don't move geom nodes */
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
     if (geom_node) continue;
-    /* skip nodes set by sliver protection */
-    RSS(ref_list_contains(ref_list, node, &is_sliver), "create list");
-    if (is_sliver) continue;
     /* next to ghost node, can't move */
     RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
@@ -1787,7 +1779,6 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     RSS(ref_smooth_geom_edge(ref_grid, node), "ideal node for edge");
     ref_node_age(ref_node, node) = 0;
   }
-  RSS(ref_list_free(ref_list), "free list");
 
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
