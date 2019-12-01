@@ -740,7 +740,7 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
 
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
       if (node1 != nodes[node]) {
-        RSS(ref_node_ratio(ref_node, node0, nodes[node], &edge_ratio), "ratio");
+        RSS(ref_node_ratio(ref_node, node1, nodes[node], &edge_ratio), "ratio");
         old_max = MAX(old_max, edge_ratio);
         old_min = MIN(old_min, edge_ratio);
       }
