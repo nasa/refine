@@ -351,6 +351,7 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
 
   REF_BOOL geom_node1;
   REF_BOOL geom_edge1;
+  REF_BOOL edge_side;
 
   *allowed = REF_FALSE;
 
@@ -365,10 +366,11 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
   RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_EDGE, &geom_edge1),
       "edge check 1");
   if (geom_edge1) {
-    RSS(ref_cell_has_side(ref_edg, node0, node1, allowed),
+    RSS(ref_cell_has_side(ref_edg, node0, node1, &edge_side),
         "allowed if a side of a triangle");
-    if (!(*allowed)) return REF_SUCCESS;
-    *allowed = REF_FALSE;
+    if (!edge_side) return REF_SUCCESS;
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
   }
 
   /* ids1 is a list of degree1 face ids for node1 */
