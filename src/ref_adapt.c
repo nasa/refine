@@ -491,7 +491,7 @@ static REF_STATUS ref_adapt_min_sliver_angle(REF_GRID ref_grid, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
+REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell;
