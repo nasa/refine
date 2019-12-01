@@ -435,6 +435,27 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
     }
   }
 
+  ref_cell = ref_grid_edg(ref_grid);
+
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+      if (node1 == nodes[node]) nodes[node] = node0;
+
+    RXS(ref_cell_with(ref_cell, nodes, &new_cell), REF_NOT_FOUND,
+        "with node0 failed");
+    if (REF_EMPTY != new_cell) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+  }
+
   *allowed = REF_TRUE;
 
   return REF_SUCCESS;
