@@ -510,10 +510,13 @@ static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
     RSS(ref_mpi_max(ref_mpi, &ratio, &max_ratio, REF_DBL_TYPE), "mpi max");
     RSS(ref_mpi_bcast(ref_mpi, &max_ratio, 1, REF_DBL_TYPE), "max");
 
-    if (min_quality < 0.1 || min_ratio < 0.1 || max_ratio > 4.0 ||
-        min_normdev < 0.5)
-      printf("face %d quality %6.4f ratio %6.4f %6.2f normdev %6.4f\n", id,
-             min_quality, min_ratio, max_ratio, min_normdev);
+    if (ref_mpi_once(ref_mpi)) {
+      if (min_quality < 0.1 || min_ratio < 0.1 || max_ratio > 4.0 ||
+          min_normdev < 0.5) {
+        printf("face %d quality %6.4f ratio %6.4f %6.2f normdev %6.4f\n", id,
+               min_quality, min_ratio, max_ratio, min_normdev);
+      }
+    }
   }
 
   return REF_SUCCESS;
