@@ -449,6 +449,48 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_adapt_min_sliver_angle(REF_GRID ref_grid, REF_INT *nodes,
+                                             REF_DBL *angle) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_BOOL geom_node, has_side;
+  REF_INT i, cell_node, node, node1, node2;
+
+  REF_DBL dx1[3], dx2[3], dot;
+
+  for (cell_node = 0; cell_node < 3; cell_node++) {
+    node = nodes[cell_node];
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node),
+        "geom node check");
+    if (geom_node) {
+      node1 = cell_node + 1;
+      node2 = cell_node + 2;
+      if (node1 > 2) node1 -= 3;
+      if (node2 > 2) node2 -= 3;
+      node1 = nodes[node1];
+      node2 = nodes[node2];
+      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node1, &has_side),
+          "has edge node-node1");
+      if (!has_side) continue;
+      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node2, &has_side),
+          "has edge node-node2");
+      if (!has_side) continue;
+      for (i = 0; i < 3; i++) {
+        dx1[i] =
+            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+        dx2[i] =
+            ref_node_xyz(ref_node, i, node2) - ref_node_xyz(ref_node, i, node);
+      }
+      RSS(ref_math_normalize(dx1), "dx1");
+      RSS(ref_math_normalize(dx2), "dx2");
+      dot = ref_math_dot(dx1, dx2);
+      *angle = MIN(*angle, ref_math_in_degrees(acos(dot)));
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell;
@@ -457,6 +499,7 @@ static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
   REF_DBL quality, min_quality;
   REF_DBL normdev, min_normdev;
   REF_DBL ratio, min_ratio, max_ratio;
+  REF_DBL angle, min_angle;
   REF_INT edge, n0, n1;
   REF_INT id, min_id, max_id;
 
@@ -475,17 +518,23 @@ static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
     RSS(ref_mpi_bcast(ref_mpi, &quality, 1, REF_DBL_TYPE), "min");
 
     min_normdev = 2.0;
+    min_angle = 90.0;
     if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
       ref_cell = ref_grid_tri(ref_grid);
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
         RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
         min_normdev = MIN(min_normdev, normdev);
+        RSS(ref_adapt_min_sliver_angle(ref_grid, nodes, &min_angle),
+            "sliver angle");
       }
     }
     normdev = min_normdev;
     RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
     RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
+    angle = min_angle;
+    RSS(ref_mpi_min(ref_mpi, &angle, &min_angle, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &min_angle, 1, REF_DBL_TYPE), "min");
 
     min_ratio = REF_DBL_MAX;
     max_ratio = REF_DBL_MIN;
@@ -513,8 +562,10 @@ static REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
     if (ref_mpi_once(ref_mpi)) {
       if (min_quality < 0.1 || min_ratio < 0.1 || max_ratio > 4.0 ||
           min_normdev < 0.5) {
-        printf("face %d quality %6.4f ratio %6.4f %6.2f normdev %6.4f\n", id,
-               min_quality, min_ratio, max_ratio, min_normdev);
+        printf(
+            "face%6d quality %6.4f ratio %6.4f %6.2f normdev %6.4f"
+            " topo angle %5.2f\n",
+            id, min_quality, min_ratio, max_ratio, min_normdev, angle);
       }
     }
   }
