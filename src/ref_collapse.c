@@ -148,6 +148,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   REF_BOOL valid_cavity;
   REF_BOOL allowed_cavity_ratio;
   REF_DBL min_del, min_add;
+  REF_BOOL audit = REF_FALSE;
 
   *actual_node0 = REF_EMPTY;
   RAS(ref_node_valid(ref_node, node1), "node1 is invalid");
@@ -169,29 +170,43 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
   RSS(ref_sort_heap_dbl(nnode, ratio_to_collapse, order), "sort lengths");
 
+  /* audit = (nnode > 0 && ratio_to_collapse[order[0]] < 0.2); */
+  if (audit) {
+    printf("node1 %d %f %f %f\n", node1, ref_node_xyz(ref_node, 0, node1),
+           ref_node_xyz(ref_node, 1, node1), ref_node_xyz(ref_node, 2, node1));
+  }
+
   for (node = 0; node < nnode; node++) {
     node0 = node_to_collapse[order[node]];
+    if (audit)
+      printf("  node0 %d ratio %f\n", node0, ratio_to_collapse[order[node]]);
 
     RSS(ref_collapse_edge_mixed(ref_grid, node0, node1, &allowed), "col mixed");
+    if (!allowed && audit) printf("   mixed\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
         "col geom");
+    if (!allowed && audit) printf("   geom\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_manifold(ref_grid, node0, node1, &allowed),
         "col manifold");
+    if (!allowed && audit) printf("   manifold\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_chord_height(ref_grid, node0, node1, &allowed),
         "col edge chord height");
+    if (!allowed && audit) printf("   chord\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed && audit) printf("   ratio\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_surf_ratio(ref_grid, node0, node1, &allowed),
         "surf ratio");
+    if (!allowed && audit) printf("   ratio (surf)\n");
     if (!allowed) continue;
 
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
@@ -200,22 +215,27 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     if (have_geometry_support) {
       RSS(ref_collapse_edge_cad_constrained(ref_grid, node0, node1, &allowed),
           "cad constrained");
+      if (!allowed && audit) printf("   cad const\n");
       if (!allowed) continue;
       RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed),
           "normdev");
+      if (!allowed && audit) printf("   normdev\n");
       if (!allowed) continue;
     } else {
       RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
           "normal deviation");
+      if (!allowed && audit) printf("   same normal\n");
       if (!allowed) continue;
     }
 
     RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
         "tri qual");
+    if (!allowed && audit) printf("   tri qual\n");
     if (!allowed) continue;
 
     RSS(ref_collapse_edge_tet_quality(ref_grid, node0, node1, &allowed),
         "tet qual");
+    if (!allowed && audit) printf("   tet qual\n");
 
     RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &local), "colloc");
     if (!local) {
@@ -256,6 +276,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       }
       RSS(ref_cavity_free(ref_cavity), "cav free");
       ref_cavity = (REF_CAVITY)NULL;
+      if (!allowed && audit) printf("   cav unsuccessful\n");
       continue;
     }
 
