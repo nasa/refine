@@ -214,10 +214,6 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
                            &have_geometry_support),
         "geom");
     if (have_geometry_support) {
-      RSS(ref_collapse_edge_cad_constrained(ref_grid, node0, node1, &allowed),
-          "cad constrained");
-      if (!allowed && audit) printf("   cad const\n");
-      if (!allowed) continue;
       RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed),
           "normdev");
       if (!allowed && audit) printf("   normdev\n");
