@@ -179,7 +179,8 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   for (node = 0; node < nnode; node++) {
     node0 = node_to_collapse[order[node]];
     if (audit)
-      printf("  node0 %d ratio %f\n", node0, ratio_to_collapse[order[node]]);
+      printf(" %d node0 %d ratio %f\n", nnode - node, node0,
+             ratio_to_collapse[order[node]]);
 
     RSS(ref_collapse_edge_mixed(ref_grid, node0, node1, &allowed), "col mixed");
     if (!allowed && audit) printf("   mixed\n");
