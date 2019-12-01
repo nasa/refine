@@ -21,6 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ref_adapt.h"
 #include "ref_args.h"
 #include "ref_defs.h"
 #include "ref_egads.h"
@@ -256,6 +257,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");
@@ -328,7 +331,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != auto_tparams_pos && auto_tparams_pos < argc - 1) {
     auto_tparams = atoi(argv[auto_tparams_pos + 1]);
     printf("--auto-tparams %d requested\n", auto_tparams);
-    if ( auto_tparams < 0) {
+    if (auto_tparams < 0) {
       auto_tparams = REF_EGADS_ALL_TPARAM;
       printf("--auto-tparams %d set to all\n", auto_tparams);
     }
@@ -800,6 +803,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");

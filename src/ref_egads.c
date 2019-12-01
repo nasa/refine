@@ -556,8 +556,9 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
       diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                   (box[1] - box[4]) * (box[1] - box[4]) +
                   (box[2] - box[5]) * (box[2] - box[5]));
-      printf("face %d rel chord %f abs len %f abs chord %f diag %f\n", face + 1,
-             max_chord, max_chord_length, max_chord_offset, diag);
+      if (max_chord > 0.2)
+        printf("face %d rel chord %f abs len %f abs chord %f diag %f\n",
+               face + 1, max_chord, max_chord_length, max_chord_offset, diag);
       if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
         params[0] = 0.1 * diag;
         params[1] = 0.001 * diag;

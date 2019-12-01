@@ -23,7 +23,7 @@ ${src}/ref_histogram_test sliver01.meshb sliver01-final-metric.solb \
  > accept-sliver-curvature.status
 
 cat accept-sliver-curvature.status
-../../check.rb accept-sliver-curvature.status 0.2 2.2
+../../check.rb accept-sliver-curvature.status 0.01 2.0
 
 
 

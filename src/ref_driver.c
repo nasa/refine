@@ -235,6 +235,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+    RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_mpi, "pack");

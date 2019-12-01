@@ -295,6 +295,12 @@ cd ${source_dir}/acceptance/cone-cone/recon
 ( ./accept-cone-cone-recon.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-sliver-bootstrap
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/sliver/bootstrap
+( ./accept-sliver.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-om6-recon
