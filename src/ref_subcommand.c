@@ -68,7 +68,7 @@ static void adapt_help(const char *name) {
   printf("\n");
 }
 static void bootstrap_help(const char *name) {
-  printf("usage: \n %s boostrap project.egads [-t]\n", name);
+  printf("usage: \n %s bootstrap project.egads [-t]\n", name);
   printf("  -t  tecplot movie of surface curvature adaptation\n");
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("  --mesher {tetgen|aflr} volume mesher\n");
@@ -136,7 +136,7 @@ static void loop_help(const char *name) {
   printf("   --gradation <gradation> (default -1)\n");
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
-  printf("   --buffer coarsens the metric appraoching the x max boundary.\n");
+  printf("   --buffer coarsens the metric approaching the x max boundary.\n");
 
   printf("\n");
 }
