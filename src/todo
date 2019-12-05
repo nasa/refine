@@ -1,7 +1,11 @@
 
 tunnel restart
-  extract a subset of grid and solb straddling x plane with fuzz
   interpolate a single faceid of receptor from a donor
+  extract a subset of grid and solb straddling x plane with fuzz
+
+squelch cavity failures
+
+ref_matrix_intersect echo m on failure
 
 surrogate surface
   support twod geom
