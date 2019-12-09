@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
   REF_INT pair_pos = REF_EMPTY;
   REF_INT rate_pos = REF_EMPTY;
   REF_INT error_pos = REF_EMPTY;
+  REF_INT face_pos = REF_EMPTY;
   REF_INT subset_pos = REF_EMPTY;
   REF_INT nearest_pos = REF_EMPTY;
   REF_INT field_pos = REF_EMPTY;
@@ -118,6 +119,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--rate", &rate_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--error", &error_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--face", &face_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--subset", &subset_pos), REF_NOT_FOUND,
       "arg search");
@@ -389,6 +392,78 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(candidate_grid), "free");
     ref_free(truth_scalar);
     RSS(ref_grid_free(truth_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  /* update one face, keep everything else constant */
+  if (REF_EMPTY != face_pos) {
+    REF_GRID donor_grid, ref_grid;
+    REF_DBL *donor_solution, *solution;
+    REF_INTERP ref_interp;
+    REF_INT ldim, target_ldim;
+    REF_INT faceid;
+
+    REIS(1, face_pos,
+         "required args: --face donor_mesh.ext donor_solution.solb "
+         "mesh.ext solution.solb merged_solution.solb faceid\n");
+    if (8 > argc) {
+      printf(
+          "required args: --face donor_mesh.ext donor_solution.solb "
+          "mesh.ext solution.solb merged_solution.solb faceid\n");
+      return REF_FAILURE;
+    }
+
+    faceid = atoi(argv[7]);
+    if (ref_mpi_once(ref_mpi)) printf(" for faceid %d\n", faceid);
+
+    if (ref_mpi_once(ref_mpi)) printf("read/part donor grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&donor_grid, ref_mpi, argv[2]),
+        "read/part donor grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read donor grid");
+    if (ref_mpi_once(ref_mpi)) printf("read/part donor solution %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(donor_grid), &ldim, &donor_solution,
+                        argv[3]),
+        "read/part donor solution in position 3");
+    ref_mpi_stopwatch_stop(ref_mpi, "read donor solution");
+    if (ref_mpi_once(ref_mpi)) printf("read/part target grid %s\n", argv[4]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[4]),
+        "read/part target grid in position 4");
+    ref_mpi_stopwatch_stop(ref_mpi, "read target grid");
+    if (ref_mpi_once(ref_mpi))
+      printf("read/part target solution %s\n", argv[5]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &target_ldim, &solution,
+                        argv[5]),
+        "read/part target solution in position 5");
+    ref_mpi_stopwatch_stop(ref_mpi, "read target solution");
+
+    REIS(ldim, target_ldim, "solb leading dimensions must match");
+
+    if (ref_mpi_once(ref_mpi)) {
+      printf("%d leading dim donor " REF_GLOB_FMT
+             " nodes to update " REF_GLOB_FMT " nodes\n",
+             ldim, ref_node_n_global(ref_grid_node(donor_grid)),
+             ref_node_n_global(ref_grid_node(ref_grid)));
+    }
+    RSS(ref_interp_create(&ref_interp, donor_grid, ref_grid), "make interp");
+    RSS(ref_interp_face_only(ref_interp, faceid, ldim, donor_solution,
+                             solution),
+        "map");
+    ref_mpi_stopwatch_stop(ref_mpi, "update");
+
+    if (ref_mpi_once(ref_mpi))
+      printf("write/gather merged solution %s\n", argv[6]);
+    RSS(ref_gather_scalar(ref_grid, ldim, solution, argv[6]),
+        "write/gather merged solution");
+    ref_mpi_stopwatch_stop(ref_mpi, "write merged solution");
+
+    ref_free(solution);
+    RSS(ref_interp_free(ref_interp), "interp free");
+    RSS(ref_grid_free(ref_grid), "free");
+    ref_free(donor_solution);
+    RSS(ref_grid_free(donor_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
