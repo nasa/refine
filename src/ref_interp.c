@@ -1963,7 +1963,7 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
       "l2c");
 
   each_ref_node_valid_node(to_node, node) {
-    if (REF_EMPTY == l2c[node]) {
+    if (REF_EMPTY == l2c[node] || !ref_node_owned(to_node, node)) {
       ref_interp->cell[node] = -57; /* magic number to skip */
     }
   }
@@ -1984,14 +1984,14 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   REIS(REF_FALSE, increase_fuzz, "unable to grow fuzz to find tree candidate");
 
   each_ref_node_valid_node(to_node, node) {
-    if (REF_EMPTY == l2c[node]) {
+    if (REF_EMPTY == l2c[node] || !ref_node_owned(to_node, node)) {
       ref_interp->cell[node] = REF_EMPTY; /* set back */
     }
   }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (REF_EMPTY != l2c[node]) {
+    if (REF_EMPTY != l2c[node] && ref_node_owned(to_node, node)) {
       n_recept++;
     }
   }
@@ -2004,7 +2004,7 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
-    if (REF_EMPTY != l2c[node]) {
+    if (REF_EMPTY != l2c[node] && ref_node_owned(to_node, node)) {
       RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
       RSS(ref_node_clip_bary4(&(ref_interp->bary[4 * node]),
                               &(recept_bary[4 * n_recept])),
