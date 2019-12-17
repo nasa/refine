@@ -1632,47 +1632,36 @@ REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL eig;
   REF_INT node;
   REF_DBL r, rmax, x, xmax, exponent, hmin, s, t, smin, smax, emin, emax;
-  REF_DBL xorigin, xmin, length;
 
-  xmax = -REF_DBL_MAX;
-  xmin = REF_DBL_MAX;
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    xmax = MAX(xmax, ref_node_xyz(ref_node, 0, node));
-    xmin = MIN(xmin, ref_node_xyz(ref_node, 0, node));
-  }
-  x = xmin;
-  RSS(ref_mpi_min(ref_mpi, &x, &xmin, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &xmin, 1, REF_DBL_TYPE), "bcast");
-  x = xmax;
-  RSS(ref_mpi_max(ref_mpi, &x, &xmax, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &xmax, 1, REF_DBL_TYPE), "bcast");
-  xorigin = 0.5 * (xmin + xmax);
-
+  xmax = -1.0e-100;
   rmax = 0.0;
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    r = sqrt(pow(ref_node_xyz(ref_node, 0, node) - xorigin, 2) +
-             pow(ref_node_xyz(ref_node, 1, node), 2) +
-             pow(ref_node_xyz(ref_node, 2, node), 2));
+    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node) +
+             ref_node_xyz(ref_node, 2, node) * ref_node_xyz(ref_node, 2, node));
     rmax = MAX(rmax, r);
+    xmax = MAX(xmax, ref_node_xyz(ref_node, 0, node));
   }
   r = rmax;
   RSS(ref_mpi_max(ref_mpi, &r, &rmax, REF_DBL_TYPE), "mpi max");
   RSS(ref_mpi_bcast(ref_mpi, &rmax, 1, REF_DBL_TYPE), "bcast");
+  x = xmax;
+  RSS(ref_mpi_max(ref_mpi, &x, &xmax, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &xmax, 1, REF_DBL_TYPE), "bcast");
 
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "eigen decomp");
 
-    r = sqrt(pow(ref_node_xyz(ref_node, 0, node) - xorigin, 2) +
-             pow(ref_node_xyz(ref_node, 1, node), 2) +
-             pow(ref_node_xyz(ref_node, 2, node), 2));
+    r = sqrt(ref_node_xyz(ref_node, 0, node) * ref_node_xyz(ref_node, 0, node) +
+             ref_node_xyz(ref_node, 1, node) * ref_node_xyz(ref_node, 1, node) +
+             ref_node_xyz(ref_node, 2, node) * ref_node_xyz(ref_node, 2, node));
 
     smin = 0.5;
     smax = 0.9;
     emin = -4.0;
     emax = -1.0;
 
-    length = 0.5 * (xmax - xmin);
-    s = MIN(1.0, r / length);
+    s = MIN(1.0, r / xmax);
 
     t = MIN(s / smin, 1.0);
     exponent = -15.0 * (1.0 - t) + emin * t;
