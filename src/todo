@@ -1,7 +1,6 @@
 
-tunnel restart
-  interpolate a single faceid of receptor from a donor
-  extract a subset of grid and solb straddling x plane with fuzz
+extract a subset of grid and solb straddling x plane with fuzz
+viz crinkle cut
 
 squelch cavity failures
 
@@ -230,6 +229,8 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ interpolate a single faceid of receptor from a donor for tunnel restart
 
 + extract init tess
 + automatically set and increase tess parametters
