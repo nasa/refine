@@ -530,7 +530,6 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
     ref_matrix_show_m(m2bar);
     printf("m1neghalf\n");
     ref_matrix_show_m(m1neghalf);
-    return REF_FAILURE;
   });
   ref_matrix_eig(m12bar_system, 0) = MAX(1.0, ref_matrix_eig(m12bar_system, 0));
   ref_matrix_eig(m12bar_system, 1) = MAX(1.0, ref_matrix_eig(m12bar_system, 1));
