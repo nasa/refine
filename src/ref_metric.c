@@ -875,11 +875,16 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
     }
     RSS(ref_matrix_form_m(diag_system, limit_metric), "reform limit");
 
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node0]), limit_metric, limited),
-        "limit m0 with enlarged m1");
-    RSS(ref_matrix_intersect(&(metric[6 * node0]), limited,
-                             &(metric[6 * node0])),
-        "update m0");
+    if (REF_SUCCESS == ref_matrix_intersect(&(metric_orig[6 * node0]),
+                                            limit_metric, limited)) {
+      RSS(ref_matrix_intersect(&(metric[6 * node0]), limited,
+                               &(metric[6 * node0])),
+          "update m0");
+    } else {
+      ref_node_location(ref_node, node0);
+      printf("dist %24.15e ratio %24.15e\n", dist, ratio);
+      printf("RECOVER ref_metric_mixed_space_gradation\n");
+    }
 
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node0]), direction);
 
@@ -892,11 +897,16 @@ REF_STATUS ref_metric_mixed_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
     }
     RSS(ref_matrix_form_m(diag_system, limit_metric), "reform limit");
 
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node1]), limit_metric, limited),
-        "limit m1 with enlarged m0");
-    RSS(ref_matrix_intersect(&(metric[6 * node1]), limited,
-                             &(metric[6 * node1])),
-        "update m1");
+    if (REF_SUCCESS == ref_matrix_intersect(&(metric_orig[6 * node1]),
+                                            limit_metric, limited)) {
+      RSS(ref_matrix_intersect(&(metric[6 * node1]), limited,
+                               &(metric[6 * node1])),
+          "update m1");
+    } else {
+      ref_node_location(ref_node, node1);
+      printf("dist %24.15e ratio %24.15e\n", dist, ratio);
+      printf("RECOVER ref_metric_mixed_space_gradation\n");
+    }
   }
 
   ref_free(metric_orig);

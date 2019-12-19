@@ -1302,5 +1302,12 @@ m12 = m1half'*m12bar*m1half
     RWDS(1.0, m12[5], tol, "m12[5]");
   }
 
+  if (REF_FALSE) { /* intersect fail with show_m seg fault */
+    REF_DBL m1[6] = {1.0 / 0.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m2[6] = {1.0, 0.0, 0.0, -1.0, 0.0, -1.0};
+    REF_DBL m12[6];
+    RSS(ref_matrix_intersect(m1, m2, m12), "int");
+  }
+
   return 0;
 }
