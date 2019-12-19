@@ -1303,20 +1303,19 @@ m12 = m1half'*m12bar*m1half
   }
 
   { /* diag report inf */
-    REF_DBL m[6] = {1.0 / 0.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m[6] = {INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL d[12];
     REIS(REF_INVALID, ref_matrix_diag_m(m, d), "worked?");
   }
 
   { /* diag report nan */
-    REF_DBL m[6] = {1.0 / 0.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m[6] = {NAN, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL d[12];
-    m[0] = m[0] * 0.0;
     REIS(REF_INVALID, ref_matrix_diag_m(m, d), "worked?");
   }
 
   { /* intersect fail with show_m seg fault */
-    REF_DBL m1[6] = {1.0 / 0.0, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m1[6] = {INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL m2[6] = {1.0, 0.0, 0.0, -1.0, 0.0, -1.0};
     REF_DBL m12[6];
     REIS(REF_INVALID, ref_matrix_intersect(m1, m2, m12), "worked?");
