@@ -92,6 +92,12 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   REF_INT mml, ii, k;
   REF_DBL s2;
 
+  /* potential for stack coruption, if inf or nan */
+  if (!isfinite(m[0]) || !isfinite(m[1]) || !isfinite(m[2]) ||
+      !isfinite(m[3]) || !isfinite(m[4]) || !isfinite(m[5])) {
+    return REF_INVALID;
+  }
+
   /* one rotation to make tridiagonal ( zero out m[2] ) */
   /* http://www.geometrictools.com/Documentation/EigenSymmetricNxN.pdf */
   /* Eigen System Solvers for Symmetric Matricies, David Eberly */
