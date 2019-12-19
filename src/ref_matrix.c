@@ -505,7 +505,7 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
     for (i = 0; i < 6; i++) m12[i] = m2[i];
     return REF_SUCCESS;
   }
-  if(REF_SUCCESS != sqrt_m1_status) {
+  if (REF_SUCCESS != sqrt_m1_status) {
     printf("m1\n");
     ref_matrix_show_m(m1);
     printf("m2\n");
