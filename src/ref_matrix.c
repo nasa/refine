@@ -399,8 +399,15 @@ REF_STATUS ref_matrix_sqrt_m(REF_DBL *m_upper_tri, REF_DBL *sqrt_m_upper_tri,
                              REF_DBL *inv_sqrt_m_upper_tri) {
   REF_DBL d[12];
 
-  RSS(ref_matrix_diag_m(m_upper_tri, d), "diag");
+  RSB(ref_matrix_diag_m(m_upper_tri, d), "diag",
+      { ref_matrix_show_m(m_upper_tri); });
 
+  if (d[0] < 0.0 || d[1] < 0.0 || d[2] < 0.0) {
+    REF_WHERE("negative eigenvalues");
+    printf("eigs %24.15e %24.15e %24.15e\n", d[0], d[1], d[2]);
+    ref_matrix_show_m(m_upper_tri);
+    return REF_FAILURE;
+  }
   d[0] = sqrt(d[0]);
   d[1] = sqrt(d[1]);
   d[2] = sqrt(d[2]);
@@ -506,6 +513,7 @@ REF_STATUS ref_matrix_intersect(REF_DBL *m1, REF_DBL *m2, REF_DBL *m12) {
     return REF_SUCCESS;
   }
   if (REF_SUCCESS != sqrt_m1_status) {
+    REF_WHERE("ref_matrix_sqrt_m failed");
     printf("m1\n");
     ref_matrix_show_m(m1);
     printf("m2\n");
