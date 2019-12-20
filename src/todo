@@ -2,10 +2,6 @@
 extract a subset of grid and solb straddling x plane with fuzz
 viz crinkle cut
 
-squelch cavity failures
-
-ref_matrix_intersect echo m on failure
-
 surrogate surface
   support twod geom
   share via meshb
@@ -229,6 +225,10 @@ mixed element in refine/two
  metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ ref_matrix_intersect echo m on failure
+
++ squelch inconsistent cavity
 
 + interpolate a single faceid of receptor from a donor for tunnel restart
 
