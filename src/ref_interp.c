@@ -110,19 +110,29 @@ static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_CELL from_tri = ref_grid_tri(from_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius;
   REF_SEARCH ref_search;
 
-  RSS(ref_search_create(&ref_search, ref_cell_n(from_tet)), "create search");
-  ref_interp_search(ref_interp) = ref_search;
-
-  each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
-    RSS(ref_interp_bounding_sphere4(from_node, nodes, center, &radius), "b");
-    RSS(ref_search_insert(ref_search, cell, center,
-                          ref_interp_search_donor_scale(ref_interp) * radius),
-        "ins");
+  if (ref_grid_twod(from_grid)) {
+    RSS(ref_search_create(&ref_search, ref_cell_n(from_tri)), "create search");
+    each_ref_cell_valid_cell_with_nodes(from_tri, cell, nodes) {
+      RSS(ref_interp_bounding_sphere3(from_node, nodes, center, &radius), "b");
+      RSS(ref_search_insert(ref_search, cell, center,
+                            ref_interp_search_donor_scale(ref_interp) * radius),
+          "ins");
+    }
+  } else {
+    RSS(ref_search_create(&ref_search, ref_cell_n(from_tet)), "create search");
+    each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
+      RSS(ref_interp_bounding_sphere4(from_node, nodes, center, &radius), "b");
+      RSS(ref_search_insert(ref_search, cell, center,
+                            ref_interp_search_donor_scale(ref_interp) * radius),
+          "ins");
+    }
   }
+  ref_interp_search(ref_interp) = ref_search;
 
   return REF_SUCCESS;
 }
