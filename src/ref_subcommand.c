@@ -353,9 +353,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
   printf("verify constrained param\n");
   RSS(ref_geom_verify_param(ref_grid), "constrained params");
-  printf("verify manifold\n");
-  RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
-  ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
+  if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
+    printf("verify manifold\n");
+    RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
+    ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
+  } else {
+    printf("manifold not required for wirebody\n");
+  }
 
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
@@ -392,21 +396,23 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  if (strncmp(mesher, "t", 1) == 0) {
-    printf("fill volume with TetGen\n");
-    RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
-    ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
-  } else if (strncmp(mesher, "a", 1) == 0) {
-    printf("fill volume with AFLR3\n");
-    RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
-    ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
-  } else {
-    printf("mesher '%s' not implemented\n", mesher);
-    goto shutdown;
-  }
+  if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
+    if (strncmp(mesher, "t", 1) == 0) {
+      printf("fill volume with TetGen\n");
+      RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+      ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
+    } else if (strncmp(mesher, "a", 1) == 0) {
+      printf("fill volume with AFLR3\n");
+      RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+      ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
+    } else {
+      printf("mesher '%s' not implemented\n", mesher);
+      goto shutdown;
+    }
 
-  RSS(ref_split_edge_geometry(ref_grid), "split geom");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+    RSS(ref_split_edge_geometry(ref_grid), "split geom");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+  }
 
   sprintf(filename, "%s-vol.meshb", project);
   printf("export %s\n", filename);
