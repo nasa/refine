@@ -39,6 +39,17 @@
 
 #define MAX_CELL_SPLIT (100)
 
+REF_STATUS ref_split_two_tris(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                              REF_BOOL *two_tris) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell, cells[2];
+  *two_tris = REF_TRUE;
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
+      "more then two");
+  if (2 != ncell) *two_tris = REF_FALSE;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -49,7 +60,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity;
   REF_BOOL allowed, allowed_local, geom_support;
-  REF_BOOL cad_edge;
+  REF_BOOL cad_edge, two_tris;
   REF_GLOB global;
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
@@ -160,7 +171,11 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                       &allowed_tri_conformity),
         "edge tri qual");
 
-    if (!allowed_tri_conformity && geom_support) {
+    RSS(ref_split_two_tris(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                           ref_edge_e2n(ref_edge, 1, edge), &two_tris),
+        "two_tris");
+
+    if (!allowed_tri_conformity && geom_support && two_tris) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid,
                                      ref_edge_e2n(ref_edge, 0, edge),
