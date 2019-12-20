@@ -173,8 +173,10 @@ int main(int argc, char *argv[]) {
       }
       THROW("geometry association without EGADS");
     }
-    if (!ref_geom_manifold(ref_grid_geom(ref_grid)))
+    if (!ref_geom_manifold(ref_grid_geom(ref_grid))) {
+      ref_grid_twod(ref_grid) = REF_TRUE;
       ref_grid_surf(ref_grid) = REF_TRUE;
+    }
     curvature_constraint = REF_TRUE;
     RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");

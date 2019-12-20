@@ -67,7 +67,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
 
   RAS(!ref_mpi_para(ref_mpi), "not parallel");
-  RAS(!ref_grid_twod(ref_grid), "only surf");
   RAS(ref_grid_surf(ref_grid), "only surf");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
