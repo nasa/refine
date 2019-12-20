@@ -86,6 +86,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
+  ref_geom->manifold = REF_TRUE;
   ref_geom->context = NULL;
   RSS(ref_egads_open(ref_geom), "open egads");
   ref_geom->solid = NULL;
@@ -148,6 +149,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->nnode = REF_EMPTY;
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
+  ref_geom->manifold = original->manifold;
   ref_geom->context = NULL;
   ref_geom->solid = NULL;
   ref_geom->faces = NULL;
@@ -1000,12 +1002,14 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   if (0 == ncell) { /* volume edge */
     return REF_SUCCESS;
   }
-  REIB(2, ncell, "expected two tri for between", {
-    ref_geom_tattle(ref_geom, node0);
-    ref_geom_tattle(ref_geom, node1);
-    ref_node_location(ref_node, node0);
-    ref_node_location(ref_node, node1);
-  });
+  if (ref_geom_manifold(ref_geom)) {
+    REIB(2, ncell, "expected two tri for between", {
+      ref_geom_tattle(ref_geom, node0);
+      ref_geom_tattle(ref_geom, node1);
+      ref_node_location(ref_node, node0);
+      ref_node_location(ref_node, node1);
+    });
+  }
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");

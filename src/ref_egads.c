@@ -129,8 +129,10 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
        EG_getTopology(solid, &geom, &oclass, &mtype, NULL, &nchild, &children,
                       &senses),
        "EG topo body type");
-  REIS(SOLIDBODY, mtype, "expected SOLIDBODY");
+  RAB(SOLIDBODY == mtype || FACEBODY == mtype, "expected SOLIDBODY or FACEBODY",
+      { printf("mtype %d\n", mtype); });
   ref_geom->solid = (void *)solid;
+  ref_geom->manifold = FACEBODY != mtype;
 
   REIS(EGADS_SUCCESS, EG_getBodyTopos(solid, NULL, NODE, &nnode, &nodes),
        "EG node topo");
