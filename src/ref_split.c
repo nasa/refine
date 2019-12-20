@@ -166,11 +166,16 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
                                      ref_edge_e2n(ref_edge, 0, edge),
                                      ref_edge_e2n(ref_edge, 1, edge), new_node),
           "form edge split cav");
-      RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
-      if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        RSS(ref_cavity_replace(ref_cavity), "cav replace");
-        ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
-        ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
+      if (REF_CAVITY_INCONSISTENT != ref_cavity_state(ref_cavity)) {
+        RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge");
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_replace(ref_cavity), "cav replace");
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
+          ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
+        } else {
+          RSS(ref_node_remove(ref_node, new_node), "remove new node");
+          RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+        }
       } else {
         RSS(ref_node_remove(ref_node, new_node), "remove new node");
         RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
