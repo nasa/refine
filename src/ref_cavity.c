@@ -394,7 +394,11 @@ REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity, REF_INT node0,
          node1 == ref_cavity_f2n(ref_cavity, 2, face)) ||
         (node0 == ref_cavity_f2n(ref_cavity, 2, face) &&
          node1 == ref_cavity_f2n(ref_cavity, 0, face))) {
-      REIS(REF_EMPTY, *found_face, "face found twice with side");
+      if (REF_EMPTY != *found_face) { /* found face twice */
+        ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
+        *found_face = REF_EMPTY;
+        return REF_SUCCESS;
+      }
       *found_face = face;
     }
   }
@@ -405,21 +409,30 @@ REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity, REF_INT node0,
 REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
   REF_INT face, found_face;
 
+  if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
+    return REF_SUCCESS;
+
   each_ref_cavity_valid_face(ref_cavity, face) {
     RSS(ref_cavity_find_face_with_side(
             ref_cavity, ref_cavity_f2n(ref_cavity, 1, face),
             ref_cavity_f2n(ref_cavity, 0, face), &found_face),
         "find side 01");
+    if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
+      return REF_SUCCESS;
     RUS(REF_EMPTY, found_face, "side 01 missing");
     RSS(ref_cavity_find_face_with_side(
             ref_cavity, ref_cavity_f2n(ref_cavity, 2, face),
             ref_cavity_f2n(ref_cavity, 1, face), &found_face),
         "find side 12");
+    if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
+      return REF_SUCCESS;
     RUS(REF_EMPTY, found_face, "side 12 missing");
     RSS(ref_cavity_find_face_with_side(
             ref_cavity, ref_cavity_f2n(ref_cavity, 0, face),
             ref_cavity_f2n(ref_cavity, 2, face), &found_face),
         "find side 20");
+    if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
+      return REF_SUCCESS;
     RUS(REF_EMPTY, found_face, "side 20 missing");
   }
 
@@ -429,12 +442,18 @@ REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
 REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
   REF_INT seg0, seg1, found_seg;
 
+  if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
+    return REF_SUCCESS;
+
   each_ref_cavity_valid_seg(ref_cavity, seg0) {
     found_seg = REF_EMPTY;
     each_ref_cavity_valid_seg(ref_cavity, seg1) {
       if (ref_cavity_s2n(ref_cavity, 1, seg0) ==
           ref_cavity_s2n(ref_cavity, 0, seg1)) {
-        REIS(REF_EMPTY, found_seg, "seg found twice");
+        if (REF_EMPTY != found_seg) { /* found seg twice */
+          ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
+          return REF_SUCCESS;
+        }
         found_seg = seg1;
       }
     }
@@ -620,6 +639,9 @@ REF_STATUS ref_cavity_replace(REF_CAVITY ref_cavity) {
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "replace face manifold");
   RSS(ref_cavity_verify_seg_manifold(ref_cavity), "replace seg manifold");
+
+  REIS(REF_CAVITY_VISIBLE, ref_cavity_state(ref_cavity),
+       "attempt to replace cavity that is inconsistent");
 
   node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
@@ -2066,6 +2088,11 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
                                                      nodes[n0], nodes[n1],
                                                      nodes[n2])) {
           REF_WHERE("form edge swap"); /* note but skip cavity failures */
+          RSS(ref_cavity_free(ref_cavity), "free");
+          continue;
+        }
+        if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity)) {
+          /* skip cavity failures */
           RSS(ref_cavity_free(ref_cavity), "free");
           continue;
         }

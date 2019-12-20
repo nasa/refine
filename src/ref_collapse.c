@@ -245,8 +245,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
     if (!allowed) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
-      if (REF_SUCCESS ==
-          ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) {
+      if ((REF_SUCCESS ==
+           ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) &&
+          (REF_CAVITY_INCONSISTENT != ref_cavity_state(ref_cavity))) {
         RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
         if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
           RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
