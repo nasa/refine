@@ -581,7 +581,6 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
   ref_geom = ref_grid_geom(ref_grid);
-  ref_grid_twod(ref_grid) = REF_FALSE;
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_import_meshb_jump(file, version, key_pos, 4, &available,
@@ -1241,11 +1240,6 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npyr, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
-
-  /* guess twod status */
-
-  if (0 == ntet && 0 == npyr && (0 != npri || 0 != nhex))
-    ref_grid_twod(ref_grid) = REF_TRUE;
 
   RSS(ref_part_node(file, swap_endian, has_id, ref_node, nnode), "part node");
   if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");

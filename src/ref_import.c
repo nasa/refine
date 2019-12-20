@@ -1516,9 +1516,6 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(REF_FAILURE, "unknown file extension");
   }
 
-  ref_grid_guess_twod_status(*ref_grid_ptr);
-  ref_grid_guess_surf_status(*ref_grid_ptr);
-
   RSS(ref_grid_inward_boundary_orientation(*ref_grid_ptr),
       "inward boundary orientation");
 
