@@ -31,8 +31,8 @@
 #include "ref_mpi.h"
 
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
-                                REF_BOOL has_id, REF_NODE ref_node,
-                                REF_LONG nnode) {
+                                REF_BOOL has_id, REF_BOOL twod,
+                                REF_NODE ref_node, REF_LONG nnode) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT node, new_node;
   REF_INT part;
@@ -54,8 +54,12 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
       RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "y");
       if (swap_endian) SWAP_DBL(dbl);
       ref_node_xyz(ref_node, 1, new_node) = dbl;
-      RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "z");
-      if (swap_endian) SWAP_DBL(dbl);
+      if (!twod) {
+        RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "z");
+        if (swap_endian) SWAP_DBL(dbl);
+      } else {
+        dbl = 0.0;
+      }
       ref_node_xyz(ref_node, 2, new_node) = dbl;
       if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
     }
@@ -575,12 +579,13 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
-    REIS(3, dim, "only 3D supported");
   }
+  RSS(ref_mpi_bcast(ref_mpi, &dim, 1, REF_INT_TYPE), "bcast");
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
   ref_node = ref_grid_node(ref_grid);
   ref_geom = ref_grid_geom(ref_grid);
+  ref_grid_twod(ref_grid) = (2 == dim);
 
   if (ref_grid_once(ref_grid)) {
     RSS(ref_import_meshb_jump(file, version, key_pos, 4, &available,
@@ -591,7 +596,9 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (verbose) printf("nnode %d\n", nnode);
   }
   RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_INT_TYPE), "bcast");
-  RSS(ref_part_node(file, swap_endian, has_id, ref_node, nnode), "part node");
+  RSS(ref_part_node(file, swap_endian, has_id, ref_grid_twod(ref_grid),
+                    ref_node, nnode),
+      "part node");
   if (ref_grid_once(ref_grid))
     REIS(next_position, ftello(file), "end location");
 
@@ -1241,7 +1248,8 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
-  RSS(ref_part_node(file, swap_endian, has_id, ref_node, nnode), "part node");
+  RSS(ref_part_node(file, swap_endian, has_id, REF_FALSE, ref_node, nnode),
+      "part node");
   if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");
 
   if (0 < ntri) {
@@ -1364,10 +1372,10 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-    if ( (nnode !=ref_node_n_global(ref_node)) &&
-	 (nnode !=ref_node_n_global(ref_node)/2) ) {
-      printf("file %d ref_node " REF_GLOB_FMT "\n",
-	     nnode,ref_node_n_global(ref_node));
+    if ((nnode != ref_node_n_global(ref_node)) &&
+        (nnode / 2 != ref_node_n_global(ref_node))) {
+      printf("file %d ref_node " REF_GLOB_FMT "\n", nnode,
+             ref_node_n_global(ref_node));
       THROW("global count mismatch");
     }
     REIS(1, ntype, "number of solutions");
@@ -1664,7 +1672,12 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
     RAS(available, "SolAtVertices missing");
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
-    REIS(ref_node_n_global(ref_node), nnode, "global nnode");
+    if ((nnode != ref_node_n_global(ref_node)) &&
+        (nnode / 2 != ref_node_n_global(ref_node))) {
+      printf("file %d ref_node " REF_GLOB_FMT "\n", nnode,
+             ref_node_n_global(ref_node));
+      THROW("global count mismatch");
+    }
     *ldim = 0;
     for (i = 0; i < ntype; i++) {
       REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
@@ -1717,7 +1730,8 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
   ref_free(data);
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
-    REIS(next_position, ftello(file), "end location");
+    if (nnode == ref_node_n_global(ref_node))
+      REIS(next_position, ftello(file), "end location");
     REIS(0, fclose(file), "close file");
   }
   return REF_SUCCESS;
