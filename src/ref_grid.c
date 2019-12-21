@@ -965,6 +965,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   REF_INT node, new_node, offset;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
+  REF_INT candidate, faceid1, faceid2;
   *extruded_grid = NULL;
   RAS(ref_grid_twod(twod_grid), "require twod grid input");
   RSS(ref_grid_create(extruded_grid, ref_grid_mpi(twod_grid)), "create grid");
@@ -997,6 +998,72 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
     new_nodes[3] = nodes[0] + offset;
     new_nodes[4] = nodes[2];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
+  }
+
+  /* find two unsed faceids for the symmetry planes */
+  faceid1 = REF_EMPTY;
+  faceid2 = REF_EMPTY;
+  candidate = 1;
+  while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2) {
+    REF_BOOL not_used = REF_TRUE;
+    each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
+      if (candidate == nodes[4]) {
+        not_used = REF_FALSE;
+        break;
+      }
+    }
+    if (not_used) {
+      if (REF_EMPTY == faceid1) {
+        faceid1 = candidate;
+      } else {
+        faceid2 = candidate;
+      }
+    }
+    candidate++;
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_grid_tri(twod_grid), cell, nodes) {
+    new_nodes[0] = nodes[0];
+    new_nodes[1] = nodes[2];
+    new_nodes[2] = nodes[1];
+    new_nodes[3] = faceid1;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), new_nodes, &new_cell), "boundary");
+    new_nodes[0] = nodes[0] + offset;
+    new_nodes[1] = nodes[1] + offset;
+    new_nodes[2] = nodes[2] + offset;
+    new_nodes[3] = faceid2;
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), new_nodes, &new_cell), "boundary");
+    new_nodes[0] = nodes[0] + offset;
+    new_nodes[1] = nodes[1] + offset;
+    new_nodes[2] = nodes[2] + offset;
+    new_nodes[3] = nodes[0];
+    new_nodes[4] = nodes[1];
+    new_nodes[5] = nodes[2];
+    RSS(ref_cell_add(ref_grid_pri(ref_grid), new_nodes, &new_cell), "boundary");
+  }
+
+  each_ref_cell_valid_cell_with_nodes(ref_grid_qua(twod_grid), cell, nodes) {
+    new_nodes[0] = nodes[3];
+    new_nodes[1] = nodes[2];
+    new_nodes[2] = nodes[1];
+    new_nodes[3] = nodes[0];
+    new_nodes[4] = faceid1;
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
+    new_nodes[0] = nodes[0] + offset;
+    new_nodes[1] = nodes[1] + offset;
+    new_nodes[2] = nodes[2] + offset;
+    new_nodes[3] = nodes[3] + offset;
+    new_nodes[4] = faceid2;
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
+    new_nodes[0] = nodes[0] + offset;
+    new_nodes[1] = nodes[1] + offset;
+    new_nodes[2] = nodes[2] + offset;
+    new_nodes[3] = nodes[3] + offset;
+    new_nodes[4] = nodes[0];
+    new_nodes[5] = nodes[1];
+    new_nodes[6] = nodes[2];
+    new_nodes[7] = nodes[3];
+    RSS(ref_cell_add(ref_grid_hex(ref_grid), new_nodes, &new_cell), "boundary");
   }
 
   return REF_SUCCESS;
