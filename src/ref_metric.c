@@ -391,67 +391,12 @@ REF_STATUS ref_metric_delta_box_node(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_metric_interpolate_node_twod(REF_GRID ref_grid,
-                                                   REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GRID parent_grid;
-  REF_NODE parent_node;
-  REF_INT tri, ixyz, ibary, im;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL xyz[3], interpolated_xyz[3], bary[3];
-  REF_DBL tol = 1.0e-11;
-  REF_DBL log_parent_m[3][6];
-  REF_DBL log_interpolated_m[6];
-
-  /* skip if parallel at this point */
-  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
-
-  /* skip null interp */
-  if (NULL == ref_grid_interp(ref_grid)) return REF_SUCCESS;
-
-  parent_grid = ref_interp_from_grid(ref_grid_interp(ref_grid));
-  parent_node = ref_grid_node(parent_grid);
-
-  if (!ref_grid_twod(ref_grid))
-    RSS(REF_IMPLEMENT, "ref_metric_interpolate_node only implemented for twod");
-
-  /* skip mixed element nodes, they can't move */
-  if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) return REF_SUCCESS;
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    xyz[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-  tri = REF_EMPTY;
-  RSS(ref_grid_enclosing_tri(parent_grid, xyz, &tri, bary), "enclosing tri");
-  RSS(ref_cell_nodes(ref_grid_tri(parent_grid), tri, nodes), "c2n");
-  for (ixyz = 0; ixyz < 3; ixyz++) {
-    interpolated_xyz[ixyz] = 0.0;
-    for (ibary = 0; ibary < 3; ibary++)
-      interpolated_xyz[ixyz] +=
-          bary[ibary] * ref_node_real(parent_node, ixyz, nodes[ibary]);
-  }
-  /* override z for fake twod */
-  interpolated_xyz[2] = ref_node_xyz(ref_node, 2, node);
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
-  for (ibary = 0; ibary < 3; ibary++)
-    RSS(ref_node_metric_get_log(parent_node, nodes[ibary], log_parent_m[ibary]),
-        "log(parentM)");
-  for (im = 0; im < 6; im++) {
-    log_interpolated_m[im] = 0.0;
-    for (ibary = 0; ibary < 3; ibary++)
-      log_interpolated_m[im] += bary[ibary] * log_parent_m[ibary][im];
-  }
-  RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
-      "log(interpM)");
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INTERP ref_interp;
   REF_GRID from_grid;
   REF_NODE from_node;
+  REF_CELL from_cell;
   REF_DBL log_parent_m[4][6], log_m[6], bary[4];
   REF_INT ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -463,15 +408,8 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   ref_interp = ref_grid_interp(ref_grid);
   from_grid = ref_interp_from_grid(ref_interp);
   from_node = ref_grid_node(from_grid);
-
-  if (ref_grid_twod(ref_grid)) {
-    if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
-      RSS(REF_IMPLEMENT, "para twod metric interp not implemented");
-    } else {
-      RSS(ref_metric_interpolate_node_twod(ref_grid, node), "interp node twod");
-    }
-    return REF_SUCCESS;
-  }
+  from_cell = ref_grid_tet(from_grid);
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
 
   if (!ref_interp_continuously(ref_interp)) {
     ref_interp_cell(ref_interp, node) = REF_EMPTY; /* mark moved */
@@ -484,17 +422,15 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   if (REF_EMPTY == ref_interp_cell(ref_interp, node) ||
       ref_mpi_rank(ref_mpi) != ref_interp->part[node])
     return REF_SUCCESS;
-
-  RSS(ref_cell_nodes(ref_grid_tet(from_grid), ref_interp_cell(ref_interp, node),
-                     nodes),
+  RSS(ref_cell_nodes(from_cell, ref_interp_cell(ref_interp, node), nodes),
       "node needs to be localized");
   RSS(ref_node_clip_bary4(&ref_interp_bary(ref_interp, 0, node), bary), "clip");
-  for (ibary = 0; ibary < 4; ibary++)
+  for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++)
     RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
         "log(parentM)");
   for (im = 0; im < 6; im++) log_m[im] = 0.0;
   for (im = 0; im < 6; im++) {
-    for (ibary = 0; ibary < 4; ibary++) {
+    for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
       log_m[im] += bary[ibary] * log_parent_m[ibary][im];
     }
   }
@@ -510,6 +446,7 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   REF_INTERP ref_interp;
   REF_GRID from_grid;
   REF_NODE from_node;
+  REF_CELL from_cell;
   REF_NODE to_node;
   REF_DBL log_parent_m[4][6], log_m[6], bary[4];
   REF_INT ibary, im;
@@ -520,18 +457,12 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   ref_interp = ref_grid_interp(ref_grid);
   from_grid = ref_interp_from_grid(ref_interp);
   from_node = ref_grid_node(from_grid);
+  from_cell = ref_grid_tet(from_grid);
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
   to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
 
   if (new_node >= ref_interp_max(ref_interp)) {
     RSS(ref_interp_resize(ref_interp, ref_node_max(to_node)), "resize");
-  }
-
-  if (ref_grid_surf(ref_grid)) return REF_SUCCESS;
-
-  if (ref_grid_twod(ref_grid)) {
-    RSS(ref_metric_interpolate_node_twod(ref_grid, new_node),
-        "interp node twod");
-    return REF_SUCCESS;
   }
 
   if (!ref_interp_continuously(ref_interp)) {
@@ -546,18 +477,17 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
       ref_mpi_rank(ref_mpi) != ref_interp_part(ref_interp, new_node))
     return REF_SUCCESS;
 
-  RSS(ref_cell_nodes(ref_grid_tet(from_grid),
-                     ref_interp_cell(ref_interp, new_node), nodes),
+  RSS(ref_cell_nodes(from_cell, ref_interp_cell(ref_interp, new_node), nodes),
       "new_node needs to be localized");
   RSS(ref_node_clip_bary4(&ref_interp_bary(ref_interp, 0, new_node), bary),
       "clip");
 
-  for (ibary = 0; ibary < 4; ibary++)
+  for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++)
     RSS(ref_node_metric_get_log(from_node, nodes[ibary], log_parent_m[ibary]),
         "log(parentM)");
   for (im = 0; im < 6; im++) log_m[im] = 0.0;
   for (im = 0; im < 6; im++) {
-    for (ibary = 0; ibary < 4; ibary++) {
+    for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
       log_m[im] += bary[ibary] * log_parent_m[ibary][im];
     }
   }
