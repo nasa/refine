@@ -980,7 +980,8 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   }
   offset = ref_node_n(ref_node);
   each_ref_node_valid_node(twod_node, node) {
-    RSS(ref_node_add(ref_node, ref_node_global(twod_node, node), &new_node),
+    RSS(ref_node_add(ref_node, offset + ref_node_global(twod_node, node),
+                     &new_node),
         "add node out of plane");
     ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
     ref_node_xyz(ref_node, 1, new_node) = 1.0;
@@ -992,8 +993,8 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
     new_nodes[0] = nodes[0];
     new_nodes[1] = nodes[1];
-    new_nodes[2] = nodes[0] + offset;
-    new_nodes[3] = nodes[1] + offset;
+    new_nodes[2] = nodes[1] + offset;
+    new_nodes[3] = nodes[0] + offset;
     new_nodes[4] = nodes[2];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
   }
