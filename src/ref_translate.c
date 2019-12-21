@@ -42,6 +42,7 @@ static int print_usage(const char *name) {
   printf("     [--compact-faceids]\n");
   printf("     [--drop-volume]\n");
   printf("     [--map-face [old new] ...]\n");
+  printf("     [--extrude]\n");
   return 0;
 }
 
@@ -275,6 +276,11 @@ int main(int argc, char *argv[]) {
         ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) =
             new_faceid[faceid - min_faceid];
       }
+    }
+    if (strcmp(argv[pos], "--extrude") == 0) {
+      REF_GRID twod_grid = ref_grid;
+      RSS( ref_grid_extrude_twod(&ref_grid, twod_grid),"extrude");
+      RSS(ref_grid_free(twod_grid), "free");
     }
     pos++;
   }
