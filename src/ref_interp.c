@@ -498,9 +498,9 @@ REF_STATUS ref_interp_best_tri_in_list(REF_GRID ref_grid, REF_LIST ref_list,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_update_agent_seed(REF_INTERP ref_interp, REF_INT id,
-                                        REF_INT node0, REF_INT node1,
-                                        REF_INT node2) {
+static REF_STATUS ref_update_agent_tet_seed(REF_INTERP ref_interp, REF_INT id,
+                                            REF_INT node0, REF_INT node1,
+                                            REF_INT node2) {
   REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tets = ref_grid_tet(ref_grid);
@@ -649,50 +649,58 @@ REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
 
     /* less than */
     if (bary[0] < bary[1] && bary[0] < bary[2] && bary[0] < bary[3]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[1], nodes[2], nodes[3]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[1], nodes[2],
+                                    nodes[3]),
           "1 2 3");
       continue;
     }
 
     if (bary[1] < bary[0] && bary[1] < bary[3] && bary[1] < bary[2]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[3], nodes[2]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[3],
+                                    nodes[2]),
           "0 3 2");
       continue;
     }
 
     if (bary[2] < bary[0] && bary[2] < bary[1] && bary[2] < bary[3]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[1], nodes[3]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[1],
+                                    nodes[3]),
           "0 1 3");
       continue;
     }
 
     if (bary[3] < bary[0] && bary[3] < bary[2] && bary[3] < bary[1]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[2], nodes[1]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[2],
+                                    nodes[1]),
           "0 2 1");
       continue;
     }
 
     /* less than or equal */
     if (bary[0] <= bary[1] && bary[0] <= bary[2] && bary[0] <= bary[3]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[1], nodes[2], nodes[3]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[1], nodes[2],
+                                    nodes[3]),
           "1 2 3");
       continue;
     }
 
     if (bary[1] <= bary[0] && bary[1] <= bary[3] && bary[1] <= bary[2]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[3], nodes[2]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[3],
+                                    nodes[2]),
           "0 3 2");
       continue;
     }
 
     if (bary[2] <= bary[0] && bary[2] <= bary[1] && bary[2] <= bary[3]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[1], nodes[3]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[1],
+                                    nodes[3]),
           "0 1 3");
       continue;
     }
 
     if (bary[3] <= bary[0] && bary[3] <= bary[2] && bary[3] <= bary[1]) {
-      RSS(ref_update_agent_seed(ref_interp, id, nodes[0], nodes[2], nodes[1]),
+      RSS(ref_update_agent_tet_seed(ref_interp, id, nodes[0], nodes[2],
+                                    nodes[1]),
           "0 2 1");
       continue;
     }
