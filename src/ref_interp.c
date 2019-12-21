@@ -883,6 +883,9 @@ REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
   REF_INT n_agents;
   REF_INT sweep = 0;
 
+  if (ref_grid_twod(ref_interp_from_grid(ref_interp)))
+    from_cell = ref_grid_tri(ref_interp_from_grid(ref_interp));
+
   n_agents = ref_agents_n(ref_agents);
   RSS(ref_mpi_allsum(ref_mpi, &n_agents, 1, REF_INT_TYPE), "sum");
 
