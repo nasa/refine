@@ -18,5 +18,5 @@ skbeg     1   1   0   1
    linseg    ::x[1]   ::y[1]   0
 skend     0
 
-export square-circle.egads
+dump square-circle.egads
 
