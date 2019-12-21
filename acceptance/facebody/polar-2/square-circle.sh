@@ -7,7 +7,7 @@ set -u # Treat unset variables as error
 if [ $# -gt 0 ] ; then
     src=$1/src
 else
-    src=${HOME}/refine/strict/src
+    src=${HOME}/refine/egads/src
 fi
 
 serveCSM -batch square-circle.csm
