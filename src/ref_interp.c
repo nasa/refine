@@ -409,6 +409,46 @@ REF_STATUS ref_interp_exhaustive_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_interp_enclosing_tri_in_list(REF_GRID ref_grid,
+                                            REF_LIST ref_list, REF_DBL *xyz,
+                                            REF_INT *cell, REF_DBL *bary) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, candidate, best_candidate;
+  REF_DBL current_bary[4];
+  REF_DBL best_bary, min_bary;
+  REF_STATUS status;
+
+  best_candidate = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_list_item(ref_list, item) {
+    candidate = ref_list_value(ref_list, item);
+    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+    current_bary[3] = 0.0;
+    status = ref_node_bary3(ref_node, nodes, xyz, current_bary);
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                     MIN(current_bary[2], current_bary[3]));
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
+    }
+  }
+
+  RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+  *cell = best_candidate;
+  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+  bary[3] = 0.0;
+  RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
                                             REF_LIST ref_list, REF_DBL *xyz,
                                             REF_INT *cell, REF_DBL *bary) {
@@ -1873,11 +1913,19 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
                             ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
-      RSS(ref_interp_enclosing_tet_in_list(
-              ref_interp_from_grid(ref_interp), ref_list,
-              ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
-              &(ref_interp->bary[4 * node])),
-          "best in list");
+      if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
+        RSS(ref_interp_enclosing_tri_in_list(
+                ref_interp_from_grid(ref_interp), ref_list,
+                ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
+                &(ref_interp->bary[4 * node])),
+            "best tri in list");
+      } else {
+        RSS(ref_interp_enclosing_tet_in_list(
+                ref_interp_from_grid(ref_interp), ref_list,
+                ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
+                &(ref_interp->bary[4 * node])),
+            "best tet in list");
+      }
     }
     RSS(ref_list_free(ref_list), "free list");
   }
