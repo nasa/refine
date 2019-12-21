@@ -131,6 +131,8 @@ REF_STATUS ref_grid_enclosing_tri(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tri,
 REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
                                   REF_DBL *bary);
 
+REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded, REF_GRID twod);
+
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */

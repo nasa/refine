@@ -957,3 +957,32 @@ REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_NODE twod_node = ref_grid_node(twod_grid);
+  REF_INT node, new_node;
+  *extruded_grid = NULL;
+  RAS(ref_grid_twod(twod_grid), "require twod grid input");
+  RSS(ref_grid_create(extruded_grid, ref_grid_mpi(twod_grid)), "create grid");
+  ref_grid = *extruded_grid;
+  ref_node = ref_grid_node(ref_grid);
+
+  each_ref_node_valid_node(twod_node, node) {
+    RSS(ref_node_add(ref_node, ref_node_global(twod_node, node), &new_node),
+        "add node in plane");
+    ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
+    ref_node_xyz(ref_node, 1, new_node) = 0.0;
+    ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
+  }
+  each_ref_node_valid_node(twod_node, node) {
+    RSS(ref_node_add(ref_node, ref_node_global(twod_node, node), &new_node),
+        "add node out of plane");
+    ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
+    ref_node_xyz(ref_node, 1, new_node) = 1.0;
+    ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
+  }
+
+  return REF_SUCCESS;
+}
