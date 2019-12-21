@@ -837,6 +837,8 @@ REF_STATUS ref_interp_push_onto_queue(REF_INTERP ref_interp, REF_INT node) {
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT id, other;
 
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+
   RAS(ref_node_valid(ref_node, node), "invalid node");
   RAS(ref_node_owned(ref_node, node), "ghost node");
 
@@ -1165,7 +1167,7 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_SEARCH ref_search = ref_interp_search(ref_interp);
   REF_DBL bary[4];
@@ -1183,6 +1185,8 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   REF_INT *send_node, *recv_node;
   REF_DBL *send_bary, *recv_bary;
   REF_INT i, item;
+
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
 
   *increase_fuzz = REF_FALSE;
 
@@ -1226,10 +1230,17 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
                             ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
-      RSS(ref_interp_enclosing_tet_in_list(from_grid, ref_list,
-                                           &(global_xyz[3 * node]),
-                                           &(best_cell[node]), bary),
-          "best in list");
+      if (ref_grid_twod(from_grid)) {
+        RSS(ref_interp_enclosing_tri_in_list(from_grid, ref_list,
+                                             &(global_xyz[3 * node]),
+                                             &(best_cell[node]), bary),
+            "best in list");
+      } else {
+        RSS(ref_interp_enclosing_tet_in_list(from_grid, ref_list,
+                                             &(global_xyz[3 * node]),
+                                             &(best_cell[node]), bary),
+            "best in list");
+      }
       if (REF_EMPTY != best_cell[node]) {
         /* negative for min, until use max*/
         best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
@@ -1260,14 +1271,21 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
       send_node[nsend] = best_node[node];
       send_cell[nsend] = best_cell[node];
       if (REF_EMPTY != send_cell[nsend]) {
-        RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
+        RSB(ref_cell_nodes(from_cell, best_cell[node], nodes),
             "cell should be set and valid", {
               printf("global %d best cell %d best bary %e\n", best_node[node],
                      best_cell[node], best_bary[node]);
             });
-        RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
-                           &(send_bary[4 * nsend])),
-            "bary");
+        if (ref_grid_twod(from_grid)) {
+          send_bary[3 + 4 * nsend] = 0.0;
+          RSS(ref_node_bary3(from_node, nodes, &(global_xyz[3 * node]),
+                             &(send_bary[4 * nsend])),
+              "bary");
+        } else {
+          RSS(ref_node_bary4(from_node, nodes, &(global_xyz[3 * node]),
+                             &(send_bary[4 * nsend])),
+              "bary");
+        }
       } else {
         *increase_fuzz =
             REF_TRUE; /* candate not found, try again larger fuzz */
