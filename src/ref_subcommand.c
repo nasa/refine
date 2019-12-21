@@ -412,6 +412,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+  } else {
+    ref_grid_twod(ref_grid) = REF_TRUE; /* assume flat facebody */
   }
 
   sprintf(filename, "%s-vol.meshb", project);
