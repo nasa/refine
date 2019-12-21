@@ -269,6 +269,7 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
     if (ref_node_owned(to_node, node)) {
       REIS(REF_EMPTY, ref_interp->cell[node], "identity already found?");
       if (ref_grid_twod(to_grid)) {
+        if (ref_cell_node_empty(ref_grid_tri(to_grid), node)) continue;
         RSS(ref_interp_exhaustive_tri_around_node(
                 from_grid, node, ref_node_xyz_ptr(to_node, node),
                 &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
