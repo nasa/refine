@@ -44,5 +44,5 @@ adapt_cycle cycle02 cycle03 10
 adapt_cycle cycle03 cycle04 10
 
 cat cycle04.status
-../../check.rb cycle04.status 0.30 2.2
+../../check.rb cycle04.status 0.20 2.4
 
