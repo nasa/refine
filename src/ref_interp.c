@@ -2016,11 +2016,21 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
                             ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
-      RSS(ref_interp_enclosing_tet_in_list(
-              ref_interp_from_grid(ref_interp), ref_list,
-              ref_node_xyz_ptr(ref_node, new_node),
-              &(ref_interp->cell[new_node]), &(ref_interp->bary[4 * new_node])),
-          "best in list");
+      if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
+        RSS(ref_interp_enclosing_tri_in_list(
+                ref_interp_from_grid(ref_interp), ref_list,
+                ref_node_xyz_ptr(ref_node, new_node),
+                &(ref_interp->cell[new_node]),
+                &(ref_interp->bary[4 * new_node])),
+            "best in list");
+      } else {
+        RSS(ref_interp_enclosing_tet_in_list(
+                ref_interp_from_grid(ref_interp), ref_list,
+                ref_node_xyz_ptr(ref_node, new_node),
+                &(ref_interp->cell[new_node]),
+                &(ref_interp->bary[4 * new_node])),
+            "best in list");
+      }
     }
     RSS(ref_list_free(ref_list), "free list");
   }
