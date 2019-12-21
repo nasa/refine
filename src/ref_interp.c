@@ -610,6 +610,8 @@ REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
   REF_DBL bary[4];
   REF_AGENTS ref_agents = ref_interp->ref_agents;
 
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+
   limit = 215; /* 10e6^(1/3), required 108 for twod testcase  */
 
   each_ref_agent_step(ref_agents, id, limit) {
@@ -621,9 +623,16 @@ REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
     RSB(ref_cell_nodes(ref_cell, ref_agent_seed(ref_agents, id), nodes), "cell",
         { ref_agents_tattle(ref_agents, id, "cell_nodes in walk"); });
     /* when REF_DIV_ZERO, min bary is preserved */
-    RXS(ref_node_bary4(ref_node, nodes, ref_agent_xyz_ptr(ref_agents, id),
-                       bary),
-        REF_DIV_ZERO, "bary");
+    if (ref_grid_twod(ref_grid)) {
+      bary[3] = 0.0;
+      RXS(ref_node_bary3(ref_node, nodes, ref_agent_xyz_ptr(ref_agents, id),
+                         bary),
+          REF_DIV_ZERO, "bary");
+    } else {
+      RXS(ref_node_bary4(ref_node, nodes, ref_agent_xyz_ptr(ref_agents, id),
+                         bary),
+          REF_DIV_ZERO, "bary");
+    }
 
     if (ref_agent_step(ref_agents, id) > (limit)) {
       printf("bary %e %e %e %e inside %e\n", bary[0], bary[1], bary[2], bary[3],
