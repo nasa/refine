@@ -1364,10 +1364,11 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
     REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-    if (3 == dim) {
-      REIS(ref_node_n_global(ref_node), nnode, "global 3d nnode");
-    } else {
-      REIS(ref_node_n_global(ref_node) / 2, nnode, "global 2d nnode");
+    if ( (nnode !=ref_node_n_global(ref_node)) &&
+	 (nnode !=ref_node_n_global(ref_node)/2) ) {
+      printf("file %d ref_node " REF_GLOB_FMT "\n",
+	     nnode,ref_node_n_global(ref_node));
+      THROW("global count mismatch");
     }
     REIS(1, ntype, "number of solutions");
     REIS(3, type, "metric solution type");
