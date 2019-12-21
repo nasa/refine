@@ -71,6 +71,46 @@ static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_interp_exhaustive_tri_around_node(REF_GRID ref_grid,
+                                                        REF_INT node,
+                                                        REF_DBL *xyz,
+                                                        REF_INT *cell,
+                                                        REF_DBL *bary) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, candidate, best_candidate;
+  REF_DBL current_bary[4];
+  REF_DBL best_bary, min_bary;
+  REF_STATUS status;
+
+  best_candidate = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_cell_having_node(ref_cell, node, item, candidate) {
+    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+    status = ref_node_bary3(ref_node, nodes, xyz, current_bary);
+    current_bary[3] = 0.0;
+    RXS(status, REF_DIV_ZERO, "bary");
+    if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
+                     MIN(current_bary[2], current_bary[3]));
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
+    }
+  }
+
+  RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+  *cell = best_candidate;
+  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+  RSS(ref_node_bary3(ref_node, nodes, xyz, bary), "bary");
+  bary[3] = 0.0;
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_interp_bounding_sphere4(REF_NODE ref_node, REF_INT *nodes,
                                               REF_DBL *center,
                                               REF_DBL *radius) {
@@ -222,18 +262,23 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
   RSS(ref_grid_deep_copy(&from_grid, to_grid), "import");
   RSS(ref_interp_create(ref_interp_ptr, from_grid, to_grid), "create");
 
-  if (ref_grid_twod(to_grid) || ref_grid_surf(to_grid)) return REF_SUCCESS;
-
   ref_interp = *ref_interp_ptr;
   to_node = ref_grid_node(to_grid);
 
   each_ref_node_valid_node(to_node, node) {
     if (ref_node_owned(to_node, node)) {
       REIS(REF_EMPTY, ref_interp->cell[node], "identity already found?");
-      RSS(ref_interp_exhaustive_tet_around_node(
-              from_grid, node, ref_node_xyz_ptr(to_node, node),
-              &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
-          "tet around node");
+      if (ref_grid_twod(to_grid)) {
+        RSS(ref_interp_exhaustive_tri_around_node(
+                from_grid, node, ref_node_xyz_ptr(to_node, node),
+                &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
+            "tri around node");
+      } else {
+        RSS(ref_interp_exhaustive_tet_around_node(
+                from_grid, node, ref_node_xyz_ptr(to_node, node),
+                &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
+            "tet around node");
+      }
       ref_interp->part[node] = ref_mpi_rank(ref_grid_mpi(from_grid));
       if (!ref_interp_bary_inside(ref_interp, &(ref_interp->bary[4 * node]))) {
         printf("info bary %e %e %e %e identity tol\n",
@@ -2127,11 +2172,13 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
   REF_DBL error;
-  REF_INT i;
+  REF_INT i, j;
   REF_INT receptor, n_recept, donation, n_donor;
   REF_DBL *recept_xyz, *donor_xyz, *recept_bary, *donor_bary;
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
+
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
 
   *max_error = 0.0;
 
@@ -2186,12 +2233,13 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (i = 0; i < 3; i++)
-      donor_xyz[i + 3 * donation] =
-          donor_bary[0 + 4 * donation] * ref_node_xyz(from_node, i, nodes[0]) +
-          donor_bary[1 + 4 * donation] * ref_node_xyz(from_node, i, nodes[1]) +
-          donor_bary[2 + 4 * donation] * ref_node_xyz(from_node, i, nodes[2]) +
-          donor_bary[3 + 4 * donation] * ref_node_xyz(from_node, i, nodes[3]);
+    for (i = 0; i < 3; i++) {
+      donor_xyz[i + 3 * donation] = 0.0;
+      for (j = 0; j < ref_cell_node_per(from_cell); j++) {
+        donor_xyz[i + 3 * donation] +=
+            donor_bary[j + 4 * donation] * ref_node_xyz(from_node, i, nodes[j]);
+      }
+    }
   }
   ref_free(donor_cell);
   ref_free(donor_bary);
@@ -2755,6 +2803,8 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT *lookedup_donation, *lookedup_cell;
   REF_DBL max_error;
 
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+
   RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
   if (ref_mpi_once(ref_grid_mpi(to_grid))) {
     printf("starting %e max error\n", max_error);
@@ -2815,7 +2865,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < ref_cell_node_per(from_cell); i++) {
       from_part[nodes[i]] = donor_ret[donation];
     }
   }
@@ -2827,7 +2877,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < ref_cell_node_per(from_cell); i++) {
       donor_nodes[i + 4 * donation] = ref_node_global(from_node, nodes[i]);
     }
     donor_donation[donation] = donation;
@@ -2860,7 +2910,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   ref_malloc(find_cell, n_find, REF_INT);
 
   for (find = 0; find < n_find; find++) {
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < ref_cell_node_per(from_cell); i++) {
       RSS(ref_node_local(from_node, find_nodes[i + 4 * find], &(nodes[i])),
           "g2l");
     }
