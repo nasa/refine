@@ -228,7 +228,7 @@ trap - EXIT
 LOG=${root_dir}/log.accept-facebody-polar-2
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/polar-2
-( ./accept-facebody-polar-2.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-facebody-polar-2.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 LOG=${root_dir}/log.accept-3d-linear
