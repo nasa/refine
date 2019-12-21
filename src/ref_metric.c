@@ -564,6 +564,8 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+
   RSS(ref_interp_max_error(ref_interp, &max_error), "err");
   if (max_error > tol && ref_mpi_once(ref_mpi)) {
     printf("warning: %e max_error greater than %e tol\n", max_error, tol);
