@@ -716,8 +716,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
       "project.meshb is missing the geometry model record");
-  RAS(!ref_grid_twod(ref_grid), "2D adaptation not implemented");
-  RAS(!ref_grid_surf(ref_grid), "Surface adaptation not implemented");
   RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
 
   sprintf(filename, "%s_volume.solb", in_project);
@@ -776,6 +774,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
   RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
   ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
