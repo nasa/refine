@@ -52,6 +52,7 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   if (ref_grid_twod(ref_grid)) {
     each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
       RSS(ref_node_tri_area(ref_node, nodes, &cell_vol), "vol");
+      RSS(ref_node_tri_grad_nodes(ref_node, nodes, scalar, cell_grad), "vol");
       for (cell_node = 0; cell_node < 3; cell_node++)
         for (i = 0; i < 3; i++)
           grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
