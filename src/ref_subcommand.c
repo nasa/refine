@@ -654,6 +654,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char filename[1024];
   REF_GRID ref_grid = NULL;
   REF_GRID initial_grid = NULL;
+  REF_GRID extruded_grid = NULL;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
@@ -830,8 +831,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
   sprintf(filename, "%s.lb8.ugrid", out_project);
-  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
-  RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
+    RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid), "extrude");
+    if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
+    RSS(ref_gather_by_extension(extruded_grid, filename), "gather .lb8.ugrid");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+    RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
 
   if (ref_mpi_once(ref_mpi)) {
@@ -859,8 +867,10 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename), "gather recept");
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
 
-  ref_free(ref_field) ref_free(initial_field)
-      RSS(ref_grid_free(initial_grid), "free");
+  ref_free(ref_field);
+  ref_free(initial_field);
+  ref_grid_free(extruded_grid);
+  RSS(ref_grid_free(initial_grid), "free");
   RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;
