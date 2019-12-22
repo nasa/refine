@@ -1913,9 +1913,15 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
     (ref_interp->n_walk)++;
     REIS(ref_mpi_rank(ref_mpi), ref_interp->part[node], "expected local");
-    RAS(ref_cell_valid(ref_grid_tet(ref_interp_from_grid(ref_interp)),
-                       ref_interp->cell[node]),
-        "expected a valid cell");
+    if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
+      RAS(ref_cell_valid(ref_grid_tri(ref_interp_from_grid(ref_interp)),
+			 ref_interp->cell[node]),
+	  "expected a valid tri");
+    }else{
+      RAS(ref_cell_valid(ref_grid_tet(ref_interp_from_grid(ref_interp)),
+			 ref_interp->cell[node]),
+	  "expected a valid tet");
+    }
   } else {
     /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
     /* what for parallel REF_AGENT_HOP_PART */
