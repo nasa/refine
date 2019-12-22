@@ -863,7 +863,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   char line[1024];
   REF_INT dummy, row;
   REF_DBL x, y, z;
-  REF_INT nnode, node, new_node;
+  REF_INT dim, nnode, node, new_node;
   REF_INT nedge, edge, n0, n1, n2, n3, id;
   REF_INT ntri, tri;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
@@ -882,6 +882,11 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     status = fscanf(file, "%s", line);
     if (EOF == status) return REF_SUCCESS;
     REIS(1, status, "line read failed");
+
+    if (0 == strcmp("Dimension", line)) {
+      REIS(1, fscanf(file, "%d", &dim), "read dim");
+      if (2 == dim) ref_grid_twod(ref_grid) = REF_TRUE;
+    }
 
     if (0 == strcmp("Vertices", line)) {
       REIS(1, fscanf(file, "%d", &nnode), "read nnode");
@@ -1515,9 +1520,6 @@ REF_STATUS ref_import_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
            "input file name extension unknown", filename);
     RSS(REF_FAILURE, "unknown file extension");
   }
-
-  ref_grid_guess_twod_status(*ref_grid_ptr);
-  ref_grid_guess_surf_status(*ref_grid_ptr);
 
   RSS(ref_grid_inward_boundary_orientation(*ref_grid_ptr),
       "inward boundary orientation");

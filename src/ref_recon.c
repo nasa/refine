@@ -49,22 +49,34 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
   each_ref_node_valid_node(ref_node, node) for (i = 0; i < 3; i++)
       grad[i + 3 * node] = 0.0;
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-        RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
-            "grad");
-        for (cell_node = 0; cell_node < 4; cell_node++)
-          for (i = 0; i < 3; i++)
-            grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
-        for (cell_node = 0; cell_node < 4; cell_node++)
-          vol[nodes[cell_node]] += cell_vol;
-        break;
-      default:
-        RSS(REF_IMPLEMENT, "implement cell type");
-        break;
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_cell_valid_cell_with_nodes(ref_grid_tri(ref_grid), cell, nodes) {
+      RSS(ref_node_tri_area(ref_node, nodes, &cell_vol), "vol");
+      RSS(ref_node_tri_grad_nodes(ref_node, nodes, scalar, cell_grad), "vol");
+      for (cell_node = 0; cell_node < 3; cell_node++)
+        for (i = 0; i < 3; i++)
+          grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
+      for (cell_node = 0; cell_node < 3; cell_node++)
+        vol[nodes[cell_node]] += cell_vol;
+    }
+  } else {
+    each_ref_grid_ref_cell(ref_grid, group, ref_cell)
+        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      switch (ref_cell_node_per(ref_cell)) {
+        case 4:
+          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+          RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
+              "grad");
+          for (cell_node = 0; cell_node < 4; cell_node++)
+            for (i = 0; i < 3; i++)
+              grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
+          for (cell_node = 0; cell_node < 4; cell_node++)
+            vol[nodes[cell_node]] += cell_vol;
+          break;
+        default:
+          RSS(REF_IMPLEMENT, "implement cell type");
+          break;
+      }
     }
   }
 
@@ -613,18 +625,32 @@ REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
+                              REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT i, node;
+
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < ldim; i++) {
+      replace[i + ldim * node] = !ref_cell_node_empty(ref_cell, node);
+    }
+  }
+  return REF_SUCCESS;
+}
+
 /* replace with volume weighing of donor dual volume */
 REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
                                         REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL tets = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT node;
   REF_INT max_node = REF_RECON_MAX_DEGREE, nnode;
   REF_INT node_list[REF_RECON_MAX_DEGREE];
   REF_INT i, neighbor, nint;
   REF_INT pass, remain;
 
-  if (ref_grid_twod(ref_grid)) RSS(REF_IMPLEMENT, "2D not implmented");
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
 
   RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
   RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
@@ -634,7 +660,7 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
       if (ref_node_owned(ref_node, node)) {
         for (i = 0; i < ldim; i++) {
           if (replace[i + ldim * node]) {
-            RXS(ref_cell_node_list_around(tets, node, max_node, &nnode,
+            RXS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode,
                                           node_list),
                 REF_INCREASE_LIMIT, "unable to build neighbor list ");
             nint = 0;
@@ -823,7 +849,11 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
     case REF_RECON_L2PROJECTION:
       RSS(ref_recon_l2_projection_hessian(ref_grid, scalar, hessian), "l2");
       ref_malloc(replace, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
-      RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_recon_mask_edg(ref_grid, replace, 6), "mask edg");
+      } else {
+        RSS(ref_recon_mask_tri(ref_grid, replace, 6), "mask tri");
+      }
       RSS(ref_recon_extrapolate_zeroth(ref_grid, hessian, replace, 6),
           "bound extrap");
       ref_free(replace);

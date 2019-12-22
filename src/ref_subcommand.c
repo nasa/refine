@@ -412,6 +412,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
+  } else {
+    ref_grid_twod(ref_grid) = REF_TRUE; /* assume flat facebody */
   }
 
   sprintf(filename, "%s-vol.meshb", project);
@@ -645,6 +647,24 @@ shutdown:
   if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
   return REF_FAILURE;
 }
+static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
+                                         REF_DBL *twod_field,
+                                         REF_GRID extruded_grid,
+                                         REF_DBL *extruded_field) {
+  REF_INT node, local, i;
+  REF_GLOB twod_nnode, global;
+  twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
+  each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
+    global = ref_node_global(ref_grid_node(extruded_grid), node);
+    if (global >= twod_nnode) global -= twod_nnode;
+    RSS(ref_node_local(ref_grid_node(twod_grid), global, &local),
+        "twod global missing");
+    for (i = 0; i < ldim; i++) {
+      extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+    }
+  }
+  return REF_SUCCESS;
+}
 
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
@@ -652,13 +672,14 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char filename[1024];
   REF_GRID ref_grid = NULL;
   REF_GRID initial_grid = NULL;
+  REF_GRID extruded_grid = NULL;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
   REF_INT pass, passes = 30;
   REF_DBL gamma = 1.4;
   REF_INT ldim, node;
-  REF_DBL *initial_field, *ref_field, *scalar, *metric;
+  REF_DBL *initial_field, *ref_field, *extruded_field = NULL, *scalar, *metric;
   REF_INT p = 2;
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -714,8 +735,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
       "project.meshb is missing the geometry model record");
-  RAS(!ref_grid_twod(ref_grid), "2D adaptation not implemented");
-  RAS(!ref_grid_surf(ref_grid), "Surface adaptation not implemented");
   RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
 
   sprintf(filename, "%s_volume.solb", in_project);
@@ -774,6 +793,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) printf("load egadslite from .meshb byte stream\n");
   RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+  ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
   ref_mpi_stopwatch_stop(ref_mpi, "load egads");
   RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
@@ -829,8 +849,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
   sprintf(filename, "%s.lb8.ugrid", out_project);
-  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
-  RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
+    RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid), "extrude");
+    if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
+    RSS(ref_gather_by_extension(extruded_grid, filename), "gather .lb8.ugrid");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+    RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
 
   if (ref_mpi_once(ref_mpi)) {
@@ -853,13 +880,30 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
   sprintf(filename, "%s-restart.solb", out_project);
-  if (ref_mpi_once(ref_mpi))
-    printf("writing interpolated field %s\n", filename);
-  RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename), "gather recept");
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated extruded field %s\n", filename);
+    ref_malloc(extruded_field,
+               ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+    RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
+                               extruded_field),
+        "extrude field");
+    RSS(ref_gather_scalar(extruded_grid, ldim, extruded_field, filename),
+        "gather recept");
+  } else {
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated field %s\n", filename);
+    RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename),
+        "gather recept");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
 
-  ref_free(ref_field) ref_free(initial_field)
-      RSS(ref_grid_free(initial_grid), "free");
+  ref_free(ref_field);
+  ref_free(initial_field);
+  ref_free(extruded_field);
+
+  ref_grid_free(extruded_grid);
+  RSS(ref_grid_free(initial_grid), "free");
   RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;

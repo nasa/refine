@@ -218,6 +218,8 @@ REF_STATUS ref_node_xyz_grad(REF_DBL *xyzs[4], REF_DBL *scalar,
                              REF_DBL *gradient);
 REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *scalar, REF_DBL *gradient);
+REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
+                                   REF_DBL *scalar, REF_DBL *gradient);
 
 REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
