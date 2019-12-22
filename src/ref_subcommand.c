@@ -647,6 +647,24 @@ shutdown:
   if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
   return REF_FAILURE;
 }
+static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
+                                         REF_DBL *twod_field,
+                                         REF_GRID extruded_grid,
+                                         REF_DBL *extruded_field) {
+  REF_INT node, local, i;
+  REF_GLOB twod_nnode, global;
+  twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
+  each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
+    global = ref_node_global(ref_grid_node(extruded_grid), node);
+    if (global >= twod_nnode) global -= twod_nnode;
+    RSS(ref_node_local(ref_grid_node(twod_grid), global, &local),
+        "twod global missing");
+    for (i = 0; i < ldim; i++) {
+      extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+    }
+  }
+  return REF_SUCCESS;
+}
 
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
@@ -661,7 +679,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pass, passes = 30;
   REF_DBL gamma = 1.4;
   REF_INT ldim, node;
-  REF_DBL *initial_field, *ref_field, *scalar, *metric;
+  REF_DBL *initial_field, *ref_field, *extruded_field = NULL, *scalar, *metric;
   REF_INT p = 2;
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -862,13 +880,27 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
   sprintf(filename, "%s-restart.solb", out_project);
-  if (ref_mpi_once(ref_mpi))
-    printf("writing interpolated field %s\n", filename);
-  RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename), "gather recept");
+  if (ref_grid_twod(ref_grid)) {
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated extruded field %s\n", filename);
+    ref_malloc(extruded_field,
+               ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+    RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
+                               extruded_field),
+        "extrude field");
+    RSS(ref_gather_scalar(extruded_grid, ldim, extruded_field, filename),
+        "gather recept");
+  } else {
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated field %s\n", filename);
+    RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename),
+        "gather recept");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
 
   ref_free(ref_field);
   ref_free(initial_field);
+  ref_free(extruded_field);
 
   ref_grid_free(extruded_grid);
   RSS(ref_grid_free(initial_grid), "free");
