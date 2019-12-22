@@ -999,7 +999,7 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   REF_DBL dt = ref_math_in_radians(360.0 / (REF_DBL)n);
   REF_DBL scale = 0.5; /* so the ellipses touch for an ideal grid */
 
-  if (ref_grid_twod(ref_grid)) {
+  if (REF_FALSE && ref_grid_twod(ref_grid)) {
     RSS(ref_export_tec_metric_ellipse_twod(ref_grid, root_filename), "2d met");
     return REF_SUCCESS;
   }
