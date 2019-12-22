@@ -1093,10 +1093,17 @@ REF_STATUS ref_interp_geom_nodes(REF_INTERP ref_interp) {
       xyz = &(global_xyz[3 * to_item]);
       send_node[nsend] = global_node[to_item];
       send_proc[nsend] = source[to_item];
-      RSS(ref_interp_exhaustive_tet_around_node(from_grid, best_node[to_item],
-                                                xyz, &(send_cell[nsend]),
-                                                &(send_bary[4 * nsend])),
-          "tet around node");
+      if (ref_grid_twod(from_grid)) {
+        RSS(ref_interp_exhaustive_tri_around_node(from_grid, best_node[to_item],
+                                                  xyz, &(send_cell[nsend]),
+                                                  &(send_bary[4 * nsend])),
+            "tri around node");
+      } else {
+        RSS(ref_interp_exhaustive_tet_around_node(from_grid, best_node[to_item],
+                                                  xyz, &(send_cell[nsend]),
+                                                  &(send_bary[4 * nsend])),
+            "tet around node");
+      }
       nsend++;
     }
 
@@ -1915,12 +1922,12 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     REIS(ref_mpi_rank(ref_mpi), ref_interp->part[node], "expected local");
     if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
       RAS(ref_cell_valid(ref_grid_tri(ref_interp_from_grid(ref_interp)),
-			 ref_interp->cell[node]),
-	  "expected a valid tri");
-    }else{
+                         ref_interp->cell[node]),
+          "expected a valid tri");
+    } else {
       RAS(ref_cell_valid(ref_grid_tet(ref_interp_from_grid(ref_interp)),
-			 ref_interp->cell[node]),
-	  "expected a valid tet");
+                         ref_interp->cell[node]),
+          "expected a valid tet");
     }
   } else {
     /* new seed or go exhaustive for REF_AGENT_AT_BOUNDARY */
@@ -2078,6 +2085,8 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   REF_DBL *recept_scalar, *donor_scalar, *recept_bary, *donor_bary;
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
+
+  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
