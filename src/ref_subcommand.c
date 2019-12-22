@@ -869,6 +869,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_free(ref_field);
   ref_free(initial_field);
+
   ref_grid_free(extruded_grid);
   RSS(ref_grid_free(initial_grid), "free");
   RSS(ref_grid_free(ref_grid), "free");
