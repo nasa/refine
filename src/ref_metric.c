@@ -887,9 +887,9 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
             pow(complexity / current_complexity, complexity_scale);
       }
       if (ref_grid_twod(ref_grid)) {
-        metric[1 + 6 * node] = 0.0;
-        metric[3 + 6 * node] = 1.0;
+        metric[2 + 6 * node] = 0.0;
         metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0;
       }
     }
     if (gradation < 1.0) {
@@ -901,9 +901,9 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
     }
     if (ref_grid_twod(ref_grid)) {
       each_ref_node_valid_node(ref_node, node) {
-        metric[1 + 6 * node] = 0.0;
-        metric[3 + 6 * node] = 1.0;
+        metric[2 + 6 * node] = 0.0;
         metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0;
       }
     }
   }
@@ -917,9 +917,9 @@ REF_STATUS ref_metric_gradation_at_complexity(REF_DBL *metric,
           pow(complexity / current_complexity, complexity_scale);
     }
     if (ref_grid_twod(ref_grid)) {
-      metric[1 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = 1.0;
+      metric[2 + 6 * node] = 0.0;
       metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
     }
   }
 
@@ -974,9 +974,9 @@ REF_STATUS ref_metric_sanitize_twod(REF_GRID ref_grid) {
 
   RSS(ref_metric_from_node(metric_orig, ref_grid_node(ref_grid)), "from");
   for (node = 0; node < ref_node_max(ref_node); node++) {
-    metric_orig[1 + 6 * node] = 0.0;
-    metric_orig[3 + 6 * node] = 1.0;
+    metric_orig[2 + 6 * node] = 0.0;
     metric_orig[4 + 6 * node] = 0.0;
+    metric_orig[5 + 6 * node] = 1.0;
   }
 
   RSS(ref_metric_imply_from(metric_imply, ref_grid), "imply");
@@ -1693,6 +1693,14 @@ REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
     dimension = 2;
   }
 
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      metric[2 + 6 * node] = 0.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
+    }
+  }
+
   /* local scaling */
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
   each_ref_node_valid_node(ref_node, node) {
@@ -1701,11 +1709,12 @@ REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
       for (i = 0; i < 6; i++) metric[i + 6 * node] *= pow(det, exponent);
     }
   }
+
   if (ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_node, node) {
-      metric[1 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = 1.0;
+      metric[2 + 6 * node] = 0.0;
       metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
     }
   }
 
@@ -1768,9 +1777,9 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
   }
   if (ref_grid_twod(ref_grid)) {
     each_ref_node_valid_node(ref_node, node) {
-      metric[1 + 6 * node] = 0.0;
-      metric[3 + 6 * node] = 1.0;
+      metric[2 + 6 * node] = 0.0;
       metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
     }
   }
 
