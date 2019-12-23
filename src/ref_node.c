@@ -2722,7 +2722,7 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
   for (i = 0; i < 3; i++) norm01[i] = edge01[i];
   for (i = 0; i < 3; i++) norm02[i] = edge02[i];
-  RSS(ref_math_normalize(norm01), "normalize zero length n0 -> n2");
+  RSS(ref_math_normalize(norm01), "normalize zero length n0 -> n1");
   RSS(ref_math_normalize(norm02), "normalize zero length n0 -> n2");
 
   dot = ref_math_dot(edge01, norm02);
