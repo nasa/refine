@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  SKIP_BLOCK("fix permutation") { /* l2-projection grad tri twod brick */
+  { /* l2-projection grad tri twod brick */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *scalar, *grad;
@@ -235,8 +235,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  SKIP_BLOCK("fix permutation") { /* l2-projection hessian zero, constant
-                                     gradient twod tri brick */
+  { /* l2-projection hessian zero, constant gradient twod tri brick */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *scalar, *hessian;
