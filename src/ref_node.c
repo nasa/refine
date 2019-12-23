@@ -2727,11 +2727,13 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
   dot = ref_math_dot(edge01, norm02);
   for (i = 0; i < 3; i++) grad1[i] = edge01[i] - dot * norm02[i];
-  for (i = 0; i < 3; i++) grad1[i] *= ref_math_dot(edge02, edge02);
+  RSS(ref_math_normalize(grad1), "normalize zero length grad1");
+  for (i = 0; i < 3; i++) grad1[i] *= sqrt(ref_math_dot(edge02, edge02));
 
   dot = ref_math_dot(edge02, norm01);
   for (i = 0; i < 3; i++) grad2[i] = edge02[i] - dot * norm01[i];
-  for (i = 0; i < 3; i++) grad2[i] *= ref_math_dot(edge01, edge01);
+  RSS(ref_math_normalize(grad2), "normalize zero length grad2");
+  for (i = 0; i < 3; i++) grad2[i] *= sqrt(ref_math_dot(edge01, edge01));
 
   for (i = 0; i < 3; i++)
     gradient[i] = (scalar[nodes[1]] - scalar[nodes[0]]) * grad1[i] +
