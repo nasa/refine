@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  { /* l2-projection grad */
+  { /* l2-projection grad tet */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *scalar, *grad;
@@ -135,7 +135,39 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* l2-projection hessian zero, constant gradient */
+  { /* l2-projection grad tri */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *grad;
+    REF_INT node;
+
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "tet");
+
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
+                     3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
+                     15.0;
+    }
+
+    RSS(ref_recon_gradient(ref_grid, scalar, grad, REF_RECON_L2PROJECTION),
+        "l2 grad");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(1.3, grad[0 + 3 * node], tol, "gradx");
+      RWDS(3.5, grad[1 + 3 * node], tol, "grady");
+      RWDS(0.0, grad[2 + 3 * node], tol, "gradz");
+    }
+
+    ref_free(grad);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* l2-projection hessian zero, constant gradient tet */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *scalar, *hessian;
