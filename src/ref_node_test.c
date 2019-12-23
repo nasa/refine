@@ -1992,7 +1992,7 @@ int main(int argc, char *argv[]) {
 
   { /* tet gradient, right tet */
     REF_NODE ref_node;
-    REF_INT nodes[4], global;
+    REF_INT nodes[4], permute[4], global;
     REF_DBL grad[3], scalar[4];
     REF_DBL *xyzs[4];
 
@@ -2047,6 +2047,31 @@ int main(int argc, char *argv[]) {
     RWDS(3.0, grad[1], -1.0, "grady expected");
     RWDS(5.0, grad[2], -1.0, "gradz expected");
     RSS(ref_node_xyz_grad(xyzs, scalar, grad), "vol");
+    RWDS(1.0, grad[0], -1.0, "gradx expected");
+    RWDS(3.0, grad[1], -1.0, "grady expected");
+    RWDS(5.0, grad[2], -1.0, "gradz expected");
+
+    permute[0] = nodes[1];
+    permute[1] = nodes[2];
+    permute[2] = nodes[3];
+    permute[3] = nodes[0];
+    RSS(ref_node_tet_grad_nodes(ref_node, permute, scalar, grad), "vol");
+    RWDS(1.0, grad[0], -1.0, "gradx expected");
+    RWDS(3.0, grad[1], -1.0, "grady expected");
+    RWDS(5.0, grad[2], -1.0, "gradz expected");
+    permute[0] = nodes[2];
+    permute[1] = nodes[3];
+    permute[2] = nodes[0];
+    permute[3] = nodes[1];
+    RSS(ref_node_tet_grad_nodes(ref_node, permute, scalar, grad), "vol");
+    RWDS(1.0, grad[0], -1.0, "gradx expected");
+    RWDS(3.0, grad[1], -1.0, "grady expected");
+    RWDS(5.0, grad[2], -1.0, "gradz expected");
+    permute[0] = nodes[3];
+    permute[1] = nodes[0];
+    permute[2] = nodes[1];
+    permute[3] = nodes[2];
+    RSS(ref_node_tet_grad_nodes(ref_node, permute, scalar, grad), "vol");
     RWDS(1.0, grad[0], -1.0, "gradx expected");
     RWDS(3.0, grad[1], -1.0, "grady expected");
     RWDS(5.0, grad[2], -1.0, "gradz expected");
