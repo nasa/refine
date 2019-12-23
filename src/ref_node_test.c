@@ -2081,7 +2081,7 @@ int main(int argc, char *argv[]) {
 
   { /* tri gradient, right tri */
     REF_NODE ref_node;
-    REF_INT nodes[3], global, rotated[3];
+    REF_INT nodes[3], global, permute[3];
     REF_DBL grad[3], scalar[3];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
@@ -2122,14 +2122,14 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, grad[2], -1.0, "gradz expected");
 
     SKIP_BLOCK("fix permutation") {
-      rotated[0] = nodes[2];
-      rotated[1] = nodes[0];
-      rotated[2] = nodes[1];
-      RSS(ref_node_tri_grad_nodes(ref_node, rotated, scalar, grad), "grad");
-      rotated[0] = nodes[1];
-      rotated[1] = nodes[2];
-      rotated[2] = nodes[0];
-      RSS(ref_node_tri_grad_nodes(ref_node, rotated, scalar, grad), "grad");
+      permute[0] = nodes[2];
+      permute[1] = nodes[0];
+      permute[2] = nodes[1];
+      RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
+      permute[0] = nodes[1];
+      permute[1] = nodes[2];
+      permute[2] = nodes[0];
+      RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
       RWDS(1.0, grad[0], -1.0, "gradx expected for permutation");
       RWDS(3.0, grad[1], -1.0, "grady expected for permutation");
       RWDS(0.0, grad[2], -1.0, "gradz expected for permutation");
