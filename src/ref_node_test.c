@@ -2121,19 +2121,21 @@ int main(int argc, char *argv[]) {
     RWDS(3.0, grad[1], -1.0, "grady expected");
     RWDS(0.0, grad[2], -1.0, "gradz expected");
 
-    SKIP_BLOCK("fix permutation") {
-      permute[0] = nodes[2];
-      permute[1] = nodes[0];
-      permute[2] = nodes[1];
-      RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
-      permute[0] = nodes[1];
-      permute[1] = nodes[2];
-      permute[2] = nodes[0];
-      RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
-      RWDS(1.0, grad[0], -1.0, "gradx expected for permutation");
-      RWDS(3.0, grad[1], -1.0, "grady expected for permutation");
-      RWDS(0.0, grad[2], -1.0, "gradz expected for permutation");
-    }
+    permute[0] = nodes[2];
+    permute[1] = nodes[0];
+    permute[2] = nodes[1];
+    RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
+    RWDS(1.0, grad[0], -1.0, "gradx expected for permutation");
+    RWDS(3.0, grad[1], -1.0, "grady expected for permutation");
+    RWDS(0.0, grad[2], -1.0, "gradz expected for permutation");
+
+    permute[0] = nodes[1];
+    permute[1] = nodes[2];
+    permute[2] = nodes[0];
+    RSS(ref_node_tri_grad_nodes(ref_node, permute, scalar, grad), "grad");
+    RWDS(1.0, grad[0], -1.0, "gradx expected for permutation");
+    RWDS(3.0, grad[1], -1.0, "grady expected for permutation");
+    RWDS(0.0, grad[2], -1.0, "gradz expected for permutation");
 
     RSS(ref_node_free(ref_node), "free");
   }
