@@ -2703,7 +2703,7 @@ REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
 REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *scalar, REF_DBL *gradient) {
-  REF_DBL area2, dot;
+  REF_DBL area2, dot, side_length;
   REF_DBL grad1[3], grad2[3], edge02[3], edge01[3], norm02[3], norm01[3];
   REF_INT i;
   gradient[0] = 0.0;
@@ -2726,14 +2726,16 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
   RSS(ref_math_normalize(norm02), "normalize zero length n0 -> n2");
 
   dot = ref_math_dot(edge01, norm02);
+  side_length = sqrt(ref_math_dot(edge02, edge02));
   for (i = 0; i < 3; i++) grad1[i] = edge01[i] - dot * norm02[i];
   RSS(ref_math_normalize(grad1), "normalize zero length grad1");
-  for (i = 0; i < 3; i++) grad1[i] *= sqrt(ref_math_dot(edge02, edge02));
+  for (i = 0; i < 3; i++) grad1[i] *= side_length;
 
   dot = ref_math_dot(edge02, norm01);
+  side_length = sqrt(ref_math_dot(edge01, edge01));
   for (i = 0; i < 3; i++) grad2[i] = edge02[i] - dot * norm01[i];
   RSS(ref_math_normalize(grad2), "normalize zero length grad2");
-  for (i = 0; i < 3; i++) grad2[i] *= sqrt(ref_math_dot(edge01, edge01));
+  for (i = 0; i < 3; i++) grad2[i] *= side_length;
 
   for (i = 0; i < 3; i++)
     gradient[i] = (scalar[nodes[1]] - scalar[nodes[0]]) * grad1[i] +
