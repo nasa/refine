@@ -167,7 +167,39 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* l2-projection hessian zero, constant gradient tet */
+  SKIP_BLOCK("fix permutation") { /* l2-projection grad tri twod brick */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *grad;
+    REF_INT node;
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
+                     3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
+                     15.0;
+    }
+
+    RSS(ref_recon_gradient(ref_grid, scalar, grad, REF_RECON_L2PROJECTION),
+        "l2 grad");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(1.3, grad[0 + 3 * node], tol, "gradx");
+      RWDS(3.5, grad[1 + 3 * node], tol, "grady");
+      RWDS(0.0, grad[2 + 3 * node], tol, "gradz");
+    }
+
+    ref_free(grad);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* l2-projection hessian zero, constant gradient tet brick */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
     REF_DBL *scalar, *hessian;
@@ -182,6 +214,42 @@ int main(int argc, char *argv[]) {
       scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
                      3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
                      7.2 * ref_node_xyz(ref_grid_node(ref_grid), 2, node) +
+                     15.0;
+    }
+
+    RSS(ref_recon_hessian(ref_grid, scalar, hessian, REF_RECON_L2PROJECTION),
+        "l2 hess");
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(0.0, hessian[0 + 6 * node], tol, "m11");
+      RWDS(0.0, hessian[1 + 6 * node], tol, "m12");
+      RWDS(0.0, hessian[2 + 6 * node], tol, "m13");
+      RWDS(0.0, hessian[3 + 6 * node], tol, "m22");
+      RWDS(0.0, hessian[4 + 6 * node], tol, "m23");
+      RWDS(0.0, hessian[5 + 6 * node], tol, "m33");
+    }
+
+    ref_free(hessian);
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  SKIP_BLOCK("fix permutation") { /* l2-projection hessian zero, constant
+                                     gradient twod tri brick */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_DBL *scalar, *hessian;
+    REF_INT node;
+
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
+
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(hessian, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      scalar[node] = 1.3 * ref_node_xyz(ref_grid_node(ref_grid), 0, node) +
+                     3.5 * ref_node_xyz(ref_grid_node(ref_grid), 1, node) +
                      15.0;
     }
 
