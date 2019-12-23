@@ -2703,42 +2703,44 @@ REF_STATUS ref_node_tet_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
 REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *scalar, REF_DBL *gradient) {
-  REF_DBL area, edge1[3], edge2[3];
-
+  REF_DBL area2, dot;
+  REF_DBL grad1[3], grad2[3], edge02[3], edge01[3], norm02[3], norm01[3];
+  REF_INT i;
   gradient[0] = 0.0;
   gradient[1] = 0.0;
   gradient[2] = 0.0;
 
-  RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
-  area *= 2;
+  RSS(ref_node_tri_area(ref_node, nodes, &area2), "area");
+  area2 *= 2;
 
-  edge1[0] =
-      ref_node_xyz(ref_node, 0, nodes[1]) - ref_node_xyz(ref_node, 0, nodes[0]);
-  edge1[1] =
-      ref_node_xyz(ref_node, 1, nodes[1]) - ref_node_xyz(ref_node, 1, nodes[0]);
-  edge1[2] =
-      ref_node_xyz(ref_node, 2, nodes[1]) - ref_node_xyz(ref_node, 2, nodes[0]);
+  for (i = 0; i < 3; i++)
+    edge01[i] = ref_node_xyz(ref_node, i, nodes[1]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
+  for (i = 0; i < 3; i++)
+    edge02[i] = ref_node_xyz(ref_node, i, nodes[2]) -
+                ref_node_xyz(ref_node, i, nodes[0]);
 
-  edge2[0] =
-      ref_node_xyz(ref_node, 0, nodes[2]) - ref_node_xyz(ref_node, 0, nodes[0]);
-  edge2[1] =
-      ref_node_xyz(ref_node, 1, nodes[2]) - ref_node_xyz(ref_node, 1, nodes[0]);
-  edge2[2] =
-      ref_node_xyz(ref_node, 2, nodes[2]) - ref_node_xyz(ref_node, 2, nodes[0]);
+  for (i = 0; i < 3; i++) norm01[i] = edge01[i];
+  for (i = 0; i < 3; i++) norm02[i] = edge02[i];
+  RSS(ref_math_normalize(norm01), "normalize zero length n0 -> n2");
+  RSS(ref_math_normalize(norm02), "normalize zero length n0 -> n2");
 
-  gradient[0] = (scalar[nodes[1]] - scalar[nodes[0]]) * edge1[0] +
-                (scalar[nodes[2]] - scalar[nodes[0]]) * edge2[0];
-  gradient[1] = (scalar[nodes[1]] - scalar[nodes[0]]) * edge1[1] +
-                (scalar[nodes[2]] - scalar[nodes[0]]) * edge2[1];
-  gradient[2] = (scalar[nodes[1]] - scalar[nodes[0]]) * edge1[2] +
-                (scalar[nodes[2]] - scalar[nodes[0]]) * edge2[2];
+  dot = ref_math_dot(edge01, norm02);
+  for (i = 0; i < 3; i++) grad1[i] = edge01[i] - dot * norm02[i];
 
-  if (ref_math_divisible(gradient[0], area) &&
-      ref_math_divisible(gradient[1], area) &&
-      ref_math_divisible(gradient[2], area)) {
-    gradient[0] /= area;
-    gradient[1] /= area;
-    gradient[2] /= area;
+  dot = ref_math_dot(edge02, norm01);
+  for (i = 0; i < 3; i++) grad2[i] = edge02[i] - dot * norm01[i];
+
+  for (i = 0; i < 3; i++)
+    gradient[i] = (scalar[nodes[1]] - scalar[nodes[0]]) * grad1[i] +
+                  (scalar[nodes[2]] - scalar[nodes[0]]) * grad2[i];
+
+  if (ref_math_divisible(gradient[0], area2) &&
+      ref_math_divisible(gradient[1], area2) &&
+      ref_math_divisible(gradient[2], area2)) {
+    gradient[0] /= area2;
+    gradient[1] /= area2;
+    gradient[2] /= area2;
   } else {
     gradient[0] = 0.0;
     gradient[1] = 0.0;
