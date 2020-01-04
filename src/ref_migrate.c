@@ -109,6 +109,18 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
     }
   }
 
+  /* for twod */
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      /* need ghost nodes for agglomeration */
+      n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      RSS(ref_adj_add_uniquely(ref_migrate_conn(ref_migrate), n0, n1), "uniq");
+      RSS(ref_adj_add_uniquely(ref_migrate_conn(ref_migrate), n1, n0), "uniq");
+    }
+  }
+
   return REF_SUCCESS;
 }
 
