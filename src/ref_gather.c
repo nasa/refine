@@ -705,6 +705,7 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_INT local;
   REF_INT id = REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
+  REF_BOOL node_not_used_once = REF_FALSE;
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
@@ -746,6 +747,7 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
         if (ABS(xyzm[3 + 4 * i] - 1.0) > 0.1) {
           printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
                  xyzm[3 + 4 * i]);
+          node_not_used_once = REF_TRUE;
         }
         swapped_dbl = xyzm[0 + 4 * i];
         if (swap_endian) SWAP_DBL(swapped_dbl);
@@ -764,6 +766,9 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
 
   ref_free(xyzm);
   ref_free(local_xyzm);
+
+  RSS(ref_mpi_all_or(ref_mpi, &node_not_used_once), "all gather error code");
+  RAS(!node_not_used_once, "node used more or less than once");
 
   return REF_SUCCESS;
 }

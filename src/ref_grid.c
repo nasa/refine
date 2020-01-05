@@ -962,7 +962,8 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_NODE twod_node = ref_grid_node(twod_grid);
-  REF_INT node, new_node, offset;
+  REF_INT node, new_node;
+  REF_INT offset;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
   REF_INT candidate, faceid1, faceid2;
@@ -975,15 +976,19 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   each_ref_node_valid_node(twod_node, node) {
     RSS(ref_node_add(ref_node, ref_node_global(twod_node, node), &new_node),
         "add node in plane");
+    ref_node_part(ref_node, new_node) = ref_node_part(twod_node, node);
     ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
     ref_node_xyz(ref_node, 1, new_node) = 0.0;
     ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);
   }
   offset = ref_node_n(ref_node);
   each_ref_node_valid_node(twod_node, node) {
-    RSS(ref_node_add(ref_node, offset + ref_node_global(twod_node, node),
-                     &new_node),
+    RSS(ref_node_add(
+            ref_node,
+            ref_node_n_global(twod_node) + ref_node_global(twod_node, node),
+            &new_node),
         "add node out of plane");
+    ref_node_part(ref_node, new_node) = ref_node_part(twod_node, node);
     ref_node_xyz(ref_node, 0, new_node) = ref_node_xyz(twod_node, 0, node);
     ref_node_xyz(ref_node, 1, new_node) = 1.0;
     ref_node_xyz(ref_node, 2, new_node) = ref_node_xyz(twod_node, 1, node);

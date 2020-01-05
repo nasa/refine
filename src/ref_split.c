@@ -51,7 +51,6 @@ REF_STATUS ref_split_two_tris(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 }
 
 REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_EDGE ref_edge;
@@ -66,7 +65,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
 
-  RAS(!ref_mpi_para(ref_mpi), "not parallel");
   RAS(ref_grid_surf(ref_grid), "only surf");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");

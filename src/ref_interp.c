@@ -2927,6 +2927,8 @@ static REF_STATUS ref_interp_from_part_neighbor(REF_INTERP ref_interp,
   REF_CELL ref_cell = ref_grid_tet(from_grid);
   REF_INT item, cell, cell_node;
 
+  if (ref_grid_twod(from_grid)) ref_cell = ref_grid_tri(from_grid);
+
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     each_ref_cell_cell_node(ref_cell, cell_node) {
       if (REF_EMPTY != from_part[ref_cell_c2n(ref_cell, cell_node, cell)]) {
@@ -3044,7 +3046,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
                         (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
       "blind send bary");
 
-  ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
+  ref_malloc_init(donor_nodes, 4 * n_donor, REF_GLOB, REF_EMPTY);
   ref_malloc(donor_donation, n_donor, REF_INT);
   ref_malloc(donor_part, n_donor, REF_INT);
   ref_malloc(donor_origpart, n_donor, REF_INT);

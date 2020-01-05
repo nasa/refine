@@ -76,8 +76,12 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
           RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "y");
           if (swap_endian) SWAP_DBL(dbl);
           xyz[1 + 3 * node] = dbl;
-          RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "z");
-          if (swap_endian) SWAP_DBL(dbl);
+          if (!twod) {
+            RES(1, fread(&dbl, sizeof(REF_DBL), 1, file), "z");
+            if (swap_endian) SWAP_DBL(dbl);
+          } else {
+            dbl = 0.0;
+          }
           xyz[2 + 3 * node] = dbl;
           if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
         }

@@ -225,6 +225,12 @@ cd ${source_dir}/acceptance/2d/circle
 ( ./accept-2d-circle.sh ${strict_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-facebody-side
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/side
+( ./accept-facebody-side.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-facebody-polar-2
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/polar-2
@@ -360,6 +366,13 @@ cd ${source_dir}/acceptance/inflate/mapbc
 trap - EXIT
 
 wait
+
+# 2 procs
+LOG=${root_dir}/log.accept-facebody-side-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/side
+( ./accept-facebody-side-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
 
 # 2 procs
 LOG=${root_dir}/log.accept-3d-linear-para

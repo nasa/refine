@@ -109,6 +109,18 @@ REF_STATUS ref_migrate_create(REF_MIGRATE *ref_migrate_ptr, REF_GRID ref_grid) {
     }
   }
 
+  /* for twod */
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      /* need ghost nodes for agglomeration */
+      n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      RSS(ref_adj_add_uniquely(ref_migrate_conn(ref_migrate), n0, n1), "uniq");
+      RSS(ref_adj_add_uniquely(ref_migrate_conn(ref_migrate), n1, n0), "uniq");
+    }
+  }
+
   return REF_SUCCESS;
 }
 
@@ -1317,6 +1329,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   }
 
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_edg(ref_grid)), "edg");
+  RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_ed3(ref_grid)), "ed3");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_tri(ref_grid)), "tri");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_qua(ref_grid)), "qua");
 
@@ -1324,6 +1337,11 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       need_to_keep = REF_FALSE;
       each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+        need_to_keep =
+            (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
+      }
+      if (ref_grid_twod(ref_grid)) {
+        ref_cell = ref_grid_tri(ref_grid);
         need_to_keep =
             (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
       }

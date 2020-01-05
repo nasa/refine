@@ -159,8 +159,6 @@ int main(int argc, char *argv[]) {
   }
 
   RNS(ref_grid, "input grid required");
-  RAS(!ref_mpi_para(ref_mpi) || !ref_grid_twod(ref_grid),
-      "implement parallel 2D adaptation");
 
   RSS(ref_gather_ngeom(ref_grid_node(ref_grid), ref_grid_geom(ref_grid),
                        REF_GEOM_FACE, &ngeom),
