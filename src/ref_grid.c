@@ -966,7 +966,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   REF_INT offset;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT cell, new_cell;
-  REF_INT candidate, faceid1, faceid2;
+  REF_INT max_faceid, faceid1, faceid2;
   *extruded_grid = NULL;
   RAS(ref_grid_twod(twod_grid), "require twod grid input");
   RSS(ref_grid_create(extruded_grid, ref_grid_mpi(twod_grid)), "create grid");
@@ -1006,26 +1006,17 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   }
 
   /* find two unsed faceids for the symmetry planes */
-  faceid1 = REF_EMPTY;
-  faceid2 = REF_EMPTY;
-  candidate = 1;
-  while (REF_EMPTY == faceid1 || REF_EMPTY == faceid2) {
-    REF_BOOL not_used = REF_TRUE;
-    each_ref_cell_valid_cell_with_nodes(ref_grid_qua(ref_grid), cell, nodes) {
-      if (candidate == nodes[4]) {
-        not_used = REF_FALSE;
-        break;
-      }
-    }
-    if (not_used) {
-      if (REF_EMPTY == faceid1) {
-        faceid1 = candidate;
-      } else {
-        faceid2 = candidate;
-      }
-    }
-    candidate++;
+  max_faceid = REF_INT_MIN;
+  each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
+    max_faceid = MAX(max_faceid, nodes[4]);
   }
+  faceid1 = max_faceid;
+  RSS(ref_mpi_max(ref_grid_mpi(twod_grid), &faceid1, &max_faceid, REF_INT_TYPE),
+      "max faceid");
+  RSS(ref_mpi_bcast(ref_grid_mpi(twod_grid), &max_faceid, 1, REF_INT_TYPE),
+      "share max faceid");
+  faceid1 = max_faceid + 1;
+  faceid2 = max_faceid + 2;
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_tri(twod_grid), cell, nodes) {
     new_nodes[0] = nodes[0];
