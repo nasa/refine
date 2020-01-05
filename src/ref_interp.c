@@ -2927,6 +2927,8 @@ static REF_STATUS ref_interp_from_part_neighbor(REF_INTERP ref_interp,
   REF_CELL ref_cell = ref_grid_tet(from_grid);
   REF_INT item, cell, cell_node;
 
+  if (ref_grid_twod(from_grid)) ref_cell = ref_grid_tri(from_grid);
+
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     each_ref_cell_cell_node(ref_cell, cell_node) {
       if (REF_EMPTY != from_part[ref_cell_c2n(ref_cell, cell_node, cell)]) {
