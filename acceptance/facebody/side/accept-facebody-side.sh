@@ -41,9 +41,7 @@ cp square.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10
-adapt_cycle cycle02 cycle03 10
-adapt_cycle cycle03 cycle04 10
 
-cat cycle04.status
-../../check.rb cycle04.status 0.25 2.5
+cat cycle02.status
+../../check.rb cycle02.status 0.5 1.75
 
