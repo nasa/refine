@@ -1008,7 +1008,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
   /* find two unsed faceids for the symmetry planes */
   max_faceid = REF_INT_MIN;
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
-    max_faceid = MAX(max_faceid, nodes[4]);
+    max_faceid = MAX(max_faceid, nodes[2]);
   }
   faceid1 = max_faceid;
   RSS(ref_mpi_max(ref_grid_mpi(twod_grid), &faceid1, &max_faceid, REF_INT_TYPE),
