@@ -1329,6 +1329,7 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
   }
 
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_edg(ref_grid)), "edg");
+  RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_ed3(ref_grid)), "ed3");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_tri(ref_grid)), "tri");
   RSS(ref_migrate_shufflin_cell(ref_node, ref_grid_qua(ref_grid)), "qua");
 
@@ -1336,6 +1337,11 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) {
       need_to_keep = REF_FALSE;
       each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+        need_to_keep =
+            (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
+      }
+      if (ref_grid_twod(ref_grid)) {
+        ref_cell = ref_grid_tri(ref_grid);
         need_to_keep =
             (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
       }
