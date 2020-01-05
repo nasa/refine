@@ -3044,7 +3044,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
                         (void **)(&donor_bary), &n_donor, REF_DBL_TYPE),
       "blind send bary");
 
-  ref_malloc(donor_nodes, 4 * n_donor, REF_GLOB);
+  ref_malloc_init(donor_nodes, 4 * n_donor, REF_GLOB, REF_EMPTY);
   ref_malloc(donor_donation, n_donor, REF_INT);
   ref_malloc(donor_part, n_donor, REF_INT);
   ref_malloc(donor_origpart, n_donor, REF_INT);
