@@ -58,7 +58,8 @@ use graph distance from boundary (and edge, node) to prioritize smoothing
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   use lexigraph comparison
- 
+  avro style boundary topology checks
+
 alternating RCB part
  n-median over-decomposition with random odd/even combine and age awareness
  INRIA space filling curve
@@ -212,30 +213,30 @@ egads recon
 
 *****************
 
-- bootstrap all of C2S
-- mesh movement
 - yplus augmentation of metric (compute internally, are non solid walls ok?)
-- curved higher order meshing
 - buffer / metric diffusion for LES and guide multiscale 
-- TKE fixed-point augmentaion for HRLES
+- mesh movement
+- bootstrap all of C2S
+- C2S acceptance on fun3d and sfe develop/master
+- curved higher order meshing
+- smoothing order graph distance to boundary
+- TKE fixed-point augmentation for HRLES
 - native partitioner
 - merge twod surf threed methods
-- smoothing order graph distance to boundary
+- migration to cavity from local operators
 - filter geometry surface curvature metric with descrete curvature 
 - verify interpolation error to background mesh
 - available initial volume mesher
+- gap metric gradation via octree
+- thin geometry boost of curvature constraint metric
 - switch to remaketess instead of changing attributes
 - virtual topology
 - surrogate geometry
-- migration to cavity from local operators
+- meshlink support
 - split private/public header defs
 - standardize post operation conditions
-- thin geometry boost of curvature constraint metric
-- gap metric gradation via octree
-- C2S acceptance on fun3d and sfe develop/master
 - second order boundary reconstrcution of hessian and adjont
-- meshlink support
-- first cell normal, skin friction noise
+- encourage first cell normal, skin friction noise
 
 ooooooooooooooooo
 
