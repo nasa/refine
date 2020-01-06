@@ -223,6 +223,7 @@ egads recon
 - fun3d integration and manual
 - native partitioner
 - merge twod surf threed methods
+- smoothing order graph distance to boundary
 
 ooooooooooooooooo
 
