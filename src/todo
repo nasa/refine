@@ -219,7 +219,6 @@ egads recon
 - verify visc goal metric (paper)
 - buffer / metric diffusion
 - TKE fixed-point augmentaion for
-- fun3d integration and manual
 - native partitioner
 - merge twod surf threed methods
 - smoothing order graph distance to boundary
