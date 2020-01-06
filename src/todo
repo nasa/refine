@@ -216,13 +216,12 @@ egads recon
 - mesh movement
 - yplus augmentation of metric (compute internally, are non solid walls ok?)
 - curved higher order meshing
-- verify visc goal metric (paper)
-- buffer / metric diffusion
-- TKE fixed-point augmentaion for
+- buffer / metric diffusion for LES and guide multiscale 
+- TKE fixed-point augmentaion for HRLES
 - native partitioner
 - merge twod surf threed methods
 - smoothing order graph distance to boundary
-- filter curvature metric with descrete
+- filter geometry surface curvature metric with descrete curvature 
 - verify interpolation error to background mesh
 - available initial volume mesher
 - switch to remaketess instead of changing attributes
