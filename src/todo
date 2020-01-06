@@ -27,8 +27,6 @@ ref_geom
   allow inv eval to hop objects
  many-to-many association virtual topology
 
-report face ids with poor normdev, short edges, and poor shape measure
-
 protect geom constraint metric from surface folds and high curvature
  descrete curvature estimate (triangle-center based?)
  filter based on neighborhood
@@ -186,7 +184,7 @@ viz/debug/status
  report locations of extremely long ratio edges?
 
 validation:
-validaiton_all: turn on
+validation_all: turn on
 validation_face: make parallel
 validation_face: all triangles have one tet and tet has one neighbor
 euler number
@@ -198,6 +196,7 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
+ parallel
 
 egads recon
  clean up method
@@ -227,12 +226,25 @@ egads recon
 - filter curvature metric with descrete
 - verify interpolation error to background mesh
 - available initial volume mesher
+- switch to remaketess instead of changing attributes
+- virtual topology
+- surrogate geometry
+- migration to cavity from local operators
+- split private/public header defs
+- standardize post operation conditions
+- thin geometry boost of curvature constraint metric
+- C2S acceptance on fun3d and sfe develop/master
+- second order boundary reconstrcution of hessian and adjont
+- meshlink support
+- first cell normal, skin friction noise
 
 ooooooooooooooooo
 
 
 
 +++++++++++++++++
+
++ report face ids with poor normdev, short edges, and poor shape measure
 
 + merge ref_smooth_local_tet_about ref_smooth_local_pris_about
   + to ref_smooth_local_cell_about
