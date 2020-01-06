@@ -48,6 +48,7 @@ C2S
   - exclude from statistics?
 
 - merge threed, twod, surf paths
+  - ref_collapse_face_* goes away
 
 - single pass near-tree for grid size gradation of gaps
   + pearl in curved plate test case for blister
@@ -210,25 +211,27 @@ egads recon
    why is is not working for faces near edges (start from faces interior)
    revert on failure (wrap?)
 
+*****************
+
+- bootstrap all of C2S
+- mesh movement
+- yplus augmentation of metric (compute internally, are non visc ok?)
+- curved higher order meshing
+- verify visc goal metric (paper)
+- buffer / metric diffusion
+- TKE fixed-point augmentaion for
+- fun3d integration and manual
+- native partitioner
+- merge twod surf threed methods
+
 ooooooooooooooooo
 
-throw when global node not found on import or export
 
-merge ref_smooth_local_tet_about ref_smooth_local_pris_about
-  to ref_smooth_local_cell_about
-merge ref_collapse_face_local_*
-add chunk size to minloc (use MPT work-around instead)
-extract BC tags from egads
-
-unify clump plotting diagnostics in parallel
- tri tet mr < 0.1
- edge > 3
- clump degree > 50
-
-mixed element in refine/two
- metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
+  + to ref_smooth_local_cell_about
 
 + ref_matrix_intersect echo m on failure
 
