@@ -27,8 +27,6 @@ ref_geom
   allow inv eval to hop objects
  many-to-many association virtual topology
 
-report face ids with poor normdev, short edges, and poor shape measure
-
 protect geom constraint metric from surface folds and high curvature
  descrete curvature estimate (triangle-center based?)
  filter based on neighborhood
@@ -48,6 +46,7 @@ C2S
   - exclude from statistics?
 
 - merge threed, twod, surf paths
+  - ref_collapse_face_* goes away
 
 - single pass near-tree for grid size gradation of gaps
   + pearl in curved plate test case for blister
@@ -59,7 +58,8 @@ use graph distance from boundary (and edge, node) to prioritize smoothing
 cavity operator in 2D/3D
   replace classic surf swap with cavity
   use lexigraph comparison
- 
+  avro style boundary topology checks
+
 alternating RCB part
  n-median over-decomposition with random odd/even combine and age awareness
  INRIA space filling curve
@@ -88,7 +88,7 @@ check that post conditions are implemented completely for all ops
 tess
  high order geometry visualization with cubic patches
  unfreeze edges for AFLR volume
- try gmsh
+ try gmsh, mmgtools.org, netgen-mesher, CGALmesh
  thin shells
   - near-tree for reducing geometry metric across thickness
   - auto bump curvature based?
@@ -185,7 +185,7 @@ viz/debug/status
  report locations of extremely long ratio edges?
 
 validation:
-validaiton_all: turn on
+validation_all: turn on
 validation_face: make parallel
 validation_face: all triangles have one tet and tet has one neighbor
 euler number
@@ -197,6 +197,7 @@ layer insert
  cavity recover triangle side
  cavity recover tet face
  remove tet walking from grid (ref_layer uses?) ref_interp one at time
+ parallel
 
 egads recon
  clean up method
@@ -210,25 +211,43 @@ egads recon
    why is is not working for faces near edges (start from faces interior)
    revert on failure (wrap?)
 
+*****************
+
+- yplus augmentation of metric (compute internally, are non solid walls ok?)
+- buffer / metric diffusion for LES and guide multiscale 
+- mesh movement
+- bootstrap all of C2S
+- C2S acceptance on fun3d and sfe develop/master
+- curved higher order meshing
+- smoothing order graph distance to boundary
+- TKE fixed-point augmentation for HRLES
+- native partitioner
+- merge twod surf threed methods
+- migration to cavity from local operators
+- filter geometry surface curvature metric with descrete curvature 
+- verify interpolation error to background mesh
+- available initial volume mesher
+- gap metric gradation via octree
+- thin geometry boost of curvature constraint metric
+- switch to remaketess instead of changing attributes
+- virtual topology
+- surrogate geometry
+- meshlink support
+- split private/public header defs
+- standardize post operation conditions
+- second order boundary reconstrcution of hessian and adjont
+- encourage first cell normal, skin friction noise
+
 ooooooooooooooooo
 
-throw when global node not found on import or export
 
-merge ref_smooth_local_tet_about ref_smooth_local_pris_about
-  to ref_smooth_local_cell_about
-merge ref_collapse_face_local_*
-add chunk size to minloc (use MPT work-around instead)
-extract BC tags from egads
-
-unify clump plotting diagnostics in parallel
- tri tet mr < 0.1
- edge > 3
- clump degree > 50
-
-mixed element in refine/two
- metric construction, interp for mixed element donor, parallel edge split
 
 +++++++++++++++++
+
++ report face ids with poor normdev, short edges, and poor shape measure
+
++ merge ref_smooth_local_tet_about ref_smooth_local_pris_about
+  + to ref_smooth_local_cell_about
 
 + ref_matrix_intersect echo m on failure
 
