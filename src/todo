@@ -214,7 +214,7 @@ egads recon
 
 - bootstrap all of C2S
 - mesh movement
-- yplus augmentation of metric (compute internally, are non visc ok?)
+- yplus augmentation of metric (compute internally, are non solid walls ok?)
 - curved higher order meshing
 - verify visc goal metric (paper)
 - buffer / metric diffusion
