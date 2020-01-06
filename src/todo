@@ -232,6 +232,7 @@ egads recon
 - split private/public header defs
 - standardize post operation conditions
 - thin geometry boost of curvature constraint metric
+- gap metric gradation via octree
 - C2S acceptance on fun3d and sfe develop/master
 - second order boundary reconstrcution of hessian and adjont
 - meshlink support
