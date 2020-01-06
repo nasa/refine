@@ -89,7 +89,7 @@ check that post conditions are implemented completely for all ops
 tess
  high order geometry visualization with cubic patches
  unfreeze edges for AFLR volume
- try gmsh
+ try gmsh, mmgtools.org, netgen-mesher, CGALmesh
  thin shells
   - near-tree for reducing geometry metric across thickness
   - auto bump curvature based?
@@ -224,6 +224,9 @@ egads recon
 - native partitioner
 - merge twod surf threed methods
 - smoothing order graph distance to boundary
+- filter curvature metric with descrete
+- verify interpolation error to background mesh
+- available initial volume mesher
 
 ooooooooooooooooo
 
