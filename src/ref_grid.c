@@ -997,10 +997,37 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
       "init glob");
 
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
-    new_nodes[0] = nodes[0];
-    new_nodes[1] = nodes[1];
-    new_nodes[2] = nodes[1] + offset;
-    new_nodes[3] = nodes[0] + offset;
+    /* use triangle to orient edge correctly */
+    REF_INT ncell, edg_tri;
+    REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    RSS(ref_cell_list_with2(ref_grid_tri(twod_grid), nodes[0], nodes[1], 1,
+                            &ncell, &edg_tri),
+        "tri with edge side");
+    REIS(1, ncell, "expect one triangle for an edge");
+    RSS(ref_cell_nodes(ref_grid_tri(twod_grid), edg_tri, tri_nodes),
+        "tri nodes");
+    node0 = REF_EMPTY;
+    node1 = REF_EMPTY;
+    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[0], tri_nodes[1])) &&
+        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[0], tri_nodes[1]))) {
+      node0 = tri_nodes[0];
+      node1 = tri_nodes[1];
+    }
+    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[1], tri_nodes[2])) &&
+        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[1], tri_nodes[2]))) {
+      node0 = tri_nodes[1];
+      node1 = tri_nodes[2];
+    }
+    if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[2], tri_nodes[0])) &&
+        (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[2], tri_nodes[0]))) {
+      node0 = tri_nodes[2];
+      node1 = tri_nodes[0];
+    }
+    new_nodes[0] = node1;
+    new_nodes[1] = node0;
+    new_nodes[2] = node0 + offset;
+    new_nodes[3] = node1 + offset;
     new_nodes[4] = nodes[2];
     RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
   }
