@@ -31,7 +31,7 @@ export PATH=`pwd`/egads/src:${PATH}
 cd ../C2S
 
 cases=`find . -name accept.sh`
-puts ${cases}
+echo ${cases}
 i=0
 for case in ${cases}
     do
