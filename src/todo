@@ -169,7 +169,6 @@ performance
  fine grain stopwatch for ref_migrate, ref_interp, ref_subdiv, face mov
  replace ref_subdiv with extra load balance?
  node smooth after node, cell, and, adj are compact
-   metric exact after split
  make faster, more efficient
  don't balloon up in size
  insert once, right place
@@ -227,6 +226,7 @@ egads recon
 - available initial volume mesher
 - gap metric gradation via octree
 - thin geometry boost of curvature constraint metric
+- limit metric change from implied metric and update until convergence
 - switch to remaketess instead of changing attributes
 - virtual topology
 - surrogate geometry
