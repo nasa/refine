@@ -588,6 +588,9 @@ REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
       case REF_INT_TYPE:
         *(REF_INT *)array = *(REF_INT *)scalar;
         break;
+      case REF_LONG_TYPE:
+        *(REF_LONG *)array = *(REF_LONG *)scalar;
+        break;
       case REF_DBL_TYPE:
         *(REF_DBL *)array = *(REF_DBL *)scalar;
         break;
@@ -605,6 +608,9 @@ REF_STATUS ref_mpi_allgather(REF_MPI ref_mpi, void *scalar, void *array,
   switch (type) {
     case REF_INT_TYPE:
       *(REF_INT *)array = *(REF_INT *)scalar;
+      break;
+    case REF_LONG_TYPE:
+      *(REF_LONG *)array = *(REF_LONG *)scalar;
       break;
     case REF_DBL_TYPE:
       *(REF_DBL *)array = *(REF_DBL *)scalar;

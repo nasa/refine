@@ -1,8 +1,6 @@
 
 each_ref_grid_ref_cell for boundary and higher order
 
-ref_node_implicit_global_from_local REF_GLOB
-
 extract a subset of grid and solb straddling x plane with fuzz
 viz crinkle cut
 
@@ -243,6 +241,8 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ ref_node_implicit_global_from_local REF_GLOB
 
 + report face ids with poor normdev, short edges, and poor shape measure
 
