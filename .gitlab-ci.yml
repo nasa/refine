@@ -38,8 +38,7 @@ merge-boot-accept-k:
 master-boot-accept-k:
   only:
     - master
-  when:
-    - manual
+  when: manual
   tags:
     - gitlab_runner
   script: ./acceptance/boot-wrapper.sh
