@@ -1122,16 +1122,23 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
-    RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
-    RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-        "ratio");
-    if ((REF_SUCCESS == interp_status) &&
-        (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-        (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+    if (REF_SUCCESS == interp_status) {
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
       if (tri_quality > tri_quality0) {
-        return REF_SUCCESS;
+        if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+          return REF_SUCCESS;
+        } else {
+          RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
+          RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio,
+                                          &max_ratio),
+              "ratio");
+          if ((REF_SUCCESS == interp_status) &&
+              (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+              (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+              (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+            return REF_SUCCESS;
+          }
+        }
       }
     }
     backoff *= 0.5;
