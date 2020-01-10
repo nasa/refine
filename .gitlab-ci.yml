@@ -2,7 +2,8 @@ variables:
   GIT_STRATEGY: clone
 
 ref-accept-k:
-  only:
+  when:
+    - manual
     - merge_requests
   tags:
     - gitlab_runner
@@ -14,7 +15,8 @@ ref-accept-k:
     expire_in: 1 week
 
 c2s-accept-k:
-  only:
+  when:
+    - manual
     - merge_requests
   tags:
     - gitlab_runner
@@ -25,7 +27,8 @@ c2s-accept-k:
     expire_in: 1 week
 
 boot-accept-k:
-  only:
+  when:
+    - manual
     - merge_requests
   tags:
     - gitlab_runner
@@ -36,7 +39,8 @@ boot-accept-k:
     expire_in: 1 week
 
 .cmb-accept-cmb20:
-  only:
+  when:
+    - manual
     - merge_requests
   tags:
     - gitlab_runner
