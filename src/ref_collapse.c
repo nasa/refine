@@ -826,7 +826,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_BOOL node0_support, node1_support;
+  REF_BOOL node0_support, node1_support, supported;
   REF_DBL orig_dev, new_dev;
   REF_DBL sign_uv_area, orig_uv_area, new_uv_area;
 
@@ -858,7 +858,18 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
 
     /* see if new config is below limit */
+    RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
+        "tuv support fororiginal configuration");
+    RAS(supported,
+        "original configuration before collapse does not support cell tuv");
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
+    RSS(ref_geom_cell_tuv_supported(ref_geom, new_nodes, REF_GEOM_FACE,
+                                    &supported),
+        "tuv support for swapped configuration");
+    if (!supported) { /* abort collapse, cell tuv not supported */
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
     RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
                               &sign_uv_area),
