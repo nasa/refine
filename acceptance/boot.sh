@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x # echo commands
-
 set -e # exit on first error
 set -u # Treat unset variables as error
 
@@ -10,6 +8,8 @@ set -u # Treat unset variables as error
 
 module purge
 source acceptance/boot-modules.sh
+
+set -x # echo commands
 
 log=`pwd`/../log-build.txt
 
@@ -21,20 +21,6 @@ mkdir -p egads
 	  --with-EGADS=${egads_path} \
 	  CFLAGS="-g -O2" \
 	  CC=gcc >> $log 2>&1 \
-      && make >> $log 2>&1 \
-      && make install >> $log 2>&1 \
-    ) \
-    || exit 1
-
-mkdir -p parmetis
-( cd parmetis && \
-    ../configure \
-	--prefix=`pwd` \
-	--with-parmetis=${parmetis_path} \
-	--with-EGADS=${egads_path} \
-	--enable-lite \
-	CFLAGS="-DHAVE_MPI -g -O2" \
-	CC=mpicc >> $log 2>&1 \
       && make >> $log 2>&1 \
       && make install >> $log 2>&1 \
     ) \
