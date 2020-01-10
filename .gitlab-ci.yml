@@ -24,9 +24,21 @@ c2s-accept-k:
       - "log-*"
     expire_in: 1 week
 
-boot-accept-k:
+merge-boot-accept-k:
   only:
     - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/boot-wrapper.sh
+  artifacts:
+    paths:
+      - "log-*"
+    expire_in: 1 week
+
+master-boot-accept-k:
+  only:
+    - master
+  when: manual
   tags:
     - gitlab_runner
   script: ./acceptance/boot-wrapper.sh
