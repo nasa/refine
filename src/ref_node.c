@@ -590,8 +590,9 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node) {
 
 REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT node, nnode, *global;
-  REF_INT *everyones_nnode, offset, proc;
+  REF_INT node, proc;
+  REF_GLOB nnode, *global;
+  REF_GLOB *everyones_nnode, offset;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -602,8 +603,8 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
     }
   }
 
-  ref_malloc(everyones_nnode, ref_mpi_n(ref_mpi), REF_INT);
-  RSS(ref_mpi_allgather(ref_mpi, &nnode, everyones_nnode, REF_INT_TYPE),
+  ref_malloc(everyones_nnode, ref_mpi_n(ref_mpi), REF_GLOB);
+  RSS(ref_mpi_allgather(ref_mpi, &nnode, everyones_nnode, REF_GLOB_TYPE),
       "allgather");
 
   offset = 0;
@@ -611,7 +612,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
     offset += everyones_nnode[proc];
 
   ref_free(everyones_nnode);
-  ref_malloc(global, ref_node_max(ref_node), REF_INT);
+  ref_malloc(global, ref_node_max(ref_node), REF_GLOB);
 
   nnode = 0;
   each_ref_node_valid_node(ref_node, node) {
@@ -621,7 +622,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
     }
   }
 
-  RSS(ref_node_ghost_int(ref_node, global, 1), "ghost int");
+  RSS(ref_node_ghost_glob(ref_node, global, 1), "ghost int");
 
   each_ref_node_valid_node(ref_node, node) {
     ref_node->global[node] = global[node];
