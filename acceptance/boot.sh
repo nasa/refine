@@ -40,7 +40,7 @@ do
     dir=`dirname -- ${sketch}`
     (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch $dir/FAILED ) &
     ((i=i+1))
-    if [ $((i%8)) -eq 0 ];
+    if [ $((i%12)) -eq 0 ];
     then
 	sleep 30
     fi
