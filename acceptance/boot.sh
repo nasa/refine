@@ -28,27 +28,38 @@ mkdir -p egads
 
 export PATH=`pwd`/egads/src:${PATH}
 
+output=`pwd`/../log-bootstrap-status.txt
+
 cd ../C2S
 
-cases=`find . -name accept.sh`
-echo ${cases}
+sketches=`find . -name accept.sh`
+echo ${sketches}
 i=0
-for case in ${cases}
-    do
-	dir=`dirname -- ${case}`
-	(cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch $dir/FAILED ) &
-	((i=i+1))
-	if [ $((i%8)) -eq 0 ];
-	then
-	    sleep 30
-	fi
-    done
+for sketch in ${sketches}
+do
+    dir=`dirname -- ${sketch}`
+    (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch $dir/FAILED ) &
+    ((i=i+1))
+    if [ $((i%8)) -eq 0 ];
+    then
+	sleep 30
+    fi
+done
     
 wait
+
+statuses=`find . -name accept-bootstrap-status.txt | sort`
+for status in ${statuses}
+do
+    dir=`dirname -- ${status}`
+    echo `cat ${status}` #{dir} >> ${output}
+done
+
+cat ${output}
 
 find . -name FAILED
 
 echo -e \\n\
-# Build has failed if any failed cases have been reported
+# Build has failed if any failed sketches have been reported
 exit `find . -name FAILED | wc -l`
 

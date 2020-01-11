@@ -30,8 +30,7 @@ else
   exit 1
 fi
 
-
-BUILDLOG=$PWD/../log-pbs-out.txt
+output=`pwd`/../log-bootstrap-status.txt
 
 cat << EOF > ${testname}.pbs
 #PBS -S /bin/bash -q ${queue} -l select=1:ncpus=${nprocs}:mpiprocs=${nprocs} -l walltime=00:${walltime}:00
@@ -55,3 +54,6 @@ EOF
 trap "sleep 5; cat ${testname}.* ${testname}; pwd" EXIT
 qsub -V -Wblock=true ${testname}.pbs
 trap - EXIT
+
+cat ${output}
+
