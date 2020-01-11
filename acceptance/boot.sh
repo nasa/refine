@@ -52,7 +52,7 @@ statuses=`find . -name accept-bootstrap-status.txt | sort`
 for status in ${statuses}
 do
     dir=`dirname -- ${status}`
-    echo `cat ${status}` #{dir} >> ${output}
+    echo "`cat ${status}` #{dir}" >> ${output}
 done
 
 cat ${output}
