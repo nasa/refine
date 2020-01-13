@@ -741,7 +741,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
   RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field, filename),
       "part scalar");
-  RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) { /* usm3d has two turb vars in plt file */
+    RAS(5 == ldim || 7 == ldim, "expected 5 or 6 variables per vertex");
+  } else {
+    RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_mpi_once(ref_mpi)) printf("compute mach\n");
