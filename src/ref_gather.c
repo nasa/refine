@@ -1811,7 +1811,7 @@ REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
           "recv ncell");
       if (ncell_recv > 0) {
         ref_malloc(data, ldim * ncell_recv, REF_DBL);
-        RSS(ref_mpi_recv(ref_mpi, data, (REF_INT)(ldim * ncell_local),
+        RSS(ref_mpi_recv(ref_mpi, data, (REF_INT)(ldim * ncell_recv),
                          REF_DBL_TYPE, proc),
             "send data");
         REIS((size_t)(ldim * ncell_recv),
