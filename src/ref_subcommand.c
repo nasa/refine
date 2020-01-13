@@ -898,6 +898,16 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
 
+  RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s-cell-center.solb", out_project);
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated field at cell centers %s\n", filename);
+    RSS(ref_gather_tet_scalar_solb(ref_grid, ldim, ref_field, filename),
+        "gather cell center");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather cell center");
+  }
+
   ref_free(ref_field);
   ref_free(initial_field);
   ref_free(extruded_field);
