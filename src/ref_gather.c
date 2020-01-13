@@ -1716,6 +1716,94 @@ REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_gather_tet_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                 REF_DBL *scalar, const char *filename) {
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_LONG ncell_local, ncell;
+  int version, code, keyword_code, dim;
+  REF_INT i, header_size, ncell_int;
+  REF_FILEPOS next_position;
+  REF_INT part, cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+  }
+
+  if (10000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    code = 1;
+    REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
+    REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
+    next_position = (REF_FILEPOS)header_size + ftell(file);
+    keyword_code = 3;
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    dim = 3;
+    REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
+  }
+
+  ncell_local = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      ncell_local++;
+    }
+  }
+  ncell = ncell_local;
+  RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_LONG_TYPE), "sum");
+
+  RAS(ncell < (REF_LONG)REF_INT_MAX, "requires version 4 solb for 64bit ncell");
+
+  if (ref_mpi_once(ref_mpi)) {
+    next_position = (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
+                    (REF_FILEPOS)ncell * (REF_FILEPOS)(ldim * 8) + ftell(file);
+    /* GmfSolAtTetrahedra 113 - 47 = 66 */
+    keyword_code = 66;
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    ncell_int = (int)ncell;
+    REIS(1, fwrite(&ncell_int, sizeof(int), 1, file), "nnode");
+    keyword_code = ldim; /* one solution at node */
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "n solutions");
+    keyword_code = 1; /* solution type 1, scalar */
+    for (i = 0; i < ldim; i++) {
+      REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "scalar");
+    }
+  }
+
+  if (ref_mpi_once(ref_mpi))
+    REIS(next_position, ftell(file), "solb metric record len inconsistent");
+
+  if (ref_mpi_once(ref_mpi)) { /* End */
+    keyword_code = 54;
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "end kw");
+    next_position = 0;
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+  }
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
                             REF_LONG *ncell) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);

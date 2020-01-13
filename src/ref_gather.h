@@ -63,6 +63,8 @@ REF_STATUS ref_gather_by_extension(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
                              const char *filename);
+REF_STATUS ref_gather_tet_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                 REF_DBL *scalar, const char *filename);
 
 REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
                             REF_LONG *ncell);
