@@ -1830,12 +1830,13 @@ REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
         if (ref_mpi_rank(ref_mpi) == part) {
           for (i = 0; i < ldim; i++) {
             cell_average = 0.0;
-            for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+            for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
               cell_average += scalar[i + ldim * nodes[node]];
+            }
             cell_average /= (REF_DBL)ref_cell_node_per(ref_cell);
             data[i + ldim * j] = cell_average;
           }
-	  j++;
+          j++;
         }
       }
       RSS(ref_mpi_send(ref_mpi, data, (REF_INT)(ldim * ncell_local),
