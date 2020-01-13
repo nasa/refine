@@ -1716,8 +1716,8 @@ REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_tet_scalar(REF_GRID ref_grid, REF_INT ldim,
-                                 REF_DBL *scalar, const char *filename) {
+REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+                                      REF_DBL *scalar, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -1727,8 +1727,11 @@ REF_STATUS ref_gather_tet_scalar(REF_GRID ref_grid, REF_INT ldim,
   REF_INT i, header_size, ncell_int;
   REF_FILEPOS next_position;
   REF_INT part, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL cell_average, *data;
+  REF_INT node, j, proc;
+  REF_LONG ncell_recv;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(scalar);
+  next_position = 0;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
@@ -1786,6 +1789,53 @@ REF_STATUS ref_gather_tet_scalar(REF_GRID ref_grid, REF_INT ldim,
     keyword_code = 1; /* solution type 1, scalar */
     for (i = 0; i < ldim; i++) {
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "scalar");
+    }
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+      if (ref_mpi_rank(ref_mpi) == part) {
+        for (i = 0; i < ldim; i++) {
+          cell_average = 0.0;
+          for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+            cell_average += scalar[i + ldim * nodes[node]];
+          cell_average /= (REF_DBL)ref_cell_node_per(ref_cell);
+          REIS(1, fwrite(&cell_average, sizeof(REF_DBL), 1, file),
+               "master cell avg");
+        }
+      }
+    }
+    each_ref_mpi_worker(ref_mpi, proc) {
+      RSS(ref_mpi_recv(ref_mpi, &ncell_recv, 1, REF_LONG_TYPE, proc),
+          "recv ncell");
+      if (ncell_recv > 0) {
+        ref_malloc(data, ldim * ncell_recv, REF_DBL);
+        REIS((size_t)(ldim * ncell_recv),
+             fwrite(data, sizeof(REF_DBL), (size_t)(ldim * ncell_recv), file),
+             "worker cell avg");
+        ref_free(data);
+      }
+    }
+  } else {
+    RSS(ref_mpi_send(ref_mpi, &ncell_local, 1, REF_LONG_TYPE, 0), "send ncell");
+    if (ncell_local > 0) {
+      ref_malloc(data, ldim * ncell_local, REF_DBL);
+      j = 0;
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+        if (ref_mpi_rank(ref_mpi) == part) {
+          for (i = 0; i < ldim; i++) {
+            cell_average = 0.0;
+            for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+              cell_average += scalar[i + ldim * nodes[node]];
+            cell_average /= (REF_DBL)ref_cell_node_per(ref_cell);
+            data[i + ldim * j] = cell_average;
+            j++;
+          }
+        }
+      }
+      ref_free(data);
     }
   }
 
