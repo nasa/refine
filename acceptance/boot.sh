@@ -58,7 +58,6 @@ do
 done
 
 cat ${output}
-
 find . -name FAILED
 
 echo -e \\n\
