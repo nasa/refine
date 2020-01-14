@@ -38,7 +38,7 @@ i=0
 for sketch in ${sketches}
 do
     dir=`dirname -- ${sketch}`
-    (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch $dir/FAILED ) &
+    (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch ./FAILED ) &
     ((i=i+1))
     if [ $((i%12)) -eq 0 ];
     then
