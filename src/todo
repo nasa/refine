@@ -1,8 +1,11 @@
 
-each_ref_grid_ref_cell for boundary and higher order
+improve parallel k-select algorithm
 
-extract a subset of grid and solb straddling x plane with fuzz
-viz crinkle cut
+self intersecting triangles for bootstrap
+ - speed
+ - parallel
+
+each_ref_grid_ref_cell for boundary and higher order
 
 surrogate surface
   support twod geom
@@ -98,7 +101,6 @@ boostrap
   - thin wavy (along training edge) training edge bootstrap
   - edge off surface testcase or surface gap testcase?
   - cusp geom topology testcase
-  - acceptance test with bootstrap of C608, JSM, etc.
   - validate normal deviation (make metric big across cylinder)
 
 improve CI test
@@ -140,6 +142,7 @@ smooth verify improvement
 optimized 4th tet node placement
 
 robustness and metric conformity
+ viz crinkle cut
  report threshold means
  add end-game or blend to end-game metric conformity strategy
  measure gradation and see if there is a connection to histogram convergence
@@ -210,18 +213,18 @@ egads recon
 
 *****************
 
-- yplus augmentation of metric (compute internally, are non solid walls ok?)
-- buffer / metric diffusion for LES and guide multiscale 
-- mesh movement
 - bootstrap all of C2S
+- yplus augmentation of metric (compute internally, are non solid walls ok?)
+- native partitioner
+- buffer / metric diffusion for LES and guide multiscale 
+- TKE fixed-point augmentation for HRLES
+- merge twod surf threed methods
+- mesh movement
 - C2S acceptance on fun3d and sfe develop/master
 - curved higher order meshing
 - smoothing order graph distance to boundary
-- TKE fixed-point augmentation for HRLES
-- native partitioner
-- merge twod surf threed methods
 - migration to cavity from local operators
-- filter geometry surface curvature metric with descrete curvature 
+- filter geometry surface curvature metric with discrete curvature
 - verify interpolation error to background mesh
 - available initial volume mesher
 - gap metric gradation via octree
