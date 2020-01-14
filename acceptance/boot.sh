@@ -3,11 +3,13 @@
 set -e # exit on first error
 set -u # Treat unset variables as error
 
+set +x # echo commands off for module
+
 # Setup bash module environment
 . /usr/local/pkgs/modules/init/bash
-
 module purge
 source acceptance/boot-modules.sh
+module list
 
 set -x # echo commands
 
@@ -38,7 +40,7 @@ i=0
 for sketch in ${sketches}
 do
     dir=`dirname -- ${sketch}`
-    (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch $dir/FAILED ) &
+    (cd ${dir}  && ./accept.sh > accept-out.txt 2>&1 || touch ./FAILED ) &
     ((i=i+1))
     if [ $((i%12)) -eq 0 ];
     then
@@ -56,7 +58,6 @@ do
 done
 
 cat ${output}
-
 find . -name FAILED
 
 echo -e \\n\
