@@ -24,6 +24,7 @@
 #include "ref_adapt.h"
 #include "ref_args.h"
 #include "ref_defs.h"
+#include "ref_dist.h"
 #include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
@@ -309,6 +310,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT auto_tparams = 0; /* REF_EGADS_ALL_TPARAM; */
   char *mesher = "tetgen";
   REF_INT passes = 15;
+  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
@@ -361,6 +363,13 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("manifold not required for wirebody\n");
   }
 
+  if (ref_mpi_once(ref_mpi))
+    printf("probing initial tessellation self-intersections\n");
+  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+  if (self_intersections > 0)
+    printf("%d segment-triangle intersections detected.\n", self_intersections);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -380,6 +389,14 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
+
+  if (ref_mpi_once(ref_mpi))
+    printf("probing adapted tessellation self-intersections\n");
+  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+  if (self_intersections > 0)
+    printf("%d segment-triangle intersections detected.\n", self_intersections);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+
   RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
   printf("verify topo\n");
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");

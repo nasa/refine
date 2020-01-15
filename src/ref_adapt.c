@@ -25,7 +25,6 @@
 
 #include "ref_cavity.h"
 #include "ref_collapse.h"
-#include "ref_dist.h"
 #include "ref_edge.h"
 #include "ref_gather.h"
 #include "ref_histogram.h"
@@ -784,7 +783,6 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
   REF_BOOL all_done = REF_FALSE;
   REF_INT pass;
-  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
 
@@ -803,11 +801,6 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
     RSS(ref_histogram_ratio(ref_grid), "gram");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
-    RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
-    if (self_intersections > 0)
-      printf("%d segment-triangle intersections detected.\n",
-             self_intersections);
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
   }

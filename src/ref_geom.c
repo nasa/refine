@@ -3243,6 +3243,8 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
   REF_DBL min_normdev, min_area, max_area, min_uv_area, max_uv_area;
   REF_DBL normdev, area, uv_area, area_sign;
 
+  RAS(!ref_mpi_para(ref_grid_mpi(ref_grid)), "needs to be parallelized");
+
   min_normdev = 2.0;
   min_area = REF_DBL_MAX;
   max_area = REF_DBL_MIN;
