@@ -312,9 +312,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT passes = 15;
   REF_INT self_intersections;
 
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
-  }
   if (argc < 3) goto shutdown;
   end_of_string = MIN(1023, strlen(argv[2]));
   if (7 > end_of_string ||
