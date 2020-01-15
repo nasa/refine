@@ -791,12 +791,14 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
 #ifdef HAVE_EGADS
   ego tess;
 
-  RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
-      "create tess object");
+  if (ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
+        "create tess object");
 
-  RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
-  RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
-  RSS(ref_egads_tess_fill_edg(ref_grid, tess), "fill tess edges");
+    RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
+    RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
+    RSS(ref_egads_tess_fill_edg(ref_grid, tess), "fill tess edges");
+  }
 
   RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps");
   ref_grid_surf(ref_grid) = REF_TRUE;
