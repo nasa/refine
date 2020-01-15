@@ -1094,7 +1094,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   }
 
   each_ref_geom_face(ref_geom, geom) {
-    node = ref_geom_node(ref_geom, node);
+    node = ref_geom_node(ref_geom, geom);
     if (ref_node_owned(ref_node, node)) {
       lrad = drad;
       face = ref_geom_id(ref_geom, geom) - 1;
@@ -1154,7 +1154,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   }
 
   each_ref_geom_edge(ref_geom, geom) {
-    node = ref_geom_node(ref_geom, node);
+    node = ref_geom_node(ref_geom, geom);
     if (ref_node_owned(ref_node, node)) {
       RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
       /* ignore sign, curvature is 1 / radius */
