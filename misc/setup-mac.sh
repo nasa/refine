@@ -48,24 +48,24 @@ mkdir -p parmetis
     ) \
     || exit
 
-mkdir -p zoltan
-( cd zoltan && \
+mkdir -p para
+( cd para && \
     ../configure \
     --prefix=`pwd` \
-    --with-zoltan=${zoltan_path} \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
-    --enable-lite \
     CC=mpicc \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
     ) \
     || exit
 
-mkdir -p both
-( cd both && \
+exit
+
+mkdir -p zoltan
+( cd zoltan && \
     ../configure \
     --prefix=`pwd` \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
