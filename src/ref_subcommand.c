@@ -420,19 +420,24 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  if (ref_geom_manifold(ref_grid_geom(ref_grid)) && ref_mpi_once(ref_mpi)) {
+  if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {
-      if (ref_mpi_once(ref_mpi)) printf("fill volume with TetGen\n");
-      RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+      if (ref_mpi_once(ref_mpi)) {
+        printf("fill volume with TetGen\n");
+        RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+      }
       ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
     } else if (strncmp(mesher, "a", 1) == 0) {
-      if (ref_mpi_once(ref_mpi)) printf("fill volume with AFLR3\n");
-      RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+      if (ref_mpi_once(ref_mpi)) {
+        printf("fill volume with AFLR3\n");
+        RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+      }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
       printf("mesher '%s' not implemented\n", mesher);
       goto shutdown;
     }
+    ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
 
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
