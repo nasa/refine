@@ -1011,6 +1011,12 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     faceid3 = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
+      RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
+          "local cell");
+      if (!all_local) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
       each_ref_cell_cell_node(ref_cell, cell_node) {
         if (node2 == ref_cell_c2n(ref_cell, cell_node, cell))
           faceid2 = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
