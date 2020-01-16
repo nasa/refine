@@ -25,7 +25,6 @@
 
 #include "ref_cavity.h"
 #include "ref_collapse.h"
-#include "ref_dist.h"
 #include "ref_edge.h"
 #include "ref_gather.h"
 #include "ref_histogram.h"
@@ -784,10 +783,8 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
   REF_BOOL all_done = REF_FALSE;
   REF_INT pass;
-  REF_INT self_intersections;
 
-  if (ref_mpi_para(ref_grid_mpi(ref_grid))) RSS(REF_IMPLEMENT, "seq only");
-
+  RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
 
@@ -797,17 +794,16 @@ REF_STATUS ref_adapt_surf_to_geom(REF_GRID ref_grid, REF_INT passes) {
              ref_mpi_n(ref_grid_mpi(ref_grid)));
     RSS(ref_adapt_pass(ref_grid, &all_done), "pass");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pass");
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
+
+    RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
     RSS(ref_grid_pack(ref_grid), "pack");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "pack");
-    RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
-    if (self_intersections > 0)
-      printf("%d segment-triangle intersections detected.\n",
-             self_intersections);
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
+
+    RSS(ref_histogram_quality(ref_grid), "gram");
+    RSS(ref_histogram_ratio(ref_grid), "gram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
   }

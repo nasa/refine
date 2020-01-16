@@ -831,7 +831,7 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                           &already_have_it),
         "have tet?");
     RAS(!already_have_it, "added tri twice?");
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
     if (!all_local) {
       ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
@@ -920,13 +920,13 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
     seg_nodes[2] = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+      RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
           "local cell");
       if (!all_local) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
         return REF_SUCCESS;
       }
-      RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
     REIS(2, ref_list_n(ref_cavity_tri_list(ref_cavity)), "expect two tri");
@@ -1011,6 +1011,12 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
     faceid3 = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
+      RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
+          "local cell");
+      if (!all_local) {
+        ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
+        return REF_SUCCESS;
+      }
       each_ref_cell_cell_node(ref_cell, cell_node) {
         if (node2 == ref_cell_c2n(ref_cell, cell_node, cell))
           faceid2 = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
@@ -1134,7 +1140,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                           &already_have_it),
         "have tet?");
     if (already_have_it) continue;
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     has_node0 = REF_FALSE;
     has_node1 = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, node) {
@@ -1175,7 +1181,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                           &already_have_it),
         "have tet?");
     if (already_have_it) continue;
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     has_node0 = REF_FALSE;
     has_node1 = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, node) {
@@ -2142,6 +2148,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
 }
 
 static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
   REF_INT node0, node1, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2157,6 +2164,14 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   each_ref_cell_valid_cell_with_nodes(edg, cell, nodes) {
     node0 = nodes[0];
     node1 = nodes[1];
+
+    /* expands around node0, should try node1 too? */
+
+    /* skip unless node0 is owned */
+    if (!ref_node_owned(ref_node, node0)) {
+      continue;
+    }
+
     RSB(ref_cell_list_with2(tri, node0, node1, 2, &ncell, edge_tri), "tris", {
       REF_DBL xyz_phys[3];
       REF_INT local;

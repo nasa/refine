@@ -2,8 +2,13 @@
 improve parallel k-select algorithm
 
 self intersecting triangles for bootstrap
+ - once on init tess and once on final
  - speed
  - parallel
+
+para bootstrap
+
+speed up edge smoothing
 
 each_ref_grid_ref_cell for boundary and higher order
 

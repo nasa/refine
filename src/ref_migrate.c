@@ -1340,11 +1340,9 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid) {
         need_to_keep =
             (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
       }
-      if (ref_grid_twod(ref_grid)) {
-        ref_cell = ref_grid_tri(ref_grid);
-        need_to_keep =
-            (need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
-      }
+      ref_cell = ref_grid_tri(ref_grid);
+      need_to_keep =
+	(need_to_keep || !ref_adj_empty(ref_cell_adj(ref_cell), node));
       if (!need_to_keep) {
         RSS(ref_node_remove_without_global_invalidates_sorted(ref_node, node),
             "remove");

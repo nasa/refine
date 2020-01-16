@@ -1077,124 +1077,131 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   norm_ratio = 2.0;
 
   each_ref_node_valid_node(ref_node, node) {
-    RSS(ref_geom_feature_size(ref_geom, node, &hr, r, &hs, s, &hn, n),
-        "feature size");
-    hs = MIN(hs, hr * aspect_ratio);
-    hn = MIN(hn, norm_ratio * hr);
-    hn = MIN(hn, norm_ratio * hs);
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
-    ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
-    ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
-    ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
-    RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_geom_feature_size(ref_geom, node, &hr, r, &hs, s, &hn, n),
+          "feature size");
+      hs = MIN(hs, hr * aspect_ratio);
+      hn = MIN(hn, norm_ratio * hr);
+      hn = MIN(hn, norm_ratio * hs);
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
+      ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
+      ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
+      ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
+      RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
+    }
   }
 
   each_ref_geom_face(ref_geom, geom) {
-    lrad = drad;
-    face = ref_geom_id(ref_geom, geom) - 1;
-    /* -999 marks not set */
-    if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) >
-        -990.0) {
-      /* less than 0.1 marks do not use */
-      if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) < 0.1)
-        continue;
-      lrad =
-          1.0 / ref_geom_face_segments_per_radian_of_curvature(ref_geom, face);
-    }
-    llimit = hmax / lrad; /* h = r*drad, r = h/drad */
-    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-    /* ignore sign, curvature is 1 / radius */
-    kr = ABS(kr);
-    ks = ABS(ks);
-    /* limit the aspect ratio of the metric by reducing the larest radius */
-    kr = MAX(kr, curvature_ratio * ks);
-    ks = MAX(ks, curvature_ratio * kr);
-    hr = hmax;
-    if (1.0 / llimit < kr) hr = lrad / kr;
-    hs = hmax;
-    if (1.0 / llimit < ks) hs = lrad / ks;
-
-    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                           ref_geom_id(ref_geom, geom), &tol),
-        "edge tol");
-    if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
-        hs < ref_geom_tolerance_protection(ref_geom) * tol)
-      continue;
-
-    RSS(ref_geom_gap(ref_grid, ref_geom_node(ref_geom, geom), &gap),
-        "edge gap");
-    if (hr < ref_geom_gap_protection(ref_geom) * gap ||
-        hs < ref_geom_gap_protection(ref_geom) * gap)
-      continue;
-
-    /* cross the tangent vectors to get the (inward or outward) normal */
-    ref_math_cross_product(r, s, n);
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
-    ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
-    ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
-    for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
-    hn = hmax;
-    hn = MIN(hn, norm_ratio * hr);
-    hn = MIN(hn, norm_ratio * hs);
-    ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
-    /* form and intersect with previous */
     node = ref_geom_node(ref_geom, geom);
-    RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
-    for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
-    RSS(ref_matrix_intersect(previous_metric, curvature_metric,
-                             &(metric[6 * node])),
-        "intersect to update metric");
+    if (ref_node_owned(ref_node, node)) {
+      lrad = drad;
+      face = ref_geom_id(ref_geom, geom) - 1;
+      /* -999 marks not set */
+      if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) >
+          -990.0) {
+        /* less than 0.1 marks do not use */
+        if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) <
+            0.1)
+          continue;
+        lrad = 1.0 /
+               ref_geom_face_segments_per_radian_of_curvature(ref_geom, face);
+      }
+      llimit = hmax / lrad; /* h = r*drad, r = h/drad */
+      RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      /* ignore sign, curvature is 1 / radius */
+      kr = ABS(kr);
+      ks = ABS(ks);
+      /* limit the aspect ratio of the metric by reducing the larest radius */
+      kr = MAX(kr, curvature_ratio * ks);
+      ks = MAX(ks, curvature_ratio * kr);
+      hr = hmax;
+      if (1.0 / llimit < kr) hr = lrad / kr;
+      hs = hmax;
+      if (1.0 / llimit < ks) hs = lrad / ks;
+
+      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                             ref_geom_id(ref_geom, geom), &tol),
+          "edge tol");
+      if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
+          hs < ref_geom_tolerance_protection(ref_geom) * tol)
+        continue;
+
+      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
+      if (hr < ref_geom_gap_protection(ref_geom) * gap ||
+          hs < ref_geom_gap_protection(ref_geom) * gap)
+        continue;
+
+      /* cross the tangent vectors to get the (inward or outward) normal */
+      ref_math_cross_product(r, s, n);
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
+      ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
+      ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
+      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
+      hn = hmax;
+      hn = MIN(hn, norm_ratio * hr);
+      hn = MIN(hn, norm_ratio * hs);
+      ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
+      /* form and intersect with previous */
+      RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
+      for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
+      RSS(ref_matrix_intersect(previous_metric, curvature_metric,
+                               &(metric[6 * node])),
+          "intersect to update metric");
+    }
   }
 
   each_ref_geom_edge(ref_geom, geom) {
-    RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
-    /* ignore sign, curvature is 1 / radius */
-    kr = ABS(kr);
-    hr = hmax;
-    if (1.0 / rlimit < kr) hr = drad / kr;
-
-    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                           ref_geom_id(ref_geom, geom), &tol),
-        "edge tol");
-    if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
-
-    RSS(ref_geom_gap(ref_grid, ref_geom_node(ref_geom, geom), &gap),
-        "edge gap");
-    if (hr < ref_geom_gap_protection(ref_geom) * gap) continue;
-
-    RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
-    if (crease_dot_prod < -0.8) {
-      ramp = (-crease_dot_prod - 0.8) / 0.2;
-      scale = 0.25 * ramp + 1.0 * (1.0 - ramp);
-      hr *= scale;
-    }
-
-    ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
-    ref_matrix_vec(diagonal_system, 1, 0) = 0.0;
-    ref_matrix_vec(diagonal_system, 2, 0) = 0.0;
-    ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
-
-    ref_matrix_vec(diagonal_system, 0, 1) = 0.0;
-    ref_matrix_vec(diagonal_system, 1, 1) = 1.0;
-    ref_matrix_vec(diagonal_system, 2, 1) = 0.0;
-    ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
-
-    ref_matrix_vec(diagonal_system, 0, 2) = 0.0;
-    ref_matrix_vec(diagonal_system, 1, 2) = 0.0;
-    ref_matrix_vec(diagonal_system, 2, 2) = 1.0;
-    ref_matrix_eig(diagonal_system, 2) = 1.0 / hr / hr;
-
-    /* form and intersect with previous */
     node = ref_geom_node(ref_geom, geom);
-    RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
-    for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
-    RSS(ref_matrix_intersect(previous_metric, curvature_metric,
-                             &(metric[6 * node])),
-        "intersect to update metric");
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+      /* ignore sign, curvature is 1 / radius */
+      kr = ABS(kr);
+      hr = hmax;
+      if (1.0 / rlimit < kr) hr = drad / kr;
+
+      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                             ref_geom_id(ref_geom, geom), &tol),
+          "edge tol");
+      if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
+
+      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
+      if (hr < ref_geom_gap_protection(ref_geom) * gap) continue;
+
+      RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
+      if (crease_dot_prod < -0.8) {
+        ramp = (-crease_dot_prod - 0.8) / 0.2;
+        scale = 0.25 * ramp + 1.0 * (1.0 - ramp);
+        hr *= scale;
+      }
+
+      ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
+      ref_matrix_vec(diagonal_system, 1, 0) = 0.0;
+      ref_matrix_vec(diagonal_system, 2, 0) = 0.0;
+      ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+
+      ref_matrix_vec(diagonal_system, 0, 1) = 0.0;
+      ref_matrix_vec(diagonal_system, 1, 1) = 1.0;
+      ref_matrix_vec(diagonal_system, 2, 1) = 0.0;
+      ref_matrix_eig(diagonal_system, 1) = 1.0 / hr / hr;
+
+      ref_matrix_vec(diagonal_system, 0, 2) = 0.0;
+      ref_matrix_vec(diagonal_system, 1, 2) = 0.0;
+      ref_matrix_vec(diagonal_system, 2, 2) = 1.0;
+      ref_matrix_eig(diagonal_system, 2) = 1.0 / hr / hr;
+
+      /* form and intersect with previous */
+      RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");
+      for (i = 0; i < 6; i++) previous_metric[i] = metric[i + 6 * node];
+      RSS(ref_matrix_intersect(previous_metric, curvature_metric,
+                               &(metric[6 * node])),
+          "intersect to update metric");
+    }
   }
+
+  RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
 
   return REF_SUCCESS;
 }

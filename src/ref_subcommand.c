@@ -24,6 +24,7 @@
 #include "ref_adapt.h"
 #include "ref_args.h"
 #include "ref_defs.h"
+#include "ref_dist.h"
 #include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
@@ -309,10 +310,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT auto_tparams = 0; /* REF_EGADS_ALL_TPARAM; */
   char *mesher = "tetgen";
   REF_INT passes = 15;
+  REF_INT self_intersections;
 
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref bootstrap is not parallel");
-  }
   if (argc < 3) goto shutdown;
   end_of_string = MIN(1023, strlen(argv[2]));
   if (7 > end_of_string ||
@@ -322,7 +321,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   project[end_of_string - 6] = '\0';
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-  printf("loading %s.egads\n", project);
+  if (ref_mpi_once(ref_mpi)) printf("loading %s.egads\n", project);
   RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 
@@ -337,29 +336,38 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  printf("initial tessellation\n");
+  if (ref_mpi_once(ref_mpi)) printf("initial tessellation\n");
   RSS(ref_egads_tess(ref_grid, auto_tparams), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
-  RSS(ref_geom_tec(ref_grid, filename), "geom export");
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-init-surf.tec", project);
-  RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
-  printf("verify topo\n");
+  if (ref_mpi_once(ref_mpi)) printf("verify topo\n");
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
-  printf("verify EGADS param\n");
+  if (ref_mpi_once(ref_mpi)) printf("verify EGADS param\n");
   RSS(ref_geom_verify_param(ref_grid), "egads params");
-  printf("constrain all\n");
+  if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
-  printf("verify constrained param\n");
+  if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
   RSS(ref_geom_verify_param(ref_grid), "constrained params");
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
-    printf("verify manifold\n");
+    if (ref_mpi_once(ref_mpi)) printf("verify manifold\n");
     RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
     ref_mpi_stopwatch_stop(ref_mpi, "tess verification");
   } else {
-    printf("manifold not required for wirebody\n");
+    if (ref_mpi_once(ref_mpi)) printf("manifold not required for wirebody\n");
   }
+
+  if (ref_mpi_once(ref_mpi))
+    printf("probing initial tessellation self-intersections\n");
+  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+  if (self_intersections > 0)
+    printf("%d segment-triangle intersections detected.\n", self_intersections);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
 
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
@@ -380,45 +388,67 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
+
+  if (ref_mpi_once(ref_mpi))
+    printf("probing adapted tessellation self-intersections\n");
+  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+  if (self_intersections > 0)
+    printf("%d segment-triangle intersections detected.\n", self_intersections);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+
   RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
-  printf("verify topo\n");
+  if (ref_mpi_once(ref_mpi)) printf("verify topo\n");
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
-  printf("verify param\n");
+  if (ref_mpi_once(ref_mpi)) printf("verify param\n");
   RSS(ref_geom_verify_param(ref_grid), "adapt params");
   ref_mpi_stopwatch_stop(ref_mpi, "surf verification");
+
+  ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;
+  RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
+  RSS(ref_grid_pack(ref_grid), "pack");
+  ref_mpi_stopwatch_stop(ref_mpi, "pack");
+
   sprintf(filename, "%s-adapt-surf.meshb", project);
   RSS(ref_gather_by_extension(ref_grid, filename), "gather surf meshb");
   sprintf(filename, "%s-adapt-geom.tec", project);
-  RSS(ref_geom_tec(ref_grid, filename), "geom export");
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_geom_tec(ref_grid, filename), "geom export");
   sprintf(filename, "%s-adapt-surf.tec", project);
-  RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
+  if (ref_mpi_once(ref_mpi))
+    RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   sprintf(filename, "%s-adapt-prop.tec", project);
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {
-      printf("fill volume with TetGen\n");
-      RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+      if (ref_mpi_once(ref_mpi)) {
+        printf("fill volume with TetGen\n");
+        RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+      }
       ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
     } else if (strncmp(mesher, "a", 1) == 0) {
-      printf("fill volume with AFLR3\n");
-      RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+      if (ref_mpi_once(ref_mpi)) {
+        printf("fill volume with AFLR3\n");
+        RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+      }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
       printf("mesher '%s' not implemented\n", mesher);
       goto shutdown;
     }
+    ref_grid_surf(ref_grid) = REF_FALSE; /* needed until vol mesher para */
 
     RSS(ref_split_edge_geometry(ref_grid), "split geom");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "split geom");
   } else {
     ref_grid_twod(ref_grid) = REF_TRUE; /* assume flat facebody */
   }
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
   sprintf(filename, "%s-vol.meshb", project);
-  printf("export %s\n", filename);
-  RSS(ref_export_by_extension(ref_grid, filename), "vol export");
+  if (ref_mpi_once(ref_mpi)) printf("export/gather %s\n", filename);
+  RSS(ref_gather_by_extension(ref_grid, filename), "vol export");
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
