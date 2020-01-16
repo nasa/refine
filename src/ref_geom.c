@@ -3265,22 +3265,19 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
   }
   local = min_normdev;
   RSS(ref_mpi_min(ref_mpi, &local, &min_normdev, REF_DBL_TYPE), "mpi min");
-  RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
   local = min_area;
   RSS(ref_mpi_min(ref_mpi, &local, &min_area, REF_DBL_TYPE), "mpi min");
-  RSS(ref_mpi_bcast(ref_mpi, &min_area, 1, REF_DBL_TYPE), "min");
   local = min_uv_area;
   RSS(ref_mpi_min(ref_mpi, &local, &min_uv_area, REF_DBL_TYPE), "mpi min");
-  RSS(ref_mpi_bcast(ref_mpi, &min_uv_area, 1, REF_DBL_TYPE), "min");
   local = max_area;
   RSS(ref_mpi_max(ref_mpi, &local, &max_area, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &max_area, 1, REF_DBL_TYPE), "max");
   local = max_uv_area;
   RSS(ref_mpi_max(ref_mpi, &local, &max_uv_area, REF_DBL_TYPE), "mpi max");
-  RSS(ref_mpi_bcast(ref_mpi, &max_uv_area, 1, REF_DBL_TYPE), "max");
 
-  printf("normdev %f area %.5e  %.5e uv area  %.5e  %.5e\n", min_normdev,
-         min_area, max_area, min_uv_area, max_uv_area);
+  if (ref_mpi_once(ref_mpi)) {
+    printf("normdev %f area %.5e  %.5e uv area  %.5e  %.5e\n", min_normdev,
+           min_area, max_area, min_uv_area, max_uv_area);
+  }
 
   return REF_SUCCESS;
 }
