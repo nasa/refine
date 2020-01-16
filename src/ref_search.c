@@ -143,6 +143,7 @@ REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
   REF_DBL distance;
 
   if (REF_EMPTY == parent) return REF_SUCCESS;
+  RAS(0 <= parent && parent < ref_search->n, "parent invalid")
   if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
 
   distance = 0.0;
