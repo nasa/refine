@@ -831,7 +831,7 @@ REF_STATUS ref_cavity_form_ball(REF_CAVITY ref_cavity, REF_GRID ref_grid,
                           &already_have_it),
         "have tet?");
     RAS(!already_have_it, "added tri twice?");
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local), "local cell");
     if (!all_local) {
       ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
@@ -920,13 +920,13 @@ REF_STATUS ref_cavity_form_edge_swap(REF_CAVITY ref_cavity, REF_GRID ref_grid,
 
     seg_nodes[2] = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+      RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
           "local cell");
       if (!all_local) {
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
         return REF_SUCCESS;
       }
-      RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       seg_nodes[2] = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
     }
     REIS(2, ref_list_n(ref_cavity_tri_list(ref_cavity)), "expect two tri");
@@ -1140,7 +1140,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                           &already_have_it),
         "have tet?");
     if (already_have_it) continue;
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     has_node0 = REF_FALSE;
     has_node1 = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, node) {
@@ -1181,7 +1181,7 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
                           &already_have_it),
         "have tet?");
     if (already_have_it) continue;
-    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tet");
+    RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
     has_node0 = REF_FALSE;
     has_node1 = REF_FALSE;
     each_ref_cell_cell_node(ref_cell, node) {
