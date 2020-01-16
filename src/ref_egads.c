@@ -219,7 +219,8 @@ static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess) {
+static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
+                                             REF_GLOB *n_global) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
 
@@ -246,7 +247,7 @@ static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess) {
     }
   }
 
-  RSS(ref_node_initialize_n_global(ref_node, nvert), "init glob");
+  *n_global = (REF_GLOB)nvert;
 
   return REF_SUCCESS;
 }
@@ -790,15 +791,22 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
 #ifdef HAVE_EGADS
   ego tess;
+  REF_GLOB n_global;
 
   if (ref_mpi_once(ref_grid_mpi(ref_grid))) {
     RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
         "create tess object");
 
-    RSS(ref_egads_tess_fill_vertex(ref_grid, tess), "fill tess vertex");
+    RSS(ref_egads_tess_fill_vertex(ref_grid, tess, &n_global),
+        "fill tess vertex");
     RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
     RSS(ref_egads_tess_fill_edg(ref_grid, tess), "fill tess edges");
   }
+
+  RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &n_global, 1, REF_GLOB_TYPE),
+      "bcast glob");
+  RSS(ref_node_initialize_n_global(ref_grid_node(ref_grid), n_global),
+      "init glob");
 
   RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps");
   ref_grid_surf(ref_grid) = REF_TRUE;
