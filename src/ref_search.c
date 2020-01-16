@@ -142,7 +142,11 @@ REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
   REF_INT i;
   REF_DBL distance;
 
-  if (REF_EMPTY == parent) return REF_SUCCESS;
+  if (0 == ref_search->n) return REF_SUCCESS;  /* tree empty */
+  if (REF_EMPTY == parent) return REF_SUCCESS; /* finished traversing */
+  RAB(0 <= parent && parent < ref_search->n, "parent invalid",
+      { printf("%d n %d parent\n", ref_search->n, parent); })
+  /* finished traversing */
   if (REF_EMPTY == ref_search->item[parent]) return REF_SUCCESS;
 
   distance = 0.0;

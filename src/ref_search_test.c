@@ -238,6 +238,24 @@ int main(int argc, char *argv[]) {
     RSS(ref_search_free(ref_search), "search free");
   }
 
+  { /* nearest candidate, empty tree */
+    REF_SEARCH ref_search;
+    REF_LIST ref_list;
+    REF_DBL xyz[3];
+
+    RSS(ref_search_create(&ref_search, 0), "make search");
+    RSS(ref_list_create(&ref_list), "make list");
+
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "touches");
+    REIS(0, ref_list_n(ref_list), "should gather");
+
+    RSS(ref_list_free(ref_list), "list free");
+    RSS(ref_search_free(ref_search), "search free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
