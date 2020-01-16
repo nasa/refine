@@ -405,6 +405,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_grid_partitioner(ref_grid) = REF_MIGRATE_SINGLE;
   RSS(ref_migrate_to_balance(ref_grid), "migrate to single part");
+  RSS(ref_grid_pack(ref_grid), "pack");
+  ref_mpi_stopwatch_stop(ref_mpi, "pack");
 
   sprintf(filename, "%s-adapt-surf.meshb", project);
   RSS(ref_gather_by_extension(ref_grid, filename), "gather surf meshb");
