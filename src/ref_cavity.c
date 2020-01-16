@@ -2148,6 +2148,7 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
 }
 
 static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
   REF_INT node0, node1, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2163,6 +2164,14 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   each_ref_cell_valid_cell_with_nodes(edg, cell, nodes) {
     node0 = nodes[0];
     node1 = nodes[1];
+
+    /* expands around node0, should try node1 too? */
+
+    /* skip unless node0 is owned */
+    if (!ref_node_owned(ref_node, node0)) {
+      continue;
+    }
+
     RSB(ref_cell_list_with2(tri, node0, node1, 2, &ncell, edge_tri), "tris", {
       REF_DBL xyz_phys[3];
       REF_INT local;
