@@ -420,7 +420,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
-  if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
+  if (ref_geom_manifold(ref_grid_geom(ref_grid)) && ref_mpi_once(ref_mpi)) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) printf("fill volume with TetGen\n");
       RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
@@ -439,6 +439,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   } else {
     ref_grid_twod(ref_grid) = REF_TRUE; /* assume flat facebody */
   }
+  RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
   sprintf(filename, "%s-vol.meshb", project);
   if (ref_mpi_once(ref_mpi)) printf("export/gather %s\n", filename);
