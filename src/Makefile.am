@@ -87,6 +87,13 @@ refmpi_CFLAGS = \
 	-DHAVE_MPI -DHAVE_EGADS_LITE \
 	@zoltan_include@ @parmetis_include@ @egads_include@ @mpi_include@
 refmpi_LDADD = @egadslite_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+
+bin_PROGRAMS += refmpifull
+refmpifull_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
+refmpifull_CFLAGS = \
+	-DHAVE_MPI \
+	@zoltan_include@ @parmetis_include@ @egads_include@ @mpi_include@
+refmpifull_LDADD = @egadslite_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver
