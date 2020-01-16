@@ -3238,12 +3238,12 @@ REF_STATUS ref_geom_face_match(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], id;
   REF_DBL min_normdev, min_area, max_area, min_uv_area, max_uv_area;
   REF_DBL normdev, area, uv_area, area_sign;
-
-  RAS(!ref_mpi_para(ref_grid_mpi(ref_grid)), "needs to be parallelized");
+  REF_DBL local;
 
   min_normdev = 2.0;
   min_area = REF_DBL_MAX;
@@ -3263,6 +3263,22 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
     min_uv_area = MIN(min_uv_area, uv_area);
     max_uv_area = MAX(max_uv_area, uv_area);
   }
+  local = min_normdev;
+  RSS(ref_mpi_min(ref_mpi, &local, &min_normdev, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
+  local = min_area;
+  RSS(ref_mpi_min(ref_mpi, &local, &min_area, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_area, 1, REF_DBL_TYPE), "min");
+  local = min_uv_area;
+  RSS(ref_mpi_min(ref_mpi, &local, &min_uv_area, REF_DBL_TYPE), "mpi min");
+  RSS(ref_mpi_bcast(ref_mpi, &min_uv_area, 1, REF_DBL_TYPE), "min");
+  local = max_area;
+  RSS(ref_mpi_max(ref_mpi, &local, &max_area, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_area, 1, REF_DBL_TYPE), "max");
+  local = max_uv_area;
+  RSS(ref_mpi_max(ref_mpi, &local, &max_uv_area, REF_DBL_TYPE), "mpi max");
+  RSS(ref_mpi_bcast(ref_mpi, &max_uv_area, 1, REF_DBL_TYPE), "max");
+
   printf("normdev %f area %.5e  %.5e uv area  %.5e  %.5e\n", min_normdev,
          min_area, max_area, min_uv_area, max_uv_area);
 
