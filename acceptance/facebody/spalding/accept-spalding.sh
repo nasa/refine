@@ -11,7 +11,7 @@ else
 fi
 
 tecplot=-t
-field="-u uplus100"
+field="-u uplus"
 egads="-g square.egads"
 
 function adapt_cycle {
