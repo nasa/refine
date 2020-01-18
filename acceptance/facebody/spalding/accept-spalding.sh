@@ -1,3 +1,4 @@
+
 #!/usr/bin/env bash
 
 set -x # echo commands
@@ -25,7 +26,7 @@ function adapt_cycle {
 	  ${inproj}.solb ${inproj}-uplus.tec
 
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  1000 ${inproj}-metric.solb
+	 100 ${inproj}-metric.solb
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
@@ -42,5 +43,9 @@ adapt_cycle cycle02 cycle03
 adapt_cycle cycle03 cycle04
 adapt_cycle cycle04 cycle05
 adapt_cycle cycle05 cycle06
+adapt_cycle cycle06 cycle07
+adapt_cycle cycle07 cycle08
+adapt_cycle cycle08 cycle09
+adapt_cycle cycle09 cycle10
 
 
