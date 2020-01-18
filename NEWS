@@ -1,6 +1,12 @@
 
-- set or overwrite EGADS .tParams for face tessellation without triangles
-- configure --with-mpi creates refmpi
+- ref loop 2D adaptation with 2D l2projection gradient reconstruction
+- 2D adaptation in parallel for an EGADS FACEBODY
+- interpolate a single faceid of receptor from a donor for tunnel restart
+- pliant smooth force linearly increased near zero to prevent short edges
+- metric conformity statistics are reported for each face
+- refmpifull boostrap surface adaptation is parallel, single part tess/vol fill
+- ref bootstrap --auto-tparams EGADS .tParams for improved tess
+- configure --with-mpi creates refmpi and refmpifull
 - ideal tet and tri smoothing uses log average of vertex metrics
 - cavity operator extended to simultaneous volume and surface changes
 - gaps between surfaces at edges are used to limit curvature metric size
