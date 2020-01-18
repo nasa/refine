@@ -412,3 +412,9 @@ REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus) {
   *yplus = uplus + 0.1108 * (exp(0.4 * uplus) - 1.0 - 0.4 * uplus);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
+                                           REF_DBL *dyplus_duplus) {
+  *dyplus_duplus = 1.0 + 0.1108 * (exp(0.4 * uplus) * 0.4 - 0.4);
+  return REF_SUCCESS;
+}

@@ -1053,18 +1053,55 @@ int main(int argc, char *argv[]) {
   }
 
   {
-    REF_DBL yplus, uplus;
+    REF_DBL uplus, yplus;
     uplus = 0;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(0, yplus, -1, "yplus");
 
-    uplus = 0.00001;
+    uplus = 0.0000;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(uplus, yplus, -1, "yplus");
 
     uplus = 100;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(0.1108 * exp(0.4 * uplus), yplus, -1, "yplus");
+  }
+
+  {
+    REF_DBL uplus, dyplus_duplus, yplus0, yplus1, duplus;
+    uplus = 0;
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS(1.0, dyplus_duplus, -1, "yplus");
+    uplus = 1.0e-11;
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS(1.0, dyplus_duplus, -1, "yplus");
+    uplus = 100.0;
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS(0.1108 * 0.4 * exp(0.4 * uplus), dyplus_duplus, -1, "yplus");
+
+    /* finite-difference */
+    uplus = 5;
+    duplus = 1.0e-6;
+    RSS(ref_phys_spalding_yplus(uplus - duplus, &yplus0), "yplus");
+    RSS(ref_phys_spalding_yplus(uplus + duplus, &yplus1), "yplus");
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS((yplus1 - yplus0) / (2.0 * duplus), dyplus_duplus, duplus, "yplus");
+
+    /* finite-difference */
+    uplus = 11;
+    duplus = 1.0e-6;
+    RSS(ref_phys_spalding_yplus(uplus - duplus, &yplus0), "yplus");
+    RSS(ref_phys_spalding_yplus(uplus + duplus, &yplus1), "yplus");
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS((yplus1 - yplus0) / (2.0 * duplus), dyplus_duplus, duplus, "yplus");
+
+    /* finite-difference */
+    uplus = 50;
+    duplus = 1.0e-4;
+    RSS(ref_phys_spalding_yplus(uplus - duplus, &yplus0), "yplus");
+    RSS(ref_phys_spalding_yplus(uplus + duplus, &yplus1), "yplus");
+    RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
+    RWDS((yplus1 - yplus0) / (2.0 * duplus), dyplus_duplus, 0.01, "yplus");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
