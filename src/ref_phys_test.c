@@ -1052,6 +1052,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  {
+    REF_DBL yplus, uplus;
+    uplus = 0;
+    RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
+    RWDS(0, yplus, -1, "yplus");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

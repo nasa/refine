@@ -401,3 +401,8 @@ REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus) {
+  *yplus = 0.0 * uplus;
+  return REF_SUCCESS;
+}

@@ -47,6 +47,8 @@ REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
 REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
                                 REF_DBL *res);
 
+REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus);
+
 END_C_DECLORATION
 
 #endif /* REF_PHYS_H */
