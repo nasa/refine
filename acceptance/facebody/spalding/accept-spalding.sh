@@ -21,6 +21,9 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}.solb
 
+    ${src}/ref_gather_test ${inproj}.meshb \
+	  ${inproj}.solb ${inproj}-uplus.tec
+
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
 	  1000 ${inproj}-metric.solb
 
