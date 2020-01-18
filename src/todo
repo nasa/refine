@@ -1,14 +1,11 @@
 
 improve parallel k-select algorithm
 
-self intersecting triangles for bootstrap
- - once on init tess and once on final
- - speed
+test for self intersecting triangles for bootstrap
+ - speed (adt)?
  - parallel
 
-para bootstrap
-
-speed up edge smoothing
+speed up edge and face smoothing
 
 each_ref_grid_ref_cell for boundary and higher order
 
@@ -146,6 +143,8 @@ smooth ordering
 smooth verify improvement
 optimized 4th tet node placement
 
+- buffer / metric diffusion for LES and guide multiscale 
+
 robustness and metric conformity
  viz crinkle cut
  report threshold means
@@ -221,7 +220,6 @@ egads recon
 - bootstrap all of C2S
 - yplus augmentation of metric (compute internally, are non solid walls ok?)
 - native partitioner
-- buffer / metric diffusion for LES and guide multiscale 
 - TKE fixed-point augmentation for HRLES
 - merge twod surf threed methods
 - mesh movement
@@ -249,6 +247,10 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ ref boostrap surface self intersection only during single part begin/end
+
++ parallel bootstrap surf adapt with single part tess and volume fill
 
 + ref_node_implicit_global_from_local REF_GLOB
 
