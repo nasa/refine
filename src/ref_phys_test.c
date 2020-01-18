@@ -1058,6 +1058,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(0, yplus, -1, "yplus");
 
+    uplus = 0.00001;
+    RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
+    RWDS(uplus, yplus, -1, "yplus");
+
     uplus = 100;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(0.1108 * exp(0.4 * uplus), yplus, -1, "yplus");
