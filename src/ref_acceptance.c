@@ -38,6 +38,7 @@
 #include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
+#include "ref_phys.h"
 #include "ref_sort.h"
 
 static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
@@ -80,6 +81,11 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       g = (1.0 - exp(-b * (1.0 - y) / nu)) / (1.0 - exp(-b / nu));
       h = (1.0 - exp(-c * (1.0 - z) / nu)) / (1.0 - exp(-c / nu));
       scalar[node] = scale * f * g * h + offset;
+    } else if (strcmp(function_name, "uplus100") == 0) {
+      REF_DBL uplus, yplus;
+      yplus = 100.0 * y;
+      RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+      scalar[node] = uplus + 5.0e-4 * x * x;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
