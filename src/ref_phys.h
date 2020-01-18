@@ -50,6 +50,7 @@ REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
 REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus);
 REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
                                            REF_DBL *dyplus_duplus);
+REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus);
 
 END_C_DECLORATION
 

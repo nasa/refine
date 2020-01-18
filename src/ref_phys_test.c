@@ -1054,11 +1054,15 @@ int main(int argc, char *argv[]) {
 
   {
     REF_DBL uplus, yplus;
+    uplus = -0.00001;
+    RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
+    RWDS(-0.00001, yplus, -1, "yplus");
+
     uplus = 0;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(0, yplus, -1, "yplus");
 
-    uplus = 0.0000;
+    uplus = 0.00001;
     RSS(ref_phys_spalding_yplus(uplus, &yplus), "yplus");
     RWDS(uplus, yplus, -1, "yplus");
 
@@ -1102,6 +1106,42 @@ int main(int argc, char *argv[]) {
     RSS(ref_phys_spalding_yplus(uplus + duplus, &yplus1), "yplus");
     RSS(ref_phys_spalding_dyplus_duplus(uplus, &dyplus_duplus), "yplus");
     RWDS((yplus1 - yplus0) / (2.0 * duplus), dyplus_duplus, 0.01, "yplus");
+  }
+
+  {
+    REF_DBL yplus, uplus, y;
+    yplus = -0.00001;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RWDS(-0.00001, uplus, -1, "uplus");
+
+    yplus = 0;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RWDS(0, uplus, -1, "uplus");
+
+    yplus = 1;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
+
+    yplus = 10;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
+
+    yplus = 15;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
+
+    yplus = 30;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
+
+    yplus = 100;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
