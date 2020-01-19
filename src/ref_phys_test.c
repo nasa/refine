@@ -1110,6 +1110,12 @@ int main(int argc, char *argv[]) {
 
   {
     REF_DBL yplus, uplus, y;
+
+    yplus = -6.0e-6;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
+
     yplus = -0.00001;
     RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
     RWDS(-0.00001, uplus, -1, "uplus");
@@ -1117,6 +1123,11 @@ int main(int argc, char *argv[]) {
     yplus = 0;
     RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
     RWDS(0, uplus, -1, "uplus");
+
+    yplus = 1.0e-10;
+    RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
+    RSS(ref_phys_spalding_yplus(uplus, &y), "y");
+    RWDS(y, yplus, -1, "uplus");
 
     yplus = 1;
     RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");

@@ -430,18 +430,17 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   keep_going = REF_TRUE;
   while (keep_going) {
     iters++;
-    if (iters > 100) THROW("iteration count exceeded");
+    RAB(iters < 100, "iteration count exceeded",
+        { printf(" y %e u %e err %e dydu %e\n", y, u, error, dyplus_duplus); });
 
     RSS(ref_phys_spalding_yplus(u, &y), "yplus");
     error = y - yplus;
 
     RSS(ref_phys_spalding_dyplus_duplus(u, &dyplus_duplus), "dyplus");
 
-    /* printf(" y %e u %e err %e dydu %e\n",y,u,error,dyplus_duplus); */
-
     u = u - error / dyplus_duplus;
 
-    if (ref_math_divisible(error, u)) {
+    if (ref_math_divisible(error, u) && ABS(u) > 1.0e-5) {
       keep_going = (ABS(error / u) > 1.0e-12);
     } else {
       keep_going = (ABS(error) > 1.0e-12);
