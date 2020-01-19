@@ -82,8 +82,9 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       h = (1.0 - exp(-c * (1.0 - z) / nu)) / (1.0 - exp(-c / nu));
       scalar[node] = scale * f * g * h + offset;
     } else if (strcmp(function_name, "uplus") == 0) {
-      REF_DBL uplus, yplus;
-      yplus = 10000.0 * y;
+      REF_DBL uplus, yplus, scale;
+      scale = 1.0e4;
+      yplus = scale * y;
       RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
       scalar[node] = uplus + 5.0e-4 * x * x;
     } else if (strcmp(function_name, "circgap") == 0) {
@@ -92,7 +93,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       radius = 1.0;
       gap = 0.1;
       center = -gap - radius;
-      scale = 1000;
+      scale = 1.0e4;
       yplus0 = scale * ABS(y);
       RSS(ref_phys_spalding_uplus(yplus0, &uplus0), "uplus");
       r = sqrt(x * x + (y - center) * (y - center));
