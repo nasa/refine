@@ -99,6 +99,11 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       yplus1 = scale * (r - radius);
       RSS(ref_phys_spalding_uplus(yplus1, &uplus1), "uplus");
       scalar[node] = MIN(uplus0, uplus1);
+    } else if (strcmp(function_name, "dist") == 0) {
+      REF_DBL r, radius;
+      radius = 0.5;
+      r = sqrt(x * x + y * y);
+      scalar[node] = (r - radius);
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
