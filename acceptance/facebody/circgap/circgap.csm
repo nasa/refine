@@ -1,5 +1,8 @@
 
-# Branches:
+
+despmtr radius 1
+despmtr gap 0.1
+
 skbeg     0   0   0   1
    skvar     xy   0.000000;0.000000;0.000000;2.000000;0.000000;0.000000;2.000000;-1.000000;0.000000;0.994987;-1.000000;0.000000;0.000000;-0.100000;0.258380;
    skcon     X   1   -1  0
@@ -11,8 +14,8 @@ skbeg     0   0   0   1
    skcon     L   1   2  2
    skcon     L   2   3  1
    skcon     P   5   -1  0
-   skcon     L   5   1  0.1
-   skcon     R   4   5  1
+   skcon     L   5   1  gap
+   skcon     R   4   5  radius
    linseg    ::x[2]   ::y[2]   0
    linseg    ::x[3]   ::y[3]   0
    linseg    ::x[4]   ::y[4]   0
@@ -20,5 +23,5 @@ skbeg     0   0   0   1
    linseg    ::x[1]   ::y[1]   0
 skend     0
 
-dump circgap.csm
+dump circgap.egads
 
