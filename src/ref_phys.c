@@ -401,3 +401,53 @@ REF_STATUS ref_phys_cc_fv_embed(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_spalding_yplus(REF_DBL uplus, REF_DBL *yplus) {
+  *yplus = uplus + 0.1108 * (exp(0.4 * uplus) - 1.0 - 0.4 * uplus);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_spalding_dyplus_duplus(REF_DBL uplus,
+                                           REF_DBL *dyplus_duplus) {
+  *dyplus_duplus = 1.0 + 0.1108 * (exp(0.4 * uplus) * 0.4 - 0.4);
+  return REF_SUCCESS;
+}
+
+/*
+   y = 0.1108 * exp(0.4 * u)
+   y / 0.1108 = exp(0.4 * u)
+   log(y / 0.1108) = 0.4 * u
+   log(y / 0.1108) / 0.4 = u
+*/
+REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
+  REF_DBL u, y, error, dyplus_duplus;
+  REF_BOOL keep_going;
+  REF_INT iters;
+  u = yplus;
+  if (u > 12) u = log(yplus / 0.1108) / 0.4;
+
+  iters = 0;
+  keep_going = REF_TRUE;
+  while (keep_going) {
+    iters++;
+    RAB(iters < 100, "iteration count exceeded",
+        { printf(" y %e u %e err %e dydu %e\n", y, u, error, dyplus_duplus); });
+
+    RSS(ref_phys_spalding_yplus(u, &y), "yplus");
+    error = y - yplus;
+
+    RSS(ref_phys_spalding_dyplus_duplus(u, &dyplus_duplus), "dyplus");
+
+    u = u - error / dyplus_duplus;
+
+    if (ref_math_divisible(error, u) && ABS(u) > 1.0e-5) {
+      keep_going = (ABS(error / u) > 1.0e-12);
+    } else {
+      keep_going = (ABS(error) > 1.0e-12);
+    }
+  }
+
+  *uplus = u;
+
+  return REF_SUCCESS;
+}
