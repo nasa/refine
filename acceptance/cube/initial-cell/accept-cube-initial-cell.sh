@@ -12,7 +12,7 @@ fi
 
 serveCSM -batch cube.csm
 
-ref boostrap cube.egads
+${src}/ref boostrap cube.egads
 
-ref adapt cube-vol.meshb -g cube.egads -x cube01.meshb -f cube01-prop.tec
+${src}/ref adapt cube-vol.meshb -g cube.egads -x cube01.meshb -f cube01-prop.tec
 
