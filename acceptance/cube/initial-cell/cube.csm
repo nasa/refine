@@ -1,0 +1,11 @@
+
+box 0 0 0 1 1 1
+
+select face 2 # x-max
+attribute initial_cell_height  "0.01"
+
+select face 4 # y-max
+attribute initial_cell_height  "0.01"
+
+dump cube.egads
+
