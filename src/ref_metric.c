@@ -1141,6 +1141,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
       for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
       hn = hmax;
+      if (0.0 < ref_geom_face_initial_cell_height(ref_geom, face))
+        hn = ref_geom_face_initial_cell_height(ref_geom, face);
       hn = MIN(hn, norm_ratio * hr);
       hn = MIN(hn, norm_ratio * hs);
       ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
