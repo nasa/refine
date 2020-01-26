@@ -1587,6 +1587,52 @@ REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *scalar) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_DBL wall_jump = 2.0;
+  REF_INT edg_cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tri_cell, tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, tri_node, off_node;
+  each_ref_cell_valid_cell_with_nodes(edg, edg_cell, edg_nodes) {
+    /* tri with edg for side */
+    each_ref_cell_having_node2(tri, edg_nodes[0], edg_nodes[1], item, tri_node,
+                               tri_cell) {
+      RSS(ref_cell_nodes(tri, tri_cell, tri_nodes), "tri node");
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      /* third node of tri not on edg */
+      if (ref_cell_node_empty(edg, off_node)) {
+        REF_DBL height, dh[3], dt[3], dm, scalar_wall, jump;
+        REF_INT i;
+        for (i = 0; i < 3; i++)
+          dh[i] = ref_node_xyz(ref_node, i, off_node) -
+                  ref_node_xyz(ref_node, i, edg_nodes[0]);
+        for (i = 0; i < 3; i++)
+          dt[i] = ref_node_xyz(ref_node, i, edg_nodes[1]) -
+                  ref_node_xyz(ref_node, i, edg_nodes[0]);
+        printf("dh %f %f %f\n", dh[0], dh[1], dh[2]);
+        printf("dt %f %f %f\n", dt[0], dt[1], dt[2]);
+        RSS(ref_math_normalize(dt), "dt");
+        printf("dtt %f %f %f\n", dt[0], dt[1], dt[2]);
+        for (i = 0; i < 3; i++) dh[i] -= dt[i] * ref_math_dot(dh, dt);
+        printf("dhh %f %f %f\n", dh[0], dh[1], dh[2]);
+        height = sqrt(ref_math_dot(dh, dh));
+        RSS(ref_math_normalize(dt), "dh");
+        dm = ref_matrix_sqrt_vt_m_v(&(metric[6 * off_node]), dh);
+        scalar_wall = 0.5 * (scalar[edg_nodes[0]] + scalar[edg_nodes[1]]);
+        jump = scalar[off_node] - scalar_wall;
+        printf("h %f j %f %f m %f r %f\n", height, jump, jump / wall_jump, dm,
+               jump / dm);
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1683,6 +1729,8 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
       "floor metric eignvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
       "local scale lp norm");
+  if (REF_TRUE)
+    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");

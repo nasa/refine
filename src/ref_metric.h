@@ -85,6 +85,8 @@ REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
 REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                             REF_DBL hmin, REF_DBL hmax,
                                             REF_DBL complexity);
+REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *scalar);
 REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid);
 REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                            REF_DBL complexity);
