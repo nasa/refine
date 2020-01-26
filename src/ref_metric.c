@@ -1729,8 +1729,6 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
       "floor metric eignvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
       "local scale lp norm");
-  if (REF_TRUE)
-    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
