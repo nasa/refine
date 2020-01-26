@@ -1605,7 +1605,7 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
                  edg_nodes[1];
       /* third node of tri not on edg */
       if (ref_cell_node_empty(edg, off_node)) {
-        REF_DBL height, dh[3], dt[3], dm, scalar_wall, jump;
+        REF_DBL height, dh[3], dt[3], scalar_wall, jump;
         REF_INT i;
         REF_DBL min_eig, m[6], merged[6], diag_system[12];
         for (i = 0; i < 3; i++)
@@ -1621,19 +1621,18 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
         for (i = 0; i < 3; i++) dh[i] -= dt[i] * ref_math_dot(dh, dt);
         printf("dhh %f %f %f\n", dh[0], dh[1], dh[2]);
         height = sqrt(ref_math_dot(dh, dh));
-        RSS(ref_math_normalize(dt), "dh");
-        dm = ref_matrix_sqrt_vt_m_v(&(metric[6 * off_node]), dh);
+        RSS(ref_math_normalize(dh), "dh");
         scalar_wall = 0.5 * (scalar[edg_nodes[0]] + scalar[edg_nodes[1]]);
-        jump = scalar[off_node] - scalar_wall;
-        printf("h %f j %f s %f m %f r %f\n", height, jump, wall_jump / jump, dm,
-               jump / dm);
+        jump = ABS(scalar[off_node] - scalar_wall);
+        printf("h %f j %f s %f n %f\n", height, jump, wall_jump / jump,
+               height * wall_jump / jump);
         RSS(ref_matrix_diag_m(&(metric[6 * off_node]), diag_system),
             "eigen decomp");
         min_eig = MIN(
             MIN(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
             ref_matrix_eig(diag_system, 2));
         /* normal */
-        ref_matrix_eig(diag_system, 0) = pow(height * wall_jump / jump, -2);
+        ref_matrix_eig(diag_system, 0) = pow(height * wall_jump / jump, -2.0);
         for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 0) = dh[i];
         /* tangent */
         ref_matrix_eig(diag_system, 1) = min_eig;
@@ -1645,6 +1644,8 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
         ref_matrix_vec(diag_system, 2, 2) = 1;
         RSS(ref_matrix_form_m(diag_system, m), "form m");
         RSS(ref_matrix_intersect(m, &(metric[6 * off_node]), merged), "int");
+        ref_matrix_show_m(m);
+        ref_matrix_show_m(&(metric[6 * off_node]));
         for (i = 0; i < 6; i++) metric[i + 6 * off_node] = merged[i];
       }
     }
