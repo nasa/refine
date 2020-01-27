@@ -1071,7 +1071,9 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (wall_jump) {
     if (ref_mpi_once(ref_mpi)) printf("wall jump\n");
-    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
+    RSS(ref_metric_wall_jump_at_complexity(metric, ref_grid, scalar,
+                                           complexity),
+        "wall jump");
     ref_mpi_stopwatch_stop(ref_mpi, "wall jump");
   }
 

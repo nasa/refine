@@ -1659,6 +1659,31 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_wall_jump_at_complexity(REF_DBL *metric,
+                                              REF_GRID ref_grid,
+
+                                              REF_DBL *scalar,
+                                              REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node, relaxations;
+  REF_DBL current_complexity;
+
+  /* global scaling and h limits */
+  for (relaxations = 0; relaxations < 10; relaxations++) {
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+          pow(target_complexity / current_complexity, 2.0 / 3.0);
+    }
+    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
