@@ -1670,6 +1670,7 @@ REF_STATUS ref_metric_wall_jump_at_complexity(REF_DBL *metric,
 
   /* global scaling and h limits */
   for (relaxations = 0; relaxations < 10; relaxations++) {
+    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
     RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(target_complexity, current_complexity)) {
       return REF_DIV_ZERO;
@@ -1678,9 +1679,7 @@ REF_STATUS ref_metric_wall_jump_at_complexity(REF_DBL *metric,
       metric[i + 6 * node] *=
           pow(target_complexity / current_complexity, 2.0 / 3.0);
     }
-    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
   }
-
   return REF_SUCCESS;
 }
 
