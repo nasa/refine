@@ -889,7 +889,7 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
 REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
                            REF_INT *nbalanced, REF_DBL **balanced) {
   REF_INT *shares, total, share, remainder;
-  REF_INT *destination;
+  REF_INT *destination, offset, part, i;
 
   total = nitem;
   RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "total items");
@@ -904,6 +904,12 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
   RSS(ref_mpi_allgather(ref_mpi, &share, shares, REF_INT_TYPE), "all share");
 
   ref_malloc_init(destination, nitem, REF_INT, 0);
+  offset = 0;
+  for (part = 0; part < ref_mpi_rank(ref_mpi); part++) {
+    offset++;
+  }
+  for (i = 0; i < nitem; i++) {
+  }
 
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, 1, nitem,
                         (void **)(&balanced), nbalanced, REF_DBL_TYPE),
