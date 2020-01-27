@@ -242,9 +242,9 @@ int main(int argc, char *argv[]) {
   /* balance */
   {
     REF_DBL *items = NULL;
-    REF_LONG nitem = 0;
+    REF_INT nitem = 0;
     REF_DBL *balanced = NULL;
-    REF_LONG nbalanced = 0;
+    REF_INT nbalanced = 0;
     if (0 == ref_mpi_rank(ref_mpi)) {
       nitem = 100;
       ref_malloc_init(items, nitem, REF_DBL, 0);
