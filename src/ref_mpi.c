@@ -886,6 +886,16 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
   return REF_SUCCESS;
 }
 
+static REF_INT find_destination(REF_INT n, REF_INT *shares, REF_INT gid){
+    REF_INT part;
+    for(part = 0; part < n; part++){ 
+        if (gid < shares[part] )
+            return part;
+        gid -= shares[part];
+    }
+    return n-1;
+}
+
 REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
                            REF_INT *nbalanced, REF_DBL **balanced) {
   REF_INT *shares, total, share, remainder;
@@ -909,6 +919,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
     offset++;
   }
   for (i = 0; i < nitem; i++) {
+    destination[i] = find_destination(ref_mpi_n(ref_mpi), shares, offset + i);
   }
 
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, 1, nitem,
