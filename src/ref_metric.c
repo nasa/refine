@@ -1612,7 +1612,7 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
       if (ref_cell_node_empty(edg, off_node) &&
           scalar[edg_nodes[0]] < wall_scalar &&
           scalar[edg_nodes[1]] < wall_scalar) {
-        REF_DBL dh[3], dt[3], ds, h;
+        REF_DBL dh[3], dt[3], ds, h, height;
         REF_INT i;
         REF_DBL min_eig, m[6], merged[6], diag_system[12];
         for (i = 0; i < 3; i++)
@@ -1623,10 +1623,12 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
                   ref_node_xyz(ref_node, i, edg_nodes[0]);
         RSS(ref_math_normalize(dt), "dt");
         for (i = 0; i < 3; i++) dh[i] -= dt[i] * ref_math_dot(dh, dt);
-        /* height = sqrt(ref_math_dot(dh, dh)); */
+        height = sqrt(ref_math_dot(dh, dh));
         RSS(ref_math_normalize(dh), "dh");
         ds = ABS(ref_math_dot(dh, &(grad[3 * off_node])));
         h = wall_jump / ds;
+        printf("h %f %f ds %f y %f\n", height, h, ds,
+               ref_node_xyz(ref_node, 1, edg_nodes[0]));
         RSS(ref_matrix_diag_m(&(metric[6 * off_node]), diag_system),
             "eigen decomp");
         min_eig = MIN(
