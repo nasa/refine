@@ -1592,10 +1592,15 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
-  REF_DBL wall_jump = 2.0;
+  REF_DBL *grad, wall_jump = 2.0, wall_scalar = 10.0;
   REF_INT edg_cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tri_cell, tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, tri_node, off_node;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+  ref_malloc_init(grad, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_recon_gradient(ref_grid, scalar, grad, reconstruction), "grad");
+
   each_ref_cell_valid_cell_with_nodes(edg, edg_cell, edg_nodes) {
     /* tri with edg for side */
     each_ref_cell_having_node2(tri, edg_nodes[0], edg_nodes[1], item, tri_node,
@@ -1604,8 +1609,10 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
       off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
                  edg_nodes[1];
       /* third node of tri not on edg */
-      if (ref_cell_node_empty(edg, off_node)) {
-        REF_DBL height, dh[3], dt[3], scalar_wall, jump;
+      if (ref_cell_node_empty(edg, off_node) &&
+          scalar[edg_nodes[0]] < wall_scalar &&
+          scalar[edg_nodes[1]] < wall_scalar) {
+        REF_DBL dh[3], dt[3], ds, h;
         REF_INT i;
         REF_DBL min_eig, m[6], merged[6], diag_system[12];
         for (i = 0; i < 3; i++)
@@ -1614,25 +1621,19 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
         for (i = 0; i < 3; i++)
           dt[i] = ref_node_xyz(ref_node, i, edg_nodes[1]) -
                   ref_node_xyz(ref_node, i, edg_nodes[0]);
-        printf("dh %f %f %f\n", dh[0], dh[1], dh[2]);
-        printf("dt %f %f %f\n", dt[0], dt[1], dt[2]);
         RSS(ref_math_normalize(dt), "dt");
-        printf("dtt %f %f %f\n", dt[0], dt[1], dt[2]);
         for (i = 0; i < 3; i++) dh[i] -= dt[i] * ref_math_dot(dh, dt);
-        printf("dhh %f %f %f\n", dh[0], dh[1], dh[2]);
-        height = sqrt(ref_math_dot(dh, dh));
+        /* height = sqrt(ref_math_dot(dh, dh)); */
         RSS(ref_math_normalize(dh), "dh");
-        scalar_wall = 0.5 * (scalar[edg_nodes[0]] + scalar[edg_nodes[1]]);
-        jump = ABS(scalar[off_node] - scalar_wall);
-        printf("h %f j %f s %f n %f\n", height, jump, wall_jump / jump,
-               height * wall_jump / jump);
+        ds = ABS(ref_math_dot(dh, &(grad[3 * off_node])));
+        h = wall_jump / ds;
         RSS(ref_matrix_diag_m(&(metric[6 * off_node]), diag_system),
             "eigen decomp");
         min_eig = MIN(
             MIN(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
             ref_matrix_eig(diag_system, 2));
         /* normal */
-        ref_matrix_eig(diag_system, 0) = pow(height * wall_jump / jump, -2.0);
+        ref_matrix_eig(diag_system, 0) = 1.0 / (h * h);
         for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 0) = dh[i];
         /* tangent */
         ref_matrix_eig(diag_system, 1) = min_eig;
@@ -1643,14 +1644,16 @@ REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
         ref_matrix_vec(diag_system, 1, 2) = 0;
         ref_matrix_vec(diag_system, 2, 2) = 1;
         RSS(ref_matrix_form_m(diag_system, m), "form m");
-        RSS(ref_matrix_intersect(m, &(metric[6 * off_node]), merged), "int");
-        ref_matrix_show_m(m);
-        ref_matrix_show_m(&(metric[6 * off_node]));
-        for (i = 0; i < 6; i++) metric[i + 6 * off_node] = merged[i];
+        RSS(ref_matrix_intersect(m, &(metric[6 * edg_nodes[0]]), merged),
+            "int");
+        for (i = 0; i < 6; i++) metric[i + 6 * edg_nodes[0]] = merged[i];
+        RSS(ref_matrix_intersect(m, &(metric[6 * edg_nodes[1]]), merged),
+            "int");
+        for (i = 0; i < 6; i++) metric[i + 6 * edg_nodes[1]] = merged[i];
       }
     }
   }
-
+  ref_free(grad);
   return REF_SUCCESS;
 }
 
