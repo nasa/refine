@@ -885,3 +885,31 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_LONG nitem, REF_DBL *items,
+                           REF_LONG *nbalanced, REF_DBL **balanced) {
+  REF_LONG *totals, total, share, remainder;
+  REF_INT part, nsend, nrecv, *destination;
+  ref_malloc(totals, ref_mpi_n(ref_mpi), REF_LONG);
+  RSS(ref_mpi_allgather(ref_mpi, &nitem, totals, REF_LONG_TYPE), "total items");
+  total = 0;
+  each_ref_mpi_part(ref_mpi, part) { total += totals[part]; }
+  share = total / ref_mpi_n(ref_mpi);
+  remainder = total - share * ref_mpi_n(ref_mpi);
+  if (ref_mpi_rank(ref_mpi) < remainder) {
+    share++;
+  }
+  *nbalanced = share;
+  nsend = (REF_INT)nitem;
+  ref_malloc_init(destination, nsend, REF_INT, 0);
+
+  RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, 1, nsend,
+                        (void **)(&balanced), &nrecv, REF_DBL_TYPE),
+      "blind send node");
+  *nbalanced = nrecv;
+
+  ref_free(destination);
+  ref_free(totals);
+
+  return REF_SUCCESS;
+}
