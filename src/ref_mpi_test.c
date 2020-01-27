@@ -245,11 +245,15 @@ int main(int argc, char *argv[]) {
     REF_INT nitem = 0;
     REF_DBL *balanced = NULL;
     REF_INT nbalanced = 0;
+    REF_INT total = 100;
     if (0 == ref_mpi_rank(ref_mpi)) {
-      nitem = 100;
+      nitem = total;
       ref_malloc_init(items, nitem, REF_DBL, 0);
     }
     RSS(ref_mpi_balance(ref_mpi, nitem, items, &nbalanced, &balanced), "bal");
+    RAS(total / ref_mpi_n(ref_mpi) <= nbalanced &&
+            nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
+        "not bal");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
