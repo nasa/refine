@@ -886,14 +886,13 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
   return REF_SUCCESS;
 }
 
-static REF_INT find_destination(REF_INT n, REF_INT *shares, REF_INT gid){
-    REF_INT part;
-    for(part = 0; part < n; part++){ 
-        if (gid < shares[part] )
-            return part;
-        gid -= shares[part];
-    }
-    return n-1;
+static REF_INT find_destination(REF_INT n, REF_INT *shares, REF_INT gid) {
+  REF_INT part;
+  for (part = 0; part < n; part++) {
+    if (gid < shares[part]) return part;
+    gid -= shares[part];
+  }
+  return n - 1;
 }
 
 REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
@@ -925,7 +924,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, 1, nitem,
                         (void **)(&balanced), nbalanced, REF_DBL_TYPE),
       "blind send node");
-  /* REIS(share, *nbalanced, "share mismatch"); */
+  REIS(share, *nbalanced, "share mismatch");
 
   ref_free(destination);
   ref_free(shares);
