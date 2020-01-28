@@ -31,7 +31,8 @@ function adapt_cycle {
 	 1000 ${inproj}-metric.solb --wall-jump | tee ${inproj}-multi.txt
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
-	  -x ${outproj}.meshb -f ${outproj}.tec
+	  -x ${outproj}.meshb -f ${outproj}.tec > ${inproj}-adapt.txt
+    tail -50 ${inproj}-adapt.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}.solb
