@@ -133,6 +133,9 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
                                     REF_DBL *prim_dual,
                                     REF_RECON_RECONSTRUCTION reconstruction);
 
+REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
+                                const char *filename);
+
 END_C_DECLORATION
 
 #endif /* REF_METRIC_H */

@@ -33,6 +33,7 @@
 #include "ref_matrix.h"
 #include "ref_node.h"
 #include "ref_phys.h"
+#include "ref_sort.h"
 
 #define REF_METRIC_MAX_DEGREE (1000)
 
@@ -1797,6 +1798,7 @@ REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eignvalues based on grid size and solution jitter");
+  RSS(ref_metric_histogram(metric, ref_grid, "hess.tec"), "histogram");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
@@ -2374,5 +2376,41 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
   ref_free(hess_cons);
   ref_free(cons);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
+                                const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *eig, diag_system[12];
+  REF_INT i, node, n, *sorted_index;
+  FILE *file;
+
+  ref_malloc_init(eig, ref_node_n(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(sorted_index, ref_node_n(ref_node), REF_INT, REF_EMPTY);
+  n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+    eig[n] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                     ABS(ref_matrix_eig(diag_system, 1))),
+                 ABS(ref_matrix_eig(diag_system, 2)));
+    n++;
+  }
+  REIS(ref_node_n(ref_node), n, "node count");
+  RSS(ref_sort_heap_dbl(n, eig, sorted_index), "sort");
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot ordered max eig\"\n");
+  fprintf(file, "variables = \"i\" \"e\"\n");
+  fprintf(file, "zone t=\"eig\"\n");
+  for (i = 0; i < n; i++) {
+    fprintf(file, "%d %e\n", i, eig[sorted_index[i]]);
+  }
+  fclose(file);
+  ref_free(sorted_index);
+  ref_free(eig);
   return REF_SUCCESS;
 }
