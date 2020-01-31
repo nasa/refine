@@ -20,10 +20,12 @@ mkdir -p egads
 ( cd egads && \
       ../configure \
 	  --prefix=`pwd` \
+	  --with-mpi=${mpi_path} \
+	  --with-parmetis=${parmetis_path} \
 	  --with-EGADS=${egads_path} \
 	  CFLAGS="-g -O2" \
 	  CC=gcc >> $log 2>&1 \
-      && make >> $log 2>&1 \
+      && make -j 8 >> $log 2>&1 \
       && make install >> $log 2>&1 \
     ) \
     || exit 1
