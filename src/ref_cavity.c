@@ -2185,6 +2185,7 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
       xyz_phys[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, local);
       xyz_phys[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, local);
       printf(" %.16e %.16e %.16e\n", xyz_phys[0], xyz_phys[1], xyz_phys[2]);
+      ref_export_tec(ref_grid, "ref_cavity_geom_edge_fail.tec");
     });
     for (i = 0; i < ncell; i++) {
       tri_cell = edge_tri[i];
