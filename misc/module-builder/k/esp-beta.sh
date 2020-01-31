@@ -18,16 +18,16 @@ module purge
 module load ${GCC_MODULE}
 module list
 
-#mkdir ${MODULE_DEST}
-#cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
+mkdir ${MODULE_DEST}
+cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 
 # https://acdl.mit.edu/ESP/PreBuilts/
 # https://acdl.mit.edu/ESP/archive/
 
-#rm -f ESPbeta.tgz
-#wget https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
-#rm -rf EngSketchPad
-#tar xzf ESPbeta.tgz
+rm -f ESPbeta.tgz
+wget https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
+rm -rf EngSketchPad
+tar xzf ESPbeta.tgz
 ( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
 ( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++)
 
