@@ -20,6 +20,9 @@ mkdir -p egads
 ( cd egads && \
       ../configure \
 	  --prefix=`pwd` \
+	  --with-mpi=${mpi_path} \
+	  --with-metis=${metis_path} \
+	  --with-parmetis=${parmetis_path} \
 	  --with-EGADS=${egads_path} \
 	  CFLAGS="-g -O2" \
 	  CC=gcc >> $log 2>&1 \
