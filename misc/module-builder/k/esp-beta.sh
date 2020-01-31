@@ -2,7 +2,6 @@
 
 PACKAGE='ESP'
 VERSION='117-rc.1'
-OCC_COPY_SOURCE='/u/shared/fun3d/fun3d_users/modules/ESP/116/OpenCASCADE-7.3.1'
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
@@ -10,25 +9,28 @@ else
    . common.sh
 fi
 
+OCC_COPY_SOURCE='/u/shared/fun3d/fun3d_users/modules/ESP/116/OpenCASCADE-7.3.1'
+OCC_COPY_DEST=${MODULE_DEST}/OpenCASCADE-7.3.1
+
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
 module load ${GCC_MODULE}
 module list
 
+mkdir ${MODULE_DEST}
+cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 
 # https://acdl.mit.edu/ESP/PreBuilts/
 # https://acdl.mit.edu/ESP/archive/
 
-rm -f ESPbeta.tgz
-wget https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
-rm -rf EngSketchPad
-tar xzf ESPbeta.tgz
-( cd EngSketchPad/config && ./makeEnv )
+#rm -f ESPbeta.tgz
+#wget https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
+#rm -rf EngSketchPad
+#tar xzf ESPbeta.tgz
+( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
 ( cd EngSketchPad/src && . ./makeEnv && make CC=gcc CXX=g++)
 
-mkdir ${MODULE_DEST}
-cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 mkdir ${MODULE_DEST}/EngSketchPad
 cp -r EngSketchPad/include EngSketchPad/lib EngSketchPad/bin ${MODULE_DEST}/EngSketchPad
 
