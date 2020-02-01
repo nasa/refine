@@ -815,7 +815,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     } else if (strcmp(interpolant, "htot") == 0) {
       scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
     } else if (strcmp(interpolant, "pressure") == 0) {
-      scalar[node] = p;
+      scalar[node] = press;
     } else if (strcmp(interpolant, "density") == 0) {
       scalar[node] = rho;
     } else if (strcmp(interpolant, "temperature") == 0) {
