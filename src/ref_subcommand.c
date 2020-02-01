@@ -814,6 +814,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       scalar[node] = sqrt(mach2);
     } else if (strcmp(interpolant, "htot") == 0) {
       scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+    } else if (strcmp(interpolant, "pressure") == 0) {
+      scalar[node] = p;
+    } else if (strcmp(interpolant, "density") == 0) {
+      scalar[node] = rho;
+    } else if (strcmp(interpolant, "temperature") == 0) {
+      scalar[node] = temp;
     } else {
       RSS(REF_INVALID, "unknown scalar interpolant");
     }
