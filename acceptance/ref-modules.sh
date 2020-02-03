@@ -9,7 +9,7 @@ module load tetgen/1.5.0
 module use --append /u/shared/wtjones1/Modules/modulefiles
 module load GEOLAB/geolab_64 GEOLAB/AFLR3-16.28.5
 
-module load ESP/116
+module load ESP/117
 
 module load valgrind_3.13.0
 
@@ -19,5 +19,5 @@ export module_path="/u/shared/fun3d/fun3d_users/modules"
 export parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
 export zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
-export egads_path="${module_path}/ESP/116/EngSketchPad"
-export opencascade_path="${module_path}/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
+export egads_path="${module_path}/ESP/117/EngSketchPad"
+export opencascade_path="${module_path}/ESP/117/OpenCASCADE-7.3.1/lib"
