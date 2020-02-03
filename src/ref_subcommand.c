@@ -714,6 +714,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL buffer = REF_FALSE;
   REF_INTERP ref_interp;
   REF_INT pos;
+  char *mach_interpolant = "mach";
+  char *interpolant = mach_interpolant;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
@@ -748,12 +750,19 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     buffer = REF_TRUE;
   }
 
+  RXS(ref_args_find(argc, argv, "--interpolant", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    interpolant = argv[pos + 1];
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
     printf("buffer %d (zero is inactive)\n", buffer);
+    printf("interpolant %s\n", interpolant);
   }
 
   sprintf(filename, "%s.meshb", in_project);
@@ -777,7 +786,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-  if (ref_mpi_once(ref_mpi)) printf("compute mach\n");
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     REF_DBL rho, u, v, w, press, temp, u2, mach2;
@@ -801,7 +810,19 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
              u, v, w, press, temp);
     });
-    scalar[node] = sqrt(mach2);
+    if (strcmp(interpolant, "mach") == 0) {
+      scalar[node] = sqrt(mach2);
+    } else if (strcmp(interpolant, "htot") == 0) {
+      scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+    } else if (strcmp(interpolant, "pressure") == 0) {
+      scalar[node] = press;
+    } else if (strcmp(interpolant, "density") == 0) {
+      scalar[node] = rho;
+    } else if (strcmp(interpolant, "temperature") == 0) {
+      scalar[node] = temp;
+    } else {
+      RSS(REF_INVALID, "unknown scalar interpolant");
+    }
   }
   ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
 
