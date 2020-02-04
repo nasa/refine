@@ -18,9 +18,6 @@ echo Build ${PACKAGE} ${VERSION}
 
 module purge
 module load ${INTEL_MODULE}
-module load ${MPT_MODULE}
-module load ${PARMETIS}
-module load ${ZOLTAN}
 module list
 
 ( cd ${TOPDIR} && ./bootstrap )
@@ -63,7 +60,6 @@ set base    $MODULE_BASE
 set version $VERSION
 
 prereq ${INTEL_MODULE}
-# prereq ${MPT_MODULE}
 
 set logr "/bin"
 
