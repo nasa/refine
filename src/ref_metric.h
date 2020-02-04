@@ -85,6 +85,12 @@ REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
 REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                             REF_DBL hmin, REF_DBL hmax,
                                             REF_DBL complexity);
+REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *scalar);
+REF_STATUS ref_metric_wall_jump_at_complexity(REF_DBL *metric,
+                                              REF_GRID ref_grid,
+                                              REF_DBL *scalar,
+                                              REF_DBL complexity);
 REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid);
 REF_STATUS ref_metric_buffer_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                            REF_DBL complexity);
@@ -92,6 +98,11 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_DBL *weight,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
+REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
+                              REF_DBL *scalar,
+                              REF_RECON_RECONSTRUCTION reconstruction,
+                              REF_INT p_norm, REF_DBL gradation,
+                              REF_DBL complexity);
 REF_STATUS ref_metric_local_scale(REF_DBL *metric, REF_DBL *weight,
                                   REF_GRID ref_grid, REF_INT p_norm);
 REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
@@ -121,6 +132,9 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
                                     REF_GRID ref_grid, REF_INT ldim,
                                     REF_DBL *prim_dual,
                                     REF_RECON_RECONSTRUCTION reconstruction);
+
+REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
+                                const char *filename);
 
 END_C_DECLORATION
 

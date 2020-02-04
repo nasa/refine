@@ -33,6 +33,7 @@
 #include "ref_matrix.h"
 #include "ref_node.h"
 #include "ref_phys.h"
+#include "ref_sort.h"
 
 #define REF_METRIC_MAX_DEGREE (1000)
 
@@ -1587,6 +1588,105 @@ REF_STATUS ref_metric_limit_h_at_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_wall_jump(REF_DBL *metric, REF_GRID ref_grid,
+                                REF_DBL *scalar) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_CELL edg = ref_grid_edg(ref_grid);
+  REF_DBL *grad, wall_jump = 4.0, wall_scalar = 10.0;
+  REF_INT edg_cell, edg_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tri_cell, tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, tri_node, off_node;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+  ref_malloc_init(grad, 3 * ref_node_max(ref_node), REF_DBL, 0.0);
+  RSS(ref_recon_gradient(ref_grid, scalar, grad, reconstruction), "grad");
+
+  each_ref_cell_valid_cell_with_nodes(edg, edg_cell, edg_nodes) {
+    /* tri with edg for side */
+    each_ref_cell_having_node2(tri, edg_nodes[0], edg_nodes[1], item, tri_node,
+                               tri_cell) {
+      RSS(ref_cell_nodes(tri, tri_cell, tri_nodes), "tri node");
+      off_node = tri_nodes[0] + tri_nodes[1] + tri_nodes[2] - edg_nodes[0] -
+                 edg_nodes[1];
+      /* third node of tri not on edg */
+      if (ref_cell_node_empty(edg, off_node) &&
+          scalar[edg_nodes[0]] < wall_scalar &&
+          scalar[edg_nodes[1]] < wall_scalar) {
+        REF_DBL dh[3], dt[3], ds, h, height, g[3];
+        REF_INT i;
+        REF_DBL min_eig, m[6], merged[6], diag_system[12];
+        for (i = 0; i < 3; i++)
+          dh[i] = ref_node_xyz(ref_node, i, off_node) -
+                  ref_node_xyz(ref_node, i, edg_nodes[0]);
+        for (i = 0; i < 3; i++)
+          dt[i] = ref_node_xyz(ref_node, i, edg_nodes[1]) -
+                  ref_node_xyz(ref_node, i, edg_nodes[0]);
+        RSS(ref_math_normalize(dt), "dt");
+        for (i = 0; i < 3; i++) dh[i] -= dt[i] * ref_math_dot(dh, dt);
+        height = sqrt(ref_math_dot(dh, dh));
+        RSS(ref_math_normalize(dh), "dh");
+        for (i = 0; i < 3; i++)
+          g[i] =
+              0.5 * (grad[i + 3 * edg_nodes[0]] + grad[i + 3 * edg_nodes[1]]);
+        ds = ABS(ref_math_dot(dh, g));
+        h = wall_jump / ds;
+        printf("h %f %f ds %f y %f u %f\n", height, h, ds,
+               ref_node_xyz(ref_node, 1, edg_nodes[0]), scalar[off_node]);
+        RSS(ref_matrix_diag_m(&(metric[6 * off_node]), diag_system),
+            "eigen decomp");
+        min_eig = MIN(
+            MIN(ref_matrix_eig(diag_system, 0), ref_matrix_eig(diag_system, 1)),
+            ref_matrix_eig(diag_system, 2));
+        /* normal */
+        ref_matrix_eig(diag_system, 0) = 1.0 / (h * h);
+        for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 0) = dh[i];
+        /* tangent */
+        ref_matrix_eig(diag_system, 1) = min_eig;
+        for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 1) = dt[i];
+        /* z */
+        ref_matrix_eig(diag_system, 2) = 1.0;
+        ref_matrix_vec(diag_system, 0, 2) = 0;
+        ref_matrix_vec(diag_system, 1, 2) = 0;
+        ref_matrix_vec(diag_system, 2, 2) = 1;
+        RSS(ref_matrix_form_m(diag_system, m), "form m");
+        RSS(ref_matrix_intersect(m, &(metric[6 * edg_nodes[0]]), merged),
+            "int");
+        for (i = 0; i < 6; i++) metric[i + 6 * edg_nodes[0]] = merged[i];
+        RSS(ref_matrix_intersect(m, &(metric[6 * edg_nodes[1]]), merged),
+            "int");
+        for (i = 0; i < 6; i++) metric[i + 6 * edg_nodes[1]] = merged[i];
+      }
+    }
+  }
+  ref_free(grad);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_wall_jump_at_complexity(REF_DBL *metric,
+                                              REF_GRID ref_grid,
+
+                                              REF_DBL *scalar,
+                                              REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node, relaxations;
+  REF_DBL current_complexity;
+
+  /* global scaling and h limits */
+  for (relaxations = 0; relaxations < 10; relaxations++) {
+    RSS(ref_metric_wall_jump(metric, ref_grid, scalar), "wall jump");
+    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(target_complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+          pow(target_complexity / current_complexity, 2.0 / 3.0);
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_buffer(REF_DBL *metric, REF_GRID ref_grid) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1682,6 +1782,24 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
       "floor metric eignvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
+      "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         target_complexity),
+      "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
+                              REF_DBL *scalar,
+                              REF_RECON_RECONSTRUCTION reconstruction,
+                              REF_INT p_norm, REF_DBL gradation,
+                              REF_DBL target_complexity) {
+  RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eignvalues based on grid size and solution jitter");
+  RSS(ref_metric_histogram(metric, ref_grid, "hess.tec"), "histogram");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
@@ -2258,5 +2376,41 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
   ref_free(hess_cons);
   ref_free(cons);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
+                                const char *filename) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *eig, diag_system[12];
+  REF_INT i, node, n, *sorted_index;
+  FILE *file;
+
+  ref_malloc_init(eig, ref_node_n(ref_node), REF_DBL, 0.0);
+  ref_malloc_init(sorted_index, ref_node_n(ref_node), REF_INT, REF_EMPTY);
+  n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+    eig[n] = MAX(MAX(ABS(ref_matrix_eig(diag_system, 0)),
+                     ABS(ref_matrix_eig(diag_system, 1))),
+                 ABS(ref_matrix_eig(diag_system, 2)));
+    n++;
+  }
+  REIS(ref_node_n(ref_node), n, "node count");
+  RSS(ref_sort_heap_dbl(n, eig, sorted_index), "sort");
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot ordered max eig\"\n");
+  fprintf(file, "variables = \"i\" \"e\"\n");
+  fprintf(file, "zone t=\"eig\"\n");
+  for (i = 0; i < n; i++) {
+    fprintf(file, "%d %e\n", i, eig[sorted_index[i]]);
+  }
+  fclose(file);
+  ref_free(sorted_index);
+  ref_free(eig);
   return REF_SUCCESS;
 }

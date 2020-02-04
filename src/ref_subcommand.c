@@ -987,7 +987,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
-  REF_BOOL buffer;
+  REF_BOOL buffer, wall_jump, eig_bal;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -1021,12 +1021,28 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     buffer = REF_TRUE;
   }
 
+  wall_jump = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--wall-jump", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    wall_jump = REF_TRUE;
+  }
+
+  eig_bal = REF_FALSE;
+  RXS(ref_args_find(argc, argv, "--eig-bal", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    eig_bal = REF_TRUE;
+  }
+
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
     printf("gradation %f\n", gradation);
     printf("reconstruction %d\n", (int)reconstruction);
     printf("buffer %d (zero is inactive)\n", buffer);
+    printf("wall_jump %d (zero is inactive)\n", wall_jump);
+    printf("eig_bal %d (zero is inactive)\n", eig_bal);
   }
 
   ref_mpi_stopwatch_start(ref_mpi);
@@ -1047,11 +1063,18 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REIS(1, ldim, "expected one scalar");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
-  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                    gradation, complexity),
-      "lp norm");
+  if (eig_bal) {
+    if (ref_mpi_once(ref_mpi)) printf("eig balance Hessian, compute metric\n");
+    RSS(ref_metric_eig_bal(metric, ref_grid, scalar, reconstruction, p,
+                           gradation, complexity),
+        "eig_bal");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
 
   if (buffer) {
@@ -1059,6 +1082,14 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_buffer_at_complexity(metric, ref_grid, complexity),
         "buffer at complexity");
     ref_mpi_stopwatch_stop(ref_mpi, "buffer");
+  }
+
+  if (wall_jump) {
+    if (ref_mpi_once(ref_mpi)) printf("wall jump\n");
+    RSS(ref_metric_wall_jump_at_complexity(metric, ref_grid, scalar,
+                                           complexity),
+        "wall jump");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall jump");
   }
 
   RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
