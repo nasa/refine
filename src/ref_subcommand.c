@@ -454,6 +454,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_by_extension(ref_grid, filename), "vol export");
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
+  RSS(ref_validation_cell_volume(ref_grid), "vol");
+
   RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
   RSS(ref_histogram_quality(ref_grid), "gram");
