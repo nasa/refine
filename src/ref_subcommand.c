@@ -362,12 +362,15 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("manifold not required for wirebody\n");
   }
 
-  if (ref_mpi_once(ref_mpi))
-    printf("probing initial tessellation self-intersections\n");
-  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
-  if (self_intersections > 0)
-    printf("%d segment-triangle intersections detected.\n", self_intersections);
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+  if (REF_FALSE) { /* skip to reduce execution time, will be repaired */
+    if (ref_mpi_once(ref_mpi))
+      printf("probing initial tessellation self-intersections\n");
+    RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
+    if (self_intersections > 0)
+      printf("%d segment-triangle intersections detected.\n",
+             self_intersections);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
+  }
 
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
