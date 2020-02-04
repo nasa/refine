@@ -18,6 +18,7 @@ echo Build ${PACKAGE} ${VERSION}
 
 module purge
 module load ${INTEL_MODULE}
+module load ${MPT_MODULE}
 module list
 
 ( cd ${TOPDIR} && ./bootstrap )
