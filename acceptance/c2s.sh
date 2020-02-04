@@ -19,6 +19,7 @@ mkdir -p egads
       ../configure \
 	  --prefix=`pwd` \
 	  --with-EGADS=${egads_path} \
+          --with-OpenCASCADE=${opencascade_path} \
 	  CFLAGS="-g -O2" \
 	  CC=gcc >> $log 2>&1 \
       && make -j 8 >> $log 2>&1 \
