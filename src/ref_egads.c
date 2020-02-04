@@ -604,6 +604,9 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
   const int *ptype, *pindex, *tris, *tric;
 
   double params[3], diag, box[6];
+  REF_INT edge, *e2f;
+
+  RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
 
   for (face = 0; face < (ref_geom->nface); face++) {
     faceobj = ((ego *)(ref_geom->faces))[face];
@@ -618,11 +621,17 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
         diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                     (box[1] - box[4]) * (box[1] - box[4]) +
                     (box[2] - box[5]) * (box[2] - box[5]));
-        params[0] = 0.1 * diag;
-        params[1] = 0.01 * diag;
+        params[0] = 0.5 * diag;
+        params[1] = 0.05 * diag;
         params[2] = 15.0;
         RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
             "update tparams");
+        for (edge = 0; edge < (ref_geom->nedge); edge++) {
+          if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
+            RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+                "update tparams");
+          }
+        }
       }
     } else {
       REF_INT tri, side, n0, n1, i;
@@ -670,11 +679,17 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
         printf("face %d rel chord %f abs len %f abs chord %f diag %f\n",
                face + 1, max_chord, max_chord_length, max_chord_offset, diag);
       if (max_chord > 0.2 && (auto_tparams & REF_EGADS_CHORD_TPARAM)) {
-        params[0] = 0.1 * diag;
-        params[1] = 0.001 * diag;
+        params[0] = 0.25 * diag;
+        params[1] = 0.025 * diag;
         params[2] = 15.0;
         RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
             "update tparams");
+        for (edge = 0; edge < (ref_geom->nedge); edge++) {
+          if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
+            RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+                "update tparams");
+          }
+        }
       }
     }
 
@@ -684,6 +699,9 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
           "face width");
     }
   }
+
+  ref_free(e2f);
+
   return REF_SUCCESS;
 }
 #endif
