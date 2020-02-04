@@ -450,7 +450,11 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   if (type > 0) ref_geom_param(ref_geom, 0, geom) = param[0];
   if (type > 1) ref_geom_param(ref_geom, 1, geom) = param[1];
 
-  RSS(ref_adj_add(ref_geom->ref_adj, node, geom), "register geom");
+  RSB(ref_adj_add(ref_geom->ref_adj, node, geom), "register geom", {
+    printf("register node %d geom %d type %d id %d\n",
+           ref_geom_node(ref_geom, geom), geom, ref_geom_type(ref_geom, geom),
+           ref_geom_id(ref_geom, geom));
+  });
 
   ref_geom_n(ref_geom)++;
 

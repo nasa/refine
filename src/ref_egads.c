@@ -428,8 +428,11 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
         REIS(EGADS_SUCCESS, egads_status, "l2g0");
         nodes[0] -= 1;
         param[0] = t[node];
-        RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, edge + 1, param),
-            "edge t");
+        RSB(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, edge + 1, param),
+            "edge t", {
+              printf("edge %d of %d plen %d node %d global %d\n", edge + 1,
+                     ref_geom->nedge, plen, node + 1, nodes[0] + 1);
+            });
       }
     }
     if (!degenerate)
