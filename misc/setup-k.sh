@@ -31,7 +31,8 @@ mkdir -p egads
     --with-OpenCASCADE=${occ_path} \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
-    CFLAGS="${gcc_flags}" \
+    CC=icc \
+    CFLAGS="${icc_flags}" \
     ) \
     || exit
 
