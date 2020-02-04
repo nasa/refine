@@ -235,6 +235,94 @@ static REF_STATUS ref_egads_face_surface_type(REF_GEOM ref_geom, REF_INT faceid,
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
+                                       REF_INT **edge_face_arg) {
+  REF_INT *e2f, *nface;
+  REF_INT face, edge;
+
+  ego esurf, *eloops;
+  int oclass, mtype, nloop, *senses;
+  double data[18];
+  ego ecurve, *eedges;
+  int iloop, iedge, nedge;
+
+  ref_malloc_init(*edge_face_arg, 2 * (ref_geom->nedge), REF_INT, REF_EMPTY);
+  e2f = *edge_face_arg;
+  ref_malloc_init(nface, (ref_geom->nedge), REF_INT, 0);
+
+  for (face = 0; face < (ref_geom->nface); face++) {
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
+                        &mtype, data, &nloop, &eloops, &senses),
+         "topo");
+    for (iloop = 0; iloop < nloop; iloop++) {
+      /* loop through all Edges associated with this Loop */
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data, &nedge,
+                          &eedges, &senses),
+           "topo");
+      for (iedge = 0; iedge < nedge; iedge++) {
+        edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]) - 1;
+        RAS(2 > nface[edge], "edge has more than 2 faces");
+        e2f[nface[edge] + 2 * edge] = face + 1;
+        nface[edge]++;
+      }
+    }
+  }
+
+  ref_free(nface);
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
+static REF_STATUS ref_egads_node_faces(REF_GEOM ref_geom,
+                                       REF_ADJ *ref_adj_arg) {
+  REF_ADJ ref_adj;
+  REF_INT *e2f, id, toponode;
+  ego ref, *pchldrn, object;
+  int oclass, mtype, nchild, *psens;
+  double trange[2];
+  RSS(ref_adj_create(ref_adj_arg), "create ref_adj");
+  ref_adj = *ref_adj_arg;
+  RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
+  for (id = 1; id <= ref_geom->nedge; id++) {
+    object = ((ego *)(ref_geom->edges))[id - 1];
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                        &pchldrn, &psens),
+         "EG topo node");
+
+    if (0 < nchild) {
+      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
+      if (0 < e2f[0 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
+            "add");
+      }
+      if (0 < e2f[1 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
+            "add");
+      }
+    }
+
+    if (1 < nchild) {
+      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
+      if (0 < e2f[0 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
+            "add");
+      }
+      if (0 < e2f[1 + 2 * (id - 1)]) {
+        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
+            "add");
+      }
+    }
+  }
+  ref_free(e2f);
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
                                              REF_GLOB *n_global) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -836,96 +924,6 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
   return REF_SUCCESS;
 }
 
-#ifdef HAVE_EGADS
-static REF_STATUS ref_egads_edge_faces(REF_GRID ref_grid,
-                                       REF_INT **edge_face_arg) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT *e2f, *nface;
-  REF_INT face, edge;
-
-  ego esurf, *eloops;
-  int oclass, mtype, nloop, *senses;
-  double data[18];
-  ego ecurve, *eedges;
-  int iloop, iedge, nedge;
-
-  ref_malloc_init(*edge_face_arg, 2 * (ref_geom->nedge), REF_INT, REF_EMPTY);
-  e2f = *edge_face_arg;
-  ref_malloc_init(nface, (ref_geom->nedge), REF_INT, 0);
-
-  for (face = 0; face < (ref_geom->nface); face++) {
-    REIS(EGADS_SUCCESS,
-         EG_getTopology(((ego *)(ref_geom->faces))[face], &esurf, &oclass,
-                        &mtype, data, &nloop, &eloops, &senses),
-         "topo");
-    for (iloop = 0; iloop < nloop; iloop++) {
-      /* loop through all Edges associated with this Loop */
-      REIS(EGADS_SUCCESS,
-           EG_getTopology(eloops[iloop], &ecurve, &oclass, &mtype, data, &nedge,
-                          &eedges, &senses),
-           "topo");
-      for (iedge = 0; iedge < nedge; iedge++) {
-        edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]) - 1;
-        RAS(2 > nface[edge], "edge has more than 2 faces");
-        e2f[nface[edge] + 2 * edge] = face + 1;
-        nface[edge]++;
-      }
-    }
-  }
-
-  ref_free(nface);
-  return REF_SUCCESS;
-}
-#endif
-
-#ifdef HAVE_EGADS
-static REF_STATUS ref_egads_node_faces(REF_GRID ref_grid,
-                                       REF_ADJ *ref_adj_arg) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_ADJ ref_adj;
-  REF_INT *e2f, id, toponode;
-  ego ref, *pchldrn, object;
-  int oclass, mtype, nchild, *psens;
-  double trange[2];
-  RSS(ref_adj_create(ref_adj_arg), "create ref_adj");
-  ref_adj = *ref_adj_arg;
-  RSS(ref_egads_edge_faces(ref_grid, &e2f), "edge2face");
-  for (id = 1; id <= ref_geom->nedge; id++) {
-    object = ((ego *)(ref_geom->edges))[id - 1];
-    REIS(EGADS_SUCCESS,
-         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
-                        &pchldrn, &psens),
-         "EG topo node");
-
-    if (0 < nchild) {
-      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[0]);
-      if (0 < e2f[0 + 2 * (id - 1)]) {
-        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
-            "add");
-      }
-      if (0 < e2f[1 + 2 * (id - 1)]) {
-        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
-            "add");
-      }
-    }
-
-    if (1 < nchild) {
-      toponode = EG_indexBodyTopo(ref_geom->solid, pchldrn[1]);
-      if (0 < e2f[0 + 2 * (id - 1)]) {
-        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[0 + 2 * (id - 1)]),
-            "add");
-      }
-      if (0 < e2f[1 + 2 * (id - 1)]) {
-        RSS(ref_adj_add_uniquely(ref_adj, toponode, e2f[1 + 2 * (id - 1)]),
-            "add");
-      }
-    }
-  }
-  ref_free(e2f);
-  return REF_SUCCESS;
-}
-#endif
-
 REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -971,7 +969,7 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
     }
   }
 
-  RSS(ref_egads_edge_faces(ref_grid, &e2f), "edge2face");
+  RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
 
   for (edge = 0; edge < (ref_geom->nedge); edge++) {
     REIS(EGADS_SUCCESS,
@@ -1063,7 +1061,7 @@ static REF_STATUS ref_egads_recon_nodes(REF_GRID ref_grid,
   REF_BOOL show_xyz = REF_FALSE;
   REF_INT i, j;
   REF_BOOL found, all_found;
-  RSS(ref_egads_node_faces(ref_grid, &n2f), "build n2f");
+  RSS(ref_egads_node_faces(ref_geom, &n2f), "build n2f");
   ref_malloc(grid_faceids, max_faceids, REF_INT);
   ref_malloc(cad_faceids, max_faceids, REF_INT);
   printf("searching for %d topo nodes\n", ref_geom->nnode);
@@ -1171,7 +1169,7 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
 
   RSS(ref_egads_recon_nodes(ref_grid, &cad_nodes), "recover nodes");
 
-  RSS(ref_egads_edge_faces(ref_grid, &e2f), "compute edge faces");
+  RSS(ref_egads_edge_faces(ref_geom, &e2f), "compute edge faces");
 
   ref_malloc(node_list, max_node, REF_INT);
 
