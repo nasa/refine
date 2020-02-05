@@ -305,7 +305,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT s_pos = REF_EMPTY;
   REF_INT mesher_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
-  REF_INT auto_tparams = 0; /* REF_EGADS_ALL_TPARAM; */
+  REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
   char *mesher = "tetgen";
   REF_INT passes = 15;
   REF_INT self_intersections;
