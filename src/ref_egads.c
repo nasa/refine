@@ -358,7 +358,8 @@ static REF_STATUS ref_egads_tess_fill_vertex(REF_GRID ref_grid, ego tess,
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
+static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess,
+                                          REF_GLOB n_global) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
@@ -376,6 +377,9 @@ static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
     for (node = 0; node < plen; node++) {
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, node + 1, &(nodes[0])), "l2g0");
+      RAB(0 < nodes[0] && nodes[0] <= n_global, "tri global out of range", {
+        printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[0]);
+      });
       nodes[0] -= 1;
       param[0] = uv[0 + 2 * node];
       param[1] = uv[1 + 2 * node];
@@ -387,12 +391,21 @@ static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, tris[0 + 3 * tri], &(nodes[1])),
            "l2g0");
+      RAB(0 < nodes[1] && nodes[1] <= n_global, "tri n1 global out of range", {
+        printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[0]);
+      });
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, tris[1 + 3 * tri], &(nodes[0])),
            "l2g1");
+      RAB(0 < nodes[0] && nodes[0] <= n_global, "tri n0 global out of range", {
+        printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[0]);
+      });
       REIS(EGADS_SUCCESS,
            EG_localToGlobal(tess, face + 1, tris[2 + 3 * tri], &(nodes[2])),
            "l2g2");
+      RAB(0 < nodes[2] && nodes[2] <= n_global, "tri n2 global out of range", {
+        printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[2]);
+      });
       nodes[0] -= 1;
       nodes[1] -= 1;
       nodes[2] -= 1;
@@ -406,7 +419,8 @@ static REF_STATUS ref_egads_tess_fill_tri(REF_GRID ref_grid, ego tess) {
 #endif
 
 #ifdef HAVE_EGADS
-static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
+static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess,
+                                          REF_GLOB n_global) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL param[2];
@@ -426,6 +440,9 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
         degenerate = REF_TRUE;
       } else {
         REIS(EGADS_SUCCESS, egads_status, "l2g0");
+        RAB(0 < nodes[0] && nodes[0] <= n_global, "edg global out of range", {
+          printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[0]);
+        });
         nodes[0] -= 1;
         param[0] = t[node];
         RSB(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, edge + 1, param),
@@ -441,9 +458,15 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess) {
         REIS(EGADS_SUCCESS,
              EG_localToGlobal(tess, -(edge + 1), node + 1, &(nodes[0])),
              "l2g0");
+        RAB(0 < nodes[0] && nodes[0] <= n_global, "edg0 global out of range", {
+          printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[0]);
+        });
         REIS(EGADS_SUCCESS,
              EG_localToGlobal(tess, -(edge + 1), node + 2, &(nodes[1])),
              "l2g1");
+        RAB(0 < nodes[1] && nodes[1] <= n_global, "edg1 global out of range", {
+          printf("nvert " REF_GLOB_FMT " global %d\n", n_global, nodes[1]);
+        });
         nodes[0] -= 1;
         nodes[1] -= 1;
         nodes[2] = edge + 1;
@@ -924,8 +947,9 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
 
     RSS(ref_egads_tess_fill_vertex(ref_grid, tess, &n_global),
         "fill tess vertex");
-    RSS(ref_egads_tess_fill_tri(ref_grid, tess), "fill tess triangles");
-    RSS(ref_egads_tess_fill_edg(ref_grid, tess), "fill tess edges");
+    RSS(ref_egads_tess_fill_tri(ref_grid, tess, n_global),
+        "fill tess triangles");
+    RSS(ref_egads_tess_fill_edg(ref_grid, tess, n_global), "fill tess edges");
   }
 
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &n_global, 1, REF_GLOB_TYPE),
