@@ -148,6 +148,13 @@ static void multiscale_help(const char *name) {
       name);
   printf("   complexity is approximately half the target number of vertices\n");
   printf("\n");
+  printf("  options:\n");
+  printf("   --norm-power <power> multiscale metric norm power (default 2)\n");
+  printf("   --gradation <gradation> (default -1)\n");
+  printf("       positive: metric-space gradation stretching ratio.\n");
+  printf("       negative: mixed-space gradation.\n");
+  printf("   --buffer coarsens the metric approaching the x max boundary.\n");
+  printf("\n");
 }
 static void surface_help(const char *name) {
   printf("usage: \n %s surface input_mesh.extension [surface_mesh.tec] \n",
@@ -170,7 +177,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
   REF_INT pass, passes = 30;
-  REF_INT opt;
+  REF_INT opt, pos;
 
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
@@ -206,6 +213,17 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+
+  RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos)
+    RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
+        "movie on");
+
+  RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    passes = atoi(argv[pos + 1]);
+    printf("-s %d surface adaptation passes\n", passes);
+  }
 
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
       "metric arg search");
@@ -377,7 +395,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != s_pos && s_pos < argc - 1) {
     passes = atoi(argv[s_pos + 1]);
-    printf("-s %d surface adpatation passes\n", passes);
+    printf("-s %d surface adaptation passes\n", passes);
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
@@ -993,20 +1011,22 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   out_metric = argv[5];
 
   p = 2;
-  RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: -p <norm power>\n");
+      printf("option missing value: --norm-power <norm power>\n");
       goto shutdown;
     }
     p = atoi(argv[pos + 1]);
   }
 
   gradation = -1.0;
-  RXS(ref_args_find(argc, argv, "-g", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--gradation", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: -g <gradation>\n");
+      printf("option missing value: --gradation <gradation>\n");
       goto shutdown;
     }
     gradation = atof(argv[pos + 1]);
