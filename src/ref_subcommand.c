@@ -362,16 +362,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("manifold not required for wirebody\n");
   }
 
-  if (REF_FALSE) { /* skip to reduce execution time, will be repaired */
-    if (ref_mpi_once(ref_mpi))
-      printf("probing initial tessellation self-intersections\n");
-    RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
-    if (self_intersections > 0)
-      printf("%d segment-triangle intersections detected.\n",
-             self_intersections);
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
-  }
-
   RXS(ref_args_find(argc, argv, "-t", &t_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != t_pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -391,13 +381,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
-
-  if (ref_mpi_once(ref_mpi))
-    printf("probing adapted tessellation self-intersections\n");
-  RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections), "bumps");
-  if (self_intersections > 0)
-    printf("%d segment-triangle intersections detected.\n", self_intersections);
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "self intersect");
 
   RSS(ref_geom_report_tri_area_normdev(ref_grid), "tri status");
   if (ref_mpi_once(ref_mpi)) printf("verify topo\n");
@@ -427,13 +410,25 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with TetGen\n");
-        RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume");
+        RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
+          printf("probing adapted tessellation self-intersections\n");
+          RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+              "bumps");
+          printf("%d segment-triangle intersections detected.\n",
+                 self_intersections);
+        });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
     } else if (strncmp(mesher, "a", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with AFLR3\n");
-        RSS(ref_geom_aflr_volume(ref_grid), "aflr surface to volume");
+        RSB(ref_geom_aflr_volume(ref_grid), "aflr surface to volume", {
+          printf("probing adapted tessellation self-intersections\n");
+          RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+              "bumps");
+          printf("%d segment-triangle intersections detected.\n",
+                 self_intersections);
+        });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
