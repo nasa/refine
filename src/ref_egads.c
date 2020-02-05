@@ -705,9 +705,6 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
     RAB(0 < plen && 0 < tlen, "missing face",
         { printf("face id %d plen %d tlen %d\n", face + 1, plen, tlen); });
 
-    RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
-    if (contains) continue;
-
     max_chord = 0.0;
     max_chord_length = 0.0;
     max_chord_offset = 0.0;
@@ -751,8 +748,10 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
       params[0] = 0.25 * diag;
       params[1] = 0.025 * diag;
       params[2] = 15.0;
-      RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
-          "update tparams");
+      RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
+      if (!contains)
+        RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
+            "update tparams");
       for (edge = 0; edge < (ref_geom->nedge); edge++) {
         if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
           RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
