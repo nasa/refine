@@ -334,17 +334,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  {
-    REF_GRID ref_grid;
-    REF_INT node, cell;
-    RSS(ref_smooth_tri_single_fixture(&ref_grid, ref_mpi, &node, &cell),
-        "2d fix");
-
-    RSS(ref_smooth_tri_steepest_descent(ref_grid, node), "smooth");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
   { /* ideal in unit metric  */
     REF_GRID ref_grid;
     REF_INT node, cell;
