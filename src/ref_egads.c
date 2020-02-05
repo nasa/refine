@@ -644,8 +644,8 @@ static REF_STATUS ref_egads_adjust_tparams(REF_GEOM ref_geom, ego tess,
         diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
                     (box[1] - box[4]) * (box[1] - box[4]) +
                     (box[2] - box[5]) * (box[2] - box[5]));
-        params[0] = 0.1 * diag;
-        params[1] = 0.01 * diag;
+        params[0] = 0.5 * diag;
+        params[1] = 0.05 * diag;
         params[2] = 15.0;
         RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
             "update tparams");
