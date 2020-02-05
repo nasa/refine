@@ -983,6 +983,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
                                             edge_tp_augment, &rebuild),
         "adjust params");
 
+    RSS(ref_list_inspect(face_locked), "show");
+
     if (rebuild)
       printf(
           "rebuild EGADS tessilation after missing face .tParams adjustment, "
