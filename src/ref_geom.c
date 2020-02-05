@@ -2394,6 +2394,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
     }
   }
 #else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   RSS(ref_geom_egads_diagonal(ref_geom, h0), "bbox diag init");
   dir0[0] = 1.0;
   dir0[1] = 0.0;
