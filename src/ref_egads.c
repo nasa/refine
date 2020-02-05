@@ -504,7 +504,8 @@ static REF_STATUS ref_egads_merge_tparams(REF_CLOUD object_tp_augment,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_CLOUD edge_tp_augment) {
+                                       REF_CLOUD edge_tp_augment, REF_INT *e2f,
+                                       REF_LIST face_locked) {
   ego faceobj;
   double diag, box[6];
 
@@ -525,6 +526,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
   REF_DBL width, aspect_ratio, adjusted;
   double params[3];
   int edgeid;
+  REF_BOOL contains0, contains1;
 
   RAS(0 < faceid && faceid <= (ref_geom->nface), "invalid faceid");
   faceobj = ((ego *)(ref_geom->faces))[faceid - 1];
@@ -606,8 +608,15 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
         params[0] = adjusted;
         params[1] = 0.1 * params[0];
         params[2] = 15.0;
-        RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
-            "update tparams");
+        RSS(ref_list_contains(face_locked, e2f[0 + 2 * (edgeid - 1)],
+                              &contains0),
+            "lock face0");
+        RSS(ref_list_contains(face_locked, e2f[1 + 2 * (edgeid - 1)],
+                              &contains1),
+            "lock face1");
+        if (!contains0 && !contains1)
+          RSS(ref_egads_merge_tparams(edge_tp_augment, edgeid, params),
+              "update tparams");
       }
     }
   }
@@ -759,7 +768,8 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
 
     /* face width parameter to all edges */
     if (auto_tparams & REF_EGADS_WIDTH_TPARAM) {
-      RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment),
+      RSS(ref_egads_face_width(ref_geom, face + 1, edge_tp_augment, e2f,
+                               face_locked),
           "face width");
     }
   }
