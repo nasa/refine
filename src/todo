@@ -1,11 +1,10 @@
 
-ref_geom gap and feature size, use geom
+high speed flat plate
+nlf airfoil
+
+ref_geom gap and feature size, use geom via edge or node location
 
 improve parallel k-select algorithm
-
-test for self intersecting triangles for bootstrap
- - speed (adt)?
- - parallel
 
 speed up edge and face smoothing
 
@@ -218,6 +217,9 @@ egads recon
    revert on failure (wrap?)
 
 *****************
+
+- ref loop any number of turb equations
+- test for self intersecting triangles only on volume fail of bootstrap
 
 - bootstrap all of C2S
 - yplus augmentation of metric (compute internally, are non solid walls ok?)
