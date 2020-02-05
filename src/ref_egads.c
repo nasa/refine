@@ -619,7 +619,7 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams_missing_face(
     REF_GEOM ref_geom, ego tess, REF_CLOUD face_tp_augment,
-    REF_CLOUD edge_tp_augment, REF_DBL seg_per_diag) {
+    REF_CLOUD edge_tp_augment, REF_DBL seg_per_diag, REF_LIST face_locked) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
@@ -627,6 +627,7 @@ static REF_STATUS ref_egads_adjust_tparams_missing_face(
 
   double params[3], diag, box[6];
   REF_INT edge, *e2f;
+  REF_BOOL contains;
 
   RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
 
@@ -645,6 +646,8 @@ static REF_STATUS ref_egads_adjust_tparams_missing_face(
       params[0] = seg_per_diag * diag;
       params[1] = 0.1 * params[0];
       params[2] = 15.0;
+      RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
+      if (!contains) RSS(ref_list_push(face_locked, face + 1), "lock face");
       RSS(ref_egads_merge_tparams(face_tp_augment, face + 1, params),
           "update tparams");
       for (edge = 0; edge < (ref_geom->nedge); edge++) {
@@ -666,7 +669,8 @@ static REF_STATUS ref_egads_adjust_tparams_missing_face(
 static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
                                                  REF_CLOUD face_tp_augment,
                                                  REF_CLOUD edge_tp_augment,
-                                                 REF_INT auto_tparams) {
+                                                 REF_INT auto_tparams,
+                                                 REF_LIST face_locked) {
   ego faceobj;
   int face, tlen, plen;
   const double *points, *uv;
@@ -679,6 +683,7 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
   const REF_DBL *xyz0, *xyz1, *uv0, *uv1;
   REF_DBL uvm[2], xyz[3], dside[3], dmid[3];
   REF_DBL length, offset, max_chord, max_chord_length, max_chord_offset;
+  REF_BOOL contains, contains0, contains1;
 
   RSS(ref_egads_edge_faces(ref_geom, &e2f), "edge2face");
 
@@ -690,6 +695,9 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
          "tess query face");
     RAB(0 < plen && 0 < tlen, "missing face",
         { printf("face id %d plen %d tlen %d\n", face + 1, plen, tlen); });
+
+    RSS(ref_list_contains(face_locked, face + 1, &contains), "lock face");
+    if (contains) continue;
 
     max_chord = 0.0;
     max_chord_length = 0.0;
@@ -738,8 +746,13 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
           "update tparams");
       for (edge = 0; edge < (ref_geom->nedge); edge++) {
         if (face + 1 == e2f[0 + 2 * edge] || face + 1 == e2f[0 + 2 * edge]) {
-          RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
-              "update tparams");
+          RSS(ref_list_contains(face_locked, e2f[0 + 2 * edge], &contains0),
+              "lock face0");
+          RSS(ref_list_contains(face_locked, e2f[1 + 2 * edge], &contains1),
+              "lock face1");
+          if (!contains0 && !contains1)
+            RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+                "update tparams");
         }
       }
     }
@@ -912,6 +925,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   REF_INT tries;
   REF_CLOUD face_tp_original, face_tp_augment;
   REF_CLOUD edge_tp_original, edge_tp_augment;
+  REF_LIST face_locked;
   REF_DBL seg_per_diag;
   REF_INT face;
 
@@ -927,6 +941,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   RSS(ref_cloud_create(&edge_tp_augment, 3), "create tparams augment");
   RSS(ref_egads_cache_tparams(ref_geom, face_tp_original, edge_tp_original),
       "tparams cache");
+
+  RSS(ref_list_create(&face_locked), "create locked face list");
 
   REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
   diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
@@ -950,7 +966,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     REIS(1, tess_status, "tess not closed");
 
     RSS(ref_egads_adjust_tparams_missing_face(ref_geom, *tess, face_tp_augment,
-                                              edge_tp_augment, seg_per_diag),
+                                              edge_tp_augment, seg_per_diag,
+                                              face_locked),
         "adjust params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
@@ -985,7 +1002,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     REIS(1, tess_status, "tess not closed");
 
     RSS(ref_egads_adjust_tparams_chord(ref_geom, *tess, face_tp_augment,
-                                       edge_tp_augment, auto_tparams),
+                                       edge_tp_augment, auto_tparams,
+                                       face_locked),
         "adjust params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
@@ -996,6 +1014,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
       printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
              tries);
   }
+
+  RSS(ref_list_free(face_locked), "free face list");
 
   RSS(ref_cloud_free(face_tp_augment), "free tparams augment");
   RSS(ref_cloud_free(edge_tp_original), "free tparams cache");
