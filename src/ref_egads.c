@@ -975,8 +975,10 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
         "adjust params");
 
     if (rebuild)
-      printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
-             tries);
+      printf(
+          "rebuild EGADS tessilation after missing face .tParams adjustment, "
+          "try %d\n",
+          tries);
   }
 
   for (face = 0; face < (ref_geom->nface); face++) {
@@ -1011,8 +1013,9 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
         "adjust params");
 
     if (rebuild)
-      printf("rebuild EGADS tessilation after .tParams adjustment, try %d\n",
-             tries);
+      printf(
+          "rebuild EGADS tessilation after chord .tParams adjustment, try %d\n",
+          tries);
   }
 
   RSS(ref_list_free(face_locked), "free face list");
