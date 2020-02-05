@@ -1,5 +1,4 @@
 
-ref loop any number of turb equations
 high speed flat plate
 nlf airfoil
 
@@ -222,6 +221,8 @@ egads recon
    revert on failure (wrap?)
 
 *****************
+
+- ref loop any number of turb equations
 
 - bootstrap all of C2S
 - yplus augmentation of metric (compute internally, are non solid walls ok?)

@@ -86,7 +86,7 @@ static void fill_help(const char *name) {
 static void fun3d_help(const char *name) {
   printf("usage: \n %s fun3d mach project.meshb primitive.solb mach.solb\n",
          name);
-  printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb1]\n");
+  printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb...]\n");
   printf("   in fun3d nondimensionalization\n");
   printf("\n");
 }
@@ -533,7 +533,7 @@ static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", in_solb);
   RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, in_solb),
       "part solution");
-  RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
+  RAS(5 <= ldim, "expected 5 or more variables per vertex");
   ref_mpi_stopwatch_stop(ref_mpi, "part solution");
 
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", scalar_name);
@@ -780,12 +780,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
   RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field, filename),
       "part scalar");
-  RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) { /* usm3d has two turb vars in plt file */
-    RAS(5 == ldim || 7 == ldim, "expected 5 or 6 variables per vertex");
-  } else {
-    RAS(5 == ldim || 6 == ldim, "expected 5 or 6 variables per vertex");
-  }
+  RAS(5 <= ldim, "expected 5 or more variables per vertex");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
