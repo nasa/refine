@@ -962,6 +962,18 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
              tries);
   }
 
+  for (face = 0; face < (ref_geom->nface); face++) {
+    int tlen, plen;
+    const double *points, *uv;
+    const int *ptype, *pindex, *tris, *tric;
+    REIS(EGADS_SUCCESS,
+         EG_getTessFace(*tess, face + 1, &plen, &points, &uv, &ptype, &pindex,
+                        &tlen, &tris, &tric),
+         "tess query face");
+    RAB(0 < plen && 0 < tlen, "missing face",
+        { printf("face id %d plen %d tlen %d\n", face + 1, plen, tlen); });
+  }
+
   rebuild = REF_TRUE;
   tries = 0;
   while (rebuild) {
