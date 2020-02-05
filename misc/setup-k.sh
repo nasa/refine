@@ -10,6 +10,8 @@ parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.19-intel_2018.3.222"
 egads_path="${module_path}/ESP/116/EngSketchPad"
 occ_path="${module_path}/ESP/116/OpenCASCADE-7.3.1"
 
+mpi_path="/opt/hpe/hpc/mpt/mpt-2.19"
+
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"
 
@@ -27,7 +29,10 @@ mkdir -p egads
     --prefix=`pwd` \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${occ_path} \
-    CFLAGS="${gcc_flags}" \
+    --with-mpi=${mpi_path} \
+    --with-parmetis=${parmetis_path} \
+    CC=icc \
+    CFLAGS="${icc_flags}" \
     ) \
     || exit
 

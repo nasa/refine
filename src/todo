@@ -1,4 +1,6 @@
 
+ref_geom gap and feature size, use geom
+
 improve parallel k-select algorithm
 
 test for self intersecting triangles for bootstrap

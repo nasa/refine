@@ -1482,7 +1482,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL edg = ref_grid_edg(ref_grid);
-  REF_BOOL geom_node, geom_edge;
+  REF_BOOL geom_node, geom_node0, geom_node1, geom_edge;
   REF_INT id;
   REF_INT nodes[2], nnode;
   REF_DBL t_orig, t0, t1;
@@ -1513,9 +1513,17 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_cell_node_list_around(edg, node, 2, &nnode, nodes), "edge neighbors");
   REIS(2, nnode, "expected two nodes");
 
+  /* if node0 or node1 constrainted by geoemetry, give precedence */
+  RSS(ref_geom_is_a(ref_geom, nodes[0], REF_GEOM_NODE, &geom_node0), "node0");
+  RSS(ref_geom_is_a(ref_geom, nodes[1], REF_GEOM_NODE, &geom_node1), "node1");
+
   for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
-  RSS(ref_smooth_add_pliant_force(ref_node, node, nodes[0], total_force), "n0");
-  RSS(ref_smooth_add_pliant_force(ref_node, node, nodes[1], total_force), "n1");
+  if (!geom_node1 || (geom_node0 && geom_node1))
+    RSS(ref_smooth_add_pliant_force(ref_node, node, nodes[0], total_force),
+        "n0");
+  if (!geom_node0 || (geom_node0 && geom_node1))
+    RSS(ref_smooth_add_pliant_force(ref_node, node, nodes[1], total_force),
+        "n1");
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     dxyz[ixyz] =

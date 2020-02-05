@@ -450,7 +450,11 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
   if (type > 0) ref_geom_param(ref_geom, 0, geom) = param[0];
   if (type > 1) ref_geom_param(ref_geom, 1, geom) = param[1];
 
-  RSS(ref_adj_add(ref_geom->ref_adj, node, geom), "register geom");
+  RSB(ref_adj_add(ref_geom->ref_adj, node, geom), "register geom", {
+    printf("register node %d geom %d type %d id %d\n",
+           ref_geom_node(ref_geom, geom), geom, ref_geom_type(ref_geom, geom),
+           ref_geom_id(ref_geom, geom));
+  });
 
   ref_geom_n(ref_geom)++;
 
@@ -2252,10 +2256,11 @@ REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
+REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
                                  REF_DBL *h2, REF_DBL *dir2) {
 #ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT edge_item, face_item, edge_geom, face_geom, edgeid, faceid, iloop;
   ego ref, *cadnodes, *edges, *loops;
   int oclass, mtype, ncadnode, nedge, nloop, *senses;
@@ -2270,6 +2275,7 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
   REF_INT other_edgeid, iedge;
   REF_DBL len, diagonal;
   REF_DBL tangent[3], dx[3], dot, orth[3];
+  REF_DBL gap;
   int status;
 
   /* initialize isotropic with bounding box */
@@ -2351,6 +2357,8 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
               dx[1] = xyz1[1] - xyz[1];
               dx[2] = xyz1[2] - xyz[2];
               len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+              RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
+              len = MAX(len, gap);
               RSS(ref_math_normalize(dx), "direction across face");
               if (len < *h0) {
                 dot = ref_math_dot(tangent, dx);
@@ -2386,6 +2394,7 @@ REF_STATUS ref_geom_feature_size(REF_GEOM ref_geom, REF_INT node, REF_DBL *h0,
     }
   }
 #else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   RSS(ref_geom_egads_diagonal(ref_geom, h0), "bbox diag init");
   dir0[0] = 1.0;
   dir0[1] = 0.0;
