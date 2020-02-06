@@ -1845,27 +1845,6 @@ REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_threed_post_face_split(REF_GRID ref_grid, REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_BOOL allowed, interior;
-
-  RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                  &allowed),
-      "para");
-  if (!allowed) {
-    ref_node_age(ref_node, node)++;
-    return REF_SUCCESS;
-  }
-
-  interior = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
-  if (interior) {
-    RSS(ref_smooth_twod_tri_improve(ref_grid, node), "ideal tri node");
-    ref_node_age(ref_node, node) = 0;
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_smooth_tet_report_quality_around(REF_GRID ref_grid,
                                                 REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
