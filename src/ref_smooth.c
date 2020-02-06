@@ -170,8 +170,8 @@ REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_valid_twod_tri(REF_GRID ref_grid, REF_INT node,
-                                     REF_BOOL *allowed) {
+REF_STATUS ref_smooth_valid_no_geom_tri(REF_GRID ref_grid, REF_INT node,
+                                        REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -181,27 +181,6 @@ REF_STATUS ref_smooth_valid_twod_tri(REF_GRID ref_grid, REF_INT node,
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
-
-  *allowed = REF_FALSE;
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
-    if (!valid) return REF_SUCCESS;
-  }
-
-  *allowed = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
-                                   REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
-  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_BOOL valid;
 
   *allowed = REF_FALSE;
 
@@ -684,7 +663,7 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
+    RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "normals");
     if (allowed) {
       RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
@@ -832,7 +811,7 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
-      RSS(ref_smooth_valid_twod_tri(ref_grid, node, &allowed), "twod tri");
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
