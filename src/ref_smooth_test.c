@@ -404,12 +404,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* improve twod boundary */
+  { /* edge neighbors */
     REF_GRID ref_grid;
     REF_INT node, node0, node1;
     RSS(ref_smooth_tri2_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
-    RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
-        "bnode");
+    RSS(ref_smooth_edge_neighbors(ref_grid, node, &node0, &node1), "bnode");
     REIS(2, MIN(node0, node1), "node min");
     REIS(3, MAX(node0, node1), "node max");
     RSS(ref_grid_free(ref_grid), "free");

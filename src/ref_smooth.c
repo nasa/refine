@@ -581,8 +581,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
-                                          REF_INT *node0, REF_INT *node1) {
+REF_STATUS ref_smooth_edge_neighbors(REF_GRID ref_grid, REF_INT node,
+                                     REF_INT *node0, REF_INT *node1) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT item, cell, cell_edge, other;
 
@@ -661,8 +661,7 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
       "edge check");
   if (geom_edge) return REF_SUCCESS;
 
-  RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
-      "edge nodes");
+  RSS(ref_smooth_edge_neighbors(ref_grid, node, &node0, &node1), "edge nodes");
   if (REF_EMPTY == node1) return REF_SUCCESS;
   RSS(ref_smooth_node_same_tangent(ref_grid, node, node0, node1, &allowed),
       "tan");
