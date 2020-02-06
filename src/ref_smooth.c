@@ -991,6 +991,8 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* won't keep an edg straight */
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
   /* don't move edge nodes */
   RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, 2, &n_ids, ids),
@@ -1712,8 +1714,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   /* smooth edges first without geom, for 2D */
   each_ref_node_valid_node(ref_node, node) {
     /* boundaries only */
-    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-    if (allowed) continue;
+    allowed = !ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+    if (!allowed) continue;
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
     if (geom_edge) continue;
 
@@ -1750,7 +1752,13 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
 
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
-    if (ref_cell_node_empty(ref_grid_tri(ref_grid), node)) continue;
+    /* avoid edges */
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+    if (!allowed) continue;
+    /* need tri to smooth */
+    allowed = !ref_cell_node_empty(ref_grid_tri(ref_grid), node);
+    if (!allowed) continue;
+    /* avoid geometry faces (or edges) */
     RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
     if (geom_face) continue;
 
