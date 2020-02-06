@@ -170,6 +170,32 @@ REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_valid_twod_tri(REF_GRID ref_grid, REF_INT node,
+                                     REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL valid;
+
+  if (!ref_grid_twod(ref_grid)) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  *allowed = REF_FALSE;
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    RSS(ref_node_tri_twod_orientation(ref_node, nodes, &valid), "valid");
+    if (!valid) return REF_SUCCESS;
+  }
+
+  *allowed = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
                                    REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1000,8 +1026,13 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
+      RSS(ref_smooth_valid_twod_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
-      if (tri_quality > tri_quality0) {
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+      if (allowed && (tri_quality > tri_quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
         if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
           return REF_SUCCESS;
         } else {
@@ -1647,7 +1678,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
-  REF_BOOL allowed, geom_node, geom_edge, interior;
+  REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -1694,11 +1725,11 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
 
-  /* smooth faces if we have geom, but skip edges*/
+  /* smooth faces if we have geom, but skip edges */
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     /* don't move geom nodes */
-    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "node check");
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
     if (geom_edge) continue;
     /* next to ghost node, can't move */
     RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
@@ -1711,21 +1742,23 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
   }
 
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
-
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
-    if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-      RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
-          "para");
-      if (!allowed) {
-        ref_node_age(ref_node, node)++;
-        continue;
-      }
-      RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
+    if (ref_cell_node_empty(ref_grid_tri(ref_grid), node)) continue;
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
+    if (geom_face) continue;
+
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
+        "para");
+    if (!allowed) {
+      ref_node_age(ref_node, node)++;
+      continue;
     }
+    RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
   }
+
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
 
   /* smooth interior */
   each_ref_node_valid_node(ref_node, node) {
