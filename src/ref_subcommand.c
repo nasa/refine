@@ -374,12 +374,18 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("verify EGADS param\n");
   RSS(ref_geom_verify_param(ref_grid), "egads params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
-  if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
-  RSS(ref_geom_constrain_all(ref_grid), "constrain");
-  ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
-  if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
-  RSS(ref_geom_verify_param(ref_grid), "constrained params");
-  ref_mpi_stopwatch_stop(ref_mpi, "verify param");
+
+  if (REF_FALSE) { /* slow, good to machine precision, maybe parallel? */
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
+    RSS(ref_geom_verify_param(ref_grid), "constrained params");
+    ref_mpi_stopwatch_stop(ref_mpi, "verify param");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("skipped constrain\n");
+  }
+
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (ref_mpi_once(ref_mpi)) printf("verify manifold\n");
     RSS(ref_validation_boundary_manifold(ref_grid), "manifold");
