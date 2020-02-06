@@ -798,7 +798,7 @@ REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
@@ -1630,7 +1630,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     }
 
     ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_twod_bound_improve(ref_grid, node), "improve");
+    RSS(ref_smooth_no_geom_edge_improve(ref_grid, node), "improve");
   }
 
   if (ref_grid_adapt(ref_grid, instrument))
