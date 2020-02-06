@@ -442,27 +442,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* set to new pliant */
-    REF_GRID ref_grid;
-    REF_INT node;
-    REF_DBL quality0, quality1;
-    REF_BOOL allowed;
-
-    RSS(ref_smooth_tri_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
-
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
-
-    RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "imp");
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality1), "q");
-
-    RAS(quality1 > quality0, "expected improvment");
-
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "outward allowed");
-    RAS(allowed, "expected validity");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
   { /* ideal tet in unit metric  */
     REF_GRID ref_grid;
     REF_INT node, cell;
