@@ -165,6 +165,9 @@ static void translate_help(const char *name) {
   printf("usage: \n %s translate input_mesh.extension output_mesh.extension \n",
          name);
   printf("\n");
+  printf("  options:\n");
+  printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
+  printf("\n");
 }
 
 static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
@@ -1180,6 +1183,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
   REF_GRID ref_grid = NULL;
+  REF_INT pos;
 
   if (argc < 4) goto shutdown;
   in_file = argv[2];
@@ -1195,6 +1199,14 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_file);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "import");
     ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID twod_grid = ref_grid;
+    RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
+    RSS(ref_grid_free(twod_grid), "free");
   }
 
   if (ref_mpi_para(ref_mpi)) {
