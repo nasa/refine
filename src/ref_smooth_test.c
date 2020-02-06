@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
 
-    RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
+    RSS(ref_smooth_pass(ref_grid), "smooth pass");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
 
