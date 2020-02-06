@@ -57,43 +57,6 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT item, cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL f, d[3];
-  REF_DBL dcost, dcost_dl, dl;
-  REF_BOOL verbose = REF_FALSE;
-
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &f, d), "qual deriv");
-    if (verbose)
-      printf("cost %10.8f : %12.8f %12.8f %12.8f\n", f, d[0], d[1], d[2]);
-  }
-
-  dcost = 1.0 - f;
-  dcost_dl = sqrt(d[0] * d[0] + d[1] * d[1] * d[2] * d[2]);
-  dl = dcost / dcost_dl;
-
-  ref_node_xyz(ref_node, 0, node) += dl * d[0];
-  ref_node_xyz(ref_node, 1, node) += dl * d[1];
-  ref_node_xyz(ref_node, 2, node) += dl * d[2];
-  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
-
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &f, d), "qual deriv");
-  }
-
-  if (verbose)
-    printf("rate %12.8f dcost %12.8f dl %12.8f\n", (1.0 - f) / dcost, dcost,
-           dl);
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
                                        REF_DBL *min_ratio, REF_DBL *max_ratio) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -207,12 +170,17 @@ REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
-                                   REF_BOOL *allowed) {
+REF_STATUS ref_smooth_valid_no_geom_tri(REF_GRID ref_grid, REF_INT node,
+                                        REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL valid;
+
+  if (!ref_grid_twod(ref_grid)) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
 
   *allowed = REF_FALSE;
 
@@ -592,8 +560,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
-                                          REF_INT *node0, REF_INT *node1) {
+REF_STATUS ref_smooth_edge_neighbors(REF_GRID ref_grid, REF_INT node,
+                                     REF_INT *node0, REF_INT *node1) {
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT item, cell, cell_edge, other;
 
@@ -620,51 +588,6 @@ REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
       THROW("found more than two boundary edges");
     }
   }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT tries;
-  REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz;
-  REF_BOOL allowed;
-
-  /* can't handle boundaries yet */
-  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
-
-  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
-
-  backoff = 1.0;
-  for (tries = 0; tries < 8; tries++) {
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      ref_node_xyz(ref_node, ixyz, node) =
-          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
-    if (allowed) {
-      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
-      RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-          "ratio");
-      if ((quality > quality0) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        return REF_SUCCESS;
-      }
-    }
-    backoff *= 0.5;
-  }
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
-  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   return REF_SUCCESS;
 }
@@ -698,222 +621,29 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_move_edge_to(REF_GRID ref_grid, REF_INT node1,
-                                   REF_DBL *xyz1, REF_INT node2,
-                                   REF_DBL *xyz2) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_BOOL geom_node, geom_edge;
-  REF_INT id1, geom1, id2, geom2;
-  REF_DBL t1, t_orig1, t_target1, t2, t_orig2, t_target2;
-  REF_DBL q1, normdev1, normdev_orig1, min_uv_area1;
-  REF_DBL q2, normdev2, normdev_orig2, min_uv_area2;
-  REF_STATUS interp_status1, interp_status2;
-  REF_INT interp_guess1, interp_guess2;
-  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
-  REF_DBL backoff;
-  REF_INT tries;
-
-  RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_NODE, &geom_node), "node check");
-  RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_EDGE, &geom_edge), "edge check");
-  RAS(!geom_node, "geom node not allowed");
-  RAS(geom_edge, "geom edge required");
-  RSS(ref_geom_is_a(ref_geom, node2, REF_GEOM_NODE, &geom_node), "node check");
-  RSS(ref_geom_is_a(ref_geom, node2, REF_GEOM_EDGE, &geom_edge), "edge check");
-  RAS(!geom_node, "geom node not allowed");
-  RAS(geom_edge, "geom edge required");
-
-  RSS(ref_geom_unique_id(ref_geom, node1, REF_GEOM_EDGE, &id1), "get id");
-  RSS(ref_geom_unique_id(ref_geom, node2, REF_GEOM_EDGE, &id2), "get id");
-  RSS(ref_geom_find(ref_geom, node1, REF_GEOM_EDGE, id1, &geom1), "get geom");
-  RSS(ref_geom_find(ref_geom, node2, REF_GEOM_EDGE, id2, &geom2), "get geom");
-
-  RSS(ref_geom_tuv(ref_geom, node1, REF_GEOM_EDGE, id1, &t_orig1),
-      "get t_orig");
-  RSS(ref_geom_tuv(ref_geom, node2, REF_GEOM_EDGE, id2, &t_orig2),
-      "get t_orig");
-  RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id1, xyz1, &t_target1),
-      "inv");
-  RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id2, xyz2, &t_target2),
-      "inv");
-
-  RSS(ref_smooth_tri_normdev_around(ref_grid, node1, &normdev_orig1),
-      "nd_orig");
-  RSS(ref_smooth_tri_normdev_around(ref_grid, node2, &normdev_orig2),
-      "nd_orig");
-
-  interp_guess1 = REF_EMPTY;
-  interp_guess2 = REF_EMPTY;
-  if (NULL != ref_interp) {
-    if (ref_interp_continuously(ref_interp)) {
-      interp_guess1 = ref_interp_cell(ref_interp, node1);
-      interp_guess2 = ref_interp_cell(ref_interp, node2);
-    }
-  }
-
-  backoff = 1.0;
-  for (tries = 0; tries < 8; tries++) {
-    t1 = backoff * t_target1 + (1.0 - backoff) * t_orig1;
-    t2 = backoff * t_target2 + (1.0 - backoff) * t_orig2;
-
-    RSS(ref_geom_add(ref_geom, node1, REF_GEOM_EDGE, id1, &t1), "set t");
-    RSS(ref_geom_constrain(ref_grid, node1), "constrain");
-    interp_status1 = ref_metric_interpolate_node(ref_grid, node1);
-    RXS(interp_status1, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
-    if (ref_grid_surf(ref_grid)) {
-      q1 = 1.0;
-    } else {
-      RSS(ref_smooth_tet_quality_around(ref_grid, node1, &q1), "q");
-    }
-    RSS(ref_smooth_tri_normdev_around(ref_grid, node1, &normdev1), "nd");
-    RSS(ref_smooth_tri_uv_area_around(ref_grid, node1, &min_uv_area1), "a");
-
-    RSS(ref_geom_add(ref_geom, node2, REF_GEOM_EDGE, id2, &t2), "set t");
-    RSS(ref_geom_constrain(ref_grid, node2), "constrain");
-    interp_status2 = ref_metric_interpolate_node(ref_grid, node2);
-    RXS(interp_status2, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
-    if (ref_grid_surf(ref_grid)) {
-      q2 = 1.0;
-    } else {
-      RSS(ref_smooth_tet_quality_around(ref_grid, node2, &q2), "q");
-    }
-    RSS(ref_smooth_tri_normdev_around(ref_grid, node2, &normdev2), "nd");
-    RSS(ref_smooth_tri_uv_area_around(ref_grid, node2, &min_uv_area2), "a");
-
-    printf("boff %f nd %8.4f area %8.3e nd %8.4f area %8.3e\n", backoff,
-           normdev1, min_uv_area1, normdev2, min_uv_area2);
-    if ((q1 > 0.1 * ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (normdev1 > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev1 > normdev_orig1) &&
-        (min_uv_area1 > ref_node_min_uv_area(ref_node)) &&
-        (q2 > 0.1 * ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev2 > normdev_orig2) &&
-        (min_uv_area2 > ref_node_min_uv_area(ref_node))) {
-      return REF_SUCCESS;
-    }
-    backoff *= 0.5;
-    if (REF_EMPTY != interp_guess1 && REF_SUCCESS != interp_status1)
-      ref_interp_cell(ref_interp, node1) = interp_guess1;
-    if (REF_EMPTY != interp_guess2 && REF_SUCCESS != interp_status2)
-      ref_interp_cell(ref_interp, node2) = interp_guess2;
-  }
-
-  RSS(ref_geom_add(ref_geom, node1, REF_GEOM_EDGE, id1, &t_orig1), "set t");
-  RSS(ref_geom_add(ref_geom, node2, REF_GEOM_EDGE, id2, &t_orig2), "set t");
-  RSS(ref_geom_constrain(ref_grid, node1), "constrain");
-  RSS(ref_geom_constrain(ref_grid, node2), "constrain");
-  RXS(ref_metric_interpolate_node(ref_grid, node1), REF_NOT_FOUND, "interp");
-  RXS(ref_metric_interpolate_node(ref_grid, node2), REF_NOT_FOUND, "interp");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_sliver_node(REF_GRID ref_grid, REF_LIST ref_list) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT i, geom, node, item, cell;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node1, node2;
-  REF_DBL dx1[3], dx2[3], dot;
-  REF_DBL xyz1[3], xyz2[3];
-  REF_DBL log_m0[6], log_m1[6], log_m2[6], log_m[6];
-  REF_DBL m[6];
-  REF_DBL length_in_metric;
-  REF_BOOL has_side1, has_side2;
-  REF_BOOL geom_node1, geom_node2;
-
-  /* not implemented for parallel, yet */
-  if (ref_mpi_para(ref_grid_mpi(ref_grid))) return REF_SUCCESS;
-
-  each_ref_geom_node(ref_geom, geom) {
-    node = ref_geom_node(ref_geom, geom);
-    each_ref_cell_having_node(ref_cell, node, item, cell) {
-      RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
-      node1 = REF_EMPTY;
-      node2 = REF_EMPTY;
-      if (node == nodes[0]) {
-        node1 = nodes[1];
-        node2 = nodes[2];
-      }
-      if (node == nodes[1]) {
-        node1 = nodes[2];
-        node2 = nodes[0];
-      }
-      if (node == nodes[2]) {
-        node1 = nodes[0];
-        node2 = nodes[1];
-      }
-      RUS(REF_EMPTY, node1, "node1 not set");
-      RUS(REF_EMPTY, node2, "node2 not set");
-      /* skip if not bound by edges */
-      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node1, &has_side1),
-          "has edge node-node1");
-      RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node, node2, &has_side2),
-          "has edge node-node2");
-      if (!has_side1 || !has_side2) continue;
-      /* skip if fixed by geom nodes */
-      RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_NODE, &geom_node1),
-          "node1 check");
-      RSS(ref_geom_is_a(ref_geom, node2, REF_GEOM_NODE, &geom_node2),
-          "node2 check");
-      if (geom_node1 || geom_node2) continue;
-
-      for (i = 0; i < 3; i++) {
-        dx1[i] =
-            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
-        dx2[i] =
-            ref_node_xyz(ref_node, i, node2) - ref_node_xyz(ref_node, i, node);
-      }
-      RSS(ref_math_normalize(dx1), "dx1");
-      RSS(ref_math_normalize(dx2), "dx2");
-      dot = ref_math_dot(dx1, dx2);
-      if (dot > 0.99) {
-        /* averaged metric */
-        RSS(ref_node_metric_get_log(ref_node, node1, log_m1), "get n1 log m");
-        RSS(ref_node_metric_get_log(ref_node, node2, log_m2), "get n2 log m");
-        RSS(ref_node_metric_get_log(ref_node, node, log_m0), "get node log m");
-        for (i = 0; i < 6; i++)
-          log_m[i] = (log_m0[i] + log_m1[i] + log_m2[i]) / 3.0;
-        RSS(ref_matrix_exp_m(log_m, m), "exp avg");
-        length_in_metric = 0.5 * (ref_matrix_sqrt_vt_m_v(m, dx1) +
-                                  ref_matrix_sqrt_vt_m_v(m, dx2));
-        for (i = 0; i < 3; i++) {
-          xyz1[i] = dx1[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
-          xyz2[i] = dx2[i] / length_in_metric + ref_node_xyz(ref_node, i, node);
-        }
-        printf("face %d angle %f at %f %f %f\n", nodes[3],
-               ref_math_in_degrees(acos(dot)), ref_node_xyz(ref_node, 0, node),
-               ref_node_xyz(ref_node, 1, node),
-               ref_node_xyz(ref_node, 2, node));
-        RSS(ref_smooth_move_edge_to(ref_grid, node1, xyz1, node2, xyz2),
-            "move node1");
-        RSS(ref_list_push(ref_list, node1), "mark node1");
-        RSS(ref_list_push(ref_list, node2), "mark node2");
-      }
-    }
-  }
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
   REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
+  REF_DBL backoff, quality, min_ratio, max_ratio, tet_quality;
   REF_INT ixyz;
-  REF_BOOL allowed;
+  REF_BOOL allowed, geom_edge;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* protect geometry */
+  RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE, &geom_edge),
+      "edge check");
+  if (geom_edge) return REF_SUCCESS;
 
-  RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
-      "edge nodes");
+  RSS(ref_smooth_edge_neighbors(ref_grid, node, &node0, &node1), "edge nodes");
   if (REF_EMPTY == node1) return REF_SUCCESS;
   RSS(ref_smooth_node_same_tangent(ref_grid, node, node0, node1, &allowed),
       "tan");
@@ -930,25 +660,51 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
-    if (allowed) {
-      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
-      RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-          "ratio");
-      if (quality > ref_grid_adapt(ref_grid, smooth_min_quality)) {
-        return REF_SUCCESS;
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
+    if (REF_SUCCESS == interp_status) {
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "normals");
+      if (allowed) {
+        RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
+        RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+        RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+            "ratio");
+        if ((quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+            (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+            (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+          if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+            return REF_SUCCESS;
+          } else {
+            RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality),
+                "q");
+            RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio,
+                                            &max_ratio),
+                "ratio");
+            if ((REF_SUCCESS == interp_status) &&
+                (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+                (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+                (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+              return REF_SUCCESS;
+            }
+          }
+        }
       }
     }
     backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
   }
 
   for (ixyz = 0; ixyz < 3; ixyz++)
@@ -984,51 +740,6 @@ static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
   for (ixyz = 0; ixyz < 3; ixyz++)
     ideal_location[ixyz] +=
         ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT tries;
-  REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
-  REF_INT ixyz;
-  REF_BOOL allowed;
-
-  /* can't handle boundaries yet */
-  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
-
-  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
-
-  backoff = 1.0;
-  for (tries = 0; tries < 8; tries++) {
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      ref_node_xyz(ref_node, ixyz, node) =
-          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "normals");
-    if (allowed) {
-      RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
-      RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-          "ratio");
-      if ((quality > 0.9 * quality0 && quality > 0.4) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-        return REF_SUCCESS;
-      }
-    }
-    backoff *= 0.5;
-  }
-
-  for (ixyz = 0; ixyz < 3; ixyz++)
-    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
-  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
 
   return REF_SUCCESS;
 }
@@ -1088,6 +799,8 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* won't keep an edg straight */
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
   /* don't move edge nodes */
   RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, 2, &n_ids, ids),
@@ -1111,9 +824,15 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     }
   }
 
-  RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
-
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
+  RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+
+  if (tri_quality0 < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
+    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
+  }
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
@@ -1123,8 +842,13 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
-      if (tri_quality > tri_quality0) {
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+      if (allowed && (tri_quality > tri_quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
         if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
           return REF_SUCCESS;
         } else {
@@ -1169,58 +893,6 @@ static REF_STATUS ref_smooth_local_cell_about(REF_CELL ref_cell,
     }
   }
   *allowed = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-  REF_BOOL allowed;
-  REF_DBL quality, min_ratio, max_ratio;
-
-  /* boundary */
-  each_ref_node_valid_node(ref_node, node) {
-    /* boundaries only */
-    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-    if (allowed) continue;
-
-    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                    &allowed),
-        "para");
-    if (!allowed) {
-      ref_node_age(ref_node, node)++;
-      continue;
-    }
-
-    ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_twod_bound_improve(ref_grid, node), "improve");
-  }
-
-  /* interior */
-  each_ref_node_valid_node(ref_node, node) {
-    /* already did boundaries */
-    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-    if (!allowed) continue;
-
-    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                    &allowed),
-        "para");
-    if (!allowed) {
-      ref_node_age(ref_node, node)++;
-      continue;
-    }
-
-    ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-    RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-        "ratio");
-    if (quality < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
-      RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
-    } else {
-      RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve");
-    }
-  }
 
   return REF_SUCCESS;
 }
@@ -1765,12 +1437,12 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
+REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   REF_CELL ref_cell;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
-  REF_BOOL allowed, geom_node, geom_edge, interior;
+  REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
 
   if (ref_grid_surf(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
@@ -1795,14 +1467,33 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
   }
 
+  /* smooth edges first without geom, for 2D */
+  each_ref_node_valid_node(ref_node, node) {
+    /* boundaries only */
+    allowed = !ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+    if (!allowed) continue;
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
+    if (geom_edge) continue;
+
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
+        "para");
+    if (!allowed) {
+      ref_node_age(ref_node, node)++;
+      continue;
+    }
+
+    ref_node_age(ref_node, node) = 0;
+    RSS(ref_smooth_no_geom_edge_improve(ref_grid, node), "improve");
+  }
+
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
 
-  /* smooth faces if we have geom, but skip edges*/
+  /* smooth faces if we have geom, but skip edges */
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     /* don't move geom nodes */
-    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "node check");
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
     if (geom_edge) continue;
     /* next to ghost node, can't move */
     RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
@@ -1815,21 +1506,29 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
   }
 
-  if (ref_grid_adapt(ref_grid, instrument))
-    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
-
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
-    if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-      RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
-          "para");
-      if (!allowed) {
-        ref_node_age(ref_node, node)++;
-        continue;
-      }
-      RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
+    /* avoid edges */
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+    if (!allowed) continue;
+    /* need tri to smooth */
+    allowed = !ref_cell_node_empty(ref_grid_tri(ref_grid), node);
+    if (!allowed) continue;
+    /* avoid geometry faces (or edges) */
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &geom_face), "face check");
+    if (geom_face) continue;
+
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
+        "para");
+    if (!allowed) {
+      ref_node_age(ref_node, node)++;
+      continue;
     }
+    RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
   }
+
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
 
   /* smooth interior */
   each_ref_node_valid_node(ref_node, node) {
@@ -1880,7 +1579,7 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_post_edge_split(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL allowed, interior;
 
@@ -1896,27 +1595,6 @@ REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node) {
              ref_cell_node_empty(ref_grid_qua(ref_grid), node);
   if (interior) {
     RSS(ref_smooth_tet_improve(ref_grid, node), "ideal tet node");
-    ref_node_age(ref_node, node) = 0;
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_smooth_threed_post_face_split(REF_GRID ref_grid, REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_BOOL allowed, interior;
-
-  RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                  &allowed),
-      "para");
-  if (!allowed) {
-    ref_node_age(ref_node, node)++;
-    return REF_SUCCESS;
-  }
-
-  interior = ref_cell_node_empty(ref_grid_qua(ref_grid), node);
-  if (interior) {
-    RSS(ref_smooth_twod_tri_improve(ref_grid, node), "ideal tri node");
     ref_node_age(ref_node, node) = 0;
   }
 

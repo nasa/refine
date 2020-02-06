@@ -21,5 +21,5 @@ ${two}/ref_acceptance ${metric} mixed01.meshb mixed01.solb
 ${two}/ref_driver -i mixed01.meshb -m mixed01.solb -x mixed02.meshb -t > accept-2d-mixed-02.status
 
 cat accept-2d-mixed-02.status
-../../check.rb accept-2d-mixed-02.status 0.1 16.0
+../../check.rb accept-2d-mixed-02.status 0.1 20.0
 

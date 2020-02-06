@@ -322,7 +322,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
 
-    RSS(ref_smooth_threed_pass(ref_grid), "smooth pass");
+    RSS(ref_smooth_pass(ref_grid), "smooth pass");
     if (ref_grid_adapt(ref_grid, instrument))
       ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt mov");
 
@@ -330,17 +330,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_histogram_quality(ref_grid), "gram");
     RSS(ref_histogram_ratio(ref_grid), "gram");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "stats");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  {
-    REF_GRID ref_grid;
-    REF_INT node, cell;
-    RSS(ref_smooth_tri_single_fixture(&ref_grid, ref_mpi, &node, &cell),
-        "2d fix");
-
-    RSS(ref_smooth_tri_steepest_descent(ref_grid, node), "smooth");
 
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -415,62 +404,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* improve twod boundary */
+  { /* edge neighbors */
     REF_GRID ref_grid;
     REF_INT node, node0, node1;
     RSS(ref_smooth_tri2_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
-    RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
-        "bnode");
+    RSS(ref_smooth_edge_neighbors(ref_grid, node, &node0, &node1), "bnode");
     REIS(2, MIN(node0, node1), "node min");
     REIS(3, MAX(node0, node1), "node max");
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* improve to new ideal */
-    REF_GRID ref_grid;
-    REF_INT node;
-    REF_DBL quality0, quality1;
-    REF_BOOL allowed;
-
-    RSS(ref_smooth_tri_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
-
-    ref_node_xyz(ref_grid_node(ref_grid), 1, node) = 0.0000001;
-
-    ref_node_xyz(ref_grid_node(ref_grid), 0, 1) = 1.0;
-    ref_node_xyz(ref_grid_node(ref_grid), 1, 1) = 0.5;
-
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
-
-    RSS(ref_smooth_twod_tri_improve(ref_grid, node), "imp");
-
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality1), "q");
-
-    RAS(quality1 > quality0, "expected improvment");
-
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "outward allowed");
-    RAS(allowed, "expected validity");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
-  { /* set to new pliant */
-    REF_GRID ref_grid;
-    REF_INT node;
-    REF_DBL quality0, quality1;
-    REF_BOOL allowed;
-
-    RSS(ref_smooth_tri_two_fixture(&ref_grid, ref_mpi, &node), "2d fix");
-
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
-
-    RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "imp");
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality1), "q");
-
-    RAS(quality1 > quality0, "expected improvment");
-
-    RSS(ref_smooth_outward_norm(ref_grid, node, &allowed), "outward allowed");
-    RAS(allowed, "expected validity");
-
     RSS(ref_grid_free(ref_grid), "free");
   }
 

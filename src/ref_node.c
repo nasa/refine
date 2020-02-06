@@ -1106,24 +1106,6 @@ REF_STATUS ref_node_localize_ghost_int(REF_NODE ref_node, REF_INT *scalar) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_edge_twod(REF_NODE ref_node, REF_INT node0, REF_INT node1,
-                              REF_BOOL *twod) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_node)
-  SUPRESS_UNUSED_COMPILER_WARNING(node0)
-  SUPRESS_UNUSED_COMPILER_WARNING(node1)
-  *twod = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_node_twod(REF_NODE ref_node, REF_INT node, REF_BOOL *twod) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_node)
-  SUPRESS_UNUSED_COMPILER_WARNING(node)
-  *twod = REF_TRUE;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_node_metric_form(REF_NODE ref_node, REF_INT node, REF_DBL m11,
                                 REF_DBL m12, REF_DBL m13, REF_DBL m22,
                                 REF_DBL m23, REF_DBL m33) {

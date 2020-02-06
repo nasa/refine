@@ -24,17 +24,12 @@
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_smooth_tri_steepest_descent(REF_GRID ref_grid, REF_INT node);
-
 REF_STATUS ref_smooth_tri_ratio_around(REF_GRID ref_grid, REF_INT node,
                                        REF_DBL *min_ratio, REF_DBL *max_ratio);
 REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
 REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_normdev);
-
-REF_STATUS ref_smooth_outward_norm(REF_GRID ref_grid, REF_INT node,
-                                   REF_BOOL *allowed);
 
 REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
                                 REF_DBL *ideal_location);
@@ -48,13 +43,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
                                             REF_DBL *ideal_uv);
 
-REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
-                                          REF_INT *node0, REF_INT *node1);
-
-REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node);
-REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node);
-
-REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid);
+REF_STATUS ref_smooth_edge_neighbors(REF_GRID ref_grid, REF_INT node,
+                                     REF_INT *node0, REF_INT *node1);
 
 REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
@@ -72,10 +62,9 @@ REF_STATUS ref_smooth_tet_improve(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node);
 
-REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid);
+REF_STATUS ref_smooth_pass(REF_GRID ref_grid);
 
-REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node);
-REF_STATUS ref_smooth_threed_post_face_split(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_smooth_post_edge_split(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node);
 
