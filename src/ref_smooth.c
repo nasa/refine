@@ -780,12 +780,16 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality, min_ratio, max_ratio;
   REF_INT ixyz;
-  REF_BOOL allowed;
+  REF_BOOL allowed, geom_edge;
 
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* protect geometry */
+  RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE, &geom_edge),
+      "edge check");
+  if (geom_edge) return REF_SUCCESS;
 
   RSS(ref_smooth_twod_boundary_nodes(ref_grid, node, &node0, &node1),
       "edge nodes");
@@ -1666,6 +1670,25 @@ REF_STATUS ref_smooth_threed_pass(REF_GRID ref_grid) {
     }
     RSS(ref_smooth_geom_edge(ref_grid, node), "ideal node for edge");
     ref_node_age(ref_node, node) = 0;
+  }
+
+  /* smooth edges first without geom, for 2D */
+  each_ref_node_valid_node(ref_node, node) {
+    /* boundaries only */
+    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
+    if (allowed) continue;
+    RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
+    if (geom_edge) continue;
+
+    RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
+        "para");
+    if (!allowed) {
+      ref_node_age(ref_node, node)++;
+      continue;
+    }
+
+    ref_node_age(ref_node, node) = 0;
+    RSS(ref_smooth_twod_bound_improve(ref_grid, node), "improve");
   }
 
   if (ref_grid_adapt(ref_grid, instrument))
