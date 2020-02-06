@@ -562,6 +562,15 @@ REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_collapse_face_mixed(REF_GRID ref_grid, REF_INT node0,
+                                   REF_INT node1, REF_BOOL *allowed) {
+  SUPRESS_UNUSED_COMPILER_WARNING(node0);
+
+  *allowed = (ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node1));
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
                                    REF_INT node1, REF_BOOL *allowed) {
   SUPRESS_UNUSED_COMPILER_WARNING(node0);
@@ -1266,6 +1275,10 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
 
   for (node = 0; node < nnode; node++) {
     node0 = node_to_collapse[order[node]];
+
+    RSS(ref_collapse_face_mixed(ref_grid, node0, node1, &allowed), "col mixed");
+    if (!allowed && verbose) printf("%d mixed\n", node);
+    if (!allowed) continue;
 
     RSS(ref_collapse_face_geometry(ref_grid, node0, node1, &allowed),
         "col geom");
