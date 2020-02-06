@@ -214,9 +214,6 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
 
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
-
-    /* RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
-       "smooth after split"); */
   }
 
   ref_free(edges);
@@ -375,7 +372,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
           ref_cavity = (REF_CAVITY)NULL;
           ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
           ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
-          RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
+          RSS(ref_smooth_post_edge_split(ref_grid, new_node),
               "smooth after split");
           continue;
         }
@@ -417,8 +414,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 0, edge)) = 0;
     ref_node_age(ref_node, ref_edge_e2n(ref_edge, 1, edge)) = 0;
 
-    RSS(ref_smooth_threed_post_edge_split(ref_grid, new_node),
-        "smooth after split");
+    RSS(ref_smooth_post_edge_split(ref_grid, new_node), "smooth after split");
   }
 
   ref_free(edges);

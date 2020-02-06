@@ -1823,7 +1823,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_threed_post_edge_split(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_post_edge_split(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_BOOL allowed, interior;
 
