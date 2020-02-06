@@ -778,7 +778,7 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
   REF_INT tries;
   REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
-  REF_DBL backoff, quality0, quality, min_ratio, max_ratio;
+  REF_DBL backoff, quality, min_ratio, max_ratio;
   REF_INT ixyz;
   REF_BOOL allowed;
 
@@ -805,8 +805,6 @@ REF_STATUS ref_smooth_twod_bound_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-
-  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality0), "q");
 
   backoff = 1.0;
   for (tries = 0; tries < 8; tries++) {
