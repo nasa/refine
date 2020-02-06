@@ -52,8 +52,6 @@ REF_STATUS ref_smooth_twod_boundary_nodes(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_smooth_twod_tri_improve(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_smooth_twod_tri_pliant(REF_GRID ref_grid, REF_INT node);
 
-REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid);
-
 REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality);
 REF_STATUS ref_smooth_tet_ratio_around(REF_GRID ref_grid, REF_INT node,

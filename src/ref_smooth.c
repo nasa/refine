@@ -1089,58 +1089,6 @@ static REF_STATUS ref_smooth_local_cell_about(REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_twod_pass(REF_GRID ref_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-  REF_BOOL allowed;
-  REF_DBL quality, min_ratio, max_ratio;
-
-  /* boundary */
-  each_ref_node_valid_node(ref_node, node) {
-    /* boundaries only */
-    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-    if (allowed) continue;
-
-    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                    &allowed),
-        "para");
-    if (!allowed) {
-      ref_node_age(ref_node, node)++;
-      continue;
-    }
-
-    ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_twod_bound_improve(ref_grid, node), "improve");
-  }
-
-  /* interior */
-  each_ref_node_valid_node(ref_node, node) {
-    /* already did boundaries */
-    allowed = ref_cell_node_empty(ref_grid_edg(ref_grid), node);
-    if (!allowed) continue;
-
-    RSS(ref_smooth_local_cell_about(ref_grid_pri(ref_grid), ref_node, node,
-                                    &allowed),
-        "para");
-    if (!allowed) {
-      ref_node_age(ref_node, node)++;
-      continue;
-    }
-
-    ref_node_age(ref_node, node) = 0;
-    RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
-    RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
-        "ratio");
-    if (quality < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
-      RSS(ref_smooth_twod_tri_improve(ref_grid, node), "improve");
-    } else {
-      RSS(ref_smooth_twod_tri_pliant(ref_grid, node), "improve");
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_smooth_tet_quality_around(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *min_quality) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
