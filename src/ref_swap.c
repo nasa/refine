@@ -558,9 +558,11 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev3), "nd3");
   RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area3), "uv area");
 
-  normdev_allowed = ((MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) ||
-                     (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) &&
-                      normdev3 > ref_grid_adapt(ref_grid, post_min_normdev)));
+  normdev_allowed =
+      ((MIN(normdev2, normdev3) > MIN(normdev0, normdev1)) ||
+       ((MIN(normdev2, normdev3) > 0.9 * MIN(normdev0, normdev1)) &&
+        (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) &&
+         normdev3 > ref_grid_adapt(ref_grid, post_min_normdev))));
 
   RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
                             &sign_uv_area),
