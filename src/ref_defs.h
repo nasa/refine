@@ -29,6 +29,7 @@
 
 #include <limits.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 BEGIN_C_DECLORATION
 
