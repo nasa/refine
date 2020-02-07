@@ -181,6 +181,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL all_done1 = REF_FALSE;
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
+  REF_LONG ntet;
 
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
@@ -212,6 +213,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
+  RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_tet(ref_grid), &ntet),
+      "global tets");
+  if (0 == ntet) ref_grid_surf(ref_grid) = REF_TRUE;
   RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
