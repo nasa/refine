@@ -6,7 +6,7 @@ ref_geom gap and feature size, use geom via edge or node location
 
 improve parallel k-select algorithm
 
-speed up edge and face smoothing
+non smooth optimization nso of face uv
 
 each_ref_grid_ref_cell for boundary and higher order
 
@@ -218,11 +218,8 @@ egads recon
 
 *****************
 
-- ref loop any number of turb equations
-- test for self intersecting triangles only on volume fail of bootstrap
-
 - bootstrap all of C2S
-- yplus augmentation of metric (compute internally, are non solid walls ok?)
+- faster multiscale convergence of boundary layer and nozzle when shocks
 - native partitioner
 - TKE fixed-point augmentation for HRLES
 - merge twod surf threed methods
@@ -237,7 +234,6 @@ egads recon
 - gap metric gradation via octree
 - thin geometry boost of curvature constraint metric
 - limit metric change from implied metric and update until convergence
-- switch to remaketess instead of changing attributes
 - virtual topology
 - surrogate geometry
 - meshlink support
@@ -252,6 +248,9 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ ref loop any number of turb equations
+
++ test for self intersecting triangles only on volume fail of bootstrap
 + ref boostrap surface self intersection only during single part begin/end
 
 + parallel bootstrap surf adapt with single part tess and volume fill
