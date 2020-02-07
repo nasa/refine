@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_sort.h"
+
 #include "ref_malloc.h"
 
 REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
@@ -108,14 +110,18 @@ REF_STATUS ref_dict_location(REF_DICT ref_dict, REF_INT key,
                              REF_INT *location) {
   REF_INT i;
 
-  *location = REF_EMPTY;
+  if (10 < ref_dict_n(ref_dict)) {
+    return ref_sort_search_int(ref_dict_n(ref_dict), ref_dict->key, key,
+                               location);
+  } else {
+    *location = REF_EMPTY;
 
-  for (i = 0; i < ref_dict_n(ref_dict); i++)
-    if (key == ref_dict->key[i]) {
-      *location = i;
-      return REF_SUCCESS;
-    }
-
+    for (i = 0; i < ref_dict_n(ref_dict); i++)
+      if (key == ref_dict->key[i]) {
+        *location = i;
+        return REF_SUCCESS;
+      }
+  }
   return REF_NOT_FOUND;
 }
 

@@ -205,6 +205,46 @@ REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original, REF_INT *nunique,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
+                               REF_INT target, REF_INT *position) {
+  REF_INT lower, upper, mid;
+
+  *position = REF_EMPTY;
+
+  if (n < 1) return REF_NOT_FOUND;
+
+  if (target < ascending_list[0] || target > ascending_list[n - 1])
+    return REF_NOT_FOUND;
+
+  lower = 0;
+  upper = n - 1;
+  mid = n >> 1; /* fast divide by two */
+
+  if (target == ascending_list[lower]) {
+    *position = lower;
+    return REF_SUCCESS;
+  }
+  if (target == ascending_list[upper]) {
+    *position = upper;
+    return REF_SUCCESS;
+  }
+
+  while ((lower < mid) && (mid < upper)) {
+    if (target >= ascending_list[mid]) {
+      if (target == ascending_list[mid]) {
+        *position = mid;
+        return REF_SUCCESS;
+      }
+      lower = mid;
+    } else {
+      upper = mid;
+    }
+    mid = (lower + upper) >> 1;
+  }
+
+  return REF_NOT_FOUND;
+}
+
 REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
                                 REF_GLOB target, REF_INT *position) {
   REF_INT lower, upper, mid;

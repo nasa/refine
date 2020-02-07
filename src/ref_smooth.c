@@ -285,8 +285,9 @@ REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
-                                   REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
+                                          REF_INT tri, REF_DBL *ideal_uv,
+                                          REF_DBL target_q) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -300,6 +301,9 @@ REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   REF_DBL step1, step2, step3, q1, q2, q3;
   REF_INT tries, search;
   REF_BOOL verbose = REF_FALSE;
+
+  ideal_uv[0] = 0.0; /* initialized warning suppression */
+  ideal_uv[1] = 0.0;
 
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes), "get tri");
   n0 = REF_EMPTY;
@@ -326,6 +330,8 @@ REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "id");
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv_orig), "uv");
   RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "geom");
+  ideal_uv[0] = uv_orig[0]; /* return meaning value on error */
+  ideal_uv[1] = uv_orig[1];
 
   RSS(ref_node_tri_quality(ref_node, nodes, &q0), "qual");
 
@@ -334,7 +340,7 @@ REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   dq_duv0[0] = 0; /* uninit warning */
   dq_duv0[1] = 0;
   q = q0;
-  for (tries = 0; tries < 30 && q < 0.99; tries++) {
+  for (tries = 0; tries < 30 && q < target_q; tries++) {
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &q, dq_dxyz), "qual");
@@ -401,7 +407,7 @@ REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
     }
   }
 
-  if (verbose && q < 0.99) {
+  if (verbose && q < target_q) {
     printf(" bad ideal q %f dq_duv %f %f\n", q, dq_duv[0], dq_duv[1]);
   }
 
@@ -451,8 +457,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
-                                    REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
+                                           REF_DBL *ideal_uv) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ixyz, id;
@@ -527,19 +533,24 @@ REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
-                                            REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid,
+                                                   REF_INT node,
+                                                   REF_DBL *ideal_uv) {
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT iuv;
   REF_DBL tri_uv[2];
-  REF_DBL quality, weight, normalization;
+  REF_DBL target_q, quality, weight, normalization;
 
   normalization = 0.0;
   for (iuv = 0; iuv < 2; iuv++) ideal_uv[iuv] = 0.0;
 
+  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+  target_q = sqrt(quality);
+
   each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
-    RSS(ref_smooth_tri_ideal_uv(ref_grid, node, cell, tri_uv), "tri ideal");
+    RSS(ref_smooth_tri_ideal_uv(ref_grid, node, cell, tri_uv, target_q),
+        "tri ideal");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
     RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
         "tri qual");
@@ -1622,8 +1633,8 @@ REF_STATUS ref_smooth_tet_report_quality_around(REF_GRID ref_grid,
 }
 
 /* does not have ratio limits */
-REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
-                               REF_BOOL *complete) {
+REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
+                                   REF_BOOL *complete) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
@@ -1864,7 +1875,7 @@ success_clean_and_return:
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_tet_nso(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL allowed, interior;
   REF_BOOL complete = REF_FALSE;
   REF_INT step;
@@ -1879,7 +1890,7 @@ REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node) {
   if (!interior) return REF_SUCCESS;
 
   for (step = 0; step < 100; step++) {
-    RSS(ref_smooth_nso_step(ref_grid, node, &complete), "step");
+    RSS(ref_smooth_tet_nso_step(ref_grid, node, &complete), "step");
     if (complete) break;
   }
 
