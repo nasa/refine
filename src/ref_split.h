@@ -38,27 +38,15 @@ REF_STATUS ref_split_edge_mixed(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
 REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_INT new_node,
                                       REF_BOOL *allowed);
-REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
-                                    REF_INT node1, REF_INT new_node,
-                                    REF_BOOL *allowed);
+REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                                REF_INT new_node, REF_BOOL *allowed);
 REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1, REF_INT new_node,
                                          REF_BOOL *allowed);
-REF_STATUS ref_split_edge_tri_complexity(REF_GRID ref_grid, REF_INT node0,
-                                         REF_INT node1, REF_INT new_node,
-                                         REF_BOOL *allowed);
 
-REF_STATUS ref_split_twod_pass(REF_GRID ref_grid);
-
-REF_STATUS ref_split_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                               REF_INT new_node);
-
-REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_INT new_node,
-                                       REF_BOOL *allowed);
-REF_STATUS ref_split_prism_tri_ratio(REF_GRID ref_grid, REF_INT node0,
-                                     REF_INT node1, REF_INT new_node,
-                                     REF_BOOL *allowed);
+REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_INT new_node,
+                                      REF_BOOL *allowed);
 
 REF_STATUS ref_split_edge_pattern(REF_GRID ref_grid, REF_INT first,
                                   REF_INT skip);
