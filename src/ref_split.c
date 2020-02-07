@@ -57,7 +57,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed_tet_ratio, allowed_tri_conformity;
+  REF_BOOL allowed_ratio, allowed_tri_conformity;
   REF_BOOL allowed_tri_quality;
   REF_BOOL allowed, allowed_local, geom_support;
   REF_BOOL cad_edge, two_tris;
@@ -154,11 +154,11 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
 
-    RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                 ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                 &allowed_tet_ratio),
+    RSS(ref_split_edge_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                             ref_edge_e2n(ref_edge, 1, edge), new_node,
+                             &allowed_ratio),
         "edge tet ratio");
-    if (!allowed_tet_ratio && !cad_edge) {
+    if (!allowed_ratio && !cad_edge) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
@@ -246,7 +246,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_DBL *ratio;
   REF_INT *edges, *order;
   REF_INT i, n, edge;
-  REF_BOOL allowed_tet_ratio, allowed_tri_conformity, allowed_tet_quality;
+  REF_BOOL allowed_ratio, allowed_tri_conformity, allowed_tet_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity, try_cavity;
   REF_BOOL allowed_cavity_ratio, has_edge;
   REF_DBL min_del, min_add;
@@ -337,11 +337,11 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "edge tet qual");
     if (transcript && !allowed_tet_quality) printf("tet quality poor\n");
 
-    RSS(ref_split_edge_tet_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                 ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                 &allowed_tet_ratio),
+    RSS(ref_split_edge_ratio(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                             ref_edge_e2n(ref_edge, 1, edge), new_node,
+                             &allowed_ratio),
         "edge tet ratio");
-    if (transcript && !allowed_tet_ratio) printf("tet ratio poor\n");
+    if (transcript && !allowed_ratio) printf("tet ratio poor\n");
 
     RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                       ref_edge_e2n(ref_edge, 1, edge), new_node,
@@ -350,7 +350,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
 
     try_cavity = REF_FALSE;
-    if (!allowed_tet_quality || !allowed_tet_ratio || !allowed_tri_conformity) {
+    if (!allowed_tet_quality || !allowed_ratio || !allowed_tri_conformity) {
       if (geom_support) {
         try_cavity = REF_TRUE;
       } else {
@@ -709,9 +709,8 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_edge_tet_ratio(REF_GRID ref_grid, REF_INT node0,
-                                    REF_INT node1, REF_INT new_node,
-                                    REF_BOOL *allowed) {
+REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
+                                REF_INT new_node, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
