@@ -58,6 +58,7 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_INT *edges, *order;
   REF_INT i, n, edge;
   REF_BOOL allowed_tet_ratio, allowed_tri_conformity;
+  REF_BOOL allowed_tri_quality;
   REF_BOOL allowed, allowed_local, geom_support;
   REF_BOOL cad_edge, two_tris;
   REF_GLOB global;
@@ -161,6 +162,18 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
       RSS(ref_node_remove(ref_node, new_node), "remove new node");
       RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
       continue;
+    }
+
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_split_prism_tri_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                      ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                      &allowed_tri_quality),
+          "quality of new tri");
+      if (!allowed_tri_quality) {
+        RSS(ref_node_remove(ref_node, new_node), "remove new node");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), new_node), "rm");
+        continue;
+      }
     }
 
     RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
