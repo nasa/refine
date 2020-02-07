@@ -165,9 +165,9 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
     }
 
     if (ref_grid_twod(ref_grid)) {
-      RSS(ref_split_prism_tri_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-                                      ref_edge_e2n(ref_edge, 1, edge), new_node,
-                                      &allowed_tri_quality),
+      RSS(ref_split_edge_tri_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
+                                     ref_edge_e2n(ref_edge, 1, edge), new_node,
+                                     &allowed_tri_quality),
           "quality of new tri");
       if (!allowed_tri_quality) {
         RSS(ref_node_remove(ref_node, new_node), "remove new node");
@@ -826,9 +826,9 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_prism_tri_quality(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_INT new_node,
-                                       REF_BOOL *allowed) {
+REF_STATUS ref_split_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_INT new_node,
+                                      REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
