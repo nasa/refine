@@ -2209,8 +2209,39 @@ static REF_STATUS ref_cavity_surf_geom_edge_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL normdev;
+  REF_CAVITY ref_cavity;
+  REF_BOOL improved;
+  if (!ref_grid_surf(ref_grid)) return REF_SUCCESS;
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (!ref_node_owned(ref_node, nodes[0])) {
+      continue;
+    }
+    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
+    if (normdev < 0.1) {
+      printf("face %d nd %f\n", nodes[3], normdev);
+      RSS(ref_cavity_create(&ref_cavity), "create");
+      RSS(ref_cavity_form_ball(ref_cavity, ref_grid, nodes[0]), "insert ball");
+      RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
+      if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+        RSS(ref_cavity_normdev(ref_cavity, &improved), "normdev tri");
+        if (improved) {
+          RSS(ref_cavity_replace(ref_cavity), "replace tri");
+        }
+      }
+      RSS(ref_cavity_free(ref_cavity), "free");
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cavity_pass(REF_GRID ref_grid) {
   RSS(ref_cavity_swap_tet_pass(ref_grid), "cavity swap pass");
   RSS(ref_cavity_surf_geom_edge_pass(ref_grid), "cavity geom edge");
+  RSS(ref_cavity_surf_geom_face_pass(ref_grid), "cavity geom edge");
   return REF_SUCCESS;
 }
