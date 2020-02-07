@@ -2215,10 +2215,16 @@ static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL normdev;
   REF_CAVITY ref_cavity;
-  REF_BOOL improved;
+  REF_BOOL improved, geom_edge;
   if (!ref_grid_surf(ref_grid)) return REF_SUCCESS;
   each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
     if (!ref_node_owned(ref_node, nodes[0])) {
+      continue;
+    }
+    RSS(ref_geom_is_a(ref_grid_geom(ref_grid), nodes[0], REF_GEOM_EDGE,
+                      &geom_edge),
+        "n");
+    if (geom_edge) {
       continue;
     }
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
