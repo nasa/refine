@@ -36,6 +36,8 @@ REF_STATUS ref_sort_heap_dbl(REF_INT n, REF_DBL *original,
 REF_STATUS ref_sort_unique_int(REF_INT n, REF_INT *original, REF_INT *nunique,
                                REF_INT *unique);
 
+REF_STATUS ref_sort_search_int(REF_INT n, REF_INT *ascending_list,
+                               REF_INT target, REF_INT *position);
 REF_STATUS ref_sort_search_glob(REF_INT n, REF_GLOB *ascending_list,
                                 REF_GLOB target, REF_INT *position);
 
