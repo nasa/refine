@@ -285,8 +285,8 @@ REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
-                                   REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
+                                          REF_INT tri, REF_DBL *ideal_uv) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -451,8 +451,8 @@ REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
-                                    REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
+                                           REF_DBL *ideal_uv) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ixyz, id;
@@ -527,8 +527,9 @@ REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
-                                            REF_DBL *ideal_uv) {
+static REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid,
+                                                   REF_INT node,
+                                                   REF_DBL *ideal_uv) {
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT iuv;

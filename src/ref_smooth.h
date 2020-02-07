@@ -34,14 +34,8 @@ REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
                                 REF_DBL *ideal_location);
 
-REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node, REF_INT tri,
-                                   REF_DBL *ideal_uv);
-
 REF_STATUS ref_smooth_tri_weighted_ideal(REF_GRID ref_grid, REF_INT node,
                                          REF_DBL *ideal_location);
-
-REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid, REF_INT node,
-                                            REF_DBL *ideal_uv);
 
 REF_STATUS ref_smooth_edge_neighbors(REF_GRID ref_grid, REF_INT node,
                                      REF_INT *node0, REF_INT *node1);
