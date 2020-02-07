@@ -286,7 +286,8 @@ REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node, REF_INT id,
 }
 
 static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
-                                          REF_INT tri, REF_DBL *ideal_uv) {
+                                          REF_INT tri, REF_DBL *ideal_uv,
+                                          REF_DBL target_q) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -334,7 +335,7 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
   dq_duv0[0] = 0; /* uninit warning */
   dq_duv0[1] = 0;
   q = q0;
-  for (tries = 0; tries < 30 && q < 0.99; tries++) {
+  for (tries = 0; tries < 30 && q < target_q; tries++) {
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &q, dq_dxyz), "qual");
@@ -401,7 +402,7 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
     }
   }
 
-  if (verbose && q < 0.99) {
+  if (verbose && q < target_q) {
     printf(" bad ideal q %f dq_duv %f %f\n", q, dq_duv[0], dq_duv[1]);
   }
 
@@ -534,13 +535,17 @@ static REF_STATUS ref_smooth_tri_weighted_ideal_uv(REF_GRID ref_grid,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT iuv;
   REF_DBL tri_uv[2];
-  REF_DBL quality, weight, normalization;
+  REF_DBL target_q, quality, weight, normalization;
 
   normalization = 0.0;
   for (iuv = 0; iuv < 2; iuv++) ideal_uv[iuv] = 0.0;
 
+  RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+  target_q = sqrt(quality);
+
   each_ref_cell_having_node(ref_grid_tri(ref_grid), node, item, cell) {
-    RSS(ref_smooth_tri_ideal_uv(ref_grid, node, cell, tri_uv), "tri ideal");
+    RSS(ref_smooth_tri_ideal_uv(ref_grid, node, cell, tri_uv, target_q),
+        "tri ideal");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
     RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
         "tri qual");
