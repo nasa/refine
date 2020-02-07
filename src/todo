@@ -248,6 +248,10 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ surf swap requires more normdev
++ add surface cavity operator for normdev
++ merged twod surf split
+
 + ref loop any number of turb equations
 
 + test for self intersecting triangles only on volume fail of bootstrap
