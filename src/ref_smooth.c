@@ -1628,8 +1628,8 @@ REF_STATUS ref_smooth_tet_report_quality_around(REF_GRID ref_grid,
 }
 
 /* does not have ratio limits */
-REF_STATUS ref_smooth_nso_step(REF_GRID ref_grid, REF_INT node,
-                               REF_BOOL *complete) {
+REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
+                                   REF_BOOL *complete) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
@@ -1870,7 +1870,7 @@ success_clean_and_return:
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node) {
+REF_STATUS ref_smooth_tet_nso(REF_GRID ref_grid, REF_INT node) {
   REF_BOOL allowed, interior;
   REF_BOOL complete = REF_FALSE;
   REF_INT step;
@@ -1885,7 +1885,7 @@ REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node) {
   if (!interior) return REF_SUCCESS;
 
   for (step = 0; step < 100; step++) {
-    RSS(ref_smooth_nso_step(ref_grid, node, &complete), "step");
+    RSS(ref_smooth_tet_nso_step(ref_grid, node, &complete), "step");
     if (complete) break;
   }
 

@@ -546,7 +546,7 @@ dir=q./norm(q)
 m = g*dir
      */
 
-    RSS(ref_smooth_nso(ref_grid, target_node), "fix");
+    RSS(ref_smooth_tet_nso(ref_grid, target_node), "fix");
     RSS(ref_smooth_tet_quality_around(ref_grid, target_node, &quality),
         "orig qual");
     RWDS(original, quality, 1.0e-5, "not recovered");

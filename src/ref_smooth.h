@@ -60,7 +60,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid);
 
 REF_STATUS ref_smooth_post_edge_split(REF_GRID ref_grid, REF_INT node);
 
-REF_STATUS ref_smooth_nso(REF_GRID ref_grid, REF_INT node);
+REF_STATUS ref_smooth_tet_nso(REF_GRID ref_grid, REF_INT node);
 
 END_C_DECLORATION
 
