@@ -302,6 +302,9 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
   REF_INT tries, search;
   REF_BOOL verbose = REF_FALSE;
 
+  ideal_uv[0] = 0.0; /* initialized warning suppression */
+  ideal_uv[1] = 0.0;
+
   RSS(ref_cell_nodes(ref_grid_tri(ref_grid), tri, nodes), "get tri");
   n0 = REF_EMPTY;
   n1 = REF_EMPTY;
@@ -327,6 +330,8 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
   RSS(ref_geom_unique_id(ref_geom, node, REF_GEOM_FACE, &id), "id");
   RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_FACE, id, uv_orig), "uv");
   RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "geom");
+  ideal_uv[0] = uv_orig[0]; /* return meaning value on error */
+  ideal_uv[1] = uv_orig[1];
 
   RSS(ref_node_tri_quality(ref_node, nodes, &q0), "qual");
 
