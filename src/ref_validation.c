@@ -109,6 +109,8 @@ REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
             ref_node_location(ref_node, nodes[0]);
             ref_node_location(ref_node, nodes[1]);
             ref_node_location(ref_node, nodes[2]);
+            ref_export_tec_surf(ref_grid,
+                                "ref_validation_boundary_manifold.tec");
           });
       REIB(2, ncell, "two triangles expected", {
         printf("cell_edge %d nodes %d %d faceid %d\n", cell_edge, node0, node1,
@@ -116,6 +118,7 @@ REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
         ref_node_location(ref_node, nodes[0]);
         ref_node_location(ref_node, nodes[1]);
         ref_node_location(ref_node, nodes[2]);
+        ref_export_tec_surf(ref_grid, "ref_validation_boundary_manifold.tec");
       });
     }
   }
