@@ -2229,7 +2229,6 @@ static REF_STATUS ref_cavity_surf_geom_face_pass(REF_GRID ref_grid) {
     }
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
     if (normdev < 0.1) {
-      printf("face %d nd %f\n", nodes[3], normdev);
       RSS(ref_cavity_create(&ref_cavity), "create");
       RSS(ref_cavity_form_ball(ref_cavity, ref_grid, nodes[0]), "insert ball");
       RSS(ref_cavity_enlarge_conforming(ref_cavity), "enlarge tri");
