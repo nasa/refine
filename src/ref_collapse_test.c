@@ -203,6 +203,58 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
+  /*
+         /  6252 \
+     6253    e    5936
+         /  6251 \
+     6559    c    5937
+      \   \  5938 /  |
+        \     |   \ 6252r
+          \  6560 /
+
+start 6251 5938
+remove cell 12781 nodes 6251 6559 5938  id 1186
+remove cell 12154 nodes 5937 6251 5938  id 1186
+old cell 12783 nodes 6560 6252 5938  id 1186
+new cell 12783 nodes 6560 6252 6251  id 1186
+old cell 12787 nodes 6559 6560 5938  id 1186
+new cell 12787 nodes 6559 6560 6251  id 1186
+old cell 12155 nodes 6252 5937 5938  id 1186
+new cell 12155 nodes 6252 5937 6251  id 1186
+
+quad 6251 6252
+replaced
+ item 0 cell 12155 nodes 6252 5937 6251 id 1186
+ item 1 cell 12783 nodes 6560 6252 6251 id 1186
+exisiting
+ item 2 cell 12150 nodes 6252 6251 5936 id 1191
+ item 3 cell 12780 nodes 6251 6252 6253 id 1192
+
+
+  {
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT node0, node1;
+    REF_BOOL allowed;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "set up");
+    nodes[0] = 6251;
+    nodes[1] = 6251;
+    nodes[2] = 6251;
+    nodes[3] = 6251;
+
+    node0 = 0;
+    node1 = 1;
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
+        "col geom");
+
+    REIS(REF_TRUE, allowed, "interior edge allowed?");
+
+    RSS(ref_grid_free(ref_grid), "free grid");
+  }
+
+   */
+
   { /* geometry: collapse allowed on face? */
     REF_GRID ref_grid;
     REF_INT node0, node1;
