@@ -372,6 +372,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi))
     RSS(ref_export_tec_surf(ref_grid, filename), "dbg surf");
   ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
+  if (REF_FALSE) {
+    sprintf(filename, "%s-init-surf.meshb", project);
+    if (ref_mpi_once(ref_mpi))
+      RSS(ref_export_by_extension(ref_grid, filename), "dbg meshb");
+    ref_mpi_stopwatch_stop(ref_mpi, "export init-surf");
+  }
   if (ref_mpi_once(ref_mpi)) printf("verify topo\n");
   RSS(ref_geom_verify_topo(ref_grid), "adapt topo");
   ref_mpi_stopwatch_stop(ref_mpi, "verify topo");
