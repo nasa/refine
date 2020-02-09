@@ -436,6 +436,8 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
     }
   }
 
+  ref_cell = ref_grid_tri(ref_grid);
+
   {
     REF_INT safe_list[4], nsafe;
     REF_INT nnode0, node_list0[MAX_NODE_LIST];
@@ -464,25 +466,28 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
         }
       }
     }
-    RAS(3 == nsafe || 4 == nsafe, "nsafe not 3-non manifold or 4-manifold");
+    RAS(0 == nsafe || 3 == nsafe || 4 == nsafe,
+        "nsafe not 3-non manifold or 4-manifold");
 
-    RSS(ref_cell_node_list_around(ref_cell, node0, MAX_NODE_LIST, &nnode0,
-                                  node_list0),
-        "node0 list");
-    RSS(ref_cell_node_list_around(ref_cell, node1, MAX_NODE_LIST, &nnode1,
-                                  node_list1),
-        "node1 list");
-    for (i0 = 0; i0 < nnode0; i0++) {
-      for (i1 = 0; i1 < nnode1; i1++) {
-        if (node_list0[i0] == node_list1[i1]) {
-          shared = REF_TRUE;
-          for (i = 0; i < nsafe; i++) {
-            shared = shared && (node_list0[i0] != safe_list[i]);
-          }
-          if (shared) {
-            printf("common %d\n", node_list0[i0]);
-            *allowed = REF_FALSE;
-            return REF_SUCCESS;
+    if (3 == nsafe || 4 == nsafe) {
+      RSS(ref_cell_node_list_around(ref_cell, node0, MAX_NODE_LIST, &nnode0,
+                                    node_list0),
+          "node0 list");
+      RSS(ref_cell_node_list_around(ref_cell, node1, MAX_NODE_LIST, &nnode1,
+                                    node_list1),
+          "node1 list");
+      for (i0 = 0; i0 < nnode0; i0++) {
+        for (i1 = 0; i1 < nnode1; i1++) {
+          if (node_list0[i0] == node_list1[i1]) {
+            shared = REF_TRUE;
+            for (i = 0; i < nsafe; i++) {
+              shared = shared && (node_list0[i0] != safe_list[i]);
+            }
+            if (shared) {
+              printf("common %d\n", node_list0[i0]);
+              *allowed = REF_FALSE;
+              return REF_SUCCESS;
+            }
           }
         }
       }
