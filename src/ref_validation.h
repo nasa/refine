@@ -26,6 +26,7 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_validation_simplex_node(REF_GRID ref_grid);
 REF_STATUS ref_validation_unused_node(REF_GRID ref_grid);
+REF_STATUS ref_validation_boundary_at_node(REF_GRID ref_grid, REF_INT node);
 REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid);
 REF_STATUS ref_validation_boundary_face(REF_GRID ref_grid);
 REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid);

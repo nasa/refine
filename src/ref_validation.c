@@ -90,11 +90,49 @@ REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
   return (problem ? REF_FAILURE : REF_SUCCESS);
 }
 
+REF_STATUS ref_validation_boundary_at_node(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT i, c, ns[REF_CELL_MAX_SIZE_PER];
+  REF_INT node0, node1, ncell, cell_list[10];
+
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "get cell");
+    each_ref_cell_cell_edge(ref_cell, cell_edge) {
+      node0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+      node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+      if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
+        continue;
+      RSB(ref_cell_list_with2(ref_cell, node0, node1, 10, &ncell, cell_list),
+          "more than ten triangles found with two nodes", {
+            printf("nodes %d %d faceid %d\n", node0, node1, nodes[3]);
+            ref_node_location(ref_node, node0);
+            ref_node_location(ref_node, node1);
+          });
+      REIB(2, ncell, "two triangles expected", {
+        printf("nodes %d %d faceid %d\n", node0, node1, nodes[3]);
+        ref_node_location(ref_node, node0);
+        ref_node_location(ref_node, node1);
+        for (i = 0; i < ncell; i++) {
+          c = cell_list[i];
+          RSS(ref_cell_nodes(ref_cell, c, ns), "get cell");
+          printf(" item %d cell %d nodes %d %d %d id %d\n", i, c, ns[0], ns[1],
+                 ns[2], ns[3]);
+        }
+      });
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT cell, cell_edge, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node0, node1, ncell, cell_list[2];
+  REF_INT i, c, ns[REF_CELL_MAX_SIZE_PER];
+  REF_INT node0, node1, ncell, cell_list[10];
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     each_ref_cell_cell_edge(ref_cell, cell_edge) {
@@ -102,23 +140,22 @@ REF_STATUS ref_validation_boundary_manifold(REF_GRID ref_grid) {
       node1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
       if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
         continue;
-      RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_list),
-          "two tringles not found with two nodes", {
-            printf("cell_edge %d nodes %d %d faceid %d\n", cell_edge, node0,
-                   node1, nodes[3]);
-            ref_node_location(ref_node, nodes[0]);
-            ref_node_location(ref_node, nodes[1]);
-            ref_node_location(ref_node, nodes[2]);
-            ref_export_tec_surf(ref_grid,
-                                "ref_validation_boundary_manifold.tec");
+      RSB(ref_cell_list_with2(ref_cell, node0, node1, 10, &ncell, cell_list),
+          "more than ten triangles found with two nodes", {
+            printf("nodes %d %d faceid %d\n", node0, node1, nodes[3]);
+            ref_node_location(ref_node, node0);
+            ref_node_location(ref_node, node1);
           });
       REIB(2, ncell, "two triangles expected", {
-        printf("cell_edge %d nodes %d %d faceid %d\n", cell_edge, node0, node1,
-               nodes[3]);
-        ref_node_location(ref_node, nodes[0]);
-        ref_node_location(ref_node, nodes[1]);
-        ref_node_location(ref_node, nodes[2]);
-        ref_export_tec_surf(ref_grid, "ref_validation_boundary_manifold.tec");
+        printf("nodes %d %d faceid %d\n", node0, node1, nodes[3]);
+        ref_node_location(ref_node, node0);
+        ref_node_location(ref_node, node1);
+        for (i = 0; i < ncell; i++) {
+          c = cell_list[i];
+          RSS(ref_cell_nodes(ref_cell, c, ns), "get cell");
+          printf(" item %d cell %d nodes %d %d %d id %d\n", i, c, ns[0], ns[1],
+                 ns[2], ns[3]);
+        }
       });
     }
   }
