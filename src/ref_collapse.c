@@ -446,6 +446,10 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
     REF_BOOL already_have_it, shared;
 
     nsafe = 0;
+    safe_list[0] = REF_EMPTY;
+    safe_list[1] = REF_EMPTY;
+    safe_list[2] = REF_EMPTY;
+    safe_list[3] = REF_EMPTY;
     each_ref_cell_having_node(ref_cell, node1, item, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
 
