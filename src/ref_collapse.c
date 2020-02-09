@@ -436,6 +436,59 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
     }
   }
 
+  {
+    REF_INT safe_list[4], nsafe;
+    REF_INT nnode0, node_list0[MAX_NODE_LIST];
+    REF_INT nnode1, node_list1[MAX_NODE_LIST];
+    REF_INT i, i0, i1;
+    REF_BOOL already_have_it, shared;
+
+    nsafe = 0;
+    each_ref_cell_having_node(ref_cell, node1, item, cell) {
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+      will_be_collapsed = REF_FALSE;
+      for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+        if (node0 == nodes[node]) will_be_collapsed = REF_TRUE;
+      if (will_be_collapsed) {
+        for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+          already_have_it = REF_FALSE;
+          for (i = 0; i < nsafe; i++) {
+            already_have_it = already_have_it || (nodes[node] == safe_list[i]);
+          }
+          if (!already_have_it) {
+            RAS(nsafe < 4, "more than four remove tri nodes");
+            safe_list[nsafe] = nodes[node];
+            nsafe++;
+          }
+        }
+      }
+    }
+    RAS(3 == nsafe || 4 == nsafe, "nsafe not 3-non manifold or 4-manifold");
+
+    RSS(ref_cell_node_list_around(ref_cell, node0, MAX_NODE_LIST, &nnode0,
+                                  node_list0),
+        "node0 list");
+    RSS(ref_cell_node_list_around(ref_cell, node1, MAX_NODE_LIST, &nnode1,
+                                  node_list1),
+        "node1 list");
+    for (i0 = 0; i0 < nnode0; i0++) {
+      for (i1 = 0; i1 < nnode1; i1++) {
+        if (node_list0[i0] == node_list1[i1]) {
+          shared = REF_TRUE;
+          for (i = 0; i < nsafe; i++) {
+            shared = shared && (node_list0[i0] != safe_list[i]);
+          }
+          if (shared) {
+            printf("common %d\n", node_list0[i0]);
+            *allowed = REF_FALSE;
+            return REF_SUCCESS;
+          }
+        }
+      }
+    }
+  }
+
   ref_cell = ref_grid_edg(ref_grid);
 
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
