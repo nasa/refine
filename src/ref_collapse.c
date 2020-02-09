@@ -488,7 +488,6 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
               shared = shared && (node_list0[i0] != safe_list[i]);
             }
             if (shared) {
-              printf("common %d\n", node_list0[i0]);
               *allowed = REF_FALSE;
               return REF_SUCCESS;
             }
