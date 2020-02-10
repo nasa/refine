@@ -1,4 +1,6 @@
 
+- modules deploy with rpath to ESP/117
+- swap and collapse normal deviation limits more conservative
 - ref loop 2D adaptation with 2D l2projection gradient reconstruction
 - 2D adaptation in parallel for an EGADS FACEBODY
 - interpolate a single faceid of receptor from a donor for tunnel restart
