@@ -13,7 +13,7 @@ INTEL_MODULE="comp-intel/${INTEL_VERSION}"
 MPT_MODULE="mpi-hpe/mpt.${MPT_VERSION}"
 ESP_MODULE="ESP/${ESP_VERSION}"
 
-PREFIX="${HOME}/shared/${GROUP}"        # where everything is anchored
+PREFIX="/swbuild/fun3d/shared/fun3d_users" # where everything is anchored
 
 MODULE_ROOT="${PREFIX}/modules"         # where the built artifacts reside
 MODFILE_ROOT="${PREFIX}/modulefiles"    # where the modulefiles reside
