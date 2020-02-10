@@ -1,4 +1,6 @@
 
+Mon, Feb 10, 2020 : Released Refine 1.9.1
+
 - modules deploy with rpath to ESP/117
 - swap and collapse normal deviation limits more conservative
 - ref loop 2D adaptation with 2D l2projection gradient reconstruction
