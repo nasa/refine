@@ -1,6 +1,6 @@
 - proof read NEWS
 - mark version in src/todo
 - hard code version number
-- update version number in main
+- update version number in ref_driver.c ref_subcommand.c
 - tag version
 - set versioning back to live
