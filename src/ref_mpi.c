@@ -896,15 +896,25 @@ static REF_INT find_destination(REF_INT n, REF_INT *shares, REF_INT gid) {
 }
 
 REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
+                           REF_INT first_rank, REF_INT last_rank,
                            REF_INT *nbalanced, REF_DBL **balanced) {
   REF_INT *shares, total, share, remainder;
   REF_INT *destination, offset, part, i;
+  REF_INT active;
+
+  active = last_rank - first_rank + 1;
 
   total = nitem;
   RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "total items");
-  share = total / ref_mpi_n(ref_mpi);
-  remainder = total - share * ref_mpi_n(ref_mpi);
-  if (ref_mpi_rank(ref_mpi) < remainder) {
+  if (first_rank <= ref_mpi_rank(ref_mpi) &&
+      ref_mpi_rank(ref_mpi) <= last_rank) {
+    share = total / active;
+    remainder = total - share * active;
+  } else {
+    share = 0;
+    remainder = 0;
+  }
+  if (ref_mpi_rank(ref_mpi) - first_rank < remainder) {
     share++;
   }
   *nbalanced = share;

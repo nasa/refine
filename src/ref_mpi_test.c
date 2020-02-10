@@ -239,21 +239,56 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_free(new_mpi), "new free");
   }
 
-  /* balance */
+  /* balance, all */
   {
     REF_DBL *items = NULL;
     REF_INT nitem = 0;
     REF_DBL *balanced = NULL;
     REF_INT nbalanced = 0;
     REF_INT total = 100;
+    REF_INT first_rank, last_rank;
     if (0 == ref_mpi_rank(ref_mpi)) {
       nitem = total;
       ref_malloc_init(items, nitem, REF_DBL, 0);
     }
-    RSS(ref_mpi_balance(ref_mpi, nitem, items, &nbalanced, &balanced), "bal");
+    first_rank = 0;
+    last_rank = ref_mpi_n(ref_mpi) - 1;
+    RSS(ref_mpi_balance(ref_mpi, nitem, items, first_rank, last_rank,
+                        &nbalanced, &balanced),
+        "bal");
     RAS(total / ref_mpi_n(ref_mpi) <= nbalanced &&
             nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
         "not bal");
+    ref_free(balanced);
+  }
+
+  /* balance, first half*/
+  {
+    REF_DBL *items = NULL;
+    REF_INT nitem = 0;
+    REF_DBL *balanced = NULL;
+    REF_INT nbalanced = 0;
+    REF_INT total = 100;
+    REF_INT active;
+    REF_INT first_rank, last_rank;
+    if (0 == ref_mpi_rank(ref_mpi)) {
+      nitem = total;
+      ref_malloc_init(items, nitem, REF_DBL, 0);
+    }
+    first_rank = 0;
+    last_rank = MAX(ref_mpi_n(ref_mpi) / 2 - 1, 0);
+    active = last_rank - first_rank + 1;
+    RSS(ref_mpi_balance(ref_mpi, nitem, items, first_rank, last_rank,
+                        &nbalanced, &balanced),
+        "bal");
+    if (first_rank <= ref_mpi_rank(ref_mpi) &&
+        ref_mpi_rank(ref_mpi) <= last_rank) {
+      RAS(total / active <= nbalanced && nbalanced <= 1 + total / active,
+          "not bal");
+    } else {
+      REIS(0, nbalanced, "not zero");
+    }
+    ref_free(balanced);
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
