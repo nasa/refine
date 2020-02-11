@@ -1716,14 +1716,14 @@ REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
-                                      REF_DBL *scalar, const char *filename) {
+REF_STATUS ref_gather_cell_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+                                       REF_DBL *scalar, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell = NULL;
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
-  REF_LONG ncell_local, ncell;
-  int version, code, keyword_code, dim;
+  REF_LONG ncell_local, ncell, ntet, npri;
+  int version, code, keyword_code, dim, cell_keyword;
   REF_INT i, header_size, ncell_int;
   REF_FILEPOS next_position;
   REF_INT part, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1734,6 +1734,21 @@ REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   next_position = 0;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  RSS(ref_gather_ncell(ref_node, ref_grid_tet(ref_grid), &ntet), "ntet");
+  RSS(ref_gather_ncell(ref_node, ref_grid_pri(ref_grid), &npri), "npri");
+  cell_keyword = REF_EMPTY;
+  if (ntet > 0 && npri == 0) {
+    /* GmfSolAtTetrahedra 113 - 47 = 66 */
+    cell_keyword = 66;
+    ref_cell = ref_grid_tet(ref_grid);
+  }
+  if (ntet == 0 && npri > 0) {
+    /* GmfSolAtTetrahedra 114 - 47 = 67 */
+    cell_keyword = 67;
+    ref_cell = ref_grid_pri(ref_grid);
+  }
+  RUS(REF_EMPTY, cell_keyword, "grid must be all tet or all prism");
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1779,7 +1794,7 @@ REF_STATUS ref_gather_tet_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
     next_position = (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
                     (REF_FILEPOS)ncell * (REF_FILEPOS)(ldim * 8) + ftell(file);
     /* GmfSolAtTetrahedra 113 - 47 = 66 */
-    keyword_code = 66;
+    keyword_code = cell_keyword;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     ncell_int = (int)ncell;
