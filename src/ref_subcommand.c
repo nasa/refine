@@ -996,7 +996,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     sprintf(filename, "%s-cell-center.solb", out_project);
     if (ref_mpi_once(ref_mpi))
       printf("writing interpolated field at cell centers %s\n", filename);
-    RSS(ref_gather_tet_scalar_solb(ref_grid, ldim, ref_field, filename),
+    RSS(ref_gather_cell_scalar_solb(ref_grid, ldim, ref_field, filename),
         "gather cell center");
     ref_mpi_stopwatch_stop(ref_mpi, "gather cell center");
   }
