@@ -983,23 +983,36 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "extrude field");
     RSS(ref_gather_scalar(extruded_grid, ldim, extruded_field, filename),
         "gather recept");
+    RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
+    if (REF_EMPTY != pos) {
+      sprintf(filename, "%s.b8.ugrid", out_project);
+      if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
+      RSS(ref_gather_by_extension(extruded_grid, filename), "gather .b8.ugrid");
+      sprintf(filename, "%s-cell-center.solb", out_project);
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated field at tet cell centers %s\n", filename);
+      RSS(ref_gather_cell_scalar_solb(extruded_grid, ldim, extruded_field,
+                                      filename),
+          "gather cell center");
+    }
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("writing interpolated field %s\n", filename);
     RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename),
         "gather recept");
+    RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
+    if (REF_EMPTY != pos) {
+      sprintf(filename, "%s.b8.ugrid", out_project);
+      if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+      RSS(ref_gather_by_extension(ref_grid, filename), "gather .b8.ugrid");
+      sprintf(filename, "%s-cell-center.solb", out_project);
+      if (ref_mpi_once(ref_mpi))
+        printf("writing interpolated field at tet cell centers %s\n", filename);
+      RSS(ref_gather_cell_scalar_solb(ref_grid, ldim, ref_field, filename),
+          "gather cell center");
+    }
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
-
-  RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY != pos) {
-    sprintf(filename, "%s-cell-center.solb", out_project);
-    if (ref_mpi_once(ref_mpi))
-      printf("writing interpolated field at cell centers %s\n", filename);
-    RSS(ref_gather_cell_scalar_solb(ref_grid, ldim, ref_field, filename),
-        "gather cell center");
-    ref_mpi_stopwatch_stop(ref_mpi, "gather cell center");
-  }
 
   ref_free(ref_field);
   ref_free(initial_field);
@@ -1226,6 +1239,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     REF_GRID twod_grid = ref_grid;
+    if (ref_mpi_once(ref_mpi)) printf("extrude prims\n");
     RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
     RSS(ref_grid_free(twod_grid), "free");
   }
