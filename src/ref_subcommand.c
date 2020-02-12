@@ -892,6 +892,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+  if (ref_mpi_once(ref_mpi))
+    printf("surf %d twod %d\n", ref_grid_surf(ref_grid),
+           ref_grid_twod(ref_surf));
 
   RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
   RSS(ref_validation_cell_volume(ref_grid), "vol");
