@@ -985,6 +985,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "gather recept");
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
+      sprintf(filename, "%s.b8.ugrid", out_project);
+      if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
+      RSS(ref_gather_by_extension(extruded_grid, filename), "gather .b8.ugrid");
       sprintf(filename, "%s-cell-center.solb", out_project);
       if (ref_mpi_once(ref_mpi))
         printf("writing interpolated field at tet cell centers %s\n", filename);
@@ -999,6 +1002,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "gather recept");
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
+      sprintf(filename, "%s.b8.ugrid", out_project);
+      if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+      RSS(ref_gather_by_extension(ref_grid, filename), "gather .b8.ugrid");
       sprintf(filename, "%s-cell-center.solb", out_project);
       if (ref_mpi_once(ref_mpi))
         printf("writing interpolated field at tet cell centers %s\n", filename);
