@@ -818,8 +818,7 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid,
-                                              REF_DBL *hessian) {
+REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL diag_system[12];
   REF_INT node;
