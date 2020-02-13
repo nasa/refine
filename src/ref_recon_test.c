@@ -270,6 +270,38 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* absolute value */
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT global, node;
+    REF_DBL *hessian;
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
+    global = 0;
+    RSS(ref_node_add(ref_node, global, &node), "add");
+    ref_malloc(hessian, 6 * ref_node_max(ref_node), REF_DBL);
+    hessian[0 + 6 * node] = 1.0;
+    hessian[1 + 6 * node] = 0.0;
+    hessian[2 + 6 * node] = 0.0;
+    hessian[3 + 6 * node] = 2.0;
+    hessian[4 + 6 * node] = 0.0;
+    hessian[5 + 6 * node] = -3.0;
+
+    RSS(ref_recon_abs_value_hessian(ref_grid, hessian), "abs hess");
+
+    RWDS(1.0, hessian[0 + 6 * node], tol, "m11");
+    RWDS(0.0, hessian[1 + 6 * node], tol, "m12");
+    RWDS(0.0, hessian[2 + 6 * node], tol, "m13");
+    RWDS(2.0, hessian[3 + 6 * node], tol, "m22");
+    RWDS(0.0, hessian[4 + 6 * node], tol, "m23");
+    RWDS(3.0, hessian[5 + 6 * node], tol, "m33");
+
+    ref_free(hessian);
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* zeroth order extrapolate boundary averaging constant recon */
     REF_DBL tol = -1.0;
     REF_GRID ref_grid;
