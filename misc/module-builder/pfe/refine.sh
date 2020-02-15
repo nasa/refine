@@ -27,11 +27,15 @@ mkdir -p _build_$VERSION
 cd       _build_$VERSION
 
 ../${TOPDIR}/configure \
- --prefix=${MODULE_DEST} \
- --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
- --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
- CC=icc \
- CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
+   --prefix=${MODULE_DEST} \
+   --with-mpi=/nasa/hpe/mpt/2.17r13 \
+   --with-zoltan=${MODULE_ROOT}/${ZOLTAN} \
+   --with-metis=${MODULE_ROOT}/${PARMETIS} \
+   --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
+   --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
+   --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
+   CC=icc \
+   CFLAGS='-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv'
 
  make -j 12 
  make install
