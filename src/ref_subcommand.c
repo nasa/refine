@@ -143,7 +143,7 @@ static void loop_help(const char *name) {
 }
 static void multiscale_help(const char *name) {
   printf(
-      "usage: \n %s multiscale input_mesh.extension scalar.solb "
+      "usage: \n %s multiscale input_mesh.extension scalar.{solb,snap} "
       "complexity metric.solb\n",
       name);
   printf("   complexity is approximately half the target number of vertices\n");
