@@ -1638,8 +1638,8 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
-                           const char *filename) {
+static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
+                                       REF_DBL **scalar, const char *filename) {
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
@@ -1741,8 +1741,8 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
-                                REF_DBL **scalar, const char *filename) {
+static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
+                                       REF_DBL **scalar, const char *filename) {
   REF_FILEPOS next_position;
   FILE *file;
   REF_INT chunk;
@@ -1848,6 +1848,27 @@ REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
     REIS(0, fclose(file), "close file");
   }
   return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
+                           const char *filename) {
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
+    RSS(ref_part_scalar_solb(ref_node, ldim, scalar, filename), "solb failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".snap") == 0) {
+    RSS(ref_part_scalar_snap(ref_node, ldim, scalar, filename), "snap failed");
+    return REF_SUCCESS;
+  }
+
+  printf("%s: %d: %s %s\n", __FILE__, __LINE__,
+         "input file name extension unknown", filename);
+  RSS(REF_FAILURE, "unknown file extension");
+  return REF_FAILURE;
 }
 
 REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
