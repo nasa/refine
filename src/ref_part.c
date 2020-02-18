@@ -1638,8 +1638,8 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
-                           const char *filename) {
+static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
+                                       REF_DBL **scalar, const char *filename) {
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
@@ -1739,6 +1739,136 @@ REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
     REIS(0, fclose(file), "close file");
   }
   return REF_SUCCESS;
+}
+
+static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
+                                       REF_DBL **scalar, const char *filename) {
+  REF_FILEPOS next_position;
+  FILE *file;
+  REF_INT chunk;
+  REF_DBL *data;
+  REF_INT section_size;
+  REF_GLOB nnode_read, global, nnode;
+  REF_INT node, local;
+  size_t end_of_string;
+  REF_INT i;
+  unsigned long version_number;
+  unsigned long number_of_fields;
+  unsigned long number_of_chars;
+  char letter;
+  unsigned long field_length, uint_nnode;
+  int association;
+
+  nnode = -1;
+  next_position = -1;
+  file = NULL;
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    file = fopen(filename, "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+
+    end_of_string = strlen(filename);
+    REIS(0, strcmp(&filename[end_of_string - 5], ".snap"),
+         "solb extension expected");
+
+    REIS(1, fread(&version_number, sizeof(version_number), 1, file),
+         "version number");
+    REIS(2, version_number, "only version 2 supported");
+
+    REIS(1, fread(&number_of_fields, sizeof(number_of_fields), 1, file),
+         "number");
+    REIS(1, number_of_fields, "only one field supported");
+
+    REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
+         "number");
+    for (i = 0; i < (REF_INT)number_of_chars; i++) {
+      REIS(1, fread(&letter, sizeof(letter), 1, file), "number");
+    }
+
+    REIS(1, fread(&field_length, sizeof(field_length), 1, file), "number");
+    next_position = (REF_FILEPOS)field_length + ftello(file);
+    REIS(1, fread(&uint_nnode, sizeof(uint_nnode), 1, file), "number");
+    nnode = (REF_GLOB)uint_nnode;
+    REIS(1, fread(&association, sizeof(association), 1, file), "number");
+
+    REIS(-1, association, "field node association only");
+
+    *ldim = 1;
+
+    if ((nnode != ref_node_n_global(ref_node)) &&
+        (nnode / 2 != ref_node_n_global(ref_node))) {
+      printf("file " REF_GLOB_FMT " ref_node " REF_GLOB_FMT "\n", nnode,
+             ref_node_n_global(ref_node));
+      THROW("global count mismatch");
+    }
+  }
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
+      "bcast ldim");
+  ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
+
+  chunk = (REF_INT)MAX(
+      100000, ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
+
+  ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
+
+  nnode_read = 0;
+  while (nnode_read < ref_node_n_global(ref_node)) {
+    section_size =
+        (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
+    if (ref_mpi_once(ref_node_mpi(ref_node))) {
+      REIS((*ldim) * section_size,
+           fread(data, sizeof(REF_DBL), (size_t)((*ldim) * section_size), file),
+           "dat");
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
+          "bcast");
+    } else {
+      RSS(ref_mpi_bcast(ref_node_mpi(ref_node), data, (*ldim) * chunk,
+                        REF_DBL_TYPE),
+          "bcast");
+    }
+    for (node = 0; node < section_size; node++) {
+      global = node + nnode_read;
+      RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
+      if (REF_EMPTY != local) {
+        for (i = 0; i < *ldim; i++) {
+          (*scalar)[i + local * (*ldim)] = data[i + node * (*ldim)];
+        }
+      }
+    }
+    nnode_read += section_size;
+  }
+
+  ref_free(data);
+
+  if (ref_mpi_once(ref_node_mpi(ref_node))) {
+    if (nnode == ref_node_n_global(ref_node))
+      REIS(next_position, ftello(file), "end location");
+    REIS(0, fclose(file), "close file");
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_part_scalar(REF_NODE ref_node, REF_INT *ldim, REF_DBL **scalar,
+                           const char *filename) {
+  size_t end_of_string;
+
+  end_of_string = strlen(filename);
+
+  if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
+    RSS(ref_part_scalar_solb(ref_node, ldim, scalar, filename), "solb failed");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".snap") == 0) {
+    RSS(ref_part_scalar_snap(ref_node, ldim, scalar, filename), "snap failed");
+    return REF_SUCCESS;
+  }
+
+  printf("%s: %d: %s %s\n", __FILE__, __LINE__,
+         "input file name extension unknown", filename);
+  RSS(REF_FAILURE, "unknown file extension");
+  return REF_FAILURE;
 }
 
 REF_STATUS ref_part_by_extension(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
