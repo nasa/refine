@@ -1752,12 +1752,12 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   REF_INT node, local;
   size_t end_of_string;
   REF_INT i;
-  uint64_t version_number;
-  uint64_t number_of_fields;
-  uint64_t number_of_chars;
+  unsigned long version_number;
+  unsigned long number_of_fields;
+  unsigned long number_of_chars;
   char letter;
-  uint64_t field_length, uint_nnode;
-  int32_t association;
+  unsigned long field_length, uint_nnode;
+  int association;
 
   nnode = -1;
   next_position = -1;
