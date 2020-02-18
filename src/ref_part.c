@@ -1757,7 +1757,7 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   uint64_t number_of_chars;
   char letter;
   uint64_t field_length, uint_nnode;
-  int64_t association;
+  int32_t association;
 
   nnode = -1;
   next_position = -1;
@@ -1791,7 +1791,7 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
     nnode = (REF_GLOB)uint_nnode;
     REIS(1, fread(&association, sizeof(association), 1, file), "number");
 
-    REIS(-1, association, "only one field supported");
+    REIS(-1, association, "field node association only");
 
     *ldim = 1;
 
