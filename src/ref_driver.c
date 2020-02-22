@@ -177,6 +177,11 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("twod %d surf %d manifold %d\n", ref_grid_twod(ref_grid),
+           ref_grid_surf(ref_grid), ref_geom_manifold(ref_grid_geom(ref_grid)));
+  }
+
   if (ref_geom_curvature_unlimited(ref_grid_geom(ref_grid))) {
     RAS(!curvature_metric,
         "[-r seg_per_radian] must be greater than 0.1 or -m provided");
