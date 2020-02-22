@@ -249,7 +249,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_validation_cell_volume(ref_grid), "vol");
     ref_mpi_stopwatch_stop(ref_mpi, "crv const");
     RSS(ref_grid_cache_background(ref_grid), "cache");
-    ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
     ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
   }
 
@@ -897,7 +896,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_validation_cell_volume(ref_grid), "vol");
   ref_mpi_stopwatch_stop(ref_mpi, "crv const");
   RSS(ref_grid_cache_background(ref_grid), "cache");
-  ref_interp_continuously(ref_grid_interp(ref_grid)) = REF_TRUE;
   ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
 
   RSS(ref_histogram_quality(ref_grid), "gram");
