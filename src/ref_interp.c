@@ -265,6 +265,8 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
   ref_interp = *ref_interp_ptr;
   to_node = ref_grid_node(to_grid);
 
+  ref_interp_continuously(ref_interp) = REF_TRUE;
+
   each_ref_node_valid_node(to_node, node) {
     if (ref_node_owned(to_node, node)) {
       REIS(REF_EMPTY, ref_interp->cell[node], "identity already found?");
