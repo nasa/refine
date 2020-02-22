@@ -569,7 +569,6 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL max_error, tol = 1.0e-8;
   REF_DBL log_parent_m[4][6];
   REF_INT receptor, n_recept, donation, n_donor;
   REF_DBL *recept_log_m, *donor_log_m, *recept_bary, *donor_bary;
@@ -577,11 +576,6 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
   if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
-
-  RSS(ref_interp_max_error(ref_interp, &max_error), "err");
-  if (max_error > tol && ref_mpi_once(ref_mpi)) {
-    printf("warning: %e max_error greater than %e tol\n", max_error, tol);
-  }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
