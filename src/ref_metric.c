@@ -681,20 +681,18 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
 
   ref_mpi = ref_interp_mpi(ref_interp);
 
-  if (!ref_interp_continuously(ref_interp) || ref_mpi_para(ref_mpi)) {
-    if (ref_grid_twod(to_grid) && !ref_grid_surf(to_grid)) {
-      REF_GRID from_grid = ref_interp_from_grid(ref_interp);
-      RSS(ref_metric_interpolate_twod(to_grid, from_grid), "2d version");
-      return REF_SUCCESS;
-    }
-
+  if (ref_mpi_para(ref_mpi)) {
+    /* parallel can miss on partition boundaries, refresh interp */
     RSS(ref_interp_locate_warm(ref_interp), "map from existing");
     RSS(ref_metric_interpolate(ref_interp), "interp");
-    return REF_SUCCESS;
-  }
-
-  each_ref_node_valid_node(ref_grid_node(to_grid), node) {
-    RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+  } else {
+    /* sequential should always localized unless mixed, assert */
+    each_ref_node_valid_node(ref_grid_node(to_grid), node) {
+      if (!ref_cell_node_empty(ref_grid_tri(to_grid), node) &&
+          !ref_cell_node_empty(ref_grid_tet(to_grid), node)) {
+        RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+      }
+    }
   }
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "err");
