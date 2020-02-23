@@ -583,7 +583,7 @@ static REF_STATUS ref_adapt_swap(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
+REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
   REF_BOOL all_done0, all_done1;
 
@@ -771,11 +771,11 @@ static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
+REF_STATUS ref_adapt_route_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   if (ref_grid_twod(ref_grid) && !ref_grid_surf(ref_grid)) {
     RSS(ref_adapt_twod_pass(ref_grid, all_done), "2D pass");
   } else {
-    RSS(ref_adapt_threed_pass(ref_grid, all_done), "3D pass");
+    RSS(ref_adapt_pass(ref_grid, all_done), "3D pass");
   }
   return REF_SUCCESS;
 }
