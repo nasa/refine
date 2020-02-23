@@ -1346,6 +1346,11 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     if (!allowed && verbose) printf("%d geom\n", node);
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_manifold(ref_grid, node0, node1, &allowed),
+        "col manifold");
+    if (!allowed && verbose) printf("   manifold\n");
+    if (!allowed) continue;
+
     RSS(ref_collapse_face_same_tangent(ref_grid, node0, node1, &allowed),
         "tan");
     if (!allowed && verbose) printf("%d tang\n", node);
