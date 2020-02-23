@@ -77,8 +77,9 @@ REF_STATUS ref_collapse_face_quality(REF_GRID ref_grid, REF_INT keep,
 REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
                                    REF_INT remove, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
-                                          REF_INT remove, REF_BOOL *allowed);
+REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
+                                              REF_INT remove,
+                                              REF_BOOL *allowed);
 
 REF_STATUS ref_collapse_face_geometry(REF_GRID ref_grid, REF_INT keep,
                                       REF_INT remove, REF_BOOL *allowed);

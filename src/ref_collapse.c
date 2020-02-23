@@ -227,6 +227,13 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
           "normal deviation");
       if (!allowed && audit) printf("   same tangent\n");
       if (!allowed) continue;
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_collapse_edge_twod_orientation(ref_grid, node0, node1,
+                                               &allowed),
+            "norm");
+        if (!allowed && audit) printf("   twod orientation\n");
+        if (!allowed) continue;
+      }
     }
 
     RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
@@ -1105,8 +1112,9 @@ REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
-                                          REF_INT remove, REF_BOOL *allowed) {
+REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
+                                              REF_INT remove,
+                                              REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1374,7 +1382,7 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     if (!allowed && verbose) printf("%d tang\n", node);
     if (!allowed) continue;
 
-    RSS(ref_collapse_face_outward_norm(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_twod_orientation(ref_grid, node0, node1, &allowed),
         "norm");
     if (!allowed && verbose) printf("%d outw\n", node);
     if (!allowed) continue;
