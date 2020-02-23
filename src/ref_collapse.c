@@ -680,7 +680,7 @@ REF_STATUS ref_collapse_edge_local_cell(REF_GRID ref_grid, REF_INT node0,
     }
   }
 
-  /* for parallel surf if ever needed */
+  /* for parallel surf and twod */
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
