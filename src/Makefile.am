@@ -116,18 +116,6 @@ bin_PROGRAMS += ref_acceptance
 ref_acceptance_SOURCES = ref_acceptance.c
 ref_acceptance_LDADD = $(default_ldadd)
 
-bin_PROGRAMS += ref_bamg_wrapper
-ref_bamg_wrapper_SOURCES = ref_bamg_wrapper.c
-ref_bamg_wrapper_LDADD = $(default_ldadd)
-
-bin_PROGRAMS += ref_bamg_emulator
-ref_bamg_emulator_SOURCES = ref_bamg_emulator.c
-ref_bamg_emulator_LDADD = $(default_ldadd)
-
-bin_PROGRAMS += ref_fefloa2d
-ref_fefloa2d_SOURCES = ref_fefloa2d.c
-ref_fefloa2d_LDADD = $(default_ldadd)
-
 noinst_PROGRAMS =
 TESTS =
 

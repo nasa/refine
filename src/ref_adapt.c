@@ -572,18 +572,18 @@ REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_threed_swap(REF_GRID ref_grid) {
+static REF_STATUS ref_adapt_swap(REF_GRID ref_grid) {
   REF_INT pass;
   RSS(ref_cavity_pass(ref_grid), "cavity pass");
-  if (ref_grid_surf(ref_grid)) {
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     for (pass = 0; pass < 3; pass++) {
-      RSS(ref_swap_surf_pass(ref_grid), "swap pass");
+      RSS(ref_swap_tri_pass(ref_grid), "swap pass");
     }
   }
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
+REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   REF_INT ngeom;
   REF_BOOL all_done0, all_done1;
 
@@ -599,15 +599,13 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt start");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
@@ -615,15 +613,13 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   ref_grid_adapt(ref_grid, post_max_ratio) = sqrt(2.0);
 
@@ -631,18 +627,16 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
   ref_gather_blocking_frame(ref_grid, "collapse");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   ref_grid_adapt(ref_grid, post_max_ratio) =
       ref_grid_adapt(ref_grid, last_max_ratio);
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_smooth_pass(ref_grid), "smooth pass");
   ref_gather_blocking_frame(ref_grid, "smooth");
@@ -650,19 +644,17 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_adapt_parameter(ref_grid, &all_done1), "param");
 
-  if (ref_grid_surf(ref_grid)) {
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     RSS(ref_split_surf_pass(ref_grid), "split surfpass");
   } else {
     RSS(ref_split_pass(ref_grid), "split pass");
@@ -672,15 +664,13 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   RSS(ref_smooth_pass(ref_grid), "smooth pass");
   ref_gather_blocking_frame(ref_grid, "smooth");
@@ -688,95 +678,19 @@ static REF_STATUS ref_adapt_threed_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
-  RSS(ref_adapt_threed_swap(ref_grid), "swap pass");
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
-  RSS(ref_validation_simplex_node(ref_grid), "simplex node");
 
   if (ngeom > 0)
     RSS(ref_geom_verify_topo(ref_grid), "geom topo postflight check");
 
   *all_done = (all_done0 && all_done1);
 
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
-  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
-
-  ref_gather_blocking_frame(ref_grid, "twod pass");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  RSS(ref_smooth_pass(ref_grid), "smooth pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  RSS(ref_collapse_twod_pass(ref_grid), "collapse pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "collapse");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  RSS(ref_smooth_pass(ref_grid), "smooth pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  RSS(ref_adapt_parameter(ref_grid, all_done), "param");
-
-  RSS(ref_split_surf_pass(ref_grid), "split pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "split");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  RSS(ref_smooth_pass(ref_grid), "smooth pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "smooth");
-
-  RSS(ref_swap_twod_pass(ref_grid), "swap pass");
-  if (ref_grid_adapt(ref_grid, watch_param))
-    RSS(ref_adapt_tattle(ref_grid), "tattle");
-  ref_gather_blocking_frame(ref_grid, "swap");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
-  if (ref_grid_twod(ref_grid) && !ref_grid_surf(ref_grid)) {
-    RSS(ref_adapt_twod_pass(ref_grid, all_done), "2D pass");
-  } else {
-    RSS(ref_adapt_threed_pass(ref_grid, all_done), "3D pass");
-  }
   return REF_SUCCESS;
 }
 

@@ -8,14 +8,14 @@ if [ $# -gt 0 ] ; then
     one=$1/one
     two=$1/src
 else
-    one=${HOME}/refine/strict/one
-    two=${HOME}/refine/strict/src
+    one=${HOME}/refine/parmetis/one
+    two=${HOME}/refine/parmetis/src
 fi
 
 tecplot=-t
-metric="-twod side"
+metric="-twod linear-0001"
 
-function adapt_cycle {
+function adapt_para {
     inproj=$1
     outproj=$2
     sweeps=$3
@@ -23,7 +23,7 @@ function adapt_cycle {
     ${two}/ref_acceptance ${metric} ${inproj}.meshb \
 	  ${inproj}.solb
 
-    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+    mpiexec -np 2 ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
 
@@ -35,14 +35,14 @@ function adapt_cycle {
 	  > ${outproj}.status
 }
 
-inproj=cycle00
-${two}/ref_acceptance 2 cycle00.meshb
+inproj=para00
+${two}/ref_acceptance 2 para00.meshb
 
-adapt_cycle cycle00 cycle01 10
-adapt_cycle cycle01 cycle02 10
-adapt_cycle cycle02 cycle03 10
-adapt_cycle cycle03 cycle04 10
+adapt_para para00 para01 10
+adapt_para para01 para02 10
+adapt_para para02 para03 10
+adapt_para para03 para04 10
 
-cat cycle04.status
-../../check.rb cycle04.status 0.50 1.6
+cat para04.status
+../../check.rb para04.status 0.40 1.6
 

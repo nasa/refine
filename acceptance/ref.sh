@@ -374,6 +374,29 @@ trap - EXIT
 wait
 
 # 2 procs
+LOG=${root_dir}/log.accept-2d-linear-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/linear
+( ./accept-2d-linear-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+# 4 procs
+LOG=${root_dir}/log.accept-2d-masabl-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/masabl
+( ./accept-2d-masabl-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+# 4 procs
+LOG=${root_dir}/log.accept-2d-polar-2-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/2d/polar-2
+( ./accept-2d-polar-2-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+wait
+
+# 2 procs
 LOG=${root_dir}/log.accept-facebody-side-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/facebody/side

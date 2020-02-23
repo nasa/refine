@@ -509,57 +509,6 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_interpolate_twod(REF_GRID ref_grid,
-                                       REF_GRID parent_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_NODE parent_node = ref_grid_node(parent_grid);
-  REF_INT node, tri, ixyz, ibary, im;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL xyz[3], interpolated_xyz[3], bary[3];
-  REF_DBL tol = 1.0e-11;
-  REF_DBL log_parent_m[3][6];
-  REF_DBL log_interpolated_m[6];
-
-  if (ref_mpi_para(ref_grid_mpi(ref_grid)))
-    RSS(REF_IMPLEMENT, "twod ref_metric_interpolate not para");
-
-  if (!ref_grid_twod(ref_grid))
-    RSS(REF_IMPLEMENT, "ref_metric_interpolate only implemented for twod");
-
-  each_ref_node_valid_node(ref_node, node) {
-    /* skip mixed element nodes, they can't move */
-    if (!ref_cell_node_empty(ref_grid_hex(ref_grid), node)) continue;
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      xyz[ixyz] = ref_node_xyz(ref_node, ixyz, node);
-    tri = REF_EMPTY;
-    RSS(ref_grid_enclosing_tri(parent_grid, xyz, &tri, bary), "enclosing tri");
-    RSS(ref_cell_nodes(ref_grid_tri(parent_grid), tri, nodes), "c2n");
-    for (ixyz = 0; ixyz < 3; ixyz++) {
-      interpolated_xyz[ixyz] = 0.0;
-      for (ibary = 0; ibary < 3; ibary++)
-        interpolated_xyz[ixyz] +=
-            bary[ibary] * ref_node_real(parent_node, ixyz, nodes[ibary]);
-    }
-    /* override y for fake twod */
-    interpolated_xyz[1] = ref_node_xyz(ref_node, 1, node);
-    for (ixyz = 0; ixyz < 3; ixyz++)
-      RWDS(xyz[ixyz], interpolated_xyz[ixyz], tol, "xyz check");
-    for (ibary = 0; ibary < 3; ibary++)
-      RSS(ref_node_metric_get_log(parent_node, nodes[ibary],
-                                  log_parent_m[ibary]),
-          "log(parentM)");
-    for (im = 0; im < 6; im++) {
-      log_interpolated_m[im] = 0.0;
-      for (ibary = 0; ibary < 3; ibary++)
-        log_interpolated_m[im] += bary[ibary] * log_parent_m[ibary][im];
-    }
-    RSS(ref_node_metric_set_log(ref_node, node, log_interpolated_m),
-        "log(interpM)");
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
@@ -569,7 +518,6 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL max_error, tol = 1.0e-8;
   REF_DBL log_parent_m[4][6];
   REF_INT receptor, n_recept, donation, n_donor;
   REF_DBL *recept_log_m, *donor_log_m, *recept_bary, *donor_bary;
@@ -577,11 +525,6 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
   if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
-
-  RSS(ref_interp_max_error(ref_interp, &max_error), "err");
-  if (max_error > tol && ref_mpi_once(ref_mpi)) {
-    printf("warning: %e max_error greater than %e tol\n", max_error, tol);
-  }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
@@ -681,20 +624,18 @@ REF_STATUS ref_metric_synchronize(REF_GRID to_grid) {
 
   ref_mpi = ref_interp_mpi(ref_interp);
 
-  if (!ref_interp_continuously(ref_interp) || ref_mpi_para(ref_mpi)) {
-    if (ref_grid_twod(to_grid) && !ref_grid_surf(to_grid)) {
-      REF_GRID from_grid = ref_interp_from_grid(ref_interp);
-      RSS(ref_metric_interpolate_twod(to_grid, from_grid), "2d version");
-      return REF_SUCCESS;
-    }
-
+  if (ref_mpi_para(ref_mpi)) {
+    /* parallel can miss on partition boundaries, refresh interp */
     RSS(ref_interp_locate_warm(ref_interp), "map from existing");
     RSS(ref_metric_interpolate(ref_interp), "interp");
-    return REF_SUCCESS;
-  }
-
-  each_ref_node_valid_node(ref_grid_node(to_grid), node) {
-    RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+  } else {
+    /* sequential should always localized unless mixed, assert */
+    each_ref_node_valid_node(ref_grid_node(to_grid), node) {
+      if (!ref_cell_node_empty(ref_grid_tri(to_grid), node) &&
+          !ref_cell_node_empty(ref_grid_tet(to_grid), node)) {
+        RUS(REF_EMPTY, ref_interp_cell(ref_interp, node), "should be located");
+      }
+    }
   }
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "err");

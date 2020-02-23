@@ -638,7 +638,8 @@ REF_STATUS ref_swap_quality(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_surf_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
+static REF_STATUS ref_swap_tri_edge(REF_GRID ref_grid, REF_INT node0,
+                                    REF_INT node1) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT ncell, cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -666,59 +667,51 @@ REF_STATUS ref_swap_surf_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
-  REF_CELL ref_cell;
-  REF_INT ncell, cell_to_swap[2];
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT node2, node3;
-  REF_INT new_cell;
+static REF_STATUS ref_swap_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed) {
+  REF_BOOL qua_side, pri_side, pyr_side, hex_side;
 
-  RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+      "qua");
+  RSS(ref_cell_has_side(ref_grid_pri(ref_grid), node0, node1, &pri_side),
+      "pri");
+  RSS(ref_cell_has_side(ref_grid_pyr(ref_grid), node0, node1, &pyr_side),
+      "pyr");
+  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),
+      "hex");
 
-  /* twod plane tri */
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
-      "more then two");
-  REIS(2, ncell, "there should be two triangles for manifold twod plane");
-  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[0]), "remove");
-  RSS(ref_cell_remove(ref_cell, cell_to_swap[1]), "remove");
-
-  nodes[0] = node0;
-  nodes[1] = node3;
-  nodes[2] = node2;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node0 version");
-  nodes[0] = node1;
-  nodes[1] = node2;
-  nodes[2] = node3;
-  RSS(ref_cell_add(ref_cell, nodes, &new_cell), "add node1 version");
+  *allowed = (!qua_side && !pri_side && !pyr_side && !hex_side);
 
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
+REF_STATUS ref_swap_tri_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge, node0, node1;
-  REF_BOOL allowed;
+  REF_BOOL allowed, has_edg, has_tri;
 
-  RAS(ref_grid_surf(ref_grid), "only surf");
+  RAS(ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid), "only twod/surf");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
-    RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &allowed),
+    RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edg),
+        "has edg");
+    if (has_edg) continue;
+
+    RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_tri),
         "still triangle side");
-    if (!allowed) continue;
+    if (!has_tri) continue;
 
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
       continue;
 
-    /* skip mixed */
-
+    RSS(ref_swap_edge_mixed(ref_grid, node0, node1, &allowed), "faceid");
+    if (!allowed) continue;
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
     RSS(ref_swap_manifold(ref_grid, node0, node1, &allowed), "manifold");
@@ -729,10 +722,13 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     if (!allowed) continue;
     RSS(ref_swap_ratio(ref_grid, node0, node1, &allowed), "ratio");
     if (!allowed) continue;
-    RSS(ref_swap_conforming(ref_grid, node0, node1, &allowed), "normdev");
-    if (!allowed) continue;
-
-    /* skip same normal */
+    if (ref_grid_surf(ref_grid)) {
+      RSS(ref_swap_conforming(ref_grid, node0, node1, &allowed), "normdev");
+      if (!allowed) continue;
+    } else {
+      RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
+      if (!allowed) continue;
+    }
 
     RSS(ref_swap_local_cell(ref_grid, node0, node1, &allowed), "local");
     if (!allowed) {
@@ -741,63 +737,7 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
       continue;
     }
 
-    RSS(ref_swap_surf_edge(ref_grid, node0, node1), "swap");
-  }
-
-  ref_edge_free(ref_edge);
-
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_swap_edge_twod_mixed(REF_GRID ref_grid, REF_INT node0,
-                                           REF_INT node1, REF_BOOL *allowed) {
-  REF_BOOL qua_side;
-
-  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
-      "qua");
-
-  *allowed = (!qua_side);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_EDGE ref_edge;
-  REF_INT edge, node0, node1;
-  REF_BOOL allowed;
-
-  RAS(ref_grid_twod(ref_grid), "only surf");
-
-  RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-  for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-    node0 = ref_edge_e2n(ref_edge, 0, edge);
-    node1 = ref_edge_e2n(ref_edge, 1, edge);
-
-    /* skip if neither node is owned */
-    if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
-      continue;
-
-    RSS(ref_swap_edge_twod_mixed(ref_grid, node0, node1, &allowed), "faceid");
-    if (!allowed) continue;
-
-    RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
-    if (!allowed) continue;
-    RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
-    if (!allowed) continue;
-    RSS(ref_swap_quality(ref_grid, node0, node1, &allowed), "qual");
-    if (!allowed) continue;
-    RSS(ref_swap_ratio(ref_grid, node0, node1, &allowed), "ratio");
-    if (!allowed) continue;
-
-    RSS(ref_swap_local_cell(ref_grid, node0, node1, &allowed), "local");
-    if (!allowed) {
-      ref_node_age(ref_node, node0)++;
-      ref_node_age(ref_node, node1)++;
-      continue;
-    }
-
-    RSS(ref_swap_twod_edge(ref_grid, node0, node1), "swap");
+    RSS(ref_swap_tri_edge(ref_grid, node0, node1), "swap");
   }
 
   ref_edge_free(ref_edge);

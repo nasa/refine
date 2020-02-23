@@ -547,80 +547,6 @@ exisiting
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  { /* collapse prism, keep qua */
-    REF_GRID ref_grid;
-    REF_INT keep, remove;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    keep = 1;
-    remove = 2;
-
-    RSS(ref_collapse_face(ref_grid, keep, remove), "split");
-
-    REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(0, ref_cell_n(ref_grid_edg(ref_grid)), "qua");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* collapse prism and qua */
-    REF_GRID ref_grid;
-    REF_INT keep, remove;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-    keep = 0;
-    remove = 1;
-
-    RSS(ref_collapse_face(ref_grid, keep, remove), "split");
-
-    REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
-    REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* local prism: collapse allowed? */
-    REF_GRID ref_grid;
-    REF_INT node0, node1;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_collapse_face_local_pris(ref_grid, node0, node1, &allowed),
-        "col loc");
-    REIS(REF_TRUE, allowed, "local collapse allowed?");
-
-    ref_node_part(ref_grid_node(ref_grid), 3) =
-        ref_node_part(ref_grid_node(ref_grid), 3) + 1;
-
-    node0 = 0;
-    node1 = 1;
-    RSS(ref_collapse_face_local_pris(ref_grid, node0, node1, &allowed),
-        "col loc");
-    REIS(REF_FALSE, allowed, "ghost collapse allowed?");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
-  { /* geometry: collapse of interior face */
-    REF_GRID ref_grid;
-    REF_INT keep, remove;
-    REF_BOOL allowed;
-
-    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
-
-    keep = 0;
-    remove = 1;
-    RSS(ref_collapse_face_geometry(ref_grid, keep, remove, &allowed),
-        "col geom");
-
-    REIS(REF_TRUE, allowed, "interior edge allowed?");
-
-    RSS(ref_grid_free(ref_grid), "free grid");
-  }
-
   { /* edge tangent: collapse allowed? */
     REF_GRID ref_grid;
     REF_INT keep, remove;
@@ -630,13 +556,13 @@ exisiting
 
     keep = 2;
     remove = 0;
-    RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
+    RSS(ref_collapse_edge_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_TRUE, allowed, "straight tangent collapse allowed?");
 
     ref_node_xyz(ref_grid_node(ref_grid), 1, remove) = 0.5;
 
-    RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
+    RSS(ref_collapse_edge_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_FALSE, allowed, "curved boundary collapse allowed?");
 
@@ -648,7 +574,7 @@ exisiting
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_collapse_twod_pass(ref_grid), "pass");
+    RSS(ref_collapse_pass(ref_grid), "pass");
 
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
@@ -665,7 +591,7 @@ exisiting
                              1.0 / (10.0 * 10.0), 0, 1),
         "set top z big");
 
-    RSS(ref_collapse_twod_pass(ref_grid), "pass");
+    RSS(ref_collapse_pass(ref_grid), "pass");
 
     REIS(2, ref_node_n(ref_grid_node(ref_grid)), "nodes");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");

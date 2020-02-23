@@ -67,29 +67,11 @@ REF_STATUS ref_collapse_surf_ratio(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
                                      REF_INT node1, REF_BOOL *allowed);
 
-REF_STATUS ref_collapse_face(REF_GRID ref_grid, REF_INT keep, REF_INT remove);
-
-REF_STATUS ref_collapse_face_local_pris(REF_GRID ref_grid, REF_INT keep,
-                                        REF_INT remove, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_face_quality(REF_GRID ref_grid, REF_INT keep,
-                                     REF_INT remove, REF_BOOL *allowed);
-REF_STATUS ref_collapse_face_ratio(REF_GRID ref_grid, REF_INT keep,
-                                   REF_INT remove, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_face_outward_norm(REF_GRID ref_grid, REF_INT keep,
+REF_STATUS ref_collapse_edge_twod_orientation(REF_GRID ref_grid, REF_INT keep,
+                                              REF_INT remove,
+                                              REF_BOOL *allowed);
+REF_STATUS ref_collapse_edge_same_tangent(REF_GRID ref_grid, REF_INT keep,
                                           REF_INT remove, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_face_geometry(REF_GRID ref_grid, REF_INT keep,
-                                      REF_INT remove, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_face_same_tangent(REF_GRID ref_grid, REF_INT keep,
-                                          REF_INT remove, REF_BOOL *allowed);
-
-REF_STATUS ref_collapse_twod_pass(REF_GRID ref_grid);
-
-REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
-                                          REF_INT *actual_node0, REF_INT node1);
 
 END_C_DECLORATION
 

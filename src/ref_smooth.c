@@ -720,7 +720,7 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
-  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+  RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
 
   return REF_SUCCESS;
 }
@@ -1455,7 +1455,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
 
-  if (ref_grid_surf(ref_grid)) {
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
@@ -1542,6 +1542,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
 
   /* smooth interior */
+  ref_cell = ref_grid_tet(ref_grid);
+
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_smooth_local_cell_about(ref_cell, ref_node, node, &allowed),
         "para");
@@ -1551,7 +1553,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     }
 
     interior = ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
-               ref_cell_node_empty(ref_grid_qua(ref_grid), node);
+               ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
+               !ref_cell_node_empty(ref_grid_tet(ref_grid), node);
     if (interior) {
       RSS(ref_smooth_tet_improve(ref_grid, node), "ideal tet node");
       ref_node_age(ref_node, node) = 0;
@@ -1562,6 +1565,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov int");
 
   /* smooth low quality tets */
+  ref_cell = ref_grid_tet(ref_grid);
+
   if (!ref_grid_surf(ref_grid)) {
     REF_DBL quality, min_quality = 0.10;
     REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1840,7 +1845,7 @@ REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
       ref_node_xyz(ref_node, 0, node) = xyz[0] + alpha * dir[0];
       ref_node_xyz(ref_node, 1, node) = xyz[1] + alpha * dir[1];
       ref_node_xyz(ref_node, 2, node) = xyz[2] + alpha * dir[2];
-      RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+      RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
       break;
     }
     if (quality > requirement || alpha < 1.0e-12) break;
