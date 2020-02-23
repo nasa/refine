@@ -726,7 +726,7 @@ static REF_STATUS ref_adapt_twod_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "swap");
 
-  RSS(ref_collapse_twod_pass(ref_grid), "collapse pass");
+  RSS(ref_collapse_pass(ref_grid), "collapse pass");
   if (ref_grid_adapt(ref_grid, watch_param))
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   ref_gather_blocking_frame(ref_grid, "collapse");
