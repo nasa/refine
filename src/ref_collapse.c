@@ -1287,7 +1287,7 @@ REF_STATUS ref_collapse_twod_pass(REF_GRID ref_grid) {
   for (i = 0; i < ntarget; i++) {
     if (ratio[order[i]] > ref_grid_adapt(ref_grid, collapse_ratio)) continue;
     node1 = target[order[i]];
-    RSS(ref_collapse_face_remove_node1(ref_grid, &node0, node1), "collapse rm");
+    RSS(ref_collapse_to_remove_node1(ref_grid, &node0, node1), "collapse rm");
     if (!ref_node_valid(ref_node, node1)) {
       ref_node_age(ref_node, node0) = 0;
       each_ref_cell_having_node(ref_cell, node0, item, cell) {
