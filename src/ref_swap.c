@@ -718,7 +718,7 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
   REF_INT edge, node0, node1;
-  REF_BOOL allowed;
+  REF_BOOL allowed, has_edg, has_tri;
 
   RAS(ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid), "only twod/surf");
 
@@ -727,9 +727,13 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     node0 = ref_edge_e2n(ref_edge, 0, edge);
     node1 = ref_edge_e2n(ref_edge, 1, edge);
 
-    RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &allowed),
+    RSS(ref_cell_has_side(ref_grid_edg(ref_grid), node0, node1, &has_edg),
+        "has edg");
+    if (has_edg) continue;
+
+    RSS(ref_cell_has_side(ref_grid_tri(ref_grid), node0, node1, &has_tri),
         "still triangle side");
-    if (!allowed) continue;
+    if (!has_tri) continue;
 
     /* skip if neither node is owned */
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
