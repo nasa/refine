@@ -1666,35 +1666,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
-    REF_GRID ref_grid, parent_grid;
-    REF_INT node, im;
-    REF_DBL tol = -1.0;
-    REF_DBL parent_m[6];
-    REF_DBL child_m[6];
-
-    RSS(ref_fixture_twod_brick_grid(&parent_grid, ref_mpi), "brick");
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "brick");
-
-    RSS(ref_metric_olympic_node(ref_grid_node(parent_grid), 0.001), "oly");
-    RSS(ref_metric_twod_node(ref_grid_node(parent_grid)), "2d");
-
-    RSS(ref_metric_interpolate_twod(ref_grid, parent_grid), "interp");
-
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_node_metric_get(ref_grid_node(parent_grid), node, parent_m),
-          "get parent m");
-      RSS(ref_node_metric_get(ref_grid_node(ref_grid), node, child_m),
-          "get child m");
-      for (im = 0; im < 6; im++) {
-        RWDS(parent_m[im], child_m[im], tol, "interpolant");
-      }
-    }
-
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_grid_free(parent_grid), "free");
-  }
-
   {
     REF_GRID ref_grid, parent_grid;
     REF_INTERP ref_interp;
