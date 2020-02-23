@@ -640,7 +640,8 @@ REF_STATUS ref_collapse_edge_mixed(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = (ref_adj_empty(ref_cell_adj(ref_grid_pyr(ref_grid)), node1) &&
               ref_adj_empty(ref_cell_adj(ref_grid_pri(ref_grid)), node1) &&
-              ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node1));
+              ref_adj_empty(ref_cell_adj(ref_grid_hex(ref_grid)), node1) &&
+              ref_adj_empty(ref_cell_adj(ref_grid_qua(ref_grid)), node1));
 
   return REF_SUCCESS;
 }
