@@ -1840,7 +1840,7 @@ REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
       ref_node_xyz(ref_node, 0, node) = xyz[0] + alpha * dir[0];
       ref_node_xyz(ref_node, 1, node) = xyz[1] + alpha * dir[1];
       ref_node_xyz(ref_node, 2, node) = xyz[2] + alpha * dir[2];
-      RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+      RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
       break;
     }
     if (quality > requirement || alpha < 1.0e-12) break;
