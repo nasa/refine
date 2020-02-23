@@ -630,13 +630,13 @@ exisiting
 
     keep = 2;
     remove = 0;
-    RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
+    RSS(ref_collapse_edge_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_TRUE, allowed, "straight tangent collapse allowed?");
 
     ref_node_xyz(ref_grid_node(ref_grid), 1, remove) = 0.5;
 
-    RSS(ref_collapse_face_same_tangent(ref_grid, keep, remove, &allowed),
+    RSS(ref_collapse_edge_same_tangent(ref_grid, keep, remove, &allowed),
         "same");
     REIS(REF_FALSE, allowed, "curved boundary collapse allowed?");
 
