@@ -817,7 +817,7 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
-  if (ref_grid_surf(ref_grid)) {
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
@@ -1356,6 +1356,15 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     if (!allowed && verbose) printf("   chord\n");
     if (!allowed) continue;
 
+    RSS(ref_collapse_edge_ratio(ref_grid, node0, node1, &allowed), "ratio");
+    if (!allowed && verbose) printf("   ratio\n");
+    if (!allowed) continue;
+
+    RSS(ref_collapse_surf_ratio(ref_grid, node0, node1, &allowed),
+        "surf ratio");
+    if (!allowed && verbose) printf("   ratio (surf)\n");
+    if (!allowed) continue;
+
     RSS(ref_collapse_face_same_tangent(ref_grid, node0, node1, &allowed),
         "tan");
     if (!allowed && verbose) printf("%d tang\n", node);
@@ -1364,10 +1373,6 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     RSS(ref_collapse_face_outward_norm(ref_grid, node0, node1, &allowed),
         "norm");
     if (!allowed && verbose) printf("%d outw\n", node);
-    if (!allowed) continue;
-
-    RSS(ref_collapse_face_ratio(ref_grid, node0, node1, &allowed), "qual");
-    if (!allowed && verbose) printf("%d ratio\n", node);
     if (!allowed) continue;
 
     RSS(ref_collapse_face_quality(ref_grid, node0, node1, &allowed), "qual");
