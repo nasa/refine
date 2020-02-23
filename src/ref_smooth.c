@@ -720,7 +720,7 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
-  RSS(ref_metric_interpolate_node(ref_grid, node), "interp");
+  RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
 
   return REF_SUCCESS;
 }
