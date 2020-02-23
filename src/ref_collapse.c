@@ -1383,7 +1383,8 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     if (!allowed && verbose) printf("%d outw\n", node);
     if (!allowed) continue;
 
-    RSS(ref_collapse_face_quality(ref_grid, node0, node1, &allowed), "qual");
+    RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
+        "qual");
     if (!allowed && verbose) printf("%d qual\n", node);
     if (!allowed) continue;
 
