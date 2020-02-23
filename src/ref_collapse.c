@@ -1337,11 +1337,11 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
   for (node = 0; node < nnode; node++) {
     node0 = node_to_collapse[order[node]];
 
-    RSS(ref_collapse_face_mixed(ref_grid, node0, node1, &allowed), "col mixed");
+    RSS(ref_collapse_edge_mixed(ref_grid, node0, node1, &allowed), "col mixed");
     if (!allowed && verbose) printf("%d mixed\n", node);
     if (!allowed) continue;
 
-    RSS(ref_collapse_face_geometry(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_geometry(ref_grid, node0, node1, &allowed),
         "col geom");
     if (!allowed && verbose) printf("%d geom\n", node);
     if (!allowed) continue;
