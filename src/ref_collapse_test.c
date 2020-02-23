@@ -648,7 +648,7 @@ exisiting
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_collapse_twod_pass(ref_grid), "pass");
+    RSS(ref_collapse_pass(ref_grid), "pass");
 
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
     REIS(0, ref_cell_n(ref_grid_qua(ref_grid)), "qua");
@@ -665,7 +665,7 @@ exisiting
                              1.0 / (10.0 * 10.0), 0, 1),
         "set top z big");
 
-    RSS(ref_collapse_twod_pass(ref_grid), "pass");
+    RSS(ref_collapse_pass(ref_grid), "pass");
 
     REIS(2, ref_node_n(ref_grid_node(ref_grid)), "nodes");
     REIS(0, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
