@@ -1392,7 +1392,7 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
         "tet qual");
     if (!allowed && verbose) printf("   tet qual\n");
 
-    RSS(ref_collapse_face_local_pris(ref_grid, node0, node1, &allowed),
+    RSS(ref_collapse_edge_local_cell(ref_grid, node0, node1, &allowed),
         "colloc");
     if (!allowed && verbose) printf("%d loca\n", node);
     if (!allowed) {
