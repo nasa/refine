@@ -373,7 +373,7 @@ trap - EXIT
 
 wait
 
-# 4 procs
+# 2 procs
 LOG=${root_dir}/log.accept-2d-linear-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/2d/linear

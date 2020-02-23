@@ -23,7 +23,7 @@ function adapt_para {
     ${two}/ref_acceptance ${metric} ${inproj}.meshb \
 	  ${inproj}.solb
 
-    mpiexec -np 4 ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
+    mpiexec -np 2 ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}.solb \
           -x ${outproj}.meshb \
 	  -s ${sweeps} ${tecplot}
 
