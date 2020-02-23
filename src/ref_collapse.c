@@ -153,7 +153,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
   *actual_node0 = REF_EMPTY;
   RAS(ref_node_valid(ref_node, node1), "node1 is invalid");
 
-  if (ref_grid_surf(ref_grid)) {
+  if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
