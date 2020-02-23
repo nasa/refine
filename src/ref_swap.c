@@ -720,7 +720,7 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
   REF_INT edge, node0, node1;
   REF_BOOL allowed;
 
-  RAS(ref_grid_surf(ref_grid), "only surf");
+  RAS(ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid), "only twod/surf");
 
   RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
   for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
@@ -747,10 +747,13 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     if (!allowed) continue;
     RSS(ref_swap_ratio(ref_grid, node0, node1, &allowed), "ratio");
     if (!allowed) continue;
-    RSS(ref_swap_conforming(ref_grid, node0, node1, &allowed), "normdev");
-    if (!allowed) continue;
-
-    /* skip same normal */
+    if (ref_grid_surf(ref_grid)) {
+      RSS(ref_swap_conforming(ref_grid, node0, node1, &allowed), "normdev");
+      if (!allowed) continue;
+    } else {
+      RSS(ref_swap_outward_norm(ref_grid, node0, node1, &allowed), "area");
+      if (!allowed) continue;
+    }
 
     RSS(ref_swap_local_cell(ref_grid, node0, node1, &allowed), "local");
     if (!allowed) {
