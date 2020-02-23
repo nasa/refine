@@ -747,6 +747,7 @@ REF_STATUS ref_collapse_edge_tri_quality(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_FALSE;
 
   ref_cell = ref_grid_tri(ref_grid);
+
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
 
@@ -781,11 +782,7 @@ REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
-  if (ref_grid_surf(ref_grid)) {
-    ref_cell = ref_grid_tri(ref_grid);
-  } else {
-    ref_cell = ref_grid_tet(ref_grid);
-  }
+  ref_cell = ref_grid_tet(ref_grid);
 
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
@@ -804,11 +801,10 @@ REF_STATUS ref_collapse_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
     }
     if (quality < ref_grid_adapt(ref_grid, collapse_quality_absolute))
       return REF_SUCCESS;
-    if (!ref_grid_surf(ref_grid)) {
-      RSS(ref_cell_ntri_with_tet_nodes(ref_grid_tri(ref_grid), nodes, &ntri),
-          "count boundary triangles");
-      if (ntri > 1) return REF_SUCCESS;
-    }
+
+    RSS(ref_cell_ntri_with_tet_nodes(ref_grid_tri(ref_grid), nodes, &ntri),
+        "count boundary triangles");
+    if (ntri > 1) return REF_SUCCESS;
   }
 
   *allowed = REF_TRUE;
