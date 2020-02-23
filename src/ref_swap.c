@@ -696,6 +696,24 @@ REF_STATUS ref_swap_twod_edge(REF_GRID ref_grid, REF_INT node0, REF_INT node1) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_swap_edge_mixed(REF_GRID ref_grid, REF_INT node0,
+                                      REF_INT node1, REF_BOOL *allowed) {
+  REF_BOOL qua_side, pri_side, pyr_side, hex_side;
+
+  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
+      "qua");
+  RSS(ref_cell_has_side(ref_grid_pri(ref_grid), node0, node1, &pri_side),
+      "pri");
+  RSS(ref_cell_has_side(ref_grid_pyr(ref_grid), node0, node1, &pyr_side),
+      "pyr");
+  RSS(ref_cell_has_side(ref_grid_hex(ref_grid), node0, node1, &hex_side),
+      "hex");
+
+  *allowed = (!qua_side && !pri_side && !pyr_side && !hex_side);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -717,8 +735,8 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
       continue;
 
-    /* skip mixed */
-
+    RSS(ref_swap_edge_mixed(ref_grid, node0, node1, &allowed), "faceid");
+    if (!allowed) continue;
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
     RSS(ref_swap_manifold(ref_grid, node0, node1, &allowed), "manifold");
@@ -749,18 +767,6 @@ REF_STATUS ref_swap_surf_pass(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_swap_edge_twod_mixed(REF_GRID ref_grid, REF_INT node0,
-                                           REF_INT node1, REF_BOOL *allowed) {
-  REF_BOOL qua_side;
-
-  RSS(ref_cell_has_side(ref_grid_qua(ref_grid), node0, node1, &qua_side),
-      "qua");
-
-  *allowed = (!qua_side);
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_EDGE ref_edge;
@@ -778,7 +784,7 @@ REF_STATUS ref_swap_twod_pass(REF_GRID ref_grid) {
     if (!ref_node_owned(ref_node, node0) && !ref_node_owned(ref_node, node1))
       continue;
 
-    RSS(ref_swap_edge_twod_mixed(ref_grid, node0, node1, &allowed), "faceid");
+    RSS(ref_swap_edge_mixed(ref_grid, node0, node1, &allowed), "faceid");
     if (!allowed) continue;
 
     RSS(ref_swap_same_faceid(ref_grid, node0, node1, &allowed), "faceid");
