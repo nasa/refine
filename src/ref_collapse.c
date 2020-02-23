@@ -1369,8 +1369,7 @@ REF_STATUS ref_collapse_face_remove_node1(REF_GRID ref_grid,
     if (!allowed && verbose) printf("   ratio (surf)\n");
     if (!allowed) continue;
 
-    RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
-        "tan");
+    RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed), "tan");
     if (!allowed && verbose) printf("%d norm\n", node);
     if (!allowed) continue;
 
