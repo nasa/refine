@@ -28,13 +28,19 @@
 #endif
 
 #ifdef HAVE_MESHLINK
-
+#include "MeshAssociativity_c.h"
 #endif
 
 REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
   if (NULL == filename) return REF_SUCCESS;
   printf("MeskLink with %s\n", filename);
+#ifdef HAVE_MESHLINK
+  MeshAssociativityObj meshAssoc;
+  REIS(0, ML_createMeshAssociativityObj(&meshAssoc),
+       "Error creating Mesh Associativity Object");
+  printf("have meshAssoc\n");
+#endif
   return REF_SUCCESS;
 }
 

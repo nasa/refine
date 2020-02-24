@@ -23,8 +23,8 @@ mkdir -p meshlink
       ../configure \
 	  --prefix=`pwd` \
 	  --with-MeshLink=${meshlink_path} \
-	  CFLAGS="${gccflags}" \
-	  CC=gcc-9 \
+	  CFLAGS="-g -O2" \
+	  CC=clang++ \
     ) \
     || exit
 

@@ -71,9 +71,9 @@ libref2_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
+libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
 
-default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 
 bin_PROGRAMS =

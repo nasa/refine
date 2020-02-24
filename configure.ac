@@ -418,14 +418,25 @@ then
                 [meshlink_include_path=$with_MeshLink/src/meshlink/h],
 		[meshlink_inlcude_path='no'])
 
+  AC_CHECK_FILE([$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
+                [meshlink_a_path=$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
+		[meshlink_a_path='no'])
+
   meshlink_include=""
   if test "$meshlink_include_path" != 'no'
   then
-      meshlink_include="-L${meshlink_include_path}"
+      meshlink_include="-I${meshlink_include_path}"
+  fi
+  
+  meshlink_ldadd=""
+  if test "$meshlink_a_path" != 'no'
+  then
+      meshlink_ldadd="${meshlink_a_path}"
   fi
   
   AC_SUBST([meshlink_include])
-  AC_DEFINE([HAVE_MESKLINK],[1],[MeskLink is available])
+  AC_SUBST([meshlink_ldadd])
+  AC_DEFINE([HAVE_MESHLINK],[1],[MeshLink is available])
 fi
   
 AC_CONFIG_FILES( \
