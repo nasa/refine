@@ -408,6 +408,26 @@ then
   AC_SUBST([opencascade_ldadd])
 fi
 
+AC_ARG_WITH(MeshLink,
+	[  --with-MeshLink[=ARG]  use MeshLink [ARG=no]],
+	[with_MeshLink=$withval],        [with_MeshLink="no"])
+
+if test "$with_MeshLink" != 'no'
+then
+  AC_CHECK_FILE([$with_MeshLink/src/meshlink/h/Types.h],
+                [meshlink_include_path=$with_MeshLink/src/meshlink/h],
+		[meshlink_inlcude_path='no'])
+
+  meshlink_include=""
+  if test "$meshlink_include_path" != 'no'
+  then
+      meshlink_include="-L${meshlink_include_path}"
+  fi
+  
+  AC_SUBST([meshlink_include])
+  AC_DEFINE([HAVE_MESKLINK],[1],[MeskLink is available])
+fi
+  
 AC_CONFIG_FILES( \
 	   Makefile \
 	   src/Makefile \
