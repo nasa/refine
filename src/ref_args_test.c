@@ -29,9 +29,9 @@ int main(int argc, char *argv[]) {
 
   {
     REF_INT n = 3;
-    char *a0 = "program";
-    char *a1 = "-1";
-    char *a2 = "-2";
+    char a0[9] = "program";
+    char a1[3] = "-1";
+    char a2[3] = "-2";
     char *as[3];
     REF_INT pos;
     as[0] = a0;

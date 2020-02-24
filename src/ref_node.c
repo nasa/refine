@@ -359,7 +359,7 @@ REF_STATUS ref_node_add(REF_NODE ref_node, REF_GLOB global, REF_INT *node) {
 REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n,
                              REF_GLOB *global_orig) {
   REF_STATUS status;
-  REF_INT i, j, local, new;
+  REF_INT i, j, local, nadd;
 
   REF_GLOB *global;
   REF_INT *sorted;
@@ -368,23 +368,23 @@ REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n,
 
   ref_malloc(global, n, REF_GLOB);
 
-  new = 0;
+  nadd = 0;
   for (i = 0; i < n; i++) {
     status = ref_node_local(ref_node, global_orig[i], &local);
     if (REF_NOT_FOUND == status) {
-      global[new] = global_orig[i];
-      new ++;
+      global[nadd] = global_orig[i];
+      nadd++;
     }
   }
 
   /* remove duplicates from list so core add can be used with existing check */
 
-  ref_malloc(sorted, new, REF_INT);
+  ref_malloc(sorted, nadd, REF_INT);
 
-  RSS(ref_sort_heap_glob(new, global, sorted), "heap");
+  RSS(ref_sort_heap_glob(nadd, global, sorted), "heap");
 
   j = 0;
-  for (i = 1; i < new; i++) {
+  for (i = 1; i < nadd; i++) {
     if (global[sorted[i]] != global[sorted[j]]) {
       j = i;
       continue;
@@ -394,7 +394,7 @@ REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n,
 
   /* add remaining via core */
 
-  for (i = 0; i < new; i++)
+  for (i = 0; i < nadd; i++)
     if (REF_EMPTY != global[i]) {
       RSS(ref_node_add_core(ref_node, global[i], &local), "add core");
     }

@@ -440,19 +440,19 @@ REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell_ptr, REF_CELL original) {
 }
 
 REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
-  REF_INT node, cell, new;
+  REF_INT node, cell, compact;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
 
-  new = 0;
+  compact = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     for (node = 0; node < ref_cell_node_per(ref_cell); node++)
-      ref_cell_c2n(ref_cell, node, new) = o2n[nodes[node]];
+      ref_cell_c2n(ref_cell, node, compact) = o2n[nodes[node]];
     if (ref_cell_last_node_is_an_id(ref_cell))
-      ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), new) =
+      ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), compact) =
           nodes[ref_cell_node_per(ref_cell)];
-    new ++;
+    compact++;
   }
-  REIS(new, ref_cell_n(ref_cell), "count is off");
+  REIS(compact, ref_cell_n(ref_cell), "count is off");
 
   if (ref_cell_n(ref_cell) < ref_cell_max(ref_cell)) {
     for (cell = ref_cell_n(ref_cell); cell < ref_cell_max(ref_cell); cell++) {

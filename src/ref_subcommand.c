@@ -330,7 +330,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT mesher_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
   REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
-  char *mesher = "tetgen";
+  const char *mesher = "tetgen";
   REF_INT passes = 15;
   REF_INT self_intersections;
 
@@ -757,8 +757,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL buffer = REF_FALSE;
   REF_INTERP ref_interp;
   REF_INT pos;
-  char *mach_interpolant = "mach";
-  char *interpolant = mach_interpolant;
+  const char *mach_interpolant = "mach";
+  const char *interpolant = mach_interpolant;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];

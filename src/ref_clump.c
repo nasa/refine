@@ -125,7 +125,7 @@ REF_STATUS ref_clump_around(REF_GRID ref_grid, REF_INT node,
   REF_CELL ref_cell;
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  char *zonetype;
+  const char *zonetype;
 
   FILE *f;
 
@@ -187,7 +187,7 @@ REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_CELL ref_cell;
   REF_INT item, cell, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  char *zonetype;
+  const char *zonetype;
 
   FILE *f;
 
@@ -432,7 +432,7 @@ REF_STATUS ref_clump_tet_quality(REF_GRID ref_grid, REF_DBL min_quality,
   REF_INT cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL quality;
-  char *zonetype;
+  const char *zonetype;
   FILE *f;
 
   RSS(ref_dict_create(&ref_dict), "create cell dict");
