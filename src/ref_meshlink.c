@@ -31,9 +31,10 @@
 
 #endif
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom) {
+REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-
+  if (NULL == filename) return REF_SUCCESS;
+  printf("MeskLink with %s\n", filename);
   return REF_SUCCESS;
 }
 

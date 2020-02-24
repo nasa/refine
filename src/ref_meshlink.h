@@ -23,15 +23,13 @@
 
 BEGIN_C_DECLORATION
 
-
-
 END_C_DECLORATION
 
 #include "ref_geom.h"
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom);
+REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename);
 REF_STATUS ref_meshlink_close(REF_GEOM ref_geom);
 
 END_C_DECLORATION

@@ -23,21 +23,31 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_mpi.h"
 #include "ref_adj.h"
+#include "ref_mpi.h"
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_GEOM ref_geom;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
-  RSS(ref_geom_create(&ref_geom), "create");
 
-  RSS(ref_meshlink_open(ref_geom), "open");
-  RSS(ref_meshlink_close(ref_geom), "close");  
+  {
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom), "create");
+    RSS(ref_meshlink_open(ref_geom, NULL), "open");
+    RSS(ref_meshlink_close(ref_geom), "close");
+    RSS(ref_geom_free(ref_geom), "free");
+  }
 
-  RSS(ref_geom_free(ref_geom), "free");
+  if (1 < argc) {
+    REF_GEOM ref_geom;
+    RSS(ref_geom_create(&ref_geom), "create");
+    RSS(ref_meshlink_open(ref_geom, argv[1]), "open");
+    RSS(ref_meshlink_close(ref_geom), "close");
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
