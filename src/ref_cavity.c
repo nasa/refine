@@ -1573,7 +1573,7 @@ REF_STATUS ref_cavity_tec(REF_CAVITY ref_cavity, const char *filename) {
   REF_INT cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local;
   REF_DBL xyz_phys[3];
-  char *zonetype;
+  const char *zonetype;
   FILE *f;
 
   zonetype = "fetetrahedron";

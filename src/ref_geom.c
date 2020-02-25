@@ -166,17 +166,17 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
 }
 
 REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n) {
-  REF_INT geom, new, i;
-  new = 0;
+  REF_INT geom, compact, i;
+  compact = 0;
   each_ref_geom(ref_geom, geom) {
     for (i = 0; i < REF_GEOM_DESCR_SIZE; i++)
-      ref_geom_descr(ref_geom, i, new) = ref_geom_descr(ref_geom, i, geom);
-    ref_geom_node(ref_geom, new) = o2n[ref_geom_node(ref_geom, geom)];
+      ref_geom_descr(ref_geom, i, compact) = ref_geom_descr(ref_geom, i, geom);
+    ref_geom_node(ref_geom, compact) = o2n[ref_geom_node(ref_geom, geom)];
     for (i = 0; i < 2; i++)
-      ref_geom_param(ref_geom, i, new) = ref_geom_param(ref_geom, i, geom);
-    new ++;
+      ref_geom_param(ref_geom, i, compact) = ref_geom_param(ref_geom, i, geom);
+    compact++;
   }
-  REIS(new, ref_geom_n(ref_geom), "count mismatch");
+  REIS(compact, ref_geom_n(ref_geom), "count mismatch");
   if (ref_geom_n(ref_geom) < ref_geom_max(ref_geom)) {
     for (geom = ref_geom_n(ref_geom); geom < ref_geom_max(ref_geom); geom++) {
       ref_geom_type(ref_geom, geom) = REF_EMPTY;
@@ -1960,12 +1960,12 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
-  char *poly_name = "ref_geom_test_tetgen.poly";
-  char *node_name = "ref_geom_test_tetgen.1.node";
-  char *ele_name = "ref_geom_test_tetgen.1.ele";
-  char *face_name = "ref_geom_test_tetgen.1.face";
-  char *edge_name = "ref_geom_test_tetgen.1.edge";
+  const char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
+  const char *poly_name = "ref_geom_test_tetgen.poly";
+  const char *node_name = "ref_geom_test_tetgen.1.node";
+  const char *ele_name = "ref_geom_test_tetgen.1.ele";
+  const char *face_name = "ref_geom_test_tetgen.1.face";
+  const char *edge_name = "ref_geom_test_tetgen.1.edge";
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -2158,8 +2158,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
 
 REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  char *surface_ugrid_name = "ref_geom_test_surface.lb8.ugrid";
-  char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
+  const char *surface_ugrid_name = "ref_geom_test_surface.lb8.ugrid";
+  const char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
   char command[1024];
   int system_status;
 
