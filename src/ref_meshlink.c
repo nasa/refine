@@ -28,6 +28,7 @@
 #endif
 
 #ifdef HAVE_MESHLINK
+#include "GeomKernel_Geode_c.h"
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
 #endif
@@ -64,6 +65,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
 #ifdef HAVE_MESHLINK
   MeshAssociativityObj mesh_assoc;
   MeshModelObj mesh_model;
+  GeometryKernelObj geom_kernel = NULL;
   REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
   printf("have mesh_assoc\n");
@@ -87,6 +89,12 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
   printf("extracting mesh_model %s\n", block_name);
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
+  printf("have mesh model\n");
+
+  printf("extracting geom_kernel\n");
+  REIS(0, ML_createGeometryKernelGeodeObj(&geom_kernel),
+       "Error creating Mesh Model Object");
+  printf("have geom kernel\n");
 
   {
     MeshPointObj mesh_point = NULL;

@@ -434,6 +434,18 @@ then
                 [xerces_lib_path=$with_MeshLink/external/xerces/macosx/lib],
 		[xerces_lib_path='no'])
 
+  AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/GeomKernel_Geode_c.h],
+                [geode_include_path=$with_MeshLink/src/mlkernel_geode],
+		[geode_inlcude_path='no'])
+
+  AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/dist/macosx/bin/mlkernel_geode.a],
+                [geode_a_path=$with_MeshLink/src/mlkernel_geode/dist/macosx/bin/mlkernel_geode.a],
+		[geode_a_path='no'])
+
+  AC_CHECK_FILE([$with_MeshLink/external/gelite/macosx/lib/libgeom.a],
+                [geode_lib_path=$with_MeshLink/external/gelite/macosx/lib],
+		[geode_lib_path='no'])
+
   meshlink_include=""
   if test "$meshlink_include_path" != 'no'
   then
@@ -443,12 +455,17 @@ then
   then
       meshlink_include="${meshlink_include} -I${xerces_include_path}"
   fi
+  if test "$geode_include_path" != 'no'
+  then
+      meshlink_include="${meshlink_include} -I${geode_include_path}"
+  fi
   
   meshlink_ldadd=""
   if test "$meshlink_a_path" != 'no'
   then
       meshlink_ldadd="${meshlink_a_path}"
   fi
+
   if test "$xerces_a_path" != 'no'
   then
       meshlink_ldadd="${meshlink_ldadd} ${xerces_a_path}"
@@ -456,6 +473,15 @@ then
   if test "$xerces_lib_path" != 'no'
   then
       meshlink_ldadd="${meshlink_ldadd} -Wl,-rpath,${xerces_lib_path} -L${xerces_lib_path} -lxerces-c"
+  fi
+
+  if test "$geode_a_path" != 'no'
+  then
+      meshlink_ldadd="${meshlink_ldadd} ${geode_a_path}"
+  fi
+  if test "$geode_lib_path" != 'no'
+  then
+      meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath"
   fi
   
   AC_SUBST([meshlink_include])
