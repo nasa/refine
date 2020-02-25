@@ -426,6 +426,14 @@ then
                 [xerces_include_path=$with_MeshLink/src/mlparser_xerces],
 		[xerces_inlcude_path='no'])
 
+  AC_CHECK_FILE([$with_MeshLink/src/mlparser_xerces/dist/macosx/bin/mlparser_xerces.a],
+                [xerces_a_path=$with_MeshLink/src/mlparser_xerces/dist/macosx/bin/mlparser_xerces.a],
+		[xerces_a_path='no'])
+
+  AC_CHECK_FILE([$with_MeshLink/external/xerces/macosx/lib/libxerces-c.dylib],
+                [xerces_lib_path=$with_MeshLink/external/xerces/macosx/lib],
+		[xerces_lib_path='no'])
+
   meshlink_include=""
   if test "$meshlink_include_path" != 'no'
   then
@@ -440,6 +448,14 @@ then
   if test "$meshlink_a_path" != 'no'
   then
       meshlink_ldadd="${meshlink_a_path}"
+  fi
+  if test "$xerces_a_path" != 'no'
+  then
+      meshlink_ldadd="${meshlink_ldadd} ${xerces_a_path}"
+  fi
+  if test "$xerces_lib_path" != 'no'
+  then
+      meshlink_ldadd="${meshlink_ldadd} -Wl,-rpath,${xerces_lib_path} -L${xerces_lib_path} -lxerces-c"
   fi
   
   AC_SUBST([meshlink_include])
