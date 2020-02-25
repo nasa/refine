@@ -121,8 +121,6 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
          "Error reading Geometry File");
   }
 
-  return REF_SUCCESS;
-
   {
     MeshPointObj mesh_point = NULL;
     REF_INT i, n;
