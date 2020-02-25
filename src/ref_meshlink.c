@@ -32,6 +32,8 @@
 #include "MeshLinkParser_xerces_c.h"
 #endif
 
+#include "ref_edge.h"
+
 REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
                              const char *block_name) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -63,6 +65,31 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
   printf("extracted mesh_model\n");
+
+  {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    REF_BOOL tri_side;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_cell_has_side(ref_cell, node0, node1, &tri_side), "is tri side");
+      if (tri_side) {
+        MLINT edge_indexes[2];
+        MeshEdgeObj mesh_edge = NULL;
+        edge_indexes[0] = ref_node_global(ref_node, node0);
+        edge_indexes[1] = ref_node_global(ref_node, node1);
+        REIS(0,
+             ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
+                                         &mesh_edge),
+             "find edge");
+      }
+    }
+    ref_edge_free(ref_edge);
+  }
 
 #endif
   return REF_SUCCESS;
