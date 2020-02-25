@@ -11,7 +11,6 @@ set -u # Treat unset variables as error
 module purge
 source acceptance/ref-modules.sh
 
-
 root_dir=$(dirname $PWD)
 source_dir=${root_dir}/refine
 
@@ -19,6 +18,7 @@ parmetis_dir=${root_dir}/_refine-parmetis-egadslite
 zoltan_dir=${root_dir}/_refine-zoltan-egadslite
 egads_dir=${root_dir}/_refine-egads-full
 strict_dir=${root_dir}/_refine-strict
+cpp_dir=${root_dir}/_refine-cpp
 
 cd ${source_dir}
 LOG=${root_dir}/log.bootstrap
@@ -48,6 +48,18 @@ trap - EXIT
 LOG=${root_dir}/log.strict-make-distcheck
 trap "cat $LOG" EXIT
 ( make distcheck > $LOG 2>&1 && cp refine-*.tar.gz ${root_dir} || touch FAILED ) &
+trap - EXIT
+
+date
+
+LOG=${root_dir}/log.cpp-configure-compile-check
+trap "cat $LOG" EXIT
+${source_dir}/configure \
+    --prefix=${strict_dir} \
+    CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
+    CC=g++  > $LOG 2>&1
+make -j 8 >> $LOG 2>&1
+make check  >> $LOG 2>&1
 trap - EXIT
 
 date
