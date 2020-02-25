@@ -1,0 +1,62 @@
+#!/usr/bin/env ruby
+
+unless (ARGV[1]) then
+  puts "usage :\n #{$0} mesh.wrl mesh.ugrid"
+  exit 1
+end
+
+lines = IO.readlines(ARGV[0])
+
+nnode = 0
+active = false
+lines.each do |line|
+  if (line =~ /point*.\[/) then
+    active = true
+    next
+  end
+  break if (active && line =~ /\]/)
+  nnode +=1 if (active)
+end
+
+ntri = 0
+active = false
+lines.each do |line|
+  if (line =~ /coordIndex*.\[/) then
+    active = true
+    next
+  end
+  break if (active && line =~ /\]/)
+  ntri += 1 if (active)
+end
+
+puts "#{nnode} #{ntri}"
+
+File.open(ARGV[1],'w') do |f|
+  f.puts "#{nnode} #{ntri} 0 0 0 0 0"
+
+  active = false
+  lines.each do |line|
+    if (line =~ /point*.\[/) then
+      active = true
+      next
+    end
+    break if (active && line =~ /\]/)
+    f.puts line.gsub(/,/,'') if (active)
+  end
+
+  active = false
+  lines.each do |line|
+    if (line =~ /coordIndex*.\[/) then
+      active = true
+      next
+    end
+    break if (active && line =~ /\]/)
+    f.puts line.split(/,/)[0..2].map{|i|i.to_i+1}.join(' ') if (active)
+  end
+
+  ntri.times do |i|
+    f.puts 1
+  end
+  
+end
+
