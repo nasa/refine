@@ -70,6 +70,19 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
          ((MeshModel *)mesh_model)->getNumFaces());
 
   {
+    MeshPointObj mesh_point = NULL;
+    REF_INT i, n;
+    n = 0;
+    for (i = 1; i < 1000; i++) {
+      if (0 != ML_findHighestTopoPointByInd(mesh_model, i, &mesh_point)) {
+        n = i;
+        break;
+      }
+    }
+    printf("%d numpoints\n", n);
+  }
+
+  {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_EDGE ref_edge;
