@@ -422,10 +422,18 @@ then
                 [meshlink_a_path=$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
 		[meshlink_a_path='no'])
 
+  AC_CHECK_FILE([$with_MeshLink/src/mlparser_xerces/MeshLinkParser_xerces_c.h],
+                [xerces_include_path=$with_MeshLink/src/mlparser_xerces],
+		[xerces_inlcude_path='no'])
+
   meshlink_include=""
   if test "$meshlink_include_path" != 'no'
   then
       meshlink_include="-I${meshlink_include_path}"
+  fi
+  if test "$xerces_include_path" != 'no'
+  then
+      meshlink_include="${meshlink_include} -I${xerces_include_path}"
   fi
   
   meshlink_ldadd=""

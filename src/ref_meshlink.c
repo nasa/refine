@@ -29,6 +29,7 @@
 
 #ifdef HAVE_MESHLINK
 #include "MeshAssociativity_c.h"
+#include "MeshLinkParser_xerces_c.h"
 #endif
 
 REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
@@ -36,10 +37,23 @@ REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
   if (NULL == filename) return REF_SUCCESS;
   printf("MeskLink with %s\n", filename);
 #ifdef HAVE_MESHLINK
-  MeshAssociativityObj meshAssoc;
-  REIS(0, ML_createMeshAssociativityObj(&meshAssoc),
+  MeshAssociativityObj mesh_assoc;
+  REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
-  printf("have meshAssoc\n");
+  printf("have mesh_assoc\n");
+  /* Read Geometry-Mesh associativity */
+  {
+    /* NULL schema filename uses schemaLocation in meshlink file */
+    const char *schema_filename = NULL;
+    /* Xerces MeshLink XML parser */
+    MeshLinkParserObj parser;
+    REIS(0, ML_createMeshLinkParserXercesObj(&parser), "create parser");
+    REIS(0, ML_parserValidateFile(parser, filename, schema_filename),
+         "validate");
+    REIS(0, ML_parserReadMeshLinkFile(parser, filename, mesh_assoc), "parse");
+    ML_freeMeshLinkParserXercesObj(&parser);
+  }
+
 #endif
   return REF_SUCCESS;
 }
