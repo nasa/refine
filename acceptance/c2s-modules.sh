@@ -4,7 +4,7 @@ module use --append /u/shared/fun3d/fun3d_users/modulefiles
 module load FUN3D/13.6
 
 module load gcc_6.2.0
-module load ESP/117
+module load ESP/118-rc.1
 module load tetgen/1.5.0
 
 module list
