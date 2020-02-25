@@ -32,9 +32,9 @@
 #include "MeshLinkParser_xerces_c.h"
 #endif
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *xml_filename,
+REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
                              const char *block_name) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   if (NULL == xml_filename || NULL == block_name) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
   MeshAssociativityObj mesh_assoc;
@@ -68,8 +68,8 @@ REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *xml_filename,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_meshlink_close(REF_GEOM ref_geom) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 
   return REF_SUCCESS;
 }

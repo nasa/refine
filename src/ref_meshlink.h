@@ -25,13 +25,13 @@ BEGIN_C_DECLORATION
 
 END_C_DECLORATION
 
-#include "ref_geom.h"
+#include "ref_grid.h"
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *xml_filename,
+REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
                              const char *base_name);
-REF_STATUS ref_meshlink_close(REF_GEOM ref_geom);
+REF_STATUS ref_meshlink_close(REF_GRID ref_grid);
 
 END_C_DECLORATION
 

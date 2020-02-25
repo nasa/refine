@@ -23,7 +23,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ref_adj.h"
+#include "ref_grid.h"
+#include "ref_import.h"
 #include "ref_mpi.h"
 
 int main(int argc, char *argv[]) {
@@ -32,20 +33,13 @@ int main(int argc, char *argv[]) {
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  {
-    REF_GEOM ref_geom;
-    RSS(ref_geom_create(&ref_geom), "create");
-    RSS(ref_meshlink_open(ref_geom, NULL, NULL), "open");
-    RSS(ref_meshlink_close(ref_geom), "close");
-    RSS(ref_geom_free(ref_geom), "free");
-  }
-
-  if (2 < argc) {
-    REF_GEOM ref_geom;
-    RSS(ref_geom_create(&ref_geom), "create");
-    RSS(ref_meshlink_open(ref_geom, argv[1], argv[2]), "open");
-    RSS(ref_meshlink_close(ref_geom), "close");
-    RSS(ref_geom_free(ref_geom), "free");
+  if (3 < argc) {
+    REF_GRID ref_grid;
+    printf("grid source %s\n", argv[1]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "argv import");
+    RSS(ref_meshlink_open(ref_grid, argv[2], argv[3]), "open");
+    RSS(ref_meshlink_close(ref_grid), "close");
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
