@@ -74,9 +74,30 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
     REF_INT i, n;
     n = 0;
     for (i = 1; i < 1000; i++) {
-      if (0 != ML_findHighestTopoPointByInd(mesh_model, i, &mesh_point)) {
+      if (0 != ML_findLowestTopoPointByInd(mesh_model, i, &mesh_point)) {
         n = i;
         break;
+      } else {
+        char ref[1024];
+        char name[1024];
+        MLINT gref;
+        MLINT mid;
+        const MLINT sizeAttIDs = 24;
+        MLINT attIDs[24];
+        MLINT numAttIDs;
+        ParamVertexConstObj paramVert;
+        const MLINT size_entityNames = 24;
+        char entityNames[24][1024];
+        MLINT num_entityNames;
+        MLVector3D evaluationPoint;
+
+        if (0 != ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name,
+                                     1024, &gref, &mid, attIDs, sizeAttIDs,
+                                     &numAttIDs, &paramVert)) {
+          printf("evaluateParamPoint: bad point info\n");
+        } else {
+          printf("name %s\n", name);
+        }
       }
     }
     printf("%d numpoints\n", n);
