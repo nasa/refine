@@ -35,6 +35,29 @@
 
 #include "ref_edge.h"
 
+#ifdef HAVE_MESHLINK
+static REF_STATUS ref_meshlink_tattle_point(MeshAssociativityObj mesh_assoc,
+                                            MeshPointObj mesh_point) {
+  char ref[1024];
+  char name[1024];
+  MLINT gref;
+  MLINT mid;
+  const MLINT sizeAttIDs = 24;
+  MLINT attIDs[24];
+  MLINT numAttIDs;
+  ParamVertexConstObj paramVert;
+
+  if (0 != ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name, 1024,
+                               &gref, &mid, attIDs, sizeAttIDs, &numAttIDs,
+                               &paramVert)) {
+    printf("evaluateParamPoint: bad point info\n");
+  } else {
+    printf("name %s\n", name);
+  }
+  return REF_SUCCESS;
+}
+#endif
+
 REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
                              const char *block_name) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -78,22 +101,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         n = i;
         break;
       } else {
-        char ref[1024];
-        char name[1024];
-        MLINT gref;
-        MLINT mid;
-        const MLINT sizeAttIDs = 24;
-        MLINT attIDs[24];
-        MLINT numAttIDs;
-        ParamVertexConstObj paramVert;
-
-        if (0 != ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name,
-                                     1024, &gref, &mid, attIDs, sizeAttIDs,
-                                     &numAttIDs, &paramVert)) {
-          printf("evaluateParamPoint: bad point info\n");
-        } else {
-          printf("name %s\n", name);
-        }
+        RSS(ref_meshlink_tattle_point(mesh_assoc, mesh_point), "tattle");
       }
     }
     printf("%d numpoints\n", n);
