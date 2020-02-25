@@ -28,7 +28,6 @@
 #endif
 
 #ifdef HAVE_MESHLINK
-#include "MeshAssociativity.h" /* for debug info, not c */
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
 #endif
@@ -88,9 +87,6 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
   printf("extracting mesh_model %s\n", block_name);
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
-  printf("extracted mesh_model numedges %d numfaces %d\n",
-         ((MeshModel *)mesh_model)->getNumEdges(),
-         ((MeshModel *)mesh_model)->getNumFaces());
 
   {
     MeshPointObj mesh_point = NULL;
