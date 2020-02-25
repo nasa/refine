@@ -35,15 +35,15 @@ int main(int argc, char *argv[]) {
   {
     REF_GEOM ref_geom;
     RSS(ref_geom_create(&ref_geom), "create");
-    RSS(ref_meshlink_open(ref_geom, NULL), "open");
+    RSS(ref_meshlink_open(ref_geom, NULL, NULL), "open");
     RSS(ref_meshlink_close(ref_geom), "close");
     RSS(ref_geom_free(ref_geom), "free");
   }
 
-  if (1 < argc) {
+  if (2 < argc) {
     REF_GEOM ref_geom;
     RSS(ref_geom_create(&ref_geom), "create");
-    RSS(ref_meshlink_open(ref_geom, argv[1]), "open");
+    RSS(ref_meshlink_open(ref_geom, argv[1], argv[2]), "open");
     RSS(ref_meshlink_close(ref_geom), "close");
     RSS(ref_geom_free(ref_geom), "free");
   }

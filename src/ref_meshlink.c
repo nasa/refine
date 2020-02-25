@@ -32,12 +32,13 @@
 #include "MeshLinkParser_xerces_c.h"
 #endif
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
+REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *xml_filename,
+                             const char *block_name) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-  if (NULL == filename) return REF_SUCCESS;
-  printf("MeskLink with %s\n", filename);
+  if (NULL == xml_filename || NULL == block_name) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
   MeshAssociativityObj mesh_assoc;
+  MeshModelObj mesh_model;
   REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
   printf("have mesh_assoc\n");
@@ -48,11 +49,20 @@ REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename) {
     /* Xerces MeshLink XML parser */
     MeshLinkParserObj parser;
     REIS(0, ML_createMeshLinkParserXercesObj(&parser), "create parser");
-    REIS(0, ML_parserValidateFile(parser, filename, schema_filename),
+    printf("validate %s\n", xml_filename);
+    REIS(0, ML_parserValidateFile(parser, xml_filename, schema_filename),
          "validate");
-    REIS(0, ML_parserReadMeshLinkFile(parser, filename, mesh_assoc), "parse");
+    printf("parse %s\n", xml_filename);
+    REIS(0, ML_parserReadMeshLinkFile(parser, xml_filename, mesh_assoc),
+         "parse");
     ML_freeMeshLinkParserXercesObj(&parser);
   }
+  printf("populated mesh_assoc\n");
+
+  printf("extracting mesh_model %s\n", block_name);
+  REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
+       "Error creating Mesh Model Object");
+  printf("extracted mesh_model\n");
 
 #endif
   return REF_SUCCESS;

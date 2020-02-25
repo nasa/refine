@@ -29,7 +29,8 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *filename);
+REF_STATUS ref_meshlink_open(REF_GEOM ref_geom, const char *xml_filename,
+                             const char *base_name);
 REF_STATUS ref_meshlink_close(REF_GEOM ref_geom);
 
 END_C_DECLORATION
