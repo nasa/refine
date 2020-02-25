@@ -112,6 +112,21 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
     REF_INT i, n;
     n = 0;
     for (i = 1; i < 1000; i++) {
+      if (0 != ML_findHighestTopoPointByInd(mesh_model, i, &mesh_point)) {
+        n = i;
+        break;
+      } else {
+        RSS(ref_meshlink_tattle_point(mesh_assoc, mesh_point), "tattle");
+      }
+    }
+    printf("%d numpoints\n", n);
+  }
+
+  {
+    MeshPointObj mesh_point = NULL;
+    REF_INT i, n;
+    n = 0;
+    for (i = 1; i < 1000; i++) {
       if (0 != ML_findMeshEdgePointByInd(mesh_model, i, &mesh_point)) {
         n = i;
         break;
