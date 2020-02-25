@@ -28,9 +28,9 @@
 #endif
 
 #ifdef HAVE_MESHLINK
+#include "MeshAssociativity.h" /* for debug info, not c */
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
-#include "MeshModel.h" /* for debug info, not c */
 #endif
 
 #include "ref_edge.h"
