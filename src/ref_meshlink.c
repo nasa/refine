@@ -86,10 +86,6 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         MLINT attIDs[24];
         MLINT numAttIDs;
         ParamVertexConstObj paramVert;
-        const MLINT size_entityNames = 24;
-        char entityNames[24][1024];
-        MLINT num_entityNames;
-        MLVector3D evaluationPoint;
 
         if (0 != ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name,
                                      1024, &gref, &mid, attIDs, sizeAttIDs,
