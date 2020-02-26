@@ -274,9 +274,6 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_BOOL transcript = REF_FALSE;
   REF_DBL ratio01, ratio0, ratio1, weight_node1;
 
-  RAS(!ref_grid_twod(ref_grid), "only 3D");
-  RAS(!ref_grid_surf(ref_grid), "only 3D");
-
   ref_cell = ref_grid_tet(ref_grid);
   if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
     ref_cell = ref_grid_tri(ref_grid);
