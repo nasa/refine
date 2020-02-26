@@ -392,7 +392,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                              ref_edge_e2n(ref_edge, 1, edge), new_node,
                              &allowed_ratio),
         "edge tet ratio");
-    if (transcript && !allowed_ratio) printf("tet ratio poor\n");
+    if (transcript && !allowed_ratio) printf("ratio poor\n");
 
     RSS(ref_split_edge_tri_conformity(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                       ref_edge_e2n(ref_edge, 1, edge), new_node,
@@ -400,11 +400,20 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "edge tri qual");
     if (transcript && !allowed_tri_conformity) printf("tri conformity poor\n");
 
+    RSS(ref_cell_has_side(ref_grid_edg(ref_grid),
+                          ref_edge_e2n(ref_edge, 0, edge),
+                          ref_edge_e2n(ref_edge, 1, edge), &has_edge),
+        "check for an edge");
+
     RSS(ref_split_tri_manifold_for_cavity(
             ref_grid, ref_edge_e2n(ref_edge, 0, edge),
             ref_edge_e2n(ref_edge, 1, edge), &allowed_tri_manifold),
         "edge tri qual");
     if (transcript && !allowed_tri_manifold) printf("tri not manifold\n");
+
+    /* until cavity is extended to non manifold twod */
+    if (ref_grid_twod(ref_grid) && !allowed_tri_manifold && has_edge)
+      allowed_ratio = REF_TRUE;
 
     try_cavity = REF_FALSE;
     if (!allowed_tet_quality || !allowed_ratio || !allowed_tri_conformity ||
@@ -427,16 +436,18 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity))
         REF_WHERE("enlarge"); /* note but skip cavity failures */
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        RSS(ref_cell_has_side(ref_grid_edg(ref_grid),
-                              ref_edge_e2n(ref_edge, 0, edge),
-                              ref_edge_e2n(ref_edge, 1, edge), &has_edge),
-            "check for an edge");
         RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
             "cavity ratio");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
         valid_cavity =
             (allowed_cavity_ratio || has_edge) &&
             (min_add > ref_grid_adapt(ref_grid, split_quality_absolute));
+        if (transcript && !valid_cavity)
+          printf("valid_cavity edge %d ratio %d add %d %f\n", has_edge,
+                 allowed_cavity_ratio,
+                 (min_add > ref_grid_adapt(ref_grid, split_quality_absolute)),
+                 min_add);
+
         if (valid_cavity) {
           RSS(ref_cavity_replace(ref_cavity), "cav replace");
           RSS(ref_cavity_free(ref_cavity), "cav free");
