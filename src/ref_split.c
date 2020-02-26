@@ -660,7 +660,7 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
                                       REF_INT node1, REF_INT new_node,
                                       REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
+  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, cell_node;
   REF_INT node;
@@ -670,7 +670,6 @@ REF_STATUS ref_split_edge_tet_quality(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_FALSE;
 
   min_existing_quality = 1.0;
-  ref_cell = ref_grid_tet(ref_grid);
   each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
 
