@@ -277,7 +277,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_split_surf_pass(ref_grid), "pass");
+    RSS(ref_split_pass(ref_grid), "pass");
 
     REIS(3, ref_node_n(ref_grid_node(ref_grid)), "nodes");
     REIS(1, ref_cell_n(ref_grid_tri(ref_grid)), "tris");
@@ -294,7 +294,7 @@ int main(int argc, char *argv[]) {
                              1.0 / (0.25 * 0.25), 0, 1),
         "set 1 small");
 
-    RSS(ref_split_surf_pass(ref_grid), "pass");
+    RSS(ref_split_pass(ref_grid), "pass");
 
     REIS(5, ref_node_n(ref_grid_node(ref_grid)), "nodes");
     REIS(3, ref_cell_n(ref_grid_tri(ref_grid)), "tri");
