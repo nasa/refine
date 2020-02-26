@@ -50,17 +50,6 @@ REF_STATUS ref_split_two_tris(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_split_tri_manifold_for_cavity(REF_GRID ref_grid, REF_INT node0,
-                                             REF_INT node1, REF_BOOL *allowed) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT ncell, cells[2];
-  *allowed = REF_TRUE;
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
-      "more then two");
-  if (1 == ncell) *allowed = REF_FALSE;
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -261,7 +250,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
   REF_BOOL allowed_ratio, allowed_tri_conformity, allowed_tet_quality;
   REF_BOOL allowed, allowed_local, geom_support, valid_cavity, try_cavity;
   REF_BOOL allowed_cavity_ratio, has_edge;
-  REF_BOOL allowed_tri_quality, allowed_tri_manifold;
+  REF_BOOL allowed_tri_quality;
   REF_DBL min_del, min_add;
   REF_GLOB global;
   REF_INT new_node;
@@ -405,20 +394,13 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                           ref_edge_e2n(ref_edge, 1, edge), &has_edge),
         "check for an edge");
 
-    RSS(ref_split_tri_manifold_for_cavity(
-            ref_grid, ref_edge_e2n(ref_edge, 0, edge),
-            ref_edge_e2n(ref_edge, 1, edge), &allowed_tri_manifold),
-        "edge tri qual");
-    if (transcript && !allowed_tri_manifold) printf("tri not manifold\n");
-
-    /* until cavity is extended to non manifold twod */
-    if (ref_grid_twod(ref_grid) && !allowed_tri_manifold && has_edge)
-      allowed_ratio = REF_TRUE;
+    /* recover coarse twod surf boundary */
+    if (ref_grid_twod(ref_grid) && has_edge) allowed_ratio = REF_TRUE;
 
     try_cavity = REF_FALSE;
     if (!allowed_tet_quality || !allowed_ratio || !allowed_tri_conformity ||
         !allowed_tri_quality) {
-      if (geom_support && allowed_tri_manifold) {
+      if (geom_support) {
         try_cavity = REF_TRUE;
       } else {
         RSS(ref_node_remove(ref_node, new_node), "remove new node");
