@@ -57,7 +57,7 @@ REF_STATUS ref_split_tri_manifold_for_cavity(REF_GRID ref_grid, REF_INT node0,
   *allowed = REF_TRUE;
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
       "more then two");
-  if (2 != ncell || 0 != ncell) *allowed = REF_FALSE;
+  if (1 == ncell) *allowed = REF_FALSE;
   return REF_SUCCESS;
 }
 
