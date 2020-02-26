@@ -75,7 +75,8 @@ REF_STATUS ref_split_surf_pass(REF_GRID ref_grid) {
   REF_GLOB global;
   REF_INT new_node;
   REF_CAVITY ref_cavity = (REF_CAVITY)NULL;
-  REF_DBL ratio01, ratio0, ratio1, weight_node1;
+  REF_DBL ratio01, ratio0, ratio1;
+  REF_DBL weight_node1;
 
   RAS(ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid), "only twod or surf");
 
