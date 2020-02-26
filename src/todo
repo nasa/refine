@@ -1,4 +1,7 @@
 
+- merge threed, twod, surf paths
+  - split
+
 high speed flat plate
 nlf airfoil
 
@@ -48,9 +51,6 @@ C2S
   - surf
   - with volume
   - exclude from statistics?
-
-- merge threed, twod, surf paths
-  - ref_collapse_face_* goes away
 
 - single pass near-tree for grid size gradation of gaps
   + pearl in curved plate test case for blister
@@ -221,10 +221,12 @@ egads recon
 - bootstrap all of C2S
 - faster multiscale convergence of boundary layer and nozzle when shocks
 - native partitioner
-- TKE fixed-point augmentation for HRLES
+- dual RANS/ILES metric or meshes for HRLES
 - merge twod surf threed methods
 - mesh movement
 - C2S acceptance on fun3d and sfe develop/master
+- recover coarse curved edge/face from tessilation
+- surrogate geometry
 - curved higher order meshing
 - smoothing order graph distance to boundary
 - migration to cavity from local operators
@@ -235,7 +237,6 @@ egads recon
 - thin geometry boost of curvature constraint metric
 - limit metric change from implied metric and update until convergence
 - virtual topology
-- surrogate geometry
 - meshlink support
 - split private/public header defs
 - standardize post operation conditions
@@ -247,6 +248,15 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ test ESP/118-rc.1
++ merged collapse twod/surf/threed paths
++ 2d parallel
++ start .snap file part
++ deploy refmpi* to pfe
++ gather cell center solb for tet and prism 
++ compiles with g++ and clang++
++ merged threed, twod, surf ref_collapse
 
 + 1.9.1
 
