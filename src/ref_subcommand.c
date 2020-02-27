@@ -96,6 +96,9 @@ static void interpolate_help(const char *name) {
       "receptor.solb\n",
       name);
   printf("\n");
+  printf("  options:\n");
+  printf("   --extrude receptor.solb data to two planes.\n");
+  printf("\n");
 }
 
 static void vertex_help(const char *name) {
@@ -606,6 +609,25 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
+                                         REF_DBL *twod_field,
+                                         REF_GRID extruded_grid,
+                                         REF_DBL *extruded_field) {
+  REF_INT node, local, i;
+  REF_GLOB twod_nnode, global;
+  twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
+  each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
+    global = ref_node_global(ref_grid_node(extruded_grid), node);
+    if (global >= twod_nnode) global -= twod_nnode;
+    RSS(ref_node_local(ref_grid_node(twod_grid), global, &local),
+        "twod global missing");
+    for (i = 0; i < ldim; i++) {
+      extruded_field[i + ldim * node] = twod_field[i + ldim * local];
+    }
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *receipt_solb;
   char *receipt_meshb;
@@ -616,6 +638,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT ldim;
   REF_DBL *donor_solution, *receipt_solution;
   REF_INTERP ref_interp;
+  REF_INT pos;
 
   if (argc < 6) goto shutdown;
   donor_meshb = argv[2];
@@ -671,11 +694,31 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
       "interp scalar");
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
-  if (ref_mpi_once(ref_mpi))
-    printf("writing receptor solution %s\n", receipt_solb);
-  RSS(ref_gather_scalar(receipt_grid, ldim, receipt_solution, receipt_solb),
-      "gather recept");
-  ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+  RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_GRID extruded_grid;
+    REF_DBL *extruded_solution = NULL;
+    if (ref_mpi_once(ref_mpi)) printf("extrude receptor solution\n");
+    RSS(ref_grid_extrude_twod(&extruded_grid, receipt_grid), "extrude");
+    ref_malloc(extruded_solution,
+               ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+    RSS(ref_grid_extrude_field(receipt_grid, ldim, receipt_solution,
+                               extruded_grid, extruded_solution),
+        "extrude solution");
+    if (ref_mpi_once(ref_mpi))
+      printf("writing interpolated extruded solution %s\n", receipt_solb);
+    RSS(ref_gather_scalar(extruded_grid, ldim, extruded_solution, receipt_solb),
+        "gather recept");
+    ref_free(extruded_solution);
+    RSS(ref_grid_free(extruded_grid), "free");
+  } else {
+    if (ref_mpi_once(ref_mpi))
+      printf("writing receptor solution %s\n", receipt_solb);
+    RSS(ref_gather_scalar(receipt_grid, ldim, receipt_solution, receipt_solb),
+        "gather recept");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
+  }
 
   ref_free(receipt_solution);
   ref_interp_free(ref_interp);
@@ -685,7 +728,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) interpolate_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -717,24 +760,6 @@ static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
 shutdown:
   if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
   return REF_FAILURE;
-}
-static REF_STATUS ref_grid_extrude_field(REF_GRID twod_grid, REF_INT ldim,
-                                         REF_DBL *twod_field,
-                                         REF_GRID extruded_grid,
-                                         REF_DBL *extruded_field) {
-  REF_INT node, local, i;
-  REF_GLOB twod_nnode, global;
-  twod_nnode = ref_node_n_global(ref_grid_node(twod_grid));
-  each_ref_node_valid_node(ref_grid_node(extruded_grid), node) {
-    global = ref_node_global(ref_grid_node(extruded_grid), node);
-    if (global >= twod_nnode) global -= twod_nnode;
-    RSS(ref_node_local(ref_grid_node(twod_grid), global, &local),
-        "twod global missing");
-    for (i = 0; i < ldim; i++) {
-      extruded_field[i + ldim * node] = twod_field[i + ldim * local];
-    }
-  }
-  return REF_SUCCESS;
 }
 
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
@@ -1022,7 +1047,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
   return REF_FAILURE;
 }
 
