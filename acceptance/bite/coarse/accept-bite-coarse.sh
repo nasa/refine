@@ -15,6 +15,9 @@ serveCSM -batch bite.csm \
 ref bootstrap bite.egads --global 10000 10000 90 -t \
     > accept-bite-coarse-bootstrap.txt
 
+grep 'topo angle' accept-bite-coarse-bootstrap.txt
+grep 'faceid near' accept-bite-coarse-bootstrap.txt
+
 exit 0
 
 ref adapt bite-vol.meshb -g bite.egads -f bite-final.tec \
