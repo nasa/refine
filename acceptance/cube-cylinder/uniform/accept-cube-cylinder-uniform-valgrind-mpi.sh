@@ -22,6 +22,7 @@ ${two}/ref_acceptance ega.meshb ega.metric 0.1
 
 mpiexec -np ${nproc} \
 valgrind --quiet  --error-exitcode=1 --leak-check=full \
+--gen-suppressions=all \
 --suppressions=../../../misc/valgrind_suppressions_occ \
 --suppressions=../../../misc/valgrind_suppressions_intel_17 \
 --suppressions=../../../misc/valgrind_suppressions_openmpi \

@@ -205,11 +205,6 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     if (!allowed && audit) printf("   ratio\n");
     if (!allowed) continue;
 
-    RSS(ref_collapse_surf_ratio(ref_grid, node0, node1, &allowed),
-        "surf ratio");
-    if (!allowed && audit) printf("   ratio (surf)\n");
-    if (!allowed) continue;
-
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
@@ -855,29 +850,6 @@ REF_STATUS ref_collapse_edge_ratio(REF_GRID ref_grid, REF_INT node0,
     *allowed = REF_TRUE;
   }
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_collapse_surf_ratio(REF_GRID ref_grid, REF_INT node0,
-                                   REF_INT node1, REF_BOOL *allowed) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_BOOL has_side;
-  REF_INT node, nnode, node_list[MAX_NODE_LIST];
-  REF_DBL ratio;
-
-  *allowed = REF_TRUE;
-  RSS(ref_cell_has_side(ref_cell, node0, node1, &has_side), "side");
-  if (has_side) {
-    RSS(ref_cell_node_list_around(ref_cell, node1, MAX_NODE_LIST, &nnode,
-                                  node_list),
-        "da hood");
-    for (node = 0; node < nnode; node++) {
-      RSS(ref_node_ratio(ref_node, node_list[node], node1, &ratio), "ratio");
-      if (ratio < ref_grid_adapt(ref_grid, collapse_ratio)) return REF_SUCCESS;
-    }
-    *allowed = REF_TRUE;
-  }
   return REF_SUCCESS;
 }
 

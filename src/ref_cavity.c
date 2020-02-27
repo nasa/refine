@@ -957,11 +957,11 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell_node, cell;
-  REF_INT node2, node3, face_node, cell_face;
+  REF_INT face_node, cell_face;
   REF_BOOL has_triangle, has_node0, has_node1;
   REF_BOOL already_have_it, all_local;
   REF_INT face_nodes[3], seg_nodes[3];
-  REF_INT faceid2, faceid3;
+  REF_INT cell_edge, n0, n1;
 
   RSS(ref_cavity_form_empty(ref_cavity, ref_grid, new_node), "init form empty");
   if (!ref_node_owned(ref_node, node0) || !ref_node_owned(ref_node, node1) ||
@@ -1004,11 +1004,6 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
   RSS(ref_cell_has_side(ref_cell, node0, node1, &has_triangle),
       "triangle side");
   if (has_triangle) {
-    RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3),
-        "nodes 2 and 3");
-
-    faceid2 = REF_EMPTY;
-    faceid3 = REF_EMPTY;
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_list_push(ref_cavity_tri_list(ref_cavity), cell), "save tri");
       RSS(ref_cell_all_local(ref_cell, ref_node, cell, &all_local),
@@ -1017,33 +1012,44 @@ REF_STATUS ref_cavity_form_edge_split(REF_CAVITY ref_cavity, REF_GRID ref_grid,
         ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
         return REF_SUCCESS;
       }
-      each_ref_cell_cell_node(ref_cell, cell_node) {
-        if (node2 == ref_cell_c2n(ref_cell, cell_node, cell))
-          faceid2 = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
-        if (node3 == ref_cell_c2n(ref_cell, cell_node, cell))
-          faceid3 = ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell);
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+        n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+        if (MIN(node0, node1) == MIN(n0, n1) &&
+            MAX(node0, node1) == MAX(n0, n1)) {
+          /* skip the edge to be split */
+        } else {
+          seg_nodes[0] = n0;
+          seg_nodes[1] = n1;
+          seg_nodes[2] = ref_cell_c2n(ref_cell, 3, cell);
+          RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+        }
       }
     }
-    REIS(2, ref_list_n(ref_cavity_tri_list(ref_cavity)), "expect two tri");
-    RUS(REF_EMPTY, faceid2, "faceid2 not set");
-    RUS(REF_EMPTY, faceid3, "faceid3 not set");
-
-    seg_nodes[0] = node0;
-    seg_nodes[1] = node3;
-    seg_nodes[2] = faceid3;
-    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
-    seg_nodes[0] = node3;
-    seg_nodes[1] = node1;
-    seg_nodes[2] = faceid3;
-    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
-    seg_nodes[0] = node1;
-    seg_nodes[1] = node2;
-    seg_nodes[2] = faceid2;
-    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
-    seg_nodes[0] = node2;
-    seg_nodes[1] = node0;
-    seg_nodes[2] = faceid2;
-    RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+    RAS(1 == ref_list_n(ref_cavity_tri_list(ref_cavity)) ||
+            2 == ref_list_n(ref_cavity_tri_list(ref_cavity)),
+        "expect one or two tri");
+    if (1 == ref_list_n(ref_cavity_tri_list(ref_cavity))) {
+      each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node,
+                                 cell) {
+        each_ref_cell_cell_edge(ref_cell, cell_edge) {
+          n0 = ref_cell_e2n(ref_cell, 0, cell_edge, cell);
+          n1 = ref_cell_e2n(ref_cell, 1, cell_edge, cell);
+          if (MIN(node0, node1) == MIN(n0, n1) &&
+              MAX(node0, node1) == MAX(n0, n1)) {
+            /* close topo with explicit edge split */
+            seg_nodes[0] = n0;
+            seg_nodes[1] = new_node;
+            seg_nodes[2] = ref_cell_c2n(ref_cell, 3, cell);
+            RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+            seg_nodes[0] = new_node;
+            seg_nodes[1] = n1;
+            seg_nodes[2] = ref_cell_c2n(ref_cell, 3, cell);
+            RSS(ref_cavity_insert_seg(ref_cavity, seg_nodes), "tri side");
+          }
+        }
+      }
+    }
   }
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "split face manifold");

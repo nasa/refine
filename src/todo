@@ -1,7 +1,3 @@
-
-- merge threed, twod, surf paths
-  - split
-
 high speed flat plate
 nlf airfoil
 
@@ -84,7 +80,6 @@ minimize duration of lazy global delete
 check that post conditions are implemented completely for all ops
   consistent naming for operation pre-condition function names and tasks
   extract/combine post adaptation operator checks and status
-  ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
   tattle throw out out range
   full post checks for edge-metric ratio: cavity swap, node smooth
   standardize exceptions (edge priority over tri, tri priority over tet)
@@ -222,7 +217,6 @@ egads recon
 - faster multiscale convergence of boundary layer and nozzle when shocks
 - native partitioner
 - dual RANS/ILES metric or meshes for HRLES
-- merge twod surf threed methods
 - mesh movement
 - C2S acceptance on fun3d and sfe develop/master
 - recover coarse curved edge/face from tessilation
@@ -250,7 +244,11 @@ ooooooooooooooooo
 +++++++++++++++++
 
 + test ESP/118-rc.1
++ merge twod surf threed methods
 + merged collapse twod/surf/threed paths
++ merged split twod/surf/threed paths
++ twod cavity boundary
++ ref_split_edge_tet_ratio -> ref_split_edge_cell_ratio for surf
 + 2d parallel
 + start .snap file part
 + deploy refmpi* to pfe
