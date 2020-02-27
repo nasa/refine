@@ -364,7 +364,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) printf("initial tessellation\n");
-  RSS(ref_egads_tess(ref_grid, auto_tparams), "tess egads");
+  RSS(ref_egads_tess(ref_grid, auto_tparams, NULL), "tess egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   if (ref_mpi_once(ref_mpi))

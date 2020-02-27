@@ -926,7 +926,8 @@ static REF_STATUS ref_egads_cache_tparams(REF_GEOM ref_geom,
 
 #ifdef HAVE_EGADS
 static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
-                                        REF_INT auto_tparams) {
+                                        REF_INT auto_tparams,
+                                        REF_DBL *global_params) {
   ego solid, geom;
   int tess_status, nvert;
   double params[3], diag, box[6];
@@ -958,9 +959,15 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
               (box[1] - box[4]) * (box[1] - box[4]) +
               (box[2] - box[5]) * (box[2] - box[5]));
 
-  params[0] = 0.25 * diag;
-  params[1] = 0.001 * diag;
-  params[2] = 15.0;
+  if (NULL != global_params) {
+    params[0] = global_params[0];
+    params[1] = global_params[1];
+    params[2] = global_params[2];
+  } else {
+    params[0] = 0.25 * diag;
+    params[1] = 0.001 * diag;
+    params[2] = 15.0;
+  }
 
   rebuild = REF_TRUE;
   tries = 0;
@@ -1051,13 +1058,15 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 }
 #endif
 
-REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
+REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams,
+                          REF_DBL *global_params) {
 #ifdef HAVE_EGADS
   ego tess;
   REF_GLOB n_global;
 
   if (ref_mpi_once(ref_grid_mpi(ref_grid))) {
-    RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams),
+    RSS(ref_egads_tess_create(ref_grid_geom(ref_grid), &tess, auto_tparams,
+                              global_params),
         "create tess object");
 
     RSS(ref_egads_tess_fill_vertex(ref_grid, tess, &n_global),
@@ -1079,6 +1088,7 @@ REF_STATUS ref_egads_tess(REF_GRID ref_grid, REF_INT auto_tparams) {
   printf("returning empty grid from %s, No EGADS linked.\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   SUPRESS_UNUSED_COMPILER_WARNING(auto_tparams);
+  SUPRESS_UNUSED_COMPILER_WARNING(global_params);
 #endif
 
   return REF_SUCCESS;
