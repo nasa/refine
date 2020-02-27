@@ -363,8 +363,26 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("initial tessellation\n");
-  RSS(ref_egads_tess(ref_grid, auto_tparams, NULL), "tess egads");
+  {
+    REF_INT global_pos = REF_EMPTY;
+    REF_DBL *global_params = NULL;
+    RXS(ref_args_find(argc, argv, "--global", &global_pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != global_pos && global_pos < argc - 3) {
+      ref_malloc(global_params, 3, REF_DBL);
+      global_params[0] = atof(argv[global_pos + 1]);
+      global_params[1] = atof(argv[global_pos + 2]);
+      global_params[2] = atof(argv[global_pos + 3]);
+      if (ref_mpi_once(ref_mpi))
+        printf("initial tessellation, global param %f %f %f\n",
+               global_params[0], global_params[1], global_params[2]);
+    } else {
+      if (ref_mpi_once(ref_mpi))
+        printf("initial tessellation, default param\n");
+    }
+    RSS(ref_egads_tess(ref_grid, auto_tparams, global_params), "tess egads");
+    ref_free(global_params);
+  }
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   if (ref_mpi_once(ref_mpi))
