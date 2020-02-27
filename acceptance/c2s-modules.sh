@@ -15,6 +15,6 @@ export mpi_path="/opt/hpe/hpc/mpt/mpt-2.19"
 
 export parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.17r14-gcc_6.2.0"
 
-export egads_path="${module_path}/ESP/117/EngSketchPad"
+export egads_path="${module_path}/ESP/118-rc.1/EngSketchPad"
 export opencascade_path="${module_path}/ESP/117/OpenCASCADE-7.3.1"
 
