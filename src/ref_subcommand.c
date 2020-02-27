@@ -685,7 +685,7 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) interpolate_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1022,7 +1022,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) adapt_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) loop_help(argv[0]);
   return REF_FAILURE;
 }
 
