@@ -4,4 +4,3 @@ subtract
 box 0 0 -0.1 1 1 1.1
 intersect
 dump annulus.egads
-end
