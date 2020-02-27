@@ -20,5 +20,5 @@ export module_path="/u/shared/fun3d/fun3d_users/modules"
 export parmetis_path="${module_path}/ParMETIS/4.0.3-openmpi-2.1.1-intel_2017.2.174"
 export zoltan_path="${module_path}/Zoltan/3.82-openmpi-1.10.7-intel_2017.2.174"
 
-export egads_path="${module_path}/ESP/117/EngSketchPad"
+export egads_path="${module_path}/ESP/118-rc.1/EngSketchPad"
 export opencascade_path="${module_path}/ESP/117/OpenCASCADE-7.3.1"
