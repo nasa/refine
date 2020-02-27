@@ -193,6 +193,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                           ref_edge_e2n(ref_edge, 0, edge),
                           ref_edge_e2n(ref_edge, 1, edge), &has_edge),
         "check for an edge");
+    if (transcript && has_edge) printf("has geom edge\n");
 
     /* recover coarse twod surf boundary */
     if (ref_grid_twod(ref_grid) && has_edge) allowed_ratio = REF_TRUE;
@@ -231,6 +232,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                  min_add);
 
         if (valid_cavity) {
+          if (transcript) printf("cavity replace\n");
           RSS(ref_cavity_replace(ref_cavity), "cav replace");
           RSS(ref_cavity_free(ref_cavity), "cav free");
           ref_cavity = (REF_CAVITY)NULL;
@@ -266,6 +268,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
 
+    if (transcript) printf("split\n");
     status = ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                             ref_edge_e2n(ref_edge, 1, edge), new_node);
     if (REF_INCREASE_LIMIT == status) {
