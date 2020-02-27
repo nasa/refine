@@ -1,0 +1,7 @@
+cylinder 0 0 0 0 0 1 0.55
+cylinder 0 0 0 0 0 1 0.5
+subtract
+box 0 0 -0.1 1 1 1.1
+intersect
+dump annulus.egads
+end
