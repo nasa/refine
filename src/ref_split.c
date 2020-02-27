@@ -166,6 +166,12 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "geom support");
     if (transcript && geom_support) printf("geom support\n");
 
+    if (transcript)
+      printf("weight_node1 %f xyz %f %f %f\n", weight_node1,
+             ref_node_xyz(ref_node, 0, new_node),
+             ref_node_xyz(ref_node, 1, new_node),
+             ref_node_xyz(ref_node, 2, new_node));
+
     RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                    ref_edge_e2n(ref_edge, 1, edge), new_node,
                                    &allowed_tet_quality),
