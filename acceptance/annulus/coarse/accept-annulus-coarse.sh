@@ -12,9 +12,9 @@ fi
 
 serveCSM -batch annulus.csm \
 	 > accept-annulus-coarse-csm.txt
-ref bootstrap annulus.egads --global 10000 10000 90 \
+${src}/ref bootstrap annulus.egads --global 10000 10000 90 \
     > accept-annulus-coarse-bootstrap.txt
-ref adapt annulus-vol.meshb -g annulus.egads -f annulus-final.tec \
+${src}/ref adapt annulus-vol.meshb -g annulus.egads -f annulus-final.tec \
     > accept-annulus-coarse-status.txt
 
 cat accept-annulus-coarse-status.txt

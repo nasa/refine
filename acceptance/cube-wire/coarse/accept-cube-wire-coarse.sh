@@ -14,9 +14,9 @@ cp ../geom/cube-wire.csm .
 
 serveCSM -batch cube-wire.csm \
 	 > accept-cube-wire-coarse-csm.txt
-ref bootstrap cube-wire.egads --global 10000 10000 90 \
+${src}/ref bootstrap cube-wire.egads --global 10000 10000 90 \
     > accept-cube-wire-coarse-bootstrap.txt
-ref adapt cube-wire-vol.meshb -g cube-wire.egads -f cube-wire-final.tec \
+${src}/ref adapt cube-wire-vol.meshb -g cube-wire.egads -f cube-wire-final.tec \
     > accept-cube-wire-coarse-status.txt
 
 cat accept-cube-wire-coarse-status.txt
