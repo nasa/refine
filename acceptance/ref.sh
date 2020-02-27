@@ -307,6 +307,12 @@ cd ${source_dir}/acceptance/cube-sphere/ring
 ( ./accept-cube-sphere-ring.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-cube-wire-coarse
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/cube-wire/coarse
+( ./accept-cube-wire-coarse.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-annulus-uniform
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/annulus/uniform
