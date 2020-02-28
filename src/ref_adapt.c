@@ -305,6 +305,13 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
   }
 
+  /* when close to convergence, prevent high lower limit from stopping split */
+  if (ref_adapt->post_max_ratio < 3.5 && ref_adapt->post_max_ratio > 1.6 &&
+      ref_adapt->post_min_ratio > 0.4) {
+    ref_adapt->post_min_ratio =
+        (1.4 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
+  }
+
   ref_adapt->split_ratio = sqrt(2.0);
   if (nodes_per_complexity > 3.0)
     ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
@@ -660,6 +667,37 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
     RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt spl");
+
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
+  ref_gather_blocking_frame(ref_grid, "swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+
+  RSS(ref_smooth_pass(ref_grid), "smooth pass");
+  ref_gather_blocking_frame(ref_grid, "smooth");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt move");
+
+  RSS(ref_adapt_swap(ref_grid), "swap pass");
+  ref_gather_blocking_frame(ref_grid, "swap");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt swap");
+
+  ref_grid_adapt(ref_grid, post_max_ratio) = sqrt(2.0);
+
+  RSS(ref_collapse_pass(ref_grid), "col pass");
+  ref_gather_blocking_frame(ref_grid, "collapse");
+  if (ref_grid_adapt(ref_grid, instrument))
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
+
+  ref_grid_adapt(ref_grid, post_max_ratio) =
+      ref_grid_adapt(ref_grid, last_max_ratio);
 
   RSS(ref_adapt_swap(ref_grid), "swap pass");
   ref_gather_blocking_frame(ref_grid, "swap");

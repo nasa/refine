@@ -824,27 +824,32 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                       faceid);
                ref_geom_tattle(ref_geom, node);
              });
-        invuv[0] = edgeuv[0];
-        invuv[1] = edgeuv[1];
-        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
-                                  ref_node_xyz_ptr(ref_node, node), invuv),
-            "inv wrapper");
-        REIS(EGADS_SUCCESS, EG_evaluate(face, edgeuv, edgexyz), "EG eval");
-        REIS(EGADS_SUCCESS, EG_evaluate(face, invuv, invxyz), "EG eval");
-        edgedist = sqrt(pow(edgexyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
-                        pow(edgexyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
-                        pow(edgexyz[2] - ref_node_xyz(ref_node, 2, node), 2));
-        invdist = sqrt(pow(invxyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
-                       pow(invxyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
-                       pow(invxyz[2] - ref_node_xyz(ref_node, 2, node), 2));
-        if (edgedist <= invdist) {
+        if (REF_TRUE) { /* use edgeuv */
           ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
           ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
-        } else {
-          if (verbose)
-            printf("face eval %e closer than edgeUV %e\n", invdist, edgedist);
-          ref_geom_param(ref_geom, 0, face_geom) = invuv[0];
-          ref_geom_param(ref_geom, 1, face_geom) = invuv[1];
+        } else { /* check if inverse eval on face is closer */
+          invuv[0] = edgeuv[0];
+          invuv[1] = edgeuv[1];
+          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
+                                    ref_node_xyz_ptr(ref_node, node), invuv),
+              "inv wrapper");
+          REIS(EGADS_SUCCESS, EG_evaluate(face, edgeuv, edgexyz), "EG eval");
+          REIS(EGADS_SUCCESS, EG_evaluate(face, invuv, invxyz), "EG eval");
+          edgedist = sqrt(pow(edgexyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                          pow(edgexyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                          pow(edgexyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+          invdist = sqrt(pow(invxyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
+                         pow(invxyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
+                         pow(invxyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+          if (edgedist <= invdist) {
+            ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
+            ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
+          } else {
+            if (verbose)
+              printf("face eval %e closer than edgeUV %e\n", invdist, edgedist);
+            ref_geom_param(ref_geom, 0, face_geom) = invuv[0];
+            ref_geom_param(ref_geom, 1, face_geom) = invuv[1];
+          }
         }
       }
     }

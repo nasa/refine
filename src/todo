@@ -243,6 +243,9 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ HL-CRM without tparams with ESP/118-rc.1
++ use edgeUV directly
++ geom add between balances edge lengths with evaluation
 + test ESP/118-rc.1
 + merge twod surf threed methods
 + merged collapse twod/surf/threed paths
