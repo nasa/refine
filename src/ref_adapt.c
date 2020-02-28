@@ -305,6 +305,13 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
         (4.0 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
   }
 
+  /* when close to convergence, prevent high lower limit from stopping split */
+  if (ref_adapt->post_max_ratio < 3.5 && ref_adapt->post_max_ratio > 1.6 &&
+      ref_adapt->post_min_ratio > 0.4) {
+    ref_adapt->post_min_ratio =
+        (1.4 / ref_adapt->post_max_ratio) * ref_adapt->post_min_ratio;
+  }
+
   ref_adapt->split_ratio = sqrt(2.0);
   if (nodes_per_complexity > 3.0)
     ref_adapt->split_ratio = 0.5 * (sqrt(2.0) + max_ratio);
