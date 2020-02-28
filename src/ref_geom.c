@@ -997,6 +997,46 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     if (param[0] < MIN(param0[0], param1[0]) ||
         MAX(param0[0], param1[0]) < param[0])
       param[0] = node0_weight * param0[0] + node1_weight * param1[0];
+    if (ref_geom_model_loaded(ref_geom)) { /* check weight and distance ratio */
+      REF_DBL xyz[3], dx0[3], dx1[3], d0, d1, total, actual_weight;
+      REF_DBL mid_t, mid_weight;
+      REF_INT ii;
+      RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, param, xyz, NULL),
+          "eval");
+      for (ii = 0; ii < 3; ii++)
+        dx0[ii] = ref_node_xyz(ref_node, ii, node0) - xyz[ii];
+      for (ii = 0; ii < 3; ii++)
+        dx1[ii] = ref_node_xyz(ref_node, ii, node1) - xyz[ii];
+      d0 = sqrt(ref_math_dot(dx0, dx0));
+      d1 = sqrt(ref_math_dot(dx1, dx1));
+      total = d0 + d1;
+      actual_weight = -1.0;
+      if (ref_math_divisible(d0, total)) {
+        actual_weight = d0 / total;
+      }
+      mid_t = node0_weight * param0[0] + node1_weight * param1[0];
+      RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &mid_t, xyz, NULL),
+          "eval");
+      for (ii = 0; ii < 3; ii++)
+        dx0[ii] = ref_node_xyz(ref_node, ii, node0) - xyz[ii];
+      for (ii = 0; ii < 3; ii++)
+        dx1[ii] = ref_node_xyz(ref_node, ii, node1) - xyz[ii];
+      d0 = sqrt(ref_math_dot(dx0, dx0));
+      d1 = sqrt(ref_math_dot(dx1, dx1));
+      total = d0 + d1;
+      mid_weight = -1.0;
+      if (ref_math_divisible(d0, total)) {
+        mid_weight = d0 / total;
+      }
+      if (ABS(mid_weight - node1_weight) < ABS(actual_weight - node1_weight)) {
+        /* printf("request %f actual %f mid %f\n",
+                  node1_weight,actual_weight,mid_weight); */
+        param[0] = mid_t;
+      }
+    }
+    if (param[0] < MIN(param0[0], param1[0]) ||
+        MAX(param0[0], param1[0]) < param[0])
+      param[0] = node0_weight * param0[0] + node1_weight * param1[0];
     RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
     has_edge_support = REF_TRUE;
     RSS(ref_geom_find(ref_geom, new_node, type, id, &edge_geom),

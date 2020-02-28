@@ -164,6 +164,13 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "interp new node metric");
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), new_node, &geom_support),
         "geom support");
+    if (transcript && geom_support) printf("geom support\n");
+
+    if (transcript)
+      printf("weight_node1 %f xyz %f %f %f\n", weight_node1,
+             ref_node_xyz(ref_node, 0, new_node),
+             ref_node_xyz(ref_node, 1, new_node),
+             ref_node_xyz(ref_node, 2, new_node));
 
     RSS(ref_split_edge_tet_quality(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                                    ref_edge_e2n(ref_edge, 1, edge), new_node,
@@ -193,6 +200,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                           ref_edge_e2n(ref_edge, 0, edge),
                           ref_edge_e2n(ref_edge, 1, edge), &has_edge),
         "check for an edge");
+    if (transcript && has_edge) printf("has geom edge\n");
 
     /* recover coarse twod surf boundary */
     if (ref_grid_twod(ref_grid) && has_edge) allowed_ratio = REF_TRUE;
@@ -215,9 +223,12 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                                      ref_edge_e2n(ref_edge, 0, edge),
                                      ref_edge_e2n(ref_edge, 1, edge), new_node),
           "form edge split cav");
+      if (transcript)
+        printf("try cavity status %d\n", ref_cavity_state(ref_cavity));
       if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity))
         REF_WHERE("enlarge"); /* note but skip cavity failures */
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+        if (transcript) printf("cavity visible\n");
         RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
             "cavity ratio");
         RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
@@ -231,6 +242,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
                  min_add);
 
         if (valid_cavity) {
+          if (transcript) printf("cavity replace\n");
           RSS(ref_cavity_replace(ref_cavity), "cav replace");
           RSS(ref_cavity_free(ref_cavity), "cav free");
           ref_cavity = (REF_CAVITY)NULL;
@@ -240,6 +252,9 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
               "smooth after split");
           continue;
         }
+      } else {
+        if (transcript)
+          printf("cavity not visible %d\n", ref_cavity_state(ref_cavity));
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");
@@ -266,6 +281,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       continue;
     }
 
+    if (transcript) printf("split\n");
     status = ref_split_edge(ref_grid, ref_edge_e2n(ref_edge, 0, edge),
                             ref_edge_e2n(ref_edge, 1, edge), new_node);
     if (REF_INCREASE_LIMIT == status) {
