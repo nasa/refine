@@ -97,6 +97,30 @@
 }
 {
    <insert_a_suppression_name_here>
+   Memcheck:Addr2
+   fun:__intel_sse2_strrchr
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr2
+   fun:__intel_sse2_strdup
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr2
+   fun:__intel_sse2_strncmp
+   ...
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Addr2
+   fun:__intel_sse2_strlen
+   ...
+}
+{
+   <insert_a_suppression_name_here>
    Memcheck:Value8
    fun:for__compute_filename
    ...
