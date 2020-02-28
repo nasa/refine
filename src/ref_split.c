@@ -202,9 +202,6 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "check for an edge");
     if (transcript && has_edge) printf("has geom edge\n");
 
-    /* recover coarse twod surf boundary */
-    if (ref_grid_twod(ref_grid) && has_edge) allowed_ratio = REF_TRUE;
-
     try_cavity = REF_FALSE;
     if (!allowed_tet_quality || !allowed_ratio || !allowed_tri_conformity ||
         !allowed_tri_quality) {
