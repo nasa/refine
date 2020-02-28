@@ -824,7 +824,10 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
                       faceid);
                ref_geom_tattle(ref_geom, node);
              });
-        if (REF_FALSE) { /* [don't] check if inverse eval on face is closer */
+        if (REF_TRUE) { /* use edgeuv */
+          ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
+          ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
+        } else { /* check if inverse eval on face is closer */
           invuv[0] = edgeuv[0];
           invuv[1] = edgeuv[1];
           RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
