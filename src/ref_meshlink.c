@@ -49,14 +49,12 @@ static REF_STATUS ref_meshlink_tattle_point(REF_INT node,
   MLINT numAttIDs;
   ParamVertexConstObj paramVert;
 
-  if (0 != ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name, 1024,
-                               &gref, &mid, attIDs, sizeAttIDs, &numAttIDs,
-                               &paramVert)) {
-    printf("evaluateParamPoint: bad point info\n");
-  } else {
-    printf("node %d geom ref %" MLINT_FORMAT " ref %s name %s\n", node, gref,
-           ref, name);
-  }
+  REIS(0,
+       ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name, 1024, &gref,
+                           &mid, attIDs, sizeAttIDs, &numAttIDs, &paramVert),
+       "bad point info");
+  printf("node %d geom ref %" MLINT_FORMAT " ref %s name %s\n", node, gref, ref,
+         name);
   return REF_SUCCESS;
 }
 #endif
