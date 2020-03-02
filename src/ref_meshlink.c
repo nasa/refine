@@ -37,7 +37,7 @@
 #include "ref_edge.h"
 
 #ifdef HAVE_MESHLINK
-static REF_STATUS ref_meshlink_tattle_point(REF_INT node,
+static REF_STATUS ref_meshlink_tattle_point(REF_NODE ref_node, REF_INT node,
                                             MeshAssociativityObj mesh_assoc,
                                             MeshPointObj mesh_point) {
   char ref[1024];
@@ -53,8 +53,34 @@ static REF_STATUS ref_meshlink_tattle_point(REF_INT node,
        ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name, 1024, &gref,
                            &mid, attIDs, sizeAttIDs, &numAttIDs, &paramVert),
        "bad point info");
-  printf("node %d geom ref %" MLINT_FORMAT " ref %s name %s\n", node, gref, ref,
-         name);
+  {
+    GeometryKernelObj geom_kernel = NULL;
+    ProjectionDataObj projection_data = NULL;
+    GeometryGroupObj geom_group = NULL;
+    MLVector3D point;
+    MLVector3D projected_point;
+    MLVector2D uv;
+    char entity_name[1024];
+    REF_DBL dist;
+    point[0] = ref_node_xyz(ref_node, 0, node);
+    point[1] = ref_node_xyz(ref_node, 1, node);
+    point[2] = ref_node_xyz(ref_node, 2, node);
+    REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+    REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+    REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+         "prj");
+    REIS(0,
+         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                              entity_name, 1024),
+         "info");
+    dist = sqrt(pow(projected_point[0] - point[0], 2) +
+                pow(projected_point[1] - point[1], 2) +
+                pow(projected_point[2] - point[2], 2));
+    printf("node %d geom ref %" MLINT_FORMAT "", node, gref);
+    printf(" dist %e to %s\n", dist, entity_name);
+    ML_freeProjectionDataObj(&projection_data);
+  }
   return REF_SUCCESS;
 }
 #endif
@@ -65,6 +91,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
   if (NULL == xml_filename || NULL == block_name) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
 #define MAX_STRING_SIZE 256
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   MeshAssociativityObj mesh_assoc;
   MeshModelObj mesh_model;
   GeometryKernelObj geom_kernel = NULL;
@@ -137,9 +164,11 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         n = i;
         break;
       }
-      RSS(ref_meshlink_tattle_point(i - 1, mesh_assoc, low_mesh_point),
+      RSS(ref_meshlink_tattle_point(ref_node, i - 1, mesh_assoc,
+                                    low_mesh_point),
           "tattle");
-      RSS(ref_meshlink_tattle_point(i - 1, mesh_assoc, high_mesh_point),
+      RSS(ref_meshlink_tattle_point(ref_node, i - 1, mesh_assoc,
+                                    high_mesh_point),
           "tattle");
     }
     printf("%d numpoints\n", n);
@@ -173,7 +202,6 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
 
   {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
-    REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_EDGE ref_edge;
     REF_INT edge, node0, node1;
     REF_INT n;
