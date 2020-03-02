@@ -53,7 +53,7 @@ static REF_STATUS ref_meshlink_tattle_point(MeshAssociativityObj mesh_assoc,
                                &paramVert)) {
     printf("evaluateParamPoint: bad point info\n");
   } else {
-    printf("name %s\n", name);
+    printf("ref %s name %s\n", ref, name);
   }
   return REF_SUCCESS;
 }
