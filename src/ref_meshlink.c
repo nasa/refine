@@ -36,6 +36,68 @@
 
 #include "ref_edge.h"
 
+REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  if (NULL == xml_filename) return REF_SUCCESS;
+#ifdef HAVE_MESHLINK
+#define MAX_STRING_SIZE 256
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  MLINT iFile;
+  MLINT numGeomFiles;
+  MeshLinkFileConstObj geom_file;
+  char geom_fname[MAX_STRING_SIZE];
+
+  REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
+       "Error creating Mesh Associativity Object");
+  printf("have mesh_assoc\n");
+  ref_geom->meshlink = (void *)mesh_assoc;
+  /* Read Geometry-Mesh associativity */
+  {
+    /* NULL schema filename uses schemaLocation in meshlink file */
+    const char *schema_filename = NULL;
+    /* Xerces MeshLink XML parser */
+    MeshLinkParserObj parser;
+    REIS(0, ML_createMeshLinkParserXercesObj(&parser), "create parser");
+    printf("validate %s\n", xml_filename);
+    REIS(0, ML_parserValidateFile(parser, xml_filename, schema_filename),
+         "validate");
+    printf("parse %s\n", xml_filename);
+    REIS(0, ML_parserReadMeshLinkFile(parser, xml_filename, mesh_assoc),
+         "parse");
+    ML_freeMeshLinkParserXercesObj(&parser);
+  }
+  printf("populated mesh_assoc\n");
+
+  printf("extracting geom_kernel\n");
+  REIS(0, ML_createGeometryKernelGeodeObj(&geom_kernel),
+       "Error creating Geometry Kernel Object");
+  printf("have geom kernel\n");
+
+  printf("activate geode\n");
+  REIS(0, ML_addGeometryKernel(mesh_assoc, geom_kernel),
+       "Error adding Geometry Kernel Object");
+  REIS(0, ML_setActiveGeometryKernelByName(mesh_assoc, "Geode"),
+       "Error adding Geometry Kernel Object");
+  printf("active geom kernel\n");
+
+  numGeomFiles = ML_getNumGeometryFiles(mesh_assoc);
+  printf("geom files %" MLINT_FORMAT "\n", numGeomFiles);
+  for (iFile = 0; iFile < numGeomFiles; ++iFile) {
+    REIS(0, ML_getGeometryFileObj(mesh_assoc, iFile, &geom_file),
+         "Error getting Geometry File");
+    REIS(0, ML_getFilename(geom_file, geom_fname, MAX_STRING_SIZE),
+         "Error getting Geometry File Name");
+    printf("geom file %" MLINT_FORMAT " %s\n", iFile, geom_fname);
+    REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
+         "Error reading Geometry File");
+  }
+
+#endif
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_MESHLINK
 static REF_STATUS ref_meshlink_tattle_point(REF_NODE ref_node, REF_INT node,
                                             MeshAssociativityObj mesh_assoc,
@@ -85,70 +147,18 @@ static REF_STATUS ref_meshlink_tattle_point(REF_NODE ref_node, REF_INT node,
 }
 #endif
 
-REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
-                             const char *block_name) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-  if (NULL == xml_filename || NULL == block_name) return REF_SUCCESS;
-#ifdef HAVE_MESHLINK
-#define MAX_STRING_SIZE 256
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  MeshAssociativityObj mesh_assoc;
-  MeshModelObj mesh_model;
-  GeometryKernelObj geom_kernel = NULL;
-  MLINT iFile;
-  MLINT numGeomFiles;
-  MeshLinkFileConstObj geom_file;
-  char geom_fname[MAX_STRING_SIZE];
-
-  REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
-       "Error creating Mesh Associativity Object");
-  printf("have mesh_assoc\n");
-  /* Read Geometry-Mesh associativity */
-  {
-    /* NULL schema filename uses schemaLocation in meshlink file */
-    const char *schema_filename = NULL;
-    /* Xerces MeshLink XML parser */
-    MeshLinkParserObj parser;
-    REIS(0, ML_createMeshLinkParserXercesObj(&parser), "create parser");
-    printf("validate %s\n", xml_filename);
-    REIS(0, ML_parserValidateFile(parser, xml_filename, schema_filename),
-         "validate");
-    printf("parse %s\n", xml_filename);
-    REIS(0, ML_parserReadMeshLinkFile(parser, xml_filename, mesh_assoc),
-         "parse");
-    ML_freeMeshLinkParserXercesObj(&parser);
-  }
-  printf("populated mesh_assoc\n");
-
+REF_STATUS ref_meshlink_examine(REF_GRID ref_grid, const char *block_name) {
+  if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
+#ifdef HAVE_MESHLINK
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  MeshModelObj mesh_model;
+
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
   printf("have mesh model\n");
-
-  printf("extracting geom_kernel\n");
-  REIS(0, ML_createGeometryKernelGeodeObj(&geom_kernel),
-       "Error creating Geometry Kernel Object");
-  printf("have geom kernel\n");
-
-  printf("activate geode\n");
-  REIS(0, ML_addGeometryKernel(mesh_assoc, geom_kernel),
-       "Error adding Geometry Kernel Object");
-  REIS(0, ML_setActiveGeometryKernelByName(mesh_assoc, "Geode"),
-       "Error adding Geometry Kernel Object");
-  printf("active geom kernel\n");
-
-  numGeomFiles = ML_getNumGeometryFiles(mesh_assoc);
-  printf("geom files %" MLINT_FORMAT "\n", numGeomFiles);
-  for (iFile = 0; iFile < numGeomFiles; ++iFile) {
-    REIS(0, ML_getGeometryFileObj(mesh_assoc, iFile, &geom_file),
-         "Error getting Geometry File");
-    REIS(0, ML_getFilename(geom_file, geom_fname, MAX_STRING_SIZE),
-         "Error getting Geometry File Name");
-    printf("geom file %" MLINT_FORMAT " %s\n", iFile, geom_fname);
-    REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
-         "Error reading Geometry File");
-  }
-
   /* low is edge, high is face */
   {
     MeshPointObj low_mesh_point = NULL;
@@ -228,6 +238,8 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
     ref_edge_free(ref_edge);
   }
 
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
   return REF_SUCCESS;
 }
