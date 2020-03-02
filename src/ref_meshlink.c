@@ -37,7 +37,8 @@
 #include "ref_edge.h"
 
 #ifdef HAVE_MESHLINK
-static REF_STATUS ref_meshlink_tattle_point(MeshAssociativityObj mesh_assoc,
+static REF_STATUS ref_meshlink_tattle_point(REF_INT node,
+                                            MeshAssociativityObj mesh_assoc,
                                             MeshPointObj mesh_point) {
   char ref[1024];
   char name[1024];
@@ -53,7 +54,8 @@ static REF_STATUS ref_meshlink_tattle_point(MeshAssociativityObj mesh_assoc,
                                &paramVert)) {
     printf("evaluateParamPoint: bad point info\n");
   } else {
-    printf("ref %s name %s\n", ref, name);
+    printf("node %d geom ref %" MLINT_FORMAT " ref %s name %s\n", node, gref,
+           ref, name);
   }
   return REF_SUCCESS;
 }
@@ -131,7 +133,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         n = i;
         break;
       } else {
-        RSS(ref_meshlink_tattle_point(mesh_assoc, mesh_point), "tattle");
+        RSS(ref_meshlink_tattle_point(i - 1, mesh_assoc, mesh_point), "tattle");
       }
     }
     printf("%d numpoints\n", n);
@@ -146,7 +148,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         n = i;
         break;
       } else {
-        RSS(ref_meshlink_tattle_point(mesh_assoc, mesh_point), "tattle");
+        RSS(ref_meshlink_tattle_point(i - 1, mesh_assoc, mesh_point), "tattle");
       }
     }
     printf("%d numpoints\n", n);
@@ -200,7 +202,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
              ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
                                          &mesh_edge),
              "find edge");
-	n++;
+        n++;
       }
     }
     printf("%d surface edges\n", n);
