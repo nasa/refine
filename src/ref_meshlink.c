@@ -98,6 +98,38 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
+  if (NULL == block_name) return REF_SUCCESS;
+  printf("extracting mesh_model %s\n", block_name);
+#ifdef HAVE_MESHLINK
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  MeshModelObj mesh_model;
+  REF_INT node;
+
+  REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
+       "Error creating Mesh Model Object");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
+      MeshPointObj edge_mesh_point = NULL;
+      MeshPointObj face_mesh_point = NULL;
+      REIS(0,
+           ML_findLowestTopoPointByInd(mesh_model, node + 1, &edge_mesh_point),
+           "low/edge");
+      REIS(0,
+           ML_findHighestTopoPointByInd(mesh_model, node + 1, &face_mesh_point),
+           "high/face");
+    }
+  }
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_MESHLINK
 static REF_STATUS ref_meshlink_tattle_point(REF_NODE ref_node, REF_INT node,
                                             MeshAssociativityObj mesh_assoc,
