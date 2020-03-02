@@ -183,8 +183,10 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
     REF_NODE ref_node = ref_grid_node(ref_grid);
     REF_EDGE ref_edge;
     REF_INT edge, node0, node1;
+    REF_INT n;
     REF_BOOL tri_side;
     RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    n = 0;
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
       node0 = ref_edge_e2n(ref_edge, 0, edge);
       node1 = ref_edge_e2n(ref_edge, 1, edge);
@@ -194,15 +196,14 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
         MeshEdgeObj mesh_edge = NULL;
         edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
         edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
-        printf("refine: sizeof(MLINT) %ld\n", sizeof(MLINT));
-        printf("refine: edge_indexes %" MLINT_FORMAT " %" MLINT_FORMAT "\n",
-               edge_indexes[0], edge_indexes[1]);
         REIS(0,
              ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
                                          &mesh_edge),
              "find edge");
+	n++;
       }
     }
+    printf("%d surface edges\n", n);
     ref_edge_free(ref_edge);
   }
 
