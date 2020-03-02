@@ -131,22 +131,21 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
            ML_findHighestTopoPointByInd(mesh_model, node + 1, &face_mesh_point),
            "high/face");
       REIS(0,
-	   ML_getMeshPointInfo(mesh_assoc, edge_mesh_point, ref, 256, name, 256, &edge_gref,
-			       &mid, attIDs, 24, &numAttIDs, &paramVert),
-       "bad point info");
+           ML_getMeshPointInfo(mesh_assoc, edge_mesh_point, ref, 256, name, 256,
+                               &edge_gref, &mid, attIDs, 24, &numAttIDs,
+                               &paramVert),
+           "bad point info");
       REIS(0,
-	   ML_getMeshPointInfo(mesh_assoc, face_mesh_point, ref, 256, name, 256, &face_gref,
-			       &mid, attIDs, 24, &numAttIDs, &paramVert),
-       "bad point info");
+           ML_getMeshPointInfo(mesh_assoc, face_mesh_point, ref, 256, name, 256,
+                               &face_gref, &mid, attIDs, 24, &numAttIDs,
+                               &paramVert),
+           "bad point info");
       id = face_gref;
-      RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, param),
-          "face uv");
+      RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, param), "face uv");
       if (edge_gref != face_gref) {
-	id = edge_gref;
-      RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, param),
-          "edge t");
+        id = edge_gref;
+        RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, param), "edge t");
       }
-
     }
   }
 
