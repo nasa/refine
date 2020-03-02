@@ -38,8 +38,8 @@ int main(int argc, char *argv[]) {
     printf("grid source %s\n", argv[1]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "argv import");
     RSS(ref_meshlink_open(ref_grid, argv[2]), "open");
-    RSS(ref_meshlink_cache(ref_grid, argv[3]), "open");
-    RSS(ref_meshlink_examine(ref_grid, argv[3]), "open");
+    RSS(ref_meshlink_cache(ref_grid, argv[3]), "cache");
+    /* RSS(ref_meshlink_examine(ref_grid, argv[3]), "examine"); */
     RSS(ref_meshlink_close(ref_grid), "close");
     RSS(ref_grid_free(ref_grid), "free");
   }
