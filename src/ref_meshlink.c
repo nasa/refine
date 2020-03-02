@@ -28,6 +28,7 @@
 #endif
 
 #ifdef HAVE_MESHLINK
+#define IS64BIT
 #include "GeomKernel_Geode_c.h"
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
@@ -110,13 +111,13 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
   printf("active geom kernel\n");
 
   numGeomFiles = ML_getNumGeometryFiles(mesh_assoc);
-  printf("geom files %d\n", numGeomFiles);
+  printf("geom files %" MLINT_FORMAT "\n", numGeomFiles);
   for (iFile = 0; iFile < numGeomFiles; ++iFile) {
     REIS(0, ML_getGeometryFileObj(mesh_assoc, iFile, &geom_file),
          "Error getting Geometry File");
     REIS(0, ML_getFilename(geom_file, geom_fname, MAX_STRING_SIZE),
          "Error getting Geometry File Name");
-    printf("geom file %d %s\n", iFile, geom_fname);
+    printf("geom file %" MLINT_FORMAT " %s\n", iFile, geom_fname);
     REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
          "Error reading Geometry File");
   }
@@ -191,8 +192,11 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename,
       if (tri_side) {
         MLINT edge_indexes[2];
         MeshEdgeObj mesh_edge = NULL;
-        edge_indexes[0] = ref_node_global(ref_node, node0);
-        edge_indexes[1] = ref_node_global(ref_node, node1);
+        edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
+        edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
+        printf("refine: sizeof(MLINT) %ld\n", sizeof(MLINT));
+        printf("refine: edge_indexes %" MLINT_FORMAT " %" MLINT_FORMAT "\n",
+               edge_indexes[0], edge_indexes[1]);
         REIS(0,
              ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
                                          &mesh_edge),
