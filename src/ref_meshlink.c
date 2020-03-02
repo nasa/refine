@@ -98,6 +98,43 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   return REF_SUCCESS;
 }
 
+#ifdef HAVE_MESHLINK
+static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, REF_BOOL *same) {
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT ncell;
+  REF_INT cells[2];
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id0, id1;
+  REF_BOOL has_edg, has_tri, has_qua;
+
+  *same = REF_FALSE;
+
+  RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
+      "more then two", {
+        ref_node_location(ref_grid_node(ref_grid), node0);
+        ref_node_location(ref_grid_node(ref_grid), node1);
+      });
+
+  REIB(2, ncell, "there should be two triangles for manifold", {
+    ref_node_location(ref_grid_node(ref_grid), node0);
+    ref_node_location(ref_grid_node(ref_grid), node1);
+  });
+
+  RSS(ref_cell_nodes(ref_cell, cells[0], nodes), "nodes tri0");
+  id0 = nodes[ref_cell_node_per(ref_cell)];
+  RSS(ref_cell_nodes(ref_cell, cells[1], nodes), "nodes tri1");
+  id1 = nodes[ref_cell_node_per(ref_cell)];
+
+  if (id0 == id1) {
+    *same = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  return REF_SUCCESS;
+}
+#endif
+
 REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
@@ -147,6 +184,55 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
         RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, param), "edge t");
       }
     }
+  }
+
+  {
+    REF_CELL ref_cell = ref_grid_tri(ref_grid);
+    REF_EDGE ref_edge;
+    REF_INT edge, node0, node1;
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
+    REF_BOOL tri_side;
+    REF_BOOL same;
+    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
+    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
+      node0 = ref_edge_e2n(ref_edge, 0, edge);
+      node1 = ref_edge_e2n(ref_edge, 1, edge);
+      RSS(ref_cell_has_side(ref_cell, node0, node1, &tri_side), "is tri side");
+      same = REF_TRUE;
+      if (tri_side) {
+        RSS(ref_swap_same_faceid(ref_grid, node0, node1, &same),
+            "same face id");
+      }
+
+      if (tri_side && !same) {
+        MLINT edge_indexes[2];
+        MeshEdgeObj mesh_edge = NULL;
+        char ref[256];
+        char name[256];
+        MLINT gref;
+        MLINT mid;
+        MLINT attIDs[24];
+        MLINT numAttIDs, numpvObjs;
+        ParamVertexConstObj paramVert[24];
+        edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
+        edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
+        REIS(0,
+             ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
+                                         &mesh_edge),
+             "find edge mesh_edge");
+        REIS(0,
+             ML_getMeshEdgeInfo(mesh_assoc, mesh_edge, ref, 256, name, 256,
+                                &gref, &mid, attIDs, 24, &numAttIDs, paramVert,
+                                24, &numpvObjs),
+             "bad edge info");
+        nodes[0] = node0;
+        nodes[1] = node1;
+        nodes[2] = (REF_INT)gref;
+        RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+            "edg for edge");
+      }
+    }
+    ref_edge_free(ref_edge);
   }
 
 #else
