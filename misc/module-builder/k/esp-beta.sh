@@ -1,7 +1,7 @@
 #! /bin/bash -xue
 
 PACKAGE='ESP'
-VERSION='117-rc.1'
+VERSION='118-rc.1'
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
@@ -25,7 +25,9 @@ cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 # https://acdl.mit.edu/ESP/archive/
 
 rm -f ESPbeta.tgz
-wget https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
+wget -N https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
+raw=$(stat -c %Y ESPbeta.tgz)
+timestamp=$(date -d @${raw} +"%Y.%d.%m.%H%M")
 rm -rf EngSketchPad
 tar xzf ESPbeta.tgz
 ( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
