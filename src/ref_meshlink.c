@@ -190,9 +190,14 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
         REF_CELL ref_cell = ref_grid_tri(ref_grid);
         REF_INT max_faceid = 1, nfaceid;
         REF_INT faceids[1];
-        RSS(ref_cell_id_list_around(ref_cell, node, max_faceid, &nfaceid,
+        RSB(ref_cell_id_list_around(ref_cell, node, max_faceid, &nfaceid,
                                     faceids),
-            "tri ids");
+            "more than one tri id", {
+              printf("edge %d face %d xyz %f %f %f\n", (int)edge_gref,
+                     (int)face_gref, ref_node_xyz(ref_node, 0, node),
+                     ref_node_xyz(ref_node, 1, node),
+                     ref_node_xyz(ref_node, 2, node));
+            });
 
         RSS(ref_dict_store(ref_dict, faceids[0], id), "store");
       }
