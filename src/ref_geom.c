@@ -1939,6 +1939,12 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         if (no_edge && ref_node_owned(ref_node, node)) {
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          ref_cell = ref_grid_edg(ref_grid);
+          each_ref_cell_having_node(ref_cell, node, item, cell) {
+            printf("edge %d %d %d\n", ref_cell_c2n(ref_cell, 0, cell),
+                   ref_cell_c2n(ref_cell, 1, cell),
+                   ref_cell_c2n(ref_cell, 2, cell));
+          }
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom edge missing edge");
