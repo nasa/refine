@@ -77,6 +77,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)
 
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
+#define ref_geom_meshlinked(ref_geom) (NULL != (void *)((ref_geom)->meshlink))
 
 #define ref_geom_descr(ref_geom, attribute, geom) \
   ((ref_geom)->descr[(attribute) + REF_GEOM_DESCR_SIZE * (geom)])
