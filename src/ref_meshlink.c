@@ -274,6 +274,20 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
 
   RSS(ref_dict_free(ref_dict), "free");
 
+  { /* mark cad nodes */
+    REF_CELL ref_cell = ref_grid_edg(ref_grid);
+    REF_INT node;
+    REF_INT nedge, edges[2];
+    REF_INT id = 0;
+    each_ref_node_valid_node(ref_node, node) {
+      RXS(ref_cell_id_list_around(ref_cell, node, 2, &nedge, edges),
+          REF_INCREASE_LIMIT, "count faceids");
+      if (nedge > 1) {
+        RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
+      }
+    }
+  }
+
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
