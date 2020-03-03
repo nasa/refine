@@ -144,6 +144,8 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
   MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   MeshModelObj mesh_model;
   REF_INT node;
+  REF_DBL param[2] = {0.0, 0.0};
+  REF_INT id;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -159,8 +161,6 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
       MLINT attIDs[24];
       MLINT numAttIDs;
       ParamVertexConstObj paramVert;
-      REF_DBL param[2] = {0.0, 0.0};
-      REF_INT id;
       REIS(0,
            ML_findLowestTopoPointByInd(mesh_model, node + 1, &edge_mesh_point),
            "low/edge");
@@ -230,6 +230,11 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
         nodes[2] = (REF_INT)gref;
         RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
             "edg for edge");
+        /* expects geom for each edge node, missing at nodes */
+        RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, nodes[2], param),
+            "edge t");
+        RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE, nodes[2], param),
+            "edge t");
       }
     }
     ref_edge_free(ref_edge);
