@@ -522,6 +522,72 @@ REF_STATUS ref_meshlink_examine(REF_GRID ref_grid, const char *block_name) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT type, item, geom, gref_geom;
+  REF_BOOL is_node, is_edge, is_face;
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLVector3D point;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[256];
+  MLINT gref;
+
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node");
+  if (is_node) return REF_SUCCESS; /* can't move geom node */
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &is_edge), "edge");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &is_face), "face");
+  RAS(is_edge || is_face, "no edge or face for contraint");
+  if (is_edge) {
+    type = REF_GEOM_EDGE;
+  } else {
+    type = REF_GEOM_FACE;
+  }
+  gref_geom = REF_EMPTY;
+  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
+    if (type == ref_geom_type(ref_geom, geom)) {
+      gref_geom = geom;
+      break;
+    }
+  }
+  RUS(REF_EMPTY, gref_geom, "can't find geom");
+  gref = (MLINT)ref_geom_id(ref_geom, gref_geom);
+
+  point[0] = ref_node_xyz(ref_node, 0, node);
+  point[1] = ref_node_xyz(ref_node, 1, node);
+  point[2] = ref_node_xyz(ref_node, 2, node);
+
+  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
+  REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+  REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+       "prj");
+  REIS(0,
+       ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                            entity_name, 256),
+       "info");
+  ML_freeProjectionDataObj(&projection_data);
+
+  ref_node_xyz(ref_node, 0, node) = projected_point[0];
+  ref_node_xyz(ref_node, 1, node) = projected_point[1];
+  ref_node_xyz(ref_node, 2, node) = projected_point[2];
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(node);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 
