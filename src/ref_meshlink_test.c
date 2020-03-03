@@ -25,6 +25,7 @@
 
 #include "ref_grid.h"
 #include "ref_import.h"
+#include "ref_export.h"
 #include "ref_mpi.h"
 
 int main(int argc, char *argv[]) {
@@ -39,8 +40,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "argv import");
     RSS(ref_meshlink_open(ref_grid, argv[2]), "open");
     RSS(ref_meshlink_cache(ref_grid, argv[3]), "cache");
-    RSS(ref_geom_tec(ref_grid, "ref_meshlink_viz.tec"), "geom tec");
+    RSS(ref_geom_tec(ref_grid, "ref_meshlink_test.tec"), "geom tec");
     /* RSS(ref_meshlink_examine(ref_grid, argv[3]), "examine"); */
+    RSS(ref_export_by_extension(ref_grid, "ref_meshlink_test.meshb"), "meshb");
     RSS(ref_meshlink_close(ref_grid), "close");
     RSS(ref_grid_free(ref_grid), "free");
   }
