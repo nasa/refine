@@ -198,26 +198,20 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
       }
     }
   }
-  ref_dict_inspect(ref_dict);
   {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
     REF_EDGE ref_edge;
     REF_INT edge, node0, node1, cell;
     REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
     REF_BOOL tri_side;
-    REF_BOOL same;
+    REF_INT max_cell = 2, cells[2], ncell;
     RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
     for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
       node0 = ref_edge_e2n(ref_edge, 0, edge);
       node1 = ref_edge_e2n(ref_edge, 1, edge);
       RSS(ref_cell_has_side(ref_cell, node0, node1, &tri_side), "is tri side");
-      same = REF_TRUE;
-      if (tri_side) {
-        RSS(ref_swap_same_faceid(ref_grid, node0, node1, &same),
-            "same face id");
-      }
 
-      if (tri_side && !same) {
+      if (tri_side) {
         MLINT edge_indexes[2];
         MeshEdgeObj mesh_edge = NULL;
         char ref[256];
@@ -227,6 +221,12 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
         MLINT attIDs[24];
         MLINT numAttIDs, numpvObjs;
         ParamVertexConstObj paramVert[24];
+
+        RSS(ref_cell_list_with2(ref_cell, node0, node1, max_cell, &ncell,
+                                cells),
+            "more than two tris");
+        REIS(2, ncell, "two cells expected for manifold");
+
         edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
         edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
         REIS(0,
@@ -238,24 +238,37 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
                                 &gref, &mid, attIDs, 24, &numAttIDs, paramVert,
                                 24, &numpvObjs),
              "bad edge info");
-        nodes[0] = node0;
-        nodes[1] = node1;
-        nodes[2] = (REF_INT)gref;
-        RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
-            "edg for edge");
-        /* expects geom for each edge node, missing at nodes */
-        RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, nodes[2], param),
-            "edge t");
-        RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE, nodes[2], param),
-            "edge t");
+        if (ref_cell_c2n(ref_cell, 3, cells[0]) !=
+            ref_cell_c2n(ref_cell, 3, cells[1])) {
+          nodes[0] = node0;
+          nodes[1] = node1;
+          nodes[2] = (REF_INT)gref;
+          RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+              "edg for edge");
+          /* expects geom for each edge node, missing at nodes */
+          RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, nodes[2], param),
+              "edge t");
+          RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE, nodes[2], param),
+              "edge t");
+        } else {
+          id = (REF_INT)gref;
+          RSS(ref_dict_store(ref_dict, ref_cell_c2n(ref_cell, 3, cells[0]), id),
+              "store tri");
+        }
       }
     }
     ref_edge_free(ref_edge);
     /* map faceids to gref */
+    ref_dict_inspect(ref_dict);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      REF_INT cell_node;
       RSB(ref_dict_value(ref_dict, nodes[3], &id), "retrieve",
           { printf("node[3] %d\n", nodes[3]); });
       ref_cell_c2n(ref_cell, 3, cell) = id;
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        RSS(ref_geom_add(ref_geom, nodes[cell_node], REF_GEOM_FACE, id, param),
+            "edge t");
+      }
     }
   }
 
