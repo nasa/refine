@@ -2973,7 +2973,10 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   }
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    kr = 0;
+    ks = 0;
+    if (ref_geom_model_loaded(ref_geom))
+      RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
     kr = ABS(kr);
     ks = ABS(ks);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
