@@ -943,8 +943,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(metric);
 
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)))
-    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
