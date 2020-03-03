@@ -1297,6 +1297,11 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
   REF_DBL normdev;
   REF_DBL sign_uv_area, uv_area;
 
+  if (ref_geom_meshlinked(ref_geom)) {
+    *conforming = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
   node = ref_cavity_seg_node(ref_cavity);
 
   *conforming = REF_FALSE;
