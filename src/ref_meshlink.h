@@ -30,6 +30,7 @@ END_C_DECLORATION
 BEGIN_C_DECLORATION
 
 REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename);
+REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename);
 REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *base_name);
 REF_STATUS ref_meshlink_examine(REF_GRID ref_grid, const char *base_name);
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid);

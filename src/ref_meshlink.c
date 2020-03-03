@@ -99,6 +99,67 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  FILE *f = NULL;
+  char line[1024];
+  REF_INT tri, ntri, edge, nedge, gref, new_cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  int status;
+  REF_DBL param[2] = {0.0, 0.0};
+  if (NULL == geom_filename) return REF_SUCCESS;
+  printf("parsing %s\n", geom_filename);
+  f = fopen(geom_filename, "r");
+  if (NULL == (void *)f) printf("unable to open %s\n", geom_filename);
+  RNS(f, "unable to open file");
+  while (!feof(f)) {
+    status = fscanf(f, "%s", line);
+    if (EOF == status) break;
+    REIS(1, status, "line read failed");
+
+    if (0 == strcmp("sheet", line)) {
+      REIS(2, fscanf(f, "%d %d", &ntri, &gref), "sheet size gref");
+      printf("sheet ntri %d gref %d\n", ntri, gref);
+      for (tri = 0; tri < ntri; tri++) {
+        REIS(3, fscanf(f, "%d %d %d", &(nodes[0]), &(nodes[1]), &(nodes[2])),
+             "tri nodes");
+        (nodes[0])--;
+        (nodes[1])--;
+        (nodes[2])--;
+        nodes[3] = gref;
+        RSS(ref_cell_with(ref_grid_tri(ref_grid), nodes, &new_cell),
+            "tri for sheet missing");
+        ref_cell_c2n(ref_grid_tri(ref_grid), 3, new_cell) = nodes[3];
+        RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_FACE, nodes[3], param),
+            "face uv");
+        RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_FACE, nodes[3], param),
+            "face uv");
+        RSS(ref_geom_add(ref_geom, nodes[2], REF_GEOM_FACE, nodes[3], param),
+            "face uv");
+      }
+    }
+
+    if (0 == strcmp("string", line)) {
+      REIS(2, fscanf(f, "%d %d", &nedge, &gref), "string size gref");
+      printf("sheet ntri %d gref %d\n", nedge, gref);
+      for (edge = 0; edge < nedge; edge++) {
+        REIS(2, fscanf(f, "%d %d", &(nodes[0]), &(nodes[1])), "edge nodes");
+        (nodes[0])--;
+        (nodes[1])--;
+        nodes[2] = gref;
+        RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+            "add edg for string");
+        RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, nodes[2], param),
+            "edge t");
+        RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE, nodes[2], param),
+            "edge t");
+      }
+    }
+  }
+  fclose(f);
+  return REF_SUCCESS;
+}
+
 #ifdef HAVE_MESHLINK
 static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
                                        REF_INT node1, REF_BOOL *same) {
