@@ -1249,7 +1249,7 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   /* no geom, do nothing */
   if (ref_adj_empty(ref_adj, node)) return REF_SUCCESS;
 
-  if (NULL != ref_geom->meshlink) {
+  if (ref_geom_meshlinked(ref_geom)) {
     RSS(ref_meshlink_constrain(ref_grid, node), "meshlink");
     return REF_SUCCESS;
   }
