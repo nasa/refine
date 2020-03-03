@@ -34,6 +34,7 @@
 #include "MeshLinkParser_xerces_c.h"
 #endif
 
+#include "ref_dict.h"
 #include "ref_edge.h"
 
 REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
@@ -146,6 +147,9 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
   REF_INT node;
   REF_DBL param[2] = {0.0, 0.0};
   REF_INT id;
+  REF_DICT ref_dict;
+
+  RSS(ref_dict_create(&ref_dict), "create");
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -182,14 +186,23 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
       if (edge_gref != face_gref) {
         id = edge_gref;
         RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, param), "edge t");
+      } else {
+        REF_CELL ref_cell = ref_grid_tri(ref_grid);
+        REF_INT max_faceid = 1, nfaceid;
+        REF_INT faceids[1];
+        RSS(ref_cell_id_list_around(ref_cell, node, max_faceid, &nfaceid,
+                                    faceids),
+            "tri ids");
+
+        RSS(ref_dict_store(ref_dict, faceids[0], id), "store");
       }
     }
   }
-
+  ref_dict_inspect(ref_dict);
   {
     REF_CELL ref_cell = ref_grid_tri(ref_grid);
     REF_EDGE ref_edge;
-    REF_INT edge, node0, node1;
+    REF_INT edge, node0, node1, cell;
     REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
     REF_BOOL tri_side;
     REF_BOOL same;
@@ -238,7 +251,15 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
       }
     }
     ref_edge_free(ref_edge);
+    /* map faceids to gref */
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSB(ref_dict_value(ref_dict, nodes[3], &id), "retrieve",
+          { printf("node[3] %d\n", nodes[3]); });
+      ref_cell_c2n(ref_cell, 3, cell) = id;
+    }
   }
+
+  RSS(ref_dict_free(ref_dict), "free");
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
