@@ -40,6 +40,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_meshlink.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_sort.h"
@@ -1245,10 +1246,13 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   REF_INT face_geom;
   REF_DBL xyz[3];
 
-  /* put sloppy geom handling here */
-
   /* no geom, do nothing */
   if (ref_adj_empty(ref_adj, node)) return REF_SUCCESS;
+
+  if (NULL != ref_geom->meshlink) {
+    RSS(ref_meshlink_constrain(ref_grid, node), "meshlink");
+    return REF_SUCCESS;
+  }
 
   have_geom_node = REF_FALSE;
   each_ref_adj_node_item_with_ref(ref_adj, node, item, geom) {
