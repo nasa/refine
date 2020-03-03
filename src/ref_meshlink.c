@@ -157,6 +157,22 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
     }
   }
   fclose(f);
+
+  { /* mark cad nodes */
+    REF_INT node;
+    REF_INT nedge, edges[2];
+    REF_INT id;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &nedge,
+                                  edges),
+          REF_INCREASE_LIMIT, "count faceids");
+      if (nedge > 1) {
+        id = (REF_INT)ref_node_global(ref_grid_node(ref_grid), node);
+        RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
+      }
+    }
+  }
+
   return REF_SUCCESS;
 }
 
