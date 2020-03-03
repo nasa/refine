@@ -1832,6 +1832,8 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   REF_DBL dist, max, max_node, max_edge, global_max;
   REF_BOOL node_constraint, edge_constraint;
 
+  if (!ref_geom_model_loaded(ref_geom)) return REF_SUCCESS;
+
   max = 0.0;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
