@@ -29,7 +29,8 @@ typedef enum REF_MIGRATE_PARTIONERS { /* 0 */ REF_MIGRATE_RECOMMENDED,
                                       /* 2 */ REF_MIGRATE_PARMETIS,
                                       /* 3 */ REF_MIGRATE_ZOLTAN_GRAPH,
                                       /* 4 */ REF_MIGRATE_ZOLTAN_RCB,
-                                      /* 5 */ REF_MIGRATE_LAST
+                                      /* 5 */ REF_MIGRATE_NATIVE_RCB,
+                                      /* 6 */ REF_MIGRATE_LAST
 } REF_MIGRATE_PARTIONER;
 END_C_DECLORATION
 

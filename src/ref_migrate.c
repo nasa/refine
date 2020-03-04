@@ -268,6 +268,17 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
+                                              REF_INT *node_part) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+
+  for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
+
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "single part");
+  return REF_SUCCESS;
+}
+
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
 static int ref_migrate_zoltan_local_n(void *void_ref_migrate, int *ierr) {
   REF_MIGRATE ref_migrate = ((REF_MIGRATE)void_ref_migrate);
@@ -972,6 +983,9 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
   switch (ref_grid_partitioner(ref_grid)) {
     case REF_MIGRATE_SINGLE:
       RSS(ref_migrate_single_part(ref_grid, new_part), "single by method");
+      break;
+    case REF_MIGRATE_NATIVE_RCB:
+      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
       break;
     case REF_MIGRATE_ZOLTAN_GRAPH:
     case REF_MIGRATE_ZOLTAN_RCB:
