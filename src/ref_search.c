@@ -271,7 +271,7 @@ REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
       if (elements[i] <= mid_val) count++;
     }
 
-    RSS(ref_mpi_allsum(ref_mpi, &count, 1, REF_DBL_TYPE), "bcast");
+    RSS(ref_mpi_allsum(ref_mpi, &count, 1, REF_LONG_TYPE), "bcast");
     /* printf("pos  %ld %ld %ld val %f %f %f\n",
                low_pos, count, high_pos, low_val,
                mid_val, high_val);*/
