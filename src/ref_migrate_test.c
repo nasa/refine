@@ -236,6 +236,30 @@ int main(int argc, char *argv[]) {
     RSS(ref_mpi_free(split_mpi), "free");
   }
 
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 5, 2, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(0, dir, "expects x");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 7, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(1, dir, "expects y");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 2, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(2, dir, "expects z");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

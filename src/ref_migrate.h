@@ -35,6 +35,7 @@ END_C_DECLORATION
 
 #include "ref_adj.h"
 #include "ref_grid.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 
@@ -85,6 +86,8 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid);
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
 
 REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z);
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_INT *dir);
 
 END_C_DECLORATION
 

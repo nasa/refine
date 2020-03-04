@@ -1410,3 +1410,39 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
             ref_migrate_split_morton(z) << 2;
   return answer;
 }
+
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_INT *dir) {
+  REF_DBL mins[3], maxes[3], temp;
+  ;
+  REF_INT i, j;
+  *dir = 0;
+  if (n == 0) {
+    return REF_SUCCESS;
+  }
+  for (j = 0; j < 3; j++) {
+    mins[j] = xyz[j];
+    maxes[j] = xyz[j];
+  }
+  for (i = 1; i < n; i++) {
+    for (j = 0; j < 3; j++) {
+      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
+      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
+    }
+  }
+  for (j = 0; j < 3; j++) {
+    temp = mins[j];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
+    temp = maxes[j];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
+    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
+  }
+  if ((maxes[1] - mins[1]) > (maxes[0] - mins[0]) &&
+      (maxes[1] - mins[1]) > (maxes[2] - mins[2]))
+    *dir = 1;
+  if ((maxes[2] - mins[2]) > (maxes[0] - mins[0]) &&
+      (maxes[2] - mins[2]) > (maxes[1] - mins[1]))
+    *dir = 2;
+  return REF_SUCCESS;
+}
