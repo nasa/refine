@@ -271,11 +271,25 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
 static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
                                               REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
-
+  REF_INT i, n, dir;
+  REF_DBL *xyz;
   for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
 
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "single part");
+  n = ref_node_n(ref_node);
+  ref_malloc(xyz, 3 * n, REF_DBL);
+  n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 3; i++) xyz[i + 3 * n] = ref_node_xyz(ref_node, i, node);
+    n++;
+  }
+  REIS(ref_node_n(ref_node), n, "node miscount");
+
+  RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+
+  ref_free(xyz);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
   return REF_SUCCESS;
 }
 
