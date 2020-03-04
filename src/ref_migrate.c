@@ -275,7 +275,12 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   REF_INT node;
   REF_INT i, n, dir;
   REF_DBL *xyz;
+  REF_DBL ratio;
+  REF_INT npart;
+
   for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
+
+  npart = ref_mpi_n(ref_mpi);
 
   n = ref_node_n(ref_node);
   ref_malloc(xyz, 3 * n, REF_DBL);
@@ -287,6 +292,7 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   REIS(ref_node_n(ref_node), n, "node miscount");
 
   RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+  RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
 
   ref_free(xyz);
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
