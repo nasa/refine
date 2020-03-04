@@ -46,6 +46,7 @@
 
 #include "ref_export.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
@@ -1444,5 +1445,17 @@ REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
   if ((maxes[2] - mins[2]) > (maxes[0] - mins[0]) &&
       (maxes[2] - mins[2]) > (maxes[1] - mins[1]))
     *dir = 2;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                   REF_DBL *ratio) {
+  REF_INT half = number_of_partitions / 2;
+  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
+    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
+  } else {
+    *ratio = 0;
+    return REF_DIV_ZERO;
+  }
   return REF_SUCCESS;
 }

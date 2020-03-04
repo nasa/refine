@@ -260,6 +260,26 @@ int main(int argc, char *argv[]) {
     REIS(2, dir, "expects z");
   }
 
+  {
+    REF_INT n = 2;
+    REF_DBL ratio;
+    RSS(ref_migrate_split_ratio(n, &ratio), "ratio");
+    RWDS(0.5, ratio, -1.0, "equal");
+  }
+
+  {
+    REF_INT n = 5;
+    REF_DBL ratio;
+    RSS(ref_migrate_split_ratio(n, &ratio), "ratio");
+    RWDS(0.4, ratio, -1.0, "equal");
+  }
+
+  {
+    REF_INT n = 0;
+    REF_DBL ratio;
+    REIS(REF_DIV_ZERO, ref_migrate_split_ratio(n, &ratio), "ratio");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
