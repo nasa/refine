@@ -2201,34 +2201,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* selection */
-    REF_NODE ref_node;
-    REF_INT node0, node1, center, global, position;
-    REF_DBL *elements, median, value;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-    center = REF_EMPTY;
-    median = 1.0e5;
-    if (ref_mpi_once(ref_mpi)) {
-      global = 2 * ref_mpi_n(ref_mpi);
-      RSS(ref_node_add(ref_node, global, &center), "median");
-    }
-    global = 0 + 2 * ref_mpi_rank(ref_mpi);
-    RSS(ref_node_add(ref_node, global, &node0), "node0");
-    global = 1 + 2 * ref_mpi_rank(ref_mpi);
-    RSS(ref_node_add(ref_node, global, &node1), "node1");
-    ref_malloc(elements, ref_node_max(ref_node), REF_DBL);
-    elements[node0] = median - (REF_DBL)(10 * ref_mpi_rank(ref_mpi));
-    elements[node1] = median + (REF_DBL)(10 * ref_mpi_rank(ref_mpi));
-    if (REF_EMPTY != center) {
-      elements[center] = median;
-    }
-    position = ref_mpi_n(ref_mpi) + 1;
-    RSS(ref_node_selection(ref_node, elements, position, &value), "median");
-    RWDS(median, value, -1.0, "median expected");
-    ref_free(elements);
-    RSS(ref_node_free(ref_node), "node free");
-  }
-
   { /* push one unused */
     REF_NODE ref_node;
     REF_INT global;
