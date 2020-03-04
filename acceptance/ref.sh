@@ -157,9 +157,9 @@ mpiexec -np 2 ./ref_migrate_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_cavity_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_elast_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_recon_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_search_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_subdiv_test >> $LOG 2>&1
-mpiexec -np 2 ./ref_subdiv_test >> $LOG 2>&1
-mpiexec -np 4 ./ref_agents_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_interp_test >> $LOG 2>&1
@@ -171,6 +171,7 @@ mpiexec -np 8 ./ref_migrate_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_cavity_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_elast_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_recon_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_search_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_subdiv_test >> $LOG 2>&1
 trap - EXIT
 
@@ -190,8 +191,8 @@ mpiexec -np 2 ./ref_migrate_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_cavity_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_elast_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_recon_test >> $LOG 2>&1
+mpiexec -np 2 ./ref_search_test >> $LOG 2>&1
 mpiexec -np 2 ./ref_subdiv_test >> $LOG 2>&1
-mpiexec -np 4 ./ref_subdiv_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_agents_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_edge_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_gather_test >> $LOG 2>&1
@@ -204,6 +205,7 @@ mpiexec -np 8 ./ref_migrate_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_cavity_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_elast_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_recon_test >> $LOG 2>&1
+mpiexec -np 8 ./ref_search_test >> $LOG 2>&1
 mpiexec -np 8 ./ref_subdiv_test >> $LOG 2>&1
 trap - EXIT
 
