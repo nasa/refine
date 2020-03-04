@@ -433,8 +433,8 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
     REF_CELL ref_cell;
-    REF_DBL *dual_flux, *system, *flux, *res, *weight;
-    REF_INT ldim;
+    REF_DBL *dual_flux, *system, *flux, *res, *weight, *packed_weight;
+    REF_INT ldim, n;
     REF_INT equ, dir, node;
     REF_DBL convergence_rate, exponent, total, l2res;
     REF_DBL min_weight, max_weight, median, minmax;
@@ -517,8 +517,16 @@ int main(int argc, char *argv[]) {
       /* approximate boundary with double weight */
       if (!ref_cell_node_empty(ref_cell, node)) weight[node] *= 2.0;
     }
-    RSS(ref_node_selection(ref_node, weight, ref_node_n_global(ref_node) / 2,
-                           &median),
+
+    ref_malloc_init(packed_weight, ref_node_max(ref_node), REF_DBL, 0.0);
+    n = 0;
+    each_ref_node_valid_node(ref_node, node) {
+      packed_weight[n] = weight[node];
+      n++;
+    }
+    REIS(n, ref_node_n(ref_node), "node miscount");
+    RSS(ref_search_selection(ref_mpi, n, packed_weight,
+                             ref_node_n_global(ref_node) / 2, &median),
         "parallel median selection");
     each_ref_node_valid_node(ref_node, node) {
       weight[node] /= median;
