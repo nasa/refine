@@ -1166,8 +1166,12 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(ref_migrate_parmetis_part(ref_grid, new_part), "parmetis part");
       break;
 #endif
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+#if !defined(HAVE_PARMETIS) && defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
       RSS(ref_migrate_zoltan_part(ref_grid, new_part), "zoltan part");
+      break;
+#endif
+#if !defined(HAVE_PARMETIS) && !defined(HAVE_ZOLTAN)
+      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
       break;
 #endif
     default:
