@@ -915,7 +915,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
     share = 0;
     remainder = 0;
   }
-  if (ref_mpi_rank(ref_mpi) - first_rank < remainder) {
+  if (MAX(0, ref_mpi_rank(ref_mpi) - first_rank) < remainder) {
     share++;
   }
   *nbalanced = share;
