@@ -766,7 +766,6 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
-    REIS(3, dim, "only 3D supported");
   }
 
   if (ref_grid_once(ref_grid)) {
@@ -848,7 +847,6 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
-    REIS(3, dim, "only 3D supported");
   }
 
   RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
@@ -912,7 +910,6 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
-    REIS(3, dim, "only 3D supported");
   }
 
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
