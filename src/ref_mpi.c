@@ -935,7 +935,11 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, ldim, nitem,
                         (void **)(balanced), nbalanced, REF_DBL_TYPE),
       "blind send node");
-  REIS(share, *nbalanced, "share mismatch");
+  REIB(share, *nbalanced, "share mismatch", {
+    printf("rank %d\n", ref_mpi_rank(ref_mpi));
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) printf(" %d", shares[i]);
+    printf("\n");
+  });
 
   ref_free(destination);
   ref_free(shares);
