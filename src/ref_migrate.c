@@ -408,7 +408,7 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   REF_INT *owners;
   REF_INT *locals;
 
-  for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
+  for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = REF_EMPTY;
 
   npart = ref_mpi_n(ref_mpi);
 
