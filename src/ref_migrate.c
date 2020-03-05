@@ -313,19 +313,19 @@ static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
   npart1 = npart - npart;
 
   RSS(ref_mpi_balance(ref_mpi, 3, n0, xyz0, 0, npart0 - 1, &bal_n0, &bal_xyz0),
-      "split");
+      "split 0");
   RSS(ref_mpi_balance(ref_mpi, 3, n1, xyz1, npart0, ref_mpi_n(ref_mpi) - 1,
                       &bal_n1, &bal_xyz1),
-      "split");
+      "split 1");
 
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
 
   if (ref_mpi_rank(ref_mpi) < npart0) {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0),
-        "split 0");
+        "recurse 0");
   } else {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1),
-        "split 1");
+        "recurse 1");
   }
 
   ref_free(bal_xyz1);
