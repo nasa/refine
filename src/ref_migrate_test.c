@@ -220,6 +220,27 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(import_grid), "free");
   }
 
+  if (1 < argc) { /* part and migrate argument, world comm, native */
+    REF_GRID import_grid;
+
+    if (ref_mpi_once(ref_mpi))
+      printf("%d procs, read %s\n", ref_mpi_n(ref_mpi), argv[1]);
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "read/part grid");
+
+    ref_grid_partitioner(import_grid) = REF_MIGRATE_NATIVE_RCB;
+    RSS(ref_migrate_to_balance(import_grid), "new part");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance parts");
+
+    RSS(ref_gather_tec_part(import_grid, "ref_migrate_test_native.tec"),
+        "part_viz");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather ref_migrate_test_world.tec");
+
+    RSS(ref_grid_free(import_grid), "free");
+  }
+
   if (1 < argc) { /* part and migrate argument, split comm */
     REF_MPI split_mpi;
     REF_GRID import_grid;
