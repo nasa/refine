@@ -271,10 +271,18 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
 static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
                                                    REF_DBL *xyz,
                                                    REF_INT npart) {
-  REF_INT i, j, n0, n1, dir;
+  REF_INT i, j, n0, n1, dir, npart0, npart1;
+  REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
+  REF_DBL *bal_xyz0, *bal_xyz1;
   REF_DBL ratio, value;
   REF_LONG position, total;
+  REF_MPI split_mpi;
+
+  if (1 >= npart) {
+    return REF_SUCCESS;
+  }
+
   ref_malloc(x, n, REF_DBL);
   RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
   RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
@@ -301,6 +309,27 @@ static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
     }
   }
   REIS(n, n0 + n1, "conservation");
+  npart0 = npart / 2;
+  npart1 = npart - npart;
+
+  RSS(ref_mpi_balance(ref_mpi, 3, n0, xyz0, 0, npart0 - 1, &bal_n0, &bal_xyz0),
+      "split");
+  RSS(ref_mpi_balance(ref_mpi, 3, n1, xyz1, npart0, ref_mpi_n(ref_mpi) - 1,
+                      &bal_n1, &bal_xyz1),
+      "split");
+
+  RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
+
+  if (ref_mpi_rank(ref_mpi) < npart0) {
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0),
+        "split 0");
+  } else {
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1),
+        "split 1");
+  }
+
+  ref_free(bal_xyz1);
+  ref_free(bal_xyz0);
 
   ref_free(xyz1);
   ref_free(xyz0);
