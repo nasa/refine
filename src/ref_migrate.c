@@ -408,7 +408,8 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   REF_INT *owners;
   REF_INT *locals;
 
-  for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = REF_EMPTY;
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    node_part[node] = REF_EMPTY;
 
   npart = ref_mpi_n(ref_mpi);
 
@@ -1611,12 +1612,13 @@ REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
     RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
     RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
   }
-  if ((maxes[1] - mins[1]) > (maxes[0] - mins[0]) &&
-      (maxes[1] - mins[1]) > (maxes[2] - mins[2]))
+  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
+      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
     *dir = 1;
-  if ((maxes[2] - mins[2]) > (maxes[0] - mins[0]) &&
-      (maxes[2] - mins[2]) > (maxes[1] - mins[1]))
+  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
+      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
     *dir = 2;
+
   return REF_SUCCESS;
 }
 
