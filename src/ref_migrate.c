@@ -268,14 +268,54 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
+                                                   REF_DBL *xyz,
+                                                   REF_INT npart) {
+  REF_INT i, j, n0, n1, dir;
+  REF_DBL *xyz0, *xyz1, *x;
+  REF_DBL ratio, value;
+  REF_LONG position, total;
+  ref_malloc(x, n, REF_DBL);
+  RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+  RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
+  for (i = 0; i < n; i++) x[i] = xyz[dir + 3 * i];
+
+  total = (REF_LONG)n;
+  RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_LONG_TYPE), "high_pos");
+
+  position = (REF_LONG)((REF_DBL)total * ratio);
+  RSS(ref_search_selection(ref_mpi, n, x, position, &value), "target");
+
+  ref_malloc(xyz0, 3 * n, REF_DBL);
+  ref_malloc(xyz1, 3 * n, REF_DBL);
+
+  n0 = 0;
+  n1 = 0;
+  for (i = 0; i < n; i++) {
+    if (x[i] < value) {
+      for (j = 0; j < 3; j++) xyz0[j + 3 * n0] = xyz[j + 3 * i];
+      n0++;
+    } else {
+      for (j = 0; j < 3; j++) xyz1[j + 3 * n1] = xyz[j + 3 * i];
+      n1++;
+    }
+  }
+  REIS(n, n0 + n1, "conservation");
+
+  ref_free(xyz1);
+  ref_free(xyz0);
+
+  ref_free(x);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
                                               REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT node;
-  REF_INT i, n, dir;
+  REF_INT i, n;
   REF_DBL *xyz;
-  REF_DBL ratio;
   REF_INT npart;
 
   for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
@@ -286,13 +326,13 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   ref_malloc(xyz, 3 * n, REF_DBL);
   n = 0;
   each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < 3; i++) xyz[i + 3 * n] = ref_node_xyz(ref_node, i, node);
-    n++;
+    if (ref_node_owned(ref_node, node)) {
+      for (i = 0; i < 3; i++) xyz[i + 3 * n] = ref_node_xyz(ref_node, i, node);
+      n++;
+    }
   }
-  REIS(ref_node_n(ref_node), n, "node miscount");
 
-  RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
-  RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
+  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart), "split");
 
   ref_free(xyz);
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
