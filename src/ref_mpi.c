@@ -925,8 +925,8 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
 
   ref_malloc_init(destination, nitem, REF_INT, 0);
   offset = 0;
-  for (part = 0; part < ref_mpi_rank(ref_mpi); part++) {
-    offset++;
+  for (part = 0; part < ref_mpi_rank(ref_mpi) - 1; part++) {
+    offset += shares[part];
   }
   for (i = 0; i < nitem; i++) {
     destination[i] = find_destination(ref_mpi_n(ref_mpi), shares, offset + i);
