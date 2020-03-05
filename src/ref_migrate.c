@@ -338,24 +338,28 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   npart0 = npart / 2;
   npart1 = npart - npart0;
 
-  RSS(ref_mpi_balance(ref_mpi, 3, n0, xyz0, 0, npart0 - 1, &bal_n0, &bal_xyz0),
+  RSS(ref_mpi_balance(ref_mpi, 3, n0, (void *)xyz0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_xyz0), REF_DBL_TYPE),
       "split 0");
-  RSS(ref_mpi_balance(ref_mpi, 3, n1, xyz1, npart0, ref_mpi_n(ref_mpi) - 1,
-                      &bal_n1, &bal_xyz1),
+  RSS(ref_mpi_balance(ref_mpi, 3, n1, (void *)xyz1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_xyz1),
+                      REF_DBL_TYPE),
       "split 1");
 
-  RSS(ref_mpi_balance_int(ref_mpi, 1, n0, owners0, 0, npart0 - 1, &bal_n0,
-                          &bal_owners0),
+  RSS(ref_mpi_balance(ref_mpi, 1, n0, (void *)owners0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_owners0), REF_INT_TYPE),
       "split owner 0");
-  RSS(ref_mpi_balance_int(ref_mpi, 1, n1, owners1, npart0,
-                          ref_mpi_n(ref_mpi) - 1, &bal_n1, &bal_owners1),
+  RSS(ref_mpi_balance(ref_mpi, 1, n1, (void *)owners1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_owners1),
+                      REF_INT_TYPE),
       "split owner 1");
 
-  RSS(ref_mpi_balance_int(ref_mpi, 1, n0, locals0, 0, npart0 - 1, &bal_n0,
-                          &bal_locals0),
+  RSS(ref_mpi_balance(ref_mpi, 1, n0, (void *)locals0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_locals0), REF_INT_TYPE),
       "split local 0");
-  RSS(ref_mpi_balance_int(ref_mpi, 1, n1, locals1, npart0,
-                          ref_mpi_n(ref_mpi) - 1, &bal_n1, &bal_locals1),
+  RSS(ref_mpi_balance(ref_mpi, 1, n1, (void *)locals1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_locals1),
+                      REF_INT_TYPE),
       "split local 1");
 
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");

@@ -254,8 +254,9 @@ int main(int argc, char *argv[]) {
     }
     first_rank = 0;
     last_rank = ref_mpi_n(ref_mpi) - 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     RAS(total / ref_mpi_n(ref_mpi) <= nbalanced &&
             nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
@@ -279,8 +280,9 @@ int main(int argc, char *argv[]) {
     }
     first_rank = 0;
     last_rank = ref_mpi_n(ref_mpi) - 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     RAS(total / ref_mpi_n(ref_mpi) <= nbalanced &&
             nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
@@ -306,8 +308,9 @@ int main(int argc, char *argv[]) {
     first_rank = 0;
     last_rank = MAX(ref_mpi_n(ref_mpi) / 2 - 1, 0);
     active = last_rank - first_rank + 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)&balanced,
+                        REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
         ref_mpi_rank(ref_mpi) <= last_rank) {
@@ -337,8 +340,9 @@ int main(int argc, char *argv[]) {
     first_rank = 0;
     last_rank = MAX(ref_mpi_n(ref_mpi) / 2 - 1, 0);
     active = last_rank - first_rank + 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void *)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
         ref_mpi_rank(ref_mpi) <= last_rank) {
@@ -368,8 +372,9 @@ int main(int argc, char *argv[]) {
     first_rank = ref_mpi_n(ref_mpi) / 2;
     last_rank = ref_mpi_n(ref_mpi) - 1;
     active = last_rank - first_rank + 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
         ref_mpi_rank(ref_mpi) <= last_rank) {
@@ -399,8 +404,9 @@ int main(int argc, char *argv[]) {
     first_rank = ref_mpi_n(ref_mpi) / 2;
     last_rank = ref_mpi_n(ref_mpi) - 1;
     active = last_rank - first_rank + 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
         ref_mpi_rank(ref_mpi) <= last_rank) {
@@ -429,8 +435,9 @@ int main(int argc, char *argv[]) {
     first_rank = ref_mpi_n(ref_mpi) / 2;
     last_rank = ref_mpi_n(ref_mpi) - 1;
     active = last_rank - first_rank + 1;
-    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
-                        &nbalanced, &balanced),
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
+                        last_rank, &nbalanced, (void **)(&balanced),
+                        REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
         ref_mpi_rank(ref_mpi) <= last_rank) {

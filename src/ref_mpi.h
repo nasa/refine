@@ -115,13 +115,8 @@ REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
                              REF_INT ldim, REF_INT nsend, void **recv,
                              REF_INT *nrecv, REF_TYPE type);
 REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
-                           REF_DBL *items, REF_INT first_rank,
-                           REF_INT last_rank, REF_INT *nbalanced,
-                           REF_DBL **balanced);
-REF_STATUS ref_mpi_balance_int(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
-                               REF_INT *items, REF_INT first_rank,
-                               REF_INT last_rank, REF_INT *nbalanced,
-                               REF_INT **balanced);
+                           void *items, REF_INT first_rank, REF_INT last_rank,
+                           REF_INT *nbalanced, void **balanced, REF_TYPE type);
 
 END_C_DECLORATION
 
