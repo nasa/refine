@@ -261,6 +261,7 @@ int main(int argc, char *argv[]) {
             nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
         "not bal");
     ref_free(balanced);
+    ref_free(items);
   }
 
   /* balance, all prime */
@@ -285,6 +286,7 @@ int main(int argc, char *argv[]) {
             nbalanced <= 1 + total / ref_mpi_n(ref_mpi),
         "not bal");
     ref_free(balanced);
+    ref_free(items);
   }
 
   /* balance, first half, even */
@@ -315,6 +317,7 @@ int main(int argc, char *argv[]) {
       REIS(0, nbalanced, "not zero");
     }
     ref_free(balanced);
+    ref_free(items);
   }
 
   /* balance, first half, prime */
@@ -345,6 +348,7 @@ int main(int argc, char *argv[]) {
       REIS(0, nbalanced, "not zero");
     }
     ref_free(balanced);
+    ref_free(items);
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

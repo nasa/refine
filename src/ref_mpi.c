@@ -933,7 +933,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
   }
 
   RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, ldim, nitem,
-                        (void **)(&balanced), nbalanced, REF_DBL_TYPE),
+                        (void **)(balanced), nbalanced, REF_DBL_TYPE),
       "blind send node");
   REIS(share, *nbalanced, "share mismatch");
 
