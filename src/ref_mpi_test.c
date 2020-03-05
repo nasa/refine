@@ -413,6 +413,36 @@ int main(int argc, char *argv[]) {
     ref_free(items);
   }
 
+  /* balance, first half, dist */
+  {
+    REF_DBL *items = NULL;
+    REF_INT nitem = 0;
+    REF_DBL *balanced = NULL;
+    REF_INT total, nbalanced = 0;
+    REF_INT ldim = 1;
+    REF_INT active;
+    REF_INT first_rank, last_rank;
+    nitem = 10;
+    ref_malloc_init(items, nitem, REF_DBL, 0);
+    total = nitem * ref_mpi_n(ref_mpi);
+
+    first_rank = ref_mpi_n(ref_mpi) / 2;
+    last_rank = ref_mpi_n(ref_mpi) - 1;
+    active = last_rank - first_rank + 1;
+    RSS(ref_mpi_balance(ref_mpi, ldim, nitem, items, first_rank, last_rank,
+                        &nbalanced, &balanced),
+        "bal");
+    if (first_rank <= ref_mpi_rank(ref_mpi) &&
+        ref_mpi_rank(ref_mpi) <= last_rank) {
+      RAS(total / active <= nbalanced && nbalanced <= 1 + total / active,
+          "not bal");
+    } else {
+      REIS(0, nbalanced, "not zero");
+    }
+    ref_free(balanced);
+    ref_free(items);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

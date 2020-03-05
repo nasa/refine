@@ -900,6 +900,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
                            REF_INT last_rank, REF_INT *nbalanced,
                            REF_DBL **balanced) {
   REF_INT *shares, total, share, remainder;
+  REF_INT *haves;
   REF_INT *destination, offset, part, i;
   REF_INT active;
 
@@ -920,13 +921,15 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
   }
   *nbalanced = share;
 
+  ref_malloc(haves, ref_mpi_n(ref_mpi), REF_INT);
   ref_malloc(shares, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &share, shares, REF_INT_TYPE), "all share");
+  RSS(ref_mpi_allgather(ref_mpi, &nitem, haves, REF_INT_TYPE), "all share");
 
   ref_malloc_init(destination, nitem, REF_INT, 0);
   offset = 0;
-  for (part = 0; part < ref_mpi_rank(ref_mpi) - 1; part++) {
-    offset += shares[part];
+  for (part = 0; part < ref_mpi_rank(ref_mpi); part++) {
+    offset += haves[part];
   }
   for (i = 0; i < nitem; i++) {
     destination[i] = find_destination(ref_mpi_n(ref_mpi), shares, offset + i);
@@ -947,6 +950,7 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
 
   ref_free(destination);
   ref_free(shares);
+  ref_free(haves);
 
   return REF_SUCCESS;
 }
