@@ -936,7 +936,11 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
                         (void **)(balanced), nbalanced, REF_DBL_TYPE),
       "blind send node");
   REIB(share, *nbalanced, "share mismatch", {
-    printf("rank %d\n", ref_mpi_rank(ref_mpi));
+    printf(
+        "rank %d first %d last %d active %d total %d rem %d share %d nitem "
+        "%d\n",
+        ref_mpi_rank(ref_mpi), first_rank, last_rank, active, total, remainder,
+        share, nitem);
     for (i = 0; i < ref_mpi_n(ref_mpi); i++) printf(" %d", shares[i]);
     printf("\n");
   });
