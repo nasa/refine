@@ -114,9 +114,10 @@ REF_STATUS ref_mpi_allminwho(REF_MPI ref_mpi, REF_DBL *val, REF_INT *who,
 REF_STATUS ref_mpi_blindsend(REF_MPI ref_mpi, REF_INT *proc, void *send,
                              REF_INT ldim, REF_INT nsend, void **recv,
                              REF_INT *nrecv, REF_TYPE type);
-REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT nitem, REF_DBL *items,
-                           REF_INT first_rank, REF_INT last_rank,
-                           REF_INT *nbalanced, REF_DBL **balanced);
+REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
+                           REF_DBL *items, REF_INT first_rank,
+                           REF_INT last_rank, REF_INT *nbalanced,
+                           REF_DBL **balanced);
 
 END_C_DECLORATION
 
