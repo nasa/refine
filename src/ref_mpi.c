@@ -954,3 +954,63 @@ REF_STATUS ref_mpi_balance(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_mpi_balance_int(REF_MPI ref_mpi, REF_INT ldim, REF_INT nitem,
+                               REF_INT *items, REF_INT first_rank,
+                               REF_INT last_rank, REF_INT *nbalanced,
+                               REF_INT **balanced) {
+  REF_INT *shares, total, share, remainder;
+  REF_INT *haves;
+  REF_INT *destination, offset, part, i;
+  REF_INT active;
+
+  active = last_rank - first_rank + 1;
+
+  total = nitem;
+  RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_INT_TYPE), "total items");
+  if (first_rank <= ref_mpi_rank(ref_mpi) &&
+      ref_mpi_rank(ref_mpi) <= last_rank) {
+    share = total / active;
+    remainder = total - share * active;
+  } else {
+    share = 0;
+    remainder = 0;
+  }
+  if (MAX(0, ref_mpi_rank(ref_mpi) - first_rank) < remainder) {
+    share++;
+  }
+  *nbalanced = share;
+
+  ref_malloc(haves, ref_mpi_n(ref_mpi), REF_INT);
+  ref_malloc(shares, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &share, shares, REF_INT_TYPE), "all share");
+  RSS(ref_mpi_allgather(ref_mpi, &nitem, haves, REF_INT_TYPE), "all share");
+
+  ref_malloc_init(destination, nitem, REF_INT, 0);
+  offset = 0;
+  for (part = 0; part < ref_mpi_rank(ref_mpi); part++) {
+    offset += haves[part];
+  }
+  for (i = 0; i < nitem; i++) {
+    destination[i] = find_destination(ref_mpi_n(ref_mpi), shares, offset + i);
+  }
+
+  RSS(ref_mpi_blindsend(ref_mpi, destination, (void *)items, ldim, nitem,
+                        (void **)(balanced), nbalanced, REF_INT_TYPE),
+      "blind send node");
+  REIB(share, *nbalanced, "share mismatch", {
+    printf(
+        "rank %d first %d last %d active %d total %d rem %d share %d nitem "
+        "%d\n",
+        ref_mpi_rank(ref_mpi), first_rank, last_rank, active, total, remainder,
+        share, nitem);
+    for (i = 0; i < ref_mpi_n(ref_mpi); i++) printf(" %d", shares[i]);
+    printf("\n");
+  });
+
+  ref_free(destination);
+  ref_free(shares);
+  ref_free(haves);
+
+  return REF_SUCCESS;
+}
