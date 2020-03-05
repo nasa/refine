@@ -269,12 +269,17 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
 }
 
 static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
-                                                   REF_DBL *xyz,
-                                                   REF_INT npart) {
+                                                   REF_DBL *xyz, REF_INT npart,
+                                                   REF_INT *owners,
+                                                   REF_INT *locals) {
   REF_INT i, j, n0, n1, dir, npart0, npart1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
   REF_DBL *bal_xyz0, *bal_xyz1;
+  REF_INT *owners0, *owners1;
+  REF_INT *bal_owners0, *bal_owners1;
+  REF_INT *locals0, *locals1;
+  REF_INT *bal_locals0, *bal_locals1;
   REF_DBL ratio, value;
   REF_LONG position, total;
   REF_MPI split_mpi;
@@ -296,15 +301,23 @@ static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
 
   ref_malloc(xyz0, 3 * n, REF_DBL);
   ref_malloc(xyz1, 3 * n, REF_DBL);
+  ref_malloc(owners0, n, REF_INT);
+  ref_malloc(owners1, n, REF_INT);
+  ref_malloc(locals0, n, REF_INT);
+  ref_malloc(locals1, n, REF_INT);
 
   n0 = 0;
   n1 = 0;
   for (i = 0; i < n; i++) {
     if (x[i] < value) {
       for (j = 0; j < 3; j++) xyz0[j + 3 * n0] = xyz[j + 3 * i];
+      owners0[n0] = owners[i];
+      locals0[n0] = locals[i];
       n0++;
     } else {
       for (j = 0; j < 3; j++) xyz1[j + 3 * n1] = xyz[j + 3 * i];
+      owners1[n1] = owners[i];
+      locals1[n1] = locals[i];
       n1++;
     }
   }
@@ -318,18 +331,49 @@ static REF_STATUS ref_migrate_native_rcb_direction(REF_MPI ref_mpi, REF_INT n,
                       &bal_n1, &bal_xyz1),
       "split 1");
 
+  RSS(ref_mpi_balance_int(ref_mpi, 1, n0, owners0, 0, npart0 - 1, &bal_n0,
+                          &bal_owners0),
+      "split owner 0");
+  RSS(ref_mpi_balance_int(ref_mpi, 1, n1, owners1, npart0,
+                          ref_mpi_n(ref_mpi) - 1, &bal_n1, &bal_owners1),
+      "split owner 1");
+
+  RSS(ref_mpi_balance_int(ref_mpi, 1, n0, locals0, 0, npart0 - 1, &bal_n0,
+                          &bal_locals0),
+      "split local 0");
+  RSS(ref_mpi_balance_int(ref_mpi, 1, n1, locals1, npart0,
+                          ref_mpi_n(ref_mpi) - 1, &bal_n1, &bal_locals1),
+      "split local 1");
+
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
 
   if (ref_mpi_rank(ref_mpi) < npart0) {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0),
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
+                                         bal_owners0, bal_locals0),
         "recurse 0");
   } else {
-    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1),
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
+                                         bal_owners1, bal_locals1),
         "recurse 1");
   }
 
+  RSS(ref_mpi_join_comm(split_mpi), "join");
+  RSS(ref_mpi_free(split_mpi), "new free");
+
+  ref_free(bal_locals1);
+  ref_free(bal_locals0);
+
+  ref_free(bal_owners1);
+  ref_free(bal_owners0);
+
   ref_free(bal_xyz1);
   ref_free(bal_xyz0);
+
+  ref_free(locals1);
+  ref_free(locals0);
+
+  ref_free(owners1);
+  ref_free(owners0);
 
   ref_free(xyz1);
   ref_free(xyz0);
@@ -346,6 +390,8 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   REF_INT i, n;
   REF_DBL *xyz;
   REF_INT npart;
+  REF_INT *owners;
+  REF_INT *locals;
 
   for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
 
@@ -353,16 +399,23 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
 
   n = ref_node_n(ref_node);
   ref_malloc(xyz, 3 * n, REF_DBL);
+  ref_malloc(owners, n, REF_INT);
+  ref_malloc(locals, n, REF_INT);
   n = 0;
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
       for (i = 0; i < 3; i++) xyz[i + 3 * n] = ref_node_xyz(ref_node, i, node);
+      owners[n] = ref_node_global(ref_node, node);
+      locals[n] = node;
       n++;
     }
   }
 
-  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart), "split");
+  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, owners, locals),
+      "split");
 
+  ref_free(locals);
+  ref_free(owners);
   ref_free(xyz);
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
   return REF_SUCCESS;
