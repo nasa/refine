@@ -28,6 +28,7 @@ typedef REF_SEARCH_STRUCT *REF_SEARCH;
 END_C_DECLORATION
 
 #include "ref_list.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 struct REF_SEARCH_STRUCT {
@@ -54,6 +55,9 @@ REF_STATUS ref_search_trim_radius(REF_SEARCH ref_search, REF_DBL *position,
                                   REF_DBL *trim_radius);
 REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
                                          REF_LIST ref_list, REF_DBL *position);
+
+REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
+                                REF_LONG position, REF_DBL *value);
 
 END_C_DECLORATION
 

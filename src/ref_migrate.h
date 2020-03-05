@@ -29,12 +29,14 @@ typedef enum REF_MIGRATE_PARTIONERS { /* 0 */ REF_MIGRATE_RECOMMENDED,
                                       /* 2 */ REF_MIGRATE_PARMETIS,
                                       /* 3 */ REF_MIGRATE_ZOLTAN_GRAPH,
                                       /* 4 */ REF_MIGRATE_ZOLTAN_RCB,
-                                      /* 5 */ REF_MIGRATE_LAST
+                                      /* 5 */ REF_MIGRATE_NATIVE_RCB,
+                                      /* 6 */ REF_MIGRATE_LAST
 } REF_MIGRATE_PARTIONER;
 END_C_DECLORATION
 
 #include "ref_adj.h"
 #include "ref_grid.h"
+#include "ref_mpi.h"
 
 BEGIN_C_DECLORATION
 
@@ -85,6 +87,11 @@ REF_STATUS ref_migrate_shufflin(REF_GRID ref_grid);
 REF_STATUS ref_migrate_to_balance(REF_GRID ref_grid);
 
 REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z);
+
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_INT *dir);
+REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                   REF_DBL *ratio);
 
 END_C_DECLORATION
 

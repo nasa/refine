@@ -230,3 +230,57 @@ REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
       "touches");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
+                                REF_LONG position, REF_DBL *value) {
+  REF_INT i, try
+    ;
+  REF_LONG low_pos, high_pos, count;
+  REF_DBL low_val, high_val, temp, mid_val;
+  low_pos = 0;
+  high_pos = (REF_LONG)n;
+  RSS(ref_mpi_allsum(ref_mpi, &high_pos, 1, REF_LONG_TYPE), "high_pos");
+  high_pos--;
+  low_val = REF_DBL_MAX;
+  high_val = REF_DBL_MIN;
+  for (i = 0; i < n; i++) {
+    low_val = MIN(low_val, elements[i]);
+    high_val = MAX(high_val, elements[i]);
+  }
+  temp = low_val;
+  RSS(ref_mpi_min(ref_mpi, &temp, &low_val, REF_DBL_TYPE), "min");
+  RSS(ref_mpi_bcast(ref_mpi, &low_val, 1, REF_DBL_TYPE), "bcast");
+  temp = high_val;
+  RSS(ref_mpi_max(ref_mpi, &temp, &high_val, REF_DBL_TYPE), "max");
+  RSS(ref_mpi_bcast(ref_mpi, &high_val, 1, REF_DBL_TYPE), "bcast");
+
+  if (position <= low_pos) {
+    *value = low_val;
+    return REF_SUCCESS;
+  }
+
+  if (position >= high_pos) {
+    *value = high_val;
+    return REF_SUCCESS;
+  }
+
+  for (try = 0; try < 40; try ++) {
+    mid_val = 0.5 * (low_val + high_val);
+    count = 0;
+    for (i = 0; i < n; i++) {
+      if (elements[i] <= mid_val) count++;
+    }
+
+    RSS(ref_mpi_allsum(ref_mpi, &count, 1, REF_LONG_TYPE), "bcast");
+    /* printf("pos  %ld %ld %ld val %f %f %f\n",
+               low_pos, count, high_pos, low_val,
+               mid_val, high_val);*/
+    if (count - 1 < position) {
+      low_val = mid_val;
+    } else {
+      high_val = mid_val;
+    }
+  }
+  *value = mid_val;
+  return REF_SUCCESS;
+}

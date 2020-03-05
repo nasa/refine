@@ -181,6 +181,25 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
+  if (1 == argc) { /* part and migrate tet b8.ugrid native rcb */
+    REF_GRID import_grid;
+    char grid_file[] = "ref_migrate_test.b8.ugrid";
+
+    if (ref_mpi_once(ref_mpi)) {
+      REF_GRID export_grid;
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+    ref_grid_partitioner(import_grid) = REF_MIGRATE_NATIVE_RCB;
+    RSS(ref_migrate_to_balance(import_grid), "create");
+
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
   if (1 < argc) { /* part and migrate argument, world comm */
     REF_GRID import_grid;
 
@@ -195,6 +214,27 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "balance parts");
 
     RSS(ref_gather_tec_part(import_grid, "ref_migrate_test_world.tec"),
+        "part_viz");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather ref_migrate_test_world.tec");
+
+    RSS(ref_grid_free(import_grid), "free");
+  }
+
+  if (1 < argc) { /* part and migrate argument, world comm, native */
+    REF_GRID import_grid;
+
+    if (ref_mpi_once(ref_mpi))
+      printf("%d procs, read %s\n", ref_mpi_n(ref_mpi), argv[1]);
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, argv[1]), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "read/part grid");
+
+    ref_grid_partitioner(import_grid) = REF_MIGRATE_NATIVE_RCB;
+    RSS(ref_migrate_to_balance(import_grid), "new part");
+    ref_mpi_stopwatch_stop(ref_mpi, "balance parts");
+
+    RSS(ref_gather_tec_part(import_grid, "ref_migrate_test_native.tec"),
         "part_viz");
     ref_mpi_stopwatch_stop(ref_mpi, "gather ref_migrate_test_world.tec");
 
@@ -234,6 +274,50 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_join_comm(split_mpi), "join");
     RSS(ref_mpi_free(split_mpi), "free");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 5, 2, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(0, dir, "expects x");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 7, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(1, dir, "expects y");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL xyz[] = {0, 0, 0, 1, 2, 3};
+    REF_INT dir;
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+    REIS(2, dir, "expects z");
+  }
+
+  {
+    REF_INT n = 2;
+    REF_DBL ratio;
+    RSS(ref_migrate_split_ratio(n, &ratio), "ratio");
+    RWDS(0.5, ratio, -1.0, "equal");
+  }
+
+  {
+    REF_INT n = 5;
+    REF_DBL ratio;
+    RSS(ref_migrate_split_ratio(n, &ratio), "ratio");
+    RWDS(0.4, ratio, -1.0, "equal");
+  }
+
+  {
+    REF_INT n = 0;
+    REF_DBL ratio;
+    REIS(REF_DIV_ZERO, ref_migrate_split_ratio(n, &ratio), "ratio");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

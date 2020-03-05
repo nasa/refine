@@ -37,6 +37,7 @@
 #include "ref_grid.h"
 #include "ref_import.h"
 #include "ref_list.h"
+#include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_migrate.h"
@@ -254,6 +255,67 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_list_free(ref_list), "list free");
     RSS(ref_search_free(ref_search), "search free");
+  }
+
+  { /* selection half */
+    REF_DBL *elements, median, value;
+    REF_INT n;
+    REF_LONG position;
+    median = 1.0e5;
+    n = 2;
+    if (ref_mpi_once(ref_mpi)) n++;
+    ref_malloc(elements, n, REF_DBL);
+    elements[0] = median - (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    elements[1] = median + (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    if (ref_mpi_once(ref_mpi)) elements[2] = median;
+    position = ref_mpi_n(ref_mpi);
+    RSS(ref_search_selection(ref_mpi, n, elements, 0, &value), "median");
+    RWDS(median - (REF_DBL)(10 * ref_mpi_n(ref_mpi)), value, -1.0,
+         "median expected");
+    RSS(ref_search_selection(ref_mpi, n, elements, 2 * ref_mpi_n(ref_mpi),
+                             &value),
+        "median");
+    RWDS(median + (REF_DBL)(10 * ref_mpi_n(ref_mpi)), value, -1.0,
+         "median expected");
+    RSS(ref_search_selection(ref_mpi, n, elements, position, &value), "median");
+    RWDS(median, value, -1.0, "median expected");
+    ref_free(elements);
+  }
+
+  { /* selection 1/3 */
+    REF_DBL *elements, target, value;
+    REF_INT n;
+    REF_LONG position;
+    target = 1.0e5;
+    n = 3;
+    if (ref_mpi_once(ref_mpi)) n++;
+    ref_malloc(elements, n, REF_DBL);
+    elements[0] = target - (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    elements[1] = target + (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    elements[2] = target + (REF_DBL)(20 * (1 + ref_mpi_rank(ref_mpi)));
+    if (ref_mpi_once(ref_mpi)) elements[3] = target;
+    position = ref_mpi_n(ref_mpi);
+    RSS(ref_search_selection(ref_mpi, n, elements, position, &value), "target");
+    RWDS(target, value, -1.0, "target expected");
+    ref_free(elements);
+  }
+
+  { /* selection 2/3 */
+    REF_DBL *elements, target, value;
+    REF_INT n;
+    REF_LONG position;
+    target = 1.0e5;
+    n = 3;
+    if (ref_mpi_once(ref_mpi)) n++;
+    ref_malloc(elements, n, REF_DBL);
+    elements[0] = target - (REF_DBL)(20 * (1 + ref_mpi_rank(ref_mpi)));
+    elements[1] = target - (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    elements[2] = target + (REF_DBL)(10 * (1 + ref_mpi_rank(ref_mpi)));
+    if (ref_mpi_once(ref_mpi)) elements[3] = target;
+    position = 2 * ref_mpi_n(ref_mpi);
+    RSS(ref_search_selection(ref_mpi, n, elements, position, &value), "target");
+    RWDS(target, value, -1.0, "target expected");
+    ref_free(elements);
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

@@ -46,6 +46,7 @@
 
 #include "ref_export.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
@@ -264,6 +265,180 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
   for (node = 0; node < ref_node_max(ref_node); node++) node_part[node] = 0;
 
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "single part");
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_migrate_native_rcb_direction(
+    REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT *owners,
+    REF_INT *locals, REF_MPI global_mpi, REF_INT *part) {
+  REF_INT i, j, n0, n1, dir, npart0, npart1;
+  REF_INT bal_n0, bal_n1;
+  REF_DBL *xyz0, *xyz1, *x;
+  REF_DBL *bal_xyz0, *bal_xyz1;
+  REF_INT *owners0, *owners1;
+  REF_INT *bal_owners0, *bal_owners1;
+  REF_INT *locals0, *locals1;
+  REF_INT *bal_locals0, *bal_locals1;
+  REF_DBL ratio, value;
+  REF_LONG position, total;
+  REF_MPI split_mpi;
+
+  if (0 == npart) return REF_SUCCESS;
+
+  if (1 == npart) {
+    REF_INT *my_id, *recv_part, *recv_locals, nrecv;
+    ref_malloc_init(my_id, n, REF_INT, ref_mpi_rank(global_mpi));
+    RSS(ref_mpi_blindsend(global_mpi, owners, my_id, 1, n, (void **)&recv_part,
+                          &nrecv, REF_INT_TYPE),
+        "recv part");
+    RSS(ref_mpi_blindsend(global_mpi, owners, locals, 1, n,
+                          (void **)&recv_locals, &nrecv, REF_INT_TYPE),
+        "recv loc");
+    for (i = 0; i < nrecv; i++) part[recv_locals[i]] = recv_part[i];
+    ref_free(recv_part);
+    ref_free(recv_locals);
+    ref_free(my_id);
+    return REF_SUCCESS;
+  }
+
+  ref_malloc(x, n, REF_DBL);
+  RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+  RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
+  for (i = 0; i < n; i++) x[i] = xyz[dir + 3 * i];
+
+  total = (REF_LONG)n;
+  RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_LONG_TYPE), "high_pos");
+
+  position = (REF_LONG)((REF_DBL)total * ratio);
+  RSS(ref_search_selection(ref_mpi, n, x, position, &value), "target");
+
+  ref_malloc(xyz0, 3 * n, REF_DBL);
+  ref_malloc(xyz1, 3 * n, REF_DBL);
+  ref_malloc(owners0, n, REF_INT);
+  ref_malloc(owners1, n, REF_INT);
+  ref_malloc(locals0, n, REF_INT);
+  ref_malloc(locals1, n, REF_INT);
+
+  n0 = 0;
+  n1 = 0;
+  for (i = 0; i < n; i++) {
+    if (x[i] < value) {
+      for (j = 0; j < 3; j++) xyz0[j + 3 * n0] = xyz[j + 3 * i];
+      owners0[n0] = owners[i];
+      locals0[n0] = locals[i];
+      n0++;
+    } else {
+      for (j = 0; j < 3; j++) xyz1[j + 3 * n1] = xyz[j + 3 * i];
+      owners1[n1] = owners[i];
+      locals1[n1] = locals[i];
+      n1++;
+    }
+  }
+  REIS(n, n0 + n1, "conservation");
+  npart0 = npart / 2;
+  npart1 = npart - npart0;
+
+  RSS(ref_mpi_balance(ref_mpi, 3, n0, (void *)xyz0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_xyz0), REF_DBL_TYPE),
+      "split 0");
+  RSS(ref_mpi_balance(ref_mpi, 3, n1, (void *)xyz1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_xyz1),
+                      REF_DBL_TYPE),
+      "split 1");
+
+  RSS(ref_mpi_balance(ref_mpi, 1, n0, (void *)owners0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_owners0), REF_INT_TYPE),
+      "split owner 0");
+  RSS(ref_mpi_balance(ref_mpi, 1, n1, (void *)owners1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_owners1),
+                      REF_INT_TYPE),
+      "split owner 1");
+
+  RSS(ref_mpi_balance(ref_mpi, 1, n0, (void *)locals0, 0, npart0 - 1, &bal_n0,
+                      (void **)(&bal_locals0), REF_INT_TYPE),
+      "split local 0");
+  RSS(ref_mpi_balance(ref_mpi, 1, n1, (void *)locals1, npart0,
+                      ref_mpi_n(ref_mpi) - 1, &bal_n1, (void **)(&bal_locals1),
+                      REF_INT_TYPE),
+      "split local 1");
+
+  RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
+
+  if (ref_mpi_rank(ref_mpi) < npart0) {
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
+                                         bal_owners0, bal_locals0, global_mpi,
+                                         part),
+        "recurse 0");
+  } else {
+    RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
+                                         bal_owners1, bal_locals1, global_mpi,
+                                         part),
+        "recurse 1");
+  }
+
+  RSS(ref_mpi_join_comm(split_mpi), "join");
+  RSS(ref_mpi_free(split_mpi), "new free");
+
+  ref_free(bal_locals1);
+  ref_free(bal_locals0);
+
+  ref_free(bal_owners1);
+  ref_free(bal_owners0);
+
+  ref_free(bal_xyz1);
+  ref_free(bal_xyz0);
+
+  ref_free(locals1);
+  ref_free(locals0);
+
+  ref_free(owners1);
+  ref_free(owners0);
+
+  ref_free(xyz1);
+  ref_free(xyz0);
+
+  ref_free(x);
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
+                                              REF_INT *node_part) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_INT i, n;
+  REF_DBL *xyz;
+  REF_INT npart;
+  REF_INT *owners;
+  REF_INT *locals;
+
+  for (node = 0; node < ref_node_max(ref_node); node++)
+    node_part[node] = REF_EMPTY;
+
+  npart = ref_mpi_n(ref_mpi);
+
+  n = ref_node_n(ref_node);
+  ref_malloc(xyz, 3 * n, REF_DBL);
+  ref_malloc(owners, n, REF_INT);
+  ref_malloc(locals, n, REF_INT);
+  n = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      for (i = 0; i < 3; i++) xyz[i + 3 * n] = ref_node_xyz(ref_node, i, node);
+      owners[n] = ref_node_part(ref_node, node);
+      locals[n] = node;
+      n++;
+    }
+  }
+
+  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, owners, locals,
+                                       ref_mpi, node_part),
+      "split");
+
+  ref_free(locals);
+  ref_free(owners);
+  ref_free(xyz);
+  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
   return REF_SUCCESS;
 }
 
@@ -972,6 +1147,9 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
     case REF_MIGRATE_SINGLE:
       RSS(ref_migrate_single_part(ref_grid, new_part), "single by method");
       break;
+    case REF_MIGRATE_NATIVE_RCB:
+      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
+      break;
     case REF_MIGRATE_ZOLTAN_GRAPH:
     case REF_MIGRATE_ZOLTAN_RCB:
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
@@ -988,8 +1166,12 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(ref_migrate_parmetis_part(ref_grid, new_part), "parmetis part");
       break;
 #endif
-#if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
+#if !defined(HAVE_PARMETIS) && defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
       RSS(ref_migrate_zoltan_part(ref_grid, new_part), "zoltan part");
+      break;
+#endif
+#if !defined(HAVE_PARMETIS) && !defined(HAVE_ZOLTAN)
+      RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
       break;
 #endif
     default:
@@ -1409,4 +1591,53 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
   answer |= ref_migrate_split_morton(x) | ref_migrate_split_morton(y) << 1 |
             ref_migrate_split_morton(z) << 2;
   return answer;
+}
+
+REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
+                                 REF_INT *dir) {
+  REF_DBL mins[3], maxes[3], temp;
+  ;
+  REF_INT i, j;
+  *dir = 0;
+  if (n == 0) {
+    return REF_SUCCESS;
+  }
+  for (j = 0; j < 3; j++) {
+    mins[j] = xyz[j];
+    maxes[j] = xyz[j];
+  }
+  for (i = 1; i < n; i++) {
+    for (j = 0; j < 3; j++) {
+      mins[j] = MIN(mins[j], xyz[j + 3 * i]);
+      maxes[j] = MAX(maxes[j], xyz[j + 3 * i]);
+    }
+  }
+  for (j = 0; j < 3; j++) {
+    temp = mins[j];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(mins[j]), REF_DBL_TYPE), "min");
+    RSS(ref_mpi_bcast(ref_mpi, &(mins[j]), 1, REF_DBL_TYPE), "bcast");
+    temp = maxes[j];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(maxes[j]), REF_DBL_TYPE), "max");
+    RSS(ref_mpi_bcast(ref_mpi, &(maxes[j]), 1, REF_DBL_TYPE), "bcast");
+  }
+  if ((maxes[1] - mins[1]) >= (maxes[0] - mins[0]) &&
+      (maxes[1] - mins[1]) >= (maxes[2] - mins[2]))
+    *dir = 1;
+  if ((maxes[2] - mins[2]) >= (maxes[0] - mins[0]) &&
+      (maxes[2] - mins[2]) >= (maxes[1] - mins[1]))
+    *dir = 2;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_migrate_split_ratio(REF_INT number_of_partitions,
+                                   REF_DBL *ratio) {
+  REF_INT half = number_of_partitions / 2;
+  if (ref_math_divisible((REF_DBL)half, (REF_DBL)number_of_partitions)) {
+    *ratio = (REF_DBL)half / (REF_DBL)number_of_partitions;
+  } else {
+    *ratio = 0;
+    return REF_DIV_ZERO;
+  }
+  return REF_SUCCESS;
 }
