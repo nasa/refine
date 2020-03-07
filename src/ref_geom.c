@@ -2586,9 +2586,10 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("sliver deg=%f at %f %f %f node %d\n", angle,
+      printf("%f %f %f # sliver deg=%f node %d\n",
              ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-             ref_node_xyz(ref_node, 2, node), ref_geom_id(ref_geom, geom));
+             ref_node_xyz(ref_node, 2, node), angle,
+             ref_geom_id(ref_geom, geom));
     }
   }
   if (ref_geom_model_loaded(ref_geom)) {
@@ -2597,9 +2598,9 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
       RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &id),
           "short edge");
       if (short_edge <= short_edge_tol) {
-        printf("short edge a=%e r=%e at %f %f %f edge %d\n", diag, short_edge,
+        printf("%f %f %f # short edge a=%e r=%e id %d\n",
                ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-               ref_node_xyz(ref_node, 2, node), id);
+               ref_node_xyz(ref_node, 2, node), diag, short_edge, id);
       }
     }
   }
