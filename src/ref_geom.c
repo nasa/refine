@@ -2546,19 +2546,61 @@ static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
+                                           REF_DBL *short_edge,
+                                           REF_DBL *short_diag,
+                                           REF_INT *short_id) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT item, geom;
+  REF_DBL diag, min_diag, max_diag;
+  *short_edge = 1.0;
+  *short_diag = REF_DBL_MAX;
+  *short_id = REF_EMPTY;
+  min_diag = REF_DBL_MAX;
+  max_diag = REF_DBL_MIN;
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_EDGE != ref_geom_type(ref_geom, geom)) continue;
+    RSS(ref_geom_diagonal(ref_geom, geom, &diag), "edge diag");
+    if (diag < min_diag) {
+      min_diag = diag;
+      *short_diag = diag;
+      *short_id = ref_geom_id(ref_geom, geom);
+    }
+    max_diag = MAX(diag, max_diag);
+  }
+  if (ref_math_divisible(min_diag, max_diag)) {
+    *short_edge = min_diag / max_diag;
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
-  REF_DBL angle_tol = 10.0;
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT geom, node;
+  REF_INT geom, node, id;
+  REF_DBL angle_tol = 10.0;
   REF_DBL angle;
+  REF_DBL short_edge_tol = 1e-3;
+  REF_DBL short_edge, diag;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
     if (angle <= angle_tol) {
-      printf("sliver %f deg at %f %f %f for cad node %d\n", angle,
-             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 0, node),
-             ref_node_xyz(ref_node, 0, node), ref_geom_id(ref_geom, geom));
+      printf("sliver deg=%f at %f %f %f node %d\n", angle,
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+             ref_node_xyz(ref_node, 2, node), ref_geom_id(ref_geom, geom));
+    }
+  }
+  if (ref_geom_model_loaded(ref_geom)) {
+    each_ref_geom_node(ref_geom, geom) {
+      node = ref_geom_node(ref_geom, geom);
+      RSS(ref_geom_node_short_edge(ref_grid, node, &short_edge, &diag, &id),
+          "short edge");
+      if (short_edge <= short_edge_tol) {
+        printf("short edge a=%e r=%e at %f %f %f edge %d\n", diag, short_edge,
+               ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node), id);
+      }
     }
   }
   return REF_SUCCESS;
