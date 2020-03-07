@@ -239,6 +239,8 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                               REF_DBL *tolerance);
 REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
 
+REF_STATUS ref_geom_feedback(REF_GRID ref_grid);
+
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_grid, REF_INT node,
                              REF_BOOL *has_jump);
 

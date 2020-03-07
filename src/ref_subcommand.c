@@ -469,6 +469,9 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_surf_status_tec(ref_grid, filename), "gather surf status");
   ref_mpi_stopwatch_stop(ref_mpi, "export adapt surf");
 
+  RSS(ref_geom_feedback(ref_grid), "feedback");
+  ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
+
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {

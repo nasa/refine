@@ -2515,6 +2515,55 @@ REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid, REF_INT node,
+                                          REF_DBL *angle) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT item1, cell1, node1;
+  REF_INT item2, cell2, node2;
+  REF_INT i;
+  REF_DBL dot, dx1[3], dx2[3];
+  *angle = 180.0;
+  each_ref_cell_having_node(ref_cell, node, item1, cell1) {
+    each_ref_cell_having_node(ref_cell, node, item2, cell2) {
+      if (cell1 == cell2) continue; /* skip same edge */
+      node1 = ref_cell_c2n(ref_cell, 0, cell1) +
+              ref_cell_c2n(ref_cell, 1, cell1) - node;
+      node2 = ref_cell_c2n(ref_cell, 0, cell2) +
+              ref_cell_c2n(ref_cell, 1, cell2) - node;
+      for (i = 0; i < 3; i++) {
+        dx1[i] =
+            ref_node_xyz(ref_node, i, node1) - ref_node_xyz(ref_node, i, node);
+        dx2[i] =
+            ref_node_xyz(ref_node, i, node2) - ref_node_xyz(ref_node, i, node);
+      }
+      RSS(ref_math_normalize(dx1), "dx1");
+      RSS(ref_math_normalize(dx2), "dx2");
+      dot = ref_math_dot(dx1, dx2);
+      *angle = MIN(*angle, ref_math_in_degrees(acos(dot)));
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
+  REF_DBL angle_tol = 10.0;
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT geom, node;
+  REF_DBL angle;
+  each_ref_geom_node(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
+    if (angle <= angle_tol) {
+      printf("sliver %f deg at %f %f %f for cad node %d\n", angle,
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 0, node),
+             ref_node_xyz(ref_node, 0, node), ref_geom_id(ref_geom, geom));
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_geom, REF_INT node,
                              REF_BOOL *has_jump) {
   REF_INT item, geom;
