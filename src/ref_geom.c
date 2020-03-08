@@ -2563,6 +2563,23 @@ REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_reliability(REF_GRID ref_grid, REF_INT node,
+                                REF_DBL *slop) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT item, geom;
+  REF_DBL tol, gap;
+  *slop = 0.0;
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                           ref_geom_id(ref_geom, geom), &tol),
+        "tol");
+    *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
+  }
+  RSS(ref_geom_gap(ref_grid, node, &gap), "gap");
+  *slop = MAX(*slop, ref_geom_gap_protection(ref_geom) * gap);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_geom_node_min_angle(REF_GRID ref_grid, REF_INT node,
                                           REF_DBL *angle) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
