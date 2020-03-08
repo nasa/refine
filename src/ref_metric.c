@@ -1042,7 +1042,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
       ks = ABS(ks);
-      /* limit the aspect ratio of the metric by reducing the larest radius */
+      /* limit the aspect ratio of the metric by reducing the largest radius */
       kr = MAX(kr, curvature_ratio * ks);
       ks = MAX(ks, curvature_ratio * kr);
       hr = hmax;
