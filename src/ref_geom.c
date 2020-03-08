@@ -81,7 +81,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->initial_cell_height = NULL;
   ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
-  ref_geom->tolerance_protection = 50.0;
+  ref_geom->tolerance_protection = 100.0;
   ref_geom->gap_protection = 10.0;
 
   ref_geom->nnode = REF_EMPTY;
@@ -2563,19 +2563,24 @@ REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_reliability(REF_GRID ref_grid, REF_INT node,
+REF_STATUS ref_geom_reliability(REF_GRID ref_grid, REF_INT geom,
                                 REF_DBL *slop) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_INT item, geom;
   REF_DBL tol, gap;
   *slop = 0.0;
-  each_ref_geom_having_node(ref_geom, node, item, geom) {
-    RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                           ref_geom_id(ref_geom, geom), &tol),
-        "tol");
-    *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
-  }
-  RSS(ref_geom_gap(ref_grid, node, &gap), "gap");
+  RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                         ref_geom_id(ref_geom, geom), &tol),
+      "tol");
+  *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
+  /*
+    each_ref_geom_having_node(ref_geom, node, item, geom) {
+      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                             ref_geom_id(ref_geom, geom), &tol),
+          "tol");
+      *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
+    }
+  */
+  RSS(ref_geom_gap(ref_grid, ref_geom_node(ref_geom, geom), &gap), "gap");
   *slop = MAX(*slop, ref_geom_gap_protection(ref_geom) * gap);
   return REF_SUCCESS;
 }
@@ -2674,7 +2679,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
       hs = hmax;
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_reliability(ref_grid, node, &slop), "edge tol");
+      RSS(ref_geom_reliability(ref_grid, face_geom, &slop), "edge tol");
       if (hr < slop) {
         *curve = MIN(*curve, hr / slop);
       }
