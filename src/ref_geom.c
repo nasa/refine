@@ -81,7 +81,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->initial_cell_height = NULL;
   ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
-  ref_geom->tolerance_protection = 10.0;
+  ref_geom->tolerance_protection = 50.0;
   ref_geom->gap_protection = 10.0;
 
   ref_geom->nnode = REF_EMPTY;
