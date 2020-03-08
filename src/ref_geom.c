@@ -2628,9 +2628,10 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
 
   REF_INT edge_geom, node;
   REF_INT item, face_geom;
-  REF_DBL hmax, drad, rlimit;
+  REF_DBL hmax, delta_radian, rlimit;
   REF_DBL kr, r[3], ks, s[3];
   REF_DBL hr, hs, tol, gap;
+  REF_DBL curvature_ratio = 1.0 / 20.0;
 
   *curve = 2.0;
 
@@ -2641,18 +2642,20 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
     node = ref_geom_node(ref_geom, face_geom);
     each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
       if (REF_GEOM_EDGE != ref_geom_type(ref_geom, edge_geom)) continue;
+      RSS(ref_geom_radian_request(ref_geom, edge_geom, &delta_radian), "drad");
+      rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       RSS(ref_geom_face_curvature(ref_geom, face_geom, &kr, r, &ks, s),
           "curve");
       /* ignore sign, k is 1 / radius */
       kr = ABS(kr);
       ks = ABS(ks);
-      /* replace with face based function */
-      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+      /* limit the aspect ratio of the metric by reducing the largest radius */
+      kr = MAX(kr, curvature_ratio * ks);
+      ks = MAX(ks, curvature_ratio * kr);
       hr = hmax;
-      if (1.0 / rlimit < kr) hr = drad / kr;
+      if (1.0 / rlimit < kr) hr = delta_radian / kr;
       hs = hmax;
-      if (1.0 / rlimit < ks) hr = drad / ks;
+      if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
       RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, face_geom),
                              faceid, &tol),
