@@ -1531,6 +1531,54 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
+REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
+                                   REF_DBL *delta_radian) {
+  REF_INT node, item, face_geom, face;
+  REF_DBL segments, face_segments;
+  REF_DBL face_set = -998.0;
+  REF_DBL face_active = 0.01;
+  REF_BOOL turn_off, use_face;
+  use_face = REF_FALSE;
+  turn_off = REF_FALSE;
+
+  segments = 0.0;
+
+  if (NULL != (ref_geom)->face_seg_per_rad) {
+    node = ref_geom_node(ref_geom, geom);
+    each_ref_geom_having_node(ref_geom, node, item, face_geom) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
+        face = ref_geom_id(ref_geom, face_geom) - 1;
+        face_segments = ref_geom->face_seg_per_rad[face];
+        if (face_segments < face_set) continue;
+        if (face_segments > face_active) {
+          segments = MAX(segments, face_segments);
+          use_face = REF_TRUE;
+        } else {
+          turn_off = REF_TRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  if (turn_off) {
+    *delta_radian = 100.0;
+    return REF_SUCCESS;
+  }
+
+  if (!use_face) {
+    segments = ref_geom_segments_per_radian_of_curvature(ref_geom);
+  }
+
+  if (segments > 0.1 && ref_math_divisible(1.0, segments)) {
+    *delta_radian = 1.0 / segments;
+  } else {
+    *delta_radian = 100.0;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
                                    REF_DBL *normal) {
 #ifdef HAVE_EGADS
