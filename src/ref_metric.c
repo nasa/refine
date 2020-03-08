@@ -997,7 +997,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL delta_radian; /* 1/segments per radian */
   REF_DBL hmax;
   REF_DBL rlimit;
-  REF_DBL hr, hs, hn, tol, gap;
+  REF_DBL hr, hs, hn, slop;
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
 
@@ -1050,17 +1050,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hs = hmax;
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                             ref_geom_id(ref_geom, geom), &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
-          hs < ref_geom_tolerance_protection(ref_geom) * tol)
-        continue;
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap ||
-          hs < ref_geom_gap_protection(ref_geom) * gap)
-        continue;
+      RSS(ref_geom_reliability(ref_grid, node, &slop), "edge tol");
+      if (hr < slop || hs < slop) continue;
 
       /* cross the tangent vectors to get the (inward or outward) normal */
       ref_math_cross_product(r, s, n);
@@ -1096,13 +1087,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hr = hmax;
       if (1.0 / rlimit < kr) hr = delta_radian / kr;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                             ref_geom_id(ref_geom, geom), &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap) continue;
+      RSS(ref_geom_reliability(ref_grid, node, &slop), "edge tol");
+      if (hr < slop) continue;
 
       RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
       if (crease_dot_prod < -0.8) {

@@ -2647,7 +2647,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
   REF_INT item, face_geom;
   REF_DBL hmax, delta_radian, rlimit;
   REF_DBL kr, r[3], ks, s[3];
-  REF_DBL hr, hs, tol, gap;
+  REF_DBL hr, hs, slop;
   REF_DBL curvature_ratio = 1.0 / 20.0;
 
   *curve = 2.0;
@@ -2674,22 +2674,12 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
       hs = hmax;
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, face_geom),
-                             faceid, &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
-        *curve = hr / (ref_geom_tolerance_protection(ref_geom) * tol);
+      RSS(ref_geom_reliability(ref_grid, node, &slop), "edge tol");
+      if (hr < slop) {
+        *curve = MIN(*curve, hr / slop);
       }
-      if (hs < ref_geom_tolerance_protection(ref_geom) * tol) {
-        *curve = hs / (ref_geom_tolerance_protection(ref_geom) * tol);
-      }
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap) {
-        *curve = hr / (ref_geom_gap_protection(ref_geom) * gap);
-      }
-      if (hs < ref_geom_gap_protection(ref_geom) * gap) {
-        *curve = hs / (ref_geom_gap_protection(ref_geom) * gap);
+      if (hs < slop) {
+        *curve = MIN(*curve, hs / slop);
       }
     }
   }
