@@ -2574,6 +2574,55 @@ static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_geom_edge_curve_tol(REF_GRID ref_grid, REF_INT id,
+                                          REF_DBL *curve) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+
+  REF_INT edge_geom, node;
+  REF_INT item, face_geom;
+  REF_DBL hmax, drad, rlimit;
+  REF_DBL kr, r[3], ks, s[3];
+  REF_DBL hr, hs, tol, gap;
+
+  RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+
+  *curve = 2.0;
+  each_ref_geom_edge(ref_geom, edge_geom) {
+    if (id != ref_geom_id(ref_geom, edge_geom)) continue;
+    node = ref_geom_node(ref_geom, edge_geom);
+    each_ref_geom_having_node(ref_geom, node, item, face_geom) {
+      if (REF_GEOM_FACE != ref_geom_type(ref_geom, face_geom)) continue;
+      RSS(ref_geom_face_curvature(ref_geom, face_geom, &kr, r, &ks, s),
+          "curve");
+      /* ignore sign, k is 1 / radius */
+      kr = ABS(kr);
+      ks = ABS(ks);
+      /* replace with face based function */
+      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
+      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+      hr = hmax;
+      if (1.0 / rlimit < kr) hr = drad / kr;
+      hs = hmax;
+      if (1.0 / rlimit < ks) hr = drad / ks;
+
+      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, face_geom),
+                             ref_geom_id(ref_geom, face_geom), &tol),
+          "edge tol");
+      *curve =
+          MIN(*curve, hr / (ref_geom_tolerance_protection(ref_geom) * tol));
+      *curve =
+          MIN(*curve, hs / (ref_geom_tolerance_protection(ref_geom) * tol));
+
+      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
+      *curve =
+          MIN(*curve, hr / (ref_geom_tolerance_protection(ref_geom) * gap));
+      *curve =
+          MIN(*curve, hs / (ref_geom_tolerance_protection(ref_geom) * gap));
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2582,6 +2631,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_DBL angle;
   REF_DBL short_edge_tol = 1e-3;
   REF_DBL short_edge, diag;
+  REF_DBL curve;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
@@ -2604,6 +2654,25 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
       }
     }
   }
+  if (ref_geom_model_loaded(ref_geom)) {
+    for (id = 1; id <= ref_geom->nedge; id++) {
+      RSS(ref_geom_edge_curve_tol(ref_grid, id, &curve), "short edge");
+      if (curve < 1.0) {
+#ifdef HAVE_EGADS
+        ego object = ((ego *)(ref_geom->edges))[id - 1];
+        double box[6];
+        REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
+        printf("%f %f %f # box corner for edge id %d\n", box[0], box[1], box[2],
+               id);
+        printf("%f %f %f # box corner with curve/tol %e\n", box[3], box[4],
+               box[5], curve);
+#else
+        printf("# edge id %d curve tol/gap %e\n", id, curve);
+#endif
+      }
+    }
+  }
+
   return REF_SUCCESS;
 }
 
