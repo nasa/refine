@@ -1050,7 +1050,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hs = hmax;
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_reliability(ref_grid, geom, &slop), "edge tol");
+      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
       if (hr < slop || hs < slop) continue;
 
       /* cross the tangent vectors to get the (inward or outward) normal */
@@ -1087,7 +1087,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hr = hmax;
       if (1.0 / rlimit < kr) hr = delta_radian / kr;
 
-      RSS(ref_geom_reliability(ref_grid, geom, &slop), "edge tol");
+      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
       if (hr < slop) continue;
 
       RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");

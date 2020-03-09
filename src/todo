@@ -1,8 +1,6 @@
 high speed flat plate
 nlf airfoil
 
-ref_geom gap and feature size, use geom via edge or node location
-
 improve parallel k-select algorithm
 
 non smooth optimization nso of face uv
