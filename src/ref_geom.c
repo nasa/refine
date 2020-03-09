@@ -2569,8 +2569,8 @@ REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
     if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
       RSS(ref_geom_eval(ref_geom, geom, face_xyz, NULL), "eval");
       dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
-                  pow(face_xyz[1] - gap_xyz[0], 2) +
-                  pow(face_xyz[2] - gap_xyz[0], 2));
+                  pow(face_xyz[1] - gap_xyz[1], 2) +
+                  pow(face_xyz[2] - gap_xyz[2], 2));
       (*gap) = MAX((*gap), dist);
     }
   }
