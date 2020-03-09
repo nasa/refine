@@ -994,10 +994,10 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL diagonal_system[12];
   REF_DBL previous_metric[6], curvature_metric[6];
   REF_INT i;
-  REF_DBL drad, lrad;
+  REF_DBL delta_radian; /* 1/segments per radian */
   REF_DBL hmax;
-  REF_DBL rlimit, llimit;
-  REF_DBL hr, hs, hn, tol, gap;
+  REF_DBL rlimit;
+  REF_DBL hr, hs, hn, slop;
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
 
@@ -1006,15 +1006,13 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
   }
 
-  /* drad is 1/segments per radian */
-  drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
   RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
   hmax *= 0.1; /* normal spacing and max tangential spacing */
-  /* prevent div by zero, use hmax for large radius, small kr ks */
-  rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+
   /* limit aspect ratio via curvature */
   aspect_ratio = 20.0;
   curvature_ratio = 1.0 / aspect_ratio;
+
   /* limit normal direction to a factor of surface spacing */
   norm_ratio = 2.0;
 
@@ -1038,42 +1036,22 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_node_owned(ref_node, node)) {
-      lrad = drad;
-      face = ref_geom_id(ref_geom, geom) - 1;
-      /* -999 marks not set */
-      if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) >
-          -990.0) {
-        /* less than 0.1 marks do not use */
-        if (ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) <
-            0.1)
-          continue;
-        lrad = 1.0 /
-               ref_geom_face_segments_per_radian_of_curvature(ref_geom, face);
-      }
-      llimit = hmax / lrad; /* h = r*drad, r = h/drad */
+      RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
+      rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
       ks = ABS(ks);
-      /* limit the aspect ratio of the metric by reducing the larest radius */
+      /* limit the aspect ratio of the metric by reducing the largest radius */
       kr = MAX(kr, curvature_ratio * ks);
       ks = MAX(ks, curvature_ratio * kr);
       hr = hmax;
-      if (1.0 / llimit < kr) hr = lrad / kr;
+      if (1.0 / rlimit < kr) hr = delta_radian / kr;
       hs = hmax;
-      if (1.0 / llimit < ks) hs = lrad / ks;
+      if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                             ref_geom_id(ref_geom, geom), &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
-          hs < ref_geom_tolerance_protection(ref_geom) * tol)
-        continue;
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap ||
-          hs < ref_geom_gap_protection(ref_geom) * gap)
-        continue;
+      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+      if (hr < slop || hs < slop) continue;
 
       /* cross the tangent vectors to get the (inward or outward) normal */
       ref_math_cross_product(r, s, n);
@@ -1083,6 +1061,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
       for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
       hn = hmax;
+      face = ref_geom_id(ref_geom, geom) - 1;
       if (0.0 < ref_geom_face_initial_cell_height(ref_geom, face))
         hn = ref_geom_face_initial_cell_height(ref_geom, face);
       hn = MIN(hn, norm_ratio * hr);
@@ -1100,19 +1079,16 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   each_ref_geom_edge(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_node_owned(ref_node, node)) {
+      RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
+      rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
       hr = hmax;
-      if (1.0 / rlimit < kr) hr = drad / kr;
+      if (1.0 / rlimit < kr) hr = delta_radian / kr;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
-                             ref_geom_id(ref_geom, geom), &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol) continue;
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap) continue;
+      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+      if (hr < slop) continue;
 
       RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
       if (crease_dot_prod < -0.8) {

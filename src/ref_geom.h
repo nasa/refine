@@ -212,6 +212,10 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                             REF_DBL *tuv, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
 REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                  REF_DBL *xyz, REF_DBL *param);
+
+REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
+                                   REF_DBL *delta_radian);
+
 REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
                                    REF_DBL *normal);
 REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
@@ -235,9 +239,11 @@ REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
 REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
                                  REF_DBL *h2, REF_DBL *dir2);
+
 REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                               REF_DBL *tolerance);
-REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap);
+REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
+REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom, REF_DBL *slop);
 
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid);
 

@@ -1531,6 +1531,54 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
 }
 
+REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
+                                   REF_DBL *delta_radian) {
+  REF_INT node, item, face_geom, face;
+  REF_DBL segments, face_segments;
+  REF_DBL face_set = -998.0;
+  REF_DBL face_active = 0.01;
+  REF_BOOL turn_off, use_face;
+  use_face = REF_FALSE;
+  turn_off = REF_FALSE;
+
+  segments = 0.0;
+
+  if (NULL != (ref_geom)->face_seg_per_rad) {
+    node = ref_geom_node(ref_geom, geom);
+    each_ref_geom_having_node(ref_geom, node, item, face_geom) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
+        face = ref_geom_id(ref_geom, face_geom) - 1;
+        face_segments = ref_geom->face_seg_per_rad[face];
+        if (face_segments < face_set) continue;
+        if (face_segments > face_active) {
+          segments = MAX(segments, face_segments);
+          use_face = REF_TRUE;
+        } else {
+          turn_off = REF_TRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  if (turn_off) {
+    *delta_radian = 100.0;
+    return REF_SUCCESS;
+  }
+
+  if (!use_face) {
+    segments = ref_geom_segments_per_radian_of_curvature(ref_geom);
+  }
+
+  if (segments > 0.1 && ref_math_divisible(1.0, segments)) {
+    *delta_radian = 1.0 / segments;
+  } else {
+    *delta_radian = 100.0;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
                                    REF_DBL *normal) {
 #ifdef HAVE_EGADS
@@ -2402,7 +2450,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
               dx[1] = xyz1[1] - xyz[1];
               dx[2] = xyz1[2] - xyz[2];
               len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
-              RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
+              RSS(ref_geom_gap(ref_geom, node, &gap), "edge gap");
               len = MAX(len, gap);
               RSS(ref_math_normalize(dx), "direction across face");
               if (len < *h0) {
@@ -2496,22 +2544,58 @@ REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT item, geom;
-  REF_DBL dist, xyz[3];
+REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
+  REF_INT item, geom, type;
+  REF_DBL dist, face_xyz[3], gap_xyz[3];
+  REF_BOOL has_node, has_edge;
   *gap = 0.0;
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &has_node), "n");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &has_edge), "n");
+  if (!has_edge) return REF_SUCCESS;
+
+  if (has_node) {
+    type = REF_GEOM_NODE;
+  } else {
+    type = REF_GEOM_FACE;
+  }
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (type == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_geom_eval(ref_geom, geom, gap_xyz, NULL), "eval");
+    }
+  }
 
   each_ref_geom_having_node(ref_geom, node, item, geom) {
     if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_geom_eval(ref_geom, geom, xyz, NULL), "eval");
-      dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
-                  pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
-                  pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
+      RSS(ref_geom_eval(ref_geom, geom, face_xyz, NULL), "eval");
+      dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
+                  pow(face_xyz[1] - gap_xyz[1], 2) +
+                  pow(face_xyz[2] - gap_xyz[2], 2));
       (*gap) = MAX((*gap), dist);
     }
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
+                                REF_DBL *slop) {
+  REF_DBL tol, gap;
+  *slop = 0.0;
+  RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                         ref_geom_id(ref_geom, geom), &tol),
+      "tol");
+  *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
+  /*
+    each_ref_geom_having_node(ref_geom, node, item, geom) {
+      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, geom),
+                             ref_geom_id(ref_geom, geom), &tol),
+          "tol");
+      *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
+    }
+  */
+  RSS(ref_geom_gap(ref_geom, ref_geom_node(ref_geom, geom), &gap), "gap");
+  *slop = MAX(*slop, ref_geom_gap_protection(ref_geom) * gap);
   return REF_SUCCESS;
 }
 
@@ -2580,9 +2664,10 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
 
   REF_INT edge_geom, node;
   REF_INT item, face_geom;
-  REF_DBL hmax, drad, rlimit;
+  REF_DBL hmax, delta_radian, rlimit;
   REF_DBL kr, r[3], ks, s[3];
-  REF_DBL hr, hs, tol, gap;
+  REF_DBL hr, hs, slop;
+  REF_DBL curvature_ratio = 1.0 / 20.0;
 
   *curve = 2.0;
 
@@ -2593,35 +2678,27 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
     node = ref_geom_node(ref_geom, face_geom);
     each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
       if (REF_GEOM_EDGE != ref_geom_type(ref_geom, edge_geom)) continue;
+      RSS(ref_geom_radian_request(ref_geom, edge_geom, &delta_radian), "drad");
+      rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       RSS(ref_geom_face_curvature(ref_geom, face_geom, &kr, r, &ks, s),
           "curve");
       /* ignore sign, k is 1 / radius */
       kr = ABS(kr);
       ks = ABS(ks);
-      /* replace with face based function */
-      drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      rlimit = hmax / drad; /* h = r*drad, r = h/drad */
+      /* limit the aspect ratio of the metric by reducing the largest radius */
+      kr = MAX(kr, curvature_ratio * ks);
+      ks = MAX(ks, curvature_ratio * kr);
       hr = hmax;
-      if (1.0 / rlimit < kr) hr = drad / kr;
+      if (1.0 / rlimit < kr) hr = delta_radian / kr;
       hs = hmax;
-      if (1.0 / rlimit < ks) hr = drad / ks;
+      if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_tolerance(ref_geom, ref_geom_type(ref_geom, face_geom),
-                             faceid, &tol),
-          "edge tol");
-      if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
-        *curve = hr / (ref_geom_tolerance_protection(ref_geom) * tol);
+      RSS(ref_geom_reliability(ref_geom, face_geom, &slop), "edge tol");
+      if (hr < slop) {
+        *curve = MIN(*curve, hr / slop);
       }
-      if (hs < ref_geom_tolerance_protection(ref_geom) * tol) {
-        *curve = hs / (ref_geom_tolerance_protection(ref_geom) * tol);
-      }
-
-      RSS(ref_geom_gap(ref_grid, node, &gap), "edge gap");
-      if (hr < ref_geom_gap_protection(ref_geom) * gap) {
-        *curve = hr / (ref_geom_gap_protection(ref_geom) * gap);
-      }
-      if (hs < ref_geom_gap_protection(ref_geom) * gap) {
-        *curve = hs / (ref_geom_gap_protection(ref_geom) * gap);
+      if (hs < slop) {
+        *curve = MIN(*curve, hs / slop);
       }
     }
   }
