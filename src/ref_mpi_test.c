@@ -341,7 +341,7 @@ int main(int argc, char *argv[]) {
     last_rank = MAX(ref_mpi_n(ref_mpi) / 2 - 1, 0);
     active = last_rank - first_rank + 1;
     RSS(ref_mpi_balance(ref_mpi, ldim, nitem, (void *)items, first_rank,
-                        last_rank, &nbalanced, (void *)(&balanced),
+                        last_rank, &nbalanced, (void **)(&balanced),
                         REF_INT_TYPE),
         "bal");
     if (first_rank <= ref_mpi_rank(ref_mpi) &&
