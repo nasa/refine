@@ -1,4 +1,6 @@
 
+meshlink geode support
+
 non smooth optimization nso of face uv
 
 each_ref_grid_ref_cell for boundary and higher order
@@ -106,8 +108,6 @@ ref_node_shift_new_globals ref_node_eliminate_unused_globals parallel tests
 
 get rid of aux and interp instead
 
-start meshlink geode support?
-
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 input means for all these parameters for optimizer setting
@@ -141,6 +141,9 @@ robustness and metric conformity
     for edge, surface, volume sequence
   requeue neighbors with large changes? particulary quality drops
   minmax optimize uv
+
+memory
+ quantify and reduce memory usage
 
 performance
  profile
@@ -191,10 +194,9 @@ egads recon
 
 - bootstrap all of C2S
 - faster multiscale convergence of boundary layer and nozzle when shocks
-- native partitioner
 - dual RANS/ILES metric or meshes for HRLES
 - mesh movement
-- C2S acceptance on fun3d and sfe develop/master
+- C2S acceptance on fun3d-intg and sfe develop/master
 - recover coarse curved edge/face from tessilation
 - surrogate geometry
 - curved higher order meshing
