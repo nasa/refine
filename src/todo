@@ -13,15 +13,28 @@ ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  volume fill: merge import grid, remove specialized readers
  user adjustable volume tetgen and aflr mesher options
+ unfreeze edges for AFLR volume
  add EGADS model builder fixture to ref_egads_tests
  create native version of inverse evaluate with guess
   use newton with discrete grid to constrain
   allow inv eval to hop objects
  many-to-many association virtual topology
+ high order geometry visualization with cubic patches
+ try gmsh, mmgtools.org, netgen-mesher, CGALmesh
 
 protect geom constraint metric from surface folds and high curvature
  descrete curvature estimate (triangle-center based?)
  filter based on neighborhood
+ thin shells
+  - near-tree for reducing geometry metric across thickness
+  - single pass near-tree for grid size gradation of gaps
+    + pearl in curved plate test case for blister
+
+boostrap
+  - thin cylinder/sphere shell test for thickness geom constraint
+  - thin wavy (along training edge) training edge bootstrap
+  - edge off surface testcase or surface gap testcase?
+  - cusp geom topology testcase
 
 C2S
  update best practice multiscale in docs
@@ -30,15 +43,6 @@ C2S
  command line interface
  rename and cleanup ref bootstrap IO
  tutorials
-
-- protect sliver geom topo with lower bound on angle, short edge
-  - identify sliver faces based on node-curve (t-derivative) tangent angle 
-  - surf
-  - with volume
-  - exclude from statistics?
-
-- single pass near-tree for grid size gradation of gaps
-  + pearl in curved plate test case for blister
 
 reject insertion based on near tree
 
@@ -73,33 +77,16 @@ check that post conditions are implemented completely for all ops
   full post checks for edge-metric ratio: cavity swap, node smooth
   standardize exceptions (edge priority over tri, tri priority over tet)
 
-tess
- high order geometry visualization with cubic patches
- unfreeze edges for AFLR volume
- try gmsh, mmgtools.org, netgen-mesher, CGALmesh
- thin shells
-  - near-tree for reducing geometry metric across thickness
-  - auto bump curvature based?
- edge chord height warning/constraint?
-
-boostrap
-  - thin cylinder/sphere shell test for thickness geom constraint
-  - antenna like geom bootstrap, diamond extrusion with round edges
-  - thin wavy (along training edge) training edge bootstrap
-  - edge off surface testcase or surface gap testcase?
-  - cusp geom topology testcase
-  - validate normal deviation (make metric big across cylinder)
-
 improve CI test
  make check stack fuzz
- big acceptance test
+ fun3d-intg test
+ move JSM NBNP bootstrap from c2s to boot
  checks interp error for functions
  clean up ref_acceptance uses without a flag
  ref_acceptance should use two dashes
  try https://doi.org/10.2514/6.2007-4186 analytic test cases
 
 ref_recon
-  twod l2projection
   implicit reconstruction (Hiro)
 
 bleme and cons visc
@@ -232,9 +219,10 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
-+ improve parallel k-select algorithm, moved to ref_search
 + gathered ref_geom_radian_request ref_geom_reliability
 + ref_geom gap and feature size, use geom via edge or node location
++ native alternating RCB partition
++ improve parallel k-select algorithm, moved to ref_search
 + HL-CRM without tparams or --auto-tparams with ESP/118-rc.1
 + use edgeUV directly
 + geom add between balances edge lengths with evaluation
