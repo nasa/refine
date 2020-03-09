@@ -11,11 +11,6 @@ surrogate surface
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
- automatically set and increase tess parametters
-  - refactor to use remaketess, not attributes
-  - large, relative edge chord heights
-  - feature size (immune to short edges)
-  - self intersecting uv edge segments
  volume fill: merge import grid, remove specialized readers
  user adjustable volume tetgen and aflr mesher options
  add EGADS model builder fixture to ref_egads_tests
@@ -237,7 +232,10 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
-+ HL-CRM without tparams with ESP/118-rc.1
++ improve parallel k-select algorithm, moved to ref_search
++ gathered ref_geom_radian_request ref_geom_reliability
++ ref_geom gap and feature size, use geom via edge or node location
++ HL-CRM without tparams or --auto-tparams with ESP/118-rc.1
 + use edgeUV directly
 + geom add between balances edge lengths with evaluation
 + test ESP/118-rc.1
