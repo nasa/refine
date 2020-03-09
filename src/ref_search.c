@@ -233,8 +233,7 @@ REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
 
 REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
                                 REF_LONG position, REF_DBL *value) {
-  REF_INT i, try
-    ;
+  REF_INT i, bisection;
   REF_LONG low_pos, high_pos, count;
   REF_DBL low_val, high_val, temp, mid_val;
   low_pos = 0;
@@ -264,7 +263,7 @@ REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
     return REF_SUCCESS;
   }
 
-  for (try = 0; try < 40; try ++) {
+  for (bisection = 0; bisection < 40; bisection++) {
     mid_val = 0.5 * (low_val + high_val);
     count = 0;
     for (i = 0; i < n; i++) {
