@@ -96,6 +96,11 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_DBL *weight,
                          REF_RECON_RECONSTRUCTION reconstruction,
                          REF_INT p_norm, REF_DBL gradation, REF_DBL complexity);
+REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
+                                        REF_DBL *displaced, REF_DBL *scalar,
+                                        REF_RECON_RECONSTRUCTION reconstruction,
+                                        REF_INT p_norm, REF_DBL gradation,
+                                        REF_DBL complexity);
 REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
                               REF_DBL *scalar,
                               REF_RECON_RECONSTRUCTION reconstruction,
