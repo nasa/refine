@@ -18,25 +18,6 @@ parmetis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/parme
 metis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/metis-5.1.0-czqd5zteq5zfccffypwbjrlb5joqeoyw"
 mpi_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/mpich-3.2.1-gtfvc44cykdfqxntezn7ud6njpthlgxe"
 
-mkdir -p meshlink
-( cd meshlink && \
-      ../configure \
-	  --prefix=`pwd` \
-	  --with-MeshLink=${meshlink_path} \
-	  CFLAGS="-g -O2" \
-	  CC=clang++ \
-    ) \
-    || exit
-
-mkdir -p strict
-( cd strict && \
-    ../configure \
-    --prefix=`pwd` \
-    CFLAGS="${gccflags}" \
-    CC=gcc-9 \
-    ) \
-    || exit
-
 mkdir -p egads
 ( cd egads && \
     ../configure \
@@ -62,6 +43,25 @@ mkdir -p parmetis
     CC=mpicc \
     FC=mpif90 \
     CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    ) \
+    || exit
+
+mkdir -p strict
+( cd strict && \
+    ../configure \
+    --prefix=`pwd` \
+    CFLAGS="${gccflags}" \
+    CC=gcc-9 \
+    ) \
+    || exit
+
+mkdir -p meshlink
+( cd meshlink && \
+      ../configure \
+	  --prefix=`pwd` \
+	  --with-MeshLink=${meshlink_path} \
+	  CFLAGS="-g -O2" \
+	  CC=clang++ \
     ) \
     || exit
 
