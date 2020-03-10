@@ -248,8 +248,13 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_gather_scalar(ref_grid, 3, xyz, argv[3]), "in");
 
-    RSS(ref_export_tec_dbl(ref_grid, 3, xyz, "ref_acceptance_xyz.tec"),
-        "scalar");
+    each_ref_node_valid_node(ref_node, node) {
+      ref_node_xyz(ref_node, 0, node) = xyz[0 + 3 * node];
+      ref_node_xyz(ref_node, 1, node) = xyz[1 + 3 * node];
+      ref_node_xyz(ref_node, 2, node) = xyz[2 + 3 * node];
+    }
+
+    RSS(ref_export_by_extension(ref_grid, argv[4]), "bent");
 
     return 0;
   }
