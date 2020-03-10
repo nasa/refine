@@ -16,10 +16,9 @@ function adapt_cycle {
     sweeps=$3
 
     ${src}/ref_acceptance -xyz ${inproj}.meshb ${inproj}-disp.solb ${inproj}-bent.meshb
-#    ${two}/ref_metric_test --lp ${inproj}.meshb ${inproj}.solb 2 -1 2000 ${inproj}-metric.solb  --kexact
-#    ${two}/ref_driver -i ${inproj}.meshb -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t
-#    mv ref_gather_movie.tec ${inproj}_movie.tec
-#    ${two}/ref_histogram_test ${outproj}.meshb ${outproj}-final-metric.solb > ${outproj}.status
+    ${src}/ref_acceptance -u tanh3 ${inproj}-bent.meshb ${inproj}.solb
+    ${src}/ref_metric_test --moving ${inproj}.meshb ${inproj}-disp.solb ${inproj}.solb 2 -1 1000  ${inproj}-metric.meshb
+    ${src}/ref_driver -i ${inproj}.meshb -m ${inproj}-metric.meshb -x ${outproj}.meshb
 }
 
 ${src}/ref_acceptance 1 cycle00.meshb
