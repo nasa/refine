@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -u
+set -e
 set -x
 
 ./bootstrap
@@ -9,11 +11,22 @@ gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
 opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
+meshlink_path="/Users/mpark/local/pkgs/MeshLink"
 
 # production spack packages
 parmetis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/parmetis-4.0.3-jwaxhhbilbtvsmt2tskek4k72nel7gtc"
 metis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/metis-5.1.0-czqd5zteq5zfccffypwbjrlb5joqeoyw"
 mpi_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/mpich-3.2.1-gtfvc44cykdfqxntezn7ud6njpthlgxe"
+
+mkdir -p meshlink
+( cd meshlink && \
+      ../configure \
+	  --prefix=`pwd` \
+	  --with-MeshLink=${meshlink_path} \
+	  CFLAGS="-g -O2" \
+	  CC=clang++ \
+    ) \
+    || exit
 
 mkdir -p strict
 ( cd strict && \

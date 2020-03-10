@@ -12,7 +12,8 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_import.h ref_inflate.h ref_interp.h \
 	ref_list.h ref_layer.h \
 	ref_malloc.h \
-	ref_math.h ref_matrix.h ref_metric.h ref_migrate.h ref_mpi.h \
+	ref_math.h ref_matrix.h ref_meshlink.h \
+	ref_metric.h ref_migrate.h ref_mpi.h \
 	ref_node.h ref_part.h ref_phys.h ref_recon.h \
 	ref_search.h ref_shard.h ref_smooth.h ref_sort.h ref_split.h \
 	ref_subdiv.h ref_swap.h ref_validation.h
@@ -54,6 +55,7 @@ libref2_a_SOURCES = \
 	ref_list.c \
 	ref_math.c \
 	ref_matrix.c \
+	ref_meshlink.c \
 	ref_metric.c \
 	ref_migrate.c \
 	ref_mpi.c \
@@ -69,9 +71,9 @@ libref2_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@
+libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
 
-default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 
 bin_PROGRAMS =
@@ -278,6 +280,11 @@ TESTS += ref_matrix_test
 noinst_PROGRAMS += ref_matrix_test
 ref_matrix_test_SOURCES = ref_matrix_test.c
 ref_matrix_test_LDADD = $(default_ldadd)
+
+TESTS += ref_meshlink_test
+noinst_PROGRAMS += ref_meshlink_test
+ref_meshlink_test_SOURCES = ref_meshlink_test.c
+ref_meshlink_test_LDADD = $(default_ldadd)
 
 TESTS += ref_metric_test
 noinst_PROGRAMS += ref_metric_test

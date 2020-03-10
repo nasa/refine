@@ -40,6 +40,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_meshlink.h"
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_sort.h"
@@ -97,6 +98,8 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
+
+  ref_geom->meshlink = NULL;
 
   return REF_SUCCESS;
 }
@@ -161,6 +164,8 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
+
+  ref_geom->meshlink = NULL;
 
   return REF_SUCCESS;
 }
@@ -1241,10 +1246,13 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   REF_INT face_geom;
   REF_DBL xyz[3];
 
-  /* put sloppy geom handling here */
-
   /* no geom, do nothing */
   if (ref_adj_empty(ref_adj, node)) return REF_SUCCESS;
+
+  if (ref_geom_meshlinked(ref_geom)) {
+    RSS(ref_meshlink_constrain(ref_grid, node), "meshlink");
+    return REF_SUCCESS;
+  }
 
   have_geom_node = REF_FALSE;
   each_ref_adj_node_item_with_ref(ref_adj, node, item, geom) {
@@ -1828,6 +1836,8 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   REF_DBL dist, max, max_node, max_edge, global_max;
   REF_BOOL node_constraint, edge_constraint;
 
+  if (!ref_geom_model_loaded(ref_geom)) return REF_SUCCESS;
+
   max = 0.0;
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
@@ -1935,6 +1945,12 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         if (no_edge && ref_node_owned(ref_node, node)) {
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");
+          ref_cell = ref_grid_edg(ref_grid);
+          each_ref_cell_having_node(ref_cell, node, item, cell) {
+            printf("edge %d %d %d\n", ref_cell_c2n(ref_cell, 0, cell),
+                   ref_cell_c2n(ref_cell, 1, cell),
+                   ref_cell_c2n(ref_cell, 2, cell));
+          }
           RSS(ref_geom_tec_para_shard(ref_grid, "ref_geom_topo_error"),
               "geom tec");
           THROW("geom edge missing edge");
@@ -2840,7 +2856,9 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   }
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    RSS(ref_geom_edge_curvature(ref_geom, geom, &radius, normal), "curve");
+    radius = 0;
+    if (ref_geom_model_loaded(ref_geom))
+      RSS(ref_geom_edge_curvature(ref_geom, geom, &radius, normal), "curve");
     radius = ABS(radius);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
@@ -2967,7 +2985,10 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   }
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    kr = 0;
+    ks = 0;
+    if (ref_geom_model_loaded(ref_geom))
+      RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
     kr = ABS(kr);
     ks = ABS(ks);
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",

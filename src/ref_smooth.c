@@ -725,6 +725,99 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node0, node1;
+  REF_INT tries;
+  REF_DBL total_force[3];
+  REF_DBL ideal[3], original[3];
+  REF_DBL backoff, quality, min_ratio, max_ratio, tet_quality;
+  REF_INT ixyz;
+  REF_BOOL allowed, geom_edge;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+
+  RAS(ref_geom_meshlinked(ref_grid_geom(ref_grid)), "expect meshlink");
+
+  /* geom edge only */
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
+  /* protect mixed-element quads */
+  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* require geometry */
+  RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_EDGE, &geom_edge),
+      "edge check");
+  if (!geom_edge) return REF_SUCCESS;
+
+  RSS(ref_smooth_edge_neighbors(ref_grid, node, &node0, &node1), "edge nodes");
+  if (REF_EMPTY == node1) return REF_SUCCESS;
+
+  for (ixyz = 0; ixyz < 3; ixyz++) total_force[ixyz] = 0.0;
+  RSS(ref_smooth_add_pliant_force(ref_node, node, node0, total_force), "n0");
+  RSS(ref_smooth_add_pliant_force(ref_node, node, node1, total_force), "n1");
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ideal[ixyz] =
+        ref_node_xyz(ref_node, ixyz, node) +
+        ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++) {
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ref_node_xyz(ref_node, ixyz, node) =
+          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_geom_constrain(ref_grid, node), "constrain");
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
+    if (REF_SUCCESS == interp_status) {
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "normals");
+      if (allowed) {
+        RSS(ref_metric_interpolate_node(ref_grid, node), "interp node");
+        RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
+        RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+            "ratio");
+        if ((quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+            (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+            (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+          if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+            return REF_SUCCESS;
+          } else {
+            RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality),
+                "q");
+            RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio,
+                                            &max_ratio),
+                "ratio");
+            if ((REF_SUCCESS == interp_status) &&
+                (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+                (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+                (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+              return REF_SUCCESS;
+            }
+          }
+        }
+      }
+    }
+    backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_smooth_tri_pliant(REF_GRID ref_grid, REF_INT node,
                                         REF_DBL *ideal_location) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -850,6 +943,99 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     for (ixyz = 0; ixyz < 3; ixyz++)
       ref_node_xyz(ref_node, ixyz, node) =
           backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    interp_status = ref_metric_interpolate_node(ref_grid, node);
+    RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
+    if (REF_SUCCESS == interp_status) {
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
+      RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
+      RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+          "ratio");
+      if (allowed && (tri_quality > tri_quality0) &&
+          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+        if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
+          return REF_SUCCESS;
+        } else {
+          RSS(ref_smooth_tet_quality_around(ref_grid, node, &tet_quality), "q");
+          RSS(ref_smooth_tet_ratio_around(ref_grid, node, &min_ratio,
+                                          &max_ratio),
+              "ratio");
+          if ((REF_SUCCESS == interp_status) &&
+              (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
+              (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
+              (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+            return REF_SUCCESS;
+          }
+        }
+      }
+    }
+    backoff *= 0.5;
+    if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
+      ref_interp_cell(ref_interp, node) = interp_guess;
+  }
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
+  RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_smooth_meshlink_face_improve(REF_GRID ref_grid,
+                                                   REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT tries;
+  REF_DBL ideal[3], original[3];
+  REF_DBL backoff, tri_quality0, tri_quality, tet_quality, min_ratio, max_ratio;
+  REF_INT ixyz;
+  REF_INT n_ids, ids[2];
+  REF_BOOL allowed, geom_face;
+  REF_STATUS interp_status;
+  REF_INT interp_guess;
+  REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+
+  RAS(ref_geom_meshlinked(ref_grid_geom(ref_grid)), "expect meshlink");
+
+  /* can't handle mixed elements */
+  if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
+  /* won't keep an edg straight */
+  if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
+
+  /* don't move edge nodes */
+  RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, 2, &n_ids, ids),
+      REF_INCREASE_LIMIT, "count faceids");
+  if (n_ids > 1) return REF_SUCCESS;
+
+  /* face geom support */
+  RSS(ref_geom_is_a(ref_grid_geom(ref_grid), node, REF_GEOM_FACE, &geom_face),
+      "face check");
+  if (!geom_face) return REF_SUCCESS;
+
+  for (ixyz = 0; ixyz < 3; ixyz++)
+    original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  interp_guess = REF_EMPTY;
+  if (NULL != ref_interp) {
+    if (ref_interp_continuously(ref_interp)) {
+      interp_guess = ref_interp_cell(ref_interp, node);
+    }
+  }
+
+  RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
+  RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
+      "ratio");
+
+  if (tri_quality0 < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
+    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
+  }
+
+  backoff = 1.0;
+  for (tries = 0; tries < 8; tries++) {
+    for (ixyz = 0; ixyz < 3; ixyz++)
+      ref_node_xyz(ref_node, ixyz, node) =
+          backoff * ideal[ixyz] + (1.0 - backoff) * original[ixyz];
+    RSS(ref_geom_constrain(ref_grid, node), "constrain");
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
@@ -1474,7 +1660,11 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
       ref_node_age(ref_node, node)++;
       continue;
     }
-    RSS(ref_smooth_geom_edge(ref_grid, node), "ideal node for edge");
+    if (ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_smooth_meshlink_edge_improve(ref_grid, node), "improve");
+    } else {
+      RSS(ref_smooth_geom_edge(ref_grid, node), "ideal node for edge");
+    }
     ref_node_age(ref_node, node) = 0;
   }
 
@@ -1513,7 +1703,11 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
       ref_node_age(ref_node, node)++;
       continue;
     }
-    RSS(ref_smooth_geom_face(ref_grid, node), "ideal node for face");
+    if (ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_smooth_meshlink_face_improve(ref_grid, node), "improve");
+    } else {
+      RSS(ref_smooth_geom_face(ref_grid, node), "ideal node for face");
+    }
     ref_node_age(ref_node, node) = 0;
   }
 
