@@ -1,4 +1,10 @@
 
+- initial MeshLink bootstrap and adaptation
+- native alternating RCB partition
+- uses edge UV directly without face inverse evaluation check
+- exports cell centered solb
+- 2D adaptation in parallel for no geometry
+
 Mon, Feb 10, 2020 : Released Refine 1.9.1
 
 - modules deploy with rpath to ESP/117
