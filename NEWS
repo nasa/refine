@@ -1,4 +1,5 @@
 
+- multiscale metric for deforming grids
 - initial MeshLink bootstrap and adaptation
 - native alternating RCB partition
 - uses edge UV directly without face inverse evaluation check
