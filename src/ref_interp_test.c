@@ -664,7 +664,7 @@ int main(int argc, char *argv[]) {
     REF_DBL *solution, *field, *xyz;
     REF_INT ldim, node, i;
 
-    REIS(1, mach_pos, "required args: --strip-xyz project\n");
+    REIS(1, strip_xyz_pos, "required args: --strip-xyz project\n");
     if (3 > argc) {
       printf("required args: --strip-xyz project\n");
       return REF_FAILURE;
