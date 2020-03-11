@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
   REF_INT subset_pos = REF_EMPTY;
   REF_INT nearest_pos = REF_EMPTY;
   REF_INT field_pos = REF_EMPTY;
+  REF_INT strip_xyz_pos = REF_EMPTY;
   REF_INT mach_pos = REF_EMPTY;
   REF_INT cust_pos = REF_EMPTY;
   REF_INT entropy_pos = REF_EMPTY;
@@ -127,6 +128,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--nearest", &nearest_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--field", &field_pos), REF_NOT_FOUND,
+      "arg search");
+  RXS(ref_args_find(argc, argv, "--strip_xyz", &strip_xyz_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--mach", &mach_pos), REF_NOT_FOUND,
       "arg search");
@@ -648,6 +651,69 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(new_grid), "free");
     ref_free(old_field);
     RSS(ref_grid_free(old_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (REF_EMPTY != strip_xyz_pos) {
+    char *project = NULL;
+    char filename[1024];
+    REF_GRID ref_grid;
+    REF_DBL *solution, *field, *xyz;
+    REF_INT ldim, node, i;
+
+    REIS(1, mach_pos, "required args: --strip_xyz project\n");
+    if (3 > argc) {
+      printf("required args: --strip_xyz project\n");
+      return REF_FAILURE;
+    }
+
+    project = argv[2];
+
+    sprintf(filename, "%s.meshb", project);
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename),
+        "part grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "part grid");
+
+    sprintf(filename, "%s_volume.solb", project);
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", filename);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, filename),
+        "unable to load field in position 3");
+    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+    ref_malloc(xyz, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 3; i++) xyz[i + 3 * node] = solution[i + ldim * node];
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "xyz");
+
+    sprintf(filename, "%s-displaced.solb", project);
+    if (ref_mpi_once(ref_mpi)) printf("writing xyz to %s\n", filename);
+    RSS(ref_gather_scalar(ref_grid, 3, xyz, filename), "export mach");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
+
+    ref_free(xyz);
+
+    ref_malloc(field, (ldim - 3) * ref_node_max(ref_grid_node(ref_grid)),
+               REF_DBL);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 3; i < ldim; i++)
+        field[(i - 3) + 3 * node] = solution[i + ldim * node];
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "field");
+
+    sprintf(filename, "%s-soln.solb", project);
+    if (ref_mpi_once(ref_mpi)) printf("writing field to %s\n", filename);
+    RSS(ref_gather_scalar(ref_grid, ldim - 3, field, filename), "export mach");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
+
+    ref_free(field);
+
+    ref_free(solution);
+    RSS(ref_grid_free(ref_grid), "free");
 
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
