@@ -1321,5 +1321,33 @@ m12 = m1half'*m12bar*m1half
     REIS(REF_INVALID, ref_matrix_intersect(m1, m2, m12), "worked?");
   }
 
+  { /* map m to full 3x3 */
+    REF_DBL m[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+    REF_DBL full[9];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_m_full(m, full), "int");
+    RWDS(1.0, full[0], tol, "full 0,0");
+    RWDS(2.0, full[1], tol, "full 1,0");
+    RWDS(3.0, full[2], tol, "full 2,0");
+    RWDS(2.0, full[3], tol, "full 0,1");
+    RWDS(4.0, full[4], tol, "full 1,1");
+    RWDS(5.0, full[5], tol, "full 2,1");
+    RWDS(3.0, full[6], tol, "full 0,2");
+    RWDS(5.0, full[7], tol, "full 1,2");
+    RWDS(6.0, full[8], tol, "full 2,2");
+  }
+
+  { /* map full 3x3 to m */
+    REF_DBL full[9] = {1.0, 2.0, 3.0, 2.0, 4.0, 5.0, 3.0, 5.0, 6.0};
+    REF_DBL m[6];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_m_full(m, full), "int");
+    RWDS(1.0, m[0], tol, "m[0]");
+    RWDS(2.0, m[1], tol, "m[1]");
+    RWDS(3.0, m[2], tol, "m[2]");
+    RWDS(4.0, m[3], tol, "m[3]");
+    RWDS(5.0, m[4], tol, "m[4]");
+    RWDS(6.0, m[5], tol, "m[5]");
+  }
   return 0;
 }
