@@ -51,6 +51,14 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     z = ref_node_xyz(ref_node, 2, node);
     if (strcmp(function_name, "5") == 0) {
       scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+    } else if (strcmp(function_name, "u5") == 0) {
+      REF_DBL xy;
+      xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
+      if (xy >= (2.0 * ref_math_pi / 50.0)) {
+        scalar[node] = 0.01 * sin(50.0 * xy);
+      } else {
+        scalar[node] = sin(50.0 * xy);
+      }
     } else if (strcmp(function_name, "sinfun3") == 0) {
       REF_DBL xyz;
       xyz = (x - 0.4) * (y - 0.4) * (z - 0.4); /* sphere2 */
