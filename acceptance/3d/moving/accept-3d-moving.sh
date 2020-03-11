@@ -33,6 +33,8 @@ adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10
 adapt_cycle cycle02 cycle03 10
 adapt_cycle cycle03 cycle04 10
+adapt_cycle cycle04 cycle05 10
+adapt_cycle cycle05 cycle06 10
 
 
 #cat cycle02.status

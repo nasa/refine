@@ -1,5 +1,5 @@
 #!MC 1410
-$!VarSet |LFDSFN1| = '"cycle04-deformed.tec"'
+$!VarSet |LFDSFN1| = '"cycle06-deformed.tec"'
 $!VarSet |LFDSVL1| = '"x" "y" "z" "V1"'
 $!SetStyleBase Factory
 $!GlobalPaper 

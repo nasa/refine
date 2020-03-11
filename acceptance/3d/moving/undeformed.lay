@@ -1,6 +1,5 @@
 #!MC 1410
-$!VarSet |LFBD| = '/Users/mpark/refine/acceptance/3d/moving'
-$!VarSet |LFDSFN1| = '"|LFBD|/cycle04-undeformed.tec"'
+$!VarSet |LFDSFN1| = '"cycle06-undeformed.tec"'
 $!VarSet |LFDSVL1| = '"x" "y" "z" "V1"'
 $!SetStyleBase Factory
 $!GlobalPaper 
@@ -860,5 +859,4 @@ $!StreamtraceLayers
   Show = No
 $!FrameControl ActivateByNumber
   Frame = 1
-$!RemoveVar |LFBD|
 $!SetStyleBase Config
