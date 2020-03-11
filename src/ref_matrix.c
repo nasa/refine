@@ -1053,3 +1053,58 @@ REF_STATUS ref_matrix_orthog(REF_INT n, REF_DBL *a) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_m_full(REF_DBL *m, REF_DBL *full) {
+  full[0 + 0 * 3] = m[0];
+  full[0 + 1 * 3] = m[1];
+  full[0 + 2 * 3] = m[2];
+  full[1 + 0 * 3] = m[1];
+  full[1 + 1 * 3] = m[3];
+  full[1 + 2 * 3] = m[4];
+  full[2 + 0 * 3] = m[2];
+  full[2 + 1 * 3] = m[4];
+  full[2 + 2 * 3] = m[5];
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m) {
+  m[0] = full[0 + 0 * 3];
+  m[1] = full[0 + 1 * 3];
+  m[2] = full[0 + 2 * 3];
+  m[3] = full[1 + 1 * 3];
+  m[4] = full[1 + 2 * 3];
+  m[5] = full[2 + 2 * 3];
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
+                                 REF_DBL *jac_m_jact) {
+  REF_DBL full[9];
+  REF_DBL jac_m[9];
+  REF_DBL full_jac_m_jact[9];
+  REF_INT i, j, k;
+
+  RSS(ref_matrix_m_full(m, full), "full");
+
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) {
+      jac_m[i + 3 * j] = 0;
+      for (k = 0; k < 3; k++) {
+        jac_m[i + 3 * j] += jac[i + 3 * k] * full[k + 3 * j];
+      }
+    }
+  }
+
+  for (i = 0; i < 3; i++) {
+    for (j = 0; j < 3; j++) {
+      full_jac_m_jact[i + 3 * j] = 0;
+      for (k = 0; k < 3; k++) {
+        full_jac_m_jact[i + 3 * j] += jac_m[i + 3 * k] * jac[j + 3 * k];
+      }
+    }
+  }
+
+  RSS(ref_matrix_full_m(full_jac_m_jact, jac_m_jact), "full");
+
+  return REF_SUCCESS;
+}

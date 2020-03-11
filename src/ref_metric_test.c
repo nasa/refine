@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
   REF_INT parent_pos = REF_EMPTY;
   REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT wlp_pos = REF_EMPTY;
+  REF_INT moving_pos = REF_EMPTY;
   REF_INT explore_pos = REF_EMPTY;
   REF_INT lp_pos = REF_EMPTY;
   REF_INT opt_goal_pos = REF_EMPTY;
@@ -97,6 +98,8 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--wlp", &wlp_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--lp", &lp_pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--moving", &moving_pos), REF_NOT_FOUND,
+      "arg search");
   RXS(ref_args_find(argc, argv, "--explore", &explore_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--opt-goal", &opt_goal_pos), REF_NOT_FOUND,
@@ -364,6 +367,76 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[7]);
     RSS(ref_gather_metric(ref_grid, argv[7]), "export curve limit metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "write metric");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  if (moving_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *displaced, *scalar, *metric;
+    REF_INT p;
+    REF_DBL gradation, complexity;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+    REF_INT ldim;
+    REIS(1, moving_pos,
+         "required args: --moving grid.meshb displaced.solb scalar.solb p "
+         "gradation "
+         "complexity output-metric.solb");
+    if (9 > argc) {
+      printf(
+          "required args: --moving grid.meshb displaced.solb scalar.solb p "
+          "gradation "
+          "complexity output-metric.solb\n");
+      return REF_FAILURE;
+    }
+
+    p = atoi(argv[5]);
+    gradation = atof(argv[6]);
+    complexity = atof(argv[7]);
+    if (REF_EMPTY != kexact_pos) {
+      reconstruction = REF_RECON_KEXACT;
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("Lp=%d\n", p);
+      printf("gradation %f\n", gradation);
+      printf("complexity %f\n", complexity);
+      printf("reconstruction %d\n", (int)reconstruction);
+    }
+
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading displaced %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &displaced, argv[3]),
+        "unable to load dispaced in position 3");
+    REIS(3, ldim, "expected 3 [x,y,z]");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading scalar %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[4]),
+        "unable to load scalar in position 4");
+    REIS(1, ldim, "expected 1 scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    RSS(ref_metric_moving_multiscale(metric, ref_grid, displaced, scalar,
+                                     reconstruction, p, gradation, complexity),
+        "moving multiscale norm");
+
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
+    ref_free(metric);
+    ref_free(displaced);
+    ref_free(scalar);
+
+    if (ref_mpi_once(ref_mpi)) printf("writing metric %s\n", argv[8]);
+    RSS(ref_gather_metric(ref_grid, argv[8]), "export curve limit metric");
     ref_mpi_stopwatch_stop(ref_mpi, "write metric");
 
     RSS(ref_grid_free(ref_grid), "free");

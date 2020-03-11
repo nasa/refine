@@ -1707,6 +1707,79 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
+                                        REF_DBL *displaced, REF_DBL *scalar,
+                                        REF_RECON_RECONSTRUCTION reconstruction,
+                                        REF_INT p_norm, REF_DBL gradation,
+                                        REF_DBL complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *jac, *x, *grad, *hess, *xyz, det;
+  REF_INT i, j, node;
+  ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(jac, 9 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(x, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(grad, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  for (j = 0; j < 3; j++) {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      x[node] = displaced[j + 3 * node];
+    }
+    RSS(ref_recon_gradient(ref_grid, x, grad, reconstruction), "recon x");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        grad[2 + 3 * node] = 1.0;
+      }
+    }
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < 3; i++) {
+        jac[i + 3 * j + 9 * node] = grad[i + 3 * node];
+      }
+    }
+  }
+  ref_free(grad);
+  ref_free(x);
+
+  ref_malloc(xyz, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 3; i++) {
+      xyz[i + 3 * node] = ref_node_xyz(ref_node, i, node);
+      ref_node_xyz(ref_node, i, node) = displaced[i + 3 * node];
+      ;
+    }
+  }
+  RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "recon");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 3; i++) {
+      ref_node_xyz(ref_node, i, node) = xyz[i + 3 * node];
+      ;
+    }
+  }
+  ref_free(xyz);
+
+  RSS(ref_recon_roundoff_limit(hess, ref_grid),
+      "floor metric eignvalues based on grid size and solution jitter");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RSS(ref_matrix_jac_m_jact(&(jac[9 * node]), &(hess[6 * node]),
+                              &(metric[6 * node])),
+        "J M J^t");
+
+    RSS(ref_matrix_det_gen(3, &(jac[9 * node]), &det), "gen det");
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *= pow(ABS(det), 1.0 / (REF_DBL)p_norm);
+    }
+  }
+  ref_free(jac);
+  ref_free(hess);
+
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
+      "local scale lp norm");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
                               REF_DBL *scalar,
                               REF_RECON_RECONSTRUCTION reconstruction,

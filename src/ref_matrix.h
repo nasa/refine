@@ -90,6 +90,11 @@ REF_STATUS ref_matrix_det_gen(REF_INT n, REF_DBL *a, REF_DBL *det);
 
 REF_STATUS ref_matrix_orthog(REF_INT n, REF_DBL *a);
 
+REF_STATUS ref_matrix_m_full(REF_DBL *m, REF_DBL *full);
+REF_STATUS ref_matrix_full_m(REF_DBL *full, REF_DBL *m);
+
+REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m, REF_DBL *jac_m_jact);
+
 END_C_DECLORATION
 
 #endif /* REF_MATRIX_H */

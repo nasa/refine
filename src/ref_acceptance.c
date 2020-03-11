@@ -51,6 +51,14 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
     z = ref_node_xyz(ref_node, 2, node);
     if (strcmp(function_name, "5") == 0) {
       scalar[node] = 2.0 * pow(x, 2) + 2.0 * pow(y, 2) + 2.0 * pow(z, 2);
+    } else if (strcmp(function_name, "u5") == 0) {
+      REF_DBL xy;
+      xy = (2.0 * x - 1.0) * (2.0 * y - 1.0);
+      if (xy >= (2.0 * ref_math_pi / 50.0)) {
+        scalar[node] = 0.01 * sin(50.0 * xy);
+      } else {
+        scalar[node] = sin(50.0 * xy);
+      }
     } else if (strcmp(function_name, "sinfun3") == 0) {
       REF_DBL xyz;
       xyz = (x - 0.4) * (y - 0.4) * (z - 0.4); /* sphere2 */
@@ -125,6 +133,7 @@ int main(int argc, char *argv[]) {
   REF_NODE ref_node;
   REF_INT masabl_pos;
   REF_INT ugawg_pos;
+  REF_INT xyz_pos;
   REF_INT twod_pos;
   REF_INT u_pos;
 
@@ -225,6 +234,36 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "grid free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "-xyz", &xyz_pos), REF_NOT_FOUND, "arg");
+  if (REF_EMPTY != xyz_pos) {
+    REF_DBL *xyz;
+    REF_INT node;
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "in");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(xyz, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+    each_ref_node_valid_node(ref_node, node) {
+      REF_DBL x = ref_node_xyz(ref_node, 0, node);
+      REF_DBL y = ref_node_xyz(ref_node, 1, node);
+      REF_DBL z = ref_node_xyz(ref_node, 2, node);
+      xyz[0 + 3 * node] = x + 0.10 * sin(2.0 * y * ref_math_pi);
+      xyz[1 + 3 * node] = y - 0.10 * sin(2.0 * x * ref_math_pi);
+      xyz[2 + 3 * node] = z + 0.10 * sin(z * ref_math_pi);
+    }
+
+    RSS(ref_gather_scalar(ref_grid, 3, xyz, argv[3]), "in");
+
+    each_ref_node_valid_node(ref_node, node) {
+      ref_node_xyz(ref_node, 0, node) = xyz[0 + 3 * node];
+      ref_node_xyz(ref_node, 1, node) = xyz[1 + 3 * node];
+      ref_node_xyz(ref_node, 2, node) = xyz[2 + 3 * node];
+    }
+
+    RSS(ref_export_by_extension(ref_grid, argv[4]), "bent");
+
     return 0;
   }
 
