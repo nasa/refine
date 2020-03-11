@@ -14,7 +14,7 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
     sweeps=$3
-    complexity=2000
+    complexity=8000
 
     ${src}/ref_acceptance -xyz ${inproj}.meshb ${inproj}-disp.solb ${inproj}-bent.meshb
     ${src}/ref_acceptance -u u5 ${inproj}-bent.meshb ${inproj}.solb
@@ -29,12 +29,11 @@ function adapt_cycle {
 
 ${src}/ref_acceptance 2 cycle00.meshb
 
-adapt_cycle cycle00 cycle01 10
-adapt_cycle cycle01 cycle02 10
-adapt_cycle cycle02 cycle03 10
-adapt_cycle cycle03 cycle04 10
-adapt_cycle cycle04 cycle05 10
-adapt_cycle cycle05 cycle06 10
+adapt_cycle cycle00 cycle01 6
+adapt_cycle cycle01 cycle02 6
+adapt_cycle cycle02 cycle03 6
+adapt_cycle cycle03 cycle04 6
+adapt_cycle cycle04 cycle05 6
 
 
 #cat cycle02.status
