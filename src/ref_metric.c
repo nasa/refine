@@ -1724,6 +1724,11 @@ REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
       x[node] = displaced[j + 3 * node];
     }
     RSS(ref_recon_gradient(ref_grid, x, grad, reconstruction), "recon x");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        grad[2 + 3 * node] = 1.0;
+      }
+    }
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 0; i < 3; i++) {
         jac[i + 3 * j + 9 * node] = grad[i + 3 * node];
