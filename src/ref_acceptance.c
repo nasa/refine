@@ -249,9 +249,9 @@ int main(int argc, char *argv[]) {
       REF_DBL x = ref_node_xyz(ref_node, 0, node);
       REF_DBL y = ref_node_xyz(ref_node, 1, node);
       REF_DBL z = ref_node_xyz(ref_node, 2, node);
-      xyz[0 + 3 * node] = x + 0.1 * sin(x * ref_math_pi);
-      xyz[1 + 3 * node] = y + 0.1 * sin(y * ref_math_pi);
-      xyz[2 + 3 * node] = z + 0.1 * sin(z * ref_math_pi);
+      xyz[0 + 3 * node] = x + 0.10 * sin(2.0 * y * ref_math_pi);
+      xyz[1 + 3 * node] = y - 0.10 * sin(2.0 * x * ref_math_pi);
+      xyz[2 + 3 * node] = z + 0.10 * sin(z * ref_math_pi);
     }
 
     RSS(ref_gather_scalar(ref_grid, 3, xyz, argv[3]), "in");
