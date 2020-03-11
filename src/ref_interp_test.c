@@ -701,7 +701,7 @@ int main(int argc, char *argv[]) {
                REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 3; i < ldim; i++)
-        field[(i - 3) + 3 * node] = solution[i + ldim * node];
+        field[(i - 3) + (ldim - 3) * node] = solution[i + ldim * node];
     }
     ref_mpi_stopwatch_stop(ref_mpi, "field");
 
