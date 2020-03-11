@@ -1341,7 +1341,7 @@ m12 = m1half'*m12bar*m1half
     REF_DBL full[9] = {1.0, 2.0, 3.0, 2.0, 4.0, 5.0, 3.0, 5.0, 6.0};
     REF_DBL m[6];
     REF_DBL tol = -1.0;
-    RSS(ref_matrix_m_full(m, full), "int");
+    RSS(ref_matrix_full_m(full, m), "int");
     RWDS(1.0, m[0], tol, "m[0]");
     RWDS(2.0, m[1], tol, "m[1]");
     RWDS(3.0, m[2], tol, "m[2]");
@@ -1349,5 +1349,36 @@ m12 = m1half'*m12bar*m1half
     RWDS(5.0, m[4], tol, "m[4]");
     RWDS(6.0, m[5], tol, "m[5]");
   }
+
+  /*
+jac = [ 1 2 3
+        4 5 6
+        7 8 9 ]
+m = [ 10 20 30
+      20 40 50
+      30 50 60 ]
+jac*m*jac'
+    1570    3670    5770
+    3670    8560   13450
+    5770   13450   21130
+jac*m
+    140    250    310
+    320    580    730
+    500    910   1150
+   */
+  { /* jac*m*jac' */
+    REF_DBL jac[9] = {1.0, 4.0, 7.0, 2.0, 5.0, 8.0, 3.0, 6.0, 9.0};
+    REF_DBL m[6] = {10, 20, 30, 40, 50, 60};
+    REF_DBL jac_m_jact[6];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_jac_m_jact(jac, m, jac_m_jact), "int");
+    RWDS(1570.0, jac_m_jact[0], tol, "m[0]");
+    RWDS(3670.0, jac_m_jact[1], tol, "m[1]");
+    RWDS(5770.0, jac_m_jact[2], tol, "m[2]");
+    RWDS(8560.0, jac_m_jact[3], tol, "m[3]");
+    RWDS(13450.0, jac_m_jact[4], tol, "m[4]");
+    RWDS(21130.0, jac_m_jact[5], tol, "m[5]");
+  }
+
   return 0;
 }

@@ -1083,22 +1083,28 @@ REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
   REF_DBL jac_m[9];
   REF_DBL full_jac_m_jact[9];
   REF_INT i, j, k;
+
   RSS(ref_matrix_m_full(m, full), "full");
+
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
+      jac_m[i + 3 * j] = 0;
       for (k = 0; k < 3; k++) {
-        jac_m[i + 3 * j] = jac[i + 3 * k] * full[k + 3 * j];
+        jac_m[i + 3 * j] += jac[i + 3 * k] * full[k + 3 * j];
       }
     }
   }
+
   for (i = 0; i < 3; i++) {
     for (j = 0; j < 3; j++) {
+      full_jac_m_jact[i + 3 * j] = 0;
       for (k = 0; k < 3; k++) {
-        full_jac_m_jact[i + 3 * j] = jac_m[i + 3 * k] * jac[j + 3 * k];
+        full_jac_m_jact[i + 3 * j] += jac_m[i + 3 * k] * jac[j + 3 * k];
       }
     }
   }
-  RSS(ref_matrix_m_full(full_jac_m_jact, jac_m_jact), "full");
+
+  RSS(ref_matrix_full_m(full_jac_m_jact, jac_m_jact), "full");
 
   return REF_SUCCESS;
 }
