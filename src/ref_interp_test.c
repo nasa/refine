@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--field", &field_pos), REF_NOT_FOUND,
       "arg search");
-  RXS(ref_args_find(argc, argv, "--strip_xyz", &strip_xyz_pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--strip-xyz", &strip_xyz_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--mach", &mach_pos), REF_NOT_FOUND,
       "arg search");
@@ -664,9 +664,9 @@ int main(int argc, char *argv[]) {
     REF_DBL *solution, *field, *xyz;
     REF_INT ldim, node, i;
 
-    REIS(1, mach_pos, "required args: --strip_xyz project\n");
+    REIS(1, mach_pos, "required args: --strip-xyz project\n");
     if (3 > argc) {
-      printf("required args: --strip_xyz project\n");
+      printf("required args: --strip-xyz project\n");
       return REF_FAILURE;
     }
 
