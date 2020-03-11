@@ -1748,7 +1748,7 @@ REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
 
     RSS(ref_matrix_det_gen(3, &(jac[9 * node]), &det), "gen det");
     for (i = 0; i < 6; i++) {
-      metric[i + 6 * node] *= pow(det, 1.0 / (REF_DBL)p_norm);
+      metric[i + 6 * node] *= pow(ABS(det), 1.0 / (REF_DBL)p_norm);
     }
   }
   ref_free(jac);
