@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
@@ -41,9 +42,97 @@
 #include "ref_sort.h"
 
 int main(int argc, char *argv[]) {
+  REF_INT pos;
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  RXS(ref_args_find(argc, argv, "--subset", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 12) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CELL ref_cell;
+    char *filename;
+    REF_INT i, node, ldim, group, cell, cell_node;
+    REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL bbox[6];
+    REF_DBL *solution;
+    REF_BOOL keep;
+
+    filename = argv[2];
+    if (ref_mpi_once(ref_mpi)) printf("part whole grid %s\n", filename);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "part whole grid");
+    ref_node = ref_grid_node(ref_grid);
+
+    filename = argv[3];
+    if (ref_mpi_once(ref_mpi)) printf("part whole solution %s\n", filename);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, filename),
+        "part whole solution");
+    ref_mpi_stopwatch_stop(ref_mpi, "part whole solution");
+
+    for (i = 0; i < 6; i++) {
+      bbox[i] = atof(argv[i + 4]);
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("bounding box min %f %f %f\n", bbox[0], bbox[1], bbox[2]);
+      printf("bounding dx dy dz %f %f %f\n", bbox[3], bbox[4], bbox[5]);
+    }
+    for (i = 0; i < 3; i++) {
+      bbox[i + 3] += bbox[i];
+    }
+    if (ref_mpi_once(ref_mpi)) {
+      printf("bounding box min %f %f %f\n", bbox[0], bbox[1], bbox[2]);
+      printf("bounding box max %f %f %f\n", bbox[3], bbox[4], bbox[5]);
+    }
+    each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        keep = REF_FALSE;
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          node = nodes[cell_node];
+          if (bbox[0] <= ref_node_xyz(ref_node, 0, node) &&
+              ref_node_xyz(ref_node, 0, node) <= bbox[3] &&
+              bbox[1] <= ref_node_xyz(ref_node, 1, node) &&
+              ref_node_xyz(ref_node, 1, node) <= bbox[4] &&
+              bbox[2] <= ref_node_xyz(ref_node, 2, node) &&
+              ref_node_xyz(ref_node, 2, node) <= bbox[5]) {
+            keep = REF_TRUE;
+          }
+        }
+        if (!keep) RSS(ref_cell_remove(ref_cell, cell), "rm");
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "prune cells");
+
+    each_ref_node_valid_node(ref_node, node) {
+      keep = REF_FALSE;
+      each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+        if (!ref_cell_node_empty(ref_cell, node)) keep = REF_TRUE;
+      }
+      if (!keep) RSS(ref_node_remove(ref_node, node), "rm");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "prune nodes");
+    RSS(ref_node_synchronize_globals(ref_node), "sync");
+    ref_mpi_stopwatch_stop(ref_mpi, "sync node globals");
+
+    filename = argv[10];
+    if (ref_mpi_once(ref_mpi)) printf("gather mesh subset %s\n", filename);
+    RSS(ref_gather_by_extension(ref_grid, filename), "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather mesh subset");
+
+    filename = argv[11];
+    if (ref_mpi_once(ref_mpi)) printf("gather solution subset %s\n", filename);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, solution, NULL,
+                                       filename),
+        "gather");
+    ref_mpi_stopwatch_stop(ref_mpi, "gather solution subset");
+
+    ref_free(solution);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (2 == argc) {
     REF_GRID import_grid;
