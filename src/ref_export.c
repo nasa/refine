@@ -213,40 +213,14 @@ REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   ncell = 0;
   size = 0;
 
-  ref_cell = ref_grid_tri(ref_grid);
-  ncell += ref_cell_n(ref_cell);
-  size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
-
-  ref_cell = ref_grid_qua(ref_grid);
-  ncell += ref_cell_n(ref_cell);
-  size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell) {
     ncell += ref_cell_n(ref_cell);
     size += ref_cell_n(ref_cell) * (1 + ref_cell_node_per(ref_cell));
   }
 
   fprintf(file, "CELLS %d %d\n", ncell, size);
 
-  ref_cell = ref_grid_tri(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    fprintf(file, " %d", node_per);
-    for (node = 0; node < node_per; node++)
-      fprintf(file, " %d", o2n[nodes[node]]);
-    fprintf(file, "\n");
-  }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  node_per = ref_cell_node_per(ref_cell);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    fprintf(file, " %d", node_per);
-    for (node = 0; node < node_per; node++)
-      fprintf(file, " %d", o2n[nodes[node]]);
-    fprintf(file, "\n");
-  }
-
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       fprintf(file, " %d", node_per);
@@ -517,74 +491,77 @@ REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
 
   ref_node = ref_grid_node(ref_grid);
 
-  each_ref_grid_ref_cell(ref_grid, group,
-                         ref_cell) if (ref_cell_n(ref_cell) > 0) {
-    node_per = ref_cell_node_per(ref_cell);
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    if (ref_cell_n(ref_cell) > 0) {
+      node_per = ref_cell_node_per(ref_cell);
 
-    ref_malloc(o2n, ref_node_max(ref_node), REF_INT);
+      ref_malloc(o2n, ref_node_max(ref_node), REF_INT);
 
-    for (node = 0; node < ref_node_max(ref_node); node++) o2n[node] = REF_EMPTY;
+      for (node = 0; node < ref_node_max(ref_node); node++)
+        o2n[node] = REF_EMPTY;
 
-    /* mark nodes needed by this element type */
-    nnode = 0;
-    each_ref_cell_valid_cell_with_nodes(
-        ref_cell, cell, nodes) for (node = 0; node < node_per;
-                                    node++) if (REF_EMPTY == o2n[nodes[node]]) {
-      o2n[nodes[node]] = nnode;
-      nnode++;
-    }
-
-    /* retain node numbering if grid is compact and single element type */
-    nnode = 0;
-    for (node = 0; node < ref_node_max(ref_node); node++)
-      if (REF_EMPTY != o2n[node]) {
-        o2n[node] = nnode;
+      /* mark nodes needed by this element type */
+      nnode = 0;
+      each_ref_cell_valid_cell_with_nodes(
+          ref_cell, cell,
+          nodes) for (node = 0; node < node_per;
+                      node++) if (REF_EMPTY == o2n[nodes[node]]) {
+        o2n[nodes[node]] = nnode;
         nnode++;
       }
 
-    ref_malloc(n2o, nnode, REF_INT);
+      /* retain node numbering if grid is compact and single element type */
+      nnode = 0;
+      for (node = 0; node < ref_node_max(ref_node); node++)
+        if (REF_EMPTY != o2n[node]) {
+          o2n[node] = nnode;
+          nnode++;
+        }
 
-    for (node = 0; node < ref_node_max(ref_node); node++)
-      if (REF_EMPTY != o2n[node]) n2o[o2n[node]] = node;
+      ref_malloc(n2o, nnode, REF_INT);
 
-    fprintf(
-        file,
-        "zone t=\"e%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
-        node_per, nnode, ref_cell_n(ref_cell), "point", "febrick");
+      for (node = 0; node < ref_node_max(ref_node); node++)
+        if (REF_EMPTY != o2n[node]) n2o[o2n[node]] = node;
 
-    for (node = 0; node < nnode; node++)
-      fprintf(file, " %.16e %.16e %.16e\n",
-              ref_node_xyz(ref_node, 0, n2o[node]),
-              ref_node_xyz(ref_node, 1, n2o[node]),
-              ref_node_xyz(ref_node, 2, n2o[node]));
+      fprintf(file,
+              "zone t=\"e%d\", nodes=%d, elements=%d, datapacking=%s, "
+              "zonetype=%s\n",
+              node_per, nnode, ref_cell_n(ref_cell), "point", "febrick");
 
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
-          TEC_BRICK_TET(brick, nodes);
-          break;
-        case 5:
-          TEC_BRICK_PYR(brick, nodes);
-          break;
-        case 6:
-          TEC_BRICK_PRI(brick, nodes);
-          break;
-        case 8:
-          TEC_BRICK_HEX(brick, nodes);
-          break;
-        default:
-          RSS(REF_IMPLEMENT, "wrong nodes per cell");
-          break;
+      for (node = 0; node < nnode; node++)
+        fprintf(file, " %.16e %.16e %.16e\n",
+                ref_node_xyz(ref_node, 0, n2o[node]),
+                ref_node_xyz(ref_node, 1, n2o[node]),
+                ref_node_xyz(ref_node, 2, n2o[node]));
+
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
+            TEC_BRICK_TET(brick, nodes);
+            break;
+          case 5:
+            TEC_BRICK_PYR(brick, nodes);
+            break;
+          case 6:
+            TEC_BRICK_PRI(brick, nodes);
+            break;
+          case 8:
+            TEC_BRICK_HEX(brick, nodes);
+            break;
+          default:
+            RSS(REF_IMPLEMENT, "wrong nodes per cell");
+            break;
+        }
+
+        for (node = 0; node < 8; node++) {
+          fprintf(file, " %d", o2n[brick[node]] + 1);
+        }
+        fprintf(file, "\n");
       }
 
-      for (node = 0; node < 8; node++) {
-        fprintf(file, " %d", o2n[brick[node]] + 1);
-      }
-      fprintf(file, "\n");
+      ref_free(n2o);
+      ref_free(o2n);
     }
-
-    ref_free(n2o);
-    ref_free(o2n);
   }
 
   return REF_SUCCESS;
@@ -612,7 +589,7 @@ REF_STATUS ref_export_tec_int(REF_GRID ref_grid, REF_INT *scalar,
   fprintf(file, "variables = \"x\" \"y\" \"z\" \"s\"\n");
 
   ncell = 0;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) ncell +=
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) ncell +=
       ref_cell_n(ref_cell);
 
   fprintf(
@@ -628,24 +605,25 @@ REF_STATUS ref_export_tec_int(REF_GRID ref_grid, REF_INT *scalar,
             ref_node_xyz(ref_node, 1, n2o[node]),
             ref_node_xyz(ref_node, 2, n2o[node]), scalar[n2o[node]]);
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        TEC_BRICK_TET(brick, nodes);
-        break;
-      case 5:
-        TEC_BRICK_PYR(brick, nodes);
-        break;
-      case 6:
-        TEC_BRICK_PRI(brick, nodes);
-        break;
-      case 8:
-        TEC_BRICK_HEX(brick, nodes);
-        break;
-      default:
-        RSS(REF_IMPLEMENT, "wrong nodes per cell");
-        break;
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      switch (ref_cell_node_per(ref_cell)) {
+        case 4:
+          TEC_BRICK_TET(brick, nodes);
+          break;
+        case 5:
+          TEC_BRICK_PYR(brick, nodes);
+          break;
+        case 6:
+          TEC_BRICK_PRI(brick, nodes);
+          break;
+        case 8:
+          TEC_BRICK_HEX(brick, nodes);
+          break;
+        default:
+          RSS(REF_IMPLEMENT, "wrong nodes per cell");
+          break;
+      }
     }
 
     for (node = 0; node < 8; node++) {
@@ -689,7 +667,7 @@ REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
   fprintf(file, "\n");
 
   ncell = 0;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) ncell +=
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) ncell +=
       ref_cell_n(ref_cell);
 
   fprintf(
@@ -709,30 +687,31 @@ REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
     fprintf(file, "\n");
   }
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    switch (ref_cell_node_per(ref_cell)) {
-      case 4:
-        TEC_BRICK_TET(brick, nodes);
-        break;
-      case 5:
-        TEC_BRICK_PYR(brick, nodes);
-        break;
-      case 6:
-        TEC_BRICK_PRI(brick, nodes);
-        break;
-      case 8:
-        TEC_BRICK_HEX(brick, nodes);
-        break;
-      default:
-        RSS(REF_IMPLEMENT, "wrong nodes per cell");
-        break;
-    }
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      switch (ref_cell_node_per(ref_cell)) {
+        case 4:
+          TEC_BRICK_TET(brick, nodes);
+          break;
+        case 5:
+          TEC_BRICK_PYR(brick, nodes);
+          break;
+        case 6:
+          TEC_BRICK_PRI(brick, nodes);
+          break;
+        case 8:
+          TEC_BRICK_HEX(brick, nodes);
+          break;
+        default:
+          RSS(REF_IMPLEMENT, "wrong nodes per cell");
+          break;
+      }
 
-    for (node = 0; node < 8; node++) {
-      fprintf(file, " %d", o2n[brick[node]] + 1);
+      for (node = 0; node < 8; node++) {
+        fprintf(file, " %d", o2n[brick[node]] + 1);
+      }
+      fprintf(file, "\n");
     }
-    fprintf(file, "\n");
   }
 
   ref_free(n2o);
@@ -823,7 +802,7 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
     fprintf(file, "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"w\"\n");
 
     ncell = 0;
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell) ncell +=
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) ncell +=
         ref_cell_n(ref_cell);
 
     fprintf(file,
@@ -846,30 +825,31 @@ REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
               ref_node_xyz(ref_node, 2, n2o[node]), dx, dy, dz);
     }
 
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
-          TEC_BRICK_TET(brick, nodes);
-          break;
-        case 5:
-          TEC_BRICK_PYR(brick, nodes);
-          break;
-        case 6:
-          TEC_BRICK_PRI(brick, nodes);
-          break;
-        case 8:
-          TEC_BRICK_HEX(brick, nodes);
-          break;
-        default:
-          RSS(REF_IMPLEMENT, "wrong nodes per cell");
-          break;
-      }
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
+            TEC_BRICK_TET(brick, nodes);
+            break;
+          case 5:
+            TEC_BRICK_PYR(brick, nodes);
+            break;
+          case 6:
+            TEC_BRICK_PRI(brick, nodes);
+            break;
+          case 8:
+            TEC_BRICK_HEX(brick, nodes);
+            break;
+          default:
+            RSS(REF_IMPLEMENT, "wrong nodes per cell");
+            break;
+        }
 
-      for (node = 0; node < 8; node++) {
-        fprintf(file, " %d", o2n[brick[node]] + 1);
+        for (node = 0; node < 8; node++) {
+          fprintf(file, " %d", o2n[brick[node]] + 1);
+        }
+        fprintf(file, "\n");
       }
-      fprintf(file, "\n");
     }
 
     ref_free(n2o);
@@ -1365,7 +1345,7 @@ REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   fprintf(file, "NELEM= %d\n", ntet + npyr + npri + nhex);
 
   /* uses VTK windings */
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       switch (ref_cell_node_per(ref_cell)) {
@@ -1513,25 +1493,27 @@ static REF_STATUS ref_export_ugrid(REF_GRID ref_grid, const char *filename) {
 
   ref_cell = ref_grid_tri(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
+  for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
         fprintf(file, " %d", nodes[3]);
         fprintf(file, "\n");
       }
     }
+  }
 
   ref_cell = ref_grid_qua(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
-  for (faceid = min_faceid; faceid <= max_faceid; faceid++)
+  for (faceid = min_faceid; faceid <= max_faceid; faceid++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[node_per] == faceid) {
         fprintf(file, " %d", nodes[4]);
         fprintf(file, "\n");
       }
     }
+  }
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < node_per; node++)
@@ -1665,7 +1647,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
     }
   }
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     node_per = ref_cell_node_per(ref_cell);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < node_per; node++) {

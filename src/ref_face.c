@@ -43,11 +43,15 @@ REF_STATUS ref_face_create(REF_FACE *ref_face_ptr, REF_GRID ref_grid) {
 
   RSS(ref_adj_create(&(ref_face_adj(ref_face))), "create adj");
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) each_ref_cell_valid_cell(
-      ref_cell, cell) each_ref_cell_cell_face(ref_cell, cell_face) {
-    for (node = 0; node < 4; node++)
-      nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
-    RSS(ref_face_add_uniquely(ref_face, nodes), "add face");
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      each_ref_cell_cell_face(ref_cell, cell_face) {
+        for (node = 0; node < 4; node++) {
+          nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        }
+        RSS(ref_face_add_uniquely(ref_face, nodes), "add face");
+      }
+    }
   }
 
   return REF_SUCCESS;

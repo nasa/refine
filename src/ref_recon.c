@@ -60,22 +60,23 @@ REF_STATUS ref_recon_l2_projection_grad(REF_GRID ref_grid, REF_DBL *scalar,
         vol[nodes[cell_node]] += cell_vol;
     }
   } else {
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-        each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
-          RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
-          RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
-              "grad");
-          for (cell_node = 0; cell_node < 4; cell_node++)
-            for (i = 0; i < 3; i++)
-              grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
-          for (cell_node = 0; cell_node < 4; cell_node++)
-            vol[nodes[cell_node]] += cell_vol;
-          break;
-        default:
-          RSS(REF_IMPLEMENT, "implement cell type");
-          break;
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
+            RSS(ref_node_tet_vol(ref_node, nodes, &cell_vol), "vol");
+            RSS(ref_node_tet_grad_nodes(ref_node, nodes, scalar, cell_grad),
+                "grad");
+            for (cell_node = 0; cell_node < 4; cell_node++)
+              for (i = 0; i < 3; i++)
+                grad[i + 3 * nodes[cell_node]] += cell_vol * cell_grad[i];
+            for (cell_node = 0; cell_node < 4; cell_node++)
+              vol[nodes[cell_node]] += cell_vol;
+            break;
+          default:
+            RSS(REF_IMPLEMENT, "implement cell type");
+            break;
+        }
       }
     }
   }

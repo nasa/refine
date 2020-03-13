@@ -71,7 +71,7 @@ REF_STATUS ref_validation_unused_node(REF_GRID ref_grid) {
 
   ref_adj_create(&ref_adj);
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         RSS(ref_adj_add(ref_adj, nodes[node], group + 4 * cell), "add");
@@ -229,12 +229,15 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
 
   for (face = 0; face < ref_face_n(ref_face); face++) hits[face] = 0;
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) each_ref_cell_valid_cell(
-      ref_cell, cell) each_ref_cell_cell_face(ref_cell, cell_face) {
-    for (node = 0; node < 4; node++)
-      nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
-    RSS(ref_face_with(ref_face, nodes, &face), "find cell face");
-    hits[face]++;
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      each_ref_cell_cell_face(ref_cell, cell_face) {
+        for (node = 0; node < 4; node++)
+          nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        RSS(ref_face_with(ref_face, nodes, &face), "find cell face");
+        hits[face]++;
+      }
+    }
   }
 
   ref_cell = ref_grid_tri(ref_grid);
@@ -292,65 +295,22 @@ REF_STATUS ref_validation_cell_node(REF_GRID ref_grid) {
   REF_INT cell, node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL has_local;
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell)
-      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    has_local = REF_FALSE;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
-        RSB(REF_FAILURE, "cell with invalid node", {
-          printf("group %d node_per %d\n", group, ref_cell_node_per(ref_cell));
-        });
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      has_local = REF_FALSE;
+      for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+        if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
+          RSB(REF_FAILURE, "cell with invalid node", {
+            printf("group %d node_per %d\n", group,
+                   ref_cell_node_per(ref_cell));
+          });
+        }
+        has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
+                                  ref_node_part(ref_node, nodes[node]));
       }
-      has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
-                                ref_node_part(ref_node, nodes[node]));
-    }
-    if (!has_local) {
-      RSS(REF_FAILURE, "cell with all ghost nodes");
-    }
-  }
-
-  ref_cell = ref_grid_edg(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    has_local = REF_FALSE;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
-        RSS(REF_FAILURE, "cell with invalid node");
+      if (!has_local) {
+        RSS(REF_FAILURE, "cell with all ghost nodes");
       }
-      has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
-                                ref_node_part(ref_node, nodes[node]));
-    }
-    if (!has_local) {
-      RSS(REF_FAILURE, "cell with all ghost nodes");
-    }
-  }
-
-  ref_cell = ref_grid_tri(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    has_local = REF_FALSE;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
-        RSS(REF_FAILURE, "cell with invalid node");
-      }
-      has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
-                                ref_node_part(ref_node, nodes[node]));
-    }
-    if (!has_local) {
-      RSS(REF_FAILURE, "cell with all ghost nodes");
-    }
-  }
-
-  ref_cell = ref_grid_qua(ref_grid);
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    has_local = REF_FALSE;
-    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
-      if (!ref_node_valid(ref_grid_node(ref_grid), nodes[node])) {
-        RSS(REF_FAILURE, "cell with invalid node");
-      }
-      has_local = has_local || (ref_mpi_rank(ref_grid_mpi(ref_grid)) ==
-                                ref_node_part(ref_node, nodes[node]));
-    }
-    if (!has_local) {
-      RSS(REF_FAILURE, "cell with all ghost nodes");
     }
   }
 

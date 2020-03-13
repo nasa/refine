@@ -41,12 +41,12 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   RSS(ref_cell_create(&ref_grid_pri(ref_grid), REF_CELL_PRI), "pri create");
   RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
 
-  ref_grid_cell(ref_grid, 4) = NULL;
-
   RSS(ref_cell_create(&ref_grid_edg(ref_grid), REF_CELL_EDG), "edg create");
   RSS(ref_cell_create(&ref_grid_ed3(ref_grid), REF_CELL_ED3), "ed3 create");
   RSS(ref_cell_create(&ref_grid_tri(ref_grid), REF_CELL_TRI), "tri create");
   RSS(ref_cell_create(&ref_grid_qua(ref_grid), REF_CELL_QUA), "qua create");
+
+  ref_grid_cell(ref_grid, 8) = NULL;
 
   RSS(ref_geom_create(&ref_grid_geom(ref_grid)), "geom create");
   RSS(ref_gather_create(&ref_grid_gather(ref_grid)), "gather create");
@@ -129,13 +129,9 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid) {
   RSS(ref_edge_free(ref_edge), "free edge");
 
   RSS(ref_node_pack(ref_grid_node(ref_grid), o2n, n2o), "pack node");
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_cell_pack(ref_cell, o2n), "pack cell");
   }
-  RSS(ref_cell_pack(ref_grid_edg(ref_grid), o2n), "pack edg");
-  RSS(ref_cell_pack(ref_grid_ed3(ref_grid), o2n), "pack ed3");
-  RSS(ref_cell_pack(ref_grid_tri(ref_grid), o2n), "pack tri");
-  RSS(ref_cell_pack(ref_grid_qua(ref_grid), o2n), "pack qua");
 
   RSS(ref_geom_pack(ref_grid_geom(ref_grid), o2n), "pack geom");
   RSS(ref_interp_pack(ref_grid_interp(ref_grid), n2o), "pack interp");
@@ -266,7 +262,7 @@ REF_STATUS ref_grid_cell_has_face(REF_GRID ref_grid, REF_INT *face_nodes,
 
   *has_face = REF_FALSE;
 
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1),
         "face search failed");
     *has_face = (REF_EMPTY != cell0);
@@ -545,7 +541,7 @@ REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
     for (node = 0; node < 3; node++) face_nodes[node] = nodes[node];
     face_nodes[3] = face_nodes[0];
     flip = REF_FALSE;
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       RSS(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1),
           "with face");
       if (REF_EMPTY == cell0) continue; /* this cell does not have the face */
@@ -608,7 +604,7 @@ REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
   each_ref_cell_valid_cell_with_nodes(qua, cell, nodes) {
     for (node = 0; node < 4; node++) face_nodes[node] = nodes[node];
     flip = REF_FALSE;
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       RSS(ref_cell_with_face(ref_cell, face_nodes, &cell0, &cell1), "wf");
       if (REF_EMPTY == cell0) continue; /* this cell does not have the face */
       REIS(REF_EMPTY, cell1, "boundary quad with two cells");

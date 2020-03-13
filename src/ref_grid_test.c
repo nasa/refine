@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* each element */
+  { /* each 3d element */
     REF_GRID ref_grid;
     REF_CELL ref_cell;
     REF_INT node_per;
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
 
     node_per = 3;
-    each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
       node_per += 1;
       if (7 == node_per) node_per = 8;
       RES(node_per, ref_cell_node_per(ref_cell), "cells in order");

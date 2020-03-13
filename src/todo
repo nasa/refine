@@ -3,8 +3,6 @@ meshlink geode support
 
 non smooth optimization nso of face uv
 
-each_ref_grid_ref_cell for boundary and higher order
-
 surrogate surface
   support twod geom
   share via meshb
@@ -221,6 +219,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ each_ref_grid_ref_cell for boundary and higher order
 + gathered ref_geom_radian_request ref_geom_reliability
 + ref_geom gap and feature size, use geom via edge or node location
 + native alternating RCB partition

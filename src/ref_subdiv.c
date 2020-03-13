@@ -98,7 +98,7 @@ REF_STATUS ref_subdiv_inspect_global(REF_SUBDIV ref_subdiv, REF_INT global0,
          ref_subdiv_mark(ref_subdiv, edge), edge,
          ref_mpi_rank(ref_subdiv_mpi(ref_subdiv)), part, global0, global1);
 
-  each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
     each_ref_cell_having_node2(ref_cell, node0, node1, item, node, cell) {
       RSS(ref_subdiv_inspect_cell(ref_subdiv, ref_cell, cell), "insp");
     }
@@ -165,16 +165,17 @@ REF_STATUS ref_subdiv_inspect(REF_SUBDIV ref_subdiv) {
   REF_INT group, cell, cell_edge, edge, map;
   REF_CELL ref_cell;
 
-  each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
-      each_ref_cell_valid_cell(ref_cell, cell) {
-    map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
-    printf(" group %d cell %d map %d\n", group, cell, map);
-    each_ref_cell_cell_edge(ref_cell, cell_edge) {
-      edge = ref_subdiv_c2e(ref_subdiv, ref_cell, cell_edge, cell);
-      printf("  edge %d nodes %d %d mark %d\n", edge,
-             ref_cell_e2n(ref_cell, 0, cell_edge, cell),
-             ref_cell_e2n(ref_cell, 1, cell_edge, cell),
-             ref_subdiv_mark(ref_subdiv, edge));
+  each_ref_grid_3d_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+    each_ref_cell_valid_cell(ref_cell, cell) {
+      map = ref_subdiv_map(ref_subdiv, ref_cell, cell);
+      printf(" group %d cell %d map %d\n", group, cell, map);
+      each_ref_cell_cell_edge(ref_cell, cell_edge) {
+        edge = ref_subdiv_c2e(ref_subdiv, ref_cell, cell_edge, cell);
+        printf("  edge %d nodes %d %d mark %d\n", edge,
+               ref_cell_e2n(ref_cell, 0, cell_edge, cell),
+               ref_cell_e2n(ref_cell, 1, cell_edge, cell),
+               ref_subdiv_mark(ref_subdiv, edge));
+      }
     }
   }
   return REF_SUCCESS;
@@ -376,30 +377,31 @@ REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
-    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell)
-        each_ref_cell_valid_cell(ref_cell, cell) {
-      switch (ref_cell_node_per(ref_cell)) {
-        case 4:
-          promote_2_3(3, 4, 5);
-          promote_2_3(1, 2, 5);
-          promote_2_3(0, 2, 4);
-          promote_2_3(0, 1, 3);
-          promote_2_all();
-          break;
-        case 5:
-          edge_or(0, 7); /* opposite quad edges */
-          edge_or(2, 4); /* opposite quad edges */
-          break;
-        case 6:
-          edge_or(0, 6);
-          edge_or(3, 8);
-          edge_or(1, 7);
-          promote_2_3(0, 1, 3);
-          promote_2_3(6, 7, 8);
-          break;
-        default:
-          RSS(REF_IMPLEMENT, "implement cell type");
-          break;
+    each_ref_grid_3d_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+      each_ref_cell_valid_cell(ref_cell, cell) {
+        switch (ref_cell_node_per(ref_cell)) {
+          case 4:
+            promote_2_3(3, 4, 5);
+            promote_2_3(1, 2, 5);
+            promote_2_3(0, 2, 4);
+            promote_2_3(0, 1, 3);
+            promote_2_all();
+            break;
+          case 5:
+            edge_or(0, 7); /* opposite quad edges */
+            edge_or(2, 4); /* opposite quad edges */
+            break;
+          case 6:
+            edge_or(0, 6);
+            edge_or(3, 8);
+            edge_or(1, 7);
+            promote_2_3(0, 1, 3);
+            promote_2_3(6, 7, 8);
+            break;
+          default:
+            RSS(REF_IMPLEMENT, "implement cell type");
+            break;
+        }
       }
     }
 
@@ -555,7 +557,7 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     nsweeps++;
     again = REF_FALSE;
 
-    each_ref_grid_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
+    each_ref_grid_3d_ref_cell(ref_subdiv_grid(ref_subdiv), group, ref_cell) {
       each_ref_cell_valid_cell(ref_cell, cell) {
         switch (ref_cell_node_per(ref_cell)) {
           case 4:
