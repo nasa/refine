@@ -58,6 +58,7 @@ int main(int argc, char *argv[]) {
     REF_DBL bbox[6];
     REF_DBL *solution;
     REF_BOOL keep;
+    REF_INT *keep_node;
 
     filename = argv[2];
     if (ref_mpi_once(ref_mpi)) printf("part whole grid %s\n", filename);
@@ -85,23 +86,33 @@ int main(int argc, char *argv[]) {
       printf("bounding box min %f %f %f\n", bbox[0], bbox[1], bbox[2]);
       printf("bounding box max %f %f %f\n", bbox[3], bbox[4], bbox[5]);
     }
+    ref_malloc_init(keep_node, ref_node_max(ref_node), REF_INT, 0);
+    each_ref_node_valid_node(ref_node, node) {
+      if (bbox[0] <= ref_node_xyz(ref_node, 0, node) &&
+          ref_node_xyz(ref_node, 0, node) <= bbox[3] &&
+          bbox[1] <= ref_node_xyz(ref_node, 1, node) &&
+          ref_node_xyz(ref_node, 1, node) <= bbox[4] &&
+          bbox[2] <= ref_node_xyz(ref_node, 2, node) &&
+          ref_node_xyz(ref_node, 2, node) <= bbox[5]) {
+        keep_node[node] = REF_TRUE;
+      }
+    }
+    RSS(ref_node_ghost_int(ref_node, keep_node, 1), "ghost");
+    ref_mpi_stopwatch_stop(ref_mpi, "mark kept nodes");
+
     each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         keep = REF_FALSE;
         each_ref_cell_cell_node(ref_cell, cell_node) {
           node = nodes[cell_node];
-          if (bbox[0] <= ref_node_xyz(ref_node, 0, node) &&
-              ref_node_xyz(ref_node, 0, node) <= bbox[3] &&
-              bbox[1] <= ref_node_xyz(ref_node, 1, node) &&
-              ref_node_xyz(ref_node, 1, node) <= bbox[4] &&
-              bbox[2] <= ref_node_xyz(ref_node, 2, node) &&
-              ref_node_xyz(ref_node, 2, node) <= bbox[5]) {
+          if (keep_node[node]) {
             keep = REF_TRUE;
           }
         }
         if (!keep) RSS(ref_cell_remove(ref_cell, cell), "rm");
       }
     }
+    ref_free(keep_node);
     ref_mpi_stopwatch_stop(ref_mpi, "prune cells");
 
     each_ref_node_valid_node(ref_node, node) {
@@ -109,9 +120,16 @@ int main(int argc, char *argv[]) {
       each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
         if (!ref_cell_node_empty(ref_cell, node)) keep = REF_TRUE;
       }
-      if (!keep) RSS(ref_node_remove(ref_node, node), "rm");
+      if (!keep) {
+        if (ref_node_owned(ref_node, node)) {
+          RSS(ref_node_remove(ref_node, node), "rm");
+        } else {
+          RSS(ref_node_remove_without_global(ref_node, node), "rm");
+        }
+      }
     }
     ref_mpi_stopwatch_stop(ref_mpi, "prune nodes");
+
     RSS(ref_node_synchronize_globals(ref_node), "sync");
     ref_mpi_stopwatch_stop(ref_mpi, "sync node globals");
     if (ref_mpi_once(ref_mpi))
