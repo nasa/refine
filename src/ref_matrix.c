@@ -80,6 +80,31 @@ REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
+  char format[] = "%24.15e";
+  printf("eig");
+  printf(format, ref_matrix_eig(d, 0));
+  printf(format, ref_matrix_eig(d, 0));
+  printf(format, ref_matrix_eig(d, 0));
+  printf("\n");
+  printf("valx");
+  printf(format, ref_matrix_vec(d, 0, 0));
+  printf(format, ref_matrix_vec(d, 0, 1));
+  printf(format, ref_matrix_vec(d, 0, 2));
+  printf("\n");
+  printf("valy");
+  printf(format, ref_matrix_vec(d, 1, 0));
+  printf(format, ref_matrix_vec(d, 1, 1));
+  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("\n");
+  printf("valz");
+  printf(format, ref_matrix_vec(d, 1, 0));
+  printf(format, ref_matrix_vec(d, 1, 1));
+  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("\n");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   REF_DBL L, u, v, s;
   REF_DBL e[3];
