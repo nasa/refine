@@ -683,21 +683,42 @@ REF_STATUS ref_metric_metric_space_gradation(REF_DBL *metric, REF_GRID ref_grid,
     enlarge = pow(1.0 + ratio * log_r, -2.0);
     for (i = 0; i < 6; i++)
       limit_metric[i] = metric_orig[i + 6 * node1] * enlarge;
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node0]), limit_metric, limited),
-        "limit m0 with enlarged m1");
-    RSS(ref_matrix_intersect(&(metric[6 * node0]), limited,
-                             &(metric[6 * node0])),
-        "update m0");
-
+    if (REF_SUCCESS != ref_matrix_intersect(&(metric_orig[6 * node0]),
+                                            limit_metric, limited)) {
+      REF_WHERE("limit m0 with enlarged m1");
+      ref_node_location(ref_node, node0);
+      printf("ratio %24.15e enlarge %24.15e \n", ratio, enlarge);
+      printf("RECOVER ref_metric_metric_space_gradation\n");
+      continue;
+    }
+    if (REF_SUCCESS != ref_matrix_intersect(&(metric[6 * node0]), limited,
+                                            &(metric[6 * node0]))) {
+      REF_WHERE("update m0");
+      ref_node_location(ref_node, node0);
+      printf("ratio %24.15e enlarge %24.15e \n", ratio, enlarge);
+      printf("RECOVER ref_metric_metric_space_gradation\n");
+      continue;
+    }
     ratio = ref_matrix_sqrt_vt_m_v(&(metric_orig[6 * node0]), direction);
     enlarge = pow(1.0 + ratio * log_r, -2.0);
     for (i = 0; i < 6; i++)
       limit_metric[i] = metric_orig[i + 6 * node0] * enlarge;
-    RSS(ref_matrix_intersect(&(metric_orig[6 * node1]), limit_metric, limited),
-        "limit m1 with enlarged m0");
-    RSS(ref_matrix_intersect(&(metric[6 * node1]), limited,
-                             &(metric[6 * node1])),
-        "update m1");
+    if (REF_SUCCESS != ref_matrix_intersect(&(metric_orig[6 * node1]),
+                                            limit_metric, limited)) {
+      REF_WHERE("limit m1 with enlarged m0");
+      ref_node_location(ref_node, node1);
+      printf("ratio %24.15e enlarge %24.15e \n", ratio, enlarge);
+      printf("RECOVER ref_metric_metric_space_gradation\n");
+      continue;
+    }
+    if (REF_SUCCESS != ref_matrix_intersect(&(metric[6 * node1]), limited,
+                                            &(metric[6 * node1]))) {
+      REF_WHERE("update m1");
+      ref_node_location(ref_node, node1);
+      printf("ratio %24.15e enlarge %24.15e \n", ratio, enlarge);
+      printf("RECOVER ref_metric_metric_space_gradation\n");
+      continue;
+    }
   }
 
   ref_free(metric_orig);
