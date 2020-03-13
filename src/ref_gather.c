@@ -1601,7 +1601,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   faceid_insted_of_c2n = REF_FALSE;
   select_faceid = REF_FALSE;
   faceid = REF_EMPTY;
-  each_ref_grid_ref_cell(ref_grid, group, ref_cell) {
+  each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
                         swap_endian, sixty_four_bit, select_faceid, faceid,
                         file),

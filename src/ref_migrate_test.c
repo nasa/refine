@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
       REF_LONG *global;
       REF_INT group;
       REF_CELL ref_cell;
-      each_ref_grid_ref_cell(import_grid, group, ref_cell) {
+      each_ref_grid_all_ref_cell(import_grid, group, ref_cell) {
         RSS(ref_cell_global(ref_cell, ref_grid_node(import_grid), &global),
             "cell global");
         ref_free(global);
