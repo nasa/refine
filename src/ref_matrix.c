@@ -65,18 +65,35 @@ REF_STATUS ref_matrix_vt_m_v_deriv(REF_DBL *m, REF_DBL *v, REF_DBL *f,
 
 REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
   REF_DBL a[9];
-  a[0] = m[0];
-  a[1] = m[1];
-  a[2] = m[2];
-  a[3] = m[1];
-  a[4] = m[3];
-  a[5] = m[4];
-  a[6] = m[2];
-  a[7] = m[4];
-  a[8] = m[5];
+  RSS(ref_matrix_m_full(m, a), "full");
 
   RSS(ref_matrix_det_gen(3, a, det), "gen det");
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
+  char format[] = "%24.15e";
+  printf("eig");
+  printf(format, ref_matrix_eig(d, 0));
+  printf(format, ref_matrix_eig(d, 0));
+  printf(format, ref_matrix_eig(d, 0));
+  printf("\n");
+  printf("valx");
+  printf(format, ref_matrix_vec(d, 0, 0));
+  printf(format, ref_matrix_vec(d, 0, 1));
+  printf(format, ref_matrix_vec(d, 0, 2));
+  printf("\n");
+  printf("valy");
+  printf(format, ref_matrix_vec(d, 1, 0));
+  printf(format, ref_matrix_vec(d, 1, 1));
+  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("\n");
+  printf("valz");
+  printf(format, ref_matrix_vec(d, 1, 0));
+  printf(format, ref_matrix_vec(d, 1, 1));
+  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("\n");
   return REF_SUCCESS;
 }
 
@@ -355,22 +372,10 @@ REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
 REF_STATUS ref_matrix_inv_m(REF_DBL *m, REF_DBL *inv_m) {
   /* the general inv has better stability by avoiding det */
   REF_DBL a[9], inv[9];
-  a[0] = m[0];
-  a[1] = m[1];
-  a[2] = m[2];
-  a[3] = m[1];
-  a[4] = m[3];
-  a[5] = m[4];
-  a[6] = m[2];
-  a[7] = m[4];
-  a[8] = m[5];
+
+  RSS(ref_matrix_m_full(m, a), "full");
   RSS(ref_matrix_inv_gen(3, a, inv), "general inverse");
-  inv_m[0] = inv[0];
-  inv_m[1] = inv[1];
-  inv_m[2] = inv[2];
-  inv_m[3] = inv[4];
-  inv_m[4] = inv[5];
-  inv_m[5] = inv[8];
+  RSS(ref_matrix_full_m(inv, inv_m), "full");
 
   return REF_SUCCESS;
 }

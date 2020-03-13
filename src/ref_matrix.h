@@ -40,6 +40,7 @@ REF_STATUS ref_matrix_vt_m_v_deriv(REF_DBL *m_upper_tri, REF_DBL *v, REF_DBL *f,
 
 REF_STATUS ref_matrix_det_m(REF_DBL *m_upper_tri, REF_DBL *det);
 
+REF_STATUS ref_matrix_show_diag_sys(REF_DBL *diagonal_system);
 REF_STATUS ref_matrix_diag_m(REF_DBL *m_upper_tri, REF_DBL *diagonal_system);
 
 REF_STATUS ref_matrix_ascending_eig(REF_DBL *diagonal_system);
