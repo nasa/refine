@@ -114,6 +114,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "prune nodes");
     RSS(ref_node_synchronize_globals(ref_node), "sync");
     ref_mpi_stopwatch_stop(ref_mpi, "sync node globals");
+    if (ref_mpi_once(ref_mpi))
+      printf("global " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
 
     filename = argv[10];
     if (ref_mpi_once(ref_mpi)) printf("gather mesh subset %s\n", filename);
