@@ -870,7 +870,10 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--meshlink", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("meshlink with %s\n", argv[pos + 1]);
     RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
+    if (ref_mpi_once(ref_mpi)) printf("cache geode orientation\n");
+    RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
     RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
         "project.meshb is missing the geometry model record");
