@@ -856,6 +856,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("interpolant %s\n", interpolant);
   }
 
+  RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    passes = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
+  }
+
   sprintf(filename, "%s.meshb", in_project);
   if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
   RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
@@ -1074,6 +1080,25 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_grid_free(extruded_grid);
   RSS(ref_grid_free(initial_grid), "free");
+
+  /* export via -x grid.ext and -f final-surf.tec*/
+  for (pos = 0; pos < argc - 1; pos++) {
+    if (strcmp(argv[pos], "-x") == 0) {
+      if (ref_mpi_para(ref_mpi)) {
+        if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[pos + 1]);
+        RSS(ref_gather_by_extension(ref_grid, argv[pos + 1]), "gather -x");
+      } else {
+        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[pos + 1]);
+        RSS(ref_export_by_extension(ref_grid, argv[pos + 1]), "export -x");
+      }
+    }
+    if (strcmp(argv[pos], "-f") == 0) {
+      if (ref_mpi_once(ref_mpi))
+        printf("gather final surface status %s\n", argv[pos + 1]);
+      RSS(ref_gather_surf_status_tec(ref_grid, argv[pos + 1]), "gather -f");
+    }
+  }
+
   RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;
