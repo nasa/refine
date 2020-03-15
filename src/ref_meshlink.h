@@ -38,6 +38,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                            REF_DBL *dot_product);
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid);
 
+REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_MESHLINK_H */
