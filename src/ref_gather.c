@@ -2105,23 +2105,31 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
 REF_STATUS ref_gather_surf_status_tec(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  REF_DBL *scalar, quality;
+  REF_DBL *scalar, quality, normdev;
   REF_INT cell, edge, node0, node1, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_EDGE ref_edge;
   REF_DBL edge_ratio;
-  const char *vars[3];
-  REF_INT ldim = 3;
+  const char *vars[4];
+  REF_INT ldim = 4;
 
   vars[0] = "q";
   vars[1] = "s";
   vars[2] = "l";
+  vars[3] = "n";
   ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tri_quality(ref_node, nodes, &quality), "tri qual");
+    normdev = 2.0;
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+        ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+    }
     each_ref_cell_cell_node(ref_cell, cell_node) {
       scalar[0 + ldim * nodes[cell_node]] =
           MIN(scalar[0 + ldim * nodes[cell_node]], quality);
+      scalar[3 + ldim * nodes[cell_node]] =
+          MIN(scalar[3 + ldim * nodes[cell_node]], normdev);
     }
   }
   RSS(ref_edge_create(&ref_edge, ref_grid), "create edges");
