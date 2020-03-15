@@ -247,7 +247,8 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
   RSS(ref_mpi_bcast(ref_mpi, &max_age, 1, REF_INT_TYPE), "min");
 
   min_normdev = 2.0;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
@@ -400,7 +401,8 @@ static REF_STATUS ref_adapt_tattle(REF_GRID ref_grid) {
   RSS(ref_mpi_allsum(ref_mpi, &nnode, 1, REF_INT_TYPE), "int sum");
 
   min_normdev = 2.0;
-  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
@@ -525,7 +527,8 @@ REF_STATUS ref_adapt_tattle_faces(REF_GRID ref_grid) {
 
     min_normdev = 2.0;
     min_angle = 90.0;
-    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+        ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
       ref_cell = ref_grid_tri(ref_grid);
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
