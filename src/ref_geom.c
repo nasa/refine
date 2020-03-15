@@ -3054,7 +3054,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
           "eval at");
     }
 
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",xyz[0],
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
             uv[1 + 2 * (nnode_degen + item)], kr, ks);
   }
