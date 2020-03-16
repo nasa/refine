@@ -442,6 +442,13 @@ cd ${source_dir}/acceptance/3d/linear
 ( ./accept-3d-linear-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+# 4 procs
+LOG=${root_dir}/log.accept-3d-setset-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/3d/subset
+( ./accept-3d-subset-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 # 1-1-4-4 procs
 LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para
 trap "cat $LOG" EXIT

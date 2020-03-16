@@ -41,6 +41,22 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 
+static REF_STATUS ref_gather_bbox_intersects(REF_DBL *bbox1, REF_DBL *bbox2,
+                                             REF_BOOL *intersects) {
+  REF_INT i;
+
+  *intersects = REF_FALSE;
+
+  for (i = 0; i < 3; i++) {
+    if (bbox1[i + 3] < bbox2[i]) return REF_SUCCESS;
+    if (bbox1[i] > bbox2[i + 3]) return REF_SUCCESS;
+  }
+
+  *intersects = REF_TRUE;
+
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_INT pos;
   REF_MPI ref_mpi;
@@ -55,9 +71,9 @@ int main(int argc, char *argv[]) {
     char *filename;
     REF_INT i, node, ldim, group, cell, cell_node;
     REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-    REF_DBL bbox[6];
+    REF_DBL bbox[6], cell_bbox[6];
     REF_DBL *solution;
-    REF_BOOL keep;
+    REF_BOOL keep, intersects;
     REF_INT *keep_node;
 
     filename = argv[2];
@@ -86,28 +102,44 @@ int main(int argc, char *argv[]) {
       printf("bounding box min %f %f %f\n", bbox[0], bbox[1], bbox[2]);
       printf("bounding box max %f %f %f\n", bbox[3], bbox[4], bbox[5]);
     }
+
     ref_malloc_init(keep_node, ref_node_max(ref_node), REF_INT, 0);
-    each_ref_node_valid_node(ref_node, node) {
-      if (bbox[0] <= ref_node_xyz(ref_node, 0, node) &&
-          ref_node_xyz(ref_node, 0, node) <= bbox[3] &&
-          bbox[1] <= ref_node_xyz(ref_node, 1, node) &&
-          ref_node_xyz(ref_node, 1, node) <= bbox[4] &&
-          bbox[2] <= ref_node_xyz(ref_node, 2, node) &&
-          ref_node_xyz(ref_node, 2, node) <= bbox[5]) {
-        keep_node[node] = REF_TRUE;
+
+    each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        for (i = 0; i < 3; i++) {
+          cell_bbox[i] = ref_node_xyz(ref_node, i, nodes[0]);
+          cell_bbox[i + 3] = ref_node_xyz(ref_node, i, nodes[0]);
+        }
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          node = nodes[cell_node];
+          for (i = 0; i < 3; i++) {
+            cell_bbox[i] =
+                MIN(cell_bbox[i], ref_node_xyz(ref_node, i, nodes[cell_node]));
+            cell_bbox[i + 3] = MAX(cell_bbox[i + i],
+                                   ref_node_xyz(ref_node, i, nodes[cell_node]));
+          }
+        }
+        RSS(ref_gather_bbox_intersects(bbox, cell_bbox, &intersects),
+            "compute intersection");
+        if (intersects) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            node = nodes[cell_node];
+            keep_node[node] = REF_TRUE;
+          }
+        }
       }
     }
+
     RSS(ref_node_ghost_int(ref_node, keep_node, 1), "ghost");
     ref_mpi_stopwatch_stop(ref_mpi, "mark kept nodes");
 
     each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        keep = REF_FALSE;
+        keep = REF_TRUE;
         each_ref_cell_cell_node(ref_cell, cell_node) {
           node = nodes[cell_node];
-          if (keep_node[node]) {
-            keep = REF_TRUE;
-          }
+          keep = keep && keep_node[node];
         }
         if (!keep) RSS(ref_cell_remove(ref_cell, cell), "rm");
       }
