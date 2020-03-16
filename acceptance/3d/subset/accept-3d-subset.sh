@@ -17,8 +17,8 @@ ${src}/ref_gather_test --subset whole.meshb whole.solb -1 -1 -1 1.4 1.6 1.8 subs
 ${src}/ref_gather_test whole.meshb whole.solb whole.tec
 ${src}/ref_gather_test subset.meshb subset.solb subset.tec
 
-${src}/ref_translate subset.meshb subset.lb8.ugrid
-${src}/ref_translate subset.meshb subset-trans.tec
+${src}/ref translate subset.meshb subset.lb8.ugrid
+${src}/ref translate subset.meshb subset-trans.tec
 
 
 exit
