@@ -649,7 +649,7 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
 
   *allowed = REF_FALSE;
 
-  if (0 < ref_geom_n(ref_geom) && !ref_geom_meshlinked(ref_geom)) {
+  if (0 < ref_geom_n(ref_geom)) {
     ref_cell = ref_grid_tri(ref_grid);
     each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
@@ -658,25 +658,47 @@ REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node0 == nodes[node]) nodes[node] = new_node;
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev0), "nd0");
-      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area0), "uv area");
-      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
-      uv_area0 *= sign_uv_area;
+
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (new_node == nodes[node]) nodes[node] = node0;
 
       for (node = 0; node < ref_cell_node_per(ref_cell); node++)
         if (node1 == nodes[node]) nodes[node] = new_node;
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev1), "nd1");
+
+      if ((normdev0 <= normdev &&
+           normdev0 < ref_grid_adapt(ref_grid, post_min_normdev)) ||
+          (normdev1 <= normdev &&
+           normdev1 < ref_grid_adapt(ref_grid, post_min_normdev))) {
+        *allowed = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  if (0 < ref_geom_n(ref_geom) && !ref_geom_meshlinked(ref_geom)) {
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+      RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "nd");
+
+      for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+        if (node0 == nodes[node]) nodes[node] = new_node;
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area0), "uv area");
+      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+      uv_area0 *= sign_uv_area;
+
+      for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+        if (new_node == nodes[node]) nodes[node] = node0;
+
+      for (node = 0; node < ref_cell_node_per(ref_cell); node++)
+        if (node1 == nodes[node]) nodes[node] = new_node;
       RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area1), "uv area");
       RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
       uv_area1 *= sign_uv_area;
 
       if (ref_node_min_uv_area(ref_node) > uv_area0 ||
-          ref_node_min_uv_area(ref_node) > uv_area1 ||
-          (normdev0 <= normdev &&
-           normdev0 < ref_grid_adapt(ref_grid, post_min_normdev)) ||
-          (normdev1 <= normdev &&
-           normdev1 < ref_grid_adapt(ref_grid, post_min_normdev))) {
+          ref_node_min_uv_area(ref_node) > uv_area1) {
         *allowed = REF_FALSE;
         return REF_SUCCESS;
       }
