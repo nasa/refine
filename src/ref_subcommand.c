@@ -417,10 +417,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("verify constrained param\n");
   RSS(ref_geom_verify_param(ref_grid), "constrained params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
-  sprintf(filename, "%s-eval-geom.tec", project);
-  if (ref_mpi_once(ref_mpi))
-    RSS(ref_geom_tec(ref_grid, filename), "geom export");
-  ref_mpi_stopwatch_stop(ref_mpi, "export eval-geom");
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (ref_mpi_once(ref_mpi)) printf("verify manifold\n");
