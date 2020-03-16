@@ -116,8 +116,8 @@ int main(int argc, char *argv[]) {
           for (i = 0; i < 3; i++) {
             cell_bbox[i] =
                 MIN(cell_bbox[i], ref_node_xyz(ref_node, i, nodes[cell_node]));
-            cell_bbox[i + 3] =
-                MAX(cell_bbox[i], ref_node_xyz(ref_node, i, nodes[cell_node]));
+            cell_bbox[i + 3] = MAX(cell_bbox[i + i],
+                                   ref_node_xyz(ref_node, i, nodes[cell_node]));
           }
         }
         RSS(ref_gather_bbox_intersects(bbox, cell_bbox, &intersects),
