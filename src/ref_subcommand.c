@@ -302,10 +302,14 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
-        if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[opt + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
       } else {
-        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[opt + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("export " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
       }
     }
@@ -512,7 +516,9 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
   sprintf(filename, "%s-vol.meshb", project);
-  if (ref_mpi_once(ref_mpi)) printf("export/gather %s\n", filename);
+  if (ref_mpi_once(ref_mpi))
+    printf("gather " REF_GLOB_FMT " nodes to %s\n",
+           ref_node_n_global(ref_grid_node(ref_grid)), filename);
   RSS(ref_gather_by_extension(ref_grid, filename), "vol export");
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
@@ -1000,7 +1006,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "verify final params");
 
   sprintf(filename, "%s.meshb", out_project);
-  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+  if (ref_mpi_once(ref_mpi))
+    printf("gather " REF_GLOB_FMT " nodes to %s\n",
+	   ref_node_n_global(ref_grid_node(ref_grid)), filename);
   RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
@@ -1008,10 +1016,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid), "extrude");
+    if (ref_mpi_once(ref_mpi))
+      printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(extruded_grid)), filename);
     if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
     RSS(ref_gather_by_extension(extruded_grid, filename), "gather .lb8.ugrid");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+    if (ref_mpi_once(ref_mpi))
+      printf("gather " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), filename);
     RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
   }
   ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
@@ -1049,7 +1062,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
       sprintf(filename, "%s.b8.ugrid", out_project);
-      if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
+      if (ref_mpi_once(ref_mpi))
+        printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(extruded_grid)), filename);
       RSS(ref_gather_by_extension(extruded_grid, filename), "gather .b8.ugrid");
       sprintf(filename, "%s-cell-center.solb", out_project);
       if (ref_mpi_once(ref_mpi))
@@ -1066,7 +1081,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
       sprintf(filename, "%s.b8.ugrid", out_project);
-      if (ref_mpi_once(ref_mpi)) printf("gather %s\n", filename);
+      if (ref_mpi_once(ref_mpi))
+        printf("gather " REF_GLOB_FMT " nodes to %s\n",
+               ref_node_n_global(ref_grid_node(ref_grid)), filename);
       RSS(ref_gather_by_extension(ref_grid, filename), "gather .b8.ugrid");
       sprintf(filename, "%s-cell-center.solb", out_project);
       if (ref_mpi_once(ref_mpi))
@@ -1088,10 +1105,14 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   for (pos = 0; pos < argc - 1; pos++) {
     if (strcmp(argv[pos], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
-        if (ref_mpi_once(ref_mpi)) printf("gather %s\n", argv[pos + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[pos + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[pos + 1]), "gather -x");
       } else {
-        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[pos + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("export " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[pos + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[pos + 1]), "export -x");
       }
     }
@@ -1282,7 +1303,9 @@ static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
         "gather surf tec");
     ref_mpi_stopwatch_stop(ref_mpi, "gather");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("export %s\n", out_file);
+    if (ref_mpi_once(ref_mpi))
+      printf("export " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
     RSS(ref_export_tec_surf(ref_grid, out_file), "export tec surf");
     ref_mpi_stopwatch_stop(ref_mpi, "export");
   }
@@ -1327,11 +1350,15 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
+    if (ref_mpi_once(ref_mpi))
+      printf("gather " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
     RSS(ref_gather_by_extension(ref_grid, out_file), "gather");
     ref_mpi_stopwatch_stop(ref_mpi, "gather");
   } else {
-    if (ref_mpi_once(ref_mpi)) printf("export %s\n", out_file);
+    if (ref_mpi_once(ref_mpi))
+      printf("export " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), out_file);
     RSS(ref_export_by_extension(ref_grid, out_file), "export");
     ref_mpi_stopwatch_stop(ref_mpi, "export");
   }
