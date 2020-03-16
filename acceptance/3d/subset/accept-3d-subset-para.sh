@@ -16,7 +16,7 @@ ${src}/ref_acceptance -u u5 whole.meshb whole.solb
 ${src}/ref_translate whole.meshb target.meshb --scale 0.5 --shift 0.25 0.25 0.25
 ${src}/ref_acceptance -u u5 target.meshb target.solb
 
-mpiexec -np 4 ${src}/ref_gather_test --subset whole.meshb whole.solb 0.2 0.2 0.2 0.2 0.6 0.6 subset.meshb subset.solb
+mpiexec -np 4 ${src}/ref_gather_test --subset whole.meshb whole.solb 0.24 0.2 0.2 0.02 0.6 0.6 subset.meshb subset.solb
 ${src}/ref_gather_test whole.meshb whole.solb whole.tec
 ${src}/ref_gather_test subset.meshb subset.solb subset.tec
 
