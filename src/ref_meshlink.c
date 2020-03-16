@@ -616,7 +616,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   RSS(status, "normalize");
 
   RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");
-
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
 
