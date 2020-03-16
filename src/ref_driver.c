@@ -250,7 +250,9 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(output_project, "") != 0) {
     snprintf(output_filename, 1024, "%s.meshb", output_project);
-    if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", output_filename);
+    if (ref_mpi_once(ref_mpi))
+      printf("gather " REF_GLOB_FMT " nodes to %s\n",
+             ref_node_n_global(ref_grid_node(ref_grid)), output_filename);
     RSS(ref_gather_by_extension(ref_grid, output_filename), "export");
     ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
@@ -284,10 +286,14 @@ int main(int argc, char *argv[]) {
   for (opt = 0; opt < argc - 1; opt++) {
     if (strcmp(argv[opt], "-x") == 0) {
       if (ref_mpi_para(ref_mpi)) {
-        if (ref_mpi_once(ref_mpi)) printf("write/gather %s\n", argv[opt + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("gather " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_gather_by_extension(ref_grid, argv[opt + 1]), "gather -x");
       } else {
-        if (ref_mpi_once(ref_mpi)) printf("export %s\n", argv[opt + 1]);
+        if (ref_mpi_once(ref_mpi))
+          printf("export " REF_GLOB_FMT " nodes to %s\n",
+                 ref_node_n_global(ref_grid_node(ref_grid)), argv[opt + 1]);
         RSS(ref_export_by_extension(ref_grid, argv[opt + 1]), "export -x");
       }
     }
