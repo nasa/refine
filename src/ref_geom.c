@@ -1770,6 +1770,12 @@ REF_STATUS ref_geom_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REF_STATUS status;
   *dot_product = -2.0;
 
+  if (ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    RSS(ref_meshlink_tri_norm_deviation(ref_grid, nodes, dot_product),
+        "meshlink");
+    return REF_SUCCESS;
+  }
+
   id = nodes[ref_cell_node_per(ref_grid_tri(ref_grid))];
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
       "tri normal");
@@ -3054,7 +3060,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
           "eval at");
     }
 
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",xyz[0],
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
             uv[1 + 2 * (nnode_degen + item)], kr, ks);
   }

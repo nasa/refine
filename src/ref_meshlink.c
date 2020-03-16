@@ -36,6 +36,8 @@
 
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_malloc.h"
+#include "ref_math.h"
 
 REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -588,8 +590,129 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
+                                           REF_DBL *dot_product) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLVector3D center_point;
+  MLVector3D normal;
+  REF_INT i, id;
+  MLINT gref;
+  REF_STATUS status;
+  REF_DBL tri_normal[3];
+  REF_DBL area_sign = 1.0;
+
+  id = nodes[3];
+  RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
+      "tri normal");
+  /* collapse attempts could create zero area, reject the step with -2.0 */
+  status = ref_math_normalize(tri_normal);
+  if (REF_DIV_ZERO == status) return REF_SUCCESS;
+  RSS(status, "normalize");
+
+  RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+
+  for (i = 0; i < 3; i++) {
+    center_point[i] = (1.0 / 3.0) * (ref_node_xyz(ref_node, i, nodes[0]) +
+                                     ref_node_xyz(ref_node, i, nodes[1]) +
+                                     ref_node_xyz(ref_node, i, nodes[2]));
+  }
+  gref = (MLINT)(id);
+
+  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
+  REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+
+  if (REF_FALSE) {
+    MLVector3D projected_point;
+    MLVector2D uv;
+    char entity_name[256];
+    REIS(
+        0,
+        ML_projectPoint(geom_kernel, geom_group, center_point, projection_data),
+        "prj");
+    REIS(0,
+         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                              entity_name, 256),
+         "info");
+    printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
+  }
+
+  normal[0] = 0.1;
+  normal[1] = 0.2;
+  normal[2] = 0.3;
+  REIS(0,
+       ML_projectPointNormal(geom_kernel, geom_group, center_point,
+                             projection_data, normal),
+       "prj");
+  ML_freeProjectionDataObj(&projection_data);
+
+  area_sign = ref_geom->uv_area_sign[id - 1];
+
+  *dot_product = area_sign * ref_math_dot(normal, tri_normal);
+
+  if (REF_FALSE) {
+    printf("surf %.3f %.3f %.3f disc %.3f %.3f %.3f\n", normal[0], normal[1],
+           normal[2], tri_normal[0], tri_normal[1], tri_normal[2]);
+  }
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(nodes);
+  *dot_product = -2.0;
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT min_id, max_id, id;
+  REF_DBL normdev, min_normdev, max_normdev;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "id range");
+  RAS(min_id > 0, "expected min_id greater then zero");
+  ref_geom->nface = max_id;
+  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 1.0);
+
+  for (id = min_id; id <= max_id; id++) {
+    min_normdev = 2.0;
+    max_normdev = -2.0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+      min_normdev = MIN(min_normdev, normdev);
+      max_normdev = MAX(max_normdev, normdev);
+    }
+    normdev = min_normdev;
+    RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
+    normdev = max_normdev;
+    RSS(ref_mpi_max(ref_mpi, &normdev, &max_normdev, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &max_normdev, 1, REF_DBL_TYPE), "max");
+    if (min_normdev > 1.5 && max_normdev < -1.5) {
+      ref_geom->uv_area_sign[id - 1] = 0.0;
+    } else {
+      if (min_normdev < -max_normdev) ref_geom->uv_area_sign[id - 1] = -1.0;
+      if (ref_mpi_once(ref_mpi))
+        printf("gref %3d orientation%6.2f inferred from %6.2f %6.2f\n", id,
+               ref_geom->uv_area_sign[id - 1], min_normdev, max_normdev);
+    }
+  }
 
   return REF_SUCCESS;
 }

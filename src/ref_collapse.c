@@ -894,7 +894,6 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     }
     new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
 
-    /* see if new config is below limit */
     RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
         "tuv support fororiginal configuration");
     RAS(supported,
@@ -908,16 +907,58 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
       return REF_SUCCESS;
     }
     RSS(ref_geom_tri_norm_deviation(ref_grid, new_nodes, &new_dev), "new");
+    /* allow if improvement */
+    if ((new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) &&
+        (new_dev < orig_dev)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+  }
+
+  /* skip uv checks for meshlink */
+  if (ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    will_be_collapsed = REF_FALSE;
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node0 == nodes[node]) {
+        will_be_collapsed = REF_TRUE;
+      }
+    }
+    if (will_be_collapsed) continue;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      new_nodes[node] = nodes[node];
+      if (node1 == new_nodes[node]) new_nodes[node] = node0;
+    }
+    new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
+
+    /* see if new config is below limit */
+    RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
+        "tuv support fororiginal configuration");
+    RAS(supported,
+        "original configuration before collapse does not support cell tuv");
+    RSS(ref_geom_cell_tuv_supported(ref_geom, new_nodes, REF_GEOM_FACE,
+                                    &supported),
+        "tuv support for swapped configuration");
+    if (!supported) { /* abort collapse, cell tuv not supported */
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
     RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
                               &sign_uv_area),
         "sign");
     RSS(ref_geom_uv_area(ref_geom, nodes, &orig_uv_area), "uv area");
     RSS(ref_geom_uv_area(ref_geom, new_nodes, &new_uv_area), "uv area");
     /* allow if improvement */
-    if (((new_dev < ref_grid_adapt(ref_grid, post_min_normdev)) &&
-         (new_dev < orig_dev)) ||
-        ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
-         (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area))) {
+    if ((sign_uv_area * new_uv_area < ref_node_min_uv_area(ref_node)) &&
+        (sign_uv_area * new_uv_area < sign_uv_area * orig_uv_area)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
