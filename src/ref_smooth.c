@@ -732,6 +732,7 @@ REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid, REF_INT node) {
   REF_DBL total_force[3];
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, quality, min_ratio, max_ratio, tet_quality;
+  REF_DBL normdev, normdev_orig;
   REF_INT ixyz;
   REF_BOOL allowed, geom_edge;
   REF_STATUS interp_status;
@@ -763,6 +764,7 @@ REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid, REF_INT node) {
 
   for (ixyz = 0; ixyz < 3; ixyz++)
     original[ixyz] = ref_node_xyz(ref_node, ixyz, node);
+  RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
   interp_guess = REF_EMPTY;
   if (NULL != ref_interp) {
     if (ref_interp_continuously(ref_interp)) {
@@ -785,9 +787,13 @@ REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid, REF_INT node) {
         RSS(ref_smooth_tri_quality_around(ref_grid, node, &quality), "q");
         RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
             "ratio");
+        RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
+
         if ((quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
             (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-            (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+            (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
+            (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+             normdev > normdev_orig)) {
           if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
             return REF_SUCCESS;
           } else {
@@ -987,6 +993,7 @@ static REF_STATUS ref_smooth_meshlink_face_improve(REF_GRID ref_grid,
   REF_INT tries;
   REF_DBL ideal[3], original[3];
   REF_DBL backoff, tri_quality0, tri_quality, tet_quality, min_ratio, max_ratio;
+  REF_DBL normdev, normdev_orig;
   REF_INT ixyz;
   REF_INT n_ids, ids[2];
   REF_BOOL allowed, geom_face;
@@ -1021,6 +1028,7 @@ static REF_STATUS ref_smooth_meshlink_face_improve(REF_GRID ref_grid,
   }
 
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
+  RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
   RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
       "ratio");
 
@@ -1041,11 +1049,14 @@ static REF_STATUS ref_smooth_meshlink_face_improve(REF_GRID ref_grid,
     if (REF_SUCCESS == interp_status) {
       RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
+      RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
       if (allowed && (tri_quality > tri_quality0) &&
           (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio)) &&
+          (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+           normdev > normdev_orig)) {
         if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
           return REF_SUCCESS;
         } else {
