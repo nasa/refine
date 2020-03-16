@@ -136,12 +136,10 @@ int main(int argc, char *argv[]) {
 
     each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-        keep = REF_FALSE;
+        keep = REF_TRUE;
         each_ref_cell_cell_node(ref_cell, cell_node) {
           node = nodes[cell_node];
-          if (keep_node[node]) {
-            keep = REF_TRUE;
-          }
+          keep = keep && keep_node[node];
         }
         if (!keep) RSS(ref_cell_remove(ref_cell, cell), "rm");
       }
