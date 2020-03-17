@@ -91,7 +91,7 @@ int main(int argc, char *argv[]) {
     echo_argv(argc, argv);
   }
 
-  while ((opt = getopt(argc, argv, "i:m:g:r:o:x:f:s:tdc")) != -1) {
+  while ((opt = getopt(argc, argv, "i:m:g:r:o:p:x:f:s:tdc")) != -1) {
     switch (opt) {
       case 'i':
         if (ref_mpi_para(ref_mpi)) {
@@ -118,6 +118,10 @@ int main(int argc, char *argv[]) {
         break;
       case 'o':
         snprintf(output_project, 1004, "%s", optarg);
+        break;
+      case 'p':
+        RNS(ref_grid, "input grid must be loaded before geom");
+        ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(optarg);
         break;
       case 'x':
         break;
@@ -146,7 +150,7 @@ int main(int argc, char *argv[]) {
         printf("       [-s number_of_adaptation_sweeps] default is 15\n");
         printf("       [-o output_project]\n");
         printf("       [-x export_grid.ext]\n");
-        printf("       [-f final-surface.tec]\n");
+        printf("       [-p partitioner_id]\n");
         printf("       [-t] tecplot movie\n");
         printf("       [-d] debug verbose\n");
         return 1;
