@@ -158,6 +158,7 @@ int main(int argc, char *argv[]) {
         } else {
           RSS(ref_node_remove_without_global(ref_node, node), "rm");
         }
+	RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
       }
     }
     ref_mpi_stopwatch_stop(ref_mpi, "prune nodes");
