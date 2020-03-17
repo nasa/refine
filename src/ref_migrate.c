@@ -271,7 +271,7 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   REF_DBL ratio, value0, value1;
   REF_LONG position, total;
   REF_MPI split_mpi;
-  REF_INT seed_base = 7;
+  REF_INT seed_base = 5;
   REF_DBL ratio_shift, ratio0, ratio1;
 
   if (0 == npart) return REF_SUCCESS;
