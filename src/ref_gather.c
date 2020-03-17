@@ -516,6 +516,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
   REF_INT edge, node0, node1;
   REF_EDGE ref_edge;
   REF_DBL edge_ratio;
+  REF_INT ldim = 4;
 
   if (!(ref_gather->recording)) return REF_SUCCESS;
 
@@ -535,7 +536,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
 
       fprintf(ref_gather->grid_file, "title=\"tecplot refine partion file\"\n");
       fprintf(ref_gather->grid_file,
-              "variables = \"x\" \"y\" \"z\" \"n\" \"s\" \"l\"\n");
+              "variables = \"x\" \"y\" \"z\" \"n\" \"s\" \"l\" \"p\"\n");
     }
     if (NULL == zone_title) {
       fprintf(ref_gather->grid_file,
@@ -553,24 +554,20 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
     }
   }
 
-  ref_malloc(scalar, 3 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc(scalar, ldim * ref_node_max(ref_node), REF_DBL);
   each_ref_node_valid_node(ref_node, node) {
-    scalar[0 + 3 * node] = (REF_DBL)ref_node_part(ref_node, node);
-    scalar[1 + 3 * node] = (REF_DBL)ref_node_age(ref_node, node);
-    scalar[2 + 3 * node] = 0.0;
+    scalar[0 + ldim * node] = 2.0;
+    scalar[1 + ldim * node] = 1.0;
+    scalar[2 + ldim * node] = 1.0;
+    scalar[3 + ldim * node] = (REF_DBL)ref_node_part(ref_node, node);
   }
   if (ref_geom_model_loaded(ref_geom) || ref_grid_twod(ref_grid)) {
-    each_ref_node_valid_node(ref_node, node) {
-      scalar[0 + 3 * node] = 2.0;
-      scalar[1 + 3 * node] = 1.0;
-      scalar[2 + 3 * node] = 1.0;
-    }
-    if (ref_geom_model_loaded(ref_geom)) {
+    if (ref_geom_model_loaded(ref_geom) || ref_geom_meshlinked(ref_geom)) {
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &dot), "norm dev");
         each_ref_cell_cell_node(ref_cell, cell_node) {
-          scalar[0 + 3 * nodes[cell_node]] =
-              MIN(scalar[0 + 3 * nodes[cell_node]], dot);
+          scalar[0 + ldim * nodes[cell_node]] =
+              MIN(scalar[0 + ldim * nodes[cell_node]], dot);
         }
       }
     }
@@ -578,8 +575,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
         RSS(ref_node_tri_quality(ref_node, nodes, &quality), "tri qual");
         each_ref_cell_cell_node(ref_cell, cell_node) {
-          scalar[0 + 3 * nodes[cell_node]] =
-              MIN(scalar[0 + 3 * nodes[cell_node]], quality);
+          scalar[0 + ldim * nodes[cell_node]] =
+              MIN(scalar[0 + ldim * nodes[cell_node]], quality);
         }
       }
     }
@@ -588,15 +585,15 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       node0 = ref_edge_e2n(ref_edge, 0, edge);
       node1 = ref_edge_e2n(ref_edge, 1, edge);
       RSS(ref_node_ratio(ref_node, node0, node1, &edge_ratio), "ratio");
-      scalar[1 + 3 * node0] = MIN(scalar[1 + 3 * node0], edge_ratio);
-      scalar[1 + 3 * node1] = MIN(scalar[1 + 3 * node1], edge_ratio);
-      scalar[2 + 3 * node0] = MAX(scalar[2 + 3 * node0], edge_ratio);
-      scalar[2 + 3 * node1] = MAX(scalar[2 + 3 * node1], edge_ratio);
+      scalar[1 + ldim * node0] = MIN(scalar[1 + ldim * node0], edge_ratio);
+      scalar[1 + ldim * node1] = MIN(scalar[1 + ldim * node1], edge_ratio);
+      scalar[2 + ldim * node0] = MAX(scalar[2 + ldim * node0], edge_ratio);
+      scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
     }
     RSS(ref_edge_free(ref_edge), "free edges");
   }
 
-  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 3, scalar,
+  RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,
                                ref_gather->grid_file),
       "nodes");
   RSS(ref_gather_cell_tec(ref_node, ref_cell, ncell, l2c,
@@ -627,7 +624,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
                   ref_gather->time);
         }
       }
-      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, 3, scalar,
+      RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,
                                    ref_gather->grid_file),
           "nodes");
       RSS(ref_gather_cell_quality_tec(ref_node, ref_grid_tet(ref_grid), ncell,
