@@ -246,6 +246,46 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
+                                                  REF_INT *node_part) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT min_part, max_part, node, proc, *partition_size;
+  ref_malloc_init(partition_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RAB(0 <= node_part[node] && node_part[node] < ref_mpi_n(ref_mpi),
+          "part out of range", {
+            printf("rank %d node %d node_part %d n %d", ref_mpi_rank(ref_mpi),
+                   node, node_part[node], ref_mpi_n(ref_mpi));
+          });
+      partition_size[node_part[node]] += 1;
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
+      "allsum");
+
+  min_part = INT_MAX;
+  max_part = 0;
+  each_ref_mpi_part(ref_mpi, proc) {
+    min_part = MIN(min_part, partition_size[proc]);
+    max_part = MAX(max_part, partition_size[proc]);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf(
+        "balance %6.3f on %d target %d size min %d max %d\n",
+        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+            (REF_DBL)ref_mpi_n(ref_mpi),
+        ref_mpi_n(ref_mpi),
+        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
+        min_part, max_part);
+  }
+  ref_free(partition_size);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
                                           REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -439,7 +479,11 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   ref_free(locals);
   ref_free(owners);
   ref_free(xyz);
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
+
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
+
   return REF_SUCCESS;
 }
 
@@ -740,6 +784,9 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
   Zoltan_Destroy(&zz);
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
+
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
@@ -1018,7 +1065,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
 
   REF_INT node, n, proc, *partition_size, *implied, shift, degree;
   REF_INT item, ref;
-  REF_INT min_part, max_part;
   REF_INT newpart;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
@@ -1089,32 +1135,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
                                     adjwgt, part),
         "subset");
   }
-  each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
-  n = 0;
-  each_ref_migrate_node(ref_migrate, node) {
-    RAS(0 <= part[n] && part[n] < ref_mpi_n(ref_mpi), "part out of range");
-    partition_size[part[n]] += 1;
-    n++;
-  }
-  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
-      "allsum");
-
-  min_part = INT_MAX;
-  max_part = 0;
-  each_ref_mpi_part(ref_mpi, proc) {
-    min_part = MIN(min_part, partition_size[proc]);
-    max_part = MAX(max_part, partition_size[proc]);
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    printf(
-        "balance %6.3f on %d of %d target %d size min %d max %d\n",
-        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-            (REF_DBL)ref_mpi_n(ref_mpi),
-        newpart, ref_mpi_n(ref_mpi),
-        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
-        min_part, max_part);
-  }
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
@@ -1131,6 +1151,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   ref_free(implied);
   ref_free(vtxdist);
   ref_free(partition_size);
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
 
