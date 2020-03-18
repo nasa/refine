@@ -8,8 +8,8 @@ if [ $# -gt 0 ] ; then
     one=$1/one
     two=$1/src
 else
-    one=${HOME}/refine/zoltan/one
-    two=${HOME}/refine/zoltan/src
+    one=${HOME}/refine/parmetis/one
+    two=${HOME}/refine/parmetis/src
 fi
 
 ${two}/ref_acceptance 1 ref_adapt_test.b8.ugrid
@@ -26,8 +26,8 @@ function adapt_cycle {
     ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.solb
     
     rm ref_adapt_test.b8.ugrid
-    mpiexec -np 2 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb \
-            -o ref_adapt_test -t
+    mpiexec -np 4 ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb \
+            -o ref_adapt_test -t -p 5
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
     
