@@ -246,6 +246,46 @@ REF_STATUS ref_migrate_2d_agglomeration(REF_MIGRATE ref_migrate) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_migrate_report_load_balance(REF_GRID ref_grid,
+                                                  REF_INT *node_part) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT min_part, max_part, node, proc, *partition_size;
+  ref_malloc_init(partition_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RAB(0 <= node_part[node] && node_part[node] < ref_mpi_n(ref_mpi),
+          "part out of range", {
+            printf("rank %d node %d node_part %d n %d", ref_mpi_rank(ref_mpi),
+                   node, node_part[node], ref_mpi_n(ref_mpi));
+          });
+      partition_size[node_part[node]] += 1;
+    }
+  }
+  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
+      "allsum");
+
+  min_part = INT_MAX;
+  max_part = 0;
+  each_ref_mpi_part(ref_mpi, proc) {
+    min_part = MIN(min_part, partition_size[proc]);
+    max_part = MAX(max_part, partition_size[proc]);
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    printf(
+        "balance %6.3f on %d target %d size min %d max %d\n",
+        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
+            (REF_DBL)ref_mpi_n(ref_mpi),
+        ref_mpi_n(ref_mpi),
+        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
+        min_part, max_part);
+  }
+  ref_free(partition_size);
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
                                           REF_INT *node_part) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -259,8 +299,9 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
 
 static REF_STATUS ref_migrate_native_rcb_direction(
     REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT *owners,
-    REF_INT *locals, REF_MPI global_mpi, REF_INT *part) {
-  REF_INT i, j, n0, n1, dir, npart0, npart1;
+    REF_INT *locals, REF_MPI global_mpi, REF_INT *part, REF_INT seed,
+    REF_INT dir) {
+  REF_INT i, j, n0, n1, npart0, npart1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
   REF_DBL *bal_xyz0, *bal_xyz1;
@@ -268,9 +309,11 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   REF_INT *bal_owners0, *bal_owners1;
   REF_INT *locals0, *locals1;
   REF_INT *bal_locals0, *bal_locals1;
-  REF_DBL ratio, value;
+  REF_DBL ratio, value0, value1;
   REF_LONG position, total;
   REF_MPI split_mpi;
+  REF_INT seed_base = 3;
+  REF_DBL ratio_shift, ratio0, ratio1;
 
   if (0 == npart) return REF_SUCCESS;
 
@@ -291,15 +334,23 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   }
 
   ref_malloc(x, n, REF_DBL);
-  RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+  if (dir < 0 || 2 < dir)
+    RSS(ref_migrate_split_dir(ref_mpi, n, xyz, &dir), "dir");
+  RAS(-1 < dir && dir < 3, "3D dir");
   RSS(ref_migrate_split_ratio(npart, &ratio), "ratio");
+  ratio_shift = (REF_DBL)(seed % seed_base) / (REF_DBL)seed_base;
+  ratio0 = ratio * ratio_shift;
+  ratio1 = 1.0 - (ratio - ratio0);
+
   for (i = 0; i < n; i++) x[i] = xyz[dir + 3 * i];
 
   total = (REF_LONG)n;
   RSS(ref_mpi_allsum(ref_mpi, &total, 1, REF_LONG_TYPE), "high_pos");
 
-  position = (REF_LONG)((REF_DBL)total * ratio);
-  RSS(ref_search_selection(ref_mpi, n, x, position, &value), "target");
+  position = (REF_LONG)((REF_DBL)total * ratio0);
+  RSS(ref_search_selection(ref_mpi, n, x, position, &value0), "target");
+  position = (REF_LONG)((REF_DBL)total * ratio1);
+  RSS(ref_search_selection(ref_mpi, n, x, position, &value1), "target");
 
   ref_malloc(xyz0, 3 * n, REF_DBL);
   ref_malloc(xyz1, 3 * n, REF_DBL);
@@ -311,7 +362,7 @@ static REF_STATUS ref_migrate_native_rcb_direction(
   n0 = 0;
   n1 = 0;
   for (i = 0; i < n; i++) {
-    if (x[i] < value) {
+    if (x[i] < value0 || value1 < x[i]) {
       for (j = 0; j < 3; j++) xyz0[j + 3 * n0] = xyz[j + 3 * i];
       owners0[n0] = owners[i];
       locals0[n0] = locals[i];
@@ -353,15 +404,17 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   RSS(ref_mpi_front_comm(ref_mpi, &split_mpi, npart0), "split");
 
+  dir += 1;
+  if (dir > 2) dir -= 3;
   if (ref_mpi_rank(ref_mpi) < npart0) {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
                                          bal_owners0, bal_locals0, global_mpi,
-                                         part),
+                                         part, seed, dir),
         "recurse 0");
   } else {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
                                          bal_owners1, bal_locals1, global_mpi,
-                                         part),
+                                         part, seed, dir),
         "recurse 1");
   }
 
@@ -421,13 +474,21 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
   }
 
   RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, owners, locals,
-                                       ref_mpi, node_part),
+                                       ref_mpi, node_part,
+                                       ref_grid_partitioner_seed(ref_grid), -1),
       "split");
+  ref_grid_partitioner_seed(ref_grid)++;
+  if (ref_grid_partitioner_seed(ref_grid) < 0)
+    ref_grid_partitioner_seed(ref_grid) = 0; /* overflow int */
 
   ref_free(locals);
   ref_free(owners);
   ref_free(xyz);
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
+
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "native RCB part");
+
   return REF_SUCCESS;
 }
 
@@ -728,6 +789,9 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
   Zoltan_Destroy(&zz);
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
+
   ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "part update");
 
   return REF_SUCCESS;
@@ -1006,7 +1070,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
 
   REF_INT node, n, proc, *partition_size, *implied, shift, degree;
   REF_INT item, ref;
-  REF_INT min_part, max_part;
   REF_INT newpart;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
@@ -1077,32 +1140,6 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
                                     adjwgt, part),
         "subset");
   }
-  each_ref_mpi_part(ref_mpi, proc) { partition_size[proc] = 0; }
-  n = 0;
-  each_ref_migrate_node(ref_migrate, node) {
-    RAS(0 <= part[n] && part[n] < ref_mpi_n(ref_mpi), "part out of range");
-    partition_size[part[n]] += 1;
-    n++;
-  }
-  RSS(ref_mpi_allsum(ref_mpi, partition_size, ref_mpi_n(ref_mpi), REF_INT_TYPE),
-      "allsum");
-
-  min_part = INT_MAX;
-  max_part = 0;
-  each_ref_mpi_part(ref_mpi, proc) {
-    min_part = MIN(min_part, partition_size[proc]);
-    max_part = MAX(max_part, partition_size[proc]);
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    printf(
-        "balance %6.3f on %d of %d target %d size min %d max %d\n",
-        (REF_DBL)max_part / (REF_DBL)ref_node_n_global(ref_node) *
-            (REF_DBL)ref_mpi_n(ref_mpi),
-        newpart, ref_mpi_n(ref_mpi),
-        (REF_INT)(ref_node_n_global(ref_node) / (REF_GLOB)ref_mpi_n(ref_mpi)),
-        min_part, max_part);
-  }
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
@@ -1119,6 +1156,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   ref_free(implied);
   ref_free(vtxdist);
   ref_free(partition_size);
+
+  RSS(ref_migrate_report_load_balance(ref_grid, node_part), "report bal");
 
   RSS(ref_migrate_free(ref_migrate), "free migrate");
 

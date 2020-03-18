@@ -50,6 +50,7 @@ struct REF_GRID_STRUCT {
   REF_INTERP interp;
 
   REF_MIGRATE_PARTIONER partitioner;
+  REF_INT partitioner_seed;
 
   REF_BOOL twod;
   REF_BOOL surf;
@@ -84,6 +85,8 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_interp(ref_grid) ((ref_grid)->interp)
 
 #define ref_grid_partitioner(ref_grid) ((ref_grid)->partitioner)
+#define ref_grid_partitioner_seed(ref_grid) ((ref_grid)->partitioner_seed)
+
 #define ref_grid_twod(ref_grid) ((ref_grid)->twod)
 #define ref_grid_surf(ref_grid) ((ref_grid)->surf)
 
