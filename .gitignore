@@ -3,6 +3,7 @@ Makefile.in
 
 /autom4te.cache
 /config.h.in
+/config.h.in~
 /aclocal.m4
 /compile
 /configure
