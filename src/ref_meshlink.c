@@ -162,7 +162,7 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
 
   { /* mark cad nodes */
     REF_INT node;
-    REF_INT nedge, edges[2];
+    REF_INT edges[2];
     REF_INT id;
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &nedge,
