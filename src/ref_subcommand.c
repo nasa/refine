@@ -239,7 +239,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("-p %d partitioner\n", ref_grid_partitioner(ref_grid));
+    printf("-p %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
   }
 
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
@@ -873,7 +873,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("-p %d partitioner\n", ref_grid_partitioner(ref_grid));
+    printf("-p %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
   }
 
   sprintf(filename, "%s.meshb", in_project);
