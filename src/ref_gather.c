@@ -937,56 +937,14 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
-                                              REF_DBL *scalar, FILE *file) {
+static REF_STATUS ref_gather_node_scalar_bin(REF_NODE ref_node, REF_INT ldim,
+                                             REF_DBL *scalar, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_GLOB global, nnode_written, first;
   REF_INT local, n, i, im;
   REF_STATUS status;
-  REF_FILEPOS next_position = 0;
-  REF_INT keyword_code, header_size;
-  REF_INT code, version, dim;
-
-  if (10000000 < ref_node_n_global(ref_node)) {
-    version = 3;
-    header_size = 4 + 8 + 4;
-  } else {
-    version = 2;
-    header_size = 4 + 4 + 4;
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    code = 1;
-    REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
-    REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = (REF_FILEPOS)header_size + ftell(file);
-    keyword_code = 3;
-    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
-    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    dim = 3;
-    REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
-    REIS(next_position, ftell(file), "dim inconsistent");
-  }
-
-  if (ref_mpi_once(ref_mpi)) {
-    next_position =
-        (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
-        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(ldim * 8) +
-        ftell(file);
-    keyword_code = 62;
-    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
-    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
-         "nnode");
-    keyword_code = ldim; /* one solution at node */
-    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "n solutions");
-    keyword_code = 1; /* solution type 1, scalar */
-    for (i = 0; i < ldim; i++) {
-      REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "scalar");
-    }
-  }
 
   chunk = (REF_INT)(ref_node_n_global(ref_node) / ref_mpi_n(ref_mpi) + 1);
 
@@ -1037,6 +995,59 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
 
   ref_free(xyzm);
   ref_free(local_xyzm);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_node_scalar_solb(REF_NODE ref_node, REF_INT ldim,
+                                              REF_DBL *scalar, FILE *file) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT i;
+  REF_FILEPOS next_position = 0;
+  REF_INT keyword_code, header_size;
+  REF_INT code, version, dim;
+
+  if (10000000 < ref_node_n_global(ref_node)) {
+    version = 3;
+    header_size = 4 + 8 + 4;
+  } else {
+    version = 2;
+    header_size = 4 + 4 + 4;
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    code = 1;
+    REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
+    REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
+    next_position = (REF_FILEPOS)header_size + ftell(file);
+    keyword_code = 3;
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    dim = 3;
+    REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
+    REIS(next_position, ftell(file), "dim inconsistent");
+  }
+
+  if (ref_mpi_once(ref_mpi)) {
+    next_position =
+        (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + (ldim * 4)) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(ldim * 8) +
+        ftell(file);
+    keyword_code = 62;
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
+    RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
+    REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
+         "nnode");
+    keyword_code = ldim; /* one solution at node */
+    REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "n solutions");
+    keyword_code = 1; /* solution type 1, scalar */
+    for (i = 0; i < ldim; i++) {
+      REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "scalar");
+    }
+  }
+
+  RSS(ref_gather_node_scalar_bin(ref_node, ldim, scalar, file),
+      "bin dump in solb");
 
   if (ref_mpi_once(ref_mpi))
     REIS(next_position, ftell(file), "solb metric record len inconsistent");
@@ -1692,8 +1703,30 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
-                             const char *filename) {
+static REF_STATUS ref_gather_scalar_bin(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar, const char *filename) {
+  FILE *file;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  file = NULL;
+  if (ref_grid_once(ref_grid)) {
+    file = fopen(filename, "w");
+    if (NULL == (void *)file) printf("unable to open %s\n", filename);
+    RNS(file, "unable to open file");
+  }
+
+  RSS(ref_gather_node_scalar_bin(ref_node, ldim, scalar, file), "nodes");
+
+  if (ref_grid_once(ref_grid)) fclose(file);
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+                                         REF_DBL *scalar,
+                                         const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
 
@@ -1713,7 +1746,7 @@ REF_STATUS ref_gather_scalar(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
                                        REF_DBL *scalar, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -1909,9 +1942,10 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
-                                 REF_DBL *scalar, const char **scalar_names,
-                                 const char *filename) {
+static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar,
+                                        const char **scalar_names,
+                                        const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   FILE *file;
@@ -2091,7 +2125,12 @@ REF_STATUS ref_gather_scalar_by_extension(REF_GRID ref_grid, REF_INT ldim,
     return REF_SUCCESS;
   }
   if (end_of_string > 5 && strcmp(&filename[end_of_string - 5], ".solb") == 0) {
-    RSS(ref_gather_scalar(ref_grid, ldim, scalar, filename), "scalar solb");
+    RSS(ref_gather_scalar_solb(ref_grid, ldim, scalar, filename),
+        "scalar solb");
+    return REF_SUCCESS;
+  }
+  if (end_of_string > 4 && strcmp(&filename[end_of_string - 4], ".bin") == 0) {
+    RSS(ref_gather_scalar_bin(ref_grid, ldim, scalar, filename), "scalar bin");
     return REF_SUCCESS;
   }
   printf("%s: %d: %s %s\n", __FILE__, __LINE__,

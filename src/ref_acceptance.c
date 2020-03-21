@@ -254,7 +254,7 @@ int main(int argc, char *argv[]) {
       xyz[2 + 3 * node] = z + 0.10 * sin(z * ref_math_pi);
     }
 
-    RSS(ref_gather_scalar(ref_grid, 3, xyz, argv[3]), "in");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3, xyz, NULL, argv[3]), "in");
 
     each_ref_node_valid_node(ref_node, node) {
       ref_node_xyz(ref_node, 0, node) = xyz[0 + 3 * node];
@@ -280,7 +280,8 @@ int main(int argc, char *argv[]) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_acceptance_u(ref_grid_node(ref_grid), argv[name_pos], scalar),
         "fill u");
-    RSS(ref_gather_scalar(ref_grid, 1, scalar, argv[4]), "in");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL, argv[4]),
+        "in");
 
     RSS(ref_export_tec_dbl(ref_grid, 1, scalar, "ref_acceptance_scalar.tec"),
         "scalar");

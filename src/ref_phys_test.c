@@ -209,7 +209,7 @@ int main(int argc, char *argv[]) {
     ref_free(primitive_dual);
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[7]);
-    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[7]),
+    RSS(ref_gather_scalar_by_extension(ref_grid, 20, dual_flux, NULL, argv[7]),
         "export dual_flux");
 
     ref_free(dual_flux);
@@ -281,7 +281,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[4]);
-    RSS(ref_gather_scalar(ref_grid, 20, dual_flux, argv[4]),
+    RSS(ref_gather_scalar_by_extension(ref_grid, 20, dual_flux, NULL, argv[4]),
         "export dual_flux");
 
     ref_free(dual_flux);
@@ -362,7 +362,8 @@ int main(int argc, char *argv[]) {
     }
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[6]);
-    RSS(ref_gather_scalar(ref_grid, 4, dual_flux, argv[6]), "export dual_flux");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 4, dual_flux, NULL, argv[6]),
+        "export dual_flux");
 
     ref_free(grad);
     ref_free(dual_flux);
@@ -417,7 +418,8 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("writing strong_replacement %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, ldim, primitive_dual, argv[5]),
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, primitive_dual, NULL,
+                                       argv[5]),
         "export primitive_dual");
 
     ref_free(primitive_dual);
@@ -561,7 +563,8 @@ int main(int argc, char *argv[]) {
       printf("min max %e %e\n", min_weight, max_weight);
     }
     if (ref_mpi_once(ref_mpi)) printf("writing weight %s\n", argv[5]);
-    RSS(ref_gather_scalar(ref_grid, 1, weight, argv[5]), "export weight");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, weight, NULL, argv[5]),
+        "export weight");
     if (ref_mpi_once(ref_mpi))
       printf("writing res,dual,weight ref_phys_system.tec\n");
     RSS(ref_gather_scalar_by_extension(ref_grid, nsystem, system, NULL,

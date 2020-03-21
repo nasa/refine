@@ -158,7 +158,7 @@ int main(int argc, char *argv[]) {
         } else {
           RSS(ref_node_remove_without_global(ref_node, node), "rm");
         }
-	RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
+        RSS(ref_geom_remove_all(ref_grid_geom(ref_grid), node), "rm");
       }
     }
     ref_mpi_stopwatch_stop(ref_mpi, "prune nodes");
@@ -224,7 +224,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(import_grid), &ldim, &field, argv[2]),
         "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "read field");
-    RSS(ref_gather_scalar_tec(import_grid, ldim, field, NULL, argv[3]),
+    RSS(ref_gather_scalar_by_extension(import_grid, ldim, field, NULL, argv[3]),
         "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "write tec");
 
