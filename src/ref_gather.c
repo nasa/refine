@@ -1703,8 +1703,8 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar_bin(REF_GRID ref_grid, REF_INT ldim,
-                                 REF_DBL *scalar, const char *filename) {
+static REF_STATUS ref_gather_scalar_bin(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
 
@@ -1724,8 +1724,9 @@ REF_STATUS ref_gather_scalar_bin(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
-                                  REF_DBL *scalar, const char *filename) {
+static REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+                                         REF_DBL *scalar,
+                                         const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
 
@@ -1941,9 +1942,10 @@ REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
-                                 REF_DBL *scalar, const char **scalar_names,
-                                 const char *filename) {
+static REF_STATUS ref_gather_scalar_tec(REF_GRID ref_grid, REF_INT ldim,
+                                        REF_DBL *scalar,
+                                        const char **scalar_names,
+                                        const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   FILE *file;
