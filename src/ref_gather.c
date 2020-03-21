@@ -1745,7 +1745,7 @@ REF_STATUS ref_gather_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_gather_cell_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
+REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
                                        REF_DBL *scalar, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
