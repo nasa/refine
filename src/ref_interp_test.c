@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "read/stitch zones");
 
     if (ref_mpi_once(ref_mpi)) printf("write/gather stitched %s\n", argv[4]);
-    RSS(ref_gather_scalar(ref_grid, ldim, scalar, argv[4]),
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
         "write/gather stitched");
     ref_mpi_stopwatch_stop(ref_mpi, "write stitched");
 
@@ -458,7 +458,7 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("write/gather merged solution %s\n", argv[6]);
-    RSS(ref_gather_scalar(ref_grid, ldim, solution, argv[6]),
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, solution, NULL, argv[6]),
         "write/gather merged solution");
     ref_mpi_stopwatch_stop(ref_mpi, "write merged solution");
 
@@ -519,7 +519,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
     if (ref_mpi_once(ref_mpi)) printf("write/gather new subset %s\n", argv[5]);
-    RSS(ref_gather_scalar(new_grid, ldim, new_subset, argv[5]),
+    RSS(ref_gather_scalar_by_extension(new_grid, ldim, new_subset, NULL,
+                                       argv[5]),
         "write/gather new subset");
     ref_mpi_stopwatch_stop(ref_mpi, "write new subset");
 
@@ -581,7 +582,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
     if (ref_mpi_once(ref_mpi)) printf("write/gather new subset %s\n", argv[5]);
-    RSS(ref_gather_scalar(new_grid, ldim, new_subset, argv[5]),
+    RSS(ref_gather_scalar_by_extension(new_grid, ldim, new_subset, NULL,
+                                       argv[5]),
         "write/gather new subset");
     ref_mpi_stopwatch_stop(ref_mpi, "write new subset");
 
@@ -642,7 +644,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
     if (ref_mpi_once(ref_mpi)) printf("write/gather new field %s\n", argv[5]);
-    RSS(ref_gather_scalar(new_grid, ldim, new_field, argv[5]),
+    RSS(ref_gather_scalar_by_extension(new_grid, ldim, new_field, NULL,
+                                       argv[5]),
         "write/gather new field");
     ref_mpi_stopwatch_stop(ref_mpi, "write new field");
 
@@ -692,7 +695,8 @@ int main(int argc, char *argv[]) {
 
     sprintf(filename, "%s-displaced.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("writing xyz to %s\n", filename);
-    RSS(ref_gather_scalar(ref_grid, 3, xyz, filename), "export mach");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 3, xyz, NULL, filename),
+        "export mach");
     ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
     ref_free(xyz);
@@ -707,7 +711,9 @@ int main(int argc, char *argv[]) {
 
     sprintf(filename, "%s-soln.solb", project);
     if (ref_mpi_once(ref_mpi)) printf("writing field to %s\n", filename);
-    RSS(ref_gather_scalar(ref_grid, ldim - 3, field, filename), "export mach");
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim - 3, field, NULL,
+                                       filename),
+        "export mach");
     ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
     ref_free(field);
@@ -762,7 +768,8 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "mach");
 
     if (ref_mpi_once(ref_mpi)) printf("writing mach to %s\n", argv[4]);
-    RSS(ref_gather_scalar(ref_grid, 1, mach, argv[4]), "export mach");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, mach, NULL, argv[4]),
+        "export mach");
     ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
     ref_free(mach);
@@ -804,7 +811,8 @@ int main(int argc, char *argv[]) {
       cust[node] = sqrt((u * u + v * v + w * w) / temp) - 0.2 * rho;
     }
 
-    RSS(ref_gather_scalar(ref_grid, 1, cust, argv[4]), "export cust");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, cust, NULL, argv[4]),
+        "export cust");
 
     ref_free(cust);
     ref_free(field);
@@ -840,7 +848,8 @@ int main(int argc, char *argv[]) {
       entropy[node] = log(p * gamma / pow(rho, gamma));
     }
 
-    RSS(ref_gather_scalar(ref_grid, 1, entropy, argv[4]), "export entropy");
+    RSS(ref_gather_scalar_by_extension(ref_grid, 1, entropy, NULL, argv[4]),
+        "export entropy");
 
     ref_free(entropy);
     ref_free(field);
@@ -908,7 +917,8 @@ int main(int argc, char *argv[]) {
       output[4 + 15 + odim * node] = w * (e + p);
     }
 
-    RSS(ref_gather_scalar(ref_grid, odim, output, argv[4]), "export output");
+    RSS(ref_gather_scalar_by_extension(ref_grid, odim, output, NULL, argv[4]),
+        "export output");
 
     ref_free(output);
     ref_free(field);

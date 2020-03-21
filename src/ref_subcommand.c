@@ -627,7 +627,8 @@ static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi))
     printf("writing %s to %s\n", scalar_name, out_solb);
-  RSS(ref_gather_scalar(ref_grid, 1, scalar, out_solb), "export mach");
+  RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL, out_solb),
+      "export mach");
   ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
 
   ref_free(scalar);
@@ -739,14 +740,16 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
         "extrude solution");
     if (ref_mpi_once(ref_mpi))
       printf("writing interpolated extruded solution %s\n", receipt_solb);
-    RSS(ref_gather_scalar(extruded_grid, ldim, extruded_solution, receipt_solb),
+    RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_solution,
+                                       NULL, receipt_solb),
         "gather recept");
     ref_free(extruded_solution);
     RSS(ref_grid_free(extruded_grid), "free");
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("writing receptor solution %s\n", receipt_solb);
-    RSS(ref_gather_scalar(receipt_grid, ldim, receipt_solution, receipt_solb),
+    RSS(ref_gather_scalar_by_extension(receipt_grid, ldim, receipt_solution,
+                                       NULL, receipt_solb),
         "gather recept");
     ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
   }
@@ -1065,7 +1068,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
                                extruded_field),
         "extrude field");
-    RSS(ref_gather_scalar(extruded_grid, ldim, extruded_field, filename),
+    RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
+                                       NULL, filename),
         "gather recept");
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
@@ -1084,7 +1088,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("writing interpolated field %s\n", filename);
-    RSS(ref_gather_scalar(ref_grid, ldim, ref_field, filename),
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
+                                       filename),
         "gather recept");
     RXS(ref_args_find(argc, argv, "-u", &pos), REF_NOT_FOUND, "arg search");
     if (REF_EMPTY != pos) {
