@@ -533,6 +533,21 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT *counts;
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+
+  RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
+                        REF_INT_TYPE),
+      "gather size");
+
+  ref_free(counts);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node) {
   RSS(ref_node_shift_new_globals(ref_node), "shift");
   RSS(ref_node_eliminate_unused_globals(ref_node), "shift");
