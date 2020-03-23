@@ -727,16 +727,18 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_shift_list(REF_INT nglobal, REF_GLOB *globals,
-                               REF_INT nshift, REF_GLOB *shifts) {
+REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
+                                          REF_GLOB *sorted_globals,
+                                          REF_INT nunused,
+                                          REF_GLOB *sorted_unused) {
   REF_INT offset;
   REF_INT i;
   offset = 0;
   for (i = 0; i < nglobal; i++) {
-    while ((offset < nshift) && (shifts[offset] < globals[i])) {
+    while ((offset < nunused) && (sorted_unused[offset] < sorted_globals[i])) {
       offset++;
     }
-    globals[i] -= (REF_GLOB)offset;
+    sorted_globals[i] -= (REF_GLOB)offset;
   }
 
   return REF_SUCCESS;
