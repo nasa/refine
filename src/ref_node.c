@@ -551,6 +551,19 @@ REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
+                                           REF_INT chunk, REF_INT active0,
+                                           REF_INT *active1, REF_INT *nactive) {
+  (*nactive) = counts[active0];
+  (*active1) = active0 + 1;
+  while ((*active1) < n && ((*nactive) + counts[(*active1)]) < chunk) {
+    (*nactive) += counts[(*active1)];
+    (*active1)++;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *counts, *active_counts;
@@ -581,13 +594,9 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
   active0 = 0;
   while (active0 < ref_mpi_n(ref_mpi)) {
     /* processor [active0, active1) slice of at least one and less than chunk */
-    nactive = counts[active0];
-    active1 = active0 + 1;
-    while (active1 < ref_mpi_n(ref_mpi) &&
-           (nactive + counts[active1]) < chunk) {
-      nactive += counts[active1];
-      active1++;
-    }
+    RSS(ref_node_eliminate_active_parts(ref_mpi_n(ref_mpi), counts, chunk,
+                                        active0, &active1, &nactive),
+        "active part range");
     /* active unused count and share active unused list, sorted */
     each_ref_mpi_part(ref_mpi, part) active_counts[part] = 0;
     for (part = active0; part < active1; part++) {
