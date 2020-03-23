@@ -534,10 +534,10 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
-                                          REF_GLOB *sorted_globals,
-                                          REF_INT nunused,
-                                          REF_GLOB *sorted_unused) {
+REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
+                                            REF_GLOB *sorted_globals,
+                                            REF_INT nunused,
+                                            REF_GLOB *sorted_unused) {
   REF_INT offset;
   REF_INT i;
   offset = 0;
@@ -624,15 +624,15 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
       ref_node_n_unused(ref_node) = 0;
 
     /* shift ref_node sorted_globals */
-    RSS(ref_node_offset_unused_globals(ref_node_n(ref_node),
-                                       ref_node->sorted_global, total_active,
-                                       unused),
+    RSS(ref_node_eliminate_unused_offset(ref_node_n(ref_node),
+                                         ref_node->sorted_global, total_active,
+                                         unused),
         "offset sorted globals");
 
     /* shift unprocessed unused */
-    RSS(ref_node_offset_unused_globals(ref_node_n_unused(ref_node),
-                                       ref_node->unused_global, total_active,
-                                       unused),
+    RSS(ref_node_eliminate_unused_offset(ref_node_n_unused(ref_node),
+                                         ref_node->unused_global, total_active,
+                                         unused),
         "offset sorted unused");
     ref_free(unused);
 
