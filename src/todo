@@ -102,8 +102,6 @@ integrate complexity more accurately (Josh)
 
 ref_geom_eval_edge_face_uv at edge end points? test each tri for jump?
 
-ref_node_shift_new_globals ref_node_eliminate_unused_globals parallel tests
-
 get rid of aux and interp instead
 
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
@@ -219,6 +217,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ ref_node_eliminate_unused_globals refactor with unit tests
 + ref_gather_scalar_by_extension learned .bin
 + each_ref_grid_ref_cell for boundary and higher order
 + gathered ref_geom_radian_request ref_geom_reliability
