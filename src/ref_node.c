@@ -536,15 +536,92 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
 
 REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT *counts;
-  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  REF_INT *counts, *active_counts;
+  REF_GLOB *unused;
+  REF_GLOB total_unused;
+  REF_INT total_active;
+  REF_INT part, chunk;
+  REF_INT active0, active1, nactive;
+  REF_INT sort, offset, local;
 
+  /* sort so that decrement of future processed unused wroks */
+  RSS(ref_node_sort_unused(ref_node), "sort unused global");
+
+  /* share unused count */
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  ref_malloc(active_counts, ref_mpi_n(ref_mpi), REF_INT);
   RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
                         REF_INT_TYPE),
       "gather size");
+  total_unused = 0;
+  each_ref_mpi_part(ref_mpi, part) total_unused += counts[part];
 
+  /* hurtistic of max to process at a time */
+  chunk = (REF_INT)(total_unused / ref_mpi_n(ref_mpi) + 1);
+  chunk = MAX(chunk, 100000);
+
+  /* while have unused to process */
+  active0 = 0;
+  while (active0 < ref_mpi_n(ref_mpi)) {
+    /* processor [active0, active1) slice of at least one and less than chunk */
+    nactive = counts[active0];
+    active1 = active0 + 1;
+    while (active1 < ref_mpi_n(ref_mpi) &&
+           (nactive + counts[active1]) < chunk) {
+      nactive += counts[active1];
+      active1++;
+    }
+    /* active unused count and share active unused list, sorted */
+    each_ref_mpi_part(ref_mpi, part) active_counts[part] = 0;
+    for (part = active0; part < active1; part++) {
+      active_counts[part] = counts[part];
+    }
+    total_active = 0;
+    for (part = active0; part < active1; part++)
+      total_active += active_counts[part];
+    ref_malloc(unused, total_unused, REF_GLOB);
+    RSS(ref_mpi_allgatherv(ref_mpi, unused, active_counts,
+                           ref_node->unused_global, REF_GLOB_TYPE),
+        "gather active unused");
+    RSS(ref_sort_in_place_glob(total_active, unused), "in place sort");
+
+    /* erase unused gathered in active unused list */
+    if (active0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) < active1)
+      ref_node_n_unused(ref_node) = 0;
+
+    /* shift ref_node globals */
+    offset = 0;
+    for (sort = 0; sort < ref_node_n(ref_node); sort++) {
+      while ((offset < total_active) &&
+             (unused[offset] < ref_node->sorted_global[sort])) {
+        offset++;
+      }
+      local = ref_node->sorted_local[sort];
+      ref_node->global[local] -= offset; /* move to separate loop for cache? */
+      ref_node->sorted_global[sort] -= offset;
+    }
+
+    /* shift unprocessed unused */
+    offset = 0;
+    for (sort = 0; sort < ref_node_n_unused(ref_node); sort++) {
+      while ((offset < total_active) &&
+             (unused[offset] < ref_node->unused_global[sort])) {
+        offset++;
+      }
+      /* verify that don't see a unused twice */
+      RUS(unused[offset], ref_node->unused_global[sort], "unused found twice");
+      ref_node->unused_global[sort] -= offset;
+    }
+    ref_free(unused);
+  }
+
+  /* set compact global count */
+  RSS(ref_node_initialize_n_global(ref_node,
+                                   ref_node->old_n_global - total_unused),
+      "re-init");
+
+  ref_free(active_counts);
   ref_free(counts);
-
   return REF_SUCCESS;
 }
 
