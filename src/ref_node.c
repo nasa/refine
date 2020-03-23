@@ -604,13 +604,19 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
     for (part = active0; part < active1; part++) {
       active_counts[part] = counts[part];
     }
+
+    /* count active unused (between active0 and active1-1) */
     total_active = 0;
-    for (part = active0; part < active1; part++)
+    for (part = active0; part < active1; part++) {
       total_active += active_counts[part];
+    }
+
+    /* gather active unused, and sort */
     ref_malloc(unused, total_active, REF_GLOB);
     RSS(ref_mpi_allgatherv(ref_mpi, ref_node->unused_global, active_counts,
                            unused, REF_GLOB_TYPE),
         "gather active unused");
+    /* (each part already sorted, merge sort faster? */
     RSS(ref_sort_in_place_glob(total_active, unused), "in place sort");
 
     /* erase unused gathered in active unused list */
