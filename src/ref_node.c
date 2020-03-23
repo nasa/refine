@@ -783,7 +783,7 @@ REF_STATUS ref_node_eliminate_unused_globals_orig(REF_NODE ref_node) {
           ref_node->old_n_global - (REF_GLOB)ref_node_n_unused(ref_node)),
       "re-init");
 
-  RSS(ref_node_erase_unused(ref_node), "erase unused list");
+  ref_node_n_unused(ref_node) = 0;
 
   return REF_SUCCESS;
 }
@@ -2921,11 +2921,6 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
     }
   }
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_erase_unused(REF_NODE ref_node) {
-  ref_node_n_unused(ref_node) = 0;
   return REF_SUCCESS;
 }
 
