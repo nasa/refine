@@ -628,8 +628,9 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
                                        ref_node->unused_global, total_active,
                                        unused),
         "offset sorted unused");
-
     ref_free(unused);
+
+    active0 = active1;
   }
 
   /* update node global with shifted sorted_global */
