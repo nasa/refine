@@ -119,6 +119,10 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global);
 REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node);
 REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node);
 
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
+                                 REF_GLOB shift);
 REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node);
 /* public for testing */
 REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
@@ -233,11 +237,6 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
 REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
-
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
-                                 REF_GLOB shift);
 
 END_C_DECLORATION
 

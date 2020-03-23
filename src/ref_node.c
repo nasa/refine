@@ -534,6 +534,45 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global) {
+  if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
+    ref_node_max_unused(ref_node) += 1000;
+    ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
+                REF_GLOB);
+  }
+
+  ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
+
+  ref_node_n_unused(ref_node)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global) {
+  if (0 == ref_node_n_unused(ref_node)) {
+    *new_global = REF_EMPTY;
+    return REF_FAILURE;
+  }
+
+  ref_node_n_unused(ref_node)--;
+  *new_global = ref_node->unused_global[ref_node_n_unused(ref_node)];
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
+                                 REF_GLOB shift) {
+  REF_INT i;
+
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    if (ref_node->unused_global[i] >= equal_and_above) {
+      ref_node->unused_global[i] += shift;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
                                             REF_GLOB *sorted_globals,
                                             REF_INT nunused,
@@ -2853,44 +2892,5 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
     }
   }
   *distance = sqrt(*distance);
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global) {
-  if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
-    ref_node_max_unused(ref_node) += 1000;
-    ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
-                REF_GLOB);
-  }
-
-  ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
-
-  ref_node_n_unused(ref_node)++;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global) {
-  if (0 == ref_node_n_unused(ref_node)) {
-    *new_global = REF_EMPTY;
-    return REF_FAILURE;
-  }
-
-  ref_node_n_unused(ref_node)--;
-  *new_global = ref_node->unused_global[ref_node_n_unused(ref_node)];
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
-                                 REF_GLOB shift) {
-  REF_INT i;
-
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    if (ref_node->unused_global[i] >= equal_and_above) {
-      ref_node->unused_global[i] += shift;
-    }
-  }
-
   return REF_SUCCESS;
 }
