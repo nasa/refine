@@ -565,7 +565,7 @@ REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
+REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *counts, *active_counts;
   REF_GLOB *unused;
@@ -757,7 +757,7 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
+REF_STATUS ref_node_eliminate_unused_globals_orig(REF_NODE ref_node) {
   REF_INT sort, offset, local;
 
   RSS(ref_node_allgather_unused(ref_node), "gather unused global");
