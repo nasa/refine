@@ -534,6 +534,23 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
+                                          REF_GLOB *sorted_globals,
+                                          REF_INT nunused,
+                                          REF_GLOB *sorted_unused) {
+  REF_INT offset;
+  REF_INT i;
+  offset = 0;
+  for (i = 0; i < nglobal; i++) {
+    while ((offset < nunused) && (sorted_unused[offset] < sorted_globals[i])) {
+      offset++;
+    }
+    sorted_globals[i] -= (REF_GLOB)offset;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT *counts, *active_counts;
@@ -542,7 +559,7 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
   REF_INT total_active;
   REF_INT part, chunk;
   REF_INT active0, active1, nactive;
-  REF_INT sort, offset, local;
+  REF_INT i, local;
 
   /* sort so that decrement of future processed unused wroks */
   RSS(ref_node_sort_unused(ref_node), "sort unused global");
@@ -589,30 +606,25 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
     if (active0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) < active1)
       ref_node_n_unused(ref_node) = 0;
 
-    /* shift ref_node globals */
-    offset = 0;
-    for (sort = 0; sort < ref_node_n(ref_node); sort++) {
-      while ((offset < total_active) &&
-             (unused[offset] < ref_node->sorted_global[sort])) {
-        offset++;
-      }
-      local = ref_node->sorted_local[sort];
-      ref_node->global[local] -= offset; /* move to separate loop for cache? */
-      ref_node->sorted_global[sort] -= offset;
-    }
+    /* shift ref_node sorted_globals */
+    RSS(ref_node_offset_unused_globals(ref_node_n(ref_node),
+                                       ref_node->sorted_global, total_active,
+                                       unused),
+        "offset sorted globals");
 
     /* shift unprocessed unused */
-    offset = 0;
-    for (sort = 0; sort < ref_node_n_unused(ref_node); sort++) {
-      while ((offset < total_active) &&
-             (unused[offset] < ref_node->unused_global[sort])) {
-        offset++;
-      }
-      /* verify that don't see a unused twice */
-      RUS(unused[offset], ref_node->unused_global[sort], "unused found twice");
-      ref_node->unused_global[sort] -= offset;
-    }
+    RSS(ref_node_offset_unused_globals(ref_node_n_unused(ref_node),
+                                       ref_node->unused_global, total_active,
+                                       unused),
+        "offset sorted unused");
+
     ref_free(unused);
+  }
+
+  /* update node global with shifted sorted_global */
+  for (i = 0; i < ref_node_n(ref_node); i++) {
+    local = ref_node->sorted_local[i];
+    ref_node->global[local] = ref_node->sorted_global[i];
   }
 
   /* set compact global count */
@@ -723,23 +735,6 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   ref_free(global);
 
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild globals");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
-                                          REF_GLOB *sorted_globals,
-                                          REF_INT nunused,
-                                          REF_GLOB *sorted_unused) {
-  REF_INT offset;
-  REF_INT i;
-  offset = 0;
-  for (i = 0; i < nglobal; i++) {
-    while ((offset < nunused) && (sorted_unused[offset] < sorted_globals[i])) {
-      offset++;
-    }
-    sorted_globals[i] -= (REF_GLOB)offset;
-  }
 
   return REF_SUCCESS;
 }
