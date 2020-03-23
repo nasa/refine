@@ -2269,6 +2269,52 @@ int main(int argc, char *argv[]) {
     REIS(28, sorted_globals[2], "not changed");
   }
 
+  { /* unused offset */
+    REF_INT n = 5;
+    REF_INT counts[5] = {10, 10, 0, 20, 20};
+    REF_INT chunk, active0, active1, nactive;
+
+    chunk = 5;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(1, active1, "end range");
+    REIS(10, nactive, "total");
+
+    chunk = 20;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(3, active1, "end range");
+    REIS(20, nactive, "total");
+
+    chunk = 30;
+    active0 = 1;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(4, active1, "end range");
+    REIS(30, nactive, "total");
+
+    chunk = 45;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(4, active1, "end range");
+    REIS(40, nactive, "total");
+
+    chunk = 1000;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(5, active1, "end range");
+    REIS(60, nactive, "total");
+  }
+
   { /* allgather */
     REF_NODE ref_node;
     RSS(ref_node_create(&ref_node, ref_mpi), "create");

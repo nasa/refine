@@ -121,6 +121,9 @@ REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node);
 
 REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node);
 /* public for testing */
+REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
+                                           REF_INT chunk, REF_INT active0,
+                                           REF_INT *active1, REF_INT *nactive);
 REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
                                             REF_GLOB *sorted_globals,
                                             REF_INT nunused,

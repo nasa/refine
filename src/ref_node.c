@@ -557,7 +557,7 @@ REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
                                            REF_INT *active1, REF_INT *nactive) {
   (*nactive) = counts[active0];
   (*active1) = active0 + 1;
-  while ((*active1) < n && ((*nactive) + counts[(*active1)]) < chunk) {
+  while ((*active1) < n && ((*nactive) + counts[(*active1)]) <= chunk) {
     (*nactive) += counts[(*active1)];
     (*active1)++;
   }
