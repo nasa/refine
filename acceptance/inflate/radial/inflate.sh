@@ -18,6 +18,7 @@ ${two}/ref_inflatable  \
     0.005 \
     0.10 \
     1.68 \
-    4 5 6
+    4 5 6 \
+    --shift 2 0 5
 
 exit
