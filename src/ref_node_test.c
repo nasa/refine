@@ -2255,6 +2255,20 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* unused offset */
+    REF_INT nglobal = 3;
+    REF_GLOB sorted_globals[3] = {10, 20, 30};
+    REF_INT nunused = 2;
+    REF_GLOB sorted_unused[2] = {15, 25};
+    RSS(ref_node_eliminate_unused_offset(nglobal, sorted_globals, nunused,
+                                         sorted_unused),
+        "offset");
+
+    REIS(10, sorted_globals[0], "not changed");
+    REIS(19, sorted_globals[1], "not changed");
+    REIS(28, sorted_globals[2], "not changed");
+  }
+
   { /* allgather */
     REF_NODE ref_node;
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
