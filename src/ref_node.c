@@ -607,9 +607,9 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
     total_active = 0;
     for (part = active0; part < active1; part++)
       total_active += active_counts[part];
-    ref_malloc(unused, total_unused, REF_GLOB);
-    RSS(ref_mpi_allgatherv(ref_mpi, unused, active_counts,
-                           ref_node->unused_global, REF_GLOB_TYPE),
+    ref_malloc(unused, total_active, REF_GLOB);
+    RSS(ref_mpi_allgatherv(ref_mpi, ref_node->unused_global, active_counts,
+                           unused, REF_GLOB_TYPE),
         "gather active unused");
     RSS(ref_sort_in_place_glob(total_active, unused), "in place sort");
 
