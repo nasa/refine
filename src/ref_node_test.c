@@ -702,6 +702,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_metric_form(ref_node, node1, 0, 0, 0, 0, 0, 0), "node1 met");
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(0.0, ratio, -1.0, "ratio expected");
+
+    RSS(ref_node_free(ref_node), "free");
   }
 
   { /* distance in metric */
