@@ -533,6 +533,169 @@ REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global) {
+  if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
+    ref_node_max_unused(ref_node) += 1000;
+    ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
+                REF_GLOB);
+  }
+
+  ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
+
+  ref_node_n_unused(ref_node)++;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global) {
+  if (0 == ref_node_n_unused(ref_node)) {
+    *new_global = REF_EMPTY;
+    return REF_FAILURE;
+  }
+
+  ref_node_n_unused(ref_node)--;
+  *new_global = ref_node->unused_global[ref_node_n_unused(ref_node)];
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
+                                 REF_GLOB shift) {
+  REF_INT i;
+
+  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
+    if (ref_node->unused_global[i] >= equal_and_above) {
+      ref_node->unused_global[i] += shift;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
+                                            REF_GLOB *sorted_globals,
+                                            REF_INT nunused,
+                                            REF_GLOB *sorted_unused) {
+  REF_INT offset;
+  REF_INT i;
+  offset = 0;
+  for (i = 0; i < nglobal; i++) {
+    while ((offset < nunused) && (sorted_unused[offset] < sorted_globals[i])) {
+      offset++;
+    }
+    /* assert there are no unused in global list */
+    sorted_globals[i] -= (REF_GLOB)offset;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
+                                           REF_INT chunk, REF_INT active0,
+                                           REF_INT *active1, REF_INT *nactive) {
+  (*nactive) = counts[active0];
+  (*active1) = active0 + 1;
+  while ((*active1) < n && ((*nactive) + counts[(*active1)]) <= chunk) {
+    (*nactive) += counts[(*active1)];
+    (*active1)++;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT *counts, *active_counts;
+  REF_GLOB *unused;
+  REF_GLOB total_unused;
+  REF_INT total_active;
+  REF_INT part, chunk;
+  REF_INT active0, active1, nactive;
+  REF_INT i, local;
+
+  /* sort so that decrement of future processed unused wroks */
+  RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
+                             ref_node->unused_global),
+      "in place");
+
+  /* share unused count */
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  ref_malloc(active_counts, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
+                        REF_INT_TYPE),
+      "gather size");
+  total_unused = 0;
+  each_ref_mpi_part(ref_mpi, part) total_unused += counts[part];
+
+  /* hurtistic of max to process at a time */
+  chunk = (REF_INT)(total_unused / ref_mpi_n(ref_mpi) + 1);
+  chunk = MAX(chunk, 100000);
+
+  /* while have unused to process */
+  active0 = 0;
+  while (active0 < ref_mpi_n(ref_mpi)) {
+    /* processor [active0, active1) slice of at least one and less than chunk */
+    RSS(ref_node_eliminate_active_parts(ref_mpi_n(ref_mpi), counts, chunk,
+                                        active0, &active1, &nactive),
+        "active part range");
+
+    /* active unused count and share active unused list, sorted */
+    each_ref_mpi_part(ref_mpi, part) active_counts[part] = 0;
+    for (part = active0; part < active1; part++) {
+      active_counts[part] = counts[part];
+    }
+
+    /* count active unused (between active0 and active1-1) */
+    total_active = 0;
+    for (part = active0; part < active1; part++) {
+      total_active += active_counts[part];
+    }
+
+    /* gather active unused, and sort */
+    ref_malloc(unused, total_active, REF_GLOB);
+    RSS(ref_mpi_allgatherv(ref_mpi, ref_node->unused_global, active_counts,
+                           unused, REF_GLOB_TYPE),
+        "gather active unused");
+    /* (each part already sorted, merge sort faster? */
+    RSS(ref_sort_in_place_glob(total_active, unused), "in place sort");
+
+    /* erase unused gathered in active unused list */
+    if (active0 <= ref_mpi_rank(ref_mpi) && ref_mpi_rank(ref_mpi) < active1)
+      ref_node_n_unused(ref_node) = 0;
+
+    /* shift ref_node sorted_globals */
+    RSS(ref_node_eliminate_unused_offset(ref_node_n(ref_node),
+                                         ref_node->sorted_global, total_active,
+                                         unused),
+        "offset sorted globals");
+
+    /* shift unprocessed unused */
+    RSS(ref_node_eliminate_unused_offset(ref_node_n_unused(ref_node),
+                                         ref_node->unused_global, total_active,
+                                         unused),
+        "offset sorted unused");
+    ref_free(unused);
+
+    active0 = active1;
+  }
+
+  /* update node global with shifted sorted_global */
+  for (i = 0; i < ref_node_n(ref_node); i++) {
+    local = ref_node->sorted_local[i];
+    ref_node->global[local] = ref_node->sorted_global[i];
+  }
+
+  /* set compact global count */
+  RSS(ref_node_initialize_n_global(ref_node,
+                                   ref_node->old_n_global - total_unused),
+      "re-init");
+
+  ref_free(active_counts);
+  ref_free(counts);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node) {
   RSS(ref_node_shift_new_globals(ref_node), "shift");
   RSS(ref_node_eliminate_unused_globals(ref_node), "shift");
@@ -631,33 +794,6 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   ref_free(global);
 
   RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild globals");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
-  REF_INT sort, offset, local;
-
-  RSS(ref_node_allgather_unused(ref_node), "gather unused global");
-  RSS(ref_node_sort_unused(ref_node), "sort unused global");
-
-  offset = 0;
-  for (sort = 0; sort < ref_node_n(ref_node); sort++) {
-    while ((offset < ref_node_n_unused(ref_node)) &&
-           (ref_node->unused_global[offset] < ref_node->sorted_global[sort])) {
-      offset++;
-    }
-    local = ref_node->sorted_local[sort];
-    ref_node->global[local] -= offset; /* move to separate loop for cashe? */
-    ref_node->sorted_global[sort] -= offset;
-  }
-
-  RSS(ref_node_initialize_n_global(
-          ref_node,
-          ref_node->old_n_global - (REF_GLOB)ref_node_n_unused(ref_node)),
-      "re-init");
-
-  RSS(ref_node_erase_unused(ref_node), "erase unused list");
 
   return REF_SUCCESS;
 }
@@ -2756,119 +2892,5 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
     }
   }
   *distance = sqrt(*distance);
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global) {
-  if (ref_node_max_unused(ref_node) == ref_node_n_unused(ref_node)) {
-    ref_node_max_unused(ref_node) += 1000;
-    ref_realloc(ref_node->unused_global, ref_node_max_unused(ref_node),
-                REF_GLOB);
-  }
-
-  ref_node->unused_global[ref_node_n_unused(ref_node)] = unused_global;
-
-  ref_node_n_unused(ref_node)++;
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global) {
-  if (0 == ref_node_n_unused(ref_node)) {
-    *new_global = REF_EMPTY;
-    return REF_FAILURE;
-  }
-
-  ref_node_n_unused(ref_node)--;
-  *new_global = ref_node->unused_global[ref_node_n_unused(ref_node)];
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
-                                 REF_GLOB shift) {
-  REF_INT i;
-
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    if (ref_node->unused_global[i] >= equal_and_above) {
-      ref_node->unused_global[i] += shift;
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_sort_unused(REF_NODE ref_node) {
-  REF_INT *order;
-  REF_GLOB *new_order;
-  REF_INT i;
-
-  /* see if it is too short to require sorting */
-  if (2 > ref_node_n_unused(ref_node)) return REF_SUCCESS;
-
-  ref_malloc(order, ref_node_n_unused(ref_node), REF_INT);
-  ref_malloc(new_order, ref_node_n_unused(ref_node), REF_GLOB);
-
-  RSS(ref_sort_heap_glob(ref_node_n_unused(ref_node), ref_node->unused_global,
-                         order),
-      "heap");
-
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    new_order[i] = ref_node->unused_global[order[i]];
-  }
-
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    ref_node->unused_global[i] = new_order[i];
-  }
-
-  ref_free(new_order);
-  ref_free(order);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_erase_unused(REF_NODE ref_node) {
-  ref_node_n_unused(ref_node) = 0;
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT i;
-  REF_GLOB *local_copy;
-  REF_INT proc;
-  REF_INT *counts;
-  REF_INT total_count;
-
-  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
-
-  RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
-                        REF_INT_TYPE),
-      "gather size");
-
-  total_count = 0;
-  each_ref_mpi_part(ref_mpi, proc) total_count += counts[proc];
-
-  ref_malloc(local_copy, ref_node_n_unused(ref_node), REF_GLOB);
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    local_copy[i] = ref_node->unused_global[i];
-  }
-
-  if (total_count > ref_node_max_unused(ref_node)) {
-    ref_node_max_unused(ref_node) = total_count;
-    ref_free(ref_node->unused_global);
-    ref_malloc(ref_node->unused_global, ref_node_max_unused(ref_node),
-               REF_GLOB);
-  }
-
-  RSS(ref_mpi_allgatherv(ref_mpi, local_copy, counts, ref_node->unused_global,
-                         REF_GLOB_TYPE),
-      "gather values");
-
-  ref_node_n_unused(ref_node) = total_count;
-
-  ref_free(local_copy);
-  ref_free(counts);
-
   return REF_SUCCESS;
 }

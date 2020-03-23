@@ -702,6 +702,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_metric_form(ref_node, node1, 0, 0, 0, 0, 0, 0), "node1 met");
     RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
     RWDS(0.0, ratio, -1.0, "ratio expected");
+
+    RSS(ref_node_free(ref_node), "free");
   }
 
   { /* distance in metric */
@@ -2253,43 +2255,64 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* sort */
-    REF_NODE ref_node;
-    REF_GLOB last;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-    RSS(ref_node_push_unused(ref_node, 20), "store");
-    RSS(ref_node_push_unused(ref_node, 10), "store");
-    RSS(ref_node_sort_unused(ref_node), "sort");
+  { /* unused offset */
+    REF_INT nglobal = 3;
+    REF_GLOB sorted_globals[3] = {10, 20, 30};
+    REF_INT nunused = 2;
+    REF_GLOB sorted_unused[2] = {15, 25};
+    RSS(ref_node_eliminate_unused_offset(nglobal, sorted_globals, nunused,
+                                         sorted_unused),
+        "offset");
 
-    RSS(ref_node_pop_unused(ref_node, &last), "rm");
-    REIS(20, last, "has none");
-    RSS(ref_node_pop_unused(ref_node, &last), "rm");
-    REIS(10, last, "has none");
-
-    RSS(ref_node_free(ref_node), "free");
+    REIS(10, sorted_globals[0], "not changed");
+    REIS(19, sorted_globals[1], "not changed");
+    REIS(28, sorted_globals[2], "not changed");
   }
 
-  { /* erase */
-    REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-    RSS(ref_node_push_unused(ref_node, 20), "store");
-    RSS(ref_node_push_unused(ref_node, 10), "store");
-    RSS(ref_node_erase_unused(ref_node), "sort");
+  { /* unused offset */
+    REF_INT n = 5;
+    REF_INT counts[5] = {10, 10, 0, 20, 20};
+    REF_INT chunk, active0, active1, nactive;
 
-    REIS(0, ref_node_n_unused(ref_node), "has one");
+    chunk = 5;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(1, active1, "end range");
+    REIS(10, nactive, "total");
 
-    RSS(ref_node_free(ref_node), "free");
-  }
+    chunk = 20;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(3, active1, "end range");
+    REIS(20, nactive, "total");
 
-  { /* allgather */
-    REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
-    RSS(ref_node_push_unused(ref_node, ref_mpi_rank(ref_mpi)), "store");
-    RSS(ref_node_allgather_unused(ref_node), "sort");
+    chunk = 30;
+    active0 = 1;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(4, active1, "end range");
+    REIS(30, nactive, "total");
 
-    REIS(ref_mpi_n(ref_mpi), ref_node_n_unused(ref_node), "has one");
+    chunk = 45;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(4, active1, "end range");
+    REIS(40, nactive, "total");
 
-    RSS(ref_node_free(ref_node), "free");
+    chunk = 1000;
+    active0 = 0;
+    RSS(ref_node_eliminate_active_parts(n, counts, chunk, active0, &active1,
+                                        &nactive),
+        "active range");
+    REIS(5, active1, "end range");
+    REIS(60, nactive, "total");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

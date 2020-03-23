@@ -113,15 +113,25 @@ REF_STATUS ref_node_inspect(REF_NODE ref_node);
 REF_STATUS ref_node_location(REF_NODE ref_node, REF_INT node);
 REF_STATUS ref_node_tattle_global(REF_NODE ref_node, REF_INT global);
 
-REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
-
 REF_STATUS ref_node_initialize_n_global(REF_NODE ref_node, REF_GLOB n_global);
 REF_STATUS ref_node_next_global(REF_NODE ref_node, REF_GLOB *global);
 
 REF_STATUS ref_node_synchronize_globals(REF_NODE ref_node);
 REF_STATUS ref_node_shift_new_globals(REF_NODE ref_node);
+
+REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
+REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
+REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
+                                 REF_GLOB shift);
 REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node);
-REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node);
+/* public for testing */
+REF_STATUS ref_node_eliminate_active_parts(REF_INT n, REF_INT *counts,
+                                           REF_INT chunk, REF_INT active0,
+                                           REF_INT *active1, REF_INT *nactive);
+REF_STATUS ref_node_eliminate_unused_offset(REF_INT nglobal,
+                                            REF_GLOB *sorted_globals,
+                                            REF_INT nunused,
+                                            REF_GLOB *sorted_unused);
 
 REF_STATUS ref_node_add(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
 REF_STATUS ref_node_add_many(REF_NODE ref_node, REF_INT n, REF_GLOB *global);
@@ -133,6 +143,10 @@ REF_STATUS ref_node_remove_without_global_invalidates_sorted(REF_NODE ref_node,
                                                              REF_INT node);
 REF_STATUS ref_node_rebuild_sorted_global(REF_NODE ref_node);
 REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node);
+
+REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node);
+
+REF_STATUS ref_node_local(REF_NODE ref_node, REF_GLOB global, REF_INT *node);
 
 REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n, REF_INT **n2o);
 
@@ -223,14 +237,6 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 
 REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
-
-REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
-REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
-REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
-                                 REF_GLOB shift);
-REF_STATUS ref_node_sort_unused(REF_NODE ref_node);
-REF_STATUS ref_node_erase_unused(REF_NODE ref_node);
-REF_STATUS ref_node_allgather_unused(REF_NODE ref_node);
 
 END_C_DECLORATION
 

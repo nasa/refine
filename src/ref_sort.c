@@ -21,6 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_malloc.h"
+
 REF_STATUS ref_sort_insertion_int(REF_INT n, REF_INT *original,
                                   REF_INT *sorted) {
   REF_INT i, j, smallest, temp;
@@ -183,6 +185,27 @@ REF_STATUS ref_sort_heap_dbl(REF_INT n, REF_DBL *original,
     sorted_index[i] = indxt;
   }
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_sort_in_place_glob(REF_INT n, REF_GLOB *sorts) {
+  REF_INT i;
+  REF_INT *order;
+  REF_GLOB *sorted;
+
+  /* see if it is too short to require sorting */
+  if (2 > n) return REF_SUCCESS;
+  ref_malloc(order, n, REF_INT);
+  ref_malloc(sorted, n, REF_GLOB);
+  RSS(ref_sort_heap_glob(n, sorts, order), "heap");
+  for (i = 0; i < n; i++) {
+    sorted[i] = sorts[order[i]];
+  }
+  for (i = 0; i < n; i++) {
+    sorts[i] = sorted[i];
+  }
+  ref_free(sorted);
+  ref_free(order);
   return REF_SUCCESS;
 }
 
