@@ -545,6 +545,7 @@ REF_STATUS ref_node_offset_unused_globals(REF_INT nglobal,
     while ((offset < nunused) && (sorted_unused[offset] < sorted_globals[i])) {
       offset++;
     }
+    /* assert there are no unused in global list */
     sorted_globals[i] -= (REF_GLOB)offset;
   }
 
@@ -597,6 +598,7 @@ REF_STATUS ref_node_eliminate_unused_globals2(REF_NODE ref_node) {
     RSS(ref_node_eliminate_active_parts(ref_mpi_n(ref_mpi), counts, chunk,
                                         active0, &active1, &nactive),
         "active part range");
+
     /* active unused count and share active unused list, sorted */
     each_ref_mpi_part(ref_mpi, part) active_counts[part] = 0;
     for (part = active0; part < active1; part++) {
