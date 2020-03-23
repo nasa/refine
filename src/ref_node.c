@@ -759,35 +759,6 @@ REF_STATUS ref_node_implicit_global_from_local(REF_NODE ref_node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_eliminate_unused_globals_orig(REF_NODE ref_node) {
-  REF_INT sort, offset, local;
-
-  RSS(ref_node_allgather_unused(ref_node), "gather unused global");
-  RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
-                             ref_node->unused_global),
-      "in place");
-
-  offset = 0;
-  for (sort = 0; sort < ref_node_n(ref_node); sort++) {
-    while ((offset < ref_node_n_unused(ref_node)) &&
-           (ref_node->unused_global[offset] < ref_node->sorted_global[sort])) {
-      offset++;
-    }
-    local = ref_node->sorted_local[sort];
-    ref_node->global[local] -= offset; /* move to separate loop for cashe? */
-    ref_node->sorted_global[sort] -= offset;
-  }
-
-  RSS(ref_node_initialize_n_global(
-          ref_node,
-          ref_node->old_n_global - (REF_GLOB)ref_node_n_unused(ref_node)),
-      "re-init");
-
-  ref_node_n_unused(ref_node) = 0;
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_node_collect_ghost_age(REF_NODE ref_node) {
   RSS(ref_node_localize_ghost_int(ref_node, (ref_node->age)),
       "localize ghost age");
@@ -2920,47 +2891,6 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
       ref_node->unused_global[i] += shift;
     }
   }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_allgather_unused(REF_NODE ref_node) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT i;
-  REF_GLOB *local_copy;
-  REF_INT proc;
-  REF_INT *counts;
-  REF_INT total_count;
-
-  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
-
-  RSS(ref_mpi_allgather(ref_mpi, &(ref_node_n_unused(ref_node)), counts,
-                        REF_INT_TYPE),
-      "gather size");
-
-  total_count = 0;
-  each_ref_mpi_part(ref_mpi, proc) total_count += counts[proc];
-
-  ref_malloc(local_copy, ref_node_n_unused(ref_node), REF_GLOB);
-  for (i = 0; i < ref_node_n_unused(ref_node); i++) {
-    local_copy[i] = ref_node->unused_global[i];
-  }
-
-  if (total_count > ref_node_max_unused(ref_node)) {
-    ref_node_max_unused(ref_node) = total_count;
-    ref_free(ref_node->unused_global);
-    ref_malloc(ref_node->unused_global, ref_node_max_unused(ref_node),
-               REF_GLOB);
-  }
-
-  RSS(ref_mpi_allgatherv(ref_mpi, local_copy, counts, ref_node->unused_global,
-                         REF_GLOB_TYPE),
-      "gather values");
-
-  ref_node_n_unused(ref_node) = total_count;
-
-  ref_free(local_copy);
-  ref_free(counts);
 
   return REF_SUCCESS;
 }
