@@ -228,7 +228,6 @@ REF_STATUS ref_node_push_unused(REF_NODE ref_node, REF_GLOB unused_global);
 REF_STATUS ref_node_pop_unused(REF_NODE ref_node, REF_GLOB *new_global);
 REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
                                  REF_GLOB shift);
-REF_STATUS ref_node_sort_unused(REF_NODE ref_node);
 REF_STATUS ref_node_erase_unused(REF_NODE ref_node);
 REF_STATUS ref_node_allgather_unused(REF_NODE ref_node);
 

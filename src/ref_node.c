@@ -576,7 +576,9 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   REF_INT i, local;
 
   /* sort so that decrement of future processed unused wroks */
-  RSS(ref_node_sort_unused(ref_node), "sort unused global");
+  RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
+                             ref_node->unused_global),
+      "in place");
 
   /* share unused count */
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
@@ -761,7 +763,9 @@ REF_STATUS ref_node_eliminate_unused_globals_orig(REF_NODE ref_node) {
   REF_INT sort, offset, local;
 
   RSS(ref_node_allgather_unused(ref_node), "gather unused global");
-  RSS(ref_node_sort_unused(ref_node), "sort unused global");
+  RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
+                             ref_node->unused_global),
+      "in place");
 
   offset = 0;
   for (sort = 0; sort < ref_node_n(ref_node); sort++) {
@@ -2916,14 +2920,6 @@ REF_STATUS ref_node_shift_unused(REF_NODE ref_node, REF_GLOB equal_and_above,
       ref_node->unused_global[i] += shift;
     }
   }
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_node_sort_unused(REF_NODE ref_node) {
-  RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
-                             ref_node->unused_global),
-      "in place");
 
   return REF_SUCCESS;
 }
