@@ -895,6 +895,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RXS(ref_args_find(argc, argv, "--egads", &pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY != pos && pos < argc - 1) {
+      if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 1]);
       RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
