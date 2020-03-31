@@ -142,6 +142,27 @@ int main(int argc, char *argv[]) {
     last_face_arg = MIN(last_face_arg, origin_pos);
   }
 
+    pos = REF_EMPTY;
+  RXS(ref_args_find(argc, argv, "--shift", &pos), REF_NOT_FOUND,
+      "shift search");
+
+  if (REF_EMPTY != pos) {
+    REF_DBL dx, dy, dz;
+    if (rotate_pos >= argc - 3) THROW("--shift requires three values");
+    dx = atof(argv[pos + 1]);
+    dy = atof(argv[pos + 2]);
+    dz = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi)) printf(" --shift %f %f %f\n", dx, dy, dz);
+    last_face_arg = MIN(last_face_arg, pos);
+
+    ref_node = ref_grid_node(ref_grid);
+    each_ref_node_valid_node(ref_node, node) {
+      ref_node_xyz(ref_node, 0, node) += dx;
+      ref_node_xyz(ref_node, 1, node) += dy;
+      ref_node_xyz(ref_node, 2, node) += dz;
+    }
+  }
+
   rotate_pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--rotate", &rotate_pos), REF_NOT_FOUND,
       "rotate search");
@@ -162,27 +183,6 @@ int main(int argc, char *argv[]) {
           x * cos(rotate_rad) - z * sin(rotate_rad);
       ref_node_xyz(ref_node, 2, node) =
           x * sin(rotate_rad) + z * cos(rotate_rad);
-    }
-  }
-
-  pos = REF_EMPTY;
-  RXS(ref_args_find(argc, argv, "--shift", &pos), REF_NOT_FOUND,
-      "shift search");
-
-  if (REF_EMPTY != pos) {
-    REF_DBL dx, dy, dz;
-    if (rotate_pos >= argc - 3) THROW("--shift requires three values");
-    dx = atof(argv[pos + 1]);
-    dy = atof(argv[pos + 2]);
-    dz = atof(argv[pos + 3]);
-    if (ref_mpi_once(ref_mpi)) printf(" --shift %f %f %f\n", dx, dy, dz);
-    last_face_arg = MIN(last_face_arg, pos);
-
-    ref_node = ref_grid_node(ref_grid);
-    each_ref_node_valid_node(ref_node, node) {
-      ref_node_xyz(ref_node, 0, node) += dx;
-      ref_node_xyz(ref_node, 1, node) += dy;
-      ref_node_xyz(ref_node, 2, node) += dz;
     }
   }
 
