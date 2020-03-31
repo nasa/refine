@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
     last_face_arg = MIN(last_face_arg, origin_pos);
   }
 
-    pos = REF_EMPTY;
+  pos = REF_EMPTY;
   RXS(ref_args_find(argc, argv, "--shift", &pos), REF_NOT_FOUND,
       "shift search");
 

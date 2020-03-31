@@ -892,12 +892,20 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("cache geode orientation\n");
     RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
-    RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
-        "project.meshb is missing the geometry model record");
-    if (ref_mpi_once(ref_mpi))
-      printf("load egadslite from .meshb byte stream\n");
-    RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
-    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+    RXS(ref_args_find(argc, argv, "--egads", &pos), REF_NOT_FOUND,
+        "arg search");
+    if (REF_EMPTY != pos && pos < argc - 1) {
+      if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", argv[pos + 1]);
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
+      ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+    } else {
+      RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
+          "project.meshb is missing the geometry model record");
+      if (ref_mpi_once(ref_mpi))
+        printf("load egadslite from .meshb byte stream\n");
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+      ref_mpi_stopwatch_stop(ref_mpi, "load egadslite cad data");
+    }
   }
 
   RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
