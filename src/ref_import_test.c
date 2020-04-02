@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
@@ -40,14 +41,50 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-
-  if (2 == argc) {
-    RSS(ref_import_examine_header(argv[1]), "examine header");
-    return 0;
-  }
+  REF_INT pos;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  if (2 == argc) {
+    RSS(ref_import_examine_header(argv[1]), "examine header");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "--prop", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 3) {
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_CELL ref_cell;
+    REF_INT i, cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_DBL total_area, total_normal[3], center[3];
+    REF_DBL area, normal[3], centroid[3];
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    ref_node = ref_grid_node(ref_grid);
+    ref_cell = ref_grid_tri(ref_grid);
+    total_area = 0;
+    for (i = 0; i < 3; i++) total_normal[i] = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+      total_area += area;
+      RSS(ref_node_tri_centroid(ref_node, nodes, centroid), "area");
+      for (i = 0; i < 3; i++) center[i] += area * centroid[i];
+      RSS(ref_node_tri_normal(ref_node, nodes, normal), "area");
+      for (i = 0; i < 3; i++) total_normal[i] += normal[i];
+    }
+    for (i = 0; i < 3; i++) center[i] /= total_area;
+    RSS(ref_math_normalize(total_normal), "norm");
+    printf("%d tri\n", ref_cell_n(ref_cell));
+    printf("%f %f %f center\n", center[0], center[1], center[2]);
+    printf("%f %f %f normal\n", total_normal[0], total_normal[1],
+           total_normal[2]);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   { /* export import twod .msh brick */
     REF_GRID export_grid, import_grid;
