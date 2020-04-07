@@ -605,9 +605,9 @@ static REF_STATUS ref_egads_face_width(REF_GEOM ref_geom, REF_INT faceid,
       if (ref_math_divisible(diag, width)) {
         aspect_ratio = diag / width;
         adjusted = MIN(MAX(1.0, aspect_ratio - 10.0), 10.0) * width;
-        params[0] = adjusted;
-        params[1] = 0.1 * params[0];
-        params[2] = 15.0;
+        params[0] = 2.0 * adjusted;
+        params[1] = 0.3 * params[0];
+        params[2] = 20.0;
         RSS(ref_list_contains(face_locked, e2f[0 + 2 * (edgeid - 1)],
                               &contains0),
             "lock face0");
