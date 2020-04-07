@@ -1,0 +1,12 @@
+#!/usr/bin/env ruby
+
+ugrids = Dir['*.ugrid']
+
+ugrids.each do |ugrid|
+  tec = File.basename(ugrid,File.extname(ugrid)) + '.tec'
+  if (File.exists?(tec) && (File.mtime(tec) > File.mtime(ugrid)) ) then
+    puts "skipped #{tec}"
+    next
+  end
+  system("ref translate #{ugrid} #{tec}")
+end
