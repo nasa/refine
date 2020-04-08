@@ -699,7 +699,10 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
     if (0 == remain) break;
   }
 
-  REIS(0, remain, "untouched boundary nodes remain");
+  if (0 < remain && ref_mpi_once(ref_grid_mpi(ref_grid))) {
+    printf(" %d remain\n", remain);
+    REF_WHERE("untouched boundary nodes remain");
+  }
 
   return REF_SUCCESS;
 }
