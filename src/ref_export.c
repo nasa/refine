@@ -2433,7 +2433,7 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT min_id, max_id, id;
-  REF_INT ntri, nedge;
+  REF_INT ntri, nquad, nedge, edge;
 
   RAS(ref_grid_twod(ref_grid), "expected twod convention grid");
 
@@ -2456,16 +2456,27 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
     fprintf(f, "%.16E %.16E %d\n", ref_node_xyz(ref_node, 0, n2o[node]),
             ref_node_xyz(ref_node, 2, n2o[node]), 1);
   }
+
   ref_cell = ref_grid_tri(ref_grid);
   fprintf(f, "%d\n", ref_cell_n(ref_cell));
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     ntri++;
-    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[2]] + 1,
-            o2n[nodes[1]] + 1);
+    fprintf(f, "%d %d %d\n", o2n[nodes[2]] + 1, o2n[nodes[1]] + 1,
+            o2n[nodes[0]] + 1);
   }
   REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
 
+  ref_cell = ref_grid_qua(ref_grid);
+  fprintf(f, "%d\n", ref_cell_n(ref_cell));
+  nquad = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    ntri++;
+    fprintf(f, "%d %d %d %d\n", o2n[nodes[3]] + 1, o2n[nodes[2]] + 1,
+            o2n[nodes[1]] + 1, o2n[nodes[0]] + 1);
+  }
+  REIS(nquad, ref_cell_n(ref_cell), "quad miscount");
+  
   ref_cell = ref_grid_edg(ref_grid);
   RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
       "id range");
@@ -2475,12 +2486,20 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
   for (id = min_id; id <= max_id; id++) {
     nedge = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      c2n[0 + 2 * nedge] = nodes[0];
-      c2n[1 + 2 * nedge] = nodes[1];
-      nedge++;
+      if (nodes[2] == id) {
+	c2n[0 + 2 * nedge] = nodes[0];
+	c2n[1 + 2 * nedge] = nodes[1];
+	nedge++;
+      }
     }
     fprintf(f, "%d\n", nedge);
-    RSS(ref_export_order_segments(nedge, c2n, order), "order");
+    if (nedge>0) {
+      RSS(ref_export_order_segments(nedge, c2n, order), "order");
+      fprintf(f, "%d\n", o2n[c2n[0]]+1);
+      for (edge=0;edge<nedge;edge++){
+	fprintf(f, "%d\n", o2n[c2n[1+2*nedge]]+1);
+      }
+    }
   }
 
   ref_free(order);
