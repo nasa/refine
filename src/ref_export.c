@@ -2424,7 +2424,8 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
+                                             const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
@@ -2476,7 +2477,7 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
             o2n[nodes[1]] + 1, o2n[nodes[0]] + 1);
   }
   REIS(nquad, ref_cell_n(ref_cell), "quad miscount");
-  
+
   ref_cell = ref_grid_edg(ref_grid);
   RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
       "id range");
@@ -2487,17 +2488,17 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
     nedge = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[2] == id) {
-	c2n[0 + 2 * nedge] = nodes[0];
-	c2n[1 + 2 * nedge] = nodes[1];
-	nedge++;
+        c2n[0 + 2 * nedge] = nodes[0];
+        c2n[1 + 2 * nedge] = nodes[1];
+        nedge++;
       }
     }
     fprintf(f, "%d\n", nedge);
-    if (nedge>0) {
+    if (nedge > 0) {
       RSS(ref_export_order_segments(nedge, c2n, order), "order");
-      fprintf(f, "%d\n", o2n[c2n[0]]+1);
-      for (edge=0;edge<nedge;edge++){
-	fprintf(f, "%d\n", o2n[c2n[1+2*nedge]]+1);
+      fprintf(f, "%d\n", o2n[c2n[0]] + 1);
+      for (edge = 0; edge < nedge; edge++) {
+        fprintf(f, "%d\n", o2n[c2n[1 + 2 * nedge]] + 1);
       }
     }
   }
@@ -2881,6 +2882,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
         "b8.ugrid64 export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".grid") == 0) {
+    RSS(ref_export_i_like_cfd_grid(ref_grid, filename), "grid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
     RSS(ref_export_poly(ref_grid, filename), "poly export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
