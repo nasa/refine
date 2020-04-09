@@ -2424,6 +2424,68 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_INT *o2n, *n2o, *c2n;
+  REF_INT nnode;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT min_id, max_id, id;
+  REF_INT ntri, nedge;
+
+  RAS(ref_grid_twod(ref_grid), "expected twod convention grid");
+
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
+  }
+
+  fprintf(f, "%d\n", nnode);
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%.16E %.16E %d\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 2, n2o[node]), 1);
+  }
+  ref_cell = ref_grid_tri(ref_grid);
+  fprintf(f, "%d\n", ref_cell_n(ref_cell));
+  ntri = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    ntri++;
+    fprintf(f, "%d %d %d\n", o2n[nodes[0]] + 1, o2n[nodes[2]] + 1,
+            o2n[nodes[1]] + 1);
+  }
+  REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
+      "id range");
+  fprintf(f, "%d\n", max_id - min_id + 1);
+  ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
+  for (id = min_id; id <= max_id; id++) {
+    nedge = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) { nedge++; }
+    fprintf(f, "%d\n", nedge);
+  }
+
+  ref_free(c2n);
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
