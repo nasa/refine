@@ -2455,7 +2455,7 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   fprintf(f, "%d\n", nnode);
   for (node = 0; node < nnode; node++) {
     fprintf(f, "%.16E %.16E %d\n", ref_node_xyz(ref_node, 0, n2o[node]),
-            ref_node_xyz(ref_node, 2, n2o[node]), 1);
+            ref_node_xyz(ref_node, 1, n2o[node]), 1);
   }
 
   ref_cell = ref_grid_tri(ref_grid);
@@ -2496,9 +2496,9 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
     fprintf(f, "%d\n", nedge);
     if (nedge > 0) {
       RSS(ref_export_order_segments(nedge, c2n, order), "order");
-      fprintf(f, "%d\n", o2n[c2n[0]] + 1);
+      fprintf(f, "%d\n", o2n[c2n[0 + 2 * order[0]]] + 1);
       for (edge = 0; edge < nedge; edge++) {
-        fprintf(f, "%d\n", o2n[c2n[1 + 2 * nedge]] + 1);
+        fprintf(f, "%d\n", o2n[c2n[1 + 2 * order[edge]]] + 1);
       }
     }
   }
