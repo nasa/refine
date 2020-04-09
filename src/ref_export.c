@@ -2815,3 +2815,37 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
+  REF_INT i, j, first_cell;
+  REF_BOOL found;
+  first_cell = REF_EMPTY;
+  for (i = 0; i < n; i++) {
+    found = REF_FALSE;
+    for (j = 0; j < n; j++) {
+      if (c2n[0 + 2 * i] == c2n[1 + 2 * j]) {
+        found = REF_TRUE;
+        break;
+      }
+    }
+    if (!found) {
+      first_cell = i;
+      break;
+    }
+  }
+  RUS(REF_EMPTY, first_cell, "first cell not found");
+  order[0] = first_cell;
+  for (i = 1; i < n; i++) {
+    found = REF_FALSE;
+    for (j = 0; j < n; j++) {
+      if (c2n[1 + 2 * order[i - 1]] == c2n[0 + 2 * j]) {
+        order[i] = j;
+        found = REF_TRUE;
+        break;
+      }
+    }
+    RAS(found, "next segment not found");
+  }
+
+  return REF_SUCCESS;
+}

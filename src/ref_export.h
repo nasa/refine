@@ -81,6 +81,8 @@ REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file);
 
+REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order);
+
 END_C_DECLORATION
 
 #endif /* REF_EXPORT_H */
