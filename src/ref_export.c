@@ -2428,7 +2428,7 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
-  REF_INT *o2n, *n2o, *c2n;
+  REF_INT *o2n, *n2o, *c2n, *order;
   REF_INT nnode;
   REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -2471,12 +2471,19 @@ REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid, const char *filename) {
       "id range");
   fprintf(f, "%d\n", max_id - min_id + 1);
   ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
+  ref_malloc(order, ref_cell_n(ref_cell), REF_INT);
   for (id = min_id; id <= max_id; id++) {
     nedge = 0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) { nedge++; }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      c2n[0 + 2 * nedge] = nodes[0];
+      c2n[1 + 2 * nedge] = nodes[1];
+      nedge++;
+    }
     fprintf(f, "%d\n", nedge);
+    RSS(ref_export_order_segments(nedge, c2n, order), "order");
   }
 
+  ref_free(order);
   ref_free(c2n);
   ref_free(n2o);
   ref_free(o2n);
