@@ -2489,7 +2489,7 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
         nedge++;
       }
     }
-    fprintf(f, "%d\n", nedge);
+    fprintf(f, "%d\n", nedge + 1); /* +1, both end points */
   }
 
   ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
