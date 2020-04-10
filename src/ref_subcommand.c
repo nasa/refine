@@ -158,6 +158,7 @@ static void multiscale_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
+  printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("\n");
 }
 static void surface_help(const char *name) {
@@ -1163,7 +1164,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation, complexity, current_complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_INT pos;
-  REF_BOOL buffer, wall_jump, eig_bal;
+  REF_BOOL buffer, wall_jump;
 
   if (argc < 6) goto shutdown;
   in_mesh = argv[2];
@@ -1206,13 +1207,6 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     wall_jump = REF_TRUE;
   }
 
-  eig_bal = REF_FALSE;
-  RXS(ref_args_find(argc, argv, "--eig-bal", &pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != pos) {
-    eig_bal = REF_TRUE;
-  }
-
   if (ref_mpi_once(ref_mpi)) {
     printf("complexity %f\n", complexity);
     printf("Lp=%d\n", p);
@@ -1220,7 +1214,6 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("reconstruction %d\n", (int)reconstruction);
     printf("buffer %d (zero is inactive)\n", buffer);
     printf("wall_jump %d (zero is inactive)\n", wall_jump);
-    printf("eig_bal %d (zero is inactive)\n", eig_bal);
   }
 
   ref_mpi_stopwatch_start(ref_mpi);
@@ -1235,25 +1228,37 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
-  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, in_scalar),
-      "part scalar");
-  REIS(1, ldim, "expected one scalar");
-  ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
-
-  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  if (eig_bal) {
-    if (ref_mpi_once(ref_mpi)) printf("eig balance Hessian, compute metric\n");
-    RSS(ref_metric_eig_bal(metric, ref_grid, scalar, reconstruction, p,
-                           gradation, complexity),
-        "eig_bal");
+  RXS(ref_args_find(argc, argv, "--hessian", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    if (ref_mpi_once(ref_mpi)) printf("part hessian %s\n", in_scalar);
+    RSS(ref_part_metric(ref_grid_node(ref_grid), in_scalar), "part scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
+    RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eignvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric from hessian");
   } else {
+    if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", in_scalar);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, in_scalar),
+        "part scalar");
+    REIS(1, ldim, "expected one scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
+
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
     RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                       gradation, complexity),
         "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
   }
-  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
 
   if (buffer) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
