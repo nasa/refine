@@ -2452,14 +2452,15 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
     nnode++;
   }
 
-  fprintf(f, "%d\n", nnode);
+  fprintf(f, "%d %d %d\n", nnode, ref_cell_n(ref_grid_tri(ref_grid)),
+          ref_cell_n(ref_grid_qua(ref_grid)));
+
   for (node = 0; node < nnode; node++) {
-    fprintf(f, "%.16E %.16E %d\n", ref_node_xyz(ref_node, 0, n2o[node]),
-            ref_node_xyz(ref_node, 1, n2o[node]), 1);
+    fprintf(f, "%.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]));
   }
 
   ref_cell = ref_grid_tri(ref_grid);
-  fprintf(f, "%d\n", ref_cell_n(ref_cell));
   ntri = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     ntri++;
@@ -2469,7 +2470,6 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
 
   ref_cell = ref_grid_qua(ref_grid);
-  fprintf(f, "%d\n", ref_cell_n(ref_cell));
   nquad = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     ntri++;
@@ -2482,6 +2482,16 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
       "id range");
   fprintf(f, "%d\n", max_id - min_id + 1);
+  for (id = min_id; id <= max_id; id++) {
+    nedge = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[2] == id) {
+        nedge++;
+      }
+    }
+    fprintf(f, "%d\n", nedge);
+  }
+
   ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
   ref_malloc(order, ref_cell_n(ref_cell), REF_INT);
   for (id = min_id; id <= max_id; id++) {
@@ -2493,7 +2503,6 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
         nedge++;
       }
     }
-    fprintf(f, "%d\n", nedge);
     if (nedge > 0) {
       RSS(ref_export_order_segments(nedge, c2n, order), "order");
       fprintf(f, "%d\n", o2n[c2n[0 + 2 * order[0]]] + 1);
