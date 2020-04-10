@@ -1414,13 +1414,13 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
         } else {
           REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
                "m11");
-          metric[1 + 6 * node] = 0.0; /* m12 */
-          REIS(1, fread(&(metric[2 + 6 * node]), sizeof(REF_DBL), 1, file),
-               "m31");
-          metric[3 + 6 * node] = 1.0; /* m22 */
-          metric[4 + 6 * node] = 0.0; /* m32 */
-          REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
-               "m33");
+          REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m12");
+          REIS(1, fread(&(metric[3 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m22");
+          metric[2 + 6 * node] = 0.0; /* m13 */
+          metric[4 + 6 * node] = 0.0; /* m23 */
+          metric[5 + 6 * node] = 1.0; /* m33 */
         }
       }
       RSS(ref_mpi_bcast(ref_node_mpi(ref_node), metric, 6 * chunk,
@@ -1472,6 +1472,7 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
   REF_INT status;
   char line[1024];
   REF_BOOL solb_format = REF_FALSE;
+  REF_INT dim = REF_EMPTY;
 
   if (ref_mpi_once(ref_node_mpi(ref_node))) {
     end_of_string = strlen(filename);
@@ -1496,10 +1497,15 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
     if (strcmp(&filename[end_of_string - 4], ".sol") == 0) {
       sol_format = REF_TRUE;
       found_keyword = REF_FALSE;
+      dim = REF_EMPTY;
       while (!feof(file)) {
         status = fscanf(file, "%s", line);
         if (EOF == status) break;
         REIS(1, status, "line read failed");
+
+        if (0 == strcmp("Dimension", line)) {
+          REIS(1, fscanf(file, "%d", &dim), "read dim");
+        }
 
         if (0 == strcmp("SolAtVertices", line)) {
           REIS(1, fscanf(file, "%d", &nnode), "read nnode");
@@ -1513,6 +1519,7 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
           break;
         }
       }
+      RUS(REF_EMPTY, dim, "Dimension keyword missing from .sol metric");
       RAS(found_keyword, "SolAtVertices keyword missing from .sol metric");
     }
   }
@@ -1530,13 +1537,23 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       for (node = 0; node < section_size; node++)
         if (sol_format) {
-          REIS(6,
-               fscanf(file, "%lf %lf %lf %lf %lf %lf", &(metric[0 + 6 * node]),
-                      &(metric[1 + 6 * node]),
-                      &(metric[3 + 6 * node]), /* transposed 3,2 */
-                      &(metric[2 + 6 * node]), &(metric[4 + 6 * node]),
-                      &(metric[5 + 6 * node])),
-               "metric read error");
+          if (3 == dim) {
+            REIS(6,
+                 fscanf(file, "%lf %lf %lf %lf %lf %lf",
+                        &(metric[0 + 6 * node]), &(metric[1 + 6 * node]),
+                        &(metric[3 + 6 * node]), /* transposed 3,2 */
+                        &(metric[2 + 6 * node]), &(metric[4 + 6 * node]),
+                        &(metric[5 + 6 * node])),
+                 "metric read error");
+          } else {
+            REIS(3,
+                 fscanf(file, "%lf %lf %lf", &(metric[0 + 6 * node]),
+                        &(metric[1 + 6 * node]), &(metric[3 + 6 * node])),
+                 "metric read error");
+            metric[2 + 6 * node] = 0.0; /* m13 */
+            metric[4 + 6 * node] = 0.0; /* m23 */
+            metric[5 + 6 * node] = 1.0; /* m33 */
+          }
         } else {
           REIS(6,
                fscanf(file, "%lf %lf %lf %lf %lf %lf", &(metric[0 + 6 * node]),

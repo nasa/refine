@@ -57,9 +57,8 @@ cavity operator in 2D/3D
   use lexigraph comparison
   avro style boundary topology checks
 
-alternating RCB part
- n-median over-decomposition with random odd/even combine and age awareness
- INRIA space filling curve
+partitioning
+ INRIA and Cart3D space filling curve
  diffusion
 
 configure with metis only, when parmetis not provided
@@ -221,7 +220,13 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ parallel Dimension 2 metric .sol reader
++ z-lazy Dimension 2 metric .solb reader
++ adopts new OpenCSM defaults for global EGADS tess params
++ RCB partition with shifting k-select age awareness
++ chunk global unused node delete
 + ref_node_eliminate_unused_globals refactor with unit tests
++ extract subset of mesh
 + ref_gather_scalar_by_extension learned .bin
 + each_ref_grid_ref_cell for boundary and higher order
 + gathered ref_geom_radian_request ref_geom_reliability
