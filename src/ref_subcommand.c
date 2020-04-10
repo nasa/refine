@@ -1250,6 +1250,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
                       gradation, complexity),
         "lp norm");
+    ref_free(scalar);
     ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
   }
 
@@ -1266,7 +1267,6 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "set node");
 
   ref_free(metric);
-  ref_free(scalar);
 
   if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_metric);
   RSS(ref_gather_metric(ref_grid, out_metric), "gather metric");
