@@ -253,6 +253,31 @@ int main(int argc, char *argv[]) {
     REIS(0, order[2], "[2]");
   }
 
+  { /* segments to array, loop */
+    REF_INT n = 3;
+    REF_INT c2n[] = {2, 0, 1, 2, 0, 1};
+    REF_INT order[3];
+    RSS(ref_export_order_segments(n, c2n, order), "order");
+    REIS(0, order[0], "[0]");
+    REIS(2, order[1], "[1]");
+    REIS(1, order[2], "[2]");
+  }
+
+  { /* one segment  */
+    REF_INT n = 1;
+    REF_INT c2n[] = {0, 1};
+    REF_INT order[1];
+    RSS(ref_export_order_segments(n, c2n, order), "order");
+    REIS(0, order[0], "[0]");
+  }
+
+  { /* zero segments */
+    REF_INT n = 0;
+    REF_INT *c2n = NULL;
+    REF_INT *order = NULL;
+    RSS(ref_export_order_segments(n, c2n, order), "order");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
