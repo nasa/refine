@@ -2489,7 +2489,7 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
         nedge++;
       }
     }
-    fprintf(f, "%d\n", nedge);
+    fprintf(f, "%d\n", nedge + 1); /* +1, both end points */
   }
 
   ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
@@ -2918,7 +2918,10 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
 
 REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
   REF_INT i, j, first_cell;
-  REF_BOOL found;
+  REF_BOOL found, loop;
+
+  if (0 == n) return REF_SUCCESS;
+
   first_cell = REF_EMPTY;
   for (i = 0; i < n; i++) {
     found = REF_FALSE;
@@ -2933,7 +2936,14 @@ REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
       break;
     }
   }
-  RUS(REF_EMPTY, first_cell, "first cell not found");
+
+  /* arbitray for loops */
+  loop = REF_FALSE;
+  if (REF_EMPTY == first_cell) {
+    loop = REF_TRUE;
+    first_cell = 0;
+  }
+
   order[0] = first_cell;
   for (i = 1; i < n; i++) {
     found = REF_FALSE;
@@ -2946,6 +2956,10 @@ REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
     }
     RAS(found, "next segment not found");
   }
+
+  if (loop)
+    REIS(c2n[0 + 2 * order[0]], c2n[1 + 2 * order[n - 1]],
+         "first and last do not match for loop");
 
   return REF_SUCCESS;
 }
