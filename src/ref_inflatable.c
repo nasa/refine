@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 
   if (REF_EMPTY != pos) {
     REF_DBL dx, dy, dz;
-    if (rotate_pos >= argc - 3) THROW("--shift requires three values");
+    if (pos >= argc - 3) THROW("--shift requires three values");
     dx = atof(argv[pos + 1]);
     dy = atof(argv[pos + 2]);
     dz = atof(argv[pos + 3]);
