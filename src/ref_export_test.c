@@ -243,6 +243,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* segments to array */
+    REF_INT n = 3;
+    REF_INT c2n[] = {2, 3, 0, 1, 1, 2};
+    REF_INT order[3];
+    RSS(ref_export_order_segments(n, c2n, order), "order");
+    REIS(1, order[0], "[0]");
+    REIS(2, order[1], "[1]");
+    REIS(0, order[2], "[2]");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

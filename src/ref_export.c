@@ -2424,6 +2424,104 @@ REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
+                                             const char *filename) {
+  FILE *f;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT node;
+  REF_INT *o2n, *n2o, *c2n, *order;
+  REF_INT nnode;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT min_id, max_id, id;
+  REF_INT ntri, nquad, nedge, edge;
+
+  RAS(ref_grid_twod(ref_grid), "expected twod convention grid");
+
+  f = fopen(filename, "w");
+  if (NULL == (void *)f) printf("unable to open %s\n", filename);
+  RNS(f, "unable to open file");
+
+  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
+
+  nnode = 0;
+  each_ref_node_valid_node(ref_node, node) {
+    o2n[node] = nnode;
+    n2o[nnode] = node;
+    nnode++;
+  }
+
+  fprintf(f, "%d %d %d\n", nnode, ref_cell_n(ref_grid_tri(ref_grid)),
+          ref_cell_n(ref_grid_qua(ref_grid)));
+
+  for (node = 0; node < nnode; node++) {
+    fprintf(f, "%.16E %.16E\n", ref_node_xyz(ref_node, 0, n2o[node]),
+            ref_node_xyz(ref_node, 1, n2o[node]));
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  ntri = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    ntri++;
+    fprintf(f, "%d %d %d\n", o2n[nodes[2]] + 1, o2n[nodes[1]] + 1,
+            o2n[nodes[0]] + 1);
+  }
+  REIS(ntri, ref_cell_n(ref_cell), "triangle miscount");
+
+  ref_cell = ref_grid_qua(ref_grid);
+  nquad = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    ntri++;
+    fprintf(f, "%d %d %d %d\n", o2n[nodes[3]] + 1, o2n[nodes[2]] + 1,
+            o2n[nodes[1]] + 1, o2n[nodes[0]] + 1);
+  }
+  REIS(nquad, ref_cell_n(ref_cell), "quad miscount");
+
+  ref_cell = ref_grid_edg(ref_grid);
+  RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
+      "id range");
+  fprintf(f, "%d\n", max_id - min_id + 1);
+  for (id = min_id; id <= max_id; id++) {
+    nedge = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[2] == id) {
+        nedge++;
+      }
+    }
+    fprintf(f, "%d\n", nedge);
+  }
+
+  ref_malloc(c2n, 2 * ref_cell_n(ref_cell), REF_INT);
+  ref_malloc(order, ref_cell_n(ref_cell), REF_INT);
+  for (id = min_id; id <= max_id; id++) {
+    nedge = 0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (nodes[2] == id) {
+        c2n[0 + 2 * nedge] = nodes[0];
+        c2n[1 + 2 * nedge] = nodes[1];
+        nedge++;
+      }
+    }
+    if (nedge > 0) {
+      RSS(ref_export_order_segments(nedge, c2n, order), "order");
+      fprintf(f, "%d\n", o2n[c2n[0 + 2 * order[0]]] + 1);
+      for (edge = 0; edge < nedge; edge++) {
+        fprintf(f, "%d\n", o2n[c2n[1 + 2 * order[edge]]] + 1);
+      }
+    }
+  }
+
+  ref_free(order);
+  ref_free(c2n);
+  ref_free(n2o);
+  ref_free(o2n);
+
+  fclose(f);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2793,6 +2891,8 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
         "b8.ugrid64 export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".ugrid") == 0) {
     RSS(ref_export_ugrid(ref_grid, filename), "ugrid export failed");
+  } else if (strcmp(&filename[end_of_string - 5], ".grid") == 0) {
+    RSS(ref_export_i_like_cfd_grid(ref_grid, filename), "grid export failed");
   } else if (strcmp(&filename[end_of_string - 5], ".poly") == 0) {
     RSS(ref_export_poly(ref_grid, filename), "poly export failed");
   } else if (strcmp(&filename[end_of_string - 6], ".smesh") == 0) {
@@ -2811,6 +2911,40 @@ REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename) {
     printf("%s: %d: %s %s\n", __FILE__, __LINE__,
            "export file name extension unknown", filename);
     RSS(REF_FAILURE, "unknown file extension");
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
+  REF_INT i, j, first_cell;
+  REF_BOOL found;
+  first_cell = REF_EMPTY;
+  for (i = 0; i < n; i++) {
+    found = REF_FALSE;
+    for (j = 0; j < n; j++) {
+      if (c2n[0 + 2 * i] == c2n[1 + 2 * j]) {
+        found = REF_TRUE;
+        break;
+      }
+    }
+    if (!found) {
+      first_cell = i;
+      break;
+    }
+  }
+  RUS(REF_EMPTY, first_cell, "first cell not found");
+  order[0] = first_cell;
+  for (i = 1; i < n; i++) {
+    found = REF_FALSE;
+    for (j = 0; j < n; j++) {
+      if (c2n[1 + 2 * order[i - 1]] == c2n[0 + 2 * j]) {
+        order[i] = j;
+        found = REF_TRUE;
+        break;
+      }
+    }
+    RAS(found, "next segment not found");
   }
 
   return REF_SUCCESS;
