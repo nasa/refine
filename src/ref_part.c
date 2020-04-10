@@ -1414,13 +1414,13 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
         } else {
           REIS(1, fread(&(metric[0 + 6 * node]), sizeof(REF_DBL), 1, file),
                "m11");
-          metric[1 + 6 * node] = 0.0; /* m12 */
-          REIS(1, fread(&(metric[2 + 6 * node]), sizeof(REF_DBL), 1, file),
-               "m31");
-          metric[3 + 6 * node] = 1.0; /* m22 */
-          metric[4 + 6 * node] = 0.0; /* m32 */
-          REIS(1, fread(&(metric[5 + 6 * node]), sizeof(REF_DBL), 1, file),
-               "m33");
+          REIS(1, fread(&(metric[1 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m12");
+          REIS(1, fread(&(metric[3 + 6 * node]), sizeof(REF_DBL), 1, file),
+               "m22");
+          metric[2 + 6 * node] = 0.0; /* m13 */
+          metric[4 + 6 * node] = 0.0; /* m23 */
+          metric[5 + 6 * node] = 1.0; /* m33 */
         }
       }
       RSS(ref_mpi_bcast(ref_node_mpi(ref_node), metric, 6 * chunk,
@@ -1550,9 +1550,9 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
                  fscanf(file, "%lf %lf %lf", &(metric[0 + 6 * node]),
                         &(metric[1 + 6 * node]), &(metric[3 + 6 * node])),
                  "metric read error");
-            metric[2 + 6 * node] = 0;
-            metric[4 + 6 * node] = 0;
-            metric[5 + 6 * node] = 1;
+            metric[2 + 6 * node] = 0.0; /* m13 */
+            metric[4 + 6 * node] = 0.0; /* m23 */
+            metric[5 + 6 * node] = 1.0; /* m33 */
           }
         } else {
           REIS(6,

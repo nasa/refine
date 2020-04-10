@@ -1,5 +1,5 @@
 
-- parallel Dimension 2 metric .sol reader
+- parallel Dimension 2 metric .sol and .solb reader
 - added 2D .grid sequental format export 
 - adopts OpenCSM defaults for global EGADS tess params
 - native recursive bisection partitioning
