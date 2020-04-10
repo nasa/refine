@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     ref_cell = ref_grid_tri(ref_grid);
     total_area = 0;
+    for (i = 0; i < 3; i++) center[i] = 0;
     for (i = 0; i < 3; i++) total_normal[i] = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
