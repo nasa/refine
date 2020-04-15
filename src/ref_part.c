@@ -712,9 +712,12 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_mpi_bcast(ref_mpi, &ref_geom_cad_data_size(ref_geom), 1,
                       REF_LONG_TYPE),
         "bcast");
-    if (!ref_grid_once(ref_grid))
+    if (!ref_grid_once(ref_grid)) {
+      /* safe non-NULL free, if already allocated, to prevent mem leaks */
+      ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
                         ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    }
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
                       (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");
@@ -797,9 +800,12 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
     RSS(ref_mpi_bcast(ref_mpi, &ref_geom_cad_data_size(ref_geom), 1,
                       REF_INT_TYPE),
         "bcast");
-    if (!ref_grid_once(ref_grid))
+    if (!ref_grid_once(ref_grid)) {
+      /* safe non-NULL free, if already allocated, to prevent mem leaks */
+      ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
                         ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    }
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
                       (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");
