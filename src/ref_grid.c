@@ -946,6 +946,7 @@ REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
   RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), nodes[0], nodes[1], 1, &ncell,
                           &edg_tri),
       "tri with edge side");
+  RSS(ref_cell_nodes(ref_grid_tri(ref_grid), edg_tri, tri_nodes), "tri nodes");
   node0 = REF_EMPTY;
   node1 = REF_EMPTY;
   if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[0], tri_nodes[1])) &&
