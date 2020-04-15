@@ -937,3 +937,37 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes) {
+  REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncell, edg_tri;
+  REF_INT node0, node1;
+
+  RSS(ref_cell_list_with2(ref_grid_tri(ref_grid), nodes[0], nodes[1], 1, &ncell,
+                          &edg_tri),
+      "tri with edge side");
+  node0 = REF_EMPTY;
+  node1 = REF_EMPTY;
+  if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[0], tri_nodes[1])) &&
+      (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[0], tri_nodes[1]))) {
+    node0 = tri_nodes[0];
+    node1 = tri_nodes[1];
+  }
+  if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[1], tri_nodes[2])) &&
+      (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[1], tri_nodes[2]))) {
+    node0 = tri_nodes[1];
+    node1 = tri_nodes[2];
+  }
+  if ((MIN(nodes[0], nodes[1]) == MIN(tri_nodes[2], tri_nodes[0])) &&
+      (MAX(nodes[0], nodes[1]) == MAX(tri_nodes[2], tri_nodes[0]))) {
+    node0 = tri_nodes[2];
+    node1 = tri_nodes[0];
+  }
+  RUS(REF_EMPTY, node0, "node0 not found");
+  RUS(REF_EMPTY, node1, "node1 not found");
+  /* same direction as triangle side */
+  nodes[0] = node0;
+  nodes[1] = node1;
+
+  return REF_SUCCESS;
+}
