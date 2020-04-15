@@ -712,9 +712,12 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_mpi_bcast(ref_mpi, &ref_geom_cad_data_size(ref_geom), 1,
                       REF_LONG_TYPE),
         "bcast");
-    if (!ref_grid_once(ref_grid))
+    if (!ref_grid_once(ref_grid)) {
+      /* safe non-NULL free, if already allocated, to prevent mem leaks */
+      ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
                         ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    }
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
                       (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");
@@ -741,7 +744,6 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   REF_BOOL available;
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
-  REF_DICT ref_dict;
   REF_INT cad_data_keyword;
   REF_BOOL verbose = REF_FALSE;
   size_t end_of_string;
@@ -753,7 +755,6 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
-    RSS(ref_dict_create(&ref_dict), "create dict");
     RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
     if (verbose) printf("meshb version %d\n", version);
     if (verbose) printf("open %s\n", filename);
@@ -799,9 +800,12 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
     RSS(ref_mpi_bcast(ref_mpi, &ref_geom_cad_data_size(ref_geom), 1,
                       REF_INT_TYPE),
         "bcast");
-    if (!ref_grid_once(ref_grid))
+    if (!ref_grid_once(ref_grid)) {
+      /* safe non-NULL free, if already allocated, to prevent mem leaks */
+      ref_free(ref_geom_cad_data(ref_geom));
       ref_malloc_size_t(ref_geom_cad_data(ref_geom),
                         ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    }
     RSS(ref_mpi_bcast(ref_mpi, ref_geom_cad_data(ref_geom),
                       (REF_INT)ref_geom_cad_data_size(ref_geom), REF_BYTE_TYPE),
         "bcast");

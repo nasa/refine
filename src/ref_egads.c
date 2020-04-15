@@ -1040,6 +1040,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
   RSS(ref_list_free(face_locked), "free face list");
 
+  RSS(ref_cloud_free(edge_tp_augment), "free tparams augment");
   RSS(ref_cloud_free(face_tp_augment), "free tparams augment");
   RSS(ref_cloud_free(edge_tp_original), "free tparams cache");
   RSS(ref_cloud_free(face_tp_original), "free tparams cache");
