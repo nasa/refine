@@ -915,12 +915,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
   RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field, filename),
       "part scalar");
-  RAS(5 <= ldim, "expected 5 or more variables per vertex");
   ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
 
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   if (strcmp(interpolant, "incomp") == 0) {
+    RAS(4 <= ldim,
+        "expected 4 or more variables per vertex for incompressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL u, v, w, u2;
       u = initial_field[0 + ldim * node];
@@ -932,6 +933,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
     ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
   } else {
+    RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL rho, u, v, w, press, temp, u2, mach2;
       rho = initial_field[0 + ldim * node];
