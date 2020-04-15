@@ -920,43 +920,56 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    REF_DBL rho, u, v, w, press, temp, u2, mach2;
-    rho = initial_field[0 + ldim * node];
-    u = initial_field[1 + ldim * node];
-    v = initial_field[2 + ldim * node];
-    w = initial_field[3 + ldim * node];
-    press = initial_field[4 + ldim * node];
-    RAB(ref_math_divisible(press, rho), "can not divide by rho", {
-      printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
-             press);
-    });
-    temp = gamma * (press / rho);
-    u2 = u * u + v * v + w * w;
-    RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
-      printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
-             u, v, w, press, temp);
-    });
-    mach2 = u2 / temp;
-    RAB(mach2 >= 0, "negative mach2", {
-      printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
-             u, v, w, press, temp);
-    });
-    if (strcmp(interpolant, "mach") == 0) {
-      scalar[node] = sqrt(mach2);
-    } else if (strcmp(interpolant, "htot") == 0) {
-      scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
-    } else if (strcmp(interpolant, "pressure") == 0) {
-      scalar[node] = press;
-    } else if (strcmp(interpolant, "density") == 0) {
-      scalar[node] = rho;
-    } else if (strcmp(interpolant, "temperature") == 0) {
-      scalar[node] = temp;
-    } else {
-      RSS(REF_INVALID, "unknown scalar interpolant");
+  if (strcmp(interpolant, "incomp") == 0) {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL u, v, w, u2;
+      u = initial_field[0 + ldim * node];
+      v = initial_field[1 + ldim * node];
+      w = initial_field[2 + ldim * node];
+      /* press = initial_field[3 + ldim * node]; */
+      u2 = u * u + v * v + w * w;
+      scalar[node] = sqrt(u2);
     }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
+  } else {
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, press, temp, u2, mach2;
+      rho = initial_field[0 + ldim * node];
+      u = initial_field[1 + ldim * node];
+      v = initial_field[2 + ldim * node];
+      w = initial_field[3 + ldim * node];
+      press = initial_field[4 + ldim * node];
+      RAB(ref_math_divisible(press, rho), "can not divide by rho", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
+               press);
+      });
+      temp = gamma * (press / rho);
+      u2 = u * u + v * v + w * w;
+      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      mach2 = u2 / temp;
+      RAB(mach2 >= 0, "negative mach2", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      if (strcmp(interpolant, "mach") == 0) {
+        scalar[node] = sqrt(mach2);
+      } else if (strcmp(interpolant, "htot") == 0) {
+        scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "pressure") == 0) {
+        scalar[node] = press;
+      } else if (strcmp(interpolant, "density") == 0) {
+        scalar[node] = rho;
+      } else if (strcmp(interpolant, "temperature") == 0) {
+        scalar[node] = temp;
+      } else {
+        RSS(REF_INVALID, "unknown scalar interpolant");
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
   }
-  ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
 
   if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
