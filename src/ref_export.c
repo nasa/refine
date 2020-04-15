@@ -2498,8 +2498,9 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
     nedge = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (nodes[2] == id) {
-        c2n[0 + 2 * nedge] = nodes[0];
-        c2n[1 + 2 * nedge] = nodes[1];
+        RSS(ref_grid_orient_edg(ref_grid, nodes), "orient based on tri");
+        c2n[0 + 2 * nedge] = nodes[1]; /* flip edges too */
+        c2n[1 + 2 * nedge] = nodes[0];
         nedge++;
       }
     }
