@@ -22,7 +22,7 @@ function adapt_cycle {
 	  ${inproj}.solb
 
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  4000 ${inproj}-metric.solb
+	  1000 ${inproj}-metric.solb
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
