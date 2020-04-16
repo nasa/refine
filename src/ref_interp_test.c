@@ -887,14 +887,14 @@ int main(int argc, char *argv[]) {
       v = field[2 + ldim * node];
       w = field[3 + ldim * node];
       p = field[4 + ldim * node];
-      /* entropy adjoint. Is pressure the right nondimensionalization? */
+      /* entropy adjoint, Equ. (11), AIAA 2009-4790 */
       s = log(p / pow(rho, gamma));
       output[0 + odim * node] =
           (gamma - s) / (gamma - 1.0) - 0.5 * rho * (u * u + v * v + w * w) / p;
       output[1 + odim * node] = rho * u / p;
       output[2 + odim * node] = rho * v / p;
       output[3 + odim * node] = rho * w / p;
-      output[4 + odim * node] = -u / p;
+      output[4 + odim * node] = -rho / p;
 
       e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
 
