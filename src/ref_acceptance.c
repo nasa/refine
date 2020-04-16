@@ -118,6 +118,24 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       radius = 0.5;
       r = sqrt(x * x + y * y);
       scalar[node] = (r - radius);
+    } else if (strcmp(function_name, "mach-mms") == 0) {
+      REF_DBL x, y, c1, x0, y0, r1, c2, r2;
+      REF_DBL rho, pressure, u, v, mach;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      c1 = 100.0;
+      x0 = 0.0;
+      y0 = 0.4;
+      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+
+      c2 = 100.0;
+      r2 = x - y + 0.3;
+      rho = 1.00 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
+      pressure = 1.00 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
+      u = 0.15 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
+      v = 0.01 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
+      mach = sqrt(u * u + v * v) / sqrt(1.4 * pressure / rho);
+      scalar[node] = mach;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
