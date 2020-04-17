@@ -16,6 +16,7 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_defs.h
         ${REFINE_SRC_PATH}/ref_dict.h
         ${REFINE_SRC_PATH}/ref_edge.h
+	${REFINE_SRC_PATH}/ref_egads.h
         ${REFINE_SRC_PATH}/ref_elast.h
         ${REFINE_SRC_PATH}/ref_endian.h
         ${REFINE_SRC_PATH}/ref_export.h
@@ -35,6 +36,7 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_malloc.h
         ${REFINE_SRC_PATH}/ref_math.h
         ${REFINE_SRC_PATH}/ref_matrix.h
+        ${REFINE_SRC_PATH}/ref_meshlink.h
         ${REFINE_SRC_PATH}/ref_metric.h
         ${REFINE_SRC_PATH}/ref_migrate.h
         ${REFINE_SRC_PATH}/ref_mpi.h
@@ -66,6 +68,7 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_comprow.c"
   "${REFINE_SRC_PATH}/ref_dict.c"
   "${REFINE_SRC_PATH}/ref_edge.c"
+  "${REFINE_SRC_PATH}/ref_egads.c"
   "${REFINE_SRC_PATH}/ref_elast.h"
   "${REFINE_SRC_PATH}/ref_endian.h"
   "${REFINE_SRC_PATH}/ref_export.c"
@@ -83,6 +86,7 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_list.c"
   "${REFINE_SRC_PATH}/ref_math.c"
   "${REFINE_SRC_PATH}/ref_matrix.c"
+  "${REFINE_SRC_PATH}/ref_meshlink.c"
   "${REFINE_SRC_PATH}/ref_metric.c"
   "${REFINE_SRC_PATH}/ref_migrate.c"
   "${REFINE_SRC_PATH}/ref_mpi.c"
