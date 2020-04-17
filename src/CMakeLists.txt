@@ -15,6 +15,7 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_comprow.h
         ${REFINE_SRC_PATH}/ref_defs.h
         ${REFINE_SRC_PATH}/ref_dict.h
+        ${REFINE_SRC_PATH}/ref_dist.h
         ${REFINE_SRC_PATH}/ref_edge.h
 	${REFINE_SRC_PATH}/ref_egads.h
         ${REFINE_SRC_PATH}/ref_elast.h
@@ -67,6 +68,7 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_collapse.c"
   "${REFINE_SRC_PATH}/ref_comprow.c"
   "${REFINE_SRC_PATH}/ref_dict.c"
+  "${REFINE_SRC_PATH}/ref_dist.c"
   "${REFINE_SRC_PATH}/ref_edge.c"
   "${REFINE_SRC_PATH}/ref_egads.c"
   "${REFINE_SRC_PATH}/ref_elast.h"
@@ -103,6 +105,11 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_swap.c"
   "${REFINE_SRC_PATH}/ref_validation.c"
 )
+
+add_executable(ref ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_subcommand.c)
+target_link_libraries(ref PRIVATE ${OpenCASCADE_LIBRARIES} ${EGADS_LIBRARIES})
+target_compile_definitions(ref PRIVATE HAVE_EGADS)
+target_include_directories(ref PRIVATE ${EGADS_INCLUDE_DIR})
 
 add_executable(ref_phys_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_phys_test.c)
 add_executable(ref_migrate_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_migrate_test.c)
