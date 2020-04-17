@@ -15,8 +15,6 @@ OCC_COPY_DEST=${MODULE_DEST}/OpenCASCADE-7.3.1
 echo Build ${PACKAGE} ${VERSION}
 
 module purge
-module load ${INTEL_MODULE}
-module list
 
 mkdir ${MODULE_DEST}
 cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
@@ -47,8 +45,6 @@ set modmode  [module-info mode]
 
 set base    $MODULE_BASE
 set version $VERSION
-
-prereq ${INTEL_MODULE}
 
 set logr "/bin"
 
