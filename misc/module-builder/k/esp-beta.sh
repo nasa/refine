@@ -17,6 +17,7 @@ echo Build ${PACKAGE} ${VERSION}
 module purge
 
 mkdir ${MODULE_DEST}
+cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 
 # https://acdl.mit.edu/ESP/PreBuilts/
 # https://acdl.mit.edu/ESP/archive/
@@ -32,8 +33,6 @@ tar xzf ESPbeta.tgz
 
 mkdir ${MODULE_DEST}/EngSketchPad
 cp -r EngSketchPad/include EngSketchPad/lib EngSketchPad/bin ${MODULE_DEST}/EngSketchPad
-
-cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
