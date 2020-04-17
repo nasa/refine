@@ -1,7 +1,7 @@
 #! /bin/bash -xue
 
 PACKAGE='ESP'
-VERSION='118-rc.1'
+VERSION='118-rc.3'
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
