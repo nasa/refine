@@ -110,6 +110,13 @@ add_executable(ref ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_subc
 target_link_libraries(ref PRIVATE ${OpenCASCADE_LIBRARIES} ${EGADS_LIBRARIES})
 target_compile_definitions(ref PRIVATE HAVE_EGADS)
 target_include_directories(ref PRIVATE ${EGADS_INCLUDE_DIR})
+set_target_rpath(ref ${CMAKE_INSTALL_PREFIX})
+
+add_executable(refmpifull ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_subcommand.c)
+target_link_libraries(refmpifull PRIVATE ${OpenCASCADE_LIBRARIES} ${EGADS_LIBRARIES} ${MPI_LIBRARIES})
+target_compile_definitions(refmpifull PRIVATE HAVE_EGADS HAVE_MPI)
+target_include_directories(refmpifull PRIVATE ${EGADS_INCLUDE_DIR} ${MPI_INCLUDE_PATH})
+set_target_rpath(refmpifull ${CMAKE_INSTALL_PREFIX})
 
 add_executable(ref_phys_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_phys_test.c)
 add_executable(ref_migrate_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_migrate_test.c)
