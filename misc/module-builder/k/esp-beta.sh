@@ -9,7 +9,7 @@ else
    . common.sh
 fi
 
-OCC_COPY_SOURCE='/u/shared/fun3d/fun3d_users/modules/ESP/116/OpenCASCADE-7.3.1'
+OCC_COPY_SOURCE='/u/shared/fun3d/fun3d_users/modules/ESP/117/OpenCASCADE-7.3.1'
 OCC_COPY_DEST=${MODULE_DEST}/OpenCASCADE-7.3.1
 
 echo Build ${PACKAGE} ${VERSION}
