@@ -29,7 +29,7 @@ timestamp=$(date -d @${raw} +"%Y.%d.%m.%H%M")
 rm -rf EngSketchPad
 tar xzf ESPbeta.tgz
 ( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
-( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++)
+( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++ FCOMP=dfortran)
 
 mkdir ${MODULE_DEST}/EngSketchPad
 cp -r EngSketchPad/include EngSketchPad/lib EngSketchPad/bin ${MODULE_DEST}/EngSketchPad
