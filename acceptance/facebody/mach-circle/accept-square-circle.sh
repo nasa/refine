@@ -12,7 +12,7 @@ fi
 
 tecplot=-t
 field="-u mach-mms"
-egads="-g square.egads"
+egads="-g square-circle.egads"
 
 function adapt_cycle {
     inproj=$1
@@ -33,9 +33,9 @@ function adapt_cycle {
     ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}-u.tec
 }
 
-serveCSM square-cirlcle.csm
-${src}/ref bootstrap square-cirlcle.egads
-cp square-cirlcle-vol.meshb cycle00.meshb
+serveCSM square-circle.csm
+${src}/ref bootstrap square-circle.egads
+cp square-circle-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01
 adapt_cycle cycle01 cycle02

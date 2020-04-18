@@ -19,6 +19,6 @@ skbeg     0   0.9   0   1
    arc       ::x[1]   ::y[1]   0   ::d[1]   xy
 skend     0
 
-dump square-cirlcle.egads
+dump square-circle.egads
 
 
