@@ -1,0 +1,24 @@
+
+skbeg     0   0.9   0   1
+   skvar     xy   0.000000;0.000000;0.341886;0.000000;0.100000;0.000000;1.000000;0.100000;0.000000;1.000000;-0.900000;0.000000;0.300000;-0.900000;0.000000;
+   skcon     X   1   -1  0
+   skcon     Y   1   -1  0
+   skcon     V   1   2  0
+   skcon     H   2   3  0
+   skcon     V   3   4  0
+   skcon     H   4   5  0
+   skcon     L   1   2  0.1
+   skcon     L   2   3  1
+   skcon     L   3   4  1
+   skcon     R   5   1  0.5
+   skcon     X   5   1  0
+   linseg    ::x[2]   ::y[2]   0
+   linseg    ::x[3]   ::y[3]   0
+   linseg    ::x[4]   ::y[4]   0
+   linseg    ::x[5]   ::y[5]   0
+   arc       ::x[1]   ::y[1]   0   ::d[1]   xy
+skend     0
+
+dump square-circle.egads
+
+
