@@ -15,7 +15,9 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_comprow.h
         ${REFINE_SRC_PATH}/ref_defs.h
         ${REFINE_SRC_PATH}/ref_dict.h
+        ${REFINE_SRC_PATH}/ref_dist.h
         ${REFINE_SRC_PATH}/ref_edge.h
+	${REFINE_SRC_PATH}/ref_egads.h
         ${REFINE_SRC_PATH}/ref_elast.h
         ${REFINE_SRC_PATH}/ref_endian.h
         ${REFINE_SRC_PATH}/ref_export.h
@@ -35,6 +37,7 @@ set(REF_TWO_HEADERS
         ${REFINE_SRC_PATH}/ref_malloc.h
         ${REFINE_SRC_PATH}/ref_math.h
         ${REFINE_SRC_PATH}/ref_matrix.h
+        ${REFINE_SRC_PATH}/ref_meshlink.h
         ${REFINE_SRC_PATH}/ref_metric.h
         ${REFINE_SRC_PATH}/ref_migrate.h
         ${REFINE_SRC_PATH}/ref_mpi.h
@@ -65,7 +68,9 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_collapse.c"
   "${REFINE_SRC_PATH}/ref_comprow.c"
   "${REFINE_SRC_PATH}/ref_dict.c"
+  "${REFINE_SRC_PATH}/ref_dist.c"
   "${REFINE_SRC_PATH}/ref_edge.c"
+  "${REFINE_SRC_PATH}/ref_egads.c"
   "${REFINE_SRC_PATH}/ref_elast.h"
   "${REFINE_SRC_PATH}/ref_endian.h"
   "${REFINE_SRC_PATH}/ref_export.c"
@@ -83,6 +88,7 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_list.c"
   "${REFINE_SRC_PATH}/ref_math.c"
   "${REFINE_SRC_PATH}/ref_matrix.c"
+  "${REFINE_SRC_PATH}/ref_meshlink.c"
   "${REFINE_SRC_PATH}/ref_metric.c"
   "${REFINE_SRC_PATH}/ref_migrate.c"
   "${REFINE_SRC_PATH}/ref_mpi.c"
@@ -99,6 +105,18 @@ set(REF_TWO_SRC
   "${REFINE_SRC_PATH}/ref_swap.c"
   "${REFINE_SRC_PATH}/ref_validation.c"
 )
+
+add_executable(ref ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_subcommand.c)
+target_link_libraries(ref PRIVATE ${OpenCASCADE_LIBRARIES} ${EGADS_LIBRARIES})
+target_compile_definitions(ref PRIVATE HAVE_EGADS)
+target_include_directories(ref PRIVATE ${EGADS_INCLUDE_DIR})
+set_target_rpath(ref ${CMAKE_INSTALL_PREFIX})
+
+add_executable(refmpifull ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_subcommand.c)
+target_link_libraries(refmpifull PRIVATE ${OpenCASCADE_LIBRARIES} ${EGADS_LIBRARIES} ${MPI_LIBRARIES})
+target_compile_definitions(refmpifull PRIVATE HAVE_EGADS HAVE_MPI)
+target_include_directories(refmpifull PRIVATE ${EGADS_INCLUDE_DIR} ${MPI_INCLUDE_PATH})
+set_target_rpath(refmpifull ${CMAKE_INSTALL_PREFIX})
 
 add_executable(ref_phys_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_phys_test.c)
 add_executable(ref_migrate_test ${REF_TWO_SRC} ${REF_TWO_HEADERS} ${REFINE_SRC_PATH}/ref_migrate_test.c)

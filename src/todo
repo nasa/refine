@@ -222,7 +222,7 @@ ooooooooooooooooo
 
 + parallel Dimension 2 metric .sol reader
 + z-lazy Dimension 2 metric .solb reader
-+ adopts new OpenCSM defaults for global EGADS tess params
++ adopts new OpenCSM defaults for global EGADS tess params, faster tess
 + RCB partition with shifting k-select age awareness
 + chunk global unused node delete
 + ref_node_eliminate_unused_globals refactor with unit tests
