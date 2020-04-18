@@ -66,6 +66,19 @@ REF_STATUS ref_egads_close(REF_GEOM ref_geom) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_egads_out_level(REF_GEOM ref_geom, REF_INT out_level) {
+#ifdef HAVE_EGADS
+  ego context;
+  context = (ego)(ref_geom->context);
+  RAS(EG_setOutLevel(context, (int)out_level) >= 0, "set verbosity");
+#else
+  printf("nothing for %s, No EGADS linked\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(out_level);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
 #ifdef HAVE_EGADS
   ego context;
