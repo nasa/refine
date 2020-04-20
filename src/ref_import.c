@@ -1128,6 +1128,20 @@ static REF_STATUS ref_import_meshb_int(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_import_meshb_size(FILE *file, REF_INT version,
+                                        REF_SIZE *value) {
+  unsigned int int_value;
+  unsigned long long_value;
+  if (version < 4) {
+    REIS(1, fread(&int_value, sizeof(int), 1, file), "int value");
+    *value = (REF_SIZE)int_value;
+  } else {
+    REIS(1, fread(&long_value, sizeof(long), 1, file), "long value");
+    *value = (REF_SIZE)long_value;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                    const char *filename) {
   REF_GRID ref_grid;
@@ -1251,8 +1265,8 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
 
       for (geom = 0; geom < ngeom; geom++) {
         double filler;
-        REIS(1, fread(&(node), sizeof(node), 1, file), "node");
-        REIS(1, fread(&(id), sizeof(id), 1, file), "id");
+        RSS(ref_import_meshb_int(file, version, &(node)), "node");
+        RSS(ref_import_meshb_int(file, version, &(id)), "node");
         for (i = 0; i < type; i++)
           REIS(1, fread(&(param[i]), sizeof(double), 1, file), "param");
         if (0 < type)
@@ -1269,9 +1283,9 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                             &available, &next_position),
       "jump");
   if (available) {
-    REIS(1,
-         fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
-         "cad data size");
+    RSS(ref_import_meshb_size(file, version,
+                              &(ref_geom_cad_data_size(ref_geom))),
+        "cad data size");
     if (verbose)
       printf("cad_data %ld bytes\n", (long)ref_geom_cad_data_size(ref_geom));
     /* safe non-NULL free, if already allocated, to prevent memory leaks */
