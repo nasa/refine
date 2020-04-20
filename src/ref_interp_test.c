@@ -1174,7 +1174,6 @@ int main(int argc, char *argv[]) {
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
-      RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");
     }
@@ -1231,13 +1230,11 @@ int main(int argc, char *argv[]) {
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_split_edge_pattern(ref_grid, 0, 2), "split");
-      RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
       RSS(ref_export_by_extension(ref_grid, even), "export");
       RSS(ref_grid_free(ref_grid), "free");
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
-      RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");
     }
@@ -1296,13 +1293,11 @@ int main(int argc, char *argv[]) {
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_split_edge_pattern(ref_grid, 0, 2), "split");
-      RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
       RSS(ref_export_by_extension(ref_grid, even), "export");
       RSS(ref_grid_free(ref_grid), "free");
 
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
       RSS(ref_split_edge_pattern(ref_grid, 1, 2), "split");
-      RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
       RSS(ref_export_by_extension(ref_grid, odd), "export");
       RSS(ref_grid_free(ref_grid), "free");
     }
