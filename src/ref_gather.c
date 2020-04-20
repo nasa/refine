@@ -692,7 +692,7 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
 }
 
 static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
-                                  REF_BOOL has_id, REF_BOOL twod, FILE *file) {
+                                  REF_INT version, REF_BOOL twod, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
@@ -700,7 +700,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_GLOB nnode_written, first, global;
   REF_INT n, i;
   REF_INT local;
-  REF_INT id = REF_EXPORT_MESHB_VERTEX_ID;
+  int int_id = (int)REF_EXPORT_MESHB_VERTEX_ID;
+  int long_id = (long)REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
   REF_BOOL node_not_used_once = REF_FALSE;
 
@@ -757,7 +758,10 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
           if (swap_endian) SWAP_DBL(swapped_dbl);
           REIS(1, fwrite(&swapped_dbl, sizeof(REF_DBL), 1, file), "z");
         }
-        if (has_id) REIS(1, fwrite(&id, sizeof(REF_INT), 1, file), "id");
+        if (1 < version && version < 4)
+	  REIS(1, fwrite(&int_id, sizeof(int), 1, file), "int id");
+        if (3 < version)
+	  REIS(1, fwrite(&long_id, sizeof(long), 1, file), "long id");
       }
   }
 
@@ -1315,7 +1319,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT code, version, dim;
   REF_FILEPOS next_position = 0;
-  REF_INT keyword_code, header_size;
+  REF_INT keyword_code, header_size, int_size, fp_size;
   REF_LONG ncell;
   REF_INT ncell_int, node_per;
   REF_INT ngeom, type;
@@ -1327,15 +1331,23 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   REF_BOOL sixty_four_bit = REF_FALSE;
   REF_BOOL select_faceid = REF_FALSE;
   REF_INT faceid = REF_EMPTY;
+  int temp_int;
+  long temp_long;
 
-  if (10000000 < ref_node_n_global(ref_node)) {
-    version = 3;
-    header_size = 4 + 8 + 4;
-  } else {
-    version = 2;
-    header_size = 4 + 4 + 4;
+  version = 2;
+  if ( 1 < ref_grid_meshb_version(ref_grid)) {
+    version = ref_grid_meshb_version(ref_grid);
+  }else{
+    if (10000000 < ref_node_n_global(ref_node)) version = 3;
+    if (100000000 < ref_node_n_global(ref_node)) version = 4;
   }
 
+  int_size = 4;
+  fp_size = 4;
+  if (2<version) fp_size=8;
+  if (3<version) int_size=8;
+  header_size = 4 + fp_size + int_size;
+  
   dim = 3;
   if (ref_grid_twod(ref_grid)) dim = 2;
 
@@ -1349,7 +1361,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = (REF_FILEPOS)header_size + ftell(file);
+    /* dimension keyword always int */
+    next_position = (REF_FILEPOS)(4+fp_size+4) + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
@@ -1360,15 +1373,22 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   if (ref_grid_once(ref_grid)) {
     next_position =
         (REF_FILEPOS)header_size +
-        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(dim * 8 + 4) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(dim * 8 + int_size) +
         ftell(file);
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
-         "nnode");
+    if (version<4){
+      temp_int = (int)ref_node_n_global(ref_node);
+      REIS(1, fwrite(&(temp_int), sizeof(int), 1, file),
+	   "int nnode");
+    }else{
+      temp_long = (long)ref_node_n_global(ref_node);
+      REIS(1, fwrite(&(temp_long), sizeof(long), 1, file),
+	   "long nnode");
+    }
   }
-  RSS(ref_gather_node(ref_node, swap_endian, always_id, ref_grid_twod(ref_grid),
+  RSS(ref_gather_node(ref_node, swap_endian, version, ref_grid_twod(ref_grid),
                       file),
       "nodes");
   if (ref_grid_once(ref_grid))
@@ -1504,7 +1524,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   REF_CELL ref_cell;
   REF_INT group;
   REF_INT faceid, min_faceid, max_faceid;
-  REF_BOOL always_id = REF_FALSE;
+  REF_BOOL version = 0; /* meshb version, zero is no id */
   REF_BOOL faceid_insted_of_c2n, select_faceid;
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
@@ -1576,7 +1596,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
     }
   }
 
-  RSS(ref_gather_node(ref_node, swap_endian, always_id, REF_FALSE, file),
+  RSS(ref_gather_node(ref_node, swap_endian, version, REF_FALSE, file),
       "nodes");
 
   RSS(ref_grid_faceid_range(ref_grid, &min_faceid, &max_faceid), "range");
@@ -1585,24 +1605,24 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   select_faceid = REF_TRUE;
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
-                        always_id, swap_endian, sixty_four_bit, select_faceid,
+                        version, swap_endian, sixty_four_bit, select_faceid,
                         faceid, file),
         "tri c2n");
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
-                        always_id, swap_endian, sixty_four_bit, select_faceid,
+                        version, swap_endian, sixty_four_bit, select_faceid,
                         faceid, file),
         "qua c2n");
 
   faceid_insted_of_c2n = REF_TRUE;
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_tri(ref_grid), faceid_insted_of_c2n,
-                        always_id, swap_endian, sixty_four_bit, select_faceid,
+                        version, swap_endian, sixty_four_bit, select_faceid,
                         faceid, file),
         "tri faceid");
   for (faceid = min_faceid; faceid <= max_faceid; faceid++)
     RSS(ref_gather_cell(ref_node, ref_grid_qua(ref_grid), faceid_insted_of_c2n,
-                        always_id, swap_endian, sixty_four_bit, select_faceid,
+                        version, swap_endian, sixty_four_bit, select_faceid,
                         faceid, file),
         "qua faceid");
 
@@ -1610,7 +1630,7 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
   select_faceid = REF_FALSE;
   faceid = REF_EMPTY;
   each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
-    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, always_id,
+    RSS(ref_gather_cell(ref_node, ref_cell, faceid_insted_of_c2n, version,
                         swap_endian, sixty_four_bit, select_faceid, faceid,
                         file),
         "cell c2n");
