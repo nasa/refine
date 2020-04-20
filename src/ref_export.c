@@ -2143,6 +2143,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT group, node_per, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER + 1]; /* everyone gets id in meshb */
   REF_INT type, id, i, size_bytes;
+  REF_INT n0, n1, n2, n3, n4;
   REF_INT geom;
   int ngeom;
 
@@ -2222,12 +2223,27 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
         for (node = 0; node < node_per; node++) {
           nodes[node] = o2n[nodes[node]] + 1;
         }
+        if (REF_CELL_PYR == ref_cell_type(ref_cell)) {
+          /* convention: square basis is 0-1-2-3
+             (oriented conter clockwise like trias) and top vertex is 4 */
+          n0 = nodes[0];
+          n1 = nodes[3];
+          n2 = nodes[4];
+          n3 = nodes[1];
+          n4 = nodes[2];
+          nodes[0] = n0;
+          nodes[1] = n1;
+          nodes[2] = n2;
+          nodes[3] = n3;
+          nodes[4] = n4;
+        }
         if (!ref_cell_last_node_is_an_id(ref_cell))
           nodes[1 + node_per] = REF_EXPORT_MESHB_3D_ID;
         for (node = 0; node < (1 + node_per); node++) {
           RSS(ref_export_meshb_int(file, version, nodes[node]), "c2n");
         }
       }
+      REIS(next_position, ftell(file), "cell inconsistent");
     }
   }
 
