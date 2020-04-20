@@ -2238,7 +2238,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
           nodes[4] = n4;
         }
         if (!ref_cell_last_node_is_an_id(ref_cell))
-          nodes[1 + node_per] = REF_EXPORT_MESHB_3D_ID;
+          nodes[node_per] = REF_EXPORT_MESHB_3D_ID;
         for (node = 0; node < (1 + node_per); node++) {
           RSS(ref_export_meshb_int(file, version, nodes[node]), "c2n");
         }
