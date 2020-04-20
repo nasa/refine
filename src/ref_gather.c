@@ -691,6 +691,33 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_meshb_glob(FILE *file, REF_INT version,
+                                        REF_GLOB value) {
+  int int_value;
+  long long_value;
+  if (version < 4) {
+    int_value = (int)value;
+    REIS(1, fwrite(&int_value, sizeof(int), 1, file), "int value");
+  } else {
+    long_value = (long)value;
+    REIS(1, fwrite(&long_value, sizeof(long), 1, file), "long value");
+  }
+  return REF_SUCCESS;
+}
+static REF_STATUS ref_gather_meshb_int(FILE *file, REF_INT version,
+                                       REF_INT value) {
+  int int_value;
+  long long_value;
+  if (version < 4) {
+    int_value = (int)value;
+    REIS(1, fwrite(&int_value, sizeof(int), 1, file), "int value");
+  } else {
+    long_value = (long)value;
+    REIS(1, fwrite(&long_value, sizeof(long), 1, file), "long value");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
                                   REF_INT version, REF_BOOL twod, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
@@ -700,8 +727,6 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
   REF_GLOB nnode_written, first, global;
   REF_INT n, i;
   REF_INT local;
-  int int_id = (int)REF_EXPORT_MESHB_VERTEX_ID;
-  int long_id = (long)REF_EXPORT_MESHB_VERTEX_ID;
   REF_STATUS status;
   REF_BOOL node_not_used_once = REF_FALSE;
 
@@ -759,9 +784,8 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
           REIS(1, fwrite(&swapped_dbl, sizeof(REF_DBL), 1, file), "z");
         }
         if (1 < version && version < 4)
-	  REIS(1, fwrite(&int_id, sizeof(int), 1, file), "int id");
-        if (3 < version)
-	  REIS(1, fwrite(&long_id, sizeof(long), 1, file), "long id");
+          RSS(ref_gather_meshb_int(file, version, REF_EXPORT_MESHB_VERTEX_ID),
+              "nnode");
       }
   }
 
@@ -1331,27 +1355,26 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   REF_BOOL sixty_four_bit = REF_FALSE;
   REF_BOOL select_faceid = REF_FALSE;
   REF_INT faceid = REF_EMPTY;
-  int temp_int;
-  long temp_long;
+
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  dim = 3;
+  if (ref_grid_twod(ref_grid)) dim = 2;
 
   version = 2;
-  if ( 1 < ref_grid_meshb_version(ref_grid)) {
+  if (1 < ref_grid_meshb_version(ref_grid)) {
     version = ref_grid_meshb_version(ref_grid);
-  }else{
+  } else {
     if (10000000 < ref_node_n_global(ref_node)) version = 3;
     if (100000000 < ref_node_n_global(ref_node)) version = 4;
   }
 
   int_size = 4;
   fp_size = 4;
-  if (2<version) fp_size=8;
-  if (3<version) int_size=8;
+  if (2 < version) fp_size = 8;
+  if (3 < version) int_size = 8;
   header_size = 4 + fp_size + int_size;
-  
-  dim = 3;
-  if (ref_grid_twod(ref_grid)) dim = 2;
 
-  RSS(ref_node_synchronize_globals(ref_node), "sync");
   file = NULL;
   if (ref_grid_once(ref_grid)) {
     file = fopen(filename, "w");
@@ -1362,7 +1385,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
     /* dimension keyword always int */
-    next_position = (REF_FILEPOS)(4+fp_size+4) + ftell(file);
+    next_position = (REF_FILEPOS)(4 + fp_size + 4) + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
@@ -1371,22 +1394,15 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   }
 
   if (ref_grid_once(ref_grid)) {
-    next_position =
-        (REF_FILEPOS)header_size +
-        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(dim * 8 + int_size) +
-        ftell(file);
+    next_position = (REF_FILEPOS)header_size +
+                    (REF_FILEPOS)ref_node_n_global(ref_node) *
+                        (REF_FILEPOS)(dim * 8 + int_size) +
+                    ftell(file);
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    if (version<4){
-      temp_int = (int)ref_node_n_global(ref_node);
-      REIS(1, fwrite(&(temp_int), sizeof(int), 1, file),
-	   "int nnode");
-    }else{
-      temp_long = (long)ref_node_n_global(ref_node);
-      REIS(1, fwrite(&(temp_long), sizeof(long), 1, file),
-	   "long nnode");
-    }
+    RSS(ref_gather_meshb_glob(file, version, ref_node_n_global(ref_node)),
+        "nnode");
   }
   RSS(ref_gather_node(ref_node, swap_endian, version, ref_grid_twod(ref_grid),
                       file),
