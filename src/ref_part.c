@@ -552,6 +552,20 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
+                                      REF_LONG *value) {
+  int int_value;
+  long long_value;
+  if (version < 4) {
+    REIS(1, fread(&int_value, sizeof(int), 1, file), "int value");
+    *value = (REF_LONG)int_value;
+  } else {
+    REIS(1, fread(&long_value, sizeof(long), 1, file), "long value");
+    *value = long_value;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
   REF_BOOL verbose = REF_FALSE;
@@ -565,7 +579,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   REF_BOOL swap_endian = REF_FALSE;
   REF_BOOL has_id = REF_TRUE;
-  REF_INT nnode, ncell;
+  REF_LONG nnode;
+  REF_INT ncell;
   REF_INT type, geom_keyword, ngeom;
   REF_INT cad_data_keyword;
 
@@ -584,6 +599,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
   }
+  RSS(ref_mpi_bcast(ref_mpi, &version, 1, REF_INT_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_mpi, &dim, 1, REF_INT_TYPE), "bcast");
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create grid");
   ref_grid = *ref_grid_ptr;
@@ -596,10 +612,10 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                               &next_position),
         "jump");
     RAS(available, "meshb missing vertex");
-    REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
-    if (verbose) printf("nnode %d\n", nnode);
+    RSS(ref_part_meshb_long(file, version, &nnode), "nnode");
+    if (verbose) printf("nnode %ld\n", nnode);
   }
-  RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_INT_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_part_node(file, swap_endian, has_id, ref_grid_twod(ref_grid),
                     ref_node, nnode),
       "part node");
@@ -618,8 +634,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node, nnode,
-                            file),
+    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node,
+                            (REF_INT)nnode, file),
         "part cell");
     if (ref_grid_once(ref_grid))
       REIS(next_position, ftello(file), "end location");
@@ -637,8 +653,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node, nnode,
-                            file),
+    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node,
+                            (REF_INT)nnode, file),
         "part cell");
     if (ref_grid_once(ref_grid))
       REIS(next_position, ftello(file), "end location");
@@ -656,8 +672,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
   if (available) {
     RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_edg(ref_grid), ncell, ref_node, nnode,
-                            file),
+    RSS(ref_part_meshb_cell(ref_grid_edg(ref_grid), ncell, ref_node,
+                            (REF_INT)nnode, file),
         "part cell");
     if (ref_grid_once(ref_grid))
       REIS(next_position, ftello(file), "end location");
@@ -677,7 +693,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
       RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_INT_TYPE), "bcast");
-      RSS(ref_part_meshb_geom(ref_geom, ngeom, type, ref_node, nnode, file),
+      RSS(ref_part_meshb_geom(ref_geom, ngeom, type, ref_node, (REF_INT)nnode,
+                              file),
           "part geom");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftello(file), "end location");
