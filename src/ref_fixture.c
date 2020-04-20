@@ -1195,5 +1195,7 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
     }
   }
 
+  RSS(ref_node_initialize_n_global(ref_node, m * n), "init glob");
+
   return REF_SUCCESS;
 }
