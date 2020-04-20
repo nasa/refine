@@ -136,10 +136,51 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import .meshb tet brick */
+  { /* export import .meshb tet brick, version 2 */
     REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.meshb";
+    char file[] = "ref_import_test_ver2.meshb";
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 2;
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick, version 3 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test_ver3.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 3;
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick, version 4 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test_ver4.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 4;
     RSS(ref_export_by_extension(export_grid, file), "export");
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
     REIS(ref_node_n(ref_grid_node(export_grid)),
