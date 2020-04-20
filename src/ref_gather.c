@@ -691,6 +691,19 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_gather_meshb_size(FILE *file, REF_INT version,
+                                        REF_SIZE value) {
+  unsigned int int_value;
+  unsigned long long_value;
+  if (version < 4) {
+    int_value = (unsigned int)value;
+    REIS(1, fwrite(&int_value, sizeof(unsigned int), 1, file), "int value");
+  } else {
+    long_value = value;
+    REIS(1, fwrite(&long_value, sizeof(unsigned long), 1, file), "long value");
+  }
+  return REF_SUCCESS;
+}
 static REF_STATUS ref_gather_meshb_glob(FILE *file, REF_INT version,
                                         REF_GLOB value) {
   int int_value;
@@ -1281,11 +1294,12 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
 }
 
 static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
-                                  REF_INT type, FILE *file) {
+                                  REF_INT version, REF_INT type, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT geom, node, id, i;
+  REF_INT geom, id, i;
+  REF_GLOB node;
   REF_INT ngeom;
-  REF_INT *node_id;
+  REF_GLOB *node_id;
   REF_DBL *param;
   REF_INT proc;
   double filler = 0.0;
@@ -1295,11 +1309,10 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
       if (ref_mpi_rank(ref_mpi) !=
           ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
         continue;
-      node =
-          (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
+      node = ref_node_global(ref_node, ref_geom_node(ref_geom, geom)) + 1;
       id = ref_geom_id(ref_geom, geom);
-      REIS(1, fwrite(&(node), sizeof(int), 1, file), "node");
-      REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
+      RSS(ref_gather_meshb_glob(file, version, node), "node");
+      RSS(ref_gather_meshb_int(file, version, id), "id");
       for (i = 0; i < type; i++)
         REIS(1,
              fwrite(&(ref_geom_param(ref_geom, i, geom)), sizeof(double), 1,
@@ -1313,17 +1326,17 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
     each_ref_mpi_worker(ref_mpi, proc) {
       RSS(ref_mpi_recv(ref_mpi, &ngeom, 1, REF_INT_TYPE, proc), "recv ngeom");
       if (ngeom > 0) {
-        ref_malloc(node_id, 2 * ngeom, REF_INT);
+        ref_malloc(node_id, 2 * ngeom, REF_GLOB);
         ref_malloc(param, 2 * ngeom, REF_DBL);
-        RSS(ref_mpi_recv(ref_mpi, node_id, 2 * ngeom, REF_INT_TYPE, proc),
+        RSS(ref_mpi_recv(ref_mpi, node_id, 2 * ngeom, REF_GLOB_TYPE, proc),
             "recv node_id");
         RSS(ref_mpi_recv(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE, proc),
             "recv param");
         for (geom = 0; geom < ngeom; geom++) {
           node = node_id[0 + 2 * geom] + 1;
-          id = node_id[1 + 2 * geom];
-          REIS(1, fwrite(&(node), sizeof(int), 1, file), "node");
-          REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
+          id = (REF_INT)node_id[1 + 2 * geom];
+          RSS(ref_gather_meshb_glob(file, version, node), "node");
+          RSS(ref_gather_meshb_int(file, version, id), "id");
           for (i = 0; i < type; i++)
             REIS(1, fwrite(&(param[i + 2 * geom]), sizeof(double), 1, file),
                  "id");
@@ -1344,7 +1357,7 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
     }
     RSS(ref_mpi_send(ref_mpi, &ngeom, 1, REF_INT_TYPE, 0), "send ngeom");
     if (ngeom > 0) {
-      ref_malloc(node_id, 2 * ngeom, REF_INT);
+      ref_malloc(node_id, 2 * ngeom, REF_GLOB);
       ref_malloc_init(param, 2 * ngeom, REF_DBL, 0.0); /* prevent uninit */
       ngeom = 0;
       each_ref_geom_of(ref_geom, type, geom) {
@@ -1352,13 +1365,13 @@ static REF_STATUS ref_gather_geom(REF_NODE ref_node, REF_GEOM ref_geom,
             ref_node_part(ref_node, ref_geom_node(ref_geom, geom)))
           continue;
         node_id[0 + 2 * ngeom] =
-            (REF_INT)ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
-        node_id[1 + 2 * ngeom] = ref_geom_id(ref_geom, geom);
+            ref_node_global(ref_node, ref_geom_node(ref_geom, geom));
+        node_id[1 + 2 * ngeom] = (REF_GLOB)ref_geom_id(ref_geom, geom);
         for (i = 0; i < type; i++)
           param[i + 2 * ngeom] = ref_geom_param(ref_geom, i, geom);
         ngeom++;
       }
-      RSS(ref_mpi_send(ref_mpi, node_id, 2 * ngeom, REF_INT_TYPE, 0),
+      RSS(ref_mpi_send(ref_mpi, node_id, 2 * ngeom, REF_GLOB_TYPE, 0),
           "send node_id");
       RSS(ref_mpi_send(ref_mpi, param, 2 * ngeom, REF_DBL_TYPE, 0),
           "send param");
@@ -1479,9 +1492,9 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
         REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
              "vertex version code");
         RSS(ref_export_meshb_next_position(file, version, next_position), "np");
-        REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "nnode");
+        RSS(ref_gather_meshb_int(file, version, ngeom), "ngeom");
       }
-      RSS(ref_gather_geom(ref_node, ref_geom, type, file), "nodes");
+      RSS(ref_gather_geom(ref_node, ref_geom, version, type, file), "nodes");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftell(file), "cell inconsistent");
     }
@@ -1493,8 +1506,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
                     (REF_FILEPOS)ref_geom_cad_data_size(ref_geom) + ftell(file);
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    REIS(1, fwrite(&(ref_geom_cad_data_size(ref_geom)), sizeof(int), 1, file),
-         "n");
+    RSS(ref_gather_meshb_size(file, version, ref_geom_cad_data_size(ref_geom)),
+        "cad size");
     REIS(ref_geom_cad_data_size(ref_geom),
          fwrite(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                 (size_t)ref_geom_cad_data_size(ref_geom), file),
