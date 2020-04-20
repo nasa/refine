@@ -2258,7 +2258,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
               (REF_FILEPOS)(int_size * 2 + 8 * type + (0 < type ? 8 : 0));
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
-      REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "n");
+      RSS(ref_export_meshb_int(file, version, ngeom), "ngeom");
       each_ref_geom_of(ref_geom, type, geom) {
         double filler = 0.0;
         node = o2n[ref_geom_node(ref_geom, geom)] + 1;

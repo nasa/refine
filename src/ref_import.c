@@ -1260,7 +1260,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                               &next_position),
         "jump");
     if (available) {
-      REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
+      RSS(ref_import_meshb_int(file, version, &(ngeom)), "ngeom");
       if (verbose) printf("type %d ngeom %d\n", type, ngeom);
 
       for (geom = 0; geom < ngeom; geom++) {
