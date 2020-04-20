@@ -2236,10 +2236,10 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     each_ref_geom_of(ref_geom, type, geom) ngeom++;
     if (ngeom > 0) {
       keyword_code = 40 + type; /* GmfVerticesOnGeometricVertices */
-      next_position = (REF_FILEPOS)header_size +
-                      (REF_FILEPOS)ngeom *
-                          (REF_FILEPOS)(4 * 2 + 8 * type + (0 < type ? 8 : 0)) +
-                      ftell(file);
+      next_position =
+          ftell(file) + (REF_FILEPOS)header_size +
+          (REF_FILEPOS)ngeom *
+              (REF_FILEPOS)(int_size * 2 + 8 * type + (0 < type ? 8 : 0));
       REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
       REIS(1, fwrite(&(ngeom), sizeof(int), 1, file), "n");
@@ -2247,14 +2247,15 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
         double filler = 0.0;
         node = o2n[ref_geom_node(ref_geom, geom)] + 1;
         id = ref_geom_id(ref_geom, geom);
-        REIS(1, fwrite(&(node), sizeof(int), 1, file), "node");
-        REIS(1, fwrite(&(id), sizeof(int), 1, file), "id");
+        RSS(ref_export_meshb_int(file, version, node), "node");
+        RSS(ref_export_meshb_int(file, version, id), "id");
         for (i = 0; i < type; i++)
           REIS(1,
                fwrite(&(ref_geom_param(ref_geom, i, geom)), sizeof(double), 1,
                       file),
                "id");
-        if (0 < type) REIS(1, fwrite(&(filler), sizeof(double), 1, file), "id");
+        if (0 < type)
+          REIS(1, fwrite(&(filler), sizeof(double), 1, file), "filler");
       }
       REIS(next_position, ftell(file), "geom inconsistent");
     }
@@ -2267,7 +2268,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "keyword");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
     size_bytes = (REF_INT)ref_geom_cad_data_size(ref_geom);
-    REIS(1, fwrite(&size_bytes, sizeof(int), 1, file), "n");
+    RSS(ref_export_meshb_int(file, version, size_bytes), "size in bytes");
     REIS(ref_geom_cad_data_size(ref_geom),
          fwrite(ref_geom_cad_data(ref_geom), sizeof(REF_BYTE),
                 ref_geom_cad_data_size(ref_geom), file),
