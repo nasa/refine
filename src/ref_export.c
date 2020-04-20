@@ -2116,6 +2116,20 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_export_meshb_int(FILE *file, REF_INT version,
+                                       REF_INT value) {
+  int int_value;
+  long long_value;
+  if (version < 4) {
+    int_value = (int)value;
+    REIS(1, fwrite(&int_value, sizeof(int), 1, file), "int value");
+  } else {
+    long_value = (long)value;
+    REIS(1, fwrite(&long_value, sizeof(long), 1, file), "long value");
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
@@ -2131,8 +2145,6 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   REF_INT type, id, i, size_bytes;
   REF_INT geom;
   int ngeom;
-  int temp_int;
-  long temp_long;
 
   dim = 3;
   if (ref_grid_twod(ref_grid)) dim = 2;
@@ -2175,13 +2187,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
     keyword_code = 4;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    if (version < 4) {
-      temp_int = (int)ref_node_n(ref_node);
-      REIS(1, fwrite(&temp_int, sizeof(int), 1, file), "int nnode");
-    } else {
-      temp_long = (long)ref_node_n(ref_node);
-      REIS(1, fwrite(&temp_long, sizeof(long), 1, file), "long nnode");
-    }
+    RSS(ref_export_meshb_int(file, version, ref_node_n(ref_node)), "nnode");
     for (node = 0; node < ref_node_n(ref_node); node++) {
       REIS(1,
            fwrite(&(ref_node_xyz(ref_node, 0, n2o[node])), sizeof(double), 1,
@@ -2196,13 +2202,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
              fwrite(&(ref_node_xyz(ref_node, 2, n2o[node])), sizeof(double), 1,
                     file),
              "z");
-      if (version < 4) {
-        temp_int = (int)REF_EXPORT_MESHB_VERTEX_ID;
-        REIS(1, fwrite(&temp_int, sizeof(int), 1, file), "int nnode");
-      } else {
-        temp_long = (long)REF_EXPORT_MESHB_VERTEX_ID;
-        REIS(1, fwrite(&temp_long, sizeof(long), 1, file), "long nnode");
-      }
+      RSS(ref_export_meshb_int(file, version, REF_EXPORT_MESHB_VERTEX_ID),
+          "nnode");
     }
     REIS(next_position, ftell(file), "vertex inconsistent");
   }
