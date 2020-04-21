@@ -1359,14 +1359,17 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
   FILE *file;
   REF_INT chunk;
   REF_DBL *metric;
-  REF_INT nnode_read, section_size;
-  REF_INT node, local, global;
+  REF_LONG nnode_read;
+  REF_INT section_size;
+  REF_INT node, local;
   REF_BOOL available;
-  REF_INT version, dim, nnode, ntype, type;
+  REF_INT version, dim, ntype, type;
+  REF_LONG global, nnode;
 
   file = NULL;
   if (ref_mpi_once(ref_mpi)) {
     RSS(ref_import_meshb_header(filename, &version, key_pos), "header");
+    RAS(2 <= version && version <= 4, "unsupported version");
     file = fopen(filename, "r");
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
@@ -1375,40 +1378,41 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
         "jump");
     RAS(available, "meshb missing dimension");
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
-    if (dim < 2 || 3 < dim) {
-      printf("dim %d not supported\n", dim);
-      THROW("dim");
-    }
-
+    RAS(2 <= dim && dim <= 3, "unsupported dimension");
     RSS(ref_import_meshb_jump(file, version, key_pos, 62, &available,
                               &next_position),
         "jump");
     RAS(available, "SolAtVertices missing");
-    REIS(1, fread((unsigned char *)&nnode, 4, 1, file), "nnode");
+    RSS(ref_part_meshb_long(file, version, &nnode), "nnode");
     REIS(1, fread((unsigned char *)&ntype, 4, 1, file), "ntype");
     REIS(1, fread((unsigned char *)&type, 4, 1, file), "type");
-    if ((nnode != ref_node_n_global(ref_node)) &&
-        (nnode / 2 != ref_node_n_global(ref_node))) {
-      printf("file %d ref_node " REF_GLOB_FMT "\n", nnode,
-             ref_node_n_global(ref_node));
-      THROW("global count mismatch");
-    }
     REIS(1, ntype, "number of solutions");
     REIS(3, type, "metric solution type");
   }
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &version, 1, REF_INT_TYPE),
+      "bcast version");
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &dim, 1, REF_INT_TYPE),
       "bcast dim");
-  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_GLOB_TYPE),
       "bcast nnode");
 
-  chunk = MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = MIN(chunk, nnode);
+  if ((nnode != ref_node_n_global(ref_node)) &&
+      (nnode / 2 != ref_node_n_global(ref_node))) {
+    if (ref_mpi_once(ref_mpi))
+      printf("file %ld ref_node " REF_GLOB_FMT "\n", nnode,
+             ref_node_n_global(ref_node));
+    THROW("global count mismatch");
+  }
+
+  chunk =
+      (REF_INT)MAX(100000, nnode / (REF_LONG)ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_LONG)chunk, nnode);
 
   ref_malloc_init(metric, 6 * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
   while (nnode_read < nnode) {
-    section_size = MIN(chunk, nnode - nnode_read);
+    section_size = MIN(chunk, (REF_INT)(nnode - nnode_read));
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       for (node = 0; node < section_size; node++) {
         if (3 == dim) {
@@ -1446,14 +1450,14 @@ REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
           "bcast");
     }
     for (node = 0; node < section_size; node++) {
-      global = node + nnode_read;
+      global = (REF_LONG)node + nnode_read;
       RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
       if (REF_EMPTY != local) {
         RSS(ref_node_metric_set(ref_node, local, &(metric[6 * node])),
             "set local node met");
       }
       if (2 == dim) {
-        global = nnode + node + nnode_read;
+        global = nnode + (REF_LONG)node + nnode_read;
         RXS(ref_node_local(ref_node, global, &local), REF_NOT_FOUND, "local");
         if (REF_EMPTY != local) {
           RSS(ref_node_metric_set(ref_node, local, &(metric[6 * node])),
