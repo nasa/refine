@@ -117,8 +117,14 @@ static REF_STATUS ref_gather_bbox_intersects(REF_DBL *bbox1, REF_DBL *bbox2,
 int main(int argc, char *argv[]) {
   REF_INT pos;
   REF_MPI ref_mpi;
+  REF_BOOL transmesh = REF_FALSE;
+
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  RXS(ref_args_find(argc, argv, "--transmesh", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) transmesh = REF_TRUE;
 
   RXS(ref_args_find(argc, argv, "--subset", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos == 1 && argc == 12) {
@@ -244,7 +250,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (2 == argc) {
+  if (2 == argc && !transmesh) {
     REF_GRID import_grid;
 
     ref_mpi_stopwatch_start(ref_mpi);
@@ -444,18 +450,84 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  { /* export part gather .meshb tet with cad_model */
+  { /* export part gather .meshb tet with cad_model, version 2 */
     REF_GRID ref_grid;
     REF_INT version = 2;
-    char file[] = "ref_gather_test.meshb";
+    char file[] = "ref_gather_test_ver2.meshb";
 
     RSS(ref_gather_meshb_fixture(ref_mpi, file, version), "fixture");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver2.meshb "
+                  "ref_gather_test_ver2_import.mesh"),
+           "mesh");
+
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
     RSS(ref_gather_by_extension(ref_grid, file), "gather");
     RSS(ref_grid_free(ref_grid), "free");
 
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver2.meshb "
+                  "ref_gather_test_ver2_gather.mesh"),
+           "mesh");
+
     if (ref_mpi_once(ref_mpi)) {
-      REIS(0, remove(file), "test clean up");
+      if (!transmesh) REIS(0, remove(file), "test clean up");
+    }
+  }
+
+  { /* export part gather .meshb tet with cad_model, version 3 */
+    REF_GRID ref_grid;
+    REF_INT version = 3;
+    char file[] = "ref_gather_test_ver3.meshb";
+
+    RSS(ref_gather_meshb_fixture(ref_mpi, file, version), "fixture");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver3.meshb "
+                  "ref_gather_test_ver3_import.mesh"),
+           "mesh");
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
+    RSS(ref_gather_by_extension(ref_grid, file), "gather");
+    RSS(ref_grid_free(ref_grid), "free");
+
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver3.meshb "
+                  "ref_gather_test_ver3_gather.mesh"),
+           "mesh");
+
+    if (ref_mpi_once(ref_mpi)) {
+      if (!transmesh) REIS(0, remove(file), "test clean up");
+    }
+  }
+
+  { /* export part gather .meshb tet with cad_model, version 4 */
+    REF_GRID ref_grid;
+    REF_INT version = 4;
+    char file[] = "ref_gather_test_ver4.meshb";
+
+    RSS(ref_gather_meshb_fixture(ref_mpi, file, version), "fixture");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver4.meshb "
+                  "ref_gather_test_ver4_import.mesh"),
+           "mesh");
+
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
+    RSS(ref_gather_by_extension(ref_grid, file), "gather");
+    RSS(ref_grid_free(ref_grid), "free");
+
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test_ver4.meshb "
+                  "ref_gather_test_ver4_gather.mesh"),
+           "mesh");
+
+    if (ref_mpi_once(ref_mpi)) {
+      if (!transmesh) REIS(0, remove(file), "test clean up");
     }
   }
 
