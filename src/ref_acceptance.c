@@ -119,7 +119,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       r = sqrt(x * x + y * y);
       scalar[node] = (r - radius);
     } else if (strcmp(function_name, "mach-mms") == 0) {
-      REF_DBL x, y, c1, x0, y0, r1, c2, r2;
+      REF_DBL c1, x0, y0, r1, c2, r2;
       REF_DBL rho, pressure, u, v, mach;
       x = ref_node_xyz(ref_node, 0, node);
       y = ref_node_xyz(ref_node, 1, node);

@@ -507,6 +507,39 @@ REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
+  switch (ref_cell_type(ref_cell)) {
+    case REF_CELL_EDG:
+      *keyword = 5;
+      break;
+    case REF_CELL_TRI:
+      *keyword = 6;
+      break;
+    case REF_CELL_QUA:
+      *keyword = 7;
+      break;
+    case REF_CELL_ED3:
+      *keyword = 25;
+      break;
+    case REF_CELL_TET:
+      *keyword = 8;
+      break;
+    case REF_CELL_PYR:
+      *keyword = 49;
+      break;
+    case REF_CELL_PRI:
+      *keyword = 9;
+      break;
+    case REF_CELL_HEX:
+      *keyword = 10;
+      break;
+    default:
+      return REF_IMPLEMENT;
+      break;
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_inspect(REF_CELL ref_cell) {
   REF_INT cell, node;
   printf("ref_cell = %p\n", (void *)ref_cell);

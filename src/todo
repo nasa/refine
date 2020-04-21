@@ -67,7 +67,8 @@ warn about 64bit metis/parmetis?
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
 
-mpi allmin allmax
+ref_mpi allmin allmax
+ref_mpi strongly typed
 
 reduce use of ref_cell_list_with2, replace with each_ref_cell_having_node2
 

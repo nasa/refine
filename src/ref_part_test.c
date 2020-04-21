@@ -335,7 +335,8 @@ int main(int argc, char *argv[]) {
   { /* part tet lb8.ugrid, split comm */
     REF_MPI split_mpi;
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_part_test.lb8.ugrid";
+    char grid_file[] = "ref_part_test_split.lb8.ugrid";
+    REF_INT dummy = 0;
 
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
@@ -343,21 +344,28 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_grid_free(export_grid), "free");
 
+    RSS(ref_mpi_bcast(ref_mpi, &dummy, 1, REF_INT_TYPE),
+        "force sync before split");
+
     RSS(ref_mpi_half_comm(ref_mpi, &split_mpi), "split");
     RSS(ref_part_by_extension(&import_grid, split_mpi, grid_file), "import");
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_join_comm(split_mpi), "join");
     RSS(ref_mpi_free(split_mpi), "free");
 
+    RSS(ref_mpi_bcast(ref_mpi, &dummy, 1, REF_INT_TYPE),
+        "force sync after join");
+
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part meshb */
+  { /* part meshb, version 2 */
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_part_test.meshb";
+    char grid_file[] = "ref_part_test_ver2.meshb";
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 2;
       RSS(ref_export_meshb(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
@@ -368,7 +376,41 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part meshb with cad_data*/
+  { /* part meshb, version 3 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test_ver3.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 3;
+      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part meshb, version 4 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test_ver4.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 4;
+      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part meshb with cad_data */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.meshb";
     REF_GEOM ref_geom;
@@ -420,6 +462,87 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
 
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(metric_file), "test clean up");
+  }
+
+  { /* gather/part .solb by extension, version 2 */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 2;
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
+        "part solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
+  }
+
+  { /* gather/part .solb by extension, version 3 */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 3;
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
+        "part solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
+  }
+
+  { /* gather/part .solb by extension, version 4 */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 4;
+    RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       solb),
+        "gather solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, meshb), "part meshb");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, solb),
+        "part solb");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(solb), "test clean up");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(meshb), "test clean up");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");

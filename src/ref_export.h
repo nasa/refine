@@ -26,6 +26,8 @@ BEGIN_C_DECLORATION
 #define REF_EXPORT_MESHB_VERTEX_ID (1)
 #define REF_EXPORT_MESHB_2D_ID (1)
 #define REF_EXPORT_MESHB_3D_ID (0)
+#define REF_EXPORT_MESHB_VERTEX_3 (10000000)
+#define REF_EXPORT_MESHB_VERTEX_4 (200000000)
 END_C_DECLORATION
 
 #include "ref_grid.h"
@@ -73,9 +75,6 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
                                           REF_FILEPOS next_position);
 REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename);
-
-REF_STATUS ref_export_metric2d(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file);

@@ -42,11 +42,16 @@
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_INT pos;
+  REF_BOOL transmesh = REF_FALSE;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  if (2 == argc) {
+  RXS(ref_args_find(argc, argv, "--transmesh", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) transmesh = REF_TRUE;
+
+  if (2 == argc && !transmesh) {
     RSS(ref_import_examine_header(argv[1]), "examine header");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
@@ -136,11 +141,24 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import .meshb tet brick */
+  { /* export import .meshb tet brick, version 2 */
     REF_GRID export_grid, import_grid;
-    char file[] = "ref_import_test.meshb";
+    char file[] = "ref_import_test_ver2.meshb";
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 2;
     RSS(ref_export_by_extension(export_grid, file), "export");
+    if (transmesh) {
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver2.meshb ref_import_test_ver2.mesh"),
+          "mesh");
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver2.mesh ref_import_test_ver2.meshb"),
+          "meshb");
+    }
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
     REIS(ref_node_n(ref_grid_node(export_grid)),
          ref_node_n(ref_grid_node(import_grid)), "node count");
@@ -152,10 +170,74 @@ int main(int argc, char *argv[]) {
          ref_cell_n(ref_grid_tet(import_grid)), "tet count");
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");
-    REIS(0, remove(file), "test clean up");
+    if (!transmesh) REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import .meshb tet brick with cad_model */
+  { /* export import .meshb tet brick, version 3 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test_ver3.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 3;
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    if (transmesh) {
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver3.meshb ref_import_test_ver3.mesh"),
+          "mesh");
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver3.mesh ref_import_test_ver3.meshb"),
+          "meshb");
+    }
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    if (!transmesh) REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick, version 4 */
+    REF_GRID export_grid, import_grid;
+    char file[] = "ref_import_test_ver4.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 4;
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    if (transmesh) {
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver4.meshb ref_import_test_ver4.mesh"),
+          "mesh");
+      REIS(
+          0,
+          system(
+              "transmesh ref_import_test_ver4.mesh ref_import_test_ver4.meshb"),
+          "meshb");
+    }
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    if (!transmesh) REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick with cad_model, default */
     REF_GRID export_grid, import_grid;
     REF_GEOM ref_geom;
     char file[] = "ref_import_test.meshb";
@@ -183,13 +265,42 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  { /* export import .meshb tet brick with geom */
+  { /* export import .meshb tet brick with cad_model, version 4  */
+    REF_GRID export_grid, import_grid;
+    REF_GEOM ref_geom;
+    char file[] = "ref_import_test.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 4;
+    ref_geom = ref_grid_geom(export_grid);
+    ref_geom_cad_data_size(ref_geom) = 5;
+    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
+                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
+    ref_geom_cad_data(ref_geom)[0] = 5;
+    ref_geom_cad_data(ref_geom)[1] = 4;
+    ref_geom_cad_data(ref_geom)[2] = 3;
+    ref_geom_cad_data(ref_geom)[3] = 2;
+    ref_geom_cad_data(ref_geom)[4] = 1;
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+    ref_geom = ref_grid_geom(import_grid);
+    REIS(5, ref_geom_cad_data_size(ref_geom), "cad size");
+    REIS(5, ref_geom_cad_data(ref_geom)[0], "cad[0]");
+    REIS(4, ref_geom_cad_data(ref_geom)[1], "cad[1]");
+    REIS(3, ref_geom_cad_data(ref_geom)[2], "cad[2]");
+    REIS(2, ref_geom_cad_data(ref_geom)[3], "cad[3]");
+    REIS(1, ref_geom_cad_data(ref_geom)[4], "cad[4]");
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick with geom, default */
     REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_GEOM ref_geom;
     REF_INT type, id, node;
     REF_DBL param[2];
-    char file[] = "ref_import_test.meshb";
+    char file[] = "ref_import_test_geom2.meshb";
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
     ref_geom = ref_grid_geom(export_grid);
     nodes[0] = 0;
@@ -232,6 +343,16 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
 
     RSS(ref_export_by_extension(export_grid, file), "export");
+    if (transmesh) {
+      REIS(0,
+           system("transmesh ref_import_test_geom2.meshb "
+                  "ref_import_test_geom2.mesh"),
+           "mesh");
+      REIS(0,
+           system("transmesh ref_import_test_geom2.mesh "
+                  "ref_import_test_geom2.meshb"),
+           "meshb");
+    }
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
 
     REIS(ref_node_n(ref_grid_node(export_grid)),
@@ -250,7 +371,88 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");
-    REIS(0, remove(file), "test clean up");
+    if (!transmesh) REIS(0, remove(file), "test clean up");
+  }
+
+  { /* export import .meshb tet brick with geom, version 4 */
+    REF_GRID export_grid, import_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_GEOM ref_geom;
+    REF_INT type, id, node;
+    REF_DBL param[2];
+    char file[] = "ref_import_test_geom4.meshb";
+    RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(export_grid) = 4;
+    ref_geom = ref_grid_geom(export_grid);
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 15;
+    RSS(ref_cell_add(ref_grid_edg(export_grid), nodes, &cell), "add edge");
+    type = REF_GEOM_NODE;
+    id = 1;
+    node = 0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom node");
+    id = 2;
+    node = 1;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom node");
+    type = REF_GEOM_EDGE;
+    id = 15;
+    node = 0;
+    param[0] = 10.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom edge");
+    id = 15;
+    node = 1;
+    param[0] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom edge");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 0;
+    param[0] = 10.0;
+    param[1] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 1;
+    param[0] = 11.0;
+    param[1] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 2;
+    param[0] = 10.5;
+    param[1] = 21.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+
+    RSS(ref_export_by_extension(export_grid, file), "export");
+    if (transmesh) {
+      REIS(0,
+           system("transmesh ref_import_test_geom4.meshb "
+                  "ref_import_test_geom4.mesh"),
+           "mesh");
+      REIS(0,
+           system("transmesh ref_import_test_geom4.mesh "
+                  "ref_import_test_geom4.meshb"),
+           "meshb");
+    }
+    RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
+
+    REIS(ref_node_n(ref_grid_node(export_grid)),
+         ref_node_n(ref_grid_node(import_grid)), "node count");
+    REIS(ref_cell_n(ref_grid_edg(export_grid)),
+         ref_cell_n(ref_grid_edg(import_grid)), "edg count");
+    REIS(ref_cell_n(ref_grid_qua(export_grid)),
+         ref_cell_n(ref_grid_qua(import_grid)), "qua count");
+    REIS(ref_cell_n(ref_grid_tri(export_grid)),
+         ref_cell_n(ref_grid_tri(import_grid)), "tri count");
+    REIS(ref_cell_n(ref_grid_tet(export_grid)),
+         ref_cell_n(ref_grid_tet(import_grid)), "tet count");
+
+    REIS(ref_geom_n(ref_grid_geom(export_grid)),
+         ref_geom_n(ref_grid_geom(import_grid)), "tet count");
+
+    RSS(ref_grid_free(import_grid), "free");
+    RSS(ref_grid_free(export_grid), "free");
+    if (!transmesh) REIS(0, remove(file), "test clean up");
   }
 
   { /* export import .fgrid tet */

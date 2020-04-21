@@ -56,6 +56,8 @@ REF_STATUS ref_grid_create(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   ref_grid_partitioner(ref_grid) = REF_MIGRATE_RECOMMENDED;
   ref_grid_partitioner_seed(ref_grid) = 0;
 
+  ref_grid_meshb_version(ref_grid) = 0;
+
   ref_grid_twod(ref_grid) = REF_FALSE;
   ref_grid_surf(ref_grid) = REF_FALSE;
 
@@ -103,6 +105,8 @@ REF_STATUS ref_grid_deep_copy(REF_GRID *ref_grid_ptr, REF_GRID original) {
 
   ref_grid_partitioner(ref_grid) = ref_grid_partitioner(original);
   ref_grid_partitioner_seed(ref_grid) = 0;
+
+  ref_grid_meshb_version(ref_grid) = 0;
 
   ref_grid_twod(ref_grid) = ref_grid_twod(original);
   ref_grid_surf(ref_grid) = ref_grid_surf(original);
@@ -190,6 +194,7 @@ REF_STATUS ref_grid_inspect(REF_GRID ref_grid) {
   printf(" %p interp\n", (void *)(ref_grid->interp));
   printf(" %d partitioner\n", (int)(ref_grid->partitioner));
   printf(" %d partitioner seed\n", (int)(ref_grid->partitioner_seed));
+  printf(" %d mesb_version\n", (ref_grid->meshb_version));
   printf(" %d twod\n", (ref_grid->twod));
   printf(" %d surf\n", (ref_grid->surf));
 

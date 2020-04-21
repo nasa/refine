@@ -134,6 +134,8 @@ REF_STATUS ref_cell_free(REF_CELL ref_cell);
 REF_STATUS ref_cell_deep_copy(REF_CELL *ref_cell, REF_CELL original);
 REF_STATUS ref_cell_pack(REF_CELL ref_cell, REF_INT *o2n);
 
+REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword);
+
 REF_STATUS ref_cell_inspect(REF_CELL ref_cell);
 REF_STATUS ref_cell_tattle(REF_CELL ref_cell, REF_INT cell);
 
