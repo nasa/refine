@@ -94,6 +94,7 @@ static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi,
     RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
 
     RSS(ref_export_by_extension(ref_grid, filename), "export");
+    RSS(ref_grid_free(ref_grid), "free");
   }
   return REF_SUCCESS;
 }
