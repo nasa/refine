@@ -41,8 +41,9 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 
-static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi, const char *filename,
-					   REF_INT version) {
+static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi,
+                                           const char *filename,
+                                           REF_INT version) {
   REF_GRID ref_grid;
   REF_GEOM ref_geom;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -449,7 +450,7 @@ int main(int argc, char *argv[]) {
     char file[] = "ref_gather_test.meshb";
 
     RSS(ref_gather_meshb_fixture(ref_mpi, file, version), "fixture");
-    RSS(ref_part_by_extension(&ref_grid,ref_mpi, file), "gather");
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
     RSS(ref_gather_by_extension(ref_grid, file), "gather");
     RSS(ref_grid_free(ref_grid), "free");
 
