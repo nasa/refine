@@ -74,8 +74,6 @@ REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
 REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename);
-
 REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file);

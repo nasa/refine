@@ -2468,45 +2468,6 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_twod_sol(REF_GRID ref_grid, const char *filename) {
-  FILE *f;
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-  REF_INT *o2n, *n2o;
-  REF_INT nnode;
-  REF_DBL m[6];
-
-  f = fopen(filename, "w");
-  if (NULL == (void *)f) printf("unable to open %s\n", filename);
-  RNS(f, "unable to open file");
-
-  ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-  ref_malloc_init(n2o, ref_node_max(ref_node), REF_INT, REF_EMPTY);
-
-  nnode = 0;
-  each_ref_node_valid_node(ref_node, node) {
-    o2n[node] = nnode;
-    n2o[nnode] = node;
-    nnode++;
-  }
-
-  fprintf(f, "MeshVersionFormatted 2\n\n");
-  fprintf(f, "Dimension 2\n\n");
-  fprintf(f, "SolAtVertices\n%d\n1 3\n", nnode);
-
-  for (node = 0; node < nnode; node++) {
-    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
-    fprintf(f, "%.16E %.16E %.16E \n", m[0], m[2], m[5]);
-  }
-
-  ref_free(n2o);
-  ref_free(o2n);
-
-  fclose(f);
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   int one = 1;
