@@ -2154,8 +2154,8 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   if (1 < ref_grid_meshb_version(ref_grid)) {
     version = ref_grid_meshb_version(ref_grid);
   } else {
-    if (10000000 < ref_node_n_global(ref_node)) version = 3;
-    if (100000000 < ref_node_n_global(ref_node)) version = 4;
+    if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) version = 3;
+    if (REF_EXPORT_MESHB_VERTEX_4 < ref_node_n_global(ref_node)) version = 4;
   }
 
   int_size = 4;

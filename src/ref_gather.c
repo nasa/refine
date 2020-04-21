@@ -893,8 +893,8 @@ static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
   if (1 < ref_grid_meshb_version(ref_grid)) {
     version = ref_grid_meshb_version(ref_grid);
   } else {
-    if (10000000 < ref_node_n_global(ref_node)) version = 3;
-    if (100000000 < ref_node_n_global(ref_node)) version = 4;
+    if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) version = 3;
+    if (REF_EXPORT_MESHB_VERTEX_4 < ref_node_n_global(ref_node)) version = 4;
   }
 
   int_size = 4;
@@ -1081,8 +1081,8 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
   if (1 < ref_grid_meshb_version(ref_grid)) {
     version = ref_grid_meshb_version(ref_grid);
   } else {
-    if (10000000 < ref_node_n_global(ref_node)) version = 3;
-    if (100000000 < ref_node_n_global(ref_node)) version = 4;
+    if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) version = 3;
+    if (REF_EXPORT_MESHB_VERTEX_4 < ref_node_n_global(ref_node)) version = 4;
   }
 
   int_size = 4;
@@ -1444,8 +1444,8 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
   if (1 < ref_grid_meshb_version(ref_grid)) {
     version = ref_grid_meshb_version(ref_grid);
   } else {
-    if (10000000 < ref_node_n_global(ref_node)) version = 3;
-    if (100000000 < ref_node_n_global(ref_node)) version = 4;
+    if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) version = 3;
+    if (REF_EXPORT_MESHB_VERTEX_4 < ref_node_n_global(ref_node)) version = 4;
   }
 
   if (4 <= version) sixty_four_bit = REF_TRUE;
@@ -1856,7 +1856,7 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
     RNS(file, "unable to open file");
   }
 
-  if (10000000 < ref_node_n_global(ref_node)) {
+  if (REF_EXPORT_MESHB_VERTEX_3 < ref_node_n_global(ref_node)) {
     version = 3;
     header_size = 4 + 8 + 4;
   } else {
