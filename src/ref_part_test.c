@@ -335,7 +335,8 @@ int main(int argc, char *argv[]) {
   { /* part tet lb8.ugrid, split comm */
     REF_MPI split_mpi;
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_part_test.lb8.ugrid";
+    char grid_file[] = "ref_part_test_split.lb8.ugrid";
+    REF_INT dummy = 0;
 
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
     if (ref_mpi_once(ref_mpi)) {
@@ -343,11 +344,17 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_grid_free(export_grid), "free");
 
+    RSS(ref_mpi_bcast(ref_mpi, &dummy, 1, REF_INT_TYPE),
+        "force sync before split");
+
     RSS(ref_mpi_half_comm(ref_mpi, &split_mpi), "split");
     RSS(ref_part_by_extension(&import_grid, split_mpi, grid_file), "import");
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_join_comm(split_mpi), "join");
     RSS(ref_mpi_free(split_mpi), "free");
+
+    RSS(ref_mpi_bcast(ref_mpi, &dummy, 1, REF_INT_TYPE),
+        "force sync after join");
 
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
