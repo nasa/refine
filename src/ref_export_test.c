@@ -58,20 +58,6 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (3 == argc) {
-    REF_GRID ref_grid;
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "set up brick");
-    RSS(ref_metric_olympic_node(ref_grid_node(ref_grid), 0.0001), "oly");
-    RSS(ref_metric_twod_node(ref_grid_node(ref_grid)), "2d");
-
-    RSS(ref_export_twod_msh(ref_grid, argv[1]), "export grid");
-    RSS(ref_export_metric2d(ref_grid, argv[2]), "export m2d");
-    RSS(ref_grid_free(ref_grid), "free");
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
   { /* export .vtk tet */
     REF_GRID ref_grid;
     char file[] = "ref_export_test.vtk";
