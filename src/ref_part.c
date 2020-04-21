@@ -273,36 +273,36 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_INT ngeom,
+static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
                                             REF_INT type, REF_NODE ref_node,
-                                            FILE *file) {
+                                            REF_INT version, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT chunk;
-  REF_INT *read_node;
-  REF_INT *read_id;
+  REF_LONG *read_node;
+  REF_LONG *read_id;
   REF_DBL *read_param;
   REF_DBL filler;
 
-  REF_INT ngeom_read;
+  REF_LONG ngeom_read;
   REF_INT section_size;
 
   REF_INT geom;
   REF_INT i, local;
 
-  chunk = MAX(1000000, ngeom / ref_mpi_n(ref_mpi));
-  chunk = MIN(chunk, ngeom);
+  chunk = (REF_INT)MAX(1000000, ngeom / (REF_LONG)ref_mpi_n(ref_mpi));
+  chunk = (REF_INT)MIN((REF_LONG)chunk, ngeom);
 
-  ref_malloc(read_node, chunk, REF_INT);
-  ref_malloc(read_id, chunk, REF_INT);
+  ref_malloc(read_node, chunk, REF_LONG);
+  ref_malloc(read_id, chunk, REF_LONG);
   ref_malloc(read_param, 2 * chunk, REF_DBL);
 
   ngeom_read = 0;
   while (ngeom_read < ngeom) {
-    section_size = MIN(chunk, ngeom - ngeom_read);
+    section_size = MIN(chunk, (REF_INT)(ngeom - ngeom_read));
     if (ref_mpi_once(ref_mpi)) {
       for (geom = 0; geom < section_size; geom++) {
-        REIS(1, fread(&(read_node[geom]), sizeof(REF_INT), 1, file), "n");
-        REIS(1, fread(&(read_id[geom]), sizeof(REF_INT), 1, file), "n");
+        RSS(ref_part_meshb_long(file, version, &(read_node[geom])), "node");
+        RSS(ref_part_meshb_long(file, version, &(read_id[geom])), "node");
         for (i = 0; i < 2; i++)
           read_param[i + 2 * geom] = 0.0; /* ensure init */
         for (i = 0; i < type; i++)
@@ -321,7 +321,7 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_INT ngeom,
       RXS(ref_node_local(ref_node, read_node[geom], &local), REF_NOT_FOUND,
           "local");
       if (REF_EMPTY != local) {
-        RSS(ref_geom_add(ref_geom, local, type, read_id[geom],
+        RSS(ref_geom_add(ref_geom, local, type, (REF_INT)read_id[geom],
                          &(read_param[2 * geom])),
             "add geom");
       }
@@ -588,7 +588,8 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_INT group, keyword_code;
   REF_CELL ref_cell;
   REF_LONG ncell;
-  REF_INT type, geom_keyword, ngeom;
+  REF_INT type, geom_keyword;
+  REF_LONG ngeom;
   REF_INT cad_data_keyword;
 
   file = NULL;
@@ -657,14 +658,15 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 &available, &next_position),
           "jump");
       if (available) {
-        REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
-        if (verbose) printf("type %d ngeom %d\n", type, ngeom);
+        RSS(ref_part_meshb_long(file, version, &ngeom), "ngeom");
+        if (verbose) printf("type %d ngeom %ld\n", type, ngeom);
       }
     }
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
-      RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_INT_TYPE), "bcast");
-      RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, file),
+      RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_LONG_TYPE), "bcast");
+      RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, version,
+                                    file),
           "part geom");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftello(file), "end location");
@@ -839,6 +841,7 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
   }
+  RSS(ref_mpi_bcast(ref_mpi, &version, 1, REF_INT_TYPE), "bcast");
 
   RSS(ref_geom_initialize(ref_geom), "clear out previous assoc");
 
@@ -856,7 +859,8 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
       RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_INT_TYPE), "bcast");
-      RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, file),
+      RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, version,
+                                    file),
           "part geom bcast");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftello(file), "end location");
