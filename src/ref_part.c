@@ -336,16 +336,17 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_INT ngeom,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
-                                      REF_NODE ref_node, REF_INT nnode,
-                                      FILE *file) {
+static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
+                                      REF_NODE ref_node, REF_LONG nnode,
+                                      REF_INT version, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell_read;
+  REF_LONG ncell_read;
   REF_INT chunk;
   REF_INT end_of_message = REF_EMPTY;
   REF_INT elements_to_receive;
-  REF_INT *c2n;
-  REF_INT *c2t;
+  REF_GLOB *c2n;
+  REF_INT *c2n_int;
+  REF_LONG *c2n_long;
   REF_GLOB *sent_c2n;
   REF_INT *dest;
   REF_INT *sent_part;
@@ -357,37 +358,39 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
   REF_INT part, node;
   REF_INT ncell_keep;
   REF_INT new_location;
+  size_t nread;
 
-  chunk = MAX(1000000, ncell / ref_mpi_n(ref_mpi));
+  chunk = (REF_INT)MAX(1000000, ncell / (REF_LONG)ref_mpi_n(ref_mpi));
 
-  size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
+  size_per = ref_cell_size_per(ref_cell);
 
   ref_malloc(sent_c2n, size_per * chunk, REF_GLOB);
 
   if (ref_mpi_once(ref_mpi)) {
     ref_malloc(elements_to_send, ref_mpi_n(ref_mpi), REF_INT);
     ref_malloc(start_to_send, ref_mpi_n(ref_mpi), REF_INT);
-    ref_malloc(c2n, size_per * chunk, REF_INT);
-    ref_malloc(c2t, (node_per + 1) * chunk, REF_INT);
+    ref_malloc(c2n, size_per * chunk, REF_GLOB);
+    ref_malloc(c2n_int, (node_per + 1) * chunk, REF_INT);
+    ref_malloc(c2n_long, (node_per + 1) * chunk, REF_LONG);
     ref_malloc(dest, chunk, REF_INT);
 
     ncell_read = 0;
     while (ncell_read < ncell) {
-      section_size = MIN(chunk, ncell - ncell_read);
-      if (node_per == size_per) {
-        RES((size_t)(section_size * (node_per + 1)),
-            fread(c2t, sizeof(REF_INT), (size_t)(section_size * (node_per + 1)),
-                  file),
-            "cn");
+      section_size = MIN(chunk, (REF_INT)(ncell - ncell_read));
+      nread = (size_t)(section_size * (1 + node_per));
+      if (version < 4) {
+        REIS(nread, fread(c2n_int, sizeof(REF_INT), nread, file), "int c2n");
         for (cell = 0; cell < section_size; cell++)
-          for (node = 0; node < node_per; node++)
-            c2n[node + size_per * cell] = c2t[node + (node_per + 1) * cell];
+          for (node = 0; node < size_per; node++)
+            c2n[node + size_per * cell] =
+                (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
       } else {
-        RES((size_t)(section_size * size_per),
-            fread(c2n, sizeof(REF_INT), (size_t)(section_size * size_per),
-                  file),
-            "cn");
+        REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file), "int c2n");
+        for (cell = 0; cell < section_size; cell++)
+          for (node = 0; node < size_per; node++)
+            c2n[node + size_per * cell] =
+                (REF_GLOB)c2n_long[node + (node_per + 1) * cell];
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
@@ -445,7 +448,8 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_INT ncell,
     }
 
     ref_free(dest);
-    ref_free(c2t);
+    ref_free(c2n_long);
+    ref_free(c2n_int);
     ref_free(c2n);
     ref_free(start_to_send);
     ref_free(elements_to_send);
@@ -581,7 +585,9 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   FILE *file;
   REF_BOOL swap_endian = REF_FALSE;
   REF_LONG nnode;
-  REF_INT ncell;
+  REF_INT group, keyword_code;
+  REF_CELL ref_cell;
+  REF_LONG ncell;
   REF_INT type, geom_keyword, ngeom;
   REF_INT cad_data_keyword;
 
@@ -621,63 +627,27 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                     ref_node, nnode),
       "part node");
   if (ref_grid_once(ref_grid))
-    REIS(next_position, ftello(file), "end location");
+    REIS(next_position, ftello(file), "vertex file location");
 
-  if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, key_pos, 8, &available,
-                              &next_position),
-        "jump");
-    if (available) {
-      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntet");
-      if (verbose) printf("ntet %d\n", ncell);
+  each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
+    if (ref_grid_once(ref_grid)) {
+      RSS(ref_cell_meshb_keyword(ref_cell, &keyword_code), "kw");
+      RSS(ref_import_meshb_jump(file, version, key_pos, keyword_code,
+                                &available, &next_position),
+          "jump");
+      if (available) {
+        RSS(ref_part_meshb_long(file, version, &ncell), "nnode");
+        if (verbose) printf("group %d ncell %ld\n", group, ncell);
+      }
     }
-  }
-  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
-  if (available) {
-    RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tet(ref_grid), ncell, ref_node,
-                            (REF_INT)nnode, file),
-        "part cell");
-    if (ref_grid_once(ref_grid))
-      REIS(next_position, ftello(file), "end location");
-  }
-
-  if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, key_pos, 6, &available,
-                              &next_position),
-        "jump");
+    RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
-      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "ntri");
-      if (verbose) printf("ntri %d\n", ncell);
+      RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_LONG_TYPE), "bcast");
+      RSS(ref_part_meshb_cell(ref_cell, ncell, ref_node, nnode, version, file),
+          "part cell");
+      if (ref_grid_once(ref_grid))
+        REIS(next_position, ftello(file), "cell file location");
     }
-  }
-  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
-  if (available) {
-    RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_tri(ref_grid), ncell, ref_node,
-                            (REF_INT)nnode, file),
-        "part cell");
-    if (ref_grid_once(ref_grid))
-      REIS(next_position, ftello(file), "end location");
-  }
-
-  if (ref_grid_once(ref_grid)) {
-    RSS(ref_import_meshb_jump(file, version, key_pos, 5, &available,
-                              &next_position),
-        "jump");
-    if (available) {
-      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nedge");
-      if (verbose) printf("nedge %d\n", ncell);
-    }
-  }
-  RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
-  if (available) {
-    RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
-    RSS(ref_part_meshb_cell(ref_grid_edg(ref_grid), ncell, ref_node,
-                            (REF_INT)nnode, file),
-        "part cell");
-    if (ref_grid_once(ref_grid))
-      REIS(next_position, ftello(file), "end location");
   }
 
   each_ref_type(ref_geom, type) {
