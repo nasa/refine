@@ -1477,7 +1477,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
     } else {
       printf("\n");
     }
-    if (version >= 4) {
+    if (version >= 4 && keyword_code != 3) {
       if (ftello(file) < end_position) {
         REIS(1, fread((unsigned char *)&i8, 8, 1, file), "code");
         printf("%ld first i8\n", i8);
