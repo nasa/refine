@@ -327,8 +327,8 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
       }
       for (geom = 0; geom < section_size; geom++) read_node[geom]--;
     }
-    RSS(ref_mpi_bcast(ref_mpi, read_node, section_size, REF_INT_TYPE), "nd");
-    RSS(ref_mpi_bcast(ref_mpi, read_id, section_size, REF_INT_TYPE), "id");
+    RSS(ref_mpi_bcast(ref_mpi, read_node, section_size, REF_LONG_TYPE), "nd");
+    RSS(ref_mpi_bcast(ref_mpi, read_id, section_size, REF_LONG_TYPE), "id");
     RSS(ref_mpi_bcast(ref_mpi, read_param, 2 * section_size, REF_DBL_TYPE),
         "pm");
     for (geom = 0; geom < section_size; geom++) {
