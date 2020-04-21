@@ -1413,7 +1413,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   if (1 != i4) goto close_file_and_return;
   REIS(1, fread((unsigned char *)&i4, 4, 1, file), "version");
   printf("%d version\n", i4);
-  if (1 > i4 || i4 > 3) goto close_file_and_return;
+  if (1 > i4 || i4 > 4) goto close_file_and_return;
   version = i4;
   next_position = ftello(file);
   while (next_position <= end_position && 0 < next_position) {
@@ -1477,9 +1477,16 @@ REF_STATUS ref_import_examine_header(const char *filename) {
     } else {
       printf("\n");
     }
-    if (ftello(file) < end_position) {
-      REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
-      printf("%d first i4\n", i4);
+    if (version >= 4) {
+      if (ftello(file) < end_position) {
+        REIS(1, fread((unsigned char *)&i8, 8, 1, file), "code");
+        printf("%ld first i8\n", i8);
+      }
+    } else {
+      if (ftello(file) < end_position) {
+        REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
+        printf("%d first i4\n", i4);
+      }
     }
     if (ftello(file) < end_position) {
       REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
