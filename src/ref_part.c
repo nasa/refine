@@ -400,7 +400,7 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
             c2n[node + size_per * cell] =
                 (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
       } else {
-        REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file), "int c2n");
+        REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file), "long c2n");
         for (cell = 0; cell < section_size; cell++)
           for (node = 0; node < size_per; node++)
             c2n[node + size_per * cell] =
@@ -506,50 +506,53 @@ static REF_STATUS ref_part_meshb_cell(REF_CELL ref_cell, REF_LONG ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
-                                            REF_NODE ref_node, FILE *file) {
+static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_GLOB ncell,
+                                            REF_NODE ref_node, REF_INT version,
+                                            FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT ncell_read;
+  REF_GLOB ncell_read;
   REF_INT chunk;
   REF_INT section_size;
-  REF_INT *c2n;
-  REF_INT *c2t;
+  REF_GLOB *c2n;
+  REF_INT *c2n_int;
+  REF_LONG *c2n_long;
   REF_INT node_per, size_per;
   REF_INT cell, node, local, new_cell;
   REF_BOOL have_all_nodes, one_node_local;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  size_t nread;
 
-  chunk = MAX(1000000, ncell / ref_mpi_n(ref_mpi));
+  chunk = (REF_INT)MAX(1000000, ncell / (REF_LONG)ref_mpi_n(ref_mpi));
 
   size_per = ref_cell_size_per(ref_cell);
   node_per = ref_cell_node_per(ref_cell);
 
-  ref_malloc(c2n, size_per * chunk, REF_INT);
+  ref_malloc(c2n, size_per * chunk, REF_GLOB);
+  ref_malloc(c2n_int, (1 + node_per) * chunk, REF_INT);
+  ref_malloc(c2n_long, (1 + node_per) * chunk, REF_LONG);
 
   ncell_read = 0;
   while (ncell_read < ncell) {
-    section_size = MIN(chunk, ncell - ncell_read);
+    section_size = MIN(chunk, (REF_INT)(ncell - ncell_read));
     if (ref_mpi_once(ref_mpi)) {
-      if (node_per == size_per) {
-        ref_malloc(c2t, (node_per + 1) * section_size, REF_INT);
-        RES((size_t)(section_size * (node_per + 1)),
-            fread(c2t, sizeof(REF_INT), (size_t)(section_size * (node_per + 1)),
-                  file),
-            "cn");
+      nread = (size_t)(section_size * (1 + node_per));
+      if (version < 4) {
+        REIS(nread, fread(c2n_int, sizeof(REF_INT), nread, file), "int c2n");
         for (cell = 0; cell < section_size; cell++)
-          for (node = 0; node < node_per; node++)
-            c2n[node + size_per * cell] = c2t[node + (node_per + 1) * cell];
-        ref_free(c2t);
+          for (node = 0; node < size_per; node++)
+            c2n[node + size_per * cell] =
+                (REF_GLOB)c2n_int[node + (node_per + 1) * cell];
       } else {
-        RES((size_t)(section_size * size_per),
-            fread(c2n, sizeof(REF_INT), (size_t)(section_size * size_per),
-                  file),
-            "cn");
+        REIS(nread, fread(c2n_long, sizeof(REF_LONG), nread, file), "long c2n");
+        for (cell = 0; cell < section_size; cell++)
+          for (node = 0; node < size_per; node++)
+            c2n[node + size_per * cell] =
+                (REF_GLOB)c2n_long[node + (node_per + 1) * cell];
       }
       for (cell = 0; cell < section_size; cell++)
         for (node = 0; node < node_per; node++) c2n[node + size_per * cell]--;
     }
-    RSS(ref_mpi_bcast(ref_mpi, c2n, size_per * section_size, REF_INT_TYPE),
+    RSS(ref_mpi_bcast(ref_mpi, c2n, size_per * section_size, REF_GLOB_TYPE),
         "broadcast read c2n");
 
     /* convert to local nodes and add if local */
@@ -567,7 +570,7 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
       }
       if (have_all_nodes) {
         if (node_per != size_per)
-          nodes[node_per] = c2n[node_per + size_per * cell];
+          nodes[node_per] = (REF_INT)c2n[node_per + size_per * cell];
         one_node_local = REF_FALSE;
         for (node = 0; node < node_per; node++) {
           one_node_local =
@@ -581,6 +584,8 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
     ncell_read += section_size;
   }
 
+  free(c2n_long);
+  free(c2n_int);
   free(c2n);
 
   return REF_SUCCESS;
@@ -651,7 +656,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                 &available, &next_position),
           "jump");
       if (available) {
-        RSS(ref_part_meshb_long(file, version, &ncell), "nnode");
+        RSS(ref_part_meshb_long(file, version, &ncell), "ncell");
         if (verbose) printf("group %d ncell %ld\n", group, ncell);
       }
     }
@@ -777,10 +782,9 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
                               &available, &next_position),
         "jump");
     if (available) {
-      REIS(
-          1,
-          fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
-          "cad_data_size");
+      RSS(ref_part_meshb_size(file, version,
+                              &(ref_geom_cad_data_size(ref_geom))),
+          "cad data size");
       if (verbose)
         printf("cad_data_size %ld\n", (long)ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
@@ -830,7 +834,7 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_INT type, geom_keyword;
-  REF_INT ngeom;
+  REF_LONG ngeom;
   REF_BOOL verbose = REF_FALSE;
   size_t end_of_string;
 
@@ -865,13 +869,13 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
                                 &available, &next_position),
           "jump");
       if (available) {
-        REIS(1, fread((unsigned char *)&ngeom, 4, 1, file), "ngeom");
-        if (verbose) printf("type %d ngeom %d\n", type, ngeom);
+        RSS(ref_part_meshb_long(file, version, &ngeom), "ngeom");
+        if (verbose) printf("type %d ngeom %ld\n", type, ngeom);
       }
     }
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
-      RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_INT_TYPE), "bcast");
+      RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_LONG_TYPE), "bcast");
       RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, version,
                                     file),
           "part geom bcast");
@@ -895,7 +899,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   REF_BOOL available;
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
-  REF_INT ncell;
+  REF_LONG ncell;
   REF_BOOL verbose = REF_FALSE;
   size_t end_of_string;
 
@@ -919,6 +923,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
     REIS(1, fread((unsigned char *)&dim, 4, 1, file), "dim");
     if (verbose) printf("meshb dim %d\n", dim);
   }
+  RSS(ref_mpi_bcast(ref_mpi, &version, 1, REF_INT_TYPE), "bcast");
 
   RSS(ref_cell_free(ref_grid_edg(ref_grid)), "clear out edge");
   RSS(ref_cell_create(&ref_grid_edg(ref_grid), REF_CELL_EDG), "edg");
@@ -928,17 +933,18 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
                               &next_position),
         "jump");
     if (available) {
-      REIS(1, fread((unsigned char *)&ncell, 4, 1, file), "nedge");
-      if (verbose) printf("nedge %d\n", ncell);
+      RSS(ref_part_meshb_long(file, version, &ncell), "ncell");
+      if (verbose) printf("nedge %ld\n", ncell);
     }
   }
   RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
 
   RAS(available, "no edge available in meshb");
 
-  RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_INT_TYPE), "bcast");
+  RSS(ref_mpi_bcast(ref_mpi, &ncell, 1, REF_GLOB_TYPE), "bcast");
 
-  RSS(ref_part_meshb_cell_bcast(ref_grid_edg(ref_grid), ncell, ref_node, file),
+  RSS(ref_part_meshb_cell_bcast(ref_grid_edg(ref_grid), ncell, ref_node,
+                                version, file),
       "part cell");
 
   if (ref_grid_once(ref_grid)) {
