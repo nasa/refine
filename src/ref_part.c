@@ -30,13 +30,28 @@
 #include "ref_migrate.h"
 #include "ref_mpi.h"
 
+static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
+                                      REF_LONG *value) {
+  int int_value;
+  long long_value;
+  if (version < 4) {
+    REIS(1, fread(&int_value, sizeof(int), 1, file), "int value");
+    *value = (REF_LONG)int_value;
+  } else {
+    REIS(1, fread(&long_value, sizeof(long), 1, file), "long value");
+    *value = long_value;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
-                                REF_BOOL has_id, REF_BOOL twod,
+                                REF_INT version, REF_BOOL twod,
                                 REF_NODE ref_node, REF_LONG nnode) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT node, new_node;
   REF_INT part;
-  REF_INT n, id;
+  REF_INT n;
+  REF_LONG id;
   REF_DBL dbl;
   REF_DBL *xyz;
 
@@ -61,7 +76,7 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
         dbl = 0.0;
       }
       ref_node_xyz(ref_node, 2, new_node) = dbl;
-      if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
+      if (version > 0) RSS(ref_part_meshb_long(file, version, &id), "nnode");
     }
     each_ref_mpi_worker(ref_mpi, part) {
       n = (REF_INT)(ref_part_first(nnode, ref_mpi_n(ref_mpi), part + 1) -
@@ -83,7 +98,8 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
             dbl = 0.0;
           }
           xyz[2 + 3 * node] = dbl;
-          if (has_id) REIS(1, fread(&(id), sizeof(id), 1, file), "id");
+          if (version > 0)
+            RSS(ref_part_meshb_long(file, version, &id), "nnode");
         }
         RSS(ref_mpi_send(ref_mpi, xyz, 3 * n, REF_DBL_TYPE, part), "send");
         free(xyz);
@@ -552,20 +568,6 @@ static REF_STATUS ref_part_meshb_cell_bcast(REF_CELL ref_cell, REF_INT ncell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
-                                      REF_LONG *value) {
-  int int_value;
-  long long_value;
-  if (version < 4) {
-    REIS(1, fread(&int_value, sizeof(int), 1, file), "int value");
-    *value = (REF_LONG)int_value;
-  } else {
-    REIS(1, fread(&long_value, sizeof(long), 1, file), "long value");
-    *value = long_value;
-  }
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                                  const char *filename) {
   REF_BOOL verbose = REF_FALSE;
@@ -578,7 +580,6 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_GEOM ref_geom;
   FILE *file;
   REF_BOOL swap_endian = REF_FALSE;
-  REF_BOOL has_id = REF_TRUE;
   REF_LONG nnode;
   REF_INT ncell;
   REF_INT type, geom_keyword, ngeom;
@@ -616,7 +617,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (verbose) printf("nnode %ld\n", nnode);
   }
   RSS(ref_mpi_bcast(ref_mpi, &nnode, 1, REF_LONG_TYPE), "bcast");
-  RSS(ref_part_node(file, swap_endian, has_id, ref_grid_twod(ref_grid),
+  RSS(ref_part_node(file, swap_endian, version, ref_grid_twod(ref_grid),
                     ref_node, nnode),
       "part node");
   if (ref_grid_once(ref_grid))
@@ -1198,7 +1199,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_GRID ref_grid;
   REF_NODE ref_node;
 
-  REF_BOOL has_id = REF_FALSE;
+  REF_INT version = 0;
   REF_BOOL instrument = REF_FALSE;
 
   REF_INT single;
@@ -1270,7 +1271,7 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &npri, 1, REF_LONG_TYPE), "bcast");
   RSS(ref_mpi_bcast(ref_grid_mpi(ref_grid), &nhex, 1, REF_LONG_TYPE), "bcast");
 
-  RSS(ref_part_node(file, swap_endian, has_id, REF_FALSE, ref_node, nnode),
+  RSS(ref_part_node(file, swap_endian, version, REF_FALSE, ref_node, nnode),
       "part node");
   if (instrument) ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nodes");
 
