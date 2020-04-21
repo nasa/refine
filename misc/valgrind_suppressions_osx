@@ -51,6 +51,46 @@
 {
    <insert_a_suppression_name_here>
    Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   fun:xpc_string_create
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   fun:xpc_dictionary_create
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   ...
+   fun:libSystem_initializer
+   ...
+}
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc_zone_malloc
+   obj:/usr/lib/libobjc.A.dylib
+   ...
+}
+
+
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
    match-leak-kinds: definite
    fun:malloc_zone_malloc
    ...
