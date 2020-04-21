@@ -535,26 +535,58 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  { /* gather .solb by extension */
+  { /* gather .solb by extension, version 2 */
     REF_GRID ref_grid;
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
     char filename[] = "ref_gather_test.solb";
-
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 2;
     ldim = 2;
     ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
                     REF_DBL, 1.0);
-    scalar_names = NULL;
-
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
                                        filename),
         "gather");
-
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
-
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
+  }
+  { /* gather .solb by extension, version 3 */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char filename[] = "ref_gather_test.solb";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 3;
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       filename),
+        "gather");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
+  }
+  { /* gather .solb by extension, version 4 */
+    REF_GRID ref_grid;
+    REF_INT ldim;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    char filename[] = "ref_gather_test.solb";
+    RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = 4;
+    ldim = 2;
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                    REF_DBL, 1.0);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       filename),
+        "gather");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
   }
 

@@ -1095,7 +1095,7 @@ static REF_STATUS ref_gather_node_scalar_solb(REF_GRID ref_grid, REF_INT ldim,
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = (REF_FILEPOS)header_size + ftell(file);
+    next_position = (REF_FILEPOS)(4 + fp_size + 4) + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
