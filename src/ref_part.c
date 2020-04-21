@@ -44,6 +44,20 @@ static REF_STATUS ref_part_meshb_long(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_part_meshb_size(FILE *file, REF_INT version,
+                                      REF_SIZE *value) {
+  unsigned int int_value;
+  unsigned long long_value;
+  if (version < 4) {
+    REIS(1, fread(&int_value, sizeof(int), 1, file), "int value");
+    *value = (REF_SIZE)int_value;
+  } else {
+    REIS(1, fread(&long_value, sizeof(long), 1, file), "long value");
+    *value = (REF_SIZE)long_value;
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
                                 REF_INT version, REF_BOOL twod,
                                 REF_NODE ref_node, REF_LONG nnode) {
@@ -679,10 +693,9 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                               &available, &next_position),
         "jump");
     if (available) {
-      REIS(
-          1,
-          fread((unsigned char *)&ref_geom_cad_data_size(ref_geom), 4, 1, file),
-          "cad_data_size");
+      RSS(ref_part_meshb_size(file, version,
+                              &(ref_geom_cad_data_size(ref_geom))),
+          "cad data size");
       if (verbose)
         printf("cad_data_size %ld\n", (long)ref_geom_cad_data_size(ref_geom));
       /* safe non-NULL free, if already allocated, to prevent mem leaks */
