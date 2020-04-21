@@ -867,8 +867,9 @@ static REF_STATUS ref_gather_node_metric(REF_NODE ref_node, FILE *file) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+static REF_STATUS ref_gather_node_metric_solb(REF_GRID ref_grid, FILE *file) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_INT chunk;
   REF_DBL *local_xyzm, *xyzm;
   REF_GLOB global, nnode_written, first;
@@ -876,25 +877,40 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   REF_STATUS status;
   REF_FILEPOS next_position = 0;
   REF_INT keyword_code, header_size;
-  REF_INT code, version, dim;
+  REF_INT code, version, dim, nmetric;
+  REF_INT int_size, fp_size;
 
-  if (10000000 < ref_node_n_global(ref_node)) {
-    version = 3;
-    header_size = 4 + 8 + 4;
-  } else {
-    version = 2;
-    header_size = 4 + 4 + 4;
+  RSS(ref_node_synchronize_globals(ref_node), "sync");
+
+  dim = 3;
+  nmetric = 6;
+  if (ref_grid_twod(ref_grid)) {
+    dim = 2;
+    nmetric = 3;
   }
+
+  version = 2;
+  if (1 < ref_grid_meshb_version(ref_grid)) {
+    version = ref_grid_meshb_version(ref_grid);
+  } else {
+    if (10000000 < ref_node_n_global(ref_node)) version = 3;
+    if (100000000 < ref_node_n_global(ref_node)) version = 4;
+  }
+
+  int_size = 4;
+  fp_size = 4;
+  if (2 < version) fp_size = 8;
+  if (3 < version) int_size = 8;
+  header_size = 4 + fp_size + int_size;
 
   if (ref_mpi_once(ref_mpi)) {
     code = 1;
     REIS(1, fwrite(&code, sizeof(int), 1, file), "code");
     REIS(1, fwrite(&version, sizeof(int), 1, file), "version");
-    next_position = (REF_FILEPOS)header_size + ftell(file);
+    next_position = (REF_FILEPOS)(4 + fp_size + 4) + ftell(file);
     keyword_code = 3;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "dim code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    dim = 3;
     REIS(1, fwrite(&dim, sizeof(int), 1, file), "dim");
     REIS(next_position, ftell(file), "dim inconsistent");
   }
@@ -902,13 +918,13 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
   if (ref_mpi_once(ref_mpi)) {
     next_position =
         (REF_FILEPOS)header_size + (REF_FILEPOS)(4 + 4) +
-        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(6 * 8) +
+        (REF_FILEPOS)ref_node_n_global(ref_node) * (REF_FILEPOS)(nmetric * 8) +
         ftell(file);
     keyword_code = 62;
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "vertex version code");
     RSS(ref_export_meshb_next_position(file, version, next_position), "next p");
-    REIS(1, fwrite(&(ref_node_n_global(ref_node)), sizeof(int), 1, file),
-         "nnode");
+    RSS(ref_gather_meshb_glob(file, version, ref_node_n_global(ref_node)),
+        "nnode");
     keyword_code = 1; /* one solution at node */
     REIS(1, fwrite(&keyword_code, sizeof(int), 1, file), "n solutions");
     keyword_code = 3; /* solution type 3, metric */
@@ -952,13 +968,19 @@ static REF_STATUS ref_gather_node_metric_solb(REF_NODE ref_node, FILE *file) {
           printf("error gather node " REF_GLOB_FMT " %f\n", first + i,
                  xyzm[6 + 7 * i]);
         }
-        REIS(1, fwrite(&(xyzm[0 + 7 * i]), sizeof(REF_DBL), 1, file), "m11");
-        REIS(1, fwrite(&(xyzm[1 + 7 * i]), sizeof(REF_DBL), 1, file), "m12");
-        /* transposed 3,2 */
-        REIS(1, fwrite(&(xyzm[3 + 7 * i]), sizeof(REF_DBL), 1, file), "m22");
-        REIS(1, fwrite(&(xyzm[2 + 7 * i]), sizeof(REF_DBL), 1, file), "m13");
-        REIS(1, fwrite(&(xyzm[4 + 7 * i]), sizeof(REF_DBL), 1, file), "m23");
-        REIS(1, fwrite(&(xyzm[5 + 7 * i]), sizeof(REF_DBL), 1, file), "m33");
+        if (3 == dim) { /* threed */
+          REIS(1, fwrite(&(xyzm[0 + 7 * i]), sizeof(REF_DBL), 1, file), "m11");
+          REIS(1, fwrite(&(xyzm[1 + 7 * i]), sizeof(REF_DBL), 1, file), "m12");
+          /* transposed 3,2 */
+          REIS(1, fwrite(&(xyzm[3 + 7 * i]), sizeof(REF_DBL), 1, file), "m22");
+          REIS(1, fwrite(&(xyzm[2 + 7 * i]), sizeof(REF_DBL), 1, file), "m13");
+          REIS(1, fwrite(&(xyzm[4 + 7 * i]), sizeof(REF_DBL), 1, file), "m23");
+          REIS(1, fwrite(&(xyzm[5 + 7 * i]), sizeof(REF_DBL), 1, file), "m33");
+        } else { /* twod */
+          REIS(1, fwrite(&(xyzm[0 + 7 * i]), sizeof(REF_DBL), 1, file), "m11");
+          REIS(1, fwrite(&(xyzm[1 + 7 * i]), sizeof(REF_DBL), 1, file), "m12");
+          REIS(1, fwrite(&(xyzm[3 + 7 * i]), sizeof(REF_DBL), 1, file), "m22");
+        }
       }
   }
 
@@ -1727,7 +1749,7 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename) {
   RSS(ref_mpi_all_or(ref_grid_mpi(ref_grid), &solb_format), "bcast");
 
   if (solb_format) {
-    RSS(ref_gather_node_metric_solb(ref_node, file), "nodes");
+    RSS(ref_gather_node_metric_solb(ref_grid, file), "nodes");
   } else {
     RSS(ref_gather_node_metric(ref_node, file), "nodes");
   }
