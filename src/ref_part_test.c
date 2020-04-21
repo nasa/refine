@@ -469,8 +469,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_gather_test.meshb";
-    char solb[] = "ref_gather_test.solb";
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 2;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
@@ -496,8 +496,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_gather_test.meshb";
-    char solb[] = "ref_gather_test.solb";
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 3;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
@@ -523,8 +523,8 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REF_DBL *scalar;
     const char **scalar_names = NULL;
-    char meshb[] = "ref_gather_test.meshb";
-    char solb[] = "ref_gather_test.solb";
+    char meshb[] = "ref_part_test.meshb";
+    char solb[] = "ref_part_test.solb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
     ref_grid_meshb_version(ref_grid) = 4;
     RSS(ref_gather_by_extension(ref_grid, meshb), "gather meshb");
