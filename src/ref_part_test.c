@@ -352,12 +352,13 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part meshb */
+  { /* part meshb, version 2 */
     REF_GRID export_grid, import_grid;
-    char grid_file[] = "ref_part_test.meshb";
+    char grid_file[] = "ref_part_test_ver2.meshb";
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 2;
       RSS(ref_export_meshb(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
@@ -368,7 +369,41 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
   }
 
-  { /* part meshb with cad_data*/
+  { /* part meshb, version 3 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test_ver3.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 3;
+      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part meshb, version 4 */
+    REF_GRID export_grid, import_grid;
+    char grid_file[] = "ref_part_test_ver4.meshb";
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
+      ref_grid_meshb_version(export_grid) = 4;
+      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_grid_free(export_grid), "free");
+    }
+
+    RSS(ref_part_by_extension(&import_grid, ref_mpi, grid_file), "import");
+
+    RSS(ref_grid_free(import_grid), "free");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(grid_file), "test clean up");
+  }
+
+  { /* part meshb with cad_data */
     REF_GRID export_grid, import_grid;
     char grid_file[] = "ref_part_test.meshb";
     REF_GEOM ref_geom;
