@@ -41,6 +41,62 @@
 #include "ref_part.h"
 #include "ref_sort.h"
 
+static REF_STATUS ref_gather_meshb_fixture(REF_MPI ref_mpi, const char *filename,
+					   REF_INT version) {
+  REF_GRID ref_grid;
+  REF_GEOM ref_geom;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT type, id, node;
+  REF_DBL param[2];
+
+  if (ref_mpi_once(ref_mpi)) {
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "set up tet");
+    ref_grid_meshb_version(ref_grid) = version;
+    ref_geom = ref_grid_geom(ref_grid);
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 15;
+    RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &cell), "add edge");
+    type = REF_GEOM_NODE;
+    id = 1;
+    node = 0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom node");
+    id = 2;
+    node = 1;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom node");
+    type = REF_GEOM_EDGE;
+    id = 15;
+    node = 0;
+    param[0] = 10.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom edge");
+    id = 15;
+    node = 1;
+    param[0] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom edge");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 0;
+    param[0] = 10.0;
+    param[1] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 1;
+    param[0] = 11.0;
+    param[1] = 20.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+    type = REF_GEOM_FACE;
+    id = 3;
+    node = 2;
+    param[0] = 10.5;
+    param[1] = 21.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom face");
+
+    RSS(ref_export_by_extension(ref_grid, filename), "export");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_gather_bbox_intersects(REF_DBL *bbox1, REF_DBL *bbox2,
                                              REF_BOOL *intersects) {
   REF_INT i;
@@ -387,30 +443,17 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  { /* export import .meshb tet with cad_model */
-    REF_GRID export_grid, import_grid;
-    REF_GEOM ref_geom;
+  { /* export part gather .meshb tet with cad_model */
+    REF_GRID ref_grid;
+    REF_INT version = 2;
     char file[] = "ref_gather_test.meshb";
 
-    RSS(ref_fixture_tet_grid(&export_grid, ref_mpi), "set up tet");
-    ref_geom = ref_grid_geom(export_grid);
-    ref_geom_cad_data_size(ref_geom) = 3;
-    ref_malloc_size_t(ref_geom_cad_data(ref_geom),
-                      ref_geom_cad_data_size(ref_geom), REF_BYTE);
-    ref_geom_cad_data(ref_geom)[0] = 5;
-    ref_geom_cad_data(ref_geom)[1] = 4;
-    ref_geom_cad_data(ref_geom)[2] = 3;
-    RSS(ref_gather_by_extension(export_grid, file), "gather");
-    RSS(ref_grid_free(export_grid), "free");
+    RSS(ref_gather_meshb_fixture(ref_mpi, file, version), "fixture");
+    RSS(ref_part_by_extension(&ref_grid,ref_mpi, file), "gather");
+    RSS(ref_gather_by_extension(ref_grid, file), "gather");
+    RSS(ref_grid_free(ref_grid), "free");
 
     if (ref_mpi_once(ref_mpi)) {
-      RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
-      ref_geom = ref_grid_geom(import_grid);
-      REIS(3, ref_geom_cad_data_size(ref_geom), "cad size");
-      REIS(5, ref_geom_cad_data(ref_geom)[0], "cad[0]");
-      REIS(4, ref_geom_cad_data(ref_geom)[1], "cad[1]");
-      REIS(3, ref_geom_cad_data(ref_geom)[2], "cad[2]");
-      RSS(ref_grid_free(import_grid), "free");
       REIS(0, remove(file), "test clean up");
     }
   }
