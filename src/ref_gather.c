@@ -796,7 +796,7 @@ static REF_STATUS ref_gather_node(REF_NODE ref_node, REF_BOOL swap_endian,
           if (swap_endian) SWAP_DBL(swapped_dbl);
           REIS(1, fwrite(&swapped_dbl, sizeof(REF_DBL), 1, file), "z");
         }
-        if (1 < version && version < 4)
+        if (1 <= version && version <= 4)
           RSS(ref_gather_meshb_int(file, version, REF_EXPORT_MESHB_VERTEX_ID),
               "nnode");
       }
@@ -1448,7 +1448,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     if (100000000 < ref_node_n_global(ref_node)) version = 4;
   }
 
-  if (3 < version) sixty_four_bit = REF_TRUE;
+  if (4 <= version) sixty_four_bit = REF_TRUE;
 
   int_size = 4;
   fp_size = 4;
@@ -1520,9 +1520,10 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     if (ngeom > 0) {
       if (ref_grid_once(ref_grid)) {
         node_per = ref_cell_node_per(ref_cell);
-        next_position = (REF_FILEPOS)header_size +
-                        (REF_FILEPOS)ngeom * (REF_FILEPOS)(4 * 2 + 8 * type) +
-                        (0 < type ? 8 * ngeom : 0) + ftell(file);
+        next_position =
+            (REF_FILEPOS)header_size +
+            (REF_FILEPOS)ngeom * (REF_FILEPOS)(int_size * 2 + 8 * type) +
+            (0 < type ? 8 * ngeom : 0) + ftell(file);
         REIS(1, fwrite(&keyword_code, sizeof(int), 1, file),
              "vertex version code");
         RSS(ref_export_meshb_next_position(file, version, next_position), "np");
@@ -1530,7 +1531,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
       }
       RSS(ref_gather_geom(ref_node, ref_geom, version, type, file), "nodes");
       if (ref_grid_once(ref_grid))
-        REIS(next_position, ftell(file), "cell inconsistent");
+        REIS(next_position, ftell(file), "geom inconsistent");
     }
   }
 

@@ -464,6 +464,7 @@ int main(int argc, char *argv[]) {
            "mesh");
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
+    ref_grid_meshb_version(ref_grid) = version;
     RSS(ref_gather_by_extension(ref_grid, file), "gather");
     RSS(ref_grid_free(ref_grid), "free");
 
@@ -491,6 +492,7 @@ int main(int argc, char *argv[]) {
            "mesh");
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
+    ref_grid_meshb_version(ref_grid) = version;
     RSS(ref_gather_by_extension(ref_grid, file), "gather");
     RSS(ref_grid_free(ref_grid), "free");
 
@@ -518,6 +520,7 @@ int main(int argc, char *argv[]) {
            "mesh");
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, file), "gather");
+    ref_grid_meshb_version(ref_grid) = version;
     RSS(ref_gather_by_extension(ref_grid, file), "gather");
     RSS(ref_grid_free(ref_grid), "free");
 
