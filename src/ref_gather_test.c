@@ -551,7 +551,13 @@ int main(int argc, char *argv[]) {
         "gather");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
-    if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test.solb "
+                  "ref_gather_test_ver2.sol"),
+           "sol");
+    if (ref_mpi_once(ref_mpi) && !transmesh)
+      REIS(0, remove(filename), "test clean up");
   }
   { /* gather .solb by extension, version 3 */
     REF_GRID ref_grid;
@@ -569,7 +575,13 @@ int main(int argc, char *argv[]) {
         "gather");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
-    if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test.solb "
+                  "ref_gather_test_ver3.sol"),
+           "sol");
+    if (ref_mpi_once(ref_mpi) && !transmesh)
+      REIS(0, remove(filename), "test clean up");
   }
   { /* gather .solb by extension, version 4 */
     REF_GRID ref_grid;
@@ -587,7 +599,13 @@ int main(int argc, char *argv[]) {
         "gather");
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "free");
-    if (ref_mpi_once(ref_mpi)) REIS(0, remove(filename), "test clean up");
+    if (transmesh && ref_mpi_once(ref_mpi))
+      REIS(0,
+           system("transmesh ref_gather_test.solb "
+                  "ref_gather_test_ver4.sol"),
+           "sol");
+    if (ref_mpi_once(ref_mpi) && !transmesh)
+      REIS(0, remove(filename), "test clean up");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
