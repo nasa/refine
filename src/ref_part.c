@@ -128,9 +128,9 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_part_meshb_geom(REF_GEOM ref_geom, REF_INT ngeom,
-                                      REF_INT type, REF_NODE ref_node,
-                                      REF_INT nnode, FILE *file) {
+REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
+                                         REF_INT type, REF_NODE ref_node,
+                                         REF_INT nnode, FILE *file) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_INT end_of_message = REF_EMPTY;
   REF_INT chunk;
@@ -664,8 +664,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     RSS(ref_mpi_bcast(ref_mpi, &available, 1, REF_INT_TYPE), "bcast");
     if (available) {
       RSS(ref_mpi_bcast(ref_mpi, &ngeom, 1, REF_INT_TYPE), "bcast");
-      RSS(ref_part_meshb_geom(ref_geom, ngeom, type, ref_node, (REF_INT)nnode,
-                              file),
+      RSS(ref_part_meshb_geom_bcast(ref_geom, ngeom, type, ref_node, file),
           "part geom");
       if (ref_grid_once(ref_grid))
         REIS(next_position, ftello(file), "end location");
