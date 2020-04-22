@@ -1519,7 +1519,6 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     RSS(ref_gather_ngeom(ref_node, ref_geom, type, &ngeom), "ngeom");
     if (ngeom > 0) {
       if (ref_grid_once(ref_grid)) {
-        node_per = ref_cell_node_per(ref_cell);
         next_position =
             (REF_FILEPOS)header_size +
             (REF_FILEPOS)ngeom * (REF_FILEPOS)(int_size * 2 + 8 * type) +
