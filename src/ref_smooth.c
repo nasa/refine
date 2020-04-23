@@ -124,12 +124,18 @@ REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL none_found = REF_TRUE;
   REF_DBL normdev;
+  REF_STATUS status;
 
   *min_normdev = 2.0;
   each_ref_cell_having_node(ref_cell, node, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     none_found = REF_FALSE;
-    RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "qual");
+    status = ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev);
+    if (REF_DIV_ZERO) {
+      *min_normdev = -1.5;
+      return REF_SUCCESS;
+    }
+    RSS(status, "ref_geom_tri_norm_deviation");
     *min_normdev = MIN(*min_normdev, normdev);
   }
 
