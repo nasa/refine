@@ -131,7 +131,7 @@ REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
     none_found = REF_FALSE;
     status = ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev);
-    if (REF_DIV_ZERO) {
+    if (REF_DIV_ZERO == status) {
       *min_normdev = -1.5;
       return REF_SUCCESS;
     }
