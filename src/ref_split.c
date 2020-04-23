@@ -222,8 +222,11 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
           "form edge split cav");
       if (transcript)
         printf("try cavity status %d\n", (int)ref_cavity_state(ref_cavity));
-      if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity))
+      if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity)) {
+        RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 0, edge)), "n0");
+        RSS(ref_node_location(ref_node, ref_edge_e2n(ref_edge, 1, edge)), "n1");
         REF_WHERE("enlarge"); /* note but skip cavity failures */
+      }
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
         if (transcript) printf("cavity visible\n");
         RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
