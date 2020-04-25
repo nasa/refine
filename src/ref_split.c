@@ -203,7 +203,9 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         printf("try cavity status %d\n", (int)ref_cavity_state(ref_cavity));
       if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity)) {
         RSS(ref_node_location(ref_node, node0), "n0");
+        RSS(ref_geom_tattle(ref_grid_geom(ref_grid), node0), "t0");
         RSS(ref_node_location(ref_node, node1), "n1");
+        RSS(ref_geom_tattle(ref_grid_geom(ref_grid), node1), "t1");
         REF_WHERE("enlarge"); /* note but skip cavity failures */
       }
       if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
