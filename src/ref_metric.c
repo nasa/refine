@@ -1075,8 +1075,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
       if (hr < slop || hs < slop) continue;
       if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
-        hr = MAX(hr, ref_geom_face_min_length(ref_geom, face));
-        hs = MAX(hs, ref_geom_face_min_length(ref_geom, face));
+        if (hr < ref_geom_face_min_length(ref_geom, face) ||
+            hs < ref_geom_face_min_length(ref_geom, face))
+          continue;
       }
 
       hn = hmax;
