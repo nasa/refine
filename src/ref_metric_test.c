@@ -876,7 +876,11 @@ int main(int argc, char *argv[]) {
 
     each_ref_node_valid_node(ref_node, node) {
       RSS(ref_matrix_diag_m(&(metric[6 * node]), multiscale_system), "decomp");
-      RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      if (ref_grid_twod(ref_grid)) {
+        RSS(ref_matrix_ascending_eig_twod(multiscale_system), "sort eig twod");
+      } else {
+        RSS(ref_matrix_ascending_eig(multiscale_system), "sort eig");
+      }
       h0 = ref_matrix_sqrt_vt_m_v(&(implied[6 * node]),
                                   &(ref_matrix_vec(multiscale_system, 0, 0)));
       if (!ref_math_divisible(1.0, h0)) RSS(REF_DIV_ZERO, "inf h0");
