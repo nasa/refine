@@ -21,7 +21,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}-u.solb
 
-    ${src}/ref_acceptance -u one ${inproj}.meshb \
+    ${src}/ref_acceptance -u half ${inproj}.meshb \
 	  ${inproj}-weight.solb
 
     ${src}/ref_metric_test --venditti ${inproj}.meshb ${inproj}-u.solb \
