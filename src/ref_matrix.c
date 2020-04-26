@@ -301,6 +301,48 @@ REF_STATUS ref_matrix_ascending_eig(REF_DBL *d) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_ascending_eig_twod(REF_DBL *d) {
+  REF_DBL temp;
+  REF_INT i, zdir;
+  REF_DBL dot, best_dot;
+  REF_DBL znorm[] = {0, 0, 1};
+
+  best_dot = -2.0;
+  zdir = REF_EMPTY;
+  for (i = 0; i < 3; i++) {
+    dot = ABS(ref_math_dot(znorm, ref_matrix_vec_ptr(d, i)));
+    if (dot > best_dot) {
+      best_dot = dot;
+      zdir = i;
+    }
+  }
+  RUS(REF_EMPTY, zdir, "better dot not found, no z preference");
+
+  if (2 != zdir) {
+    temp = ref_matrix_eig(d, 2);
+    ref_matrix_eig(d, 2) = ref_matrix_eig(d, zdir);
+    ref_matrix_eig(d, zdir) = temp;
+    for (i = 0; i < 3; i++) {
+      temp = ref_matrix_vec(d, i, 2);
+      ref_matrix_vec(d, i, 2) = ref_matrix_vec(d, i, zdir);
+      ref_matrix_vec(d, i, zdir) = temp;
+    }
+  }
+
+  if (ref_matrix_eig(d, 1) > ref_matrix_eig(d, 0)) {
+    temp = ref_matrix_eig(d, 0);
+    ref_matrix_eig(d, 0) = ref_matrix_eig(d, 1);
+    ref_matrix_eig(d, 1) = temp;
+    for (i = 0; i < 3; i++) {
+      temp = ref_matrix_vec(d, i, 0);
+      ref_matrix_vec(d, i, 0) = ref_matrix_vec(d, i, 1);
+      ref_matrix_vec(d, i, 1) = temp;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_form_m(REF_DBL *d, REF_DBL *m) {
   /* m = d * e * d' */
 
