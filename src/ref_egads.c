@@ -201,6 +201,21 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
     }
   }
 
+  ref_malloc_init(ref_geom->face_min_length, ref_geom->nface, REF_DBL, -1.0);
+  for (face = 0; face < nface; face++) {
+    int len, atype;
+    const double *preals;
+    const int *pints;
+    const char *string;
+    if (EGADS_SUCCESS == EG_attributeRet(((ego *)(ref_geom->faces))[face],
+                                         "min_length", &atype, &len, &pints,
+                                         &preals, &string)) {
+      if (ATTRREAL == atype && len == 1) {
+        ref_geom->face_min_length[face] = preals[0];
+      }
+    }
+  }
+
   ref_malloc_init(ref_geom->face_seg_per_rad, ref_geom->nface, REF_DBL, -999.0);
   for (face = 0; face < nface; face++) {
     int len, atype;

@@ -1057,6 +1057,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_node_owned(ref_node, node)) {
+      face = ref_geom_id(ref_geom, geom) - 1;
       RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
@@ -1073,6 +1074,17 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
 
       RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
       if (hr < slop || hs < slop) continue;
+      if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
+        if (hr < ref_geom_face_min_length(ref_geom, face) ||
+            hs < ref_geom_face_min_length(ref_geom, face))
+          continue;
+      }
+
+      hn = hmax;
+      if (0.0 < ref_geom_face_initial_cell_height(ref_geom, face))
+        hn = ref_geom_face_initial_cell_height(ref_geom, face);
+      hn = MIN(hn, norm_ratio * hr);
+      hn = MIN(hn, norm_ratio * hs);
 
       /* cross the tangent vectors to get the (inward or outward) normal */
       ref_math_cross_product(r, s, n);
@@ -1081,12 +1093,6 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
       ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
       for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
-      hn = hmax;
-      face = ref_geom_id(ref_geom, geom) - 1;
-      if (0.0 < ref_geom_face_initial_cell_height(ref_geom, face))
-        hn = ref_geom_face_initial_cell_height(ref_geom, face);
-      hn = MIN(hn, norm_ratio * hr);
-      hn = MIN(hn, norm_ratio * hs);
       ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
       /* form and intersect with previous */
       RSS(ref_matrix_form_m(diagonal_system, curvature_metric), "reform m");

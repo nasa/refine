@@ -51,6 +51,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL *param;
   REF_DBL *uv_area_sign;
   REF_DBL *initial_cell_height;
+  REF_DBL *face_min_length;
   REF_DBL *face_seg_per_rad;
   REF_DBL segments_per_radian_of_curvature;
   REF_DBL tolerance_protection;
@@ -100,6 +101,11 @@ struct REF_GEOM_STRUCT {
   (((face) >= 0 && (face) < (ref_geom)->nface &&          \
     NULL != (ref_geom)->initial_cell_height)              \
        ? (ref_geom)->initial_cell_height[(face)]          \
+       : -1.0)
+#define ref_geom_face_min_length(ref_geom, face) \
+  (((face) >= 0 && (face) < (ref_geom)->nface && \
+    NULL != (ref_geom)->face_min_length)         \
+       ? (ref_geom)->face_min_length[(face)]     \
        : -1.0)
 #define ref_geom_face_segments_per_radian_of_curvature(ref_geom, face) \
   (((face) >= 0 && (face) < (ref_geom)->nface &&                       \
