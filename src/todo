@@ -192,14 +192,14 @@ egads recon
 
 *****************
 
-- bootstrap all of C2S
-- faster multiscale convergence of boundary layer and nozzle when shocks
+- explore entropy adjoint in 2D and 3D
+- understand multiscale gradation of boundary layer and nozzle when shocks
 - dual RANS/ILES metric or meshes for HRLES
-- mesh movement
 - C2S acceptance on fun3d-intg and sfe develop/master
 - recover coarse curved edge/face from tessilation
 - surrogate geometry
 - curved higher order meshing
+- meshlink support
 - smoothing order graph distance to boundary
 - migration to cavity from local operators
 - filter geometry surface curvature metric with discrete curvature
@@ -209,11 +209,12 @@ egads recon
 - thin geometry boost of curvature constraint metric
 - limit metric change from implied metric and update until convergence
 - virtual topology
-- meshlink support
 - split private/public header defs
 - standardize post operation conditions
-- second order boundary reconstrcution of hessian and adjont
+- second order boundary reconstruction of hessian and adjont
 - encourage first cell normal, skin friction noise
+- mesh movement
+- bootstrap all of C2S
 
 ooooooooooooooooo
 
