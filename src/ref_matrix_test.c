@@ -112,6 +112,31 @@ int main(void) {
     RWDS(fd[2], d[2], tol, "d[2] expected");
   }
 
+  { /* twod sort, z last */
+    REF_DBL m[6] = {0.5, 0.0, 0.0, 2.0, 0.0, 1.0};
+    REF_DBL d[12];
+
+    RSS(ref_matrix_diag_m(m, d), "diag");
+
+    RSS(ref_matrix_ascending_eig_twod(d), "ascend");
+
+    RWDS(2.0, d[0], -1, "eig 0");
+    RWDS(0.5, d[1], -1, "eig 1");
+    RWDS(1.0, d[2], -1, "eig 2");
+
+    RWDS(0.0, d[3], -1, "x0");
+    RWDS(1.0, d[4], -1, "y0");
+    RWDS(0.0, d[5], -1, "z0");
+
+    RWDS(1.0, d[6], -1, "x1");
+    RWDS(0.0, d[7], -1, "y1");
+    RWDS(0.0, d[8], -1, "z1");
+
+    RWDS(0.0, d[9], -1, "x2");
+    RWDS(0.0, d[10], -1, "y2");
+    RWDS(1.0, d[11], -1, "z2");
+  }
+
   { /* diag decom, zeros */
     REF_DBL m[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
     REF_DBL d[12];
