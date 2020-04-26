@@ -18,22 +18,22 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
 
-    ${src}/ref_acceptance -u mach-mms ${inproj}.meshb \
-	  ${inproj}-mach.solb
+    ${src}/ref_acceptance ${field} ${inproj}.meshb \
+	  ${inproj}-u.solb
 
     ${src}/ref_acceptance -u one ${inproj}.meshb \
-	  ${inproj}-unity.solb
+	  ${inproj}-weight.solb
 
-    ${src}/ref_metric_test --venditti ${inproj}.meshb ${inproj}-mach.solb \
-	  ${inproj}-unity.solb -1 1000 ${inproj}-metric.solb
+    ${src}/ref_metric_test --venditti ${inproj}.meshb ${inproj}-u.solb \
+	  ${inproj}-weight.solb -1 1000 ${inproj}-metric.solb
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
-	  ${outproj}.solb
+	  ${outproj}-u.solb
 
-    ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}-u.tec
+    ${src}/ref_gather_test ${outproj}.meshb ${outproj}-u.solb ${outproj}-u.tec
 }
 
 cp square.meshb cycle00.meshb
