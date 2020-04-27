@@ -261,42 +261,8 @@ static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
-  FILE *file;
-
-  file = fopen(filename, "w");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
-
-  fprintf(file, "title=\"tecplot refine geometry file\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
-
-  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
-  RSS(ref_export_tec_vol_zone(ref_grid, file), "vol");
-  RSS(ref_export_tec_edge_zone(ref_grid, file), "edge");
-  RSS(ref_export_tec_cubic_edge_zone(ref_grid, file), "cubic edge");
-
-  fclose(file);
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename) {
-  FILE *file;
-
-  file = fopen(filename, "w");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
-
-  fprintf(file, "title=\"tecplot refine geometry file\"\n");
-  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
-
-  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
-
-  fclose(file);
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid,
+                                                 FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -351,7 +317,7 @@ REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -407,7 +373,7 @@ REF_STATUS ref_export_tec_edge_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -478,7 +444,7 @@ REF_STATUS ref_export_tec_surf_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node;
   REF_CELL ref_cell;
   REF_INT node;
@@ -564,6 +530,41 @@ REF_STATUS ref_export_tec_vol_zone(REF_GRID ref_grid, FILE *file) {
     }
   }
 
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine geometry file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
+  RSS(ref_export_tec_vol_zone(ref_grid, file), "vol");
+  RSS(ref_export_tec_edge_zone(ref_grid, file), "edge");
+  RSS(ref_export_tec_cubic_edge_zone(ref_grid, file), "cubic edge");
+
+  fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"tecplot refine geometry file\"\n");
+  fprintf(file, "variables = \"x\" \"y\" \"z\"\n");
+
+  RSS(ref_export_tec_surf_zone(ref_grid, file), "surf");
+
+  fclose(file);
   return REF_SUCCESS;
 }
 
