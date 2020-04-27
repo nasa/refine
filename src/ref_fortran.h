@@ -57,8 +57,6 @@ REF_STATUS REF_FORT_(ref_fortran_import_metric,
 REF_STATUS REF_FORT_(ref_fortran_import_ratio,
                      REF_FORTRAN_IMPORT_RATIO)(REF_INT *nnodes, REF_DBL *ratio);
 
-REF_STATUS REF_FORT_(ref_fortran_viz, REF_FORTRAN_VIZ)(void);
-
 REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void);
 
 REF_STATUS REF_FORT_(ref_fortran_size_node,

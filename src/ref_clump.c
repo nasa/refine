@@ -453,7 +453,6 @@ REF_STATUS ref_clump_tet_quality(REF_GRID ref_grid, REF_DBL min_quality,
   zonetype = "fetetrahedron";
   RSS(ref_clump_cell_zone(f, ref_cell, ref_dict, zonetype, ref_node), "zone");
 
-  RSS(ref_export_tec_surf_zone(ref_grid, f), "add surf");
   fclose(f);
 
   RSS(ref_dict_free(ref_dict), "free tet");

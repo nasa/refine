@@ -100,8 +100,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_migrate_to_balance(ref_grid), "new part");
     RSS(ref_subdiv_create(&ref_subdiv, ref_grid), "create");
 
-    RSS(ref_export_tec_part(ref_grid, "ref_subdiv_orig"), "orig part");
-
     ref_node = ref_grid_node(ref_grid);
     ref_edge = ref_subdiv_edge(ref_subdiv);
 
@@ -129,8 +127,6 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi))
       printf("split " REF_GLOB_FMT "\n", ref_node_n_global(ref_node));
-
-    RSS(ref_export_tec_part(ref_grid, "ref_subdiv_splt"), "split part");
 
     RSS(ref_gather_by_extension(ref_grid, "ref_subdiv_test.b8.ugrid"),
         "gather");

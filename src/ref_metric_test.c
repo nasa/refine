@@ -63,7 +63,6 @@ int main(int argc, char *argv[]) {
   REF_INT fixed_point_pos = REF_EMPTY;
   REF_INT curve_limit_pos = REF_EMPTY;
   REF_INT parent_pos = REF_EMPTY;
-  REF_INT xyzdirlen_pos = REF_EMPTY;
   REF_INT wlp_pos = REF_EMPTY;
   REF_INT moving_pos = REF_EMPTY;
   REF_INT explore_pos = REF_EMPTY;
@@ -92,8 +91,6 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--curve-limit", &curve_limit_pos),
       REF_NOT_FOUND, "arg search");
   RXS(ref_args_find(argc, argv, "--parent", &parent_pos), REF_NOT_FOUND,
-      "arg search");
-  RXS(ref_args_find(argc, argv, "--xyzdirlen", &xyzdirlen_pos), REF_NOT_FOUND,
       "arg search");
   RXS(ref_args_find(argc, argv, "--wlp", &wlp_pos), REF_NOT_FOUND,
       "arg search");
@@ -1439,26 +1436,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(parent_grid), "free");
     RSS(ref_grid_free(ref_grid), "free");
 
-    RSS(ref_mpi_free(ref_mpi), "free");
-    RSS(ref_mpi_stop(), "stop");
-    return 0;
-  }
-
-  if (xyzdirlen_pos != REF_EMPTY) {
-    REF_GRID ref_grid;
-
-    REIS(1, xyzdirlen_pos,
-         "required args: --xyzdirlen grid.ext input.metric output");
-    RAS(argc == 5, "required args: --xyzdirlen grid.ext input.metric output");
-
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load target grid in position 1");
-    RSS(ref_part_metric(ref_grid_node(ref_grid), argv[3]),
-        "unable to load parent grid in position 2");
-    RSS(ref_export_metric_xyzdirlen(ref_grid, argv[4]),
-        "export metric in xyzdirlen");
-
-    RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
