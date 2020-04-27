@@ -442,7 +442,9 @@ REF_STATUS ref_fixture_twod_cubic_edge(REF_GRID *ref_grid_ptr,
       ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
       ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
     add_that_node(0, 0.0, 0.0, 0.0);
     add_that_node(1, 1.0, 0.0, 0.0);
     add_that_node(2, 1.0 / 3.0, 0.0, 0.0);
@@ -1196,6 +1198,228 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
   }
 
   RSS(ref_node_initialize_n_global(ref_node, m * n), "init glob");
+
+  return REF_SUCCESS;
+}
+
+/*
+      2
+   9 8 7 6
+4 10     5 3
+  11     4
+   0 1 2 3
+      1
+
+      21
+ 7 20    22 8
+  19      23
+ 18        12
+  17      13
+ 6 16    14 5
+      15
+ */
+
+REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
+                                          REF_MPI ref_mpi) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnodesg = 24;
+  REF_DBL x0 = 0.5, y0 = 0.5, r = 0.25, t;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 2;
+  global[3] = 3;
+  local[4] = 1;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 1.0 / 3.0, 0.0, 0.0);
+    add_that_node(2, 2.0 / 3.0, 0.0, 0.0);
+    add_that_node(3, 1.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 3;
+  global[1] = 4;
+  global[2] = 5;
+  global[3] = 6;
+  local[4] = 2;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    add_that_node(0, 1.0, 0.0, 0.0);
+    add_that_node(1, 1.0, 1.0 / 3.0, 0.0);
+    add_that_node(2, 1.0, 2.0 / 3.0, 0.0);
+    add_that_node(3, 1.0, 1.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 6;
+  global[1] = 7;
+  global[2] = 8;
+  global[3] = 9;
+  local[4] = 3;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    add_that_node(0, 1.0, 1.0, 0.0);
+    add_that_node(1, 2.0 / 3.0, 1.0, 0.0);
+    add_that_node(2, 1.0 / 3.0, 1.0, 0.0);
+    add_that_node(3, 0.0, 1.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 9;
+  global[1] = 10;
+  global[2] = 11;
+  global[3] = 0;
+  local[4] = 4;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    add_that_node(0, 0.0, 1.0, 0.0);
+    add_that_node(1, 0.0, 2.0 / 3.0, 0.0);
+    add_that_node(2, 0.0, 1.0 / 3.0, 0.0);
+    add_that_node(3, 0.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 12;
+  global[1] = 13;
+  global[2] = 14;
+  global[3] = 15;
+  local[4] = 5;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    t = ref_math_pi * (12.0 / 6.0);
+    add_that_node(0, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (11.0 / 6.0);
+    add_that_node(1, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (10.0 / 6.0);
+    add_that_node(2, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (9.0 / 6.0);
+    add_that_node(3, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 15;
+  global[1] = 16;
+  global[2] = 17;
+  global[3] = 18;
+  local[4] = 6;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    t = ref_math_pi * (9.0 / 6.0);
+    add_that_node(0, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (8.0 / 6.0);
+    add_that_node(1, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (7.0 / 6.0);
+    add_that_node(2, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (6.0 / 6.0);
+    add_that_node(3, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 18;
+  global[1] = 19;
+  global[2] = 20;
+  global[3] = 21;
+  local[4] = 7;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    t = ref_math_pi * (6.0 / 6.0);
+    add_that_node(0, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (5.0 / 6.0);
+    add_that_node(1, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (4.0 / 6.0);
+    add_that_node(2, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (3.0 / 6.0);
+    add_that_node(3, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 21;
+  global[1] = 22;
+  global[2] = 23;
+  global[3] = 12;
+  local[4] = 8;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    t = ref_math_pi * (3.0 / 6.0);
+    add_that_node(0, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (2.0 / 6.0);
+    add_that_node(1, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (1.0 / 6.0);
+    add_that_node(2, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (0.0 / 6.0);
+    add_that_node(3, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
 
   return REF_SUCCESS;
 }
