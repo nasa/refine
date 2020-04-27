@@ -112,7 +112,7 @@ int main(int argc, char *argv[]) {
 
   if (2 == argc) {
     REF_GRID ref_grid;
-    RSS(ref_fixture_twod_cubic_edge(&ref_grid, ref_mpi), "fix");
+    RSS(ref_fixture_twod_square_circle(&ref_grid, ref_mpi), "fix");
     RSS(ref_export_by_extension(ref_grid, argv[1]), "export");
     RSS(ref_grid_free(ref_grid), "free");
   }

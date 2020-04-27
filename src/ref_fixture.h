@@ -45,6 +45,8 @@ REF_STATUS ref_fixture_hex_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_tet_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
+REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid, REF_MPI ref_mpi);
+
 END_C_DECLORATION
 
 #endif /* REF_FIXTURE_H */
