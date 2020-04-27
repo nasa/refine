@@ -1616,7 +1616,6 @@ REF_ULONG ref_migrate_morton_id(REF_UINT x, REF_UINT y, REF_UINT z) {
 REF_STATUS ref_migrate_split_dir(REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz,
                                  REF_INT *dir) {
   REF_DBL mins[3], maxes[3], temp;
-  ;
   REF_INT i, j;
   *dir = 0;
   if (n == 0) {
