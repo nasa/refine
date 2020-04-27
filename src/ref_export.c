@@ -1078,7 +1078,7 @@ REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1193,7 +1193,7 @@ REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1247,7 +1247,7 @@ REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1307,7 +1307,7 @@ REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename) {
 }
 
 /* https://su2code.github.io/docs/Mesh-File/ */
-REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1666,7 +1666,7 @@ static REF_STATUS ref_export_bin_ugrid(REF_GRID ref_grid, const char *filename,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;
@@ -1707,18 +1707,7 @@ REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_pdf(REF_GRID ref_grid, const char *pdf_filename) {
-  char temp_filename[] = "ref_export_temp_for_pdf.eps";
-  char command[1024];
-  RSS(ref_export_eps(ref_grid, temp_filename), "temp eps");
-  sprintf(command, "epstopdf %s -o=%s", temp_filename, pdf_filename);
-  REIS(0, system(command), "epstopdf failed");
-  REIS(0, remove(temp_filename), "temp clean up");
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
@@ -1770,7 +1759,18 @@ REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_pdf(REF_GRID ref_grid, const char *pdf_filename) {
+  char temp_filename[] = "ref_export_temp_for_pdf.eps";
+  char command[1024];
+  RSS(ref_export_eps(ref_grid, temp_filename), "temp eps");
+  sprintf(command, "epstopdf %s -o=%s", temp_filename, pdf_filename);
+  REIS(0, system(command), "epstopdf failed");
+  REIS(0, remove(temp_filename), "temp clean up");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;

@@ -51,16 +51,6 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
                                          const char *root_filename);
 REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename);
 
-REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_smesh(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_fgrid(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_su2(REF_GRID ref_grid, const char *filename);
-
-REF_STATUS ref_export_c(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_eps(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_pdf(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_html(REF_GRID ref_grid, const char *filename);
-
 REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
                                           REF_FILEPOS next_position);
 REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename);
