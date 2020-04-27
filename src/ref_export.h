@@ -38,8 +38,6 @@ REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_export_tec_int(REF_GRID ref_grid, REF_INT *scalar,
                               const char *filename);
-REF_STATUS ref_export_tec_dbl(REF_GRID ref_grid, REF_INT ldim, REF_DBL *scalar,
-                              const char *filename);
 
 REF_STATUS ref_export_tec_part(REF_GRID ref_grid, const char *root_filename);
 REF_STATUS ref_export_metric_xyzdirlen(REF_GRID ref_grid, const char *filename);
