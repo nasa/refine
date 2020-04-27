@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
     REF_GRID export_grid, import_grid;
     char file[] = "ref_import_test.msh";
     RSS(ref_fixture_twod_brick_grid(&export_grid, ref_mpi), "set up tet");
-    RSS(ref_export_twod_msh(export_grid, file), "export");
+    RSS(ref_export_by_extension(export_grid, file), "export");
     RSS(ref_import_by_extension(&import_grid, ref_mpi, file), "import");
     REIS(ref_node_n(ref_grid_node(export_grid)),
          ref_node_n(ref_grid_node(import_grid)), "node count");

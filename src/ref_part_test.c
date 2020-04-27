@@ -366,7 +366,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
       ref_grid_meshb_version(export_grid) = 2;
-      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
 
@@ -383,7 +383,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
       ref_grid_meshb_version(export_grid) = 3;
-      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
 
@@ -400,7 +400,7 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
       ref_grid_meshb_version(export_grid) = 4;
-      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
 
@@ -423,7 +423,7 @@ int main(int argc, char *argv[]) {
       ref_geom_cad_data(ref_geom)[0] = 5;
       ref_geom_cad_data(ref_geom)[1] = 4;
       ref_geom_cad_data(ref_geom)[2] = 3;
-      RSS(ref_export_meshb(export_grid, grid_file), "export");
+      RSS(ref_export_by_extension(export_grid, grid_file), "export");
       RSS(ref_grid_free(export_grid), "free");
     }
 

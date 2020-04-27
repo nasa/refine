@@ -1891,7 +1891,7 @@ static REF_STATUS ref_export_meshb_int(FILE *file, REF_INT version,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -2067,7 +2067,7 @@ REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_twod_msh(REF_GRID ref_grid, const char *filename) {
   FILE *f;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node;
