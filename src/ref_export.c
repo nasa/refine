@@ -568,42 +568,6 @@ REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_metric_xyzdirlen(REF_GRID ref_grid,
-                                       const char *filename) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT node;
-  REF_INT *o2n, *n2o;
-  REF_DBL m[6], d[12];
-  FILE *file;
-
-  file = fopen(filename, "w");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
-
-  RSS(ref_node_compact(ref_node, &o2n, &n2o), "compact");
-
-  for (node = 0; node < ref_node_n(ref_node); node++) {
-    RSS(ref_node_metric_get(ref_node, n2o[node], m), "get");
-    RSS(ref_matrix_diag_m(m, d), "diag");
-    RSS(ref_matrix_ascending_eig(d), "sort eig");
-
-    fprintf(file,
-            " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e "
-            "%.16e %.16e %.16e %.16e %.16e\n",
-            ref_node_xyz(ref_node, 0, n2o[node]),
-            ref_node_xyz(ref_node, 1, n2o[node]),
-            ref_node_xyz(ref_node, 2, n2o[node]), d[3], d[4], d[5], d[6], d[7],
-            d[8], d[9], d[10], d[11], 1.0 / sqrt(d[0]), 1.0 / sqrt(d[1]),
-            1.0 / sqrt(d[2]));
-  }
-
-  ref_free(n2o);
-  ref_free(o2n);
-
-  fclose(file);
-
-  return REF_SUCCESS;
-}
 REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
                                       const char *root_filename) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
