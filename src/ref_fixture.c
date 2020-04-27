@@ -1226,7 +1226,8 @@ REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
   REF_INT global[REF_CELL_MAX_SIZE_PER];
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
-  REF_INT nnodesg = 12;
+  REF_INT nnodesg = 16;
+  REF_DBL x0 = 0.5, y0 = 0.5, r = 0.25, t;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
   ref_grid = *ref_grid_ptr;
@@ -1314,6 +1315,31 @@ REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
     add_that_node(1, 0.0, 2.0 / 3.0, 0.0);
     add_that_node(2, 0.0, 1.0 / 3.0, 0.0);
     add_that_node(3, 0.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 12;
+  global[1] = 13;
+  global[2] = 14;
+  global[3] = 15;
+  local[4] = 5;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    t = ref_math_pi * (12.0 / 6.0);
+    add_that_node(0, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (11.0 / 6.0);
+    add_that_node(1, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (10.0 / 6.0);
+    add_that_node(2, x0 + r * cos(t), y0 + r * sin(t), 0.0);
+    t = ref_math_pi * (9.0 / 6.0);
+    add_that_node(3, x0 + r * cos(t), y0 + r * sin(t), 0.0);
 
     RSS(ref_cell_add(ref_grid_ed3(ref_grid), local, &cell), "add tri");
   }
