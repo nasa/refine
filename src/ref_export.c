@@ -767,23 +767,6 @@ REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename) {
-  REF_EDGE ref_edge;
-  char viz_file[256];
-
-  sprintf(viz_file, "%s_n%d_p%d.tec", root_filename,
-          ref_mpi_n(ref_grid_mpi(ref_grid)),
-          ref_mpi_rank(ref_grid_mpi(ref_grid)));
-
-  RSS(ref_edge_create(&ref_edge, ref_grid), "make edge");
-
-  RSS(ref_edge_tec_ratio(ref_edge, viz_file), "viz parts as scalar");
-
-  RSS(ref_edge_free(ref_edge), "free edge");
-
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
