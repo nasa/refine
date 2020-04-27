@@ -36,8 +36,6 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_export_tec_metric_axis(REF_GRID ref_grid,
-                                      const char *root_filename);
 REF_STATUS ref_export_tec_metric_ellipse(REF_GRID ref_grid,
                                          const char *root_filename);
 REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename);
