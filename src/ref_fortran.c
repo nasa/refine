@@ -115,15 +115,6 @@ REF_STATUS REF_FORT_(ref_fortran_import_face,
   return REF_SUCCESS;
 }
 
-REF_STATUS REF_FORT_(ref_fortran_viz, REF_FORTRAN_VIZ)(void) {
-  char filename[1024];
-  sprintf(filename, "ref_viz%04d.vtk", ref_mpi_rank(ref_grid_mpi(ref_grid)));
-  RSS(ref_export_vtk(ref_grid, filename), "export vtk");
-  sprintf(filename, "ref_viz%04d.tec", ref_mpi_rank(ref_grid_mpi(ref_grid)));
-  RSS(ref_export_tec(ref_grid, filename), "export tec");
-  return REF_SUCCESS;
-}
-
 REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void) {
   REF_INT passes, i;
   REF_LONG ntet, npri;
