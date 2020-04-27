@@ -1251,7 +1251,7 @@ REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
   global[1] = 4;
   global[2] = 5;
   global[3] = 6;
-  local[4] = 1;
+  local[4] = 2;
   if (ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
       ref_mpi_rank(ref_mpi) ==
@@ -1272,7 +1272,7 @@ REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
   global[1] = 7;
   global[2] = 8;
   global[3] = 9;
-  local[4] = 1;
+  local[4] = 3;
   if (ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
       ref_mpi_rank(ref_mpi) ==
@@ -1293,7 +1293,7 @@ REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
   global[1] = 10;
   global[2] = 11;
   global[3] = 0;
-  local[4] = 1;
+  local[4] = 4;
   if (ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
       ref_mpi_rank(ref_mpi) ==
