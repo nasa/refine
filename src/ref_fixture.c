@@ -1209,6 +1209,14 @@ REF_STATUS ref_fixture_twod_brick_grid(REF_GRID *ref_grid_ptr,
   11     4
    0 1 2 3
       1
+
+      21
+ 7 20    22 8
+  19      23
+ 18        12
+  17      13
+ 6 16    14 5
+      15
  */
 
 REF_STATUS ref_fixture_twod_square_circle(REF_GRID *ref_grid_ptr,
