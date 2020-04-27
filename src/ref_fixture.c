@@ -442,7 +442,9 @@ REF_STATUS ref_fixture_twod_cubic_edge(REF_GRID *ref_grid_ptr,
       ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
       ref_mpi_rank(ref_mpi) ==
-          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
     add_that_node(0, 0.0, 0.0, 0.0);
     add_that_node(1, 1.0, 0.0, 0.0);
     add_that_node(2, 1.0 / 3.0, 0.0, 0.0);
