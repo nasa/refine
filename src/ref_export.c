@@ -178,7 +178,7 @@ static REF_STATUS ref_export_faceid_range(REF_GRID ref_grid,
 }
 
 /* https://www.vtk.org/VTK/img/file-formats.pdf */
-REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_NODE ref_node;
   REF_CELL ref_cell;

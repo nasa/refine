@@ -122,10 +122,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_validation_all(ref_grid), "invalid grid");
 
     printf("vtk.\n");
-    RSS(ref_export_vtk(ref_grid, "validate.vtk"), "vtk");
+    RSS(ref_export_by_extension(ref_grid, "validate.vtk"), "vtk");
 
     printf("tec.\n");
-    RSS(ref_export_tec(ref_grid, "validate.tec"), "tec");
+    RSS(ref_export_by_extension(ref_grid, "validate.tec"), "tec");
 
     RSS(ref_grid_free(ref_grid), "free");
     printf("done.\n");
