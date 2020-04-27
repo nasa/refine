@@ -161,7 +161,7 @@ int main(int argc, char *argv[]) {
   {              /* export .eps pri */
     REF_GRID ref_grid;
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_eps(ref_grid, "ref_export_test.eps"), "export");
+    RSS(ref_export_by_extension(ref_grid, "ref_export_test.eps"), "export");
     REIS(0, remove("ref_export_test.eps"), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -170,7 +170,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.html";
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_html(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -179,7 +179,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.meshb";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_meshb(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -188,7 +188,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.msh";
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "set up pri brick");
-    RSS(ref_export_twod_msh(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.plt";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_plt(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     REIS(0, remove(file), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
