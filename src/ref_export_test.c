@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.vtk";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_vtk(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.tec";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_tec(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.tec";
     RSS(ref_fixture_hex_grid(&ref_grid, ref_mpi), "set up hex");
-    RSS(ref_export_tec(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     char file[] = "ref_export_test.fgrid";
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up tet");
-    RSS(ref_export_fgrid(ref_grid, file), "export");
+    RSS(ref_export_by_extension(ref_grid, file), "export");
     RSS(ref_grid_free(ref_grid), "free");
     REIS(0, remove(file), "test clean up");
   }
