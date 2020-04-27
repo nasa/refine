@@ -152,7 +152,7 @@ static void loop_help(const char *name) {
   printf("       3: Zoltan graph partioning.\n");
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
-  printf("   --mesh-extension output mesh extension (in addition to meshb).\n");
+  printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
 
   printf("\n");
 }
@@ -814,7 +814,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
   char filename[1024];
-  char mesh_extension[32];
   REF_GRID ref_grid = NULL;
   REF_GRID initial_grid = NULL;
   REF_GRID extruded_grid = NULL;
@@ -833,6 +832,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
+  const char *lb8_ugrid = "lb8.ugrid";
+  const char *mesh_extension = lb8_ugrid;
 
   if (argc < 5) goto shutdown;
   in_project = argv[2];
@@ -871,6 +872,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     interpolant = argv[pos + 1];
+  }
+
+  RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    mesh_extension = argv[pos + 1];
   }
 
   if (ref_mpi_once(ref_mpi)) {
@@ -1062,7 +1069,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_by_extension(ref_grid, filename), "gather .meshb");
   ref_mpi_stopwatch_stop(ref_mpi, "gather meshb");
 
-  sprintf(filename, "%s.lb8.ugrid", out_project);
+  sprintf(filename, "%s.%s", out_project, mesh_extension);
   if (ref_grid_twod(ref_grid)) {
     if (ref_mpi_once(ref_mpi)) printf("extrude twod\n");
     RSS(ref_grid_extrude_twod(&extruded_grid, ref_grid), "extrude");
@@ -1070,14 +1077,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(extruded_grid)), filename);
     if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
-    RSS(ref_gather_by_extension(extruded_grid, filename), "gather .lb8.ugrid");
+    RSS(ref_gather_by_extension(extruded_grid, filename),
+        "gather mesh extension");
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("gather " REF_GLOB_FMT " nodes to %s\n",
              ref_node_n_global(ref_grid_node(ref_grid)), filename);
-    RSS(ref_gather_by_extension(ref_grid, filename), "gather .lb8.ugrid");
+    RSS(ref_gather_by_extension(ref_grid, filename), "gather mesh extension");
   }
-  ref_mpi_stopwatch_stop(ref_mpi, "gather .lb8.ugrid");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather mesh extension");
 
   if (ref_mpi_once(ref_mpi)) {
     printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
