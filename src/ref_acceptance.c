@@ -306,9 +306,6 @@ int main(int argc, char *argv[]) {
     RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL, argv[4]),
         "in");
 
-    RSS(ref_export_tec_dbl(ref_grid, 1, scalar, "ref_acceptance_scalar.tec"),
-        "scalar");
-
     ref_free(scalar);
     RSS(ref_grid_free(ref_grid), "grid free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
