@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_validation_cell_node(ref_grid), "invalid pri");
 
-    RSS(ref_export_tec(ref_grid, "twod.tec"), "tec");
+    RSS(ref_export_by_extension(ref_grid, "twod.tec"), "tec");
 
     RSS(ref_grid_free(ref_grid), "free");
   }

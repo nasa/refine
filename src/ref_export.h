@@ -36,7 +36,6 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename);
 
-REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_export_tec_cubic_edge_zone(REF_GRID ref_grid, FILE *file);

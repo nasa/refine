@@ -261,7 +261,7 @@ static REF_STATUS ref_export_vtk(REF_GRID ref_grid, const char *filename) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
+static REF_STATUS ref_export_tec(REF_GRID ref_grid, const char *filename) {
   FILE *file;
 
   file = fopen(filename, "w");
