@@ -2229,45 +2229,7 @@ static REF_STATUS ref_export_i_like_cfd_grid(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename) {
-  FILE *file;
-  int one = 1;
-  int filetype = 0;
-  int ascii[8];
-  int numvar = 3;
-
-  file = fopen(filename, "w");
-  if (NULL == (void *)file) printf("unable to open %s\n", filename);
-  RNS(file, "unable to open file");
-
-  REIS(8, fwrite(&"#!TDV112", sizeof(char), 8, file), "header");
-  REIS(1, fwrite(&one, sizeof(int), 1, file), "magic");
-  REIS(1, fwrite(&filetype, sizeof(int), 1, file), "filetype");
-
-  ascii[0] = (int)'f';
-  ascii[1] = (int)'t';
-  ascii[2] = 0;
-  REIS(3, fwrite(&ascii, sizeof(int), 3, file), "title");
-
-  REIS(1, fwrite(&numvar, sizeof(int), 1, file), "numvar");
-  ascii[0] = (int)'x';
-  ascii[1] = 0;
-  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
-  ascii[0] = (int)'y';
-  ascii[1] = 0;
-  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
-  ascii[0] = (int)'z';
-  ascii[1] = 0;
-  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
-
-  RSS(ref_export_plt_tet_zone(ref_grid, file), "plt tet zone");
-
-  fclose(file);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file) {
+static REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   int ascii[8];
@@ -2480,6 +2442,44 @@ REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file) {
     ref_free(l2g);
     ref_free(g2l);
   }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename) {
+  FILE *file;
+  int one = 1;
+  int filetype = 0;
+  int ascii[8];
+  int numvar = 3;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  REIS(8, fwrite(&"#!TDV112", sizeof(char), 8, file), "header");
+  REIS(1, fwrite(&one, sizeof(int), 1, file), "magic");
+  REIS(1, fwrite(&filetype, sizeof(int), 1, file), "filetype");
+
+  ascii[0] = (int)'f';
+  ascii[1] = (int)'t';
+  ascii[2] = 0;
+  REIS(3, fwrite(&ascii, sizeof(int), 3, file), "title");
+
+  REIS(1, fwrite(&numvar, sizeof(int), 1, file), "numvar");
+  ascii[0] = (int)'x';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+  ascii[0] = (int)'y';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+  ascii[0] = (int)'z';
+  ascii[1] = 0;
+  REIS(2, fwrite(&ascii, sizeof(int), 2, file), "var");
+
+  RSS(ref_export_plt_tet_zone(ref_grid, file), "plt tet zone");
+
+  fclose(file);
 
   return REF_SUCCESS;
 }

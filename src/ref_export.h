@@ -34,8 +34,6 @@ END_C_DECLORATION
 
 BEGIN_C_DECLORATION
 
-REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename);
-
 REF_STATUS ref_export_tec_surf(REF_GRID ref_grid, const char *filename);
 
 REF_STATUS ref_export_tec_int(REF_GRID ref_grid, REF_INT *scalar,
@@ -54,11 +52,9 @@ REF_STATUS ref_export_tec_ratio(REF_GRID ref_grid, const char *root_filename);
 REF_STATUS ref_export_meshb_next_position(FILE *file, REF_INT version,
                                           REF_FILEPOS next_position);
 
-REF_STATUS ref_export_plt(REF_GRID ref_grid, const char *filename);
-REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file);
-REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file);
-
 REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order);
+
+REF_STATUS ref_export_by_extension(REF_GRID ref_grid, const char *filename);
 
 END_C_DECLORATION
 
