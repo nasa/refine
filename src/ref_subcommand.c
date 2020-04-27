@@ -67,6 +67,11 @@ static void adapt_help(const char *name) {
   printf("  -g  geometry.egads\n");
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  -x  output_mesh.extension\n");
+  printf("  --partioner selects domain decomposition method.\n");
+  printf("      2: ParMETIS graph partioning.\n");
+  printf("      3: Zoltan graph partioning.\n");
+  printf("      4: Zoltan recursive bisection.\n");
+  printf("      5: native recursive bisection.\n");
   printf("\n");
 }
 static void bootstrap_help(const char *name) {
@@ -147,6 +152,7 @@ static void loop_help(const char *name) {
   printf("       3: Zoltan graph partioning.\n");
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
+  printf("   --mesh-extension output mesh extension (in addition to meshb).\n");
 
   printf("\n");
 }
@@ -808,6 +814,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
   char filename[1024];
+  char mesh_extension[32];
   REF_GRID ref_grid = NULL;
   REF_GRID initial_grid = NULL;
   REF_GRID extruded_grid = NULL;
@@ -881,10 +888,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
   }
 
-  RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("-p %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
+    printf("--partioner %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
   }
 
   sprintf(filename, "%s.meshb", in_project);
