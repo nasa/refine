@@ -142,6 +142,11 @@ static void loop_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
+  printf("   --partioner selects domain decomposition method.\n");
+  printf("       2: ParMETIS graph partioning.\n");
+  printf("       3: Zoltan graph partioning.\n");
+  printf("       4: Zoltan recursive bisection.\n");
+  printf("       5: native recursive bisection.\n");
 
   printf("\n");
 }
@@ -237,10 +242,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     printf("-s %d adaptation passes\n", passes);
   }
 
-  RXS(ref_args_find(argc, argv, "-p", &pos), REF_NOT_FOUND, "arg search");
+  RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
+      "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("-p %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
+    printf("--partioner %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
   }
 
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
