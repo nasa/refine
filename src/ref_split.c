@@ -196,6 +196,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
 
     if (try_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
+      ref_cavity_debug(ref_cavity) = transcript;
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, node0, node1,
                                      new_node),
           "form edge split cav");
