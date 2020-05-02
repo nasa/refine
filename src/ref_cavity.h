@@ -55,9 +55,10 @@ struct REF_CAVITY_STRUCT {
   REF_INT *f2n;
   REF_LIST tri_list;
   REF_LIST tet_list;
-  REF_BOOL debug;
+  REF_DBL min_normdev;
   REF_INT split_node0, split_node1;
   REF_INT collapse_node0, collapse_node1;
+  REF_BOOL debug;
 };
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
@@ -88,6 +89,7 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity);
 #define ref_cavity_tri_list(ref_cavity) ((ref_cavity)->tri_list)
 #define ref_cavity_tet_list(ref_cavity) ((ref_cavity)->tet_list)
 
+#define ref_cavity_min_normdev(ref_cavity) ((ref_cavity)->min_normdev)
 #define ref_cavity_debug(ref_cavity) ((ref_cavity)->debug)
 
 #define ref_cavity_valid_seg(ref_cavity, seg)             \
