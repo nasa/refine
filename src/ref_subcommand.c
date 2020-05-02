@@ -360,6 +360,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   const char *mesher = "tetgen";
   REF_INT passes = 15;
   REF_INT self_intersections;
+  REF_INT global_pos = REF_EMPTY;
+  REF_DBL *global_params = NULL;
 
   if (argc < 3) goto shutdown;
   end_of_string = MIN(1023, strlen(argv[2]));
@@ -388,26 +390,21 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  {
-    REF_INT global_pos = REF_EMPTY;
-    REF_DBL *global_params = NULL;
-    RXS(ref_args_find(argc, argv, "--global", &global_pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != global_pos && global_pos < argc - 3) {
-      ref_malloc(global_params, 3, REF_DBL);
-      global_params[0] = atof(argv[global_pos + 1]);
-      global_params[1] = atof(argv[global_pos + 2]);
-      global_params[2] = atof(argv[global_pos + 3]);
-      if (ref_mpi_once(ref_mpi))
-        printf("initial tessellation, global param %f %f %f\n",
-               global_params[0], global_params[1], global_params[2]);
-    } else {
-      if (ref_mpi_once(ref_mpi))
-        printf("initial tessellation, default param\n");
-    }
-    RSS(ref_egads_tess(ref_grid, auto_tparams, global_params), "tess egads");
-    ref_free(global_params);
+  RXS(ref_args_find(argc, argv, "--global", &global_pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != global_pos && global_pos < argc - 3) {
+    ref_malloc(global_params, 3, REF_DBL);
+    global_params[0] = atof(argv[global_pos + 1]);
+    global_params[1] = atof(argv[global_pos + 2]);
+    global_params[2] = atof(argv[global_pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf("initial tessellation, global param %f %f %f\n", global_params[0],
+             global_params[1], global_params[2]);
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("initial tessellation, default param\n");
   }
+  RSS(ref_egads_tess(ref_grid, auto_tparams, global_params), "tess egads");
+  ref_free(global_params);
   ref_mpi_stopwatch_stop(ref_mpi, "egads tess");
   sprintf(filename, "%s-init-geom.tec", project);
   if (ref_mpi_once(ref_mpi))

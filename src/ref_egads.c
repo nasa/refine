@@ -291,7 +291,9 @@ static REF_STATUS ref_egads_edge_faces(REF_GEOM ref_geom,
            "topo");
       for (iedge = 0; iedge < nedge; iedge++) {
         edge = EG_indexBodyTopo((ego)(ref_geom->solid), eedges[iedge]) - 1;
-        RAS(2 > nface[edge], "edge has more than 2 faces");
+        RAB(2 > nface[edge], "edge has more than 2 faces",
+            printf("face ids %d %d %d edge id %d\n", e2f[0 + 2 * edge],
+                   e2f[1 + 2 * edge], face + 1, edge + 1));
         e2f[nface[edge] + 2 * edge] = face + 1;
         nface[edge]++;
       }
