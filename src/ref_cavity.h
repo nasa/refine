@@ -56,8 +56,8 @@ struct REF_CAVITY_STRUCT {
   REF_LIST tri_list;
   REF_LIST tet_list;
   REF_BOOL debug;
-  REF_BOOL split_node0, split_node1;
-  REF_BOOL collapse_node0, collapse_node1;
+  REF_INT split_node0, split_node1;
+  REF_INT collapse_node0, collapse_node1;
 };
 
 REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity);
