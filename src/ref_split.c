@@ -197,6 +197,10 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
     if (try_cavity) {
       RSS(ref_cavity_create(&ref_cavity), "cav create");
       ref_cavity_debug(ref_cavity) = transcript;
+      if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
+        RSS(ref_node_ratio(ref_node, node0, node1, &ratio01), "ratio01");
+        if (ratio01 > 5.0) ref_cavity_min_normdev(ref_cavity) = 0.0;
+      }
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, node0, node1,
                                      new_node),
           "form edge split cav");
