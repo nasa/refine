@@ -222,6 +222,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ allow surf cavity confirmity 0 normdev for thin chamfer test
 + ref loop --partioner and --mesh-extension options
 + static ref_export function via ref_export_by_extension
 + parallel Dimension 2 metric .sol reader
