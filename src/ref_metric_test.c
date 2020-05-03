@@ -1474,7 +1474,7 @@ int main(int argc, char *argv[]) {
       REF_DBL x1 = 2;
       REF_DBL y0 = -2;
       REF_DBL y1 = 2;
-      REF_DBL h = 1.0 / 40.0;
+      REF_DBL h = 1.0 / 80.0;
       if (x0 <= ref_node_xyz(ref_node, 0, node) &&
           ref_node_xyz(ref_node, 0, node) <= x1 &&
           y0 <= ref_node_xyz(ref_node, 1, node) &&
