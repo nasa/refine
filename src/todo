@@ -1,4 +1,6 @@
 
+ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
+
 sync surf/tri/face zone titles
 
 meshlink geode support
@@ -25,8 +27,8 @@ ref_geom
  try gmsh, mmgtools.org, netgen-mesher, CGALmesh
 
 protect geom constraint metric from surface folds and high curvature
+ filter based on samples of neighborhood
  descrete curvature estimate (triangle-center based?)
- filter based on neighborhood
  thin shells
   - near-tree for reducing geometry metric across thickness
   - single pass near-tree for grid size gradation of gaps
@@ -220,6 +222,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ allow surf cavity confirmity 0 normdev for thin chamfer test
 + ref loop --partioner and --mesh-extension options
 + static ref_export function via ref_export_by_extension
 + parallel Dimension 2 metric .sol reader

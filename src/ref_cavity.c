@@ -70,12 +70,14 @@ REF_STATUS ref_cavity_create(REF_CAVITY *ref_cavity_ptr) {
   RSS(ref_list_create(&(ref_cavity->tri_list)), "tri list");
   RSS(ref_list_create(&(ref_cavity->tet_list)), "tet list");
 
-  ref_cavity->debug = REF_FALSE;
+  ref_cavity->min_normdev = 0.5;
 
   ref_cavity->split_node0 = REF_EMPTY;
   ref_cavity->split_node1 = REF_EMPTY;
   ref_cavity->collapse_node0 = REF_EMPTY;
   ref_cavity->collapse_node1 = REF_EMPTY;
+
+  ref_cavity->debug = REF_FALSE;
 
   return REF_SUCCESS;
 }
@@ -1308,7 +1310,7 @@ REF_STATUS ref_cavity_conforming(REF_CAVITY ref_cavity, REF_INT seg,
 
   RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "old");
 
-  if (normdev <= 0.5) return REF_SUCCESS;
+  if (normdev <= ref_cavity_min_normdev(ref_cavity)) return REF_SUCCESS;
 
   if (ref_geom_meshlinked(ref_geom)) {
     *conforming = REF_TRUE;
