@@ -372,8 +372,10 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   project[end_of_string - 6] = '\0';
 
   RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-  if (ref_mpi_once(ref_mpi)) printf("loading %s.egads\n", project);
-  RSS(ref_egads_out_level(ref_grid_geom(ref_grid), 2), "standard info");
+  if (ref_mpi_once(ref_mpi)) {
+    printf("loading %s.egads\n", project);
+    RSS(ref_egads_out_level(ref_grid_geom(ref_grid), 2), "standard info");
+  }
   RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[2]), "ld egads");
   ref_mpi_stopwatch_stop(ref_mpi, "egads load");
 

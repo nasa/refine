@@ -1,7 +1,12 @@
 #! /bin/bash -xue
 
 PACKAGE='ESP'
-VERSION='118-rc.3'
+
+rm -f ESPbeta.tgz
+wget -N https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
+raw=$(stat -c %Y ESPbeta.tgz)
+timestamp=$(date -d @${raw} +"%Y.%d.%m.%H%M")
+VERSION="118-beta.${timestamp}"
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
@@ -19,13 +24,6 @@ module purge
 mkdir ${MODULE_DEST}
 cp -r ${OCC_COPY_SOURCE} ${MODULE_DEST}
 
-# https://acdl.mit.edu/ESP/PreBuilts/
-# https://acdl.mit.edu/ESP/archive/
-
-rm -f ESPbeta.tgz
-wget -N https://acdl.mit.edu/ESP/archive/ESPbeta.tgz
-raw=$(stat -c %Y ESPbeta.tgz)
-timestamp=$(date -d @${raw} +"%Y.%d.%m.%H%M")
 rm -rf EngSketchPad
 tar xzf ESPbeta.tgz
 ( cd EngSketchPad/config && ./makeEnv ${OCC_COPY_DEST} )
