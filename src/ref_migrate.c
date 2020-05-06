@@ -804,7 +804,8 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                             PARM_INT *adjncydist,
                                             PARM_INT *adjwgtdist,
                                             PARM_INT *partdist) {
-  PARM_INT n, *count, *xadj, *adjncy, *adjwgt, *part;
+  REF_INT *count;
+  PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT options[METIS_NOPTIONS];
