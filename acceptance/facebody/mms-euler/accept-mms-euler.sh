@@ -19,18 +19,27 @@ function adapt_cycle {
     outproj=$2
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
-	  ${inproj}.solb
+	  ${inproj}-primal.solb
 
-    ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  1000 ${inproj}-metric.solb
+    ${src}/ref_interp_test --entropyadj ${inproj}.meshb \
+	  ${inproj}-primal.solb ${inproj}-adjflux.solb
+
+    ${src}/ref_metric_test --opt-goal ${inproj}.meshb \
+	  ${inproj}-adjflux.solb 1 -1 1000 ${inproj}-metric.solb
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
-	  ${outproj}.solb
+	  ${outproj}-primal.solb
 
-    ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}-u.tec
+    ${src}/ref_interp_test --entropyadj ${outproj}.meshb \
+	  ${outproj}-primal.solb ${outproj}-adjflux.solb
+
+    ${src}/ref_gather_test ${outproj}.meshb ${outproj}-primal.solb \
+	  ${outproj}-primal.tec
+    ${src}/ref_gather_test ${outproj}.meshb ${outproj}-adjflux.solb \
+	  ${outproj}-adjflux.tec
 }
 
 ./square.sh
