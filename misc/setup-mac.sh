@@ -46,6 +46,20 @@ mkdir -p parmetis
     ) \
     || exit
 
+mkdir -p 64bit
+( cd 64bit && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
+    --with-parmetis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CC=mpicc \
+    FC=mpif90 \
+    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
+    ) \
+    || exit
+
 mkdir -p strict
 ( cd strict && \
     ../configure \
