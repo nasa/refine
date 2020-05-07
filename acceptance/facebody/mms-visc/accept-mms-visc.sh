@@ -11,7 +11,7 @@ else
 fi
 
 tecplot=-t
-field="-q mach-mms"
+field="-q trig"
 egads="-g square.egads"
 
 function adapt_cycle {
@@ -26,7 +26,7 @@ function adapt_cycle {
 
     ${src}/ref_metric_test --viscous-cons ${inproj}.meshb \
 	  ${inproj}-primdual.solb \
-	  0.635 1.0 288.15 \
+	  0.5 1000.0 288.15 \
 	  -1 1000 \
 	  ${inproj}-metric.solb
 

@@ -11,7 +11,7 @@ else
 fi
 
 tecplot=-t
-field="-q mach-mms"
+field="-q trig"
 egads="-g square.egads"
 
 function adapt_cycle {
