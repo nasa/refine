@@ -141,6 +141,26 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       v = 0.01 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
       mach = sqrt(u * u + v * v) / sqrt(1.4 * pressure / rho);
       scalar[node] = mach;
+    } else if (strcmp(function_name, "trig") == 0) {
+      REF_DBL a, c1, x0, y0, r1, c2, r2;
+      REF_DBL rho, pressure, u, v, w, mach;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      c1 = 100.0;
+      x0 = 0.0;
+      y0 = 0.4;
+      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+
+      c2 = 100.0;
+      r2 = x - y + 0.3;
+      a = 0.1;
+      rho = 1.00 * (a * tanh(c1 * (r1 - 0.5)) + 1.0);
+      pressure = 1.00 * (a * tanh(c2 * (r2 - 0.3)) + 1.0 / 1.4);
+      u = 0.5 * sin(x * 2 * ref_math_pi);
+      v = 0.1 * cos(y * 2 * ref_math_pi);
+      w = 0.0;
+      mach = sqrt(u * u + v * v + w * w) / sqrt(1.4 * pressure / rho);
+      scalar[node] = mach;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
@@ -176,6 +196,29 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       pressure = 1.00 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
       u = 0.15 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
       v = 0.01 * (tanh(c1 * (r1 - 0.5)) + tanh(c2 * (r2 - 0.3)) + 5.0);
+      w = 0.0;
+      (*scalar)[0 + 5 * node] = rho;
+      (*scalar)[1 + 5 * node] = u;
+      (*scalar)[2 + 5 * node] = v;
+      (*scalar)[3 + 5 * node] = w;
+      (*scalar)[4 + 5 * node] = pressure;
+    } else if (strcmp(function_name, "trig") == 0) {
+      REF_DBL a, c1, x0, y0, r1, c2, r2;
+      REF_DBL rho, pressure, u, v, w;
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      c1 = 100.0;
+      x0 = 0.0;
+      y0 = 0.4;
+      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+
+      c2 = 100.0;
+      r2 = x - y + 0.3;
+      a = 0.1;
+      rho = 1.00 * (a * tanh(c1 * (r1 - 0.5)) + 1.0);
+      pressure = 1.00 * (a * tanh(c2 * (r2 - 0.3)) + 1.0 / 1.4);
+      u = 0.5 * sin(x * 2 * ref_math_pi);
+      v = 0.1 * cos(y * 2 * ref_math_pi);
       w = 0.0;
       (*scalar)[0 + 5 * node] = rho;
       (*scalar)[1 + 5 * node] = u;

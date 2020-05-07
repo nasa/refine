@@ -863,7 +863,7 @@ int main(int argc, char *argv[]) {
   if (REF_EMPTY != entropyadj_pos) {
     REF_GRID ref_grid;
     REF_DBL *field, *output;
-    REF_INT ldim, odim, node;
+    REF_INT ldim, odim, node, i;
     REIS(1, entropyadj_pos,
          "required args: --entropyadj grid.ext solution.solb entropy.solb\n");
     if (5 > argc) {
@@ -877,44 +877,32 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, argv[3]),
         "unable to load field in position 3");
 
-    odim = 20;
+    RAS(5 == ldim || 6 == ldim,
+        "expected rho,u,v,w,p "
+        "or rho,u,v,w,p,turb");
+
+    odim = 2 * ldim;
     ref_malloc(output, odim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL rho, u, v, w, p, s, e;
+      REF_DBL rho, u, v, w, p, s;
       REF_DBL gamma = 1.4;
+      for (i = 0; i < ldim; i++)
+        output[i + odim * node] = field[i + ldim * node];
       rho = field[0 + ldim * node];
       u = field[1 + ldim * node];
       v = field[2 + ldim * node];
       w = field[3 + ldim * node];
       p = field[4 + ldim * node];
-      /* entropy adjoint, Equ. (11), AIAA 2009-4790 */
+      /* entropy adjoint, Equ. (11), AIAA 2009-3790 */
       s = log(p / pow(rho, gamma));
-      output[0 + odim * node] =
+      output[0 + ldim + odim * node] =
           (gamma - s) / (gamma - 1.0) - 0.5 * rho * (u * u + v * v + w * w) / p;
-      output[1 + odim * node] = rho * u / p;
-      output[2 + odim * node] = rho * v / p;
-      output[3 + odim * node] = rho * w / p;
-      output[4 + odim * node] = -rho / p;
-
-      e = p / (gamma - 1.0) + 0.5 * rho * (u * u + v * v + w * w);
-
-      output[0 + 5 + odim * node] = rho * u;
-      output[1 + 5 + odim * node] = rho * u * u + p;
-      output[2 + 5 + odim * node] = rho * u * v;
-      output[3 + 5 + odim * node] = rho * u * w;
-      output[4 + 5 + odim * node] = u * (e + p);
-
-      output[0 + 10 + odim * node] = rho * v;
-      output[1 + 10 + odim * node] = rho * v * u;
-      output[2 + 10 + odim * node] = rho * v * v + p;
-      output[3 + 10 + odim * node] = rho * v * w;
-      output[4 + 10 + odim * node] = v * (e + p);
-
-      output[0 + 15 + odim * node] = rho * w;
-      output[1 + 15 + odim * node] = rho * w * u;
-      output[2 + 15 + odim * node] = rho * w * v;
-      output[3 + 15 + odim * node] = rho * w * w + p;
-      output[4 + 15 + odim * node] = w * (e + p);
+      output[1 + ldim + odim * node] = rho * u / p;
+      output[2 + ldim + odim * node] = rho * v / p;
+      output[3 + ldim + odim * node] = rho * w / p;
+      output[4 + ldim + odim * node] = -rho / p;
+      if (odim == 12)
+        output[5 + ldim + odim * node] = 0; /* turb adj placholder */
     }
 
     RSS(ref_gather_scalar_by_extension(ref_grid, odim, output, NULL, argv[4]),
