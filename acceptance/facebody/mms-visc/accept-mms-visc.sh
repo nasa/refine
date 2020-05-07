@@ -26,7 +26,7 @@ function adapt_cycle {
 
     ${src}/ref_metric_test --viscous-cons ${inproj}.meshb \
 	  ${inproj}-primdual.solb \
-	  0.635 100.0 288.15 \
+	  0.635 1.0 288.15 \
 	  -1 1000 \
 	  ${inproj}-metric.solb
 
