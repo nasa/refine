@@ -893,7 +893,7 @@ int main(int argc, char *argv[]) {
       v = field[2 + ldim * node];
       w = field[3 + ldim * node];
       p = field[4 + ldim * node];
-      /* entropy adjoint, Equ. (11), AIAA 2009-4790 */
+      /* entropy adjoint, Equ. (11), AIAA 2009-3790 */
       s = log(p / pow(rho, gamma));
       output[0 + ldim + odim * node] =
           (gamma - s) / (gamma - 1.0) - 0.5 * rho * (u * u + v * v + w * w) / p;
