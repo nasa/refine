@@ -1489,7 +1489,7 @@ int main(int argc, char *argv[]) {
           m[2] = 0.0;
           m[3] = 1.0 / (h * h);
           m[4] = 0.0;
-          m[5] = 1.0;
+          m[5] = 1.0 / (h * h);
           for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
           RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
         }
