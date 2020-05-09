@@ -1435,7 +1435,7 @@ int main(int argc, char *argv[]) {
   ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_once(ref_mpi)) {
-    printf("version %s, on or after 1.9.1\n", VERSION);
+    printf("refine %s, on or after 1.9.1\n", VERSION);
     echo_argv(argc, argv);
   }
 
