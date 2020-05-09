@@ -1491,6 +1491,32 @@ int main(int argc, char *argv[]) {
           RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
         }
       }
+    } else {
+      each_ref_node_valid_node(ref_node, node) {
+        REF_DBL x0 = 530;
+        REF_DBL x1 = 670;
+        REF_DBL y0 = -572.8;
+        REF_DBL y1 = -507.4;
+        REF_DBL z0 = 100.0;
+        REF_DBL z1 = 151.2;
+        REF_DBL h = 0.25;
+        if (x0 <= ref_node_xyz(ref_node, 0, node) &&
+            ref_node_xyz(ref_node, 0, node) <= x1 &&
+            y0 <= ref_node_xyz(ref_node, 1, node) &&
+            ref_node_xyz(ref_node, 1, node) <= y1 &&
+            z0 <= ref_node_xyz(ref_node, 2, node) &&
+            ref_node_xyz(ref_node, 2, node) <= z1 &&
+            6.0 <= field[5 + 6 * node]) {
+          m[0] = 1.0 / (h * h);
+          m[1] = 0.0;
+          m[2] = 0.0;
+          m[3] = 1.0 / (h * h);
+          m[4] = 0.0;
+          m[5] = 1.0;
+          for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
+          RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
+        }
+      }
     }
 
     RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
