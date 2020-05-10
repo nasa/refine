@@ -1456,44 +1456,78 @@ int main(int argc, char *argv[]) {
     REIS(5, argc,
          "required args: --wake grid.ext volume.solb "
          "metric.solb");
-    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]),
-        "unable to load grid in position 2");
+    if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to part grid in position 2");
     ref_node = ref_grid_node(ref_grid);
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
     if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
     RSS(ref_part_scalar(ref_node, &ldim, &field, argv[3]),
         "unable to load solution in position 3");
     if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read vol");
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(metric, ref_grid), "imply");
+    ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
-    each_ref_node_valid_node(ref_node, node) {
-      REF_DBL x0 = 0;
-      REF_DBL x1 = 2;
-      REF_DBL y0 = -2;
-      REF_DBL y1 = 2;
-      REF_DBL h = 1.0 / 80.0;
-      if (x0 <= ref_node_xyz(ref_node, 0, node) &&
-          ref_node_xyz(ref_node, 0, node) <= x1 &&
-          y0 <= ref_node_xyz(ref_node, 1, node) &&
-          ref_node_xyz(ref_node, 1, node) <= y1 && 10 <= field[5 + 6 * node]) {
-        m[0] = 1.0 / (h * h);
-        m[1] = 0.0;
-        m[2] = 0.0;
-        m[3] = 1.0 / (h * h);
-        m[4] = 0.0;
-        m[5] = 1.0;
-        for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
-        RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
+    if (ref_grid_twod(ref_grid)) {
+      each_ref_node_valid_node(ref_node, node) {
+        REF_DBL x0 = 0;
+        REF_DBL x1 = 2;
+        REF_DBL y0 = -2;
+        REF_DBL y1 = 2;
+        REF_DBL h = 1.0 / 80.0;
+        if (x0 <= ref_node_xyz(ref_node, 0, node) &&
+            ref_node_xyz(ref_node, 0, node) <= x1 &&
+            y0 <= ref_node_xyz(ref_node, 1, node) &&
+            ref_node_xyz(ref_node, 1, node) <= y1 &&
+            10 <= field[5 + 6 * node]) {
+          m[0] = 1.0 / (h * h);
+          m[1] = 0.0;
+          m[2] = 0.0;
+          m[3] = 1.0 / (h * h);
+          m[4] = 0.0;
+          m[5] = 1.0;
+          for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
+          RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
+        }
+      }
+    } else {
+      each_ref_node_valid_node(ref_node, node) {
+        REF_DBL x0 = 530;
+        REF_DBL x1 = 670;
+        REF_DBL y0 = -572.8;
+        REF_DBL y1 = -507.4;
+        REF_DBL z0 = 100.0;
+        REF_DBL z1 = 151.2;
+        REF_DBL h = 0.25;
+        if (x0 <= ref_node_xyz(ref_node, 0, node) &&
+            ref_node_xyz(ref_node, 0, node) <= x1 &&
+            y0 <= ref_node_xyz(ref_node, 1, node) &&
+            ref_node_xyz(ref_node, 1, node) <= y1 &&
+            z0 <= ref_node_xyz(ref_node, 2, node) &&
+            ref_node_xyz(ref_node, 2, node) <= z1 &&
+            6.0 <= field[5 + 6 * node]) {
+          m[0] = 1.0 / (h * h);
+          m[1] = 0.0;
+          m[2] = 0.0;
+          m[3] = 1.0 / (h * h);
+          m[4] = 0.0;
+          m[5] = 1.0 / (h * h);
+          for (i = 0; i < 6; i++) m0[i] = metric[i + 6 * node];
+          RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
+        }
       }
     }
     RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
+    ref_mpi_stopwatch_stop(ref_mpi, "intersect");
 
     for (gradation = 0; gradation < 5; gradation++) {
       RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
           "grad");
+      ref_mpi_stopwatch_stop(ref_mpi, "gradation");
     }
 
     RSS(ref_metric_to_node(metric, ref_node), "set node");
@@ -1503,8 +1537,10 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
       printf("writing metric %s\n", argv[4]);
     RSS(ref_gather_metric(ref_grid, argv[4]), "export scaled metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
 
     RSS(ref_grid_free(ref_grid), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "done.");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
