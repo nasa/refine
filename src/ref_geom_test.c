@@ -124,10 +124,12 @@ int main(int argc, char *argv[]) {
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, xyz, uv), "inv");
         RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
             "eval at");
-
-        /* printf("%d xyz %f %f %f uv %f %f\n",
-           j, xyz[0], xyz[1], xyz[2], uv[0], uv[1]); */
+        if (REF_FALSE)
+          printf("%d xyz %f %f %f uv %f %f eval\n", j, xyz[0], xyz[1], xyz[2],
+                 uv[0], uv[1]);
       }
+      xyz[0] = orig[0];
+      xyz[1] = orig[1];
       printf("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
     }
     fclose(file);
