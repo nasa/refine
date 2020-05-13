@@ -18,6 +18,5 @@ File.open(ARGV[2],'w') do |f|
     line = lines[i+7]
     f.printf( "%d %s", i+1, line )
   end
-  f.puts `tail -n 8 #{ARGV[1]}`
 end
 

@@ -11,7 +11,7 @@ File.open(ARGV[1],'w') do |f|
   f.puts "MeshVersionFormatted 2"
   f.puts "Dimension 3"
   f.puts "SolAtVertices"
-  nnode = lines.size - 9
+  nnode = lines.size - 1
   printf(" %d nodes\n",nnode)
   f.puts nnode
   f.puts "1 1"

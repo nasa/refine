@@ -11,16 +11,16 @@ File.open(ARGV[1],'w') do |f|
   f.puts "MeshVersionFormatted 2"
   f.puts "Dimension 3"
   f.puts "SolAtVertices"
-  nnode = lines.size - 9
+  nnode = lines.size - 1
   printf(" %d nodes\n",nnode)
   f.puts nnode
-  ldim = lines[0].split(" ").length - 1
+  ldim = lines[0].split(",").length - 1
   f.print ldim
   ldim.times {f.print " 1"}
   f.print "\n"
   nnode.times do |i|
     line = lines[i+1]
-    col = line.split(" ")
+    col = line.split(",")
     ldim.times do |j|
       f.printf( " %s", col[j+1] ) # skip point index
     end
