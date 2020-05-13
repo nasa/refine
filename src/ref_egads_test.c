@@ -38,18 +38,17 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
-  REF_INT recon_pos = REF_EMPTY;
+  REF_INT pos = REF_EMPTY;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
 
-  RXS(ref_args_find(argc, argv, "--recon", &recon_pos), REF_NOT_FOUND,
-      "arg search");
-  if (recon_pos != REF_EMPTY) {
+  RXS(ref_args_find(argc, argv, "--recon", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_INT node;
     REIS(4, argc, "required args: --recon grid.ext geom.egads");
-    REIS(1, recon_pos, "required args: --recon grid.ext geom.egads");
+    REIS(1, pos, "required args: --recon grid.ext geom.egads");
     printf("reconstruct geometry association\n");
     printf("grid source %s\n", argv[2]);
     printf("geometry source %s\n", argv[3]);
