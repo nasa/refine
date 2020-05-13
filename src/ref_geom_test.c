@@ -125,9 +125,10 @@ int main(int argc, char *argv[]) {
         RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
             "eval at");
 
-        printf("%d xyz %f %f %f uv %f %f\n", j, xyz[0], xyz[1], xyz[2], uv[0],
-               uv[1]);
+        /* printf("%d xyz %f %f %f uv %f %f\n",
+           j, xyz[0], xyz[1], xyz[2], uv[0], uv[1]); */
       }
+      printf("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
     }
     fclose(file);
     RSS(ref_grid_free(ref_grid), "free");
