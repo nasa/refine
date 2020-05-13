@@ -18,7 +18,7 @@ File.open(ARGV[1],'w') do |f|
   nnode.times do |i|
     line = lines[i+1]
     col = line.split
-    mach = col[11].to_f
+    mach = col[12].to_f
     f.printf( " %.18e\n",mach )
   end
 end
