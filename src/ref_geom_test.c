@@ -90,6 +90,16 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--projection", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (pos != REF_EMPTY) {
+    REIS(2, argc, "required args: --projection");
+    REIS(1, pos, "required args: --projection");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--triage", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
