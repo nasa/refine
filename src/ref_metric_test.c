@@ -1485,7 +1485,7 @@ int main(int argc, char *argv[]) {
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
             ref_node_xyz(ref_node, 0, node) <= x1 &&
             y0 <= ref_node_xyz(ref_node, 1, node) &&
-            ref_node_xyz(ref_node, 1, node) <= y1 && (4 <= turb1 || h < slen)) {
+            ref_node_xyz(ref_node, 1, node) <= y1 && (4 <= turb1 || h > slen)) {
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
