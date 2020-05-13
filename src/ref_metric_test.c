@@ -1526,7 +1526,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_ghost_dbl(ref_node, metric, 6), "update ghosts");
     ref_mpi_stopwatch_stop(ref_mpi, "intersect");
 
-    for (gradation = 0; gradation < 5; gradation++) {
+    for (gradation = 0; gradation < 20; gradation++) {
       RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
           "grad");
       ref_mpi_stopwatch_stop(ref_mpi, "gradation");
