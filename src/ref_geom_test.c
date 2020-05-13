@@ -93,8 +93,44 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--projection", &pos), REF_NOT_FOUND,
       "arg search");
   if (pos != REF_EMPTY) {
-    REIS(2, argc, "required args: --projection");
-    REIS(1, pos, "required args: --projection");
+    REF_GRID ref_grid;
+    REF_GEOM ref_geom;
+    REF_INT i, j, id;
+    REF_DBL xyz[3], orig[3], uv[2];
+    FILE *file = NULL;
+
+    REIS(4, argc, "required args: --projection project.egads proj.input");
+    REIS(1, pos, "required args: --projection project.egads proj.input");
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "empty grid");
+    ref_geom = ref_grid_geom(ref_grid);
+    printf("load geom %s\n", argv[2]);
+    RSS(ref_egads_load(ref_geom, argv[2]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid load");
+    file = fopen(argv[3], "r");
+    if (NULL == (void *)file) printf("unable to open %s\n", argv[3]);
+    RNS(file, "unable to open file");
+    for (i = 0; i < 100; i++) {
+      REIS(4,
+           fscanf(file, "%lf %lf %lf %d", &(orig[0]), &(orig[1]), &(orig[2]),
+                  &id),
+           "read xy");
+      uv[0] = 0;
+      uv[1] = 0;
+      xyz[2] = orig[2];
+      for (j = 0; j < 10; j++) {
+        xyz[0] = orig[0];
+        xyz[1] = orig[1];
+        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, xyz, uv), "inv");
+        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
+            "eval at");
+
+        printf("%d xyz %f %f %f uv %f %f\n", j, xyz[0], xyz[1], xyz[2], uv[0],
+               uv[1]);
+      }
+    }
+    fclose(file);
+    RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
