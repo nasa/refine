@@ -1473,17 +1473,19 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
     if (ref_grid_twod(ref_grid)) {
+      REIS(7, ldim, "expect [rho,u,v,w,p,slen,turb1]");
       each_ref_node_valid_node(ref_node, node) {
-        REF_DBL x0 = 0;
+        REF_DBL x0 = -0.1;
         REF_DBL x1 = 2;
         REF_DBL y0 = -2;
         REF_DBL y1 = 2;
-        REF_DBL h = 1.0 / 80.0;
+        REF_DBL h = 1.0 / 100.0;
+        REF_DBL slen = field[5 + 7 * node];
+        REF_DBL turb1 = field[6 + 7 * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
             ref_node_xyz(ref_node, 0, node) <= x1 &&
             y0 <= ref_node_xyz(ref_node, 1, node) &&
-            ref_node_xyz(ref_node, 1, node) <= y1 &&
-            10 <= field[5 + 6 * node]) {
+            ref_node_xyz(ref_node, 1, node) <= y1 && (4 <= turb1 || h < slen)) {
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
