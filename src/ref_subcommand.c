@@ -935,14 +935,14 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY == pos) {
-    sprintf(filename, "%s_volume.plt", in_project);
+    sprintf(filename, "%s_volume.solb", in_project);
     if (ref_mpi_once(ref_mpi)) printf("part scalar %s\n", filename);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &initial_field,
                         filename),
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "part scalar");
   } else {
-    sprintf(filename, "%s_volume.solb", in_project);
+    sprintf(filename, "%s_volume.plt", in_project);
     if (ref_mpi_once(ref_mpi)) printf("reconstruct scalar %s\n", filename);
     RSS(ref_interp_plt(ref_grid, filename, &ldim, &initial_field),
         "part scalar");
