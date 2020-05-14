@@ -833,6 +833,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
   const char *lb8_ugrid = "lb8.ugrid";
+  const char *b8_ugrid = "b8.ugrid";
   const char *mesh_extension = lb8_ugrid;
 
   if (argc < 5) goto shutdown;
@@ -872,6 +873,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     interpolant = argv[pos + 1];
+  }
+
+  RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY == pos) {
+    mesh_extension = b8_ugrid;
   }
 
   RXS(ref_args_find(argc, argv, "--mesh-extension", &pos), REF_NOT_FOUND,
@@ -1115,47 +1121,42 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_interp_free(ref_interp), "free");
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
-  sprintf(filename, "%s-restart.solb", out_project);
   if (ref_grid_twod(ref_grid)) {
-    if (ref_mpi_once(ref_mpi))
-      printf("writing interpolated extruded field %s\n", filename);
+    if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
     ref_malloc(extruded_field,
                ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
     RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
                                extruded_field),
         "extrude field");
-    RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
-                                       NULL, filename),
-        "gather recept");
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
-    if (REF_EMPTY != pos) {
-      sprintf(filename, "%s.b8.ugrid", out_project);
+    if (REF_EMPTY == pos) {
+      sprintf(filename, "%s-restart.solb", out_project);
       if (ref_mpi_once(ref_mpi))
-        printf("gather extruded " REF_GLOB_FMT " nodes to %s\n",
-               ref_node_n_global(ref_grid_node(extruded_grid)), filename);
-      RSS(ref_gather_by_extension(extruded_grid, filename), "gather .b8.ugrid");
+        printf("writing interpolated extruded field %s\n", filename);
+      RSS(ref_gather_scalar_by_extension(extruded_grid, ldim, extruded_field,
+                                         NULL, filename),
+          "gather recept");
+    } else {
       sprintf(filename, "%s.solb", out_project);
       if (ref_mpi_once(ref_mpi))
-        printf("writing interpolated field at tet cell centers %s\n", filename);
+        printf("writing interpolated field at prism cell centers %s\n",
+               filename);
       RSS(ref_gather_scalar_cell_solb(extruded_grid, ldim, extruded_field,
                                       filename),
           "gather cell center");
     }
   } else {
-    if (ref_mpi_once(ref_mpi))
-      printf("writing interpolated field %s\n", filename);
-    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
-                                       filename),
-        "gather recept");
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
-    if (REF_EMPTY != pos) {
-      sprintf(filename, "%s.b8.ugrid", out_project);
+    if (REF_EMPTY == pos) {
+      sprintf(filename, "%s-restart.solb", out_project);
       if (ref_mpi_once(ref_mpi))
-        printf("gather " REF_GLOB_FMT " nodes to %s\n",
-               ref_node_n_global(ref_grid_node(ref_grid)), filename);
-      RSS(ref_gather_by_extension(ref_grid, filename), "gather .b8.ugrid");
+        printf("writing interpolated field %s\n", filename);
+      RSS(ref_gather_scalar_by_extension(ref_grid, ldim, ref_field, NULL,
+                                         filename),
+          "gather recept");
+    } else {
       sprintf(filename, "%s.solb", out_project);
       if (ref_mpi_once(ref_mpi))
         printf("writing interpolated field at tet cell centers %s\n", filename);
