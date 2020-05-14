@@ -2848,8 +2848,14 @@ REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
       RSS(ref_mpi_bcast(ref_mpi, soln, nvar * length, REF_DBL_TYPE), "b soln");
     }
     for (point = 0; point < length; point++) {
-      for (i = 0; i < 3; i++) {
-        position[i] = soln[i + nvar * point];
+      if (ref_grid_twod(ref_grid)) {
+        position[0] = soln[0 + nvar * point];
+        position[1] = soln[2 + nvar * point];
+        position[2] = 0.0;
+      } else {
+        for (i = 0; i < 3; i++) {
+          position[i] = soln[i + nvar * point];
+        }
       }
       /* single precision */
       radius =
