@@ -876,7 +876,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
-  if (REF_EMPTY == pos) {
+  if (REF_EMPTY != pos) {
     mesh_extension = b8_ugrid;
   }
 
