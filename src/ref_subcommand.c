@@ -183,6 +183,7 @@ static void translate_help(const char *name) {
   printf("\n");
   printf("  options:\n");
   printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
+  printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("\n");
 }
 
@@ -1395,6 +1396,32 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("extrude prims\n");
     RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
     RSS(ref_grid_free(twod_grid), "free");
+  }
+
+  RXS(ref_args_find(argc, argv, "--zero-y-face", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL deviation, total_deviation;
+    REF_CELL ref_cell;
+    REF_NODE ref_node = ref_grid_node(ref_grid);
+    REF_INT faceid, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
+    if (pos + 1 >= argc) goto shutdown;
+    faceid = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi)) printf("zero y of face %d\n", faceid);
+    deviation = 0.0;
+    ref_cell = ref_grid_tri(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
+        each_ref_cell_cell_node(ref_cell, node) {
+          deviation =
+              MAX(deviation, ABS(ref_node_xyz(ref_node, 1, nodes[node])));
+          ref_node_xyz(ref_node, 1, nodes[node]) = 0.0;
+        }
+      }
+    }
+    RSS(ref_mpi_max(ref_mpi, &deviation, &total_deviation, REF_DBL_TYPE),
+        "mpi max");
+    printf("max deviation %e\n", deviation);
   }
 
   if (ref_mpi_para(ref_mpi)) {
