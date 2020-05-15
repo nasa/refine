@@ -1,4 +1,3 @@
-
 /* Copyright 2014 United States Government as represented by the
  * Administrator of the National Aeronautics and Space
  * Administration. No copyright is claimed in the United States under
@@ -1027,7 +1026,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
     if (rebuild)
       printf(
-          "rebuild EGADS tessilation after missing face .tParams adjustment, "
+          "rebuild EGADS tessellation after missing face .tParams adjustment, "
           "try %d\n",
           tries);
   }
@@ -1065,7 +1064,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
     if (rebuild)
       printf(
-          "rebuild EGADS tessilation after chord .tParams adjustment, try %d\n",
+          "rebuild EGADS tessellation after chord .tParams adjustment, try %d\n",
           tries);
   }
 
