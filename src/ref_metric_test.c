@@ -1505,13 +1505,14 @@ int main(int argc, char *argv[]) {
         REF_DBL z0 = 100.0;
         REF_DBL z1 = 151.2;
         REF_DBL h = 0.25;
+        REF_DBL slen = field[5 + 7 * node];
+        REF_DBL turb1 = field[6 + 7 * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
             ref_node_xyz(ref_node, 0, node) <= x1 &&
             y0 <= ref_node_xyz(ref_node, 1, node) &&
             ref_node_xyz(ref_node, 1, node) <= y1 &&
             z0 <= ref_node_xyz(ref_node, 2, node) &&
-            ref_node_xyz(ref_node, 2, node) <= z1 &&
-            6.0 <= field[5 + 6 * node]) {
+            ref_node_xyz(ref_node, 2, node) <= z1 && (4 <= turb1 || h > slen)) {
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
