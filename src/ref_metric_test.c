@@ -1466,6 +1466,7 @@ int main(int argc, char *argv[]) {
         "unable to load solution in position 3");
     if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read vol");
+    REIS(7, ldim, "expect [rho,u,v,w,p,slen,turb1]");
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1473,7 +1474,6 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
     if (ref_grid_twod(ref_grid)) {
-      REIS(7, ldim, "expect [rho,u,v,w,p,slen,turb1]");
       each_ref_node_valid_node(ref_node, node) {
         REF_DBL x0 = -0.1;
         REF_DBL x1 = 2;
