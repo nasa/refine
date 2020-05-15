@@ -1005,7 +1005,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   while (rebuild) {
     seg_per_diag *= 0.5;
     tries++;
-    RAS(tries < 10, "exhasted tires");
+    RAS(tries < 10, "exhausted tries");
     printf("makeTessBody global param ( %e %e %f)\n", params[0], params[1],
            params[2]);
     REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
@@ -1047,7 +1047,7 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
   tries = 0;
   while (rebuild) {
     tries++;
-    RAS(tries < 5, "exhasted tires");
+    RAS(tries < 5, "exhausted tries");
     REIS(EGADS_SUCCESS, EG_makeTessBody(solid, params, tess), "EG tess");
     REIS(EGADS_SUCCESS, EG_statusTessBody(*tess, &geom, &tess_status, &nvert),
          "EG tess");
