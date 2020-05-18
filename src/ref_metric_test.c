@@ -1453,7 +1453,7 @@ int main(int argc, char *argv[]) {
     REIS(1, wake_pos,
          "required args: --wake grid.ext distance.solb volume.solb "
          "metric.solb");
-    REIS(5, argc,
+    REIS(6, argc,
          "required args: --wake grid.ext distance.solb volume.solb "
          "metric.solb");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
