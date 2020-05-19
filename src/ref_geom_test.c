@@ -96,11 +96,13 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_GEOM ref_geom;
     REF_INT i, j, id;
-    REF_DBL xyz[3], orig[3], uv[2];
+    REF_DBL xyz[3], ws, fs, uv[2];
     FILE *file = NULL;
 
-    REIS(4, argc, "required args: --projection project.egads proj.input");
-    REIS(1, pos, "required args: --projection project.egads proj.input");
+    REIS(4, argc,
+         "required args: --projection project.egads wing-station.input");
+    REIS(1, pos,
+         "required args: --projection project.egads wing-station.input");
 
     RSS(ref_grid_create(&ref_grid, ref_mpi), "empty grid");
     ref_geom = ref_grid_geom(ref_grid);
@@ -111,25 +113,37 @@ int main(int argc, char *argv[]) {
     if (NULL == (void *)file) printf("unable to open %s\n", argv[3]);
     RNS(file, "unable to open file");
     for (i = 0; i < 100; i++) {
-      REIS(4,
-           fscanf(file, "%lf %lf %lf %d", &(orig[0]), &(orig[1]), &(orig[2]),
-                  &id),
-           "read xy");
-      uv[0] = 0;
-      uv[1] = 0;
-      xyz[2] = orig[2];
+      REIS(3, fscanf(file, "%lf %lf %d", &fs, &ws, &id), "read xy");
+      printf("fs %f ws %f id %d\n", fs, ws, id);
+      uv[0] = 0.5;
+      uv[1] = 0.5;
+      xyz[2] = 120;
       for (j = 0; j < 10; j++) {
-        xyz[0] = orig[0];
-        xyz[1] = orig[1];
+        xyz[0] = fs;
+        if (ws > 0) {
+          xyz[1] = 65.0 + cos(ref_math_in_radians(6.0)) * (ws - 65.0);
+        } else {
+          xyz[1] = -65.0 + cos(ref_math_in_radians(6.0)) * (ws + 65.0);
+        }
+        printf("seed %f %f %f uv %f %f eval\n", xyz[0], xyz[1], xyz[2], uv[0],
+               uv[1]);
+
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, xyz, uv), "inv");
         RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
             "eval at");
-        if (REF_FALSE)
+        if (REF_TRUE) {
           printf("%d xyz %f %f %f uv %f %f eval\n", j, xyz[0], xyz[1], xyz[2],
                  uv[0], uv[1]);
+          if (ws > 0) {
+            printf("diff %f %f\n", xyz[0] - fs,
+                   65.0 + cos(ref_math_in_radians(6.0)) * (ws - 65.0) - xyz[1]);
+          } else {
+            printf(
+                "diff %f %f\n", xyz[0] - fs,
+                -65.0 + cos(ref_math_in_radians(6.0)) * (ws + 65.0) - xyz[1]);
+          }
+        }
       }
-      xyz[0] = orig[0];
-      xyz[1] = orig[1];
       printf("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
     }
     fclose(file);
