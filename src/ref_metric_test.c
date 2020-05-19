@@ -1447,26 +1447,32 @@ int main(int argc, char *argv[]) {
   if (wake_pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_NODE ref_node;
-    REF_DBL *field, *metric, m[6], m0[6];
+    REF_DBL *dist, *field, *metric, m[6], m0[6];
     REF_INT ldim, i, node, gradation;
 
     REIS(1, wake_pos,
-         "required args: --wake grid.ext volume.solb "
+         "required args: --wake grid.ext distance.solb volume.solb "
          "metric.solb");
-    REIS(5, argc,
-         "required args: --wake grid.ext volume.solb "
+    REIS(6, argc,
+         "required args: --wake grid.ext distance.solb volume.solb "
          "metric.solb");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to part grid in position 2");
     ref_node = ref_grid_node(ref_grid);
     ref_mpi_stopwatch_stop(ref_mpi, "read grid");
-    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[3]);
-    RSS(ref_part_scalar(ref_node, &ldim, &field, argv[3]),
-        "unable to load solution in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_node, &ldim, &dist, argv[3]),
+        "unable to load distance in position 3");
+    if (ref_mpi_once(ref_mpi)) printf("distance ldim %d\n", ldim);
+    ref_mpi_stopwatch_stop(ref_mpi, "read dist");
+    REIS(1, ldim, "expect [distance]");
+    if (ref_mpi_once(ref_mpi)) printf("reading solution %s\n", argv[4]);
+    RSS(ref_part_scalar(ref_node, &ldim, &field, argv[4]),
+        "unable to load solution in position 4");
     if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read vol");
-    REIS(7, ldim, "expect [rho,u,v,w,p,slen,turb1]");
+    REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1480,8 +1486,8 @@ int main(int argc, char *argv[]) {
         REF_DBL y0 = -2;
         REF_DBL y1 = 2;
         REF_DBL h = 1.0 / 100.0;
-        REF_DBL slen = field[5 + 7 * node];
-        REF_DBL turb1 = field[6 + 7 * node];
+        REF_DBL slen = dist[node];
+        REF_DBL turb1 = field[5 + ldim * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
             ref_node_xyz(ref_node, 0, node) <= x1 &&
             y0 <= ref_node_xyz(ref_node, 1, node) &&
@@ -1505,8 +1511,8 @@ int main(int argc, char *argv[]) {
         REF_DBL z0 = 100.0;
         REF_DBL z1 = 151.2;
         REF_DBL h = 0.25;
-        REF_DBL slen = field[5 + 7 * node];
-        REF_DBL turb1 = field[6 + 7 * node];
+        REF_DBL slen = dist[node];
+        REF_DBL turb1 = field[5 + ldim * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
             ref_node_xyz(ref_node, 0, node) <= x1 &&
             y0 <= ref_node_xyz(ref_node, 1, node) &&
@@ -1536,10 +1542,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_node), "set node");
     ref_free(metric);
     ref_free(field);
+    ref_free(dist);
 
     if (ref_mpi_once(ref_grid_mpi(ref_grid)))
-      printf("writing metric %s\n", argv[4]);
-    RSS(ref_gather_metric(ref_grid, argv[4]), "export scaled metric");
+      printf("writing metric %s\n", argv[5]);
+    RSS(ref_gather_metric(ref_grid, argv[5]), "export scaled metric");
     ref_mpi_stopwatch_stop(ref_mpi, "dump metric");
 
     RSS(ref_grid_free(ref_grid), "free");
