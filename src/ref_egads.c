@@ -1064,7 +1064,8 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
 
     if (rebuild)
       printf(
-          "rebuild EGADS tessellation after chord .tParams adjustment, try %d\n",
+          "rebuild EGADS tessellation after chord .tParams adjustment, try "
+          "%d\n",
           tries);
   }
 
