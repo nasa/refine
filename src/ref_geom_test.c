@@ -98,6 +98,7 @@ int main(int argc, char *argv[]) {
     REF_INT i, j, id;
     REF_DBL xyz[3], ws, fs, uv[2];
     FILE *file = NULL;
+    REF_BOOL verbose = REF_FALSE;
 
     REIS(4, argc,
          "required args: --projection project.egads wing-station.input");
@@ -114,7 +115,7 @@ int main(int argc, char *argv[]) {
     RNS(file, "unable to open file");
     for (i = 0; i < 100; i++) {
       REIS(3, fscanf(file, "%lf %lf %d", &fs, &ws, &id), "read xy");
-      printf("fs %f ws %f id %d\n", fs, ws, id);
+      if (verbose) printf("fs %f ws %f id %d\n", fs, ws, id);
       uv[0] = 0.5;
       uv[1] = 0.5;
       xyz[2] = 120;
@@ -125,13 +126,14 @@ int main(int argc, char *argv[]) {
         } else {
           xyz[1] = -65.0 + cos(ref_math_in_radians(6.0)) * (ws + 65.0);
         }
-        printf("seed %f %f %f uv %f %f eval\n", xyz[0], xyz[1], xyz[2], uv[0],
-               uv[1]);
+        if (verbose)
+          printf("seed %f %f %f uv %f %f eval\n", xyz[0], xyz[1], xyz[2], uv[0],
+                 uv[1]);
 
         RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, xyz, uv), "inv");
         RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
             "eval at");
-        if (REF_TRUE) {
+        if (verbose) {
           printf("%d xyz %f %f %f uv %f %f eval\n", j, xyz[0], xyz[1], xyz[2],
                  uv[0], uv[1]);
           if (ws > 0) {
