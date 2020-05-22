@@ -35,6 +35,17 @@ merge-boot-accept-k:
       - "log-*"
     expire_in: 1 week
 
+merge-cmake-accept-k:
+  only:
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/cmake-wrapper.sh
+  artifacts:
+    paths:
+      - "log-*"
+    expire_in: 1 week
+
 master-boot-accept-k:
   only:
     - master
