@@ -2423,7 +2423,11 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
       tangent[0] = dxyz_dt[0];
       tangent[1] = dxyz_dt[1];
       tangent[2] = dxyz_dt[2];
-      RSS(ref_math_normalize(tangent), "tangent of edge_geom");
+      if (REF_SUCCESS != ref_math_normalize(tangent)) {
+        tangent[0] = 0.0;
+        tangent[1] = 0.0;
+        tangent[2] = 0.0;
+      }
       RAS(0 < ncadnode && ncadnode < 3, "edge children");
       ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
       if (2 == ncadnode) {
@@ -2879,6 +2883,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             xyz[1], xyz[2], t[item], 0.0, radius, 0.0);
   }
   if (REF_EMPTY != jump_geom) {
+    node = ref_geom_node(ref_geom, jump_geom);
     radius = 0;
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
