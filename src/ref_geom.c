@@ -2883,6 +2883,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
             xyz[1], xyz[2], t[item], 0.0, radius, 0.0);
   }
   if (REF_EMPTY != jump_geom) {
+    node = ref_geom_node(ref_geom, jump_geom);
     radius = 0;
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
