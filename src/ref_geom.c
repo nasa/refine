@@ -2423,7 +2423,12 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
       tangent[0] = dxyz_dt[0];
       tangent[1] = dxyz_dt[1];
       tangent[2] = dxyz_dt[2];
-      RSS(ref_math_normalize(tangent), "tangent of edge_geom");
+      RSB(ref_math_normalize(tangent), "tangent of edge_geom", {
+        printf("edge id %d %f %f %f\n", edgeid, tangent[0], tangent[1],
+               tangent[2]);
+        RSS(ref_node_location(ref_grid_node(ref_grid), node), "loc");
+        RSS(ref_geom_tattle(ref_geom, node), "tatt");
+      });
       RAS(0 < ncadnode && ncadnode < 3, "edge children");
       ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
       if (2 == ncadnode) {
