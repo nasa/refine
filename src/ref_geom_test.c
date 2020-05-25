@@ -123,7 +123,7 @@ int main(int argc, char *argv[]) {
       RSS(ref_list_push(ref_list, faceid), "push id");
     }
     for (i = 0; i < 100; i++) {
-      REIS(2, fscanf(file, "%lf %lf", &fs, &ws), "read xy");
+      REIS(2, fscanf(file, "%lf %lf", &ws, &fs), "read xy");
       if (verbose) printf("fs %f ws %f\n", fs, ws);
       xyz[2] = 120;
       for (j = 0; j < 10; j++) {
