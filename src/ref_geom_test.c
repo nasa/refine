@@ -95,10 +95,13 @@ int main(int argc, char *argv[]) {
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
     REF_GEOM ref_geom;
-    REF_INT i, j, id;
+    REF_INT i, j, item, id;
     REF_DBL xyz[3], ws, fs, uv[2];
     FILE *file = NULL;
     REF_BOOL verbose = REF_FALSE;
+    REF_LIST ref_list;
+    REF_INT nface, faceid, best_face;
+    REF_DBL dist, best_dist, best_xyz[3], face_xyz[3];
 
     REIS(4, argc,
          "required args: --projection project.egads wing-station.input");
@@ -113,11 +116,15 @@ int main(int argc, char *argv[]) {
     file = fopen(argv[3], "r");
     if (NULL == (void *)file) printf("unable to open %s\n", argv[3]);
     RNS(file, "unable to open file");
+    RSS(ref_list_create(&ref_list), "make list");
+    REIS(1, fscanf(file, "%d", &nface), "read nface");
+    for (i = 0; i < nface; i++) {
+      REIS(1, fscanf(file, "%d", &faceid), "read faceid");
+      RSS(ref_list_push(ref_list, faceid), "push id");
+    }
     for (i = 0; i < 100; i++) {
-      REIS(3, fscanf(file, "%lf %lf %d", &fs, &ws, &id), "read xy");
-      if (verbose) printf("fs %f ws %f id %d\n", fs, ws, id);
-      uv[0] = 0.5;
-      uv[1] = 0.5;
+      REIS(2, fscanf(file, "%lf %lf", &fs, &ws), "read xy");
+      if (verbose) printf("fs %f ws %f\n", fs, ws);
       xyz[2] = 120;
       for (j = 0; j < 10; j++) {
         xyz[0] = fs;
@@ -130,9 +137,36 @@ int main(int argc, char *argv[]) {
           printf("seed %f %f %f uv %f %f eval\n", xyz[0], xyz[1], xyz[2], uv[0],
                  uv[1]);
 
-        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, xyz, uv), "inv");
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, xyz, NULL),
-            "eval at");
+        best_dist = REF_DBL_MAX;
+        best_face = REF_EMPTY;
+        best_xyz[0] = 0;
+        best_xyz[1] = 0;
+        best_xyz[2] = 0;
+        each_ref_list_item(ref_list, item) {
+          id = ref_list_value(ref_list, item);
+          uv[0] = 0.5;
+          uv[1] = 0.5;
+          face_xyz[0] = xyz[0];
+          face_xyz[1] = xyz[1];
+          face_xyz[2] = xyz[2];
+          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
+              "inv");
+          RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz, NULL),
+              "eval at");
+          dist =
+              sqrt(pow(face_xyz[0] - xyz[0], 2) + pow(face_xyz[1] - xyz[1], 2));
+          if (dist < best_dist) {
+            best_dist = dist;
+            best_face = id;
+            best_xyz[0] = face_xyz[0];
+            best_xyz[1] = face_xyz[1];
+            best_xyz[2] = face_xyz[2];
+          }
+        }
+        RUS(REF_EMPTY, best_face, "best face not found");
+        xyz[0] = best_xyz[0];
+        xyz[1] = best_xyz[1];
+        xyz[2] = best_xyz[2];
         if (verbose) {
           printf("%d xyz %f %f %f uv %f %f eval\n", j, xyz[0], xyz[1], xyz[2],
                  uv[0], uv[1]);
@@ -149,6 +183,7 @@ int main(int argc, char *argv[]) {
       printf("%f %f %f\n", xyz[0], xyz[1], xyz[2]);
     }
     fclose(file);
+    RSS(ref_list_free(ref_list), "free");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
