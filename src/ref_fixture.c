@@ -888,15 +888,8 @@ REF_STATUS ref_fixture_hex_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
 
   return REF_SUCCESS;
 }
-
 REF_STATUS ref_fixture_tet_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
-  REF_GRID ref_grid;
-  REF_NODE ref_node;
-  REF_INT global, node, hex[8], tet[4], cell;
-  REF_INT quad[5], tri[4];
-
   REF_INT l = 4, m = 4, n = 4;
-  REF_INT i, j, k;
 
   REF_DBL x0 = 0.0;
   REF_DBL x1 = 1.0;
@@ -907,6 +900,22 @@ REF_STATUS ref_fixture_tet_brick_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_DBL z0 = 0.0;
   REF_DBL z1 = 1.0;
 
+  RSS(ref_fixture_tet_brick_args_grid(ref_grid_ptr, ref_mpi, x0, x1, y0, y1, z0,
+                                      z1, l, m, n),
+      "args");
+  return REF_SUCCESS;
+}
+REF_STATUS ref_fixture_tet_brick_args_grid(REF_GRID *ref_grid_ptr,
+                                           REF_MPI ref_mpi, REF_DBL x0,
+                                           REF_DBL x1, REF_DBL y0, REF_DBL y1,
+                                           REF_DBL z0, REF_DBL z1, REF_INT l,
+                                           REF_INT m, REF_INT n) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global, node, hex[8], tet[4], cell;
+  REF_INT quad[5], tri[4];
+
+  REF_INT i, j, k;
   REF_DBL dx, dy, dz;
 
   dx = (x1 - x0) / ((REF_DBL)(l - 1));
