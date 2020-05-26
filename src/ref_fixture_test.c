@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
@@ -41,8 +42,44 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT pos = REF_EMPTY;
+
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  RXS(ref_args_find(argc, argv, "--brick", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL xmin, xmax, ymin, ymax, zmin, zmax;
+    REF_INT xdim, ydim, zdim;
+    REIS(12, argc,
+         "required args: --brick grid.ext "
+         "xmin xmax ymin ymax zmin xmax xdim ydim zdim");
+    REIS(1, pos,
+         "required args: --brick grid.ext "
+         "xmin xmax ymin ymax zmin zmax xdim ydim zdim");
+    xmin = atof(argv[3]);
+    xmax = atof(argv[4]);
+    ymin = atof(argv[5]);
+    ymax = atof(argv[6]);
+    zmin = atof(argv[7]);
+    zmax = atof(argv[8]);
+
+    xdim = atoi(argv[9]);
+    ydim = atoi(argv[10]);
+    zdim = atoi(argv[11]);
+
+    RSS(ref_fixture_tet_brick_args_grid(&ref_grid, ref_mpi, xmin, xmax, ymin,
+                                        ymax, zmin, zmax, xdim, ydim, zdim),
+        "args");
+    RSS(ref_export_by_extension(ref_grid, argv[2]), "tec");
+
+    RSS(ref_grid_free(ref_grid), "free");
+
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (REF_FALSE) { /* export for viz */
     REF_GRID ref_grid;
