@@ -12,7 +12,7 @@ fi
 
 cp ../initial-cell/cube01.meshb cube.meshb
 
-${src}/ref_acceptance -u u5 cube.meshb cube.solb
+${src}/ref_acceptance -u 5 cube.meshb cube.solb
 
 ${src}/ref_acceptance 1 whole.meshb
 ${src}/ref_translate whole.meshb target.meshb \
