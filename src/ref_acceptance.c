@@ -496,7 +496,6 @@ int main(int argc, char *argv[]) {
     REF_DBL x0, c, k, x, h;
     REF_DBL m0[6], m1[6], m2[6];
 
-    REF_INT pos;
     REF_INT node;
 
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "in");
