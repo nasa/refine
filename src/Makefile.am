@@ -97,7 +97,7 @@ refmpifull_CFLAGS = \
 	-DHAVE_MPI \
 	@zoltan_include@ @parmetis_include@ \
 	@egads_include@ @meshlink_include@ @mpi_include@
-refmpifull_LDADD = @egads_ldadd@ @opencascade_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpifull_LDADD = @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver
