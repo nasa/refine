@@ -12,7 +12,7 @@ fi
 
 cp ../initial-cell/cube01.meshb cube.meshb
 
-${src}/ref_acceptance -u u5 cube.meshb cube.solb
+${src}/ref_acceptance -u 5 cube.meshb cube.solb
 
 ${src}/ref_acceptance 1 whole.meshb
 ${src}/ref_translate whole.meshb target.meshb \
@@ -28,8 +28,8 @@ ${src}/ref_gather_test subset.meshb subset.solb subset.tec
 ${src}/ref translate subset.meshb subset.lb8.ugrid
 ${src}/ref translate subset.meshb subset-trans.tec
 
-mpiexec -np 4 ${src}/ref_interp_test --face subset.meshb subset.solb \
-      target.meshb target.solb target_merged.solb 1 
+mpiexec -np 4 ${src}/ref interpolate subset.meshb subset.solb \
+      target.meshb target_merged.solb --face 1 target.solb
 
 ${src}/ref_gather_test target.meshb \
       target_merged.solb target_merged.tec

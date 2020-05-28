@@ -104,6 +104,9 @@ static void interpolate_help(const char *name) {
   printf("\n");
   printf("  options:\n");
   printf("   --extrude receptor.solb data to two planes.\n");
+  printf("   --face <face id> <persist>.solb\n");
+  printf("       where persist.solb is copied to receptor.solb\n");
+  printf("       and face id is replaced with donor.solb.\n");
   printf("\n");
 }
 
@@ -679,12 +682,14 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *receipt_meshb;
   char *donor_solb;
   char *donor_meshb;
+  char *persist_solb;
   REF_GRID donor_grid = NULL;
   REF_GRID receipt_grid = NULL;
   REF_INT ldim;
   REF_DBL *donor_solution, *receipt_solution;
   REF_INTERP ref_interp;
   REF_INT pos;
+  REF_INT faceid;
 
   if (argc < 6) goto shutdown;
   donor_meshb = argv[2];
@@ -728,17 +733,36 @@ static REF_STATUS interpolate(REF_MPI ref_mpi, int argc, char *argv[]) {
            ref_node_n_global(ref_grid_node(receipt_grid)));
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
-  RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid), "make interp");
-  RSS(ref_interp_locate(ref_interp), "map");
-  ref_mpi_stopwatch_stop(ref_mpi, "locate");
-
-  if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
-  ref_malloc(receipt_solution, ldim * ref_node_max(ref_grid_node(receipt_grid)),
-             REF_DBL);
-  RSS(ref_interp_scalar(ref_interp, ldim, donor_solution, receipt_solution),
-      "interp scalar");
-  ref_mpi_stopwatch_stop(ref_mpi, "interp");
+  RXS(ref_args_find(argc, argv, "--face", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 2) {
+    faceid = atoi(argv[pos + 1]);
+    persist_solb = argv[pos + 2];
+    if (ref_mpi_once(ref_mpi))
+      printf("part persist solution %s\n", persist_solb);
+    RSS(ref_part_scalar(ref_grid_node(receipt_grid), &ldim, &receipt_solution,
+                        persist_solb),
+        "part solution");
+    ref_mpi_stopwatch_stop(ref_mpi, "persist part solution");
+    if (ref_mpi_once(ref_mpi)) printf("update solution on faceid %d\n", faceid);
+    RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid),
+        "make interp");
+    RSS(ref_interp_face_only(ref_interp, faceid, ldim, donor_solution,
+                             receipt_solution),
+        "map");
+    ref_mpi_stopwatch_stop(ref_mpi, "update");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
+    RSS(ref_interp_create(&ref_interp, donor_grid, receipt_grid),
+        "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+    ref_mpi_stopwatch_stop(ref_mpi, "locate");
+    if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
+    ref_malloc(receipt_solution,
+               ldim * ref_node_max(ref_grid_node(receipt_grid)), REF_DBL);
+    RSS(ref_interp_scalar(ref_interp, ldim, donor_solution, receipt_solution),
+        "interp scalar");
+    ref_mpi_stopwatch_stop(ref_mpi, "interp");
+  }
 
   RXS(ref_args_find(argc, argv, "--extrude", &pos), REF_NOT_FOUND,
       "arg search");
