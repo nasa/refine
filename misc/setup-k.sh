@@ -9,6 +9,7 @@ zoltan_path="${module_path}/Zoltan/3.82-mpt-2.19-intel_2018.3.222"
 parmetis_path="${module_path}/ParMETIS/4.0.3-mpt-2.19-intel_2018.3.222"
 egads_path="${module_path}/ESP/118-beta.2020.28.05.0659/EngSketchPad"
 occ_path="${module_path}/ESP/118-beta.2020.28.05.0659/OpenCASCADE-7.3.1"
+meshlink_path="/u/mpark/local/pkgs/MeshLink"
 
 mpi_path="/opt/hpe/hpc/mpt/mpt-2.19"
 
@@ -61,5 +62,18 @@ mkdir -p parmetis
     LIBS=-lmpi \
     ) \
     || exit
+
+mkdir -p meshlink
+( cd meshlink && \
+      ../configure \
+	  --prefix=`pwd` \
+	  --with-MeshLink=${meshlink_path} \
+          --with-mpi=${mpi_path} \
+          --with-parmetis=${parmetis_path} \
+	  CFLAGS="-g -O2" \
+	  CC=gcc \
+    ) \
+    || exit
+
 
 
