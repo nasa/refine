@@ -418,32 +418,50 @@ then
                 [meshlink_include_path=$with_MeshLink/src/meshlink/h],
 		[meshlink_inlcude_path='no'])
 
-  AC_CHECK_FILE([$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
-                [meshlink_a_path=$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
+  meshlink_platform="none"
+  if test "$meshlink_platform" == 'none'
+  then
+    AC_CHECK_FILE([$with_MeshLink/src/meshlink/dist/macosx/bin/meshlink.a],
+                  [meshlink_platform='macosx'],
+		  [meshlink_platform='none'])
+  fi
+  if test "$meshlink_platform" == 'none'
+  then
+    AC_CHECK_FILE([$with_MeshLink/src/meshlink/dist/linux_x86_64/bin/meshlink.a],
+                  [meshlink_platform='linux_x86_64'],
+		  [meshlink_platform='none'])
+  fi
+   if test "empty$meshlink_platform" == 'emptynone'
+  then
+    AC_MSG_ERROR([unable to find meshlink.a platform])
+  fi
+
+  AC_CHECK_FILE([$with_MeshLink/src/meshlink/dist/${meshlink_platform}/bin/meshlink.a],
+                [meshlink_a_path=$with_MeshLink/src/meshlink/dist/${meshlink_platform}/bin/meshlink.a],
 		[meshlink_a_path='no'])
 
   AC_CHECK_FILE([$with_MeshLink/src/mlparser_xerces/MeshLinkParser_xerces_c.h],
                 [xerces_include_path=$with_MeshLink/src/mlparser_xerces],
 		[xerces_inlcude_path='no'])
 
-  AC_CHECK_FILE([$with_MeshLink/src/mlparser_xerces/dist/macosx/bin/mlparser_xerces.a],
-                [xerces_a_path=$with_MeshLink/src/mlparser_xerces/dist/macosx/bin/mlparser_xerces.a],
+  AC_CHECK_FILE([$with_MeshLink/src/mlparser_xerces/dist/${meshlink_platform}/bin/mlparser_xerces.a],
+                [xerces_a_path=$with_MeshLink/src/mlparser_xerces/dist/${meshlink_platform}/bin/mlparser_xerces.a],
 		[xerces_a_path='no'])
 
-  AC_CHECK_FILE([$with_MeshLink/external/xerces/macosx/lib/libxerces-c.dylib],
-                [xerces_lib_path=$with_MeshLink/external/xerces/macosx/lib],
+  AC_CHECK_FILE([$with_MeshLink/external/xerces/${meshlink_platform}/lib/libxerces-c.dylib],
+                [xerces_lib_path=$with_MeshLink/external/xerces/${meshlink_platform}/lib],
 		[xerces_lib_path='no'])
 
   AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/GeomKernel_Geode_c.h],
                 [geode_include_path=$with_MeshLink/src/mlkernel_geode],
 		[geode_inlcude_path='no'])
 
-  AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/dist/macosx/bin/mlkernel_geode.a],
-                [geode_a_path=$with_MeshLink/src/mlkernel_geode/dist/macosx/bin/mlkernel_geode.a],
+  AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/dist/${meshlink_platform}/bin/mlkernel_geode.a],
+                [geode_a_path=$with_MeshLink/src/mlkernel_geode/dist/${meshlink_platform}/bin/mlkernel_geode.a],
 		[geode_a_path='no'])
 
-  AC_CHECK_FILE([$with_MeshLink/external/gelite/macosx/lib/libgeom.a],
-                [geode_lib_path=$with_MeshLink/external/gelite/macosx/lib],
+  AC_CHECK_FILE([$with_MeshLink/external/gelite/${meshlink_platform}/lib/libgeom.a],
+                [geode_lib_path=$with_MeshLink/external/gelite/${meshlink_platform}/lib],
 		[geode_lib_path='no'])
 
   meshlink_include=""
