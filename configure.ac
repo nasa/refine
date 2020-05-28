@@ -431,7 +431,7 @@ then
                   [meshlink_platform='linux_x86_64'],
 		  [meshlink_platform='none'])
   fi
-   if test "empty$meshlink_platform" == 'emptynone'
+  if test "empty$meshlink_platform" == 'emptynone'
   then
     AC_MSG_ERROR([unable to find meshlink.a platform])
   fi
@@ -451,6 +451,12 @@ then
   AC_CHECK_FILE([$with_MeshLink/external/xerces/${meshlink_platform}/lib/libxerces-c.dylib],
                 [xerces_lib_path=$with_MeshLink/external/xerces/${meshlink_platform}/lib],
 		[xerces_lib_path='no'])
+  if test "$xerces_lib_path" == 'no'
+  then
+    AC_CHECK_FILE([$with_MeshLink/external/xerces/${meshlink_platform}/lib/libxerces-c.so],
+                  [xerces_lib_path=$with_MeshLink/external/xerces/${meshlink_platform}/lib],
+		  [xerces_lib_path='no'])
+  fi
 
   AC_CHECK_FILE([$with_MeshLink/src/mlkernel_geode/GeomKernel_Geode_c.h],
                 [geode_include_path=$with_MeshLink/src/mlkernel_geode],
