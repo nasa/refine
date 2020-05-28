@@ -71,7 +71,7 @@ mkdir -p meshlink
           --with-mpi=${mpi_path} \
           --with-parmetis=${parmetis_path} \
 	  CFLAGS="-g -O2" \
-	  CC=gcc \
+	  CC=g++ \
     ) \
     || exit
 
