@@ -129,10 +129,16 @@ int main(int argc, char *argv[]) {
 
   RXS(ref_args_find(argc, argv, "--mpt", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos == 1 && argc == 3) {
-    REF_INT i, node, n = 1;
+    REF_INT i, node, n = 1, ldim = 6;
     REF_GLOB global;
+    REF_GRID ref_grid;
     REF_NODE ref_node;
-    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    const char *filename = "ref_gather_mpt.solb";
+    n = atoi(argv[2]);
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
     for (i = 0; i < n; i++) {
       global = (REF_GLOB)i + (REF_GLOB)n * (REF_GLOB)ref_mpi_rank(ref_mpi);
       RSS(ref_node_add(ref_node, global, &node), "first add");
@@ -142,7 +148,13 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("nglobal " REF_GLOB_FMT "\n", global);
 
-    RSS(ref_node_free(ref_node), "free");
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       filename),
+        "gather");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
     return 0;
