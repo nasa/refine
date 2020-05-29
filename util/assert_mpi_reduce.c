@@ -6,6 +6,7 @@ int main(int argc, char *argv[]) {
   int i, n = 10;
   int nproc, rank;
   double *in, *out;
+  long total;
 
   if (argc > 1) n = atoi(argv[1]);
 
@@ -19,6 +20,8 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < n; i++) in[i] = 0;
   if (0 == rank) {
     printf("calling MPI_Reduce( %d, MPI_DOUBLE, MPI_SUM) with %d\n", n, nproc);
+    total = n * nproc;
+    printf("for a total of %ld\n", total);
     fflush(stdout);
   }
   MPI_Allreduce(in, out, n, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
