@@ -127,6 +127,42 @@ int main(int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) transmesh = REF_TRUE;
 
+  RXS(ref_args_find(argc, argv, "--diff", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 6) {
+    REF_GRID ref_grid;
+    REF_INT node, i, ldim0, ldim1;
+    REF_DBL *field0, *field1;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim0, &field0, argv[3]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field0");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim1, &field1, argv[4]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field1");
+    REIS(ldim0, ldim1, "ldim does not match");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim1; i++) {
+        field1[i + ldim1 * node] -= field0[i + ldim0 * node];
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field1-field0");
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim1, field1, NULL, argv[5]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "write tec");
+
+    ref_free(field1);
+    ref_free(field0);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--mpt", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos == 1 && argc == 3) {
     REF_INT i, node, n = 1, ldim = 6;
