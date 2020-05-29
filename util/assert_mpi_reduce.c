@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < n; i++) in[i] = 0;
   if (0 == rank) {
     printf("calling MPI_Reduce( %d, MPI_DOUBLE, MPI_SUM) with %d\n", n, nproc);
-    total = n * nproc;
+    total = (long)n * (long)nproc;
     printf("for a total of %ld\n", total);
     fflush(stdout);
   }
