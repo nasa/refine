@@ -127,6 +127,75 @@ int main(int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) transmesh = REF_TRUE;
 
+  RXS(ref_args_find(argc, argv, "--diff", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 6) {
+    REF_GRID ref_grid;
+    REF_INT node, i, ldim0, ldim1;
+    REF_DBL *field0, *field1;
+
+    ref_mpi_stopwatch_start(ref_mpi);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read grid");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim0, &field0, argv[3]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field0");
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim1, &field1, argv[4]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "read field1");
+    REIS(ldim0, ldim1, "ldim does not match");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim1; i++) {
+        field1[i + ldim1 * node] -= field0[i + ldim0 * node];
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field1-field0");
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim1, field1, NULL, argv[5]),
+        "field");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "write tec");
+
+    ref_free(field1);
+    ref_free(field0);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "--mpt", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 3) {
+    REF_INT i, node, n = 1, ldim = 6;
+    REF_GLOB global;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_DBL *scalar;
+    const char **scalar_names = NULL;
+    const char *filename = "ref_gather_mpt.solb";
+    n = atoi(argv[2]);
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+    ref_node = ref_grid_node(ref_grid);
+    for (i = 0; i < n; i++) {
+      global = (REF_GLOB)i + (REF_GLOB)n * (REF_GLOB)ref_mpi_rank(ref_mpi);
+      RSS(ref_node_add(ref_node, global, &node), "first add");
+    }
+    global = (REF_GLOB)n * (REF_GLOB)ref_mpi_n(ref_mpi);
+    RSS(ref_node_initialize_n_global(ref_node, global), "init n glob");
+
+    if (ref_mpi_once(ref_mpi)) printf("nglobal " REF_GLOB_FMT "\n", global);
+
+    ref_malloc_init(scalar, ldim * ref_node_max(ref_node), REF_DBL, 1.0);
+
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, scalar_names,
+                                       filename),
+        "gather");
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   RXS(ref_args_find(argc, argv, "--subset", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos == 1 && argc == 12) {
     REF_GRID ref_grid;
@@ -292,6 +361,7 @@ int main(int argc, char *argv[]) {
         "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "write tec");
 
+    ref_free(field);
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");

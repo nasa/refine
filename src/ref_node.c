@@ -856,6 +856,9 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n_ptr,
 REF_STATUS ref_node_ghost_real(REF_NODE ref_node) {
   RSS(ref_node_ghost_dbl(ref_node, ref_node->real, REF_NODE_REAL_PER),
       "ghost dbl");
+  if (ref_node_naux(ref_node) > 0)
+    RSS(ref_node_ghost_dbl(ref_node, ref_node->aux, ref_node_naux(ref_node)),
+        "ghost dbl");
   return REF_SUCCESS;
 }
 
@@ -2396,6 +2399,36 @@ REF_STATUS ref_node_resize_aux(REF_NODE ref_node) {
   } else {
     ref_realloc(ref_node->aux, ref_node_naux(ref_node) * ref_node_max(ref_node),
                 REF_DBL);
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_store_aux(REF_NODE ref_node, REF_INT ldim, REF_DBL *aux) {
+  REF_INT iaux, node;
+  ref_node_naux(ref_node) = ldim;
+  if (NULL != ref_node->aux) {
+    ref_free(ref_node->aux);
+    ref_node->aux = NULL;
+  }
+  ref_malloc(ref_node->aux, ref_node_naux(ref_node) * ref_node_max(ref_node),
+             REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (iaux = 0; iaux < ref_node_naux(ref_node); iaux++) {
+      ref_node_aux(ref_node, iaux, node) = aux[iaux + ldim * node];
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_extract_aux(REF_NODE ref_node, REF_INT *ldim,
+                                REF_DBL **aux) {
+  REF_INT iaux, node;
+  (*ldim) = ref_node_naux(ref_node);
+  ref_malloc(*aux, (*ldim) * ref_node_max(ref_node), REF_DBL);
+  each_ref_node_valid_node(ref_node, node) {
+    for (iaux = 0; iaux < ref_node_naux(ref_node); iaux++) {
+      (*aux)[iaux + (*ldim) * node] = ref_node_aux(ref_node, iaux, node);
+    }
   }
   return REF_SUCCESS;
 }
