@@ -85,9 +85,10 @@ REF_STATUS ref_grid_pack(REF_GRID ref_grid);
 #define ref_grid_gather(ref_grid) ((ref_grid)->gather)
 #define ref_grid_adapt(ref_grid, param) (((ref_grid)->adapt)->param)
 #define ref_grid_interp(ref_grid) ((ref_grid)->interp)
-#define ref_grid_background(ref_grid)            \
-  ( (NULL == ref_grid_interp(ref_grid)) ? NULL : \
-      ref_interp_from_grid(ref_grid_interp(ref_grid))
+#define ref_grid_background(ref_grid)  \
+  ((NULL == ref_grid_interp(ref_grid)) \
+       ? NULL                          \
+       : ref_interp_from_grid(ref_grid_interp(ref_grid)))
 
 #define ref_grid_partitioner(ref_grid) ((ref_grid)->partitioner)
 #define ref_grid_partitioner_seed(ref_grid) ((ref_grid)->partitioner_seed)
