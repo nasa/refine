@@ -839,7 +839,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_project = NULL;
   char filename[1024];
   REF_GRID ref_grid = NULL;
-  REF_GRID initial_grid = NULL;
   REF_GRID extruded_grid = NULL;
   REF_BOOL all_done = REF_FALSE;
   REF_BOOL all_done0 = REF_FALSE;
@@ -852,7 +851,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
-  REF_INTERP ref_interp;
   REF_INT pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
@@ -961,8 +959,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  RSS(ref_grid_deep_copy(&initial_grid, ref_grid), "import");
-
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY == pos) {
     sprintf(filename, "%s_volume.solb", in_project);
@@ -1063,7 +1059,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_validation_cell_volume(ref_grid), "vol");
   ref_mpi_stopwatch_stop(ref_mpi, "crv const");
   RSS(ref_grid_cache_background(ref_grid), "cache");
-  ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
+  RSS(ref_node_store_aux(ref_grid_node(ref_grid_background(ref_grid)), ldim,
+                         initial_field),
+      "store init field with background");
+  ref_free(initial_field);
+  ref_mpi_stopwatch_stop(ref_mpi, "cache background metric and field");
 
   RSS(ref_histogram_quality(ref_grid), "gram");
   RSS(ref_histogram_ratio(ref_grid), "gram");
@@ -1129,20 +1129,25 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_mpi_once(ref_mpi)) {
     printf("%d leading dim from " REF_GLOB_FMT " donor nodes to " REF_GLOB_FMT
            " receptor nodes\n",
-           ldim, ref_node_n_global(ref_grid_node(initial_grid)),
+           ldim,
+           ref_node_n_global(ref_grid_node(ref_grid_background(ref_grid))),
            ref_node_n_global(ref_grid_node(ref_grid)));
   }
 
-  if (ref_mpi_once(ref_mpi)) printf("locate receptor nodes\n");
-  RSS(ref_interp_create(&ref_interp, initial_grid, ref_grid), "make interp");
-  RSS(ref_interp_locate(ref_interp), "map");
-  ref_mpi_stopwatch_stop(ref_mpi, "locate");
-
   if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
   ref_malloc(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  RSS(ref_interp_scalar(ref_interp, ldim, initial_field, ref_field),
+  RSS(ref_node_extract_aux(ref_grid_node(ref_grid_background(ref_grid)), &ldim,
+                           &initial_field),
+      "store init field with background");
+  RSS(ref_interp_scalar(ref_grid_interp(ref_grid), ldim, initial_field,
+                        ref_field),
       "interp scalar");
-  RSS(ref_interp_free(ref_interp), "free");
+  ref_free(initial_field);
+  /* free interp and background grid */
+  RSS(ref_grid_free(ref_grid_background(ref_grid)),
+      "free cached background grid");
+  RSS(ref_interp_free(ref_grid_interp(ref_grid)), "interp free");
+  ref_grid_interp(ref_grid) = NULL;
   ref_mpi_stopwatch_stop(ref_mpi, "interp");
 
   if (ref_grid_twod(ref_grid)) {
@@ -1193,8 +1198,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "gather receptor");
 
   ref_free(ref_field);
-  ref_free(initial_field);
-  RSS(ref_grid_free(initial_grid), "free");
 
   /* export via -x grid.ext and -f final-surf.tec*/
   for (pos = 0; pos < argc - 1; pos++) {
