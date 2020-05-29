@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "mpi.h"
 int main(int argc, char *argv[]) {
-  int n = 10;
+  int i, n = 10;
   int nproc, rank;
   double *in, *out;
 
