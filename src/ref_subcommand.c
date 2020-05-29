@@ -925,17 +925,17 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
   }
 
+  sprintf(filename, "%s.meshb", in_project);
+  if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
+  RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
+  ref_mpi_stopwatch_stop(ref_mpi, "part");
+
   RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
     printf("--partioner %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
   }
-
-  sprintf(filename, "%s.meshb", in_project);
-  if (ref_mpi_once(ref_mpi)) printf("part mesh %s\n", filename);
-  RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
-  ref_mpi_stopwatch_stop(ref_mpi, "part");
 
   RXS(ref_args_find(argc, argv, "--meshlink", &pos), REF_NOT_FOUND,
       "arg search");
