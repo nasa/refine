@@ -1118,6 +1118,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
     RSS(ref_gather_by_extension(extruded_grid, filename),
         "gather mesh extension");
+    ref_grid_free(extruded_grid);
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("gather " REF_GLOB_FMT " nodes to %s\n",
@@ -1170,6 +1171,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
                                       filename),
           "gather cell center");
     }
+    ref_free(extruded_field);
+    ref_grid_free(extruded_grid);
   } else {
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
@@ -1192,9 +1195,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   ref_free(ref_field);
   ref_free(initial_field);
-  ref_free(extruded_field);
-
-  ref_grid_free(extruded_grid);
   RSS(ref_grid_free(initial_grid), "free");
 
   /* export via -x grid.ext and -f final-surf.tec*/
