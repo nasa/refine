@@ -856,6 +856,9 @@ REF_STATUS ref_node_compact(REF_NODE ref_node, REF_INT **o2n_ptr,
 REF_STATUS ref_node_ghost_real(REF_NODE ref_node) {
   RSS(ref_node_ghost_dbl(ref_node, ref_node->real, REF_NODE_REAL_PER),
       "ghost dbl");
+  if (ref_node_naux(ref_node) > 0)
+    RSS(ref_node_ghost_dbl(ref_node, ref_node->aux, ref_node_naux(ref_node)),
+        "ghost dbl");
   return REF_SUCCESS;
 }
 
