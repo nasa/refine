@@ -8,11 +8,11 @@ int main(int argc, char *argv[]) {
   double *in, *out;
   long total;
 
-  if (argc > 1) n = atoi(argv[1]);
-
   MPI_Init(&argc, &argv);
   MPI_Comm_size(MPI_COMM_WORLD, &nproc);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+  if (argc > 1) n = atoi(argv[1]);
 
   in = (double *)malloc(n * sizeof(double));
   out = (double *)malloc(n * sizeof(double));
