@@ -325,6 +325,7 @@ int main(int argc, char *argv[]) {
         "field");
     ref_mpi_stopwatch_stop(ref_grid_mpi(import_grid), "write tec");
 
+    ref_free(field);
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "mpi free");
     RSS(ref_mpi_stop(), "stop");
