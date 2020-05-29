@@ -1118,7 +1118,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("gather extruded %s\n", filename);
     RSS(ref_gather_by_extension(extruded_grid, filename),
         "gather mesh extension");
-    ref_grid_free(extruded_grid);
   } else {
     if (ref_mpi_once(ref_mpi))
       printf("gather " REF_GLOB_FMT " nodes to %s\n",
