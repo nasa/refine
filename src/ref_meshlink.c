@@ -606,6 +606,21 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REF_STATUS status;
   REF_DBL tri_normal[3];
   REF_DBL area_sign = 1.0;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[256];
+  MLVector3D eval_point;
+  MLVector3D dXYZdU;    /* First partial derivative */
+  MLVector3D dXYZdV;    /* First partial derivative */
+  MLVector3D d2XYZdU2;  /* Second partial derivative */
+  MLVector3D d2XYZdUdV; /* Second partial derivative */
+  MLVector3D d2XYZdV2;  /* Second partial derivative */
+  MLVector3D principalV;
+  MLREAL minCurvature;
+  MLREAL maxCurvature;
+  MLREAL avg;
+  MLREAL gauss;
+  MLORIENT orientation;
 
   id = nodes[3];
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
@@ -630,28 +645,21 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
   REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
 
-  if (REF_FALSE) {
-    MLVector3D projected_point;
-    MLVector2D uv;
-    char entity_name[256];
-    REIS(
-        0,
-        ML_projectPoint(geom_kernel, geom_group, center_point, projection_data),
-        "prj");
-    REIS(0,
-         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                              entity_name, 256),
-         "info");
-    printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
-  }
-
-  normal[0] = 0.1;
-  normal[1] = 0.2;
-  normal[2] = 0.3;
   REIS(0,
-       ML_projectPointNormal(geom_kernel, geom_group, center_point,
-                             projection_data, normal),
+       ML_projectPoint(geom_kernel, geom_group, center_point, projection_data),
        "prj");
+  REIS(0,
+       ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                            entity_name, 256),
+       "info");
+  if (REF_FALSE) printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
+  REIS(0,
+       ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
+                                 dXYZdU, dXYZdV, d2XYZdU2, d2XYZdUdV, d2XYZdV2,
+                                 normal, principalV, &minCurvature,
+                                 &maxCurvature, &avg, &gauss, &orientation),
+       "eval");
+
   ML_freeProjectionDataObj(&projection_data);
 
   area_sign = ref_geom->uv_area_sign[id - 1];
