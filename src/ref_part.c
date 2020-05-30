@@ -150,11 +150,13 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
   REF_INT chunk;
   REF_INT *sent_node;
   REF_INT *sent_id;
+  REF_INT *sent_gref;
   REF_DBL *sent_param;
   REF_INT *read_node;
   REF_INT *read_id;
+  REF_INT *read_gref;
   REF_DBL *read_param;
-  REF_DBL filler;
+  double double_gref;
 
   REF_INT ngeom_read, ngeom_keep;
   REF_INT section_size;
@@ -165,7 +167,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
 
   REF_INT geom_to_receive;
 
-  REF_INT geom, i;
+  REF_INT geom, i, new_geom;
   REF_INT part, node;
   REF_INT new_location;
 
@@ -174,6 +176,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
 
   ref_malloc(sent_node, chunk, REF_INT);
   ref_malloc(sent_id, chunk, REF_INT);
+  ref_malloc(sent_gref, chunk, REF_INT);
   ref_malloc(sent_param, 2 * chunk, REF_DBL);
 
   if (ref_mpi_once(ref_mpi)) {
@@ -181,6 +184,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
     ref_malloc(start_to_send, ref_mpi_n(ref_mpi), REF_INT);
     ref_malloc(read_node, chunk, REF_INT);
     ref_malloc(read_id, chunk, REF_INT);
+    ref_malloc(read_gref, chunk, REF_INT);
     ref_malloc(read_param, 2 * chunk, REF_DBL);
     ref_malloc(dest, chunk, REF_INT);
 
@@ -195,8 +199,11 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
         for (i = 0; i < type; i++)
           REIS(1, fread(&(read_param[i + 2 * geom]), sizeof(double), 1, file),
                "param");
-        if (0 < type)
-          REIS(1, fread(&(filler), sizeof(double), 1, file), "filler");
+        read_gref[geom] = read_id[geom];
+        if (0 < type) {
+          REIS(1, fread(&(double_gref), sizeof(double), 1, file), "gref");
+          read_gref[geom] = (REF_INT)double_gref;
+        }
       }
       for (geom = 0; geom < section_size; geom++) read_node[geom]--;
 
@@ -218,6 +225,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
         new_location = start_to_send[dest[geom]] + geom_to_send[dest[geom]];
         sent_node[new_location] = read_node[geom];
         sent_id[new_location] = read_id[geom];
+        sent_gref[new_location] = read_gref[geom];
         sent_param[0 + 2 * new_location] = read_param[0 + 2 * geom];
         sent_param[1 + 2 * new_location] = read_param[1 + 2 * geom];
         geom_to_send[dest[geom]]++;
@@ -230,6 +238,9 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
         RSS(ref_geom_add(ref_geom, node, type, sent_id[geom],
                          &(sent_param[2 * geom])),
             "add geom");
+        RSS(ref_geom_find(ref_geom, node, type, sent_id[geom], &new_geom),
+            "find");
+        ref_geom_gref(ref_geom, new_geom) = sent_gref[geom];
       }
 
       /* ship it! */
@@ -242,6 +253,9 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
         RSS(ref_mpi_send(ref_mpi, &(sent_id[start_to_send[part]]),
                          geom_to_send[part], REF_INT_TYPE, part),
             "send");
+        RSS(ref_mpi_send(ref_mpi, &(sent_gref[start_to_send[part]]),
+                         geom_to_send[part], REF_INT_TYPE, part),
+            "send");
         RSS(ref_mpi_send(ref_mpi, &(sent_param[2 * start_to_send[part]]),
                          2 * geom_to_send[part], REF_DBL_TYPE, part),
             "send");
@@ -250,6 +264,7 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
 
     ref_free(dest);
     ref_free(read_param);
+    ref_free(read_gref);
     ref_free(read_id);
     ref_free(read_node);
     ref_free(start_to_send);
@@ -267,6 +282,8 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
             "send");
         RSS(ref_mpi_recv(ref_mpi, sent_id, geom_to_receive, REF_INT_TYPE, 0),
             "send");
+        RSS(ref_mpi_recv(ref_mpi, sent_gref, geom_to_receive, REF_INT_TYPE, 0),
+            "send");
         RSS(ref_mpi_recv(ref_mpi, sent_param, 2 * geom_to_receive, REF_DBL_TYPE,
                          0),
             "send");
@@ -275,12 +292,16 @@ REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
           RSS(ref_geom_add(ref_geom, node, type, sent_id[geom],
                            &(sent_param[2 * geom])),
               "add geom");
+          RSS(ref_geom_find(ref_geom, node, type, sent_id[geom], &new_geom),
+              "find");
+          ref_geom_gref(ref_geom, new_geom) = sent_gref[geom];
         }
       }
     } while (geom_to_receive != end_of_message);
   }
 
   free(sent_param);
+  free(sent_gref);
   free(sent_id);
   free(sent_node);
 
@@ -294,13 +315,14 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
   REF_INT chunk;
   REF_LONG *read_node;
   REF_LONG *read_id;
+  REF_LONG *read_gref;
   REF_DBL *read_param;
-  REF_DBL filler;
+  REF_DBL double_gref;
 
   REF_LONG ngeom_read;
   REF_INT section_size;
 
-  REF_INT geom;
+  REF_INT geom, new_geom;
   REF_INT i, local;
 
   chunk = (REF_INT)MAX(1000000, ngeom / (REF_LONG)ref_mpi_n(ref_mpi));
@@ -308,6 +330,7 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
 
   ref_malloc(read_node, chunk, REF_LONG);
   ref_malloc(read_id, chunk, REF_LONG);
+  ref_malloc(read_gref, chunk, REF_LONG);
   ref_malloc(read_param, 2 * chunk, REF_DBL);
 
   ngeom_read = 0;
@@ -322,13 +345,17 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
         for (i = 0; i < type; i++)
           REIS(1, fread(&(read_param[i + 2 * geom]), sizeof(double), 1, file),
                "param");
-        if (0 < type)
-          REIS(1, fread(&(filler), sizeof(double), 1, file), "filler");
+        read_gref[geom] = read_id[geom];
+        if (0 < type) {
+          REIS(1, fread(&(double_gref), sizeof(double), 1, file), "gref");
+          read_gref[geom] = (REF_LONG)double_gref;
+        }
       }
       for (geom = 0; geom < section_size; geom++) read_node[geom]--;
     }
     RSS(ref_mpi_bcast(ref_mpi, read_node, section_size, REF_LONG_TYPE), "nd");
     RSS(ref_mpi_bcast(ref_mpi, read_id, section_size, REF_LONG_TYPE), "id");
+    RSS(ref_mpi_bcast(ref_mpi, read_gref, section_size, REF_LONG_TYPE), "gref");
     RSS(ref_mpi_bcast(ref_mpi, read_param, 2 * section_size, REF_DBL_TYPE),
         "pm");
     for (geom = 0; geom < section_size; geom++) {
@@ -338,12 +365,17 @@ static REF_STATUS ref_part_meshb_geom_bcast(REF_GEOM ref_geom, REF_LONG ngeom,
         RSS(ref_geom_add(ref_geom, local, type, (REF_INT)read_id[geom],
                          &(read_param[2 * geom])),
             "add geom");
+        RSS(ref_geom_find(ref_geom, local, type, (REF_INT)read_id[geom],
+                          &new_geom),
+            "find");
+        ref_geom_gref(ref_geom, new_geom) = (REF_INT)read_gref[geom];
       }
     }
     ngeom_read += section_size;
   }
 
   ref_free(read_param);
+  ref_free(read_gref);
   ref_free(read_id);
   ref_free(read_node);
 
