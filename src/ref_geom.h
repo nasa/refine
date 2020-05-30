@@ -33,7 +33,7 @@ typedef REF_GEOM_STRUCT *REF_GEOM;
 #define REF_GEOM_DESCR_SIZE (6)
 #define REF_GEOM_DESCR_TYPE (0)
 #define REF_GEOM_DESCR_ID (1)
-#define REF_GEOM_DESCR_REF (2)
+#define REF_GEOM_DESCR_GREF (2)
 #define REF_GEOM_DESCR_JUMP (3)
 #define REF_GEOM_DESCR_DEGEN (4)
 #define REF_GEOM_DESCR_NODE (5)
@@ -88,8 +88,8 @@ struct REF_GEOM_STRUCT {
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_TYPE, (geom)))
 #define ref_geom_id(ref_geom, geom) \
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_ID, (geom)))
-#define ref_geom_ref(ref_geom, geom) \
-  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_REF, (geom)))
+#define ref_geom_gref(ref_geom, geom) \
+  (ref_geom_descr((ref_geom), REF_GEOM_DESCR_GREF, (geom)))
 #define ref_geom_jump(ref_geom, geom) \
   (ref_geom_descr((ref_geom), REF_GEOM_DESCR_JUMP, (geom)))
 #define ref_geom_degen(ref_geom, geom) \
