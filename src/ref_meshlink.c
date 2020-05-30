@@ -32,6 +32,7 @@
 #include "GeomKernel_Geode_c.h"
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
+#define REF_MESHLINK_MAX_STRING_SIZE 256
 #endif
 
 #include "ref_dict.h"
@@ -43,14 +44,13 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   if (NULL == xml_filename) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
-#define MAX_STRING_SIZE 256
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   MeshAssociativityObj mesh_assoc;
   GeometryKernelObj geom_kernel = NULL;
   MLINT iFile;
   MLINT numGeomFiles;
   MeshLinkFileConstObj geom_file;
-  char geom_fname[MAX_STRING_SIZE];
+  char geom_fname[REF_MESHLINK_MAX_STRING_SIZE];
 
   REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
@@ -90,7 +90,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   for (iFile = 0; iFile < numGeomFiles; ++iFile) {
     REIS(0, ML_getGeometryFileObj(mesh_assoc, iFile, &geom_file),
          "Error getting Geometry File");
-    REIS(0, ML_getFilename(geom_file, geom_fname, MAX_STRING_SIZE),
+    REIS(0, ML_getFilename(geom_file, geom_fname, REF_MESHLINK_MAX_STRING_SIZE),
          "Error getting Geometry File Name");
     printf("geom file %" MLINT_FORMAT " %s\n", iFile, geom_fname);
     REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
