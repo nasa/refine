@@ -1027,7 +1027,11 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
   }
 
-  RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+  if (ref_geom_model_loaded(ref_geom)) {
+    RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "egads bbox diag");
+  } else {
+    RSS(ref_node_bounding_box_diagonal(ref_node, &hmax), "bbox diag");
+  }
   hmax *= 0.1; /* normal spacing and max tangential spacing */
 
   /* limit aspect ratio via curvature */
@@ -1037,20 +1041,22 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   /* limit normal direction to a factor of surface spacing */
   norm_ratio = 2.0;
 
-  each_ref_node_valid_node(ref_node, node) {
-    if (ref_node_owned(ref_node, node)) {
-      RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
-          "feature size");
-      hs = MIN(hs, hr * aspect_ratio);
-      hn = MIN(hn, norm_ratio * hr);
-      hn = MIN(hn, norm_ratio * hs);
-      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
-      ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
-      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
-      ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
-      for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
-      ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
-      RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
+  if (ref_geom_model_loaded(ref_geom)) {
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
+            "feature size");
+        hs = MIN(hs, hr * aspect_ratio);
+        hn = MIN(hn, norm_ratio * hr);
+        hn = MIN(hn, norm_ratio * hs);
+        for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 0) = r[i];
+        ref_matrix_eig(diagonal_system, 0) = 1.0 / hr / hr;
+        for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 1) = s[i];
+        ref_matrix_eig(diagonal_system, 1) = 1.0 / hs / hs;
+        for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
+        ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
+        RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
+      }
     }
   }
 
@@ -1060,7 +1066,12 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       face = ref_geom_id(ref_geom, geom) - 1;
       RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
-      RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      if (ref_geom_model_loaded(ref_geom)) {
+        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      } else {
+        printf("\nNo geometry model, did you forget to load it?\n\n");
+        RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
+      }
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
       ks = ABS(ks);
@@ -1108,7 +1119,12 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     if (ref_node_owned(ref_node, node)) {
       RSS(ref_geom_radian_request(ref_geom, geom, &delta_radian), "drad");
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
-      RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+      if (ref_geom_model_loaded(ref_geom)) {
+        RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+      } else {
+        printf("\nNo geometry model, did you forget to load it?\n\n");
+        RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
+      }
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
       hr = hmax;
