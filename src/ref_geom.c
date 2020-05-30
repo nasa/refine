@@ -412,14 +412,16 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
 
 REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
                                    REF_DBL *param) {
-  REF_INT type, id, jump, degen, node, geom;
+  REF_INT type, id, ref, jump, degen, node, geom;
   type = descr[REF_GEOM_DESCR_TYPE];
   id = descr[REF_GEOM_DESCR_ID];
+  ref = descr[REF_GEOM_DESCR_REF];
   jump = descr[REF_GEOM_DESCR_JUMP];
   degen = descr[REF_GEOM_DESCR_DEGEN];
   node = descr[REF_GEOM_DESCR_NODE];
   RSS(ref_geom_add(ref_geom, node, type, id, param), "geom add");
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "geom find");
+  ref_geom_ref(ref_geom, geom) = ref;
   ref_geom_degen(ref_geom, geom) = degen;
   ref_geom_jump(ref_geom, geom) = jump;
   return REF_SUCCESS;
@@ -449,6 +451,7 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
   ref_geom_type(ref_geom, geom) = type;
   ref_geom_id(ref_geom, geom) = id;
+  ref_geom_ref(ref_geom, geom) = id; /* assume same unless set */
   ref_geom_jump(ref_geom, geom) = 0;
   ref_geom_degen(ref_geom, geom) = 0;
   ref_geom_node(ref_geom, geom) = node;
