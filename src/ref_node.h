@@ -241,6 +241,8 @@ REF_STATUS ref_node_tri_grad_nodes(REF_NODE ref_node, REF_INT *nodes,
 REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
                                 REF_INT *closest_node, REF_DBL *distance);
 
+REF_STATUS ref_node_bounding_box_diagonal(REF_NODE ref_node, REF_DBL *diagonal);
+
 END_C_DECLORATION
 
 #endif /* REF_NODE_H */
