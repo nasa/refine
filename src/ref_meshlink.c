@@ -239,12 +239,14 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REF_DBL param[2];
   char vref[REF_MESHLINK_MAX_STRING_SIZE];
 
+  MLINT nstring, mstring;
+  MeshTopoObj *string;
+
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
 
   nsheet = ML_getNumMeshSheets(mesh_model);
   printf("nsheet %" MLINT_FORMAT "\n", nsheet);
-
   ref_malloc(sheet, nsheet, MeshSheetObj);
   REIS(0, ML_getMeshSheets(mesh_model, sheet, nsheet, &msheet),
        "Error getting array of Mesh Sheets");
@@ -289,8 +291,15 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     }
     ref_free(face);
   }
-
   ref_free(sheet);
+
+  nstring = ML_getNumMeshStrings(mesh_model);
+  printf("nstring %" MLINT_FORMAT "\n", nstring);
+  ref_malloc(string, nstring, MeshTopoObj);
+  REIS(0, ML_getMeshStrings(mesh_model, string, nstring, &mstring),
+       "Error getting array of Mesh Strings");
+  REIS(nstring, mstring, "string miscount");
+  ref_free(string);
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
