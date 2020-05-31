@@ -220,6 +220,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   printf("extracting mesh_model %s\n", block_name);
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   MeshModelObj mesh_model;
   MLINT nsheet, msheet;
@@ -229,7 +230,14 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   MeshTopoObj *face;
   REF_INT iface;
   MLINT f2n[4], fn;
-  MLINT gref;
+  MLINT sheet_gref;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  ParamVertexConstObj vert[3];
+  MLINT nvert, vert_gref, mid;
+  MLVector2D uv;
+  REF_INT i, geom;
+  REF_DBL param[2];
+  char vref[REF_MESHLINK_MAX_STRING_SIZE];
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -243,11 +251,11 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REIS(nsheet, msheet, "sheet miscount");
 
   for (isheet = 0; isheet < nsheet; isheet++) {
-    REIS(0, ML_getMeshTopoGref(sheet[isheet], &gref),
+    REIS(0, ML_getMeshTopoGref(sheet[isheet], &sheet_gref),
          "Error getting Mesh Sheet gref");
     nface = ML_getNumSheetMeshFaces(sheet[isheet]);
     printf("nface %" MLINT_FORMAT " for sheet %d with gref %" MLINT_FORMAT "\n",
-           nface, isheet, gref);
+           nface, isheet, sheet_gref);
     ref_malloc(face, nface, MeshTopoObj);
     REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
          "Error getting array of Mesh Sheet Mesh Faces");
@@ -256,6 +264,28 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
       REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
       printf(" f2n %" MLINT_FORMAT " %" MLINT_FORMAT " %" MLINT_FORMAT "\n",
              f2n[0], f2n[1], f2n[2]);
+      RSS(ref_node_local(ref_node, f2n[0] - 1, &(nodes[0])), "g2l");
+      RSS(ref_node_local(ref_node, f2n[1] - 1, &(nodes[1])), "g2l");
+      RSS(ref_node_local(ref_node, f2n[2] - 1, &(nodes[2])), "g2l");
+      nodes[3] = (REF_INT)sheet_gref;
+      RSS(ref_cell_with(ref_grid_tri(ref_grid), nodes, &cell),
+          "tri for sheet missing");
+      ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell) = nodes[3];
+      REIS(0, ML_getParamVerts(face[iface], vert, 3, &nvert),
+           "Error Face Vert");
+      for (i = 0; i < 3; i++) {
+        REIS(0,
+             ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
+                                 &vert_gref, &mid, uv),
+             "Error Face Vert");
+        param[0] = uv[0];
+        param[1] = uv[1];
+        RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
+            "face uv");
+        RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], &geom),
+            "find");
+        ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
+      }
     }
     ref_free(face);
   }
