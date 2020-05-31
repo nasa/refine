@@ -244,6 +244,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REF_INT istring;
   MLINT string_gref;
   MLINT nedge, medge;
+  MeshTopoObj *edge;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -264,7 +265,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     ref_malloc(face, nface, MeshTopoObj);
     REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
          "Error getting array of Mesh Sheet Mesh Faces");
-    REIS(nface, mface, "sheet miscount");
+    REIS(nface, mface, "face miscount");
     for (iface = 0; iface < nface; iface++) {
       REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
       RSS(ref_node_local(ref_node, f2n[0] - 1, &(nodes[0])), "g2l");
@@ -307,6 +308,11 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     printf("nedge %" MLINT_FORMAT " for string %d with gref %" MLINT_FORMAT
            "\n",
            nedge, istring, string_gref);
+    ref_malloc(edge, nedge, MeshTopoObj);
+    REIS(0, ML_getStringMeshEdges(string[istring], edge, nedge, &medge),
+         "Error getting array of Mesh String Mesh Edges");
+    REIS(nedge, medge, "edge miscount");
+    ref_free(edge);
   }
 
   ref_free(string);
