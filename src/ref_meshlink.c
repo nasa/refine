@@ -215,11 +215,10 @@ static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
 }
 #endif
 
-REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
+REF_STATUS ref_meshlink_fill(REF_GRID ref_grid, const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
 #ifdef HAVE_MESHLINK
-  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   MeshModelObj mesh_model;
@@ -228,6 +227,8 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
   MeshSheetObj *sheet;
   MLINT nface, mface;
   MeshTopoObj *face;
+  REF_INT iface;
+  MLINT f2n[4], fn;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -247,6 +248,11 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
     REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
          "Error getting array of Mesh Sheet Mesh Faces");
     REIS(nface, mface, "sheet miscount");
+    for (iface = 0; iface < nface; iface++) {
+      REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
+      printf(" f2n %" MLINT_FORMAT " %" MLINT_FORMAT " %" MLINT_FORMAT "\n",
+             f2n[0], f2n[1], f2n[2]);
+    }
     ref_free(face);
   }
 
