@@ -35,7 +35,7 @@
 #define REF_MESHLINK_MAX_STRING_SIZE 256
 #endif
 
-#include "ref_dict.h"
+#include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -167,7 +167,7 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &nedge,
                                   edges),
-          REF_INCREASE_LIMIT, "count faceids");
+          REF_INCREASE_LIMIT, "count edgeids");
       if (nedge > 1) {
         id = (REF_INT)ref_node_global(ref_grid_node(ref_grid), node);
         RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
@@ -342,6 +342,20 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     ref_free(edge);
   }
   ref_free(string);
+
+  { /* mark cad nodes */
+    REF_INT node;
+    REF_INT edges[2];
+    REF_INT n, id;
+    each_ref_node_valid_node(ref_node, node) {
+      RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &n, edges),
+          REF_INCREASE_LIMIT, "count edgeids");
+      if (n > 1) {
+        id = (REF_INT)ref_node_global(ref_grid_node(ref_grid), node);
+        RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
+      }
+    }
+  }
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
