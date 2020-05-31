@@ -59,6 +59,9 @@ mkdir -p meshlink
 ( cd meshlink && \
       ../configure \
 	  --prefix=`pwd` \
+	  --with-mpi=${metis_path} \
+	  --with-metis=${metis_path} \
+	  --with-parmetis=${parmetis_path} \
 	  --with-MeshLink=${meshlink_path} \
 	  CFLAGS="-g -O2" \
 	  CC=clang++ \
