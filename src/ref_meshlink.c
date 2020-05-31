@@ -245,6 +245,8 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   MLINT string_gref;
   MLINT nedge, medge;
   MeshTopoObj *edge;
+  REF_INT iedge;
+  MLINT e2n[2], en;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -268,6 +270,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     REIS(nface, mface, "face miscount");
     for (iface = 0; iface < nface; iface++) {
       REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
+      REIS(3, fn, "face ind miscount");
       RSS(ref_node_local(ref_node, f2n[0] - 1, &(nodes[0])), "g2l");
       RSS(ref_node_local(ref_node, f2n[1] - 1, &(nodes[1])), "g2l");
       RSS(ref_node_local(ref_node, f2n[2] - 1, &(nodes[2])), "g2l");
@@ -312,10 +315,14 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     REIS(0, ML_getStringMeshEdges(string[istring], edge, nedge, &medge),
          "Error getting array of Mesh String Mesh Edges");
     REIS(nedge, medge, "edge miscount");
+    for (iedge = 0; iedge < nedge; iedge++) {
+      REIS(0, ML_getEdgeInds(edge[iedge], e2n, &en), "Error Mesh Edge Ind");
+      REIS(2, en, "edge ind miscount");
+    }
     ref_free(edge);
   }
-
   ref_free(string);
+
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
