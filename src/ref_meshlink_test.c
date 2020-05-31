@@ -23,6 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "ref_args.h"
 #include "ref_export.h"
 #include "ref_grid.h"
 #include "ref_import.h"
@@ -30,9 +31,27 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT pos;
 
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "create");
+
+  RXS(ref_args_find(argc, argv, "--link", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos == 1 && argc == 5) {
+    REF_GRID ref_grid;
+    printf("grid source %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    printf("association %s\n", argv[3]);
+    RSS(ref_meshlink_open(ref_grid, argv[3]), "open");
+    printf("block %s\n", argv[4]);
+    RSS(ref_meshlink_cache(ref_grid, argv[4]), "open");
+    RSS(ref_geom_tec(ref_grid, "ref_meshlink_test.tec"), "geom tec");
+    RSS(ref_meshlink_close(ref_grid), "close");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (3 < argc) {
     REF_GRID ref_grid;
@@ -46,6 +65,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_export_by_extension(ref_grid, "ref_meshlink_test.meshb"), "meshb");
     RSS(ref_meshlink_close(ref_grid), "close");
     RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
