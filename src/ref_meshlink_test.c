@@ -45,6 +45,7 @@ int main(int argc, char *argv[]) {
     printf("block %s\n", argv[4]);
     RSS(ref_meshlink_link(ref_grid, argv[4]), "open");
     RSS(ref_geom_tec(ref_grid, "ref_meshlink_link.tec"), "geom tec");
+    RSS(ref_export_by_extension(ref_grid, "ref_meshlink_test.meshb"), "meshb");
     RSS(ref_meshlink_close(ref_grid), "close");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
