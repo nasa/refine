@@ -223,10 +223,34 @@ REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   MeshModelObj mesh_model;
+  MLINT nsheet, msheet;
+  REF_INT isheet;
+  MeshSheetObj *sheet;
+  MLINT nface, mface;
+  MeshTopoObj *face;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
 
+  nsheet = ML_getNumMeshSheets(mesh_model);
+  printf("nsheet %" MLINT_FORMAT "\n", nsheet);
+
+  ref_malloc(sheet, nsheet, MeshSheetObj);
+  REIS(0, ML_getMeshSheets(mesh_model, sheet, nsheet, &msheet),
+       "Error getting array of Mesh Sheets");
+  REIS(nsheet, msheet, "sheet miscount");
+
+  for (isheet = 0; isheet < nsheet; isheet++) {
+    nface = ML_getNumSheetMeshFaces(sheet[isheet]);
+    printf("nface %" MLINT_FORMAT " for sheet %d\n", nface, isheet);
+    ref_malloc(face, nface, MeshTopoObj);
+    REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
+         "Error getting array of Mesh Sheet Mesh Faces");
+    REIS(nface, mface, "sheet miscount");
+    ref_free(face);
+  }
+
+  ref_free(sheet);
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
