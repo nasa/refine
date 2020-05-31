@@ -215,7 +215,7 @@ static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
 }
 #endif
 
-REF_STATUS ref_meshlink_fill(REF_GRID ref_grid, const char *block_name) {
+REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
 #ifdef HAVE_MESHLINK
