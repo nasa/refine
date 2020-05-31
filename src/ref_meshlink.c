@@ -229,6 +229,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   MeshTopoObj *face;
   REF_INT iface;
   MLINT f2n[4], fn;
+  MLINT gref;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -242,8 +243,11 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REIS(nsheet, msheet, "sheet miscount");
 
   for (isheet = 0; isheet < nsheet; isheet++) {
+    REIS(0, ML_getMeshTopoGref(sheet[isheet], &gref),
+         "Error getting Mesh Sheet gref");
     nface = ML_getNumSheetMeshFaces(sheet[isheet]);
-    printf("nface %" MLINT_FORMAT " for sheet %d\n", nface, isheet);
+    printf("nface %" MLINT_FORMAT " for sheet %d with gref %" MLINT_FORMAT "\n",
+           nface, isheet, gref);
     ref_malloc(face, nface, MeshTopoObj);
     REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
          "Error getting array of Mesh Sheet Mesh Faces");
