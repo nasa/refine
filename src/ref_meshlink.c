@@ -178,43 +178,6 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
   return REF_SUCCESS;
 }
 
-#ifdef HAVE_MESHLINK
-static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_BOOL *same) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT ncell;
-  REF_INT cells[2];
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT id0, id1;
-  REF_BOOL has_edg, has_tri, has_qua;
-
-  *same = REF_FALSE;
-
-  RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
-      "more then two", {
-        ref_node_location(ref_grid_node(ref_grid), node0);
-        ref_node_location(ref_grid_node(ref_grid), node1);
-      });
-
-  REIB(2, ncell, "there should be two triangles for manifold", {
-    ref_node_location(ref_grid_node(ref_grid), node0);
-    ref_node_location(ref_grid_node(ref_grid), node1);
-  });
-
-  RSS(ref_cell_nodes(ref_cell, cells[0], nodes), "nodes tri0");
-  id0 = nodes[ref_cell_node_per(ref_cell)];
-  RSS(ref_cell_nodes(ref_cell, cells[1], nodes), "nodes tri1");
-  id1 = nodes[ref_cell_node_per(ref_cell)];
-
-  if (id0 == id1) {
-    *same = REF_TRUE;
-    return REF_SUCCESS;
-  }
-
-  return REF_SUCCESS;
-}
-#endif
-
 REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
