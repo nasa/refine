@@ -241,6 +241,9 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
 
   MLINT nstring, mstring;
   MeshTopoObj *string;
+  REF_INT istring;
+  MLINT string_gref;
+  MLINT nedge, medge;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
@@ -264,8 +267,6 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     REIS(nface, mface, "sheet miscount");
     for (iface = 0; iface < nface; iface++) {
       REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
-      printf(" f2n %" MLINT_FORMAT " %" MLINT_FORMAT " %" MLINT_FORMAT "\n",
-             f2n[0], f2n[1], f2n[2]);
       RSS(ref_node_local(ref_node, f2n[0] - 1, &(nodes[0])), "g2l");
       RSS(ref_node_local(ref_node, f2n[1] - 1, &(nodes[1])), "g2l");
       RSS(ref_node_local(ref_node, f2n[2] - 1, &(nodes[2])), "g2l");
@@ -299,6 +300,15 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REIS(0, ML_getMeshStrings(mesh_model, string, nstring, &mstring),
        "Error getting array of Mesh Strings");
   REIS(nstring, mstring, "string miscount");
+  for (istring = 0; istring < nstring; istring++) {
+    REIS(0, ML_getMeshTopoGref(string[istring], &string_gref),
+         "Error getting Mesh String gref");
+    nedge = ML_getNumStringMeshEdges(string[istring]);
+    printf("nedge %" MLINT_FORMAT " for string %d with gref %" MLINT_FORMAT
+           "\n",
+           nedge, istring, string_gref);
+  }
+
   ref_free(string);
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
