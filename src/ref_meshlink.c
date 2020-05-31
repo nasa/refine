@@ -318,6 +318,26 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     for (iedge = 0; iedge < nedge; iedge++) {
       REIS(0, ML_getEdgeInds(edge[iedge], e2n, &en), "Error Mesh Edge Ind");
       REIS(2, en, "edge ind miscount");
+      RSS(ref_node_local(ref_node, e2n[0] - 1, &(nodes[0])), "g2l");
+      RSS(ref_node_local(ref_node, e2n[1] - 1, &(nodes[1])), "g2l");
+      nodes[2] = (REF_INT)string_gref;
+      RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &cell),
+          "add edg for string");
+      REIS(0, ML_getParamVerts(edge[iedge], vert, 2, &nvert),
+           "Error Face Vert");
+      for (i = 0; i < 2; i++) {
+        REIS(0,
+             ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
+                                 &vert_gref, &mid, uv),
+             "Error Face Vert");
+        param[0] = uv[0];
+        param[1] = uv[1];
+        RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_EDGE, nodes[2], param),
+            "face uv");
+        RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_EDGE, nodes[2], &geom),
+            "find");
+        ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
+      }
     }
     ref_free(edge);
   }
