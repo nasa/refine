@@ -435,7 +435,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REF_DBL area_sign = 1.0;
   MLVector3D projected_point;
   MLVector2D uv;
-  char entity_name[256];
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLVector3D eval_point;
   MLVector3D dXYZdU;    /* First partial derivative */
   MLVector3D dXYZdV;    /* First partial derivative */
@@ -477,7 +477,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
        "prj");
   REIS(0,
        ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                            entity_name, 256),
+                            entity_name, REF_MESHLINK_MAX_STRING_SIZE),
        "info");
   if (REF_FALSE) printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
   REIS(0,
@@ -502,6 +502,69 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   *dot_product = -2.0;
 #endif
   return REF_SUCCESS;
+}
+REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                       REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                       REF_DBL *s) {
+#ifdef HAVE_MESHLINK
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLINT gref, n_entity;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
+  MLVector3D eval_point;
+  MLVector3D dXYZdU;    /* First partial derivative */
+  MLVector3D dXYZdV;    /* First partial derivative */
+  MLVector3D d2XYZdU2;  /* Second partial derivative */
+  MLVector3D d2XYZdUdV; /* Second partial derivative */
+  MLVector3D d2XYZdV2;  /* Second partial derivative */
+  MLVector3D normal;
+  MLVector3D principalV;
+  MLREAL minCurvature;
+  MLREAL maxCurvature;
+  MLREAL avg;
+  MLREAL gauss;
+  MLORIENT orientation;
+
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "face geom expected");
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+  gref = (MLINT)ref_geom_gref(ref_geom, geom);
+
+  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+  REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+  REIS(0,
+       ML_getEntityNames(geom_group, entity_name, 1,
+                         REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
+       "grp");
+  REIS(1, n_entity, "single entity expected");
+  uv[0] = ref_geom_param(ref_geom, 0, geom);
+  uv[1] = ref_geom_param(ref_geom, 1, geom);
+  REIS(0,
+       ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
+                                 dXYZdU, dXYZdV, d2XYZdU2, d2XYZdUdV, d2XYZdV2,
+                                 normal, principalV, &minCurvature,
+                                 &maxCurvature, &avg, &gauss, &orientation),
+       "eval");
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
 }
 
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
