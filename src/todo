@@ -4,11 +4,12 @@ sync surf/tri/face zone titles
 
 meshlink
   - geometry contraint metric
-  - initial mesh via API, not xml parse
+  - orientation for uv sign
   - boostrap adapt surface, rebuild volume with option to use pw volume
-  - persist project object and other speed test
-  - persist projection uv and gref
   - automate mapbc
+  + initial mesh via API, not xml parse
+  + persist project object and other speed test
+  + persist projection uv and gref
   + find meshlink_platform and replace lib search in configure.ac
 
 non smooth optimization nso of face uv
