@@ -1088,12 +1088,14 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
 
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
-        if (hr < slop || hs < slop) continue;
-        if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
-          if (hr < ref_geom_face_min_length(ref_geom, face) ||
-              hs < ref_geom_face_min_length(ref_geom, face))
-            continue;
-        }
+      } else {
+        slop = 1.0e-5 * hmax;
+      }
+      if (hr < slop || hs < slop) continue;
+      if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
+        if (hr < ref_geom_face_min_length(ref_geom, face) ||
+            hs < ref_geom_face_min_length(ref_geom, face))
+          continue;
       }
 
       hn = hmax;
