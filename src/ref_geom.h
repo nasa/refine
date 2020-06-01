@@ -68,6 +68,7 @@ struct REF_GEOM_STRUCT {
   REF_SIZE cad_data_size;
   REF_BYTE *cad_data;
   void *meshlink;
+  void *meshlink_projection;
 };
 
 #define ref_geom_n(ref_geom) ((ref_geom)->n)

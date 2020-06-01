@@ -51,6 +51,7 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   MLINT numGeomFiles;
   MeshLinkFileConstObj geom_file;
   char geom_fname[REF_MESHLINK_MAX_STRING_SIZE];
+  ProjectionDataObj projection_data = NULL;
 
   REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
@@ -96,6 +97,9 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
     REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
          "Error reading Geometry File");
   }
+
+  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
+  ref_geom->meshlink_projection = (void *)projection_data;
 
 #endif
   return REF_SUCCESS;
@@ -347,6 +351,7 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node");
   if (is_node) {
@@ -363,8 +368,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
       point[2] = ref_node_xyz(ref_node, 2, node);
 
       REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-      REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data),
-           "make");
       REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
       REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
            "prj");
@@ -372,7 +375,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
            "info");
-      ML_freeProjectionDataObj(&projection_data);
 
       ref_node_xyz(ref_node, 0, node) = projected_point[0];
       ref_node_xyz(ref_node, 1, node) = projected_point[1];
@@ -397,7 +399,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
            "info");
-      ML_freeProjectionDataObj(&projection_data);
 
       ref_node_xyz(ref_node, 0, node) = projected_point[0];
       ref_node_xyz(ref_node, 1, node) = projected_point[1];
@@ -508,8 +509,16 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 }
 
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  ProjectionDataObj projection_data = NULL;
+  if (NULL != ref_geom->meshlink_projection) {
+    projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+    ML_freeProjectionDataObj(&projection_data);
+  }
+#else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-
+#endif
   return REF_SUCCESS;
 }
 

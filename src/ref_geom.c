@@ -101,6 +101,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
   ref_geom->meshlink = NULL;
+  ref_geom->meshlink_projection = NULL;
 
   return REF_SUCCESS;
 }
@@ -169,6 +170,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
   ref_geom->meshlink = NULL;
+  ref_geom->meshlink_projection = NULL;
 
   return REF_SUCCESS;
 }
