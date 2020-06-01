@@ -7,6 +7,8 @@ meshlink
   - orientation for uv sign
   - boostrap adapt surface, rebuild volume with option to use pw volume
   - automate mapbc
+  - tolerence (reliability)
+  - feature size?
   + initial mesh via API, not xml parse
   + persist project object and other speed test
   + persist projection uv and gref

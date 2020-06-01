@@ -31,6 +31,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_matrix.h"
+#include "ref_meshlink.h"
 #include "ref_node.h"
 #include "ref_phys.h"
 #include "ref_sort.h"
@@ -982,11 +983,6 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
   REF_DBL m[6], m_constrained[6];
   REF_INT node, gradation;
 
-  if (!ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
-    printf("No geometry model loaded, skipping curvature constraint.\n");
-    return REF_SUCCESS;
-  }
-
   ref_malloc(curvature_metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_curvature(curvature_metric, ref_grid), "curve");
   for (gradation = 0; gradation < 20; gradation++) {
@@ -1022,15 +1018,13 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;
   REF_DBL crease_dot_prod, ramp, scale;
 
-  if (!ref_geom_model_loaded(ref_geom)) {
-    printf("\nNo geometry model, did you forget to load it?\n\n");
-    RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
-  }
-
   if (ref_geom_model_loaded(ref_geom)) {
     RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "egads bbox diag");
-  } else {
+  } else if (ref_geom_meshlinked(ref_geom)) {
     RSS(ref_node_bounding_box_diagonal(ref_node, &hmax), "bbox diag");
+  } else {
+    printf("\nNo geometry model, did you forget to load it?\n\n");
+    RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate");
   }
   hmax *= 0.1; /* normal spacing and max tangential spacing */
 
@@ -1041,9 +1035,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   /* limit normal direction to a factor of surface spacing */
   norm_ratio = 2.0;
 
-  if (ref_geom_model_loaded(ref_geom)) {
-    each_ref_node_valid_node(ref_node, node) {
-      if (ref_node_owned(ref_node, node)) {
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
             "feature size");
         hs = MIN(hs, hr * aspect_ratio);
@@ -1056,6 +1050,13 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
         for (i = 0; i < 3; i++) ref_matrix_vec(diagonal_system, i, 2) = n[i];
         ref_matrix_eig(diagonal_system, 2) = 1.0 / hn / hn;
         RSS(ref_matrix_form_m(diagonal_system, &(metric[6 * node])), "form m");
+      } else {
+        metric[0 + 6 * node] = 1.0 / hmax / hmax;
+        metric[1 + 6 * node] = 0.0;
+        metric[2 + 6 * node] = 0.0;
+        metric[3 + 6 * node] = 1.0 / hmax / hmax;
+        metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0 / hmax / hmax;
       }
     }
   }
@@ -1068,9 +1069,11 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      } else if (ref_geom_meshlinked(ref_geom)) {
+        RSS(ref_meshlink_face_curvature(ref_geom, geom, &kr, r, &ks, s),
+            "curve");
       } else {
-        printf("\nNo geometry model, did you forget to load it?\n\n");
-        RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
+        continue;
       }
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
@@ -1083,12 +1086,14 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hs = hmax;
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
-      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
-      if (hr < slop || hs < slop) continue;
-      if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
-        if (hr < ref_geom_face_min_length(ref_geom, face) ||
-            hs < ref_geom_face_min_length(ref_geom, face))
-          continue;
+      if (ref_geom_model_loaded(ref_geom)) {
+        RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+        if (hr < slop || hs < slop) continue;
+        if (0.0 < ref_geom_face_min_length(ref_geom, face)) {
+          if (hr < ref_geom_face_min_length(ref_geom, face) ||
+              hs < ref_geom_face_min_length(ref_geom, face))
+            continue;
+        }
       }
 
       hn = hmax;
@@ -1122,8 +1127,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
       } else {
-        printf("\nNo geometry model, did you forget to load it?\n\n");
-        RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate")
+        continue;
       }
       /* ignore sign, curvature is 1 / radius */
       kr = ABS(kr);
