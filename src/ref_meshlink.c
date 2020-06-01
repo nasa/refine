@@ -390,8 +390,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
       point[2] = ref_node_xyz(ref_node, 2, node);
 
       REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-      REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data),
-           "make");
       REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
       REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
            "prj");
@@ -462,6 +460,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
 
   for (i = 0; i < 3; i++) {
     center_point[i] = (1.0 / 3.0) * (ref_node_xyz(ref_node, i, nodes[0]) +
@@ -471,7 +470,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   gref = (MLINT)(id);
 
   REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
   REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
 
   REIS(0,
@@ -488,8 +486,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                  normal, principalV, &minCurvature,
                                  &maxCurvature, &avg, &gauss, &orientation),
        "eval");
-
-  ML_freeProjectionDataObj(&projection_data);
 
   area_sign = ref_geom->uv_area_sign[id - 1];
 
