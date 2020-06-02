@@ -2315,6 +2315,31 @@ int main(int argc, char *argv[]) {
     REIS(60, nactive, "total");
   }
 
+  { /* diag */
+    REF_INT global, node;
+    REF_DBL diagonal;
+    REF_NODE ref_node;
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    if (0 == ref_mpi_rank(ref_node_mpi(ref_node))) {
+      global = 0;
+      RSS(ref_node_add(ref_node, global, &node), "first add");
+      ref_node_xyz(ref_node, 0, node) = 0.0;
+      ref_node_xyz(ref_node, 1, node) = -1.0;
+      ref_node_xyz(ref_node, 2, node) = -2.0;
+    }
+    if (1 == ref_mpi_rank(ref_node_mpi(ref_node)) ||
+        1 == ref_mpi_n(ref_node_mpi(ref_node))) {
+      global = 1;
+      RSS(ref_node_add(ref_node, global, &node), "first add");
+      ref_node_xyz(ref_node, 0, node) = 2.0;
+      ref_node_xyz(ref_node, 1, node) = 3.0;
+      ref_node_xyz(ref_node, 2, node) = 5.0;
+    }
+    RSS(ref_node_bounding_box_diagonal(ref_node, &diagonal), "diag");
+    RWDS(sqrt(2.0 * 2.0 + 4.0 * 4.0 + 7.0 * 7.0), diagonal, -1.0,
+         "diagonal expected");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

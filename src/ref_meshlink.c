@@ -32,9 +32,10 @@
 #include "GeomKernel_Geode_c.h"
 #include "MeshAssociativity_c.h"
 #include "MeshLinkParser_xerces_c.h"
+#define REF_MESHLINK_MAX_STRING_SIZE 256
 #endif
 
-#include "ref_dict.h"
+#include "ref_cell.h"
 #include "ref_edge.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -43,14 +44,14 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   if (NULL == xml_filename) return REF_SUCCESS;
 #ifdef HAVE_MESHLINK
-#define MAX_STRING_SIZE 256
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   MeshAssociativityObj mesh_assoc;
   GeometryKernelObj geom_kernel = NULL;
   MLINT iFile;
   MLINT numGeomFiles;
   MeshLinkFileConstObj geom_file;
-  char geom_fname[MAX_STRING_SIZE];
+  char geom_fname[REF_MESHLINK_MAX_STRING_SIZE];
+  ProjectionDataObj projection_data = NULL;
 
   REIS(0, ML_createMeshAssociativityObj(&mesh_assoc),
        "Error creating Mesh Associativity Object");
@@ -90,12 +91,15 @@ REF_STATUS ref_meshlink_open(REF_GRID ref_grid, const char *xml_filename) {
   for (iFile = 0; iFile < numGeomFiles; ++iFile) {
     REIS(0, ML_getGeometryFileObj(mesh_assoc, iFile, &geom_file),
          "Error getting Geometry File");
-    REIS(0, ML_getFilename(geom_file, geom_fname, MAX_STRING_SIZE),
+    REIS(0, ML_getFilename(geom_file, geom_fname, REF_MESHLINK_MAX_STRING_SIZE),
          "Error getting Geometry File Name");
     printf("geom file %" MLINT_FORMAT " %s\n", iFile, geom_fname);
     REIS(0, ML_readGeomFile(geom_kernel, geom_fname),
          "Error reading Geometry File");
   }
+
+  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
+  ref_geom->meshlink_projection = (void *)projection_data;
 
 #endif
   return REF_SUCCESS;
@@ -167,7 +171,7 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &nedge,
                                   edges),
-          REF_INCREASE_LIMIT, "count faceids");
+          REF_INCREASE_LIMIT, "count edgeids");
       if (nedge > 1) {
         id = (REF_INT)ref_node_global(ref_grid_node(ref_grid), node);
         RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
@@ -178,345 +182,149 @@ REF_STATUS ref_meshlink_parse(REF_GRID ref_grid, const char *geom_filename) {
   return REF_SUCCESS;
 }
 
-#ifdef HAVE_MESHLINK
-static REF_STATUS ref_swap_same_faceid(REF_GRID ref_grid, REF_INT node0,
-                                       REF_INT node1, REF_BOOL *same) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT ncell;
-  REF_INT cells[2];
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT id0, id1;
-  REF_BOOL has_edg, has_tri, has_qua;
-
-  *same = REF_FALSE;
-
-  RSB(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells),
-      "more then two", {
-        ref_node_location(ref_grid_node(ref_grid), node0);
-        ref_node_location(ref_grid_node(ref_grid), node1);
-      });
-
-  REIB(2, ncell, "there should be two triangles for manifold", {
-    ref_node_location(ref_grid_node(ref_grid), node0);
-    ref_node_location(ref_grid_node(ref_grid), node1);
-  });
-
-  RSS(ref_cell_nodes(ref_cell, cells[0], nodes), "nodes tri0");
-  id0 = nodes[ref_cell_node_per(ref_cell)];
-  RSS(ref_cell_nodes(ref_cell, cells[1], nodes), "nodes tri1");
-  id1 = nodes[ref_cell_node_per(ref_cell)];
-
-  if (id0 == id1) {
-    *same = REF_TRUE;
-    return REF_SUCCESS;
-  }
-
-  return REF_SUCCESS;
-}
-#endif
-
-REF_STATUS ref_meshlink_cache(REF_GRID ref_grid, const char *block_name) {
+REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   if (NULL == block_name) return REF_SUCCESS;
   printf("extracting mesh_model %s\n", block_name);
 #ifdef HAVE_MESHLINK
-  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   MeshModelObj mesh_model;
-  REF_INT node;
-  REF_DBL param[2] = {0.0, 0.0};
-  REF_INT id;
-  REF_DICT ref_dict;
+  MLINT nsheet, msheet;
+  REF_INT isheet;
+  MeshSheetObj *sheet;
+  MLINT nface, mface;
+  MeshTopoObj *face;
+  REF_INT iface;
+  MLINT f2n[4], fn;
+  MLINT sheet_gref;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  ParamVertexConstObj vert[3];
+  MLINT nvert, vert_gref, mid;
+  MLVector2D uv;
+  REF_INT i, geom;
+  REF_DBL param[2];
+  char vref[REF_MESHLINK_MAX_STRING_SIZE];
 
-  RSS(ref_dict_create(&ref_dict), "create");
+  MLINT nstring, mstring;
+  MeshTopoObj *string;
+  REF_INT istring;
+  MLINT string_gref;
+  MLINT nedge, medge;
+  MeshTopoObj *edge;
+  REF_INT iedge;
+  MLINT e2n[2], en;
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
 
-  each_ref_node_valid_node(ref_node, node) {
-    if (!ref_cell_node_empty(ref_grid_tri(ref_grid), node)) {
-      MeshPointObj edge_mesh_point = NULL;
-      MeshPointObj face_mesh_point = NULL;
-      char ref[256];
-      char name[256];
-      MLINT edge_gref, face_gref;
-      MLINT mid;
-      MLINT attIDs[24];
-      MLINT numAttIDs;
-      ParamVertexConstObj paramVert;
-      REIS(0,
-           ML_findLowestTopoPointByInd(mesh_model, node + 1, &edge_mesh_point),
-           "low/edge");
-      REIS(0,
-           ML_findHighestTopoPointByInd(mesh_model, node + 1, &face_mesh_point),
-           "high/face");
-      REIS(0,
-           ML_getMeshPointInfo(mesh_assoc, edge_mesh_point, ref, 256, name, 256,
-                               &edge_gref, &mid, attIDs, 24, &numAttIDs,
-                               &paramVert),
-           "bad point info");
-      REIS(0,
-           ML_getMeshPointInfo(mesh_assoc, face_mesh_point, ref, 256, name, 256,
-                               &face_gref, &mid, attIDs, 24, &numAttIDs,
-                               &paramVert),
-           "bad point info");
-      id = face_gref;
-      RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, param), "face uv");
-      if (edge_gref != face_gref) {
-        id = edge_gref;
-        RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, param), "edge t");
-      } else {
-        REF_CELL ref_cell = ref_grid_tri(ref_grid);
-        REF_INT max_faceid = 1, nfaceid;
-        REF_INT faceids[1];
-        RSB(ref_cell_id_list_around(ref_cell, node, max_faceid, &nfaceid,
-                                    faceids),
-            "more than one tri id", {
-              printf("edge %d face %d xyz %f %f %f\n", (int)edge_gref,
-                     (int)face_gref, ref_node_xyz(ref_node, 0, node),
-                     ref_node_xyz(ref_node, 1, node),
-                     ref_node_xyz(ref_node, 2, node));
-            });
+  nsheet = ML_getNumMeshSheets(mesh_model);
+  printf("nsheet %" MLINT_FORMAT "\n", nsheet);
+  ref_malloc(sheet, nsheet, MeshSheetObj);
+  REIS(0, ML_getMeshSheets(mesh_model, sheet, nsheet, &msheet),
+       "Error getting array of Mesh Sheets");
+  REIS(nsheet, msheet, "sheet miscount");
 
-        RSS(ref_dict_store(ref_dict, faceids[0], id), "store");
-      }
-    }
-  }
-  {
-    REF_CELL ref_cell = ref_grid_tri(ref_grid);
-    REF_EDGE ref_edge;
-    REF_INT edge, node0, node1, cell;
-    REF_INT nodes[REF_CELL_MAX_SIZE_PER], new_cell;
-    REF_BOOL tri_side;
-    REF_INT max_cell = 2, cells[2], ncell;
-    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-      node0 = ref_edge_e2n(ref_edge, 0, edge);
-      node1 = ref_edge_e2n(ref_edge, 1, edge);
-      RSS(ref_cell_has_side(ref_cell, node0, node1, &tri_side), "is tri side");
-
-      if (tri_side) {
-        MLINT edge_indexes[2];
-        MeshEdgeObj mesh_edge = NULL;
-        char ref[256];
-        char name[256];
-        MLINT gref;
-        MLINT mid;
-        MLINT attIDs[24];
-        MLINT numAttIDs, numpvObjs;
-        ParamVertexConstObj paramVert[24];
-
-        RSS(ref_cell_list_with2(ref_cell, node0, node1, max_cell, &ncell,
-                                cells),
-            "more than two tris");
-        REIS(2, ncell, "two cells expected for manifold");
-
-        edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
-        edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
+  for (isheet = 0; isheet < nsheet; isheet++) {
+    REIS(0, ML_getMeshTopoGref(sheet[isheet], &sheet_gref),
+         "Error getting Mesh Sheet gref");
+    nface = ML_getNumSheetMeshFaces(sheet[isheet]);
+    printf("nface %" MLINT_FORMAT " for sheet %d with gref %" MLINT_FORMAT "\n",
+           nface, isheet, sheet_gref);
+    ref_malloc(face, nface, MeshTopoObj);
+    REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
+         "Error getting array of Mesh Sheet Mesh Faces");
+    REIS(nface, mface, "face miscount");
+    for (iface = 0; iface < nface; iface++) {
+      REIS(0, ML_getFaceInds(face[iface], f2n, &fn), "Error Mesh Face Ind");
+      REIS(3, fn, "face ind miscount");
+      RSS(ref_node_local(ref_node, f2n[0] - 1, &(nodes[0])), "g2l");
+      RSS(ref_node_local(ref_node, f2n[1] - 1, &(nodes[1])), "g2l");
+      RSS(ref_node_local(ref_node, f2n[2] - 1, &(nodes[2])), "g2l");
+      nodes[3] = (REF_INT)sheet_gref;
+      RSS(ref_cell_with(ref_grid_tri(ref_grid), nodes, &cell),
+          "tri for sheet missing");
+      ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell) = nodes[3];
+      REIS(0, ML_getParamVerts(face[iface], vert, 3, &nvert),
+           "Error Face Vert");
+      for (i = 0; i < 3; i++) {
         REIS(0,
-             ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
-                                         &mesh_edge),
-             "find edge mesh_edge");
-        REIS(0,
-             ML_getMeshEdgeInfo(mesh_assoc, mesh_edge, ref, 256, name, 256,
-                                &gref, &mid, attIDs, 24, &numAttIDs, paramVert,
-                                24, &numpvObjs),
-             "bad edge info");
-        if (ref_cell_c2n(ref_cell, 3, cells[0]) !=
-            ref_cell_c2n(ref_cell, 3, cells[1])) {
-          nodes[0] = node0;
-          nodes[1] = node1;
-          nodes[2] = (REF_INT)gref;
-          RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
-              "edg for edge");
-          /* expects geom for each edge node, missing at nodes */
-          RSS(ref_geom_add(ref_geom, nodes[0], REF_GEOM_EDGE, nodes[2], param),
-              "edge t");
-          RSS(ref_geom_add(ref_geom, nodes[1], REF_GEOM_EDGE, nodes[2], param),
-              "edge t");
-        } else {
-          id = (REF_INT)gref;
-          RSS(ref_dict_store(ref_dict, ref_cell_c2n(ref_cell, 3, cells[0]), id),
-              "store tri");
-        }
+             ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
+                                 &vert_gref, &mid, uv),
+             "Error Face Vert");
+        param[0] = uv[0];
+        param[1] = uv[1];
+        RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
+            "face uv");
+        RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], &geom),
+            "find");
+        ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
       }
     }
-    ref_edge_free(ref_edge);
-    /* map faceids to gref */
-    ref_dict_inspect(ref_dict);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      REF_INT cell_node;
-      RSB(ref_dict_value(ref_dict, nodes[3], &id), "retrieve",
-          { printf("node[3] %d\n", nodes[3]); });
-      ref_cell_c2n(ref_cell, 3, cell) = id;
-      each_ref_cell_cell_node(ref_cell, cell_node) {
-        RSS(ref_geom_add(ref_geom, nodes[cell_node], REF_GEOM_FACE, id, param),
-            "edge t");
-      }
-    }
+    ref_free(face);
   }
+  ref_free(sheet);
 
-  RSS(ref_dict_free(ref_dict), "free");
+  nstring = ML_getNumMeshStrings(mesh_model);
+  printf("nstring %" MLINT_FORMAT "\n", nstring);
+  ref_malloc(string, nstring, MeshTopoObj);
+  REIS(0, ML_getMeshStrings(mesh_model, string, nstring, &mstring),
+       "Error getting array of Mesh Strings");
+  REIS(nstring, mstring, "string miscount");
+  for (istring = 0; istring < nstring; istring++) {
+    REIS(0, ML_getMeshTopoGref(string[istring], &string_gref),
+         "Error getting Mesh String gref");
+    nedge = ML_getNumStringMeshEdges(string[istring]);
+    printf("nedge %" MLINT_FORMAT " for string %d with gref %" MLINT_FORMAT
+           "\n",
+           nedge, istring, string_gref);
+    ref_malloc(edge, nedge, MeshTopoObj);
+    REIS(0, ML_getStringMeshEdges(string[istring], edge, nedge, &medge),
+         "Error getting array of Mesh String Mesh Edges");
+    REIS(nedge, medge, "edge miscount");
+    for (iedge = 0; iedge < nedge; iedge++) {
+      REIS(0, ML_getEdgeInds(edge[iedge], e2n, &en), "Error Mesh Edge Ind");
+      REIS(2, en, "edge ind miscount");
+      RSS(ref_node_local(ref_node, e2n[0] - 1, &(nodes[0])), "g2l");
+      RSS(ref_node_local(ref_node, e2n[1] - 1, &(nodes[1])), "g2l");
+      nodes[2] = (REF_INT)string_gref;
+      RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &cell),
+          "add edg for string");
+      REIS(0, ML_getParamVerts(edge[iedge], vert, 2, &nvert),
+           "Error Face Vert");
+      for (i = 0; i < 2; i++) {
+        REIS(0,
+             ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
+                                 &vert_gref, &mid, uv),
+             "Error Face Vert");
+        param[0] = uv[0];
+        param[1] = uv[1];
+        RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_EDGE, nodes[2], param),
+            "face uv");
+        RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_EDGE, nodes[2], &geom),
+            "find");
+        ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
+      }
+    }
+    ref_free(edge);
+  }
+  ref_free(string);
 
   { /* mark cad nodes */
-    REF_CELL ref_cell = ref_grid_edg(ref_grid);
     REF_INT node;
-    REF_INT nedge, edges[2];
-    REF_INT id = 0;
+    REF_INT edges[2];
+    REF_INT n, id;
     each_ref_node_valid_node(ref_node, node) {
-      RXS(ref_cell_id_list_around(ref_cell, node, 2, &nedge, edges),
-          REF_INCREASE_LIMIT, "count faceids");
-      if (nedge > 1) {
+      RXS(ref_cell_id_list_around(ref_grid_edg(ref_grid), node, 2, &n, edges),
+          REF_INCREASE_LIMIT, "count edgeids");
+      if (n > 1) {
+        id = (REF_INT)ref_node_global(ref_grid_node(ref_grid), node);
         RSS(ref_geom_add(ref_geom, node, REF_GEOM_NODE, id, param), "node");
       }
     }
   }
 
-#else
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
-#endif
-  return REF_SUCCESS;
-}
-
-#ifdef HAVE_MESHLINK
-static REF_STATUS ref_meshlink_tattle_point(REF_NODE ref_node, REF_INT node,
-                                            MeshAssociativityObj mesh_assoc,
-                                            MeshPointObj mesh_point) {
-  char ref[1024];
-  char name[1024];
-  MLINT gref;
-  MLINT mid;
-  const MLINT sizeAttIDs = 24;
-  MLINT attIDs[24];
-  MLINT numAttIDs;
-  ParamVertexConstObj paramVert;
-
-  REIS(0,
-       ML_getMeshPointInfo(mesh_assoc, mesh_point, ref, 1024, name, 1024, &gref,
-                           &mid, attIDs, sizeAttIDs, &numAttIDs, &paramVert),
-       "bad point info");
-  {
-    GeometryKernelObj geom_kernel = NULL;
-    ProjectionDataObj projection_data = NULL;
-    GeometryGroupObj geom_group = NULL;
-    MLVector3D point;
-    MLVector3D projected_point;
-    MLVector2D uv;
-    char entity_name[1024];
-    REF_DBL dist;
-    point[0] = ref_node_xyz(ref_node, 0, node);
-    point[1] = ref_node_xyz(ref_node, 1, node);
-    point[2] = ref_node_xyz(ref_node, 2, node);
-    REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-    REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
-    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-    REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-         "prj");
-    REIS(0,
-         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                              entity_name, 1024),
-         "info");
-    dist = sqrt(pow(projected_point[0] - point[0], 2) +
-                pow(projected_point[1] - point[1], 2) +
-                pow(projected_point[2] - point[2], 2));
-    printf("node %d geom ref %" MLINT_FORMAT "", node, gref);
-    printf(" dist %e to %s\n", dist, entity_name);
-    ML_freeProjectionDataObj(&projection_data);
-  }
-  return REF_SUCCESS;
-}
-#endif
-
-REF_STATUS ref_meshlink_examine(REF_GRID ref_grid, const char *block_name) {
-  if (NULL == block_name) return REF_SUCCESS;
-  printf("extracting mesh_model %s\n", block_name);
-#ifdef HAVE_MESHLINK
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  MeshAssociativityObj mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
-  MeshModelObj mesh_model;
-
-  REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
-       "Error creating Mesh Model Object");
-  printf("have mesh model\n");
-  /* low is edge, high is face */
-  {
-    MeshPointObj low_mesh_point = NULL;
-    MeshPointObj high_mesh_point = NULL;
-    REF_INT i, n;
-    n = 0;
-    for (i = 1; i < 1000; i++) {
-      if (0 != ML_findLowestTopoPointByInd(mesh_model, i, &low_mesh_point)) {
-        n = i;
-        break;
-      }
-      if (0 != ML_findHighestTopoPointByInd(mesh_model, i, &high_mesh_point)) {
-        n = i;
-        break;
-      }
-      RSS(ref_meshlink_tattle_point(ref_node, i - 1, mesh_assoc,
-                                    low_mesh_point),
-          "tattle");
-      RSS(ref_meshlink_tattle_point(ref_node, i - 1, mesh_assoc,
-                                    high_mesh_point),
-          "tattle");
-    }
-    printf("%d numpoints\n", n);
-  }
-
-  {
-    MeshPointObj mesh_point = NULL;
-    REF_INT i, n;
-    n = 0;
-    for (i = 1; i < 1000; i++) {
-      if (0 != ML_findMeshEdgePointByInd(mesh_model, i, &mesh_point)) {
-        n = i;
-        break;
-      }
-    }
-    printf("%d num edge points\n", n);
-  }
-
-  {
-    MeshPointObj mesh_point = NULL;
-    REF_INT i, n;
-    n = 0;
-    for (i = 1; i < 1000; i++) {
-      if (0 != ML_findMeshFacePointByInd(mesh_model, i, &mesh_point)) {
-        n = i;
-        break;
-      }
-    }
-    printf("%d num face points\n", n);
-  }
-
-  {
-    REF_CELL ref_cell = ref_grid_tri(ref_grid);
-    REF_EDGE ref_edge;
-    REF_INT edge, node0, node1;
-    REF_INT n;
-    REF_BOOL tri_side;
-    RSS(ref_edge_create(&ref_edge, ref_grid), "orig edges");
-    n = 0;
-    for (edge = 0; edge < ref_edge_n(ref_edge); edge++) {
-      node0 = ref_edge_e2n(ref_edge, 0, edge);
-      node1 = ref_edge_e2n(ref_edge, 1, edge);
-      RSS(ref_cell_has_side(ref_cell, node0, node1, &tri_side), "is tri side");
-      if (tri_side) {
-        MLINT edge_indexes[2];
-        MeshEdgeObj mesh_edge = NULL;
-        edge_indexes[0] = ref_node_global(ref_node, node0) + 1;
-        edge_indexes[1] = ref_node_global(ref_node, node1) + 1;
-        REIS(0,
-             ML_findLowestTopoEdgeByInds(mesh_model, edge_indexes, (MLINT)2,
-                                         &mesh_edge),
-             "find edge");
-        n++;
-      }
-    }
-    printf("%d surface edges\n", n);
-    ref_edge_free(ref_edge);
-  }
+  RSS(ref_geom_constrain_all(ref_grid), "constrain");
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -528,8 +336,7 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT type, item, geom, gref_geom;
-  REF_BOOL is_node, is_edge, is_face;
+  REF_BOOL is_node;
   MeshAssociativityObj mesh_assoc;
   GeometryKernelObj geom_kernel = NULL;
   ProjectionDataObj projection_data = NULL;
@@ -537,51 +344,71 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   MLVector3D point;
   MLVector3D projected_point;
   MLVector2D uv;
-  char entity_name[256];
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLINT gref;
+  REF_DBL node_xyz[3];
+  REF_INT item, geom;
 
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node");
-  if (is_node) return REF_SUCCESS; /* can't move geom node */
-
-  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &is_edge), "edge");
-  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_FACE, &is_face), "face");
-  RAS(is_edge || is_face, "no edge or face for contraint");
-  if (is_edge) {
-    type = REF_GEOM_EDGE;
-  } else {
-    type = REF_GEOM_FACE;
+  if (is_node) {
+    node_xyz[0] = ref_node_xyz(ref_node, 0, node);
+    node_xyz[1] = ref_node_xyz(ref_node, 1, node);
+    node_xyz[2] = ref_node_xyz(ref_node, 2, node);
   }
-  gref_geom = REF_EMPTY;
-  each_ref_adj_node_item_with_ref(ref_geom_adj(ref_geom), node, item, geom) {
-    if (type == ref_geom_type(ref_geom, geom)) {
-      gref_geom = geom;
-      break;
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      gref = (MLINT)ref_geom_id(ref_geom, geom);
+      point[0] = ref_node_xyz(ref_node, 0, node);
+      point[1] = ref_node_xyz(ref_node, 1, node);
+      point[2] = ref_node_xyz(ref_node, 2, node);
+
+      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+           "prj");
+      REIS(0,
+           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+           "info");
+
+      ref_node_xyz(ref_node, 0, node) = projected_point[0];
+      ref_node_xyz(ref_node, 1, node) = projected_point[1];
+      ref_node_xyz(ref_node, 2, node) = projected_point[2];
     }
   }
-  RUS(REF_EMPTY, gref_geom, "can't find geom");
-  gref = (MLINT)ref_geom_id(ref_geom, gref_geom);
 
-  point[0] = ref_node_xyz(ref_node, 0, node);
-  point[1] = ref_node_xyz(ref_node, 1, node);
-  point[2] = ref_node_xyz(ref_node, 2, node);
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+      gref = (MLINT)ref_geom_id(ref_geom, geom);
+      point[0] = ref_node_xyz(ref_node, 0, node);
+      point[1] = ref_node_xyz(ref_node, 1, node);
+      point[2] = ref_node_xyz(ref_node, 2, node);
 
-  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
-  REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-  REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-       "prj");
-  REIS(0,
-       ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                            entity_name, 256),
-       "info");
-  ML_freeProjectionDataObj(&projection_data);
+      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+           "prj");
+      REIS(0,
+           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+           "info");
 
-  ref_node_xyz(ref_node, 0, node) = projected_point[0];
-  ref_node_xyz(ref_node, 1, node) = projected_point[1];
-  ref_node_xyz(ref_node, 2, node) = projected_point[2];
+      ref_node_xyz(ref_node, 0, node) = projected_point[0];
+      ref_node_xyz(ref_node, 1, node) = projected_point[1];
+      ref_node_xyz(ref_node, 2, node) = projected_point[2];
+    }
+  }
+
+  if (is_node) {
+    ref_node_xyz(ref_node, 0, node) = node_xyz[0];
+    ref_node_xyz(ref_node, 1, node) = node_xyz[1];
+    ref_node_xyz(ref_node, 2, node) = node_xyz[2];
+  }
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
@@ -608,7 +435,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   REF_DBL area_sign = 1.0;
   MLVector3D projected_point;
   MLVector2D uv;
-  char entity_name[256];
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLVector3D eval_point;
   MLVector3D dXYZdU;    /* First partial derivative */
   MLVector3D dXYZdV;    /* First partial derivative */
@@ -630,9 +457,9 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   if (REF_DIV_ZERO == status) return REF_SUCCESS;
   RSS(status, "normalize");
 
-  RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
 
   for (i = 0; i < 3; i++) {
     center_point[i] = (1.0 / 3.0) * (ref_node_xyz(ref_node, i, nodes[0]) +
@@ -642,7 +469,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   gref = (MLINT)(id);
 
   REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-  REIS(0, ML_createProjectionDataObj(geom_kernel, &projection_data), "make");
   REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
 
   REIS(0,
@@ -650,7 +476,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
        "prj");
   REIS(0,
        ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
-                            entity_name, 256),
+                            entity_name, REF_MESHLINK_MAX_STRING_SIZE),
        "info");
   if (REF_FALSE) printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
   REIS(0,
@@ -660,9 +486,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                  &maxCurvature, &avg, &gauss, &orientation),
        "eval");
 
-  ML_freeProjectionDataObj(&projection_data);
-
-  area_sign = ref_geom->uv_area_sign[id - 1];
+  area_sign = 1.0;
+  if (ML_ORIENT_SAME == orientation) area_sign = -1.0;
 
   *dot_product = area_sign * ref_math_dot(normal, tri_normal);
 
@@ -678,49 +503,106 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 #endif
   return REF_SUCCESS;
 }
+REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
+                                       REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                       REF_DBL *s) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLINT gref, n_entity;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
+  MLVector3D eval_point;
+  MLVector3D dXYZdU;    /* First partial derivative */
+  MLVector3D dXYZdV;    /* First partial derivative */
+  MLVector3D d2XYZdU2;  /* Second partial derivative */
+  MLVector3D d2XYZdUdV; /* Second partial derivative */
+  MLVector3D d2XYZdV2;  /* Second partial derivative */
+  MLVector3D normal;
+  MLVector3D principalV;
+  MLREAL minCurvature;
+  MLREAL maxCurvature;
+  MLREAL avg;
+  MLREAL gauss;
+  MLORIENT orientation;
+  REF_BOOL project = REF_TRUE;
 
-REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "face geom expected");
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+
+  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+  if (project) {
+    MLVector3D point;
+    point[0] = ref_node_xyz(ref_node, 0, ref_geom_node(ref_geom, geom));
+    point[1] = ref_node_xyz(ref_node, 1, ref_geom_node(ref_geom, geom));
+    point[2] = ref_node_xyz(ref_node, 2, ref_geom_node(ref_geom, geom));
+    gref = (MLINT)ref_geom_id(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+
+    REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+         "prj");
+    REIS(0,
+         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                              entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+         "info");
+
+  } else {
+    gref = (MLINT)ref_geom_gref(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+    REIB(0,
+         ML_getEntityNames(geom_group, entity_name, 1,
+                           REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
+         "grp", { printf("gref %" MLINT_FORMAT "\n", gref); });
+    REIS(1, n_entity, "single entity expected");
+    uv[0] = ref_geom_param(ref_geom, 0, geom);
+    uv[1] = ref_geom_param(ref_geom, 1, geom);
+  }
+  REIS(0,
+       ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
+                                 dXYZdU, dXYZdV, d2XYZdU2, d2XYZdUdV, d2XYZdV2,
+                                 normal, principalV, &minCurvature,
+                                 &maxCurvature, &avg, &gauss, &orientation),
+       "eval");
+  r[0] = principalV[0];
+  r[1] = principalV[1];
+  r[2] = principalV[2];
+  ref_math_cross_product(normal, r, s);
+  *kr = minCurvature;
+  *ks = maxCurvature;
 
   return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
 }
 
-REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
-  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
+#ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT min_id, max_id, id;
-  REF_DBL normdev, min_normdev, max_normdev;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "id range");
-  RAS(min_id > 0, "expected min_id greater then zero");
-  ref_geom->nface = max_id;
-  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 1.0);
-
-  for (id = min_id; id <= max_id; id++) {
-    min_normdev = 2.0;
-    max_normdev = -2.0;
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
-      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
-      min_normdev = MIN(min_normdev, normdev);
-      max_normdev = MAX(max_normdev, normdev);
-    }
-    normdev = min_normdev;
-    RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
-    RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
-    normdev = max_normdev;
-    RSS(ref_mpi_max(ref_mpi, &normdev, &max_normdev, REF_DBL_TYPE), "mpi max");
-    RSS(ref_mpi_bcast(ref_mpi, &max_normdev, 1, REF_DBL_TYPE), "max");
-    if (min_normdev > 1.5 && max_normdev < -1.5) {
-      ref_geom->uv_area_sign[id - 1] = 0.0;
-    } else {
-      if (min_normdev < -max_normdev) ref_geom->uv_area_sign[id - 1] = -1.0;
-      if (ref_mpi_once(ref_mpi))
-        printf("gref %3d orientation%6.2f inferred from %6.2f %6.2f\n", id,
-               ref_geom->uv_area_sign[id - 1], min_normdev, max_normdev);
-    }
+  ProjectionDataObj projection_data = NULL;
+  if (NULL != ref_geom->meshlink_projection) {
+    projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+    ML_freeProjectionDataObj(&projection_data);
   }
-
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+#endif
   return REF_SUCCESS;
 }

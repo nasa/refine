@@ -1710,7 +1710,6 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
       RSS(ref_export_meshb_next_position(file, version, next_position), "next");
       RSS(ref_export_meshb_int(file, version, ngeom), "ngeom");
       each_ref_geom_of(ref_geom, type, geom) {
-        double filler = 0.0;
         node = o2n[ref_geom_node(ref_geom, geom)] + 1;
         id = ref_geom_id(ref_geom, geom);
         RSS(ref_export_meshb_int(file, version, node), "node");
@@ -1720,8 +1719,10 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
                fwrite(&(ref_geom_param(ref_geom, i, geom)), sizeof(double), 1,
                       file),
                "id");
-        if (0 < type)
-          REIS(1, fwrite(&(filler), sizeof(double), 1, file), "filler");
+        if (0 < type) {
+          double double_gref = (double)ref_geom_gref(ref_geom, geom);
+          REIS(1, fwrite(&(double_gref), sizeof(double), 1, file), "gref");
+        }
       }
       REIS(next_position, ftell(file), "geom inconsistent");
     }

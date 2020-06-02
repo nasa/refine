@@ -298,7 +298,7 @@ int main(int argc, char *argv[]) {
     REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_GEOM ref_geom;
-    REF_INT type, id, node;
+    REF_INT geom, type, id, node;
     REF_DBL param[2];
     char file[] = "ref_import_test_geom2.meshb";
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
@@ -368,6 +368,9 @@ int main(int argc, char *argv[]) {
 
     REIS(ref_geom_n(ref_grid_geom(export_grid)),
          ref_geom_n(ref_grid_geom(import_grid)), "tet count");
+    each_ref_geom(ref_grid_geom(import_grid), geom){
+        REIS(ref_geom_id(ref_grid_geom(import_grid), geom),
+             ref_geom_gref(ref_grid_geom(import_grid), geom), "gref")}
 
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");
@@ -378,7 +381,7 @@ int main(int argc, char *argv[]) {
     REF_GRID export_grid, import_grid;
     REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
     REF_GEOM ref_geom;
-    REF_INT type, id, node;
+    REF_INT geom, type, id, node;
     REF_DBL param[2];
     char file[] = "ref_import_test_geom4.meshb";
     RSS(ref_fixture_tet_brick_grid(&export_grid, ref_mpi), "set up tet");
@@ -449,6 +452,9 @@ int main(int argc, char *argv[]) {
 
     REIS(ref_geom_n(ref_grid_geom(export_grid)),
          ref_geom_n(ref_grid_geom(import_grid)), "tet count");
+    each_ref_geom(ref_grid_geom(import_grid), geom){
+        REIS(ref_geom_id(ref_grid_geom(import_grid), geom),
+             ref_geom_gref(ref_grid_geom(import_grid), geom), "gref")}
 
     RSS(ref_grid_free(import_grid), "free");
     RSS(ref_grid_free(export_grid), "free");

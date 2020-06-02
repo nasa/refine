@@ -1,10 +1,4 @@
 
-# Todo
-
-- [ ] geometry contraint metric
-- [ ] initial mesh via API, not xml parse
-- [*] find meshlink_platform and replace lib search in configure.ac
-
 # Mac
 
 git clone git@github.com:pointwise/MeshLink.git

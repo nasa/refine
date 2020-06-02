@@ -101,6 +101,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
   ref_geom->meshlink = NULL;
+  ref_geom->meshlink_projection = NULL;
 
   return REF_SUCCESS;
 }
@@ -169,6 +170,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
   ref_geom->meshlink = NULL;
+  ref_geom->meshlink_projection = NULL;
 
   return REF_SUCCESS;
 }
@@ -412,14 +414,16 @@ static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
 
 REF_STATUS ref_geom_add_with_descr(REF_GEOM ref_geom, REF_INT *descr,
                                    REF_DBL *param) {
-  REF_INT type, id, jump, degen, node, geom;
+  REF_INT type, id, gref, jump, degen, node, geom;
   type = descr[REF_GEOM_DESCR_TYPE];
   id = descr[REF_GEOM_DESCR_ID];
+  gref = descr[REF_GEOM_DESCR_GREF];
   jump = descr[REF_GEOM_DESCR_JUMP];
   degen = descr[REF_GEOM_DESCR_DEGEN];
   node = descr[REF_GEOM_DESCR_NODE];
   RSS(ref_geom_add(ref_geom, node, type, id, param), "geom add");
   RSS(ref_geom_find(ref_geom, node, type, id, &geom), "geom find");
+  ref_geom_gref(ref_geom, geom) = gref;
   ref_geom_degen(ref_geom, geom) = degen;
   ref_geom_jump(ref_geom, geom) = jump;
   return REF_SUCCESS;
@@ -449,6 +453,7 @@ REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
 
   ref_geom_type(ref_geom, geom) = type;
   ref_geom_id(ref_geom, geom) = id;
+  ref_geom_gref(ref_geom, geom) = id; /* assume same until set */
   ref_geom_jump(ref_geom, geom) = 0;
   ref_geom_degen(ref_geom, geom) = 0;
   ref_geom_node(ref_geom, geom) = node;
@@ -3025,6 +3030,11 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
       RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, &(uv[2 * item]), xyz,
                            NULL),
           "eval at");
+    }
+    if (ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s), "curve");
+      kr = ABS(kr);
+      ks = ABS(ks);
     }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kr, ks);

@@ -216,20 +216,27 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
 
-  RXS(ref_args_char(argc, argv, "-g", &in_egads), REF_NOT_FOUND,
-      "egads arg search");
-  if (NULL != in_egads) {
-    if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
-    RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
-    ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+  RXS(ref_args_find(argc, argv, "--meshlink", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("meshlink with %s\n", argv[pos + 1]);
+    RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
   } else {
-    if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
-      if (ref_mpi_once(ref_mpi))
-        printf("load egadslite from .meshb byte stream\n");
-      RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+    RXS(ref_args_char(argc, argv, "-g", &in_egads), REF_NOT_FOUND,
+        "egads arg search");
+    if (NULL != in_egads) {
+      if (ref_mpi_once(ref_mpi)) printf("load egads from %s\n", in_egads);
+      RSS(ref_egads_load(ref_grid_geom(ref_grid), in_egads), "load egads");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
-      THROW("No geometry available via .meshb or -g option");
+      if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
+        if (ref_mpi_once(ref_mpi))
+          printf("load egadslite from .meshb byte stream\n");
+        RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        ref_mpi_stopwatch_stop(ref_mpi, "load egads");
+      } else {
+        THROW("No geometry available via .meshb or -g option");
+      }
     }
   }
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
@@ -940,8 +947,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("meshlink with %s\n", argv[pos + 1]);
     RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
-    if (ref_mpi_once(ref_mpi)) printf("cache geode orientation\n");
-    RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
     RXS(ref_args_find(argc, argv, "--egads", &pos), REF_NOT_FOUND,
         "arg search");

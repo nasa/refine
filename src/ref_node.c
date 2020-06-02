@@ -2927,3 +2927,33 @@ REF_STATUS ref_node_nearest_xyz(REF_NODE ref_node, REF_DBL *xyz,
   *distance = sqrt(*distance);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_node_bounding_box_diagonal(REF_NODE ref_node,
+                                          REF_DBL *diagonal) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_DBL min_xyz[3], max_xyz[3], temp;
+  REF_INT node, i;
+  for (i = 0; i < 3; i++) {
+    min_xyz[i] = REF_DBL_MAX;
+    max_xyz[i] = REF_DBL_MIN;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 3; i++) {
+      min_xyz[i] = MIN(min_xyz[i], ref_node_xyz(ref_node, i, node));
+      max_xyz[i] = MAX(max_xyz[i], ref_node_xyz(ref_node, i, node));
+    }
+  }
+  for (i = 0; i < 3; i++) {
+    temp = min_xyz[i];
+    RSS(ref_mpi_min(ref_mpi, &temp, &(min_xyz[i]), REF_DBL_TYPE), "mpi min");
+    temp = max_xyz[i];
+    RSS(ref_mpi_max(ref_mpi, &temp, &(max_xyz[i]), REF_DBL_TYPE), "mpi max");
+  }
+  if (ref_mpi_once(ref_mpi)) {
+    *diagonal =
+        sqrt(pow(max_xyz[0] - min_xyz[0], 2) + pow(max_xyz[1] - min_xyz[1], 2) +
+             pow(max_xyz[2] - min_xyz[2], 2));
+  }
+  RSS(ref_mpi_bcast(ref_mpi, diagonal, 1, REF_DBL_TYPE), "bcast");
+  return REF_SUCCESS;
+}

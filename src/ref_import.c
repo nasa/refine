@@ -1264,15 +1264,19 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       if (verbose) printf("type %d ngeom %d\n", type, ngeom);
 
       for (geom = 0; geom < ngeom; geom++) {
-        double filler;
         RSS(ref_import_meshb_int(file, version, &(node)), "node");
         RSS(ref_import_meshb_int(file, version, &(id)), "node");
         for (i = 0; i < type; i++)
           REIS(1, fread(&(param[i]), sizeof(double), 1, file), "param");
-        if (0 < type)
-          REIS(1, fread(&(filler), sizeof(double), 1, file), "filler");
         node--;
         RSS(ref_geom_add(ref_geom, node, type, id, param), "add geom");
+        if (0 < type) {
+          double double_gref;
+          REF_INT new_geom;
+          REIS(1, fread(&(double_gref), sizeof(double), 1, file), "gref");
+          RSS(ref_geom_find(ref_geom, node, type, id, &new_geom), "find");
+          ref_geom_gref(ref_geom, new_geom) = (REF_INT)double_gref;
+        }
       }
       REIS(next_position, ftello(file), "end location");
     }

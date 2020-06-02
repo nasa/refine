@@ -2,7 +2,20 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 
 sync surf/tri/face zone titles
 
-meshlink geode support
+meshlink
+  - boostrap adapt surface, rebuild volume with option to use pw volume
+  - automate mapbc
+  - tolerence/reliability/gap discrete estimate
+  - pcurve eval (only supports uv area?) 
+  - degeneracy mark and uv update (only supports uv area?)
+  - geometry constraint metric (add edges?)
+  - feature size (need with virtual topo?)
+  + ref adapt
+  + orientation for uv sign
+  + initial mesh via API, not xml parse
+  + persist project object and other speed test
+  + persist projection uv and gref
+  + find meshlink_platform and replace lib search in configure.ac
 
 non smooth optimization nso of face uv
 
