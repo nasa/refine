@@ -487,7 +487,8 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                  &maxCurvature, &avg, &gauss, &orientation),
        "eval");
 
-  area_sign = ref_geom->uv_area_sign[id - 1];
+  area_sign = 1.0;
+  if (ML_ORIENT_SAME == orientation) area_sign = -1.0;
 
   *dot_product = area_sign * ref_math_dot(normal, tri_normal);
 
