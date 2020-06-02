@@ -530,22 +530,40 @@ REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
   MLREAL avg;
   MLREAL gauss;
   MLORIENT orientation;
+  REF_BOOL project = REF_TRUE;
 
   REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "face geom expected");
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
-  gref = (MLINT)ref_geom_gref(ref_geom, geom);
 
   REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-  REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-  REIB(0,
-       ML_getEntityNames(geom_group, entity_name, 1,
-                         REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
-       "grp", { printf("gref %" MLINT_FORMAT "\n", gref); });
-  REIS(1, n_entity, "single entity expected");
-  uv[0] = ref_geom_param(ref_geom, 0, geom);
-  uv[1] = ref_geom_param(ref_geom, 1, geom);
+  if (project) {
+    MLVector3D point;
+    point[0] = ref_node_xyz(ref_node, 0, ref_geom_node(ref_geom, geom));
+    point[1] = ref_node_xyz(ref_node, 1, ref_geom_node(ref_geom, geom));
+    point[2] = ref_node_xyz(ref_node, 2, ref_geom_node(ref_geom, geom));
+    gref = (MLINT)ref_geom_id(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+
+    REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+         "prj");
+    REIS(0,
+         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                              entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+         "info");
+
+  } else {
+    gref = (MLINT)ref_geom_gref(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+    REIB(0,
+         ML_getEntityNames(geom_group, entity_name, 1,
+                           REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
+         "grp", { printf("gref %" MLINT_FORMAT "\n", gref); });
+    REIS(1, n_entity, "single entity expected");
+    uv[0] = ref_geom_param(ref_geom, 0, geom);
+    uv[1] = ref_geom_param(ref_geom, 1, geom);
+  }
   REIS(0,
        ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
                                  dXYZdU, dXYZdV, d2XYZdU2, d2XYZdUdV, d2XYZdV2,
