@@ -1012,7 +1012,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL previous_metric[6], curvature_metric[6];
   REF_INT i;
   REF_DBL delta_radian; /* 1/segments per radian */
-  REF_DBL hmax;
+  REF_DBL hmax = REF_DBL_MAX;
   REF_DBL rlimit;
   REF_DBL hr, hs, hn, slop;
   REF_DBL aspect_ratio, curvature_ratio, norm_ratio;

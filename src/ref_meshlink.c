@@ -336,8 +336,7 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT type, item, geom;
-  REF_BOOL is_node, is_edge, is_face;
+  REF_BOOL is_node;
   MeshAssociativityObj mesh_assoc;
   GeometryKernelObj geom_kernel = NULL;
   ProjectionDataObj projection_data = NULL;
@@ -348,6 +347,7 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLINT gref;
   REF_DBL node_xyz[3];
+  REF_INT item, geom;
 
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
