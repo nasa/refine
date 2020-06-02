@@ -3032,7 +3032,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
           "eval at");
     }
     if (ref_geom_meshlinked(ref_geom)) {
-      RSS(ref_meshlink_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s), "curve");
       kr = ABS(kr);
       ks = ABS(ks);
     }

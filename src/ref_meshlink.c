@@ -503,10 +503,12 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 #endif
   return REF_SUCCESS;
 }
-REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
                                        REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
                                        REF_DBL *s) {
 #ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   MeshAssociativityObj mesh_assoc;
   GeometryKernelObj geom_kernel = NULL;
   ProjectionDataObj projection_data = NULL;
@@ -559,7 +561,7 @@ REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
 
   return REF_SUCCESS;
 #else
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
   SUPRESS_UNUSED_COMPILER_WARNING(geom);
   *kr = 0.0;
   r[0] = 1.0;

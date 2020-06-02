@@ -1070,7 +1070,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
       } else if (ref_geom_meshlinked(ref_geom)) {
-        RSS(ref_meshlink_face_curvature(ref_geom, geom, &kr, r, &ks, s),
+        RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s),
             "curve");
       } else {
         continue;
