@@ -537,10 +537,10 @@ REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
 
   REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
   REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-  REIS(0,
+  REIB(0,
        ML_getEntityNames(geom_group, entity_name, 1,
                          REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
-       "grp");
+       "grp", { printf("gref %" MLINT_FORMAT "\n", gref); });
   REIS(1, n_entity, "single entity expected");
   uv[0] = ref_geom_param(ref_geom, 0, geom);
   uv[1] = ref_geom_param(ref_geom, 1, geom);
