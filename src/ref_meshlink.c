@@ -554,10 +554,8 @@ REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   r[1] = principalV[1];
   r[2] = principalV[2];
   ref_math_cross_product(normal, r, s);
-  *kr = 0.0;
-  if (ref_math_divisible(1.0, minCurvature)) *kr = 1.0 / minCurvature;
-  *ks = 0.0;
-  if (ref_math_divisible(1.0, maxCurvature)) *ks = 1.0 / maxCurvature;
+  *kr = minCurvature;
+  *ks = maxCurvature;
 
   return REF_SUCCESS;
 #else
