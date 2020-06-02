@@ -3031,6 +3031,11 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
                            NULL),
           "eval at");
     }
+    if (ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_meshlink_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+      kr = ABS(kr);
+      ks = ABS(ks);
+    }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kr, ks);
   }
