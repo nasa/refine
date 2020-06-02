@@ -40,8 +40,6 @@ REF_STATUS ref_meshlink_face_curvature(REF_GEOM ref_geom, REF_INT geom,
                                        REF_DBL *s);
 REF_STATUS ref_meshlink_close(REF_GRID ref_grid);
 
-REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid);
-
 END_C_DECLORATION
 
 #endif /* REF_MESHLINK_H */
