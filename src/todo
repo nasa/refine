@@ -4,12 +4,14 @@ sync surf/tri/face zone titles
 
 meshlink
   - ref adapt
-  - geometry contraint metric
-  - orientation for uv sign
   - boostrap adapt surface, rebuild volume with option to use pw volume
+  - geometry constraint metric
   - automate mapbc
-  - tolerence (reliability)
-  - feature size?
+  - tolerence/reliability/gap discrete estimate
+  - feature size (need with virtual topo?)
+  - pcurve eval (only supports uv area?) 
+  - degeneracy mark and uv update (only supports uv area?)
+  + orientation for uv sign
   + initial mesh via API, not xml parse
   + persist project object and other speed test
   + persist projection uv and gref
