@@ -221,7 +221,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       if (!allowed && audit) printf("   same tangent\n");
       if (!allowed) continue;
     }
-    if (have_geometry_support && ref_grid_twod(ref_grid)) {
+    if (!have_geometry_support && ref_grid_twod(ref_grid)) {
       RSS(ref_collapse_edge_twod_orientation(ref_grid, node0, node1, &allowed),
           "norm");
       if (!allowed && audit) printf("   twod orientation\n");
