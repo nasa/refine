@@ -1924,10 +1924,12 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev),
         "old tri normdev");
     min_normdev = MIN(min_normdev, normdev);
-    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-    RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
-    uv_area *= sign_uv_area;
-    min_uv_area = MIN(min_uv_area, uv_area);
+    if (!ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+      uv_area *= sign_uv_area;
+      min_uv_area = MIN(min_uv_area, uv_area);
+    }
   }
   old_normdev = min_normdev;
 
@@ -1953,10 +1955,12 @@ REF_STATUS ref_cavity_normdev(REF_CAVITY ref_cavity, REF_BOOL *improved) {
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev),
         "new tri normdev");
     min_normdev = MIN(min_normdev, normdev);
-    RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
-    RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
-    uv_area *= sign_uv_area;
-    min_uv_area = MIN(min_uv_area, uv_area);
+    if (!ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_geom_uv_area(ref_geom, nodes, &uv_area), "uv area");
+      RSS(ref_geom_uv_area_sign(ref_grid, nodes[3], &sign_uv_area), "sign");
+      uv_area *= sign_uv_area;
+      min_uv_area = MIN(min_uv_area, uv_area);
+    }
   }
   if (ref_cavity_debug(ref_cavity))
     printf("+ min %12.8f %12.8f\n", min_normdev, min_uv_area);
