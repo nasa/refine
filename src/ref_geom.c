@@ -574,7 +574,7 @@ REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
                                        REF_INT type, REF_BOOL *supported) {
   REF_INT node_per;
   REF_INT id, geom0, geom1, geom2;
-  REF_STATUS status;
+  REF_BOOL tri_supported;
 
   *supported = REF_TRUE;
 
@@ -583,11 +583,13 @@ REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
   id = nodes[node_per];
 
   /* protects unsupported meshlink tri */
-  status = ref_geom_find(ref_geom, nodes[0], type, id, &geom0);
-  if (REF_NOT_FOUND == status) { /* meshlink without geom support */
-    return REF_SUCCESS;
+  if (REF_GEOM_FACE == type) {
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &tri_supported), "tri support");
+    if (!tri_supported) { /* no geom support */
+      *supported = 1.0;
+      return REF_SUCCESS;
+    }
   }
-  RSS(status, "error testing geom support");
 
   switch (type) {
     case REF_GEOM_EDGE:
