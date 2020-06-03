@@ -430,7 +430,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   GeometryGroupObj geom_group = NULL;
   MLVector3D center_point;
   MLVector3D normal;
-  REF_INT i, id;
+  REF_INT i, id, geom;
   MLINT gref;
   REF_STATUS status;
   REF_DBL tri_normal[3];
@@ -451,7 +451,16 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   MLREAL gauss;
   MLORIENT orientation;
 
+  *dot_product = -2.0;
+
   id = nodes[3];
+  status = ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, id, &geom);
+  if (REF_NOT_FOUND == status) { /* no geom support */
+    *dot_product = 1.0;
+    return REF_SUCCESS;
+  }
+  RSS(status, "error testing geom support");
+
   RSS(ref_node_tri_normal(ref_grid_node(ref_grid), nodes, tri_normal),
       "tri normal");
   /* collapse attempts could create zero area, reject the step with -2.0 */
