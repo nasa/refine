@@ -1998,7 +1998,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         }
       }
       if (!no_face) {
-        if (!geom_face) {
+        if (!geom_face && !ref_geom_meshlinked(ref_geom)) {
           printf("no geom for face\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");

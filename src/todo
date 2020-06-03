@@ -6,6 +6,7 @@ meshlink
   - missing geom, linear interp
   - boostrap adapt surface, rebuild volume with option to use pw volume
   - automate mapbc
+  - ref_geom_verify_param
   - tolerence/reliability/gap discrete estimate
   - pcurve eval (only supports uv area?) 
   - degeneracy mark and uv update (only supports uv area?)
