@@ -1002,7 +1002,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
   REF_DBL uv_min[2], uv_max[2];
-  REF_BOOL has_edge_support;
+  REF_BOOL has_edge_support, supported;
   REF_INT edge_geom;
   REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_STATUS status;
@@ -1106,6 +1106,10 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
+
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &supported), "tri support");
+    if (!supported) continue; /* no geom support, skip */
+
     id = nodes[ref_cell_node_per(ref_cell)];
     type = REF_GEOM_FACE;
     RSS(ref_geom_cell_tuv(ref_geom, node0, nodes, type, param0, &sense),
