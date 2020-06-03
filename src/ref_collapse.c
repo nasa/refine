@@ -869,7 +869,8 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
-  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+  if (!(ref_geom_model_loaded(ref_geom) || ref_geom_meshlinked(ref_geom)) ||
+      !node0_support || !node1_support) {
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
