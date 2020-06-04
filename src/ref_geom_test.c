@@ -133,9 +133,7 @@ int main(int argc, char *argv[]) {
         } else {
           xyz[1] = -65.0 + cos(ref_math_in_radians(6.0)) * (ws + 65.0);
         }
-        if (verbose)
-          printf("seed %f %f %f uv %f %f eval\n", xyz[0], xyz[1], xyz[2], uv[0],
-                 uv[1]);
+        if (verbose) printf("seed %f %f %f\n", xyz[0], xyz[1], xyz[2]);
 
         best_dist = REF_DBL_MAX;
         best_face = REF_EMPTY;
