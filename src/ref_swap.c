@@ -537,11 +537,16 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     nodes[1] = node3;
     nodes[2] = node2;
     RSS(ref_node_tri_normal(ref_node, nodes, normal2), "tri 2 normal");
-    RSS(ref_math_normalize(normal2), "triangle 2 has zero area");
     nodes[0] = node1;
     nodes[1] = node2;
     nodes[2] = node3;
     RSS(ref_node_tri_normal(ref_node, nodes, normal3), "tri 3 normal");
+    dot = MIN(ref_math_dot(normal2, normal2), ref_math_dot(normal3, normal3));
+    if (!ref_math_divisible(1.0, dot)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+    RSS(ref_math_normalize(normal2), "triangle 2 has zero area");
     RSS(ref_math_normalize(normal3), "triangle 3 has zero area");
     dot = ref_math_dot(normal2, normal3);
     if (dot < ref_node_same_normal_tol(ref_node)) {
