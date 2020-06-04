@@ -24,6 +24,9 @@ meshlink
 
 non smooth optimization nso of face uv
 
+ref subcommand
+  - remove fun3d
+
 surrogate surface
   support twod geom
   share via meshb
