@@ -1,4 +1,9 @@
 
+Mon, Jun  4, 2020 : Released Refine 1.9.2
+
+- ref interp learned --face
+- ref loop learned --usm3d for USM3D mixed-element version
+- ref fun3d removed (use FUN3D sampling)
 - ref loop learned --partioner and --mesh-extension options
 - parallel Dimension 2 metric .sol and .solb reader
 - added 2D .grid sequental format export 
