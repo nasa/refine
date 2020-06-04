@@ -26,9 +26,6 @@ meshlink
 
 non smooth optimization nso of face uv
 
-ref subcommand
-  - remove fun3d
-
 surrogate surface
   support twod geom
   share via meshb
@@ -244,6 +241,8 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
+
++ remove fun3d ref subcommand
 + allow surf cavity confirmity 0 normdev for thin chamfer test
 + ref loop --partioner and --mesh-extension options
 + static ref_export function via ref_export_by_extension

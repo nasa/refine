@@ -53,7 +53,6 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
-  printf("  fun3d        Extract a scalar from the primitive solution\n");
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
@@ -81,13 +80,6 @@ static void bootstrap_help(const char *name) {
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --auto-tparams {or combination of options} adjust .tParams\n");
   printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
-  printf("\n");
-}
-static void fun3d_help(const char *name) {
-  printf("usage: \n %s fun3d mach project.meshb primitive.solb mach.solb\n",
-         name);
-  printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb...]\n");
-  printf("   in fun3d nondimensionalization\n");
   printf("\n");
 }
 static void grow_help(const char *name) {
@@ -559,77 +551,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
-  return REF_FAILURE;
-}
-
-static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *scalar_name;
-  char *out_solb;
-  char *in_solb;
-  char *in_meshb;
-  REF_GRID ref_grid = NULL;
-  REF_DBL gamma = 1.4;
-  REF_INT ldim, node;
-  REF_DBL *solution, *scalar;
-
-  if (argc < 6) goto shutdown;
-  scalar_name = argv[2];
-  in_meshb = argv[3];
-  in_solb = argv[4];
-  out_solb = argv[5];
-
-  if (strncmp(scalar_name, "mach", 4) != 0) {
-    printf("scalar %s not implemented\n", scalar_name);
-    goto shutdown;
-  }
-
-  if (ref_mpi_once(ref_mpi)) printf("gamma %f\n", gamma);
-
-  ref_mpi_stopwatch_start(ref_mpi);
-
-  if (ref_mpi_para(ref_mpi)) {
-    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_meshb);
-    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_meshb), "part");
-    ref_mpi_stopwatch_stop(ref_mpi, "part");
-  } else {
-    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_meshb);
-    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_meshb), "import");
-    ref_mpi_stopwatch_stop(ref_mpi, "import");
-  }
-
-  if (ref_mpi_once(ref_mpi)) printf("part solution %s\n", in_solb);
-  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &solution, in_solb),
-      "part solution");
-  RAS(5 <= ldim, "expected 5 or more variables per vertex");
-  ref_mpi_stopwatch_stop(ref_mpi, "part solution");
-
-  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", scalar_name);
-  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-    REF_DBL rho, u, v, w, p, temp;
-    rho = solution[0 + ldim * node];
-    u = solution[1 + ldim * node];
-    v = solution[2 + ldim * node];
-    w = solution[3 + ldim * node];
-    p = solution[4 + ldim * node];
-    temp = gamma * p / rho;
-    scalar[node] = sqrt((u * u + v * v + w * w) / temp);
-  }
-  ref_mpi_stopwatch_stop(ref_mpi, "compute scalar");
-
-  if (ref_mpi_once(ref_mpi))
-    printf("writing %s to %s\n", scalar_name, out_solb);
-  RSS(ref_gather_scalar_by_extension(ref_grid, 1, scalar, NULL, out_solb),
-      "export mach");
-  ref_mpi_stopwatch_stop(ref_mpi, "gather scalar");
-
-  ref_free(scalar);
-  ref_free(solution);
-  RSS(ref_grid_free(ref_grid), "create");
-
-  return REF_SUCCESS;
-shutdown:
-  if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1529,13 +1450,6 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
-      goto shutdown;
-    }
-  } else if (strncmp(argv[1], "f", 1) == 0) {
-    if (REF_EMPTY == help_pos) {
-      RSS(fun3d(ref_mpi, argc, argv), "fun3d");
-    } else {
-      if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "g", 1) == 0) {
