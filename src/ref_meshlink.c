@@ -245,13 +245,13 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
       RSS(ref_cell_with(ref_grid_tri(ref_grid), nodes, &cell),
           "tri for sheet missing");
       ref_cell_c2n(ref_grid_tri(ref_grid), 3, cell) = nodes[3];
-      REIS(0, ML_getParamVerts(face[iface], vert, 3, &nvert),
-           "Error Face Vert");
+      REIB(0, ML_getParamVerts(face[iface], vert, 3, &nvert), "Error Face Vert",
+           { printf("iface %d\n", iface); });
       for (i = 0; i < 3; i++) {
-        REIS(0,
+        REIB(0,
              ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
                                  &vert_gref, &mid, uv),
-             "Error Face Vert");
+             "Error Vert Info", { printf("%d iface %d i\n", iface, i); });
         param[0] = uv[0];
         param[1] = uv[1];
         RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
