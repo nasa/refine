@@ -3,11 +3,8 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 sync surf/tri/face zone titles
 
 meshlink
-  - extract triangle support
-  - normdev and same normal safe in mixed support
-  - collapse with partial geom support
-  - missing geom, linear interp
-  - boostrap adapt surface, rebuild volume with option to use pw volume
+  - shorten startup time
+  - bootstrap drop volume with option to use pw volume
   - automate mapbc
   - ref_geom_verify_param
   - tolerence/reliability/gap discrete estimate
@@ -21,6 +18,11 @@ meshlink
   + persist project object and other speed test
   + persist projection uv and gref
   + find meshlink_platform and replace lib search in configure.ac
+  + extract triangle support
+  + normdev and same normal safe in mixed support
+  + collapse with partial geom support
+  + missing geom, linear interp
+  + adapt surface only and rebuild volume
 
 non smooth optimization nso of face uv
 
