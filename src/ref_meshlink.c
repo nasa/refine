@@ -467,6 +467,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   if (REF_DIV_ZERO == status) return REF_SUCCESS;
   RSS(status, "normalize");
 
+  RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");
   RNS(ref_geom->meshlink, "meshlink NULL");
   mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
   projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
@@ -499,6 +500,7 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 
   area_sign = 1.0;
   if (ML_ORIENT_SAME == orientation) area_sign = -1.0;
+  area_sign *= ref_geom->uv_area_sign[id - 1];
 
   *dot_product = area_sign * ref_math_dot(normal, tri_normal);
 
@@ -615,5 +617,45 @@ REF_STATUS ref_meshlink_close(REF_GRID ref_grid) {
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
 #endif
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT min_id, max_id, id;
+  REF_DBL normdev, min_normdev, max_normdev;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "id range");
+  RAS(min_id > 0, "expected min_id greater then zero");
+  ref_geom->nface = max_id;
+  ref_malloc_init(ref_geom->uv_area_sign, ref_geom->nface, REF_DBL, 1.0);
+
+  for (id = min_id; id <= max_id; id++) {
+    min_normdev = 2.0;
+    max_normdev = -2.0;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
+      RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
+      min_normdev = MIN(min_normdev, normdev);
+      max_normdev = MAX(max_normdev, normdev);
+    }
+    normdev = min_normdev;
+    RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &min_normdev, 1, REF_DBL_TYPE), "min");
+    normdev = max_normdev;
+    RSS(ref_mpi_max(ref_mpi, &normdev, &max_normdev, REF_DBL_TYPE), "mpi max");
+    RSS(ref_mpi_bcast(ref_mpi, &max_normdev, 1, REF_DBL_TYPE), "max");
+    if (min_normdev > 1.5 && max_normdev < -1.5) {
+      ref_geom->uv_area_sign[id - 1] = 0.0;
+    } else {
+      if (min_normdev < -max_normdev) ref_geom->uv_area_sign[id - 1] = -1.0;
+      if (ref_mpi_once(ref_mpi))
+        printf("gref %3d orientation%6.2f inferred from %6.2f %6.2f\n", id,
+               ref_geom->uv_area_sign[id - 1], min_normdev, max_normdev);
+    }
+  }
+
   return REF_SUCCESS;
 }
