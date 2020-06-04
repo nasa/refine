@@ -377,6 +377,24 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
+                                  REF_BOOL *has_support) {
+  REF_INT node, id, geom;
+  REF_STATUS status;
+  *has_support = REF_FALSE;
+
+  node = nodes[0];
+  id = nodes[3];
+  status = ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom);
+  if (REF_NOT_FOUND == status) { /* no geom support */
+    *has_support = REF_FALSE;
+    return REF_SUCCESS;
+  }
+  RSS(status, "error testing geom support");
+  *has_support = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   REF_INT geom;
   REF_INT orig, chunk;
@@ -556,12 +574,22 @@ REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
                                        REF_INT type, REF_BOOL *supported) {
   REF_INT node_per;
   REF_INT id, geom0, geom1, geom2;
+  REF_BOOL tri_supported;
 
   *supported = REF_TRUE;
 
   RAS(1 <= type && type <= 2, "type not allowed");
   node_per = type + 1;
   id = nodes[node_per];
+
+  /* protects unsupported meshlink tri */
+  if (REF_GEOM_FACE == type) {
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &tri_supported), "tri support");
+    if (!tri_supported) { /* no geom support */
+      *supported = 1.0;
+      return REF_SUCCESS;
+    }
+  }
 
   switch (type) {
     case REF_GEOM_EDGE:
@@ -974,7 +1002,7 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
   REF_DBL uv_min[2], uv_max[2];
-  REF_BOOL has_edge_support;
+  REF_BOOL has_edge_support, supported;
   REF_INT edge_geom;
   REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_STATUS status;
@@ -1078,6 +1106,10 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   for (i = 0; i < ncell; i++) {
     cell = cells[i];
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
+
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &supported), "tri support");
+    if (!supported) continue; /* no geom support, skip */
+
     id = nodes[ref_cell_node_per(ref_cell)];
     type = REF_GEOM_FACE;
     RSS(ref_geom_cell_tuv(ref_geom, node0, nodes, type, param0, &sense),
@@ -1998,7 +2030,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
         }
       }
       if (!no_face) {
-        if (!geom_face) {
+        if (!geom_face && !ref_geom_meshlinked(ref_geom)) {
           printf("no geom for face\n");
           RSS(ref_node_location(ref_node, node), "loc");
           RSS(ref_geom_tattle(ref_geom, node), "tatt");

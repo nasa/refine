@@ -159,10 +159,14 @@ static REF_STATUS ref_adapt_parameter(REF_GRID ref_grid, REF_BOOL *all_done) {
       RSS(ref_node_tri_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
       id = nodes[ref_cell_node_per(ref_cell)];
-      RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
-      RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area),
-          "uv area");
-      volume = area_sign * uv_area;
+      if (ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+        RSS(ref_node_tri_area(ref_grid_node(ref_grid), nodes, &volume), "vol");
+      } else {
+        RSS(ref_geom_uv_area_sign(ref_grid, id, &area_sign), "a sign");
+        RSS(ref_geom_uv_area(ref_grid_geom(ref_grid), nodes, &uv_area),
+            "uv area");
+        volume = area_sign * uv_area;
+      }
     } else {
       RSS(ref_node_tet_quality(ref_grid_node(ref_grid), nodes, &quality),
           "qual");
@@ -635,6 +639,8 @@ REF_STATUS ref_adapt_pass(REF_GRID ref_grid, REF_BOOL *all_done) {
 
   RSS(ref_collapse_pass(ref_grid), "col pass");
   ref_gather_blocking_frame(ref_grid, "collapse");
+  if (ref_grid_adapt(ref_grid, watch_param))
+    RSS(ref_adapt_tattle(ref_grid), "tattle");
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "adapt col");
 

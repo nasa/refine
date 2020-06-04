@@ -208,27 +208,24 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     RSS(ref_geom_supported(ref_grid_geom(ref_grid), node0,
                            &have_geometry_support),
         "geom");
-    if (have_geometry_support) {
-      RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed),
-          "normdev");
-      if (!allowed && audit) printf("   normdev\n");
-      if (!allowed) continue;
-    } else {
-      RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
-          "normal deviation");
-      if (!allowed && audit) printf("   same normal\n");
-      if (!allowed) continue;
+    RSS(ref_collapse_edge_normdev(ref_grid, node0, node1, &allowed), "normdev");
+    if (!allowed && audit) printf("   normdev\n");
+    if (!allowed) continue;
+    RSS(ref_collapse_edge_same_normal(ref_grid, node0, node1, &allowed),
+        "normal deviation");
+    if (!allowed && audit) printf("   same normal\n");
+    if (!allowed) continue;
+    if (!have_geometry_support) {
       RSS(ref_collapse_edge_same_tangent(ref_grid, node0, node1, &allowed),
           "normal deviation");
       if (!allowed && audit) printf("   same tangent\n");
       if (!allowed) continue;
-      if (ref_grid_twod(ref_grid)) {
-        RSS(ref_collapse_edge_twod_orientation(ref_grid, node0, node1,
-                                               &allowed),
-            "norm");
-        if (!allowed && audit) printf("   twod orientation\n");
-        if (!allowed) continue;
-      }
+    }
+    if (!have_geometry_support && ref_grid_twod(ref_grid)) {
+      RSS(ref_collapse_edge_twod_orientation(ref_grid, node0, node1, &allowed),
+          "norm");
+      if (!allowed && audit) printf("   twod orientation\n");
+      if (!allowed) continue;
     }
 
     RSS(ref_collapse_edge_tri_quality(ref_grid, node0, node1, &allowed),
@@ -589,12 +586,14 @@ REF_STATUS ref_collapse_edge_chord_height(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT item, cell, node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL n0[3], n1[3];
   REF_DBL dot;
   REF_STATUS status;
+  REF_BOOL supported;
 
   *allowed = REF_TRUE;
 
@@ -605,6 +604,10 @@ REF_STATUS ref_collapse_edge_same_normal(REF_GRID ref_grid, REF_INT node0,
         node0 == ref_cell_c2n(ref_cell, 2, cell))
       continue;
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &supported), "tri support");
+    if (supported) continue; /* geom support, checked by normdev */
+
     RSS(ref_node_tri_normal(ref_node, nodes, n0), "orig normal");
     RSS(ref_math_normalize(n0), "original triangle has zero area");
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
@@ -869,7 +872,8 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
   RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
   RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
-  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+  if (!(ref_geom_model_loaded(ref_geom) || ref_geom_meshlinked(ref_geom)) ||
+      !node0_support || !node1_support) {
     *allowed = REF_TRUE;
     return REF_SUCCESS;
   }
@@ -879,6 +883,9 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_having_node(ref_cell, node1, item, cell) {
     RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+
+    RSS(ref_geom_tri_supported(ref_geom, nodes, &supported), "tri support");
+    if (!supported) continue; /* no geom support, check by same normal */
 
     will_be_collapsed = REF_FALSE;
     for (node = 0; node < ref_cell_node_per(ref_cell); node++) {

@@ -502,25 +502,26 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_INT ncell, cell_to_swap[2];
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;
-  REF_BOOL node0_support, node1_support;
+  REF_BOOL cell0_support, cell1_support;
   REF_DBL normdev0, normdev1, normdev2, normdev3;
   REF_DBL sign_uv_area, uv_area2, uv_area3;
   REF_BOOL normdev_allowed, uv_area_allowed;
   REF_BOOL supported;
-  REF_DBL normal0[3], normal1[3], dot;
+  REF_DBL normal0[3], normal1[3], normal2[3], normal3[3], dot;
 
   *allowed = REF_FALSE;
-
-  RSS(ref_geom_supported(ref_geom, node0, &node0_support), "support0");
-  RSS(ref_geom_supported(ref_geom, node1, &node1_support), "support1");
 
   RSS(ref_swap_node23(ref_grid, node0, node1, &node2, &node3), "other nodes");
 
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cell_to_swap),
       "more then two");
   REIS(2, ncell, "there should be two triangles for manifold");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes");
+  RSS(ref_geom_tri_supported(ref_geom, nodes, &cell0_support), "tri support");
+  RSS(ref_cell_nodes(ref_cell, cell_to_swap[1], nodes), "nodes");
+  RSS(ref_geom_tri_supported(ref_geom, nodes, &cell1_support), "tri support");
 
-  if (!ref_geom_model_loaded(ref_geom) || !node0_support || !node1_support) {
+  if (!cell0_support || !cell1_support) {
     RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes");
     RSS(ref_node_tri_normal(ref_node, nodes, normal0), "tri 0 normal");
     RSS(ref_math_normalize(normal0), "triangle 0 has zero area");
@@ -531,10 +532,29 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
     if (dot < ref_node_same_normal_tol(ref_node)) {
       *allowed = REF_FALSE;
       return REF_SUCCESS;
-    } else {
-      *allowed = REF_TRUE;
+    }
+    nodes[0] = node0;
+    nodes[1] = node3;
+    nodes[2] = node2;
+    RSS(ref_node_tri_normal(ref_node, nodes, normal2), "tri 2 normal");
+    nodes[0] = node1;
+    nodes[1] = node2;
+    nodes[2] = node3;
+    RSS(ref_node_tri_normal(ref_node, nodes, normal3), "tri 3 normal");
+    dot = MIN(ref_math_dot(normal2, normal2), ref_math_dot(normal3, normal3));
+    if (!ref_math_divisible(1.0, dot)) {
+      *allowed = REF_FALSE;
       return REF_SUCCESS;
     }
+    RSS(ref_math_normalize(normal2), "triangle 2 has zero area");
+    RSS(ref_math_normalize(normal3), "triangle 3 has zero area");
+    dot = ref_math_dot(normal2, normal3);
+    if (dot < ref_node_same_normal_tol(ref_node)) {
+      *allowed = REF_FALSE;
+      return REF_SUCCESS;
+    }
+    *allowed = REF_TRUE;
+    return REF_SUCCESS;
   }
 
   RSS(ref_cell_nodes(ref_cell, cell_to_swap[0], nodes), "nodes tri0");
@@ -563,6 +583,12 @@ REF_STATUS ref_swap_conforming(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
        ((MIN(normdev2, normdev3) > 0.9 * MIN(normdev0, normdev1)) &&
         (normdev2 > ref_grid_adapt(ref_grid, post_min_normdev) &&
          normdev3 > ref_grid_adapt(ref_grid, post_min_normdev))));
+
+  /* skip uv checks for meshlink */
+  if (ref_geom_meshlinked(ref_geom)) {
+    *allowed = normdev_allowed;
+    return REF_SUCCESS;
+  }
 
   RSS(ref_geom_uv_area_sign(ref_grid, nodes[ref_cell_node_per(ref_cell)],
                             &sign_uv_area),

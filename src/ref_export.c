@@ -831,13 +831,14 @@ static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
           }
         }
       }
-      RUS(REF_EMPTY, largest_triangle, "no largest triangle");
-      RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
-      RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
-      RSS(ref_math_normalize(normal), "norm");
-      offset = 1.0e-4 * sqrt(area);
-      if (offset > 1.0e-12) {
-        nhole += 1;
+      if (REF_EMPTY != largest_triangle) {
+        RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
+        RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
+        RSS(ref_math_normalize(normal), "norm");
+        offset = 1.0e-4 * sqrt(area);
+        if (offset > 1.0e-12) {
+          nhole += 1;
+        }
       }
     }
     fprintf(file, "%d\n", nhole);
@@ -854,19 +855,20 @@ static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
           }
         }
       }
-      RUS(REF_EMPTY, largest_triangle, "no largest triangle");
-      RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
-      RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
-      RSS(ref_math_normalize(normal), "norm");
-      offset = 1.0e-4 * sqrt(area);
-      if (offset > 1.0e-12) {
-        RSS(ref_node_tri_centroid(ref_node, nodes, center), "center");
-        hole[0] = center[0] - offset * normal[0];
-        hole[1] = center[1] - offset * normal[1];
-        hole[2] = center[2] - offset * normal[2];
-        fprintf(file, "%d  %.16e  %.16e  %.16e\n", nhole, hole[0], hole[1],
-                hole[2]);
-        nhole += 1;
+      if (REF_EMPTY != largest_triangle) {
+        RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
+        RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
+        RSS(ref_math_normalize(normal), "norm");
+        offset = 1.0e-4 * sqrt(area);
+        if (offset > 1.0e-12) {
+          RSS(ref_node_tri_centroid(ref_node, nodes, center), "center");
+          hole[0] = center[0] - offset * normal[0];
+          hole[1] = center[1] - offset * normal[1];
+          hole[2] = center[2] - offset * normal[2];
+          fprintf(file, "%d  %.16e  %.16e  %.16e\n", nhole, hole[0], hole[1],
+                  hole[2]);
+          nhole += 1;
+        }
       }
     }
   }

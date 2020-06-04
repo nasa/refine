@@ -83,17 +83,15 @@ static void bootstrap_help(const char *name) {
   printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
   printf("\n");
 }
-/*
-static void fill_help(const char *name) {
-  printf("usage: \n %s fill surface.meshb volume.meshb\n", name);
-  printf("\n");
-}
-*/
 static void fun3d_help(const char *name) {
   printf("usage: \n %s fun3d mach project.meshb primitive.solb mach.solb\n",
          name);
   printf(" where primitive.solb is [rho,u,v,w,p] or [rho,u,v,w,p,turb...]\n");
   printf("   in fun3d nondimensionalization\n");
+  printf("\n");
+}
+static void grow_help(const char *name) {
+  printf("usage: \n %s grow surface.meshb volume.meshb\n", name);
   printf("\n");
 }
 static void interpolate_help(const char *name) {
@@ -564,36 +562,6 @@ shutdown:
   return REF_FAILURE;
 }
 
-/*
-static REF_STATUS fill(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *out_file;
-  char *in_file;
-  REF_GRID ref_grid = NULL;
-
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref fill is not parallel");
-  }
-  if (argc < 4) goto shutdown;
-  in_file = argv[2];
-  out_file = argv[3];
-
-  printf("import %s\n", in_file);
-  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
-
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
-
-  printf("export %s\n", out_file);
-  RSS(ref_export_by_extension(ref_grid, out_file), "vol export");
-
-  RSS(ref_grid_free(ref_grid), "create");
-
-  return REF_SUCCESS;
-shutdown:
-  if (ref_mpi_once(ref_mpi)) fill_help(argv[0]);
-  return REF_FAILURE;
-}
-*/
-
 static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *scalar_name;
   char *out_solb;
@@ -662,6 +630,34 @@ static REF_STATUS fun3d(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *out_file;
+  char *in_file;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref volume is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+  out_file = argv[3];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+
+  printf("export %s\n", out_file);
+  RSS(ref_export_by_extension(ref_grid, out_file), "vol export");
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) grow_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1540,6 +1536,13 @@ int main(int argc, char *argv[]) {
       RSS(fun3d(ref_mpi, argc, argv), "fun3d");
     } else {
       if (ref_mpi_once(ref_mpi)) fun3d_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "g", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(grow(ref_mpi, argc, argv), "grow");
+    } else {
+      if (ref_mpi_once(ref_mpi)) grow_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "i", 1) == 0) {
