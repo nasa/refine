@@ -11,6 +11,8 @@ fi
 
 TOPDIR='../../..'
 ESP="ESP/${ESP_VERSION}"
+PARMETIS="ParMETIS/${PARMETIS_VERSION}-${OPENMPI_VERSION}_intel_2017-${INTEL_VERSION}"
+OPENMPI_MODULE="openmpi_${OPENMPI_VERSION}_intel_2017"
 
 echo Build ${PACKAGE} ${VERSION}
 
@@ -28,6 +30,9 @@ cd       _build_$VERSION
  --prefix=${MODULE_DEST} \
  --with-EGADS=${MODULE_ROOT}/${ESP}/EngSketchPad \
  --with-OpenCASCADE=${MODULE_ROOT}/${ESP}/OpenCASCADE-7.3.1 \
+ --with-metis=${MODULE_ROOT}/${PARMETIS} \
+ --with-parmetis=${MODULE_ROOT}/${PARMETIS} \
+ --with-mpi=/usr/local/pkgs/modules_3.2.9_64/Modules/modulefiles/${OPENMPI_MODULE} \
  CC=gcc \
  CFLAGS='-g -O2'
 

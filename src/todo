@@ -241,6 +241,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ 1.9.2
 
 + remove fun3d ref subcommand
 + allow surf cavity confirmity 0 normdev for thin chamfer test

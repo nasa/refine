@@ -16,5 +16,5 @@ module list
 export parmetis_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ParMETIS/4.0.3-1.10.2_intel_2017-2017.2.174"
 export zoltan_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/Zoltan/3.82-1.10.2_intel_2017-2017.2.174"
 
-export egads_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/114/EngSketchPad"
+export egads_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/118/EngSketchPad"
 export opencascade_path="/ump/fldmd/home/casb-shared/fun3d/fun3d_users/modules/ESP/114/OpenCASCADE-6.8.1/lin64/gcc"
