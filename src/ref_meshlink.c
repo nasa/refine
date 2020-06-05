@@ -371,8 +371,14 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 
       REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
       REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-           "prj");
+      REIB(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+           "prj", {
+             printf("constrain id %d xyz %f %f %f\n",
+                    ref_geom_id(ref_geom, geom),
+                    ref_node_xyz(ref_node, 0, node),
+                    ref_node_xyz(ref_node, 1, node),
+                    ref_node_xyz(ref_node, 2, node));
+           });
       REIS(0,
            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
