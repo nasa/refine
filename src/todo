@@ -3,7 +3,8 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 sync surf/tri/face zone titles
 
 meshlink
-  - shorten startup time
+  - shift tri id to negative before extracting assoc tri and shift back uniq
+  - protect surface step inside a sheet
   - bootstrap drop volume with option to use pw volume
   - automate mapbc
   - ref_geom_verify_param
@@ -23,6 +24,7 @@ meshlink
   + collapse with partial geom support
   + missing geom, linear interp
   + adapt surface only and rebuild volume
+  + startup time shorter with MeshLink patch
 
 non smooth optimization nso of face uv
 
