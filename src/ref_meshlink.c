@@ -598,13 +598,26 @@ REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
     gref = (MLINT)ref_geom_id(ref_geom, geom);
     REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
 
-    REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-         "prj");
+    if (0 != ML_projectPoint(geom_kernel, geom_group, point, projection_data)) {
+      REF_INT node = ref_geom_node(ref_geom, geom);
+      REF_WHERE("ML_projectPoint face failed, assumes flat")
+      printf("constrain id %d xyz %f %f %f\n", ref_geom_id(ref_geom, geom),
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+             ref_node_xyz(ref_node, 2, node));
+      *kr = 0.0;
+      r[0] = 1.0;
+      r[1] = 0.0;
+      r[2] = 0.0;
+      *ks = 0.0;
+      s[0] = 0.0;
+      s[1] = 1.0;
+      s[2] = 0.0;
+      return REF_SUCCESS;
+    }
     REIS(0,
          ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
                               entity_name, REF_MESHLINK_MAX_STRING_SIZE),
          "info");
-
   } else {
     gref = (MLINT)ref_geom_gref(ref_geom, geom);
     REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
