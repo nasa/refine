@@ -215,6 +215,8 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REF_INT iedge;
   MLINT e2n[2], en;
 
+  REF_BOOL verbose = REF_FALSE;
+
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
 
@@ -229,8 +231,10 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     REIS(0, ML_getMeshTopoGref(sheet[isheet], &sheet_gref),
          "Error getting Mesh Sheet gref");
     nface = ML_getNumSheetMeshFaces(sheet[isheet]);
-    printf("nface %" MLINT_FORMAT " for sheet %d with gref %" MLINT_FORMAT "\n",
-           nface, isheet, sheet_gref);
+    if (verbose)
+      printf("nface %" MLINT_FORMAT " for sheet %d with gref %" MLINT_FORMAT
+             "\n",
+             nface, isheet, sheet_gref);
     ref_malloc(face, nface, MeshTopoObj);
     REIS(0, ML_getSheetMeshFaces(sheet[isheet], face, nface, &mface),
          "Error getting array of Mesh Sheet Mesh Faces");
@@ -248,17 +252,27 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
       REIB(0, ML_getParamVerts(face[iface], vert, 3, &nvert), "Error Face Vert",
            { printf("iface %d\n", iface); });
       for (i = 0; i < 3; i++) {
-        REIB(0,
-             ML_getParamVertInfo(vert[i], vref, REF_MESHLINK_MAX_STRING_SIZE,
-                                 &vert_gref, &mid, uv),
-             "Error Vert Info", { printf("%d iface %d i\n", iface, i); });
-        param[0] = uv[0];
-        param[1] = uv[1];
-        RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
-            "face uv");
-        RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], &geom),
-            "find");
-        ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
+        if (0 == ML_getParamVertInfo(vert[i], vref,
+                                     REF_MESHLINK_MAX_STRING_SIZE, &vert_gref,
+                                     &mid, uv)) {
+          param[0] = uv[0];
+          param[1] = uv[1];
+          RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
+              "face uv");
+          RSS(ref_geom_find(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], &geom),
+              "find");
+          ref_geom_gref(ref_geom, geom) = (REF_INT)vert_gref;
+        } else {
+          param[0] = 0.0;
+          param[1] = 0.0;
+          RSS(ref_geom_add(ref_geom, nodes[i], REF_GEOM_FACE, nodes[3], param),
+              "face uv");
+          REF_WHERE("ML_getParamVertInfo face failed, no gref or param")
+          printf("sheet gref %d xyz %f %f %f\n", nodes[3],
+                 ref_node_xyz(ref_node, 0, nodes[i]),
+                 ref_node_xyz(ref_node, 1, nodes[i]),
+                 ref_node_xyz(ref_node, 2, nodes[i]));
+        }
       }
     }
     ref_free(face);
@@ -275,9 +289,10 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     REIS(0, ML_getMeshTopoGref(string[istring], &string_gref),
          "Error getting Mesh String gref");
     nedge = ML_getNumStringMeshEdges(string[istring]);
-    printf("nedge %" MLINT_FORMAT " for string %d with gref %" MLINT_FORMAT
-           "\n",
-           nedge, istring, string_gref);
+    if (verbose)
+      printf("nedge %" MLINT_FORMAT " for string %d with gref %" MLINT_FORMAT
+             "\n",
+             nedge, istring, string_gref);
     ref_malloc(edge, nedge, MeshTopoObj);
     REIS(0, ML_getStringMeshEdges(string[istring], edge, nedge, &medge),
          "Error getting array of Mesh String Mesh Edges");
@@ -371,22 +386,22 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 
       REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
       REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-      REIB(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-           "prj", {
-             printf("constrain id %d xyz %f %f %f\n",
-                    ref_geom_id(ref_geom, geom),
-                    ref_node_xyz(ref_node, 0, node),
-                    ref_node_xyz(ref_node, 1, node),
-                    ref_node_xyz(ref_node, 2, node));
-           });
-      REIS(0,
-           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
-           "info");
-
-      ref_node_xyz(ref_node, 0, node) = projected_point[0];
-      ref_node_xyz(ref_node, 1, node) = projected_point[1];
-      ref_node_xyz(ref_node, 2, node) = projected_point[2];
+      if (0 !=
+          ML_projectPoint(geom_kernel, geom_group, point, projection_data)) {
+        REF_WHERE("ML_projectPoint face failed, point unprojected")
+        printf("constrain id %d xyz %f %f %f\n", ref_geom_id(ref_geom, geom),
+               ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node));
+      } else {
+        REIS(
+            0,
+            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+            "info");
+        ref_node_xyz(ref_node, 0, node) = projected_point[0];
+        ref_node_xyz(ref_node, 1, node) = projected_point[1];
+        ref_node_xyz(ref_node, 2, node) = projected_point[2];
+      }
     }
   }
 
