@@ -36,6 +36,7 @@
 #endif
 
 #include "ref_cell.h"
+#include "ref_dict.h"
 #include "ref_edge.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -215,7 +216,24 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   REF_INT iedge;
   MLINT e2n[2], en;
 
+  REF_DICT ref_dict;
+  REF_CELL ref_cell;
+  REF_INT location;
+
   REF_BOOL verbose = REF_FALSE;
+
+  RSS(ref_dict_create(&ref_dict), "create");
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_store(ref_dict, nodes[ref_cell_node_per(ref_cell)], REF_EMPTY),
+        "store");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_location(ref_dict, nodes[ref_cell_node_per(ref_cell)],
+                          &location),
+        "location");
+    ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = -1 - location;
+  }
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
