@@ -483,6 +483,114 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_gap(REF_GRID ref_grid, REF_INT node, REF_DBL *gap) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_BOOL is_node, is_edge;
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLVector3D point;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
+  MLINT gref;
+  REF_INT item, geom;
+  REF_DBL gap_xyz[3], dist;
+
+  *gap = 0.0;
+
+  gap_xyz[0] = ref_node_xyz(ref_node, 0, node);
+  gap_xyz[1] = ref_node_xyz(ref_node, 1, node);
+  gap_xyz[2] = ref_node_xyz(ref_node, 2, node);
+
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &is_edge), "edge");
+  if (is_edge && !is_node) {
+    each_ref_geom_having_node(ref_geom, node, item, geom) {
+      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+        gref = (MLINT)ref_geom_id(ref_geom, geom);
+        point[0] = ref_node_xyz(ref_node, 0, node);
+        point[1] = ref_node_xyz(ref_node, 1, node);
+        point[2] = ref_node_xyz(ref_node, 2, node);
+        REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+        REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+        REIS(0,
+             ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+             "prj");
+        REIS(
+            0,
+            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+            "info");
+        gap_xyz[0] = projected_point[0];
+        gap_xyz[1] = projected_point[1];
+        gap_xyz[2] = projected_point[2];
+      }
+    }
+  }
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+      gref = (MLINT)ref_geom_id(ref_geom, geom);
+      point[0] = ref_node_xyz(ref_node, 0, node);
+      point[1] = ref_node_xyz(ref_node, 1, node);
+      point[2] = ref_node_xyz(ref_node, 2, node);
+      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+           "prj");
+      REIS(0,
+           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+           "info");
+      dist = sqrt(pow(gap_xyz[0] - projected_point[0], 2) +
+                  pow(gap_xyz[1] - projected_point[1], 2) +
+                  pow(gap_xyz[2] - projected_point[2], 2));
+      (*gap) = MAX((*gap), dist);
+    }
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      gref = (MLINT)ref_geom_id(ref_geom, geom);
+      point[0] = ref_node_xyz(ref_node, 0, node);
+      point[1] = ref_node_xyz(ref_node, 1, node);
+      point[2] = ref_node_xyz(ref_node, 2, node);
+
+      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+      if (0 !=
+          ML_projectPoint(geom_kernel, geom_group, point, projection_data)) {
+        REF_WHERE("ML_projectPoint face failed, point unprojected")
+        printf("gap failid %d xyz %f %f %f\n", ref_geom_id(ref_geom, geom),
+               ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+               ref_node_xyz(ref_node, 2, node));
+      } else {
+        REIS(
+            0,
+            ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                 uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+            "info");
+        dist = sqrt(pow(gap_xyz[0] - projected_point[0], 2) +
+                    pow(gap_xyz[1] - projected_point[1], 2) +
+                    pow(gap_xyz[2] - projected_point[2], 2));
+        (*gap) = MAX((*gap), dist);
+      }
+    }
+  }
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(node);
+  *gap = 0;
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
                                            REF_DBL *dot_product) {
 #ifdef HAVE_MESHLINK

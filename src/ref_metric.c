@@ -1088,6 +1088,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
 
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+      } else if (ref_geom_meshlinked(ref_geom)) {
+        RSS(ref_meshlink_gap(ref_grid, node, &slop), "edge tol");
+        slop *= ref_geom_gap_protection(ref_geom);
       } else {
         slop = 1.0e-5 * hmax;
       }
