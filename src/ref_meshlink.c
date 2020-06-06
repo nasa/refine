@@ -234,6 +234,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
         "location");
     ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) = -1 - location;
   }
+  RSS(ref_dict_free(ref_dict), "free");
 
   REIS(0, ML_getMeshModelByName(mesh_assoc, block_name, &mesh_model),
        "Error creating Mesh Model Object");
