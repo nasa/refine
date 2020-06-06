@@ -218,7 +218,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
 
   REF_DICT ref_dict;
   REF_CELL ref_cell;
-  REF_INT location;
+  REF_INT location, min_id, max_id;
 
   REF_BOOL verbose = REF_FALSE;
 
@@ -357,6 +357,29 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
       }
     }
   }
+
+  /* shift negative face ids (not assocated) positive */
+  RSS(ref_dict_create(&ref_dict), "create");
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (0 > nodes[ref_cell_node_per(ref_cell)]) {
+      RSS(ref_dict_store(ref_dict, nodes[ref_cell_node_per(ref_cell)],
+                         REF_EMPTY),
+          "store");
+    }
+  }
+  RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
+      "range");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (0 > nodes[ref_cell_node_per(ref_cell)]) {
+      RSS(ref_dict_location(ref_dict, nodes[ref_cell_node_per(ref_cell)],
+                            &location),
+          "location");
+      ref_cell_c2n(ref_cell, ref_cell_node_per(ref_cell), cell) =
+          max_id + 1 + location;
+    }
+  }
+  RSS(ref_dict_free(ref_dict), "free");
 
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
