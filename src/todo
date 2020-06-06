@@ -3,16 +3,14 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 sync surf/tri/face zone titles
 
 meshlink
-  - shift tri id to negative before extracting assoc tri and shift back uniq
   - protect surface step inside a sheet
   - bootstrap drop volume with option to use pw volume
-  - automate mapbc
-  - ref_geom_verify_param
-  - tolerence/reliability/gap discrete estimate
+  - automate mapbc generation
+  - tolerence/reliability/gap discrete estimate to replace percent bbox
+  - feature size (need with virtual topo?)
+  - geometry constraint metric (add edges?)
   - pcurve eval (only supports uv area?) 
   - degeneracy mark and uv update (only supports uv area?)
-  - geometry constraint metric (add edges?)
-  - feature size (need with virtual topo?)
   + ref adapt
   + orientation for uv sign
   + initial mesh via API, not xml parse
@@ -25,6 +23,7 @@ meshlink
   + missing geom, linear interp
   + adapt surface only and rebuild volume
   + startup time shorter with MeshLink patch
+  + shift tri id to negative before extracting assoc tri and shift back uniq
 
 non smooth optimization nso of face uv
 
