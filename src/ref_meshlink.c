@@ -693,6 +693,90 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_meshlink_edge_curvature(REF_GRID ref_grid, REF_INT geom,
+                                       REF_DBL *k, REF_DBL *normal) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  MeshAssociativityObj mesh_assoc;
+  GeometryKernelObj geom_kernel = NULL;
+  ProjectionDataObj projection_data = NULL;
+  GeometryGroupObj geom_group = NULL;
+  MLINT gref, n_entity;
+  MLVector3D projected_point;
+  MLVector2D uv;
+  char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
+  MLVector3D eval_point;
+  MLVector3D tangent;
+  MLVector3D principal_normal; /* Second partial derivative */
+  MLVector3D binormal;
+  MLREAL curvature;
+  MLINT linear;
+  REF_BOOL project = REF_TRUE;
+
+  REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "face geom expected");
+  RNS(ref_geom->meshlink, "meshlink NULL");
+  mesh_assoc = (MeshAssociativityObj)(ref_geom->meshlink);
+  projection_data = (ProjectionDataObj)(ref_geom->meshlink_projection);
+
+  REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+  if (project) {
+    MLVector3D point;
+    point[0] = ref_node_xyz(ref_node, 0, ref_geom_node(ref_geom, geom));
+    point[1] = ref_node_xyz(ref_node, 1, ref_geom_node(ref_geom, geom));
+    point[2] = ref_node_xyz(ref_node, 2, ref_geom_node(ref_geom, geom));
+    gref = (MLINT)ref_geom_id(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+
+    if (0 != ML_projectPoint(geom_kernel, geom_group, point, projection_data)) {
+      REF_INT node = ref_geom_node(ref_geom, geom);
+      REF_WHERE("ML_projectPoint edge failed, assumes flat")
+      printf("edgecurve failid %d xyz %f %f %f\n", ref_geom_id(ref_geom, geom),
+             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
+             ref_node_xyz(ref_node, 2, node));
+      *k = 0.0;
+      normal[0] = 1.0;
+      normal[1] = 0.0;
+      normal[2] = 0.0;
+      return REF_SUCCESS;
+    }
+    REIS(0,
+         ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
+                              entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+         "info");
+  } else {
+    gref = (MLINT)ref_geom_gref(ref_geom, geom);
+    REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+    REIB(0,
+         ML_getEntityNames(geom_group, entity_name, 1,
+                           REF_MESHLINK_MAX_STRING_SIZE, &n_entity),
+         "grp", { printf("gref %" MLINT_FORMAT "\n", gref); });
+    REIS(1, n_entity, "single entity expected");
+    uv[0] = ref_geom_param(ref_geom, 0, geom);
+  }
+  REIS(
+      0,
+      ML_evalCurvatureOnCurve(geom_kernel, uv, entity_name, eval_point, tangent,
+                              principal_normal, binormal, &curvature, &linear),
+      "eval");
+  normal[0] = principal_normal[0];
+  normal[1] = principal_normal[1];
+  normal[2] = principal_normal[2];
+  *k = curvature;
+
+  return REF_SUCCESS;
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *k = 0.0;
+  normal[0] = 1.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
 REF_STATUS ref_meshlink_face_curvature(REF_GRID ref_grid, REF_INT geom,
                                        REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
                                        REF_DBL *s) {

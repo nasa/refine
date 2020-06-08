@@ -1131,6 +1131,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       rlimit = hmax / delta_radian; /* h = r*drad, r = h/drad */
       if (ref_geom_model_loaded(ref_geom)) {
         RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+      } else if (ref_geom_meshlinked(ref_geom)) {
+        RSS(ref_meshlink_edge_curvature(ref_grid, geom, &kr, r), "curve");
       } else {
         continue;
       }
@@ -1139,14 +1141,23 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       hr = hmax;
       if (1.0 / rlimit < kr) hr = delta_radian / kr;
 
-      RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+      if (ref_geom_model_loaded(ref_geom)) {
+        RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
+      } else if (ref_geom_meshlinked(ref_geom)) {
+        RSS(ref_meshlink_gap(ref_grid, node, &slop), "edge tol");
+        slop *= ref_geom_gap_protection(ref_geom);
+      } else {
+        slop = 1.0e-5 * hmax;
+      }
       if (hr < slop) continue;
 
-      RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
-      if (crease_dot_prod < -0.8) {
-        ramp = (-crease_dot_prod - 0.8) / 0.2;
-        scale = 0.25 * ramp + 1.0 * (1.0 - ramp);
-        hr *= scale;
+      if (ref_geom_model_loaded(ref_geom)) {
+        RSS(ref_geom_crease(ref_grid, node, &crease_dot_prod), "crease");
+        if (crease_dot_prod < -0.8) {
+          ramp = (-crease_dot_prod - 0.8) / 0.2;
+          scale = 0.25 * ramp + 1.0 * (1.0 - ramp);
+          hr *= scale;
+        }
       }
 
       ref_matrix_vec(diagonal_system, 0, 0) = 1.0;
