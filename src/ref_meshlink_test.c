@@ -76,6 +76,7 @@ int main(int argc, char *argv[]) {
     printf("association %s\n", argv[3]);
     RSS(ref_meshlink_open(ref_grid, argv[3]), "open");
     RSS(ref_geom_tec(ref_grid, "ref_meshlink_viz.tec"), "geom tec");
+    RSS(ref_geom_curve_tec(ref_grid, "ref_meshlink_curve_viz.tec"), "crv tec");
     RSS(ref_meshlink_close(ref_grid), "close");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");

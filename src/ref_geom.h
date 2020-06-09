@@ -271,6 +271,7 @@ REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file);
 REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file);
 REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file);
 REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename);
+REF_STATUS ref_geom_curve_tec(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_geom_tec_para_shard(REF_GRID ref_grid,
                                    const char *root_filename);
 

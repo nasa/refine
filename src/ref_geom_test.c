@@ -83,6 +83,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
     printf("write tec %s\n", "ref_geom_viz.tec");
     RSS(ref_geom_tec(ref_grid, "ref_geom_viz.tec"), "geom tec");
+    RSS(ref_geom_curve_tec(ref_grid, "ref_geom_curve_viz.tec"), "crv tec");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom tec");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");

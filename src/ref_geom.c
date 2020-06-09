@@ -3211,7 +3211,8 @@ REF_STATUS ref_geom_norm_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
+static REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id,
+                                          FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -3220,6 +3221,14 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT item, local, node;
   REF_INT nnode, ntri;
   REF_DBL kr, r[3], ks, s[3];
+  kr = 0;
+  r[0] = 0;
+  r[1] = 0;
+  r[2] = 0;
+  ks = 0;
+  s[0] = 0;
+  s[1] = 0;
+  s[2] = 0;
 
   RSS(ref_dict_create(&ref_dict), "create dict");
 
@@ -3250,10 +3259,18 @@ REF_STATUS ref_geom_curve_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
           id, nnode, ntri, "point", "fetriangle");
 
   each_ref_dict_key_value(ref_dict, item, node, geom) {
-    RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e\n",
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+    }
+    if (ref_geom_meshlinked(ref_geom)) {
+      RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s), "curve");
+    }
+    fprintf(file,
+            " %.16e %.16e %.16e %.16e %.16e %.16e %.16e "
+            "%.16e %.16e %.16e %.16e\n",
             ref_node_xyz(ref_node, 0, node), ref_node_xyz(ref_node, 1, node),
-            ref_node_xyz(ref_node, 2, node), ABS(kr), ABS(ks), 0.0);
+            ref_node_xyz(ref_node, 2, node), kr, r[0], r[1], r[2], ks, s[0],
+            s[1], s[2]);
   }
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -3302,6 +3319,34 @@ REF_STATUS ref_geom_tec(REF_GRID ref_grid, const char *filename) {
 
   for (id = min_id; id <= max_id; id++)
     RSS(ref_geom_face_tec_zone(ref_grid, id, file), "tec face");
+
+  fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_curve_tec(REF_GRID ref_grid, const char *filename) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  FILE *file;
+  REF_INT geom, id, min_id, max_id;
+
+  file = fopen(filename, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "title=\"refine cad coupling in tecplot format\"\n");
+  fprintf(file,
+          "variables = \"x\" \"y\" \"z\" \"kr\" \"rx\" \"ry\" \"rz\" "
+          "\"ks\" \"sx\" \"sy\" \"sz\"\n");
+
+  min_id = REF_INT_MAX;
+  max_id = REF_INT_MIN;
+  each_ref_geom_face(ref_geom, geom) {
+    min_id = MIN(min_id, ref_geom_id(ref_geom, geom));
+    max_id = MAX(max_id, ref_geom_id(ref_geom, geom));
+  }
+
+  for (id = min_id; id <= max_id; id++)
+    RSS(ref_geom_curve_tec_zone(ref_grid, id, file), "tec face");
 
   fclose(file);
   return REF_SUCCESS;
