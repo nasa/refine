@@ -2162,6 +2162,15 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* parse */
+    const char *args[] = {
+        "--uniform",
+        "box",
+    };
+    int narg = 2;
+    RSS(ref_metric_parse(args, narg), "parse");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

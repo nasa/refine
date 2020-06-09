@@ -2368,3 +2368,11 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(eig);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_parse(const char *args[], int narg) {
+  REF_INT i;
+
+  for (i = 0; i < narg; i++)
+    if (strncmp(args[i], "--uniform", 9) == 0) return REF_SUCCESS;
+  return REF_FAILURE;
+}
