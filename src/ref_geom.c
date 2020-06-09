@@ -2972,7 +2972,7 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
   REF_INT nnode, nnode_sens0, nnode_degen, ntri;
   REF_INT sens;
   REF_DBL *uv, param[2];
-  REF_DBL kr, r[3], ks, s[3], xyz[3];
+  REF_DBL kr, r[3], ks, s[3], xyz[3], kmin, kmax;
 
   RSS(ref_dict_create(&ref_dict), "create dict");
   RSS(ref_dict_create(&ref_dict_jump), "create dict");
@@ -3057,19 +3057,17 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     xyz[2] = ref_node_xyz(ref_node, 2, node);
     if (ref_geom_model_loaded(ref_geom)) {
       RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-      kr = ABS(kr);
-      ks = ABS(ks);
       RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, &(uv[2 * item]), xyz,
                            NULL),
           "eval at");
     }
     if (ref_geom_meshlinked(ref_geom)) {
       RSS(ref_meshlink_face_curvature(ref_grid, geom, &kr, r, &ks, s), "curve");
-      kr = ABS(kr);
-      ks = ABS(ks);
     }
+    kmax = MAX(ABS(kr), ABS(ks));
+    kmin = MIN(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kr, ks);
+            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item], kmax, kmin);
   }
   each_ref_dict_key_value(ref_dict_jump, item, node, geom) {
     kr = 0;
@@ -3079,16 +3077,15 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
     xyz[2] = ref_node_xyz(ref_node, 2, node);
     if (ref_geom_model_loaded(ref_geom)) {
       RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-      kr = ABS(kr);
-      ks = ABS(ks);
       RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id,
                            &(uv[2 * (nnode_sens0 + item)]), xyz, NULL),
           "eval at");
     }
-
+    kmax = MAX(ABS(kr), ABS(ks));
+    kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_sens0 + item)],
-            uv[1 + 2 * (nnode_sens0 + item)], kr, ks);
+            uv[1 + 2 * (nnode_sens0 + item)], kmax, kmin);
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
     kr = 0;
@@ -3101,18 +3098,17 @@ REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file) {
         if (ref_geom_type(ref_geom, geom) == REF_GEOM_FACE &&
             ref_geom_id(ref_geom, geom) == id) {
           RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-          kr = ABS(kr);
-          ks = ABS(ks);
         }
       }
       RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id,
                            &(uv[2 * (nnode_degen + item)]), xyz, NULL),
           "eval at");
     }
-
+    kmax = MAX(ABS(kr), ABS(ks));
+    kmin = MAX(ABS(kr), ABS(ks));
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
-            uv[1 + 2 * (nnode_degen + item)], kr, ks);
+            uv[1 + 2 * (nnode_degen + item)], kmax, kmin);
   }
   ref_free(uv);
 
