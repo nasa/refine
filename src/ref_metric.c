@@ -2369,10 +2369,27 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_parse(const char *args[], int narg) {
-  REF_INT i;
+REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
+                            const char *args[], int narg) {
+  REF_INT node, i;
+  REF_DBL diag_system[12];
 
-  for (i = 0; i < narg; i++)
-    if (strncmp(args[i], "--uniform", 9) == 0) return REF_SUCCESS;
-  return REF_FAILURE;
+  for (i = 0; i < narg; i++) {
+    if (strncmp(args[i], "--uniform", 9) == 0) {
+      i++;
+      if (i < narg && strncmp(args[i], "box", 3) == 0) {
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+          ref_matrix_eig(diag_system, 0) =
+              MIN(1, ref_matrix_eig(diag_system, 0));
+          ref_matrix_eig(diag_system, 1) =
+              MIN(1, ref_matrix_eig(diag_system, 1));
+          ref_matrix_eig(diag_system, 2) =
+              MIN(1, ref_matrix_eig(diag_system, 2));
+          RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
 }

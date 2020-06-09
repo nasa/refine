@@ -133,7 +133,8 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
 REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
                                 const char *filename);
 
-REF_STATUS ref_metric_parse(const char *args[], int narg);
+REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
+                            const char *args[], int narg);
 
 END_C_DECLORATION
 
