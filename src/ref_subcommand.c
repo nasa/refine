@@ -211,6 +211,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("meshlink with %s\n", argv[pos + 1]);
     RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
+    RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
     RXS(ref_args_char(argc, argv, "-g", &in_egads), REF_NOT_FOUND,
         "egads arg search");
@@ -864,6 +865,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     if (ref_mpi_once(ref_mpi)) printf("meshlink with %s\n", argv[pos + 1]);
     RSS(ref_meshlink_open(ref_grid, argv[pos + 1]), "meshlink init");
+    RSS(ref_meshlink_infer_orientation(ref_grid), "meshlink orient");
   } else {
     RXS(ref_args_find(argc, argv, "--egads", &pos), REF_NOT_FOUND,
         "arg search");
