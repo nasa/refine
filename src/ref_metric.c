@@ -2391,7 +2391,6 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
         doubling_distance = atof(args[pos]);
         pos++;
         h0 = ABS(h0); /* metric must be semi-positive definite */
-        doubling_distance = ABS(doubling_distance);
         for (i = 0; i < 6; i++) {
           box[i] = atof(args[pos]);
           pos++;
