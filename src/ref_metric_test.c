@@ -2162,12 +2162,13 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse */
+  { /* parse box spacing*/
     const char *args[] = {
         "--uniform",
         "box",
+        "2",
     };
-    int narg = 2;
+    int narg = 3;
     REF_DBL tol = -1.0;
     REF_DBL *metric;
     REF_GRID ref_grid;
@@ -2185,12 +2186,12 @@ int main(int argc, char *argv[]) {
     }
     RSS(ref_metric_parse(metric, ref_grid, args, narg), "parse");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RWDS(1.0, metric[0 + 6 * node], tol, "m[0]");
-      RWDS(0.0, metric[1 + 6 * node], tol, "m[1]");
-      RWDS(0.0, metric[2 + 6 * node], tol, "m[2]");
-      RWDS(1.0, metric[3 + 6 * node], tol, "m[3]");
-      RWDS(0.0, metric[4 + 6 * node], tol, "m[4]");
-      RWDS(1.0, metric[5 + 6 * node], tol, "m[5]");
+      RWDS(0.25, metric[0 + 6 * node], tol, "m[0]");
+      RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
+      RWDS(0.25, metric[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, metric[4 + 6 * node], tol, "m[4]");
+      RWDS(0.25, metric[5 + 6 * node], tol, "m[5]");
     }
     ref_free(metric);
 

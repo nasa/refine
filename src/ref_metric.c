@@ -2373,19 +2373,26 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
                             const char *args[], int narg) {
   REF_INT node, i;
   REF_DBL diag_system[12];
+  REF_DBL h;
 
   for (i = 0; i < narg; i++) {
     if (strncmp(args[i], "--uniform", 9) == 0) {
       i++;
       if (i < narg && strncmp(args[i], "box", 3) == 0) {
+        i++;
+        RAS(i < narg, "not enough --uniform box arguments");
+        h = atof(args[i]);
+        i++;
+        h = ABS(h); /* metric must be semi-positive definite */
+        printf("h%f\n", h);
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
           RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
           ref_matrix_eig(diag_system, 0) =
-              MIN(1, ref_matrix_eig(diag_system, 0));
+              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
           ref_matrix_eig(diag_system, 1) =
-              MIN(1, ref_matrix_eig(diag_system, 1));
+              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
           ref_matrix_eig(diag_system, 2) =
-              MIN(1, ref_matrix_eig(diag_system, 2));
+              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
           RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
         }
       }
