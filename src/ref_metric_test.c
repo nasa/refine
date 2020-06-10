@@ -2163,7 +2163,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* parse interior box spacing*/
-    const char *args[] = {
+    char *args[] = {
         "--uniform", "box", "2", "1", "0", "0", "0", "1", "1", "1",
     };
     int narg = 10;
@@ -2182,7 +2182,7 @@ int main(int argc, char *argv[]) {
       metric[4 + 6 * node] = 0.0;
       metric[5 + 6 * node] = 4.0;
     }
-    RSS(ref_metric_parse(metric, ref_grid, args, narg), "parse");
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RWDS(0.25, metric[0 + 6 * node], tol, "m[0]");
       RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
@@ -2197,7 +2197,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* parse outside box spacing*/
-    const char *args[] = {
+    char *args[] = {
         "--uniform", "box", "3", "0.5", "-1", "-1", "-1", "0", "0", "0",
     };
     int narg = 10;
@@ -2216,7 +2216,7 @@ int main(int argc, char *argv[]) {
       metric[4 + 6 * node] = 0.0;
       metric[5 + 6 * node] = 4.0;
     }
-    RSS(ref_metric_parse(metric, ref_grid, args, narg), "parse");
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       REF_DBL r, h;
       r = sqrt(pow(ref_node_xyz(ref_grid_node(ref_grid), 0, node), 2) +

@@ -2369,8 +2369,8 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
-                            const char *args[], int narg) {
+REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
+                            char *args[]) {
   REF_INT i, node, pos;
   REF_DBL diag_system[12];
   REF_DBL h0, doubling_distance;
