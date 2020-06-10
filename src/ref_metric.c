@@ -2382,7 +2382,10 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
       pos++;
       if (pos < narg && strncmp(args[pos], "box", 3) == 0) {
         pos++;
-        RAS(pos + 7 < narg, "not enough --uniform box arguments");
+        RAS(pos + 7 < narg,
+            "not enough arguments for\n"
+            "  --uniform box h0 doubling_distance xmin ymin zmin "
+            "xmax ymax zmax");
         h0 = atof(args[pos]);
         pos++;
         doubling_distance = atof(args[pos]);
