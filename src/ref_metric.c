@@ -2421,6 +2421,11 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
           ref_matrix_eig(diag_system, 2) =
               MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
           RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
+          if (ref_grid_twod(ref_grid)) {
+            metric[2 + 6 * node] = 0.0;
+            metric[4 + 6 * node] = 0.0;
+            metric[5 + 6 * node] = 1.0;
+          }
         }
       }
     }
