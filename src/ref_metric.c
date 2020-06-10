@@ -2371,21 +2371,45 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
 
 REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid,
                             const char *args[], int narg) {
-  REF_INT node, i;
+  REF_INT i, node, pos;
   REF_DBL diag_system[12];
-  REF_DBL h;
+  REF_DBL h0, doubling_distance;
+  REF_DBL box[6];
+  REF_DBL r, h;
 
-  for (i = 0; i < narg; i++) {
-    if (strncmp(args[i], "--uniform", 9) == 0) {
-      i++;
-      if (i < narg && strncmp(args[i], "box", 3) == 0) {
-        i++;
-        RAS(i < narg, "not enough --uniform box arguments");
-        h = atof(args[i]);
-        i++;
-        h = ABS(h); /* metric must be semi-positive definite */
-        printf("h%f\n", h);
+  for (pos = 0; pos < narg; pos++) {
+    if (strncmp(args[pos], "--uniform", 9) == 0) {
+      pos++;
+      if (pos < narg && strncmp(args[pos], "box", 3) == 0) {
+        pos++;
+        RAS(pos + 7 < narg, "not enough --uniform box arguments");
+        h0 = atof(args[pos]);
+        pos++;
+        doubling_distance = atof(args[pos]);
+        pos++;
+        h0 = ABS(h0); /* metric must be semi-positive definite */
+        doubling_distance = ABS(doubling_distance);
+        for (i = 0; i < 6; i++) {
+          box[i] = atof(args[pos]);
+          pos++;
+        }
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          /* distance to box, zero inside box */
+          r = 0;
+          for (i = 0; i < 3; i++) {
+            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) < box[i])
+              r += pow(ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i],
+                       2);
+            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) > box[i + 3])
+              r += pow(
+                  ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i + 3],
+                  2);
+          }
+          r = sqrt(r);
+          h = h0;
+          if (ref_math_divisible(r, doubling_distance)) {
+            h = h0 * pow(2, r / doubling_distance);
+          }
           RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
           ref_matrix_eig(diag_system, 0) =
               MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
