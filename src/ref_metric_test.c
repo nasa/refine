@@ -2162,7 +2162,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse interior box floor spacing*/
+  { /* parse interior box floor spacing */
     char *args[] = {
         "--uniform", "box", "floor", "2", "1", "0", "0", "0", "1", "1", "1",
     };
@@ -2196,7 +2196,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse outside box spacing*/
+  { /* parse outside box spacing */
     char *args[] = {
         "--uniform", "box", "floor", "3", "0.5", "-1",
         "-1",        "-1",  "0",     "0", "0",
@@ -2236,7 +2236,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse interior box ceil spacing*/
+  { /* parse interior box ceil spacing */
     char *args[] = {
         "--uniform", "box", "ceil", "0.25", "1", "0", "0", "0", "1", "1", "1",
     };
@@ -2270,7 +2270,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse outside box spacing*/
+  { /* parse outside box spacing */
     char *args[] = {
         "--uniform", "box", "ceil", "3", "0.5", "-1", "-1", "-1", "0", "0", "0",
     };
