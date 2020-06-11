@@ -2368,3 +2368,106 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(eig);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
+                                          REF_DBL *dist) {
+  REF_INT i;
+  REF_DBL axis[3], s, l, dxyz[3], pos;
+  *dist = 0.0;
+  for (i = 0; i < 3; i++) {
+    axis[i] = cone_geom[i + 3] - cone_geom[i];
+    dxyz[i] = xyz[i] - cone_geom[i];
+  }
+  l = sqrt(ref_math_dot(axis, axis));
+  s = sqrt(ref_math_dot(dxyz, dxyz));
+  if (REF_SUCCESS == ref_math_normalize(axis) && ref_math_divisible(s, l)) {
+    pos = ref_math_dot(dxyz, axis);
+    if (pos < 0) *dist = -pos;
+    if (pos > l) *dist = pos - l;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
+                            char *args[]) {
+  REF_INT i, node, pos;
+  REF_DBL diag_system[12];
+  REF_DBL h0, decay_distance;
+  REF_DBL box[6];
+  REF_DBL r, h;
+  REF_BOOL ceil;
+
+  pos = 0;
+  while (pos < narg) {
+    if (strncmp(args[pos], "--uniform", 9) != 0) {
+      pos++;
+    } else {
+      pos++;
+      if (pos < narg && strncmp(args[pos], "box", 3) == 0) {
+        pos++;
+        RAS(pos + 8 < narg,
+            "not enough arguments for\n"
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
+            "xmax ymax zmax");
+        RAS(strncmp(args[pos], "ceil", 4) == 0 ||
+                strncmp(args[pos], "floor", 5) == 0,
+            "ceil or floor is missing\n"
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
+            "xmax ymax zmax");
+        ceil = (strncmp(args[pos], "ceil", 4) == 0);
+        pos++;
+        h0 = atof(args[pos]);
+        pos++;
+        decay_distance = atof(args[pos]);
+        pos++;
+        h0 = ABS(h0); /* metric must be semi-positive definite */
+        for (i = 0; i < 6; i++) {
+          box[i] = atof(args[pos]);
+          pos++;
+        }
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          /* distance to box, zero inside box */
+          r = 0;
+          for (i = 0; i < 3; i++) {
+            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) < box[i])
+              r += pow(ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i],
+                       2);
+            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) > box[i + 3])
+              r += pow(
+                  ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i + 3],
+                  2);
+          }
+          r = sqrt(r);
+          h = h0;
+          if (ref_math_divisible(-r, decay_distance)) {
+            h = h0 * pow(2, -r / decay_distance);
+          }
+          RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+          if (ceil) {
+            ref_matrix_eig(diag_system, 0) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          } else {
+            ref_matrix_eig(diag_system, 0) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          }
+          RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
+          if (ref_grid_twod(ref_grid)) {
+            metric[2 + 6 * node] = 0.0;
+            metric[4 + 6 * node] = 0.0;
+            metric[5 + 6 * node] = 1.0;
+          }
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
