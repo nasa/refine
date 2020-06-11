@@ -2372,18 +2372,26 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
                                           REF_DBL *dist) {
   REF_INT i;
-  REF_DBL axis[3], s, l, dxyz[3], pos;
+  REF_DBL axis[3], s, l, dxyz[3], pos, r, rxyz[3], cr;
   *dist = 0.0;
   for (i = 0; i < 3; i++) {
     axis[i] = cone_geom[i + 3] - cone_geom[i];
     dxyz[i] = xyz[i] - cone_geom[i];
   }
   l = sqrt(ref_math_dot(axis, axis));
-  s = sqrt(ref_math_dot(dxyz, dxyz));
-  if (REF_SUCCESS == ref_math_normalize(axis) && ref_math_divisible(s, l)) {
+  if (REF_SUCCESS == ref_math_normalize(axis)) {
     pos = ref_math_dot(dxyz, axis);
+    s = pos / l;
+    for (i = 0; i < 3; i++) {
+      rxyz[i] = dxyz[i] - pos*axis[i];
+    }
+    r = sqrt(ref_math_dot(rxyz, rxyz));
     if (pos < 0) *dist = -pos;
     if (pos > l) *dist = pos - l;
+    if (0 <= pos && pos <= l) {
+      cr = cone_geom[6]*(1-s) + cone_geom[7]*s;
+      *dist = MAX(r - cr,0);
+    }
   }
 
   return REF_SUCCESS;
