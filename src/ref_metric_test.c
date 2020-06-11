@@ -2354,6 +2354,16 @@ int main(int argc, char *argv[]) {
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(0.0, dist, tol, "inside");
+    xyz[0] = -1;
+    xyz[1] = 0;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1.0, dist, tol, "inside");
+    xyz[0] = 3;
+    xyz[1] = 0;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(2.0, dist, tol, "inside");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
