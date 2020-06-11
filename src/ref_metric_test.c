@@ -2344,6 +2344,18 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* distance to truncated cone 2 */
+    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 0.5, 1};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    xyz[0] = 0;
+    xyz[1] = 0;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.0, dist, tol, "inside");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

@@ -135,6 +135,8 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
 
 REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
                             char *args[]);
+REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
+                                          REF_DBL *dist);
 
 END_C_DECLORATION
 

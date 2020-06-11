@@ -2369,6 +2369,13 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
+                                          REF_DBL *dist) {
+  *dist = 0.0;
+  if (xyz[0] < cone_geom[0]) *dist = 0.0;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
                             char *args[]) {
   REF_INT i, node, pos;
