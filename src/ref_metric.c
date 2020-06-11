@@ -2376,16 +2376,24 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   REF_DBL h0, doubling_distance;
   REF_DBL box[6];
   REF_DBL r, h;
+  REF_BOOL ceil;
 
   for (pos = 0; pos < narg; pos++) {
     if (strncmp(args[pos], "--uniform", 9) == 0) {
       pos++;
       if (pos < narg && strncmp(args[pos], "box", 3) == 0) {
         pos++;
-        RAS(pos + 7 < narg,
+        RAS(pos + 8 < narg,
             "not enough arguments for\n"
-            "  --uniform box h0 doubling_distance xmin ymin zmin "
+            "  --uniform box {ceil,floor} h0 doubling_distance xmin ymin zmin "
             "xmax ymax zmax");
+        RAS(strncmp(args[pos], "ceil", 4) == 0 ||
+                strncmp(args[pos], "floor", 5) == 0,
+            "ceil or floor is missing\n"
+            "  --uniform box {ceil,floor} h0 doubling_distance xmin ymin zmin "
+            "xmax ymax zmax");
+        ceil = (strncmp(args[pos], "ceil", 4) == 0);
+        pos++;
         h0 = atof(args[pos]);
         pos++;
         doubling_distance = atof(args[pos]);
@@ -2413,12 +2421,21 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
             h = h0 * pow(2, r / doubling_distance);
           }
           RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
-          ref_matrix_eig(diag_system, 0) =
-              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
-          ref_matrix_eig(diag_system, 1) =
-              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
-          ref_matrix_eig(diag_system, 2) =
-              MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          if (ceil) {
+            ref_matrix_eig(diag_system, 0) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          } else {
+            ref_matrix_eig(diag_system, 0) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          }
           RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
           if (ref_grid_twod(ref_grid)) {
             metric[2 + 6 * node] = 0.0;

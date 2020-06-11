@@ -2162,11 +2162,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* parse interior box spacing*/
+  { /* parse interior box floor spacing*/
     char *args[] = {
-        "--uniform", "box", "2", "1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "floor", "2", "1", "0", "0", "0", "1", "1", "1",
     };
-    int narg = 10;
+    int narg = 11;
     REF_DBL tol = -1.0;
     REF_DBL *metric;
     REF_GRID ref_grid;
@@ -2198,9 +2198,10 @@ int main(int argc, char *argv[]) {
 
   { /* parse outside box spacing*/
     char *args[] = {
-        "--uniform", "box", "3", "0.5", "-1", "-1", "-1", "0", "0", "0",
+        "--uniform", "box", "floor", "3", "0.5", "-1",
+        "-1",        "-1",  "0",     "0", "0",
     };
-    int narg = 10;
+    int narg = 11;
     REF_DBL tol = -1.0;
     REF_DBL *metric;
     REF_GRID ref_grid;
@@ -2223,6 +2224,79 @@ int main(int argc, char *argv[]) {
                pow(ref_node_xyz(ref_grid_node(ref_grid), 1, node), 2) +
                pow(ref_node_xyz(ref_grid_node(ref_grid), 2, node), 2));
       h = 3.0 * pow(2.0, r / 0.5);
+      RWDS(1.0 / (h * h), metric[0 + 6 * node], tol, "m[0]");
+      RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
+      RWDS(1.0 / (h * h), metric[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, metric[4 + 6 * node], tol, "m[4]");
+      RWDS(1.0 / (h * h), metric[5 + 6 * node], tol, "m[5]");
+    }
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* parse interior box ceil spacing*/
+    char *args[] = {
+        "--uniform", "box", "ceil", "0.25", "1", "0", "0", "0", "1", "1", "1",
+    };
+    int narg = 11;
+    REF_DBL tol = -1.0;
+    REF_DBL *metric;
+    REF_GRID ref_grid;
+    REF_INT node;
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      metric[0 + 6 * node] = 4.0;
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 4.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 4.0;
+    }
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(16.0, metric[0 + 6 * node], tol, "m[0]");
+      RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
+      RWDS(16.0, metric[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, metric[4 + 6 * node], tol, "m[4]");
+      RWDS(16.0, metric[5 + 6 * node], tol, "m[5]");
+    }
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  { /* parse outside box spacing*/
+    char *args[] = {
+        "--uniform", "box", "ceil", "3", "0.5", "-1", "-1", "-1", "0", "0", "0",
+    };
+    int narg = 11;
+    REF_DBL tol = -1.0;
+    REF_DBL *metric;
+    REF_GRID ref_grid;
+    REF_INT node;
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      metric[0 + 6 * node] = 4.0;
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 4.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 4.0;
+    }
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL r, h;
+      r = sqrt(pow(ref_node_xyz(ref_grid_node(ref_grid), 0, node), 2) +
+               pow(ref_node_xyz(ref_grid_node(ref_grid), 1, node), 2) +
+               pow(ref_node_xyz(ref_grid_node(ref_grid), 2, node), 2));
+      h = MIN(3.0 * pow(2.0, r / 0.5), 0.5);
       RWDS(1.0 / (h * h), metric[0 + 6 * node], tol, "m[0]");
       RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
       RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
