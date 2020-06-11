@@ -2378,8 +2378,11 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   REF_DBL r, h;
   REF_BOOL ceil;
 
-  for (pos = 0; pos < narg; pos++) {
-    if (strncmp(args[pos], "--uniform", 9) == 0) {
+  pos = 0;
+  while (pos < narg) {
+    if (strncmp(args[pos], "--uniform", 9) != 0) {
+      pos++;
+    } else {
       pos++;
       if (pos < narg && strncmp(args[pos], "box", 3) == 0) {
         pos++;

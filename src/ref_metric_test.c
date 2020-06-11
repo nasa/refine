@@ -2309,6 +2309,41 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* parse interior box floor and box ceil spacing, last wins */
+    char *args[] = {
+        "--uniform", "box", "floor", "4", "1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "ceil",  "2", "1", "0", "0", "0", "1", "1", "1",
+    };
+    int narg = 22;
+    REF_DBL tol = -1.0;
+    REF_DBL *metric;
+    REF_GRID ref_grid;
+    REF_INT node;
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      metric[0 + 6 * node] = 4.0;
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 4.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 4.0;
+    }
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RWDS(0.25, metric[0 + 6 * node], tol, "m[0]");
+      RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
+      RWDS(0.25, metric[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, metric[4 + 6 * node], tol, "m[4]");
+      RWDS(0.25, metric[5 + 6 * node], tol, "m[5]");
+    }
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
