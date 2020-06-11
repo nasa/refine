@@ -2393,7 +2393,7 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
                             char *args[]) {
   REF_INT i, node, pos;
   REF_DBL diag_system[12];
-  REF_DBL h0, doubling_distance;
+  REF_DBL h0, decay_distance;
   REF_DBL box[6];
   REF_DBL r, h;
   REF_BOOL ceil;
@@ -2408,18 +2408,18 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
         pos++;
         RAS(pos + 8 < narg,
             "not enough arguments for\n"
-            "  --uniform box {ceil,floor} h0 doubling_distance xmin ymin zmin "
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
             "xmax ymax zmax");
         RAS(strncmp(args[pos], "ceil", 4) == 0 ||
                 strncmp(args[pos], "floor", 5) == 0,
             "ceil or floor is missing\n"
-            "  --uniform box {ceil,floor} h0 doubling_distance xmin ymin zmin "
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
             "xmax ymax zmax");
         ceil = (strncmp(args[pos], "ceil", 4) == 0);
         pos++;
         h0 = atof(args[pos]);
         pos++;
-        doubling_distance = atof(args[pos]);
+        decay_distance = atof(args[pos]);
         pos++;
         h0 = ABS(h0); /* metric must be semi-positive definite */
         for (i = 0; i < 6; i++) {
@@ -2440,8 +2440,8 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
           }
           r = sqrt(r);
           h = h0;
-          if (ref_math_divisible(r, doubling_distance)) {
-            h = h0 * pow(2, r / doubling_distance);
+          if (ref_math_divisible(-r, decay_distance)) {
+            h = h0 * pow(2, -r / decay_distance);
           }
           RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
           if (ceil) {

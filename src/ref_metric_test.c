@@ -2164,7 +2164,7 @@ int main(int argc, char *argv[]) {
 
   { /* parse interior box floor spacing */
     char *args[] = {
-        "--uniform", "box", "floor", "2", "1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "floor", "2", "-1", "0", "0", "0", "1", "1", "1",
     };
     int narg = 11;
     REF_DBL tol = -1.0;
@@ -2198,7 +2198,7 @@ int main(int argc, char *argv[]) {
 
   { /* parse outside box spacing */
     char *args[] = {
-        "--uniform", "box", "floor", "3", "0.5", "-1",
+        "--uniform", "box", "floor", "3", "-0.5", "-1",
         "-1",        "-1",  "0",     "0", "0",
     };
     int narg = 11;
@@ -2223,7 +2223,7 @@ int main(int argc, char *argv[]) {
       r = sqrt(pow(ref_node_xyz(ref_grid_node(ref_grid), 0, node), 2) +
                pow(ref_node_xyz(ref_grid_node(ref_grid), 1, node), 2) +
                pow(ref_node_xyz(ref_grid_node(ref_grid), 2, node), 2));
-      h = 3.0 * pow(2.0, r / 0.5);
+      h = 3.0 * pow(2.0, -r / -0.5);
       RWDS(1.0 / (h * h), metric[0 + 6 * node], tol, "m[0]");
       RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
       RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
@@ -2238,7 +2238,7 @@ int main(int argc, char *argv[]) {
 
   { /* parse interior box ceil spacing */
     char *args[] = {
-        "--uniform", "box", "ceil", "0.25", "1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "ceil", "0.25", "-1", "0", "0", "0", "1", "1", "1",
     };
     int narg = 11;
     REF_DBL tol = -1.0;
@@ -2272,7 +2272,8 @@ int main(int argc, char *argv[]) {
 
   { /* parse outside box spacing */
     char *args[] = {
-        "--uniform", "box", "ceil", "3", "0.5", "-1", "-1", "-1", "0", "0", "0",
+        "--uniform", "box", "ceil", "3", "-0.5", "-1",
+        "-1",        "-1",  "0",    "0", "0",
     };
     int narg = 11;
     REF_DBL tol = -1.0;
@@ -2296,7 +2297,7 @@ int main(int argc, char *argv[]) {
       r = sqrt(pow(ref_node_xyz(ref_grid_node(ref_grid), 0, node), 2) +
                pow(ref_node_xyz(ref_grid_node(ref_grid), 1, node), 2) +
                pow(ref_node_xyz(ref_grid_node(ref_grid), 2, node), 2));
-      h = MIN(3.0 * pow(2.0, r / 0.5), 0.5);
+      h = MIN(3.0 * pow(2.0, -r / -0.5), 0.5);
       RWDS(1.0 / (h * h), metric[0 + 6 * node], tol, "m[0]");
       RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
       RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
@@ -2311,8 +2312,8 @@ int main(int argc, char *argv[]) {
 
   { /* parse interior box floor and box ceil spacing, last wins */
     char *args[] = {
-        "--uniform", "box", "floor", "4", "1", "0", "0", "0", "1", "1", "1",
-        "--uniform", "box", "ceil",  "2", "1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "floor", "4", "-1", "0", "0", "0", "1", "1", "1",
+        "--uniform", "box", "ceil",  "2", "-1", "0", "0", "0", "1", "1", "1",
     };
     int narg = 22;
     REF_DBL tol = -1.0;
