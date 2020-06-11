@@ -2350,26 +2350,31 @@ int main(int argc, char *argv[]) {
     REF_DBL dist;
     REF_DBL xyz[3];
     REF_DBL tol = -1.0;
+    /* inside */
     xyz[0] = 0;
     xyz[1] = 0;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(0.0, dist, tol, "inside");
+    /* negative axis */
     xyz[0] = -1;
     xyz[1] = 0;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(1.0, dist, tol, "inside");
+    /* positive axis */
     xyz[0] = 3;
     xyz[1] = 0;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(2.0, dist, tol, "inside");
+    /* end radial position */
     xyz[0] = 0;
     xyz[1] = 1;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(0.5, dist, tol, "inside");
+    /* middle radial position */
     xyz[0] = 0.5;
     xyz[1] = 2.0;
     xyz[2] = 0;
