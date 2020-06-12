@@ -146,7 +146,7 @@ set(REF_MPI_SRC
         )
 
 add_library(refine_with_egadslite STATIC ref_egads.c)
-target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADSLITE)
+target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS_LITE)
 
 add_library(refine_with_egads STATIC ref_egads.c)
 if (EGADS_FOUND)
