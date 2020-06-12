@@ -104,10 +104,19 @@ set(REF_TWO_SRC
 )
 
 function(install_target TARGET_NAME)
-    install(TARGETS ${TARGET_NAME}
-    		DESTINATION bin)
-    set_target_rpath(${TARGET_NAME} ${CMAKE_INSTALL_PREFIX})
-endfunction()
+	install(TARGETS ${TARGET_NAME}
+			DESTINATION bin)
+	set_target_rpath(${TARGET_NAME} ../lib)
+endfunction(install_target)
+
+function (create_program TARGET_NAME REFINE_LIBRARY)
+	add_executable(${TARGET_NAME} ${ARGN})
+	target_link_libraries(${TARGET_NAME} PRIVATE ${REFINE_LIBRARY})
+	if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+		target_compile_options(${TARGET_NAME} PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
+	endif()
+	install_target(${TARGET_NAME})
+endfunction(create_program)
 
 if (EGADS_FOUND)
 	message(STATUS "EGADS Found: ${EGADS_LIBRARIES}")
@@ -141,34 +150,31 @@ if(MATH_LIBRARY)
 endif()
 
 add_library(refine STATIC ${REF_TWO_SRC} ${REF_TWO_HEADERS})
-target_link_libraries(refine PUBLIC ${THIRD_PARTY_LIBRARIES})
-target_include_directories(refine PUBLIC ${THIRD_PARTY_INCLUDES})
-target_compile_definitions(refine PUBLIC ${EXTRA_DEFINITIONS})
+target_link_libraries(refine PRIVATE ${THIRD_PARTY_LIBRARIES})
+target_include_directories(refine PRIVATE ${THIRD_PARTY_INCLUDES})
+target_compile_definitions(refine PRIVATE ${EXTRA_DEFINITIONS})
 
-add_executable(ref ref_subcommand.c)
-target_link_libraries(ref PRIVATE refine)
+set(PROGRAMS_THAT_DO_NOT_REQUIRE_MPI
+		ref_driver
+		ref_translate
+		ref_axisymmetric
+		ref_inflatable
+		ref_acceptance
+		)
 
-add_executable(ref_phys_test ref_phys_test.c)
-target_link_libraries(ref_phys_test PRIVATE refine)
-
-add_executable(ref_migrate_test ref_migrate_test.c)
-target_link_libraries(ref_migrate_test PRIVATE refine)
-
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  target_compile_options(ref_phys_test PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
-  target_compile_options(ref_migrate_test PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
-endif()
-
-install_target(ref)
-install_target(ref_phys_test)
-install_target(ref_migrate_test)
+foreach(PROGRAM ${PROGRAMS_THAT_DO_NOT_REQUIRE_MPI})
+	create_program(${PROGRAM} refine ${PROGRAM}.c)
+endforeach()
+create_program(ref refine ref_subcommand.c)
 
 if (MPI_FOUND)
 	message("-- MPI Found: ${MPI_LIBRARIES}")
+
+	add_library(refinempi STATIC ${REF_TWO_SRC} ${REF_TWO_HEADERS})
+	target_link_libraries(refinempi PRIVATE ${THIRD_PARTY_LIBRARIES} ${MPI_LIBRARIES})
+	target_include_directories(refinempi PRIVATE ${THIRD_PARTY_INCLUDES} ${MPI_INCLUDE_PATH})
+	target_compile_definitions(refinempi PRIVATE ${EXTRA_DEFINITIONS} HAVE_MPI)
+
 	message("-- building refmpifull with MPI support")
-	add_executable(refmpifull ${REF_TWO_SRC} ${REF_TWO_HEADERS} ref_subcommand.c)
-	target_link_libraries(refmpifull PRIVATE ${THIRD_PARTY_LIBRARIES} ${MPI_LIBRARIES})
-	target_compile_definitions(refmpifull PRIVATE ${EXTRA_DEFINITIONS} HAVE_MPI)
-	target_include_directories(refmpifull PRIVATE ${THIRD_PARTY_INCLUDES} ${MPI_INCLUDE_PATH})
-    install_target(refmpifull)
+	create_program(refmpifull refinempi ref_subcommand.c)
 endif()
