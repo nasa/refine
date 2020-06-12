@@ -2435,9 +2435,12 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   x = ref_math_dot(pa, u); /* sign flip, error in paper? */
   n = sqrt(ref_math_dot(pa, pa));
   y2 = n * n - x * x;
-  RAB(y2 >= 0, "y2 is negative, no sqrt",
-      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
-  y = sqrt(y2);
+  if (verbose) printf("n2 %f x2 %f y2 %f\n", n * n, x * x, y2);
+  if (y2 <= 0) {
+    y = 0;
+  } else {
+    y = sqrt(y2);
+  }
   if (verbose) printf("x %f y %f l %f\n", x, y, l);
   if (x < 0) {
     if (y2 < ra * ra) {
@@ -2496,7 +2499,7 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   REF_INT i, node, pos;
   REF_DBL diag_system[12];
   REF_DBL h0, decay_distance;
-  REF_DBL box[6];
+  REF_DBL geom[8];
   REF_DBL r, h;
   REF_BOOL ceil;
 
@@ -2525,13 +2528,67 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
         pos++;
         h0 = ABS(h0); /* metric must be semi-positive definite */
         for (i = 0; i < 6; i++) {
-          box[i] = atof(args[pos]);
+          geom[i] = atof(args[pos]);
           pos++;
         }
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
           RSS(ref_metric_cart_box_dist(
-                  box, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
+                  geom, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
               "box dist");
+          h = h0;
+          if (ref_math_divisible(-r, decay_distance)) {
+            h = h0 * pow(2, -r / decay_distance);
+          }
+          RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+          if (ceil) {
+            ref_matrix_eig(diag_system, 0) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          } else {
+            ref_matrix_eig(diag_system, 0) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          }
+          RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
+          if (ref_grid_twod(ref_grid)) {
+            metric[2 + 6 * node] = 0.0;
+            metric[4 + 6 * node] = 0.0;
+            metric[5 + 6 * node] = 1.0;
+          }
+        }
+      }
+      if (pos < narg && strncmp(args[pos], "cyl", 3) == 0) {
+        pos++;
+        RAS(pos + 10 < narg,
+            "not enough arguments for\n"
+            "  --uniform cyl {ceil,floor} h0 decay_distance x1 y1 z1 "
+            "x2 y2 z2 r1 r2");
+        RAS(strncmp(args[pos], "ceil", 4) == 0 ||
+                strncmp(args[pos], "floor", 5) == 0,
+            "ceil or floor is missing\n"
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
+            "xmax ymax zmax");
+        ceil = (strncmp(args[pos], "ceil", 4) == 0);
+        pos++;
+        h0 = atof(args[pos]);
+        pos++;
+        decay_distance = atof(args[pos]);
+        pos++;
+        h0 = ABS(h0); /* metric must be semi-positive definite */
+        for (i = 0; i < 8; i++) {
+          geom[i] = atof(args[pos]);
+          pos++;
+        }
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          RSS(ref_metric_truncated_cone_dist(
+                  geom, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
+              "trunc cone dist");
           h = h0;
           if (ref_math_divisible(-r, decay_distance)) {
             h = h0 * pow(2, -r / decay_distance);
