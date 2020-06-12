@@ -26,5 +26,5 @@ mkdir -p build
       -DCMAKE_C_COMPILER=gcc \
       .. > $log 2>&1\
       && make -j 8 install >> $log 2>&1\
-      && make test) || exit 1
+      && ctest --output-on-failure >> $log 2>&1) || exit 1
 trap - EXIT
