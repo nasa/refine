@@ -14,7 +14,7 @@ set(REF_TWO_HEADERS
         ref_dict.h
         ref_dist.h
         ref_edge.h
-	    ref_egads.h
+        ref_egads.h
         ref_elast.h
         ref_endian.h
         ref_export.h
@@ -50,111 +50,200 @@ set(REF_TWO_HEADERS
         ref_subdiv.h
         ref_swap.h
         ref_validation.h
-		ref_elast.h
-		ref_endian.h
-		)
+        )
 
-set(REF_TWO_SRC
-    ref_adapt.c
-    ref_agents.c
-    ref_adj.c
-    ref_args.c
-    ref_axi.c
-    ref_cavity.c
-    ref_cell.c
-    ref_cloud.c
-    ref_clump.c
-    ref_collapse.c
-    ref_comprow.c
-    ref_dict.c
-    ref_dist.c
-    ref_edge.c
-    ref_egads.c
-    ref_export.c
-    ref_face.c
-    ref_fixture.c
-    ref_fortran.c
-    ref_gather.c
-    ref_geom.c
-    ref_grid.c
-    ref_histogram.c
-    ref_html.c
-    ref_import.c
-    ref_inflate.c
-    ref_interp.c
-    ref_list.c
-    ref_math.c
-    ref_matrix.c
-    ref_meshlink.c
-    ref_metric.c
-    ref_migrate.c
-    ref_mpi.c
-    ref_node.c
-    ref_part.c
-    ref_phys.c
-    ref_recon.c
-    ref_search.c
-    ref_shard.c
-    ref_smooth.c
-    ref_sort.c
-    ref_split.c
-    ref_subdiv.c
-    ref_swap.c
-    ref_validation.c
-)
+set(REF_CORE_SRC
+        ref_adapt.c
+        ref_agents.c
+        ref_adj.c
+        ref_args.c
+        ref_axi.c
+        ref_cavity.c
+        ref_cell.c
+        ref_cloud.c
+        ref_clump.c
+        ref_collapse.c
+        ref_comprow.c
+        ref_dict.c
+        ref_dist.c
+        ref_edge.c
+        ref_elast.c
+        ref_export.c
+        ref_face.c
+        ref_fixture.c
+        ref_fortran.c
+        ref_gather.c
+        ref_geom.c
+        ref_grid.c
+        ref_histogram.c
+        ref_html.c
+        ref_import.c
+        ref_inflate.c
+        ref_interp.c
+        ref_layer.c
+        ref_list.c
+        ref_math.c
+        ref_matrix.c
+        ref_meshlink.c
+        ref_metric.c
+        ref_node.c
+        ref_part.c
+        ref_phys.c
+        ref_recon.c
+        ref_search.c
+        ref_shard.c
+        ref_smooth.c
+        ref_sort.c
+        ref_split.c
+        ref_subdiv.c
+        ref_swap.c
+        ref_validation.c
+        )
 
 function(install_target TARGET_NAME)
+    set_target_rpath(${TARGET_NAME})
     install(TARGETS ${TARGET_NAME}
-    		DESTINATION bin)
-    set_target_rpath(${TARGET_NAME} ${CMAKE_INSTALL_PREFIX})
-endfunction()
+            DESTINATION bin)
+endfunction(install_target)
+
+function(create_program TARGET_NAME)
+    add_executable(${TARGET_NAME} ${ARGN})
+    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+        target_compile_options(${TARGET_NAME} PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
+    endif ()
+    install_target(${TARGET_NAME})
+endfunction(create_program)
 
 if (EGADS_FOUND)
-	message("-- EGADS Found: ${EGADS_LIBRARIES}")
-	list(APPEND THIRD_PARTY_LIBRARIES ${EGADS_LIBRARIES})
-	list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIR})
-	set(EXTRA_DEFINITIONS "${EXTRA_DEFINITIONS} HAVE_EGADS")
-endif()
+    message(STATUS "EGADS Found: ${EGADS_LIBRARIES}")
+    message(STATUS "EGADSLITE Found: ${EGADSLITE_LIBRARIES}")
+    list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIR})
+    list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
+endif ()
 
-if (OpenCASCADE_FOUND)
-	message("-- OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
-	list(APPEND THIRD_PARTY_LIBRARIES ${OpenCASCADE_LIBRARIES})
-endif()
+if (PARMETIS_FOUND)
+    message(STATUS "ParMETIS Found: ${PARMETIS_LIBRARIES}")
+    list(APPEND THIRD_PARTY_LIBRARIES ${PARMETIS_LIBRARIES})
+    list(APPEND THIRD_PARTY_INCLUDES ${PARMETIS_INCLUDE_DIRS})
+    list(APPEND EXTRA_DEFINITIONS HAVE_PARMETIS)
+endif ()
+
+if (ZOLTAN_FOUND)
+    message(STATUS "Zoltan Found: ${ZOLTAN_LIBRARIES}")
+    list(APPEND THIRD_PARTY_LIBRARIES ${ZOLTAN_LIBRARIES})
+    list(APPEND THIRD_PARTY_INCLUDES ${ZOLTAN_INCLUDE_DIRS})
+    list(APPEND EXTRA_DEFINITIONS HAVE_ZOLTAN)
+endif ()
 
 find_library(MATH_LIBRARY m REQUIRED)
-if(MATH_LIBRARY)
+if (MATH_LIBRARY)
     list(APPEND THIRD_PARTY_LIBRARIES ${MATH_LIBRARY})
-endif()
+endif ()
 
-add_library(refine STATIC ${REF_TWO_SRC} ${REF_TWO_HEADERS})
-target_link_libraries(refine PUBLIC ${THIRD_PARTY_LIBRARIES})
-target_include_directories(refine PUBLIC ${THIRD_PARTY_INCLUDES})
-target_compile_definitions(refine PUBLIC ${EXTRA_DEFINITIONS})
+set(REF_MPI_SRC
+        ref_mpi.c
+        ref_migrate.c
+        )
 
-add_executable(ref ref_subcommand.c)
-target_link_libraries(ref PRIVATE refine)
+add_library(refine_with_egadslite STATIC ref_egads.c)
+target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS_LITE)
 
-add_executable(ref_phys_test ref_phys_test.c)
-target_link_libraries(ref_phys_test PRIVATE refine)
+add_library(refine_with_egads STATIC ref_egads.c)
+if (EGADS_FOUND)
+    target_link_libraries(refine_with_egads PRIVATE ${EGADS_LIBRARIES})
+    target_include_directories(refine_with_egads PRIVATE ${EGADS_INCLUDE_DIRS})
+    target_compile_definitions(refine_with_egads PRIVATE HAVE_EGADS)
+    if (OpenCASCADE_FOUND)
+        message(STATUS "OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
+        target_link_libraries(refine_with_egads PRIVATE ${OpenCASCADE_LIBRARIES})
+    endif ()
 
-add_executable(ref_migrate_test ref_migrate_test.c)
-target_link_libraries(ref_migrate_test PRIVATE refine)
+    target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS)
+    target_include_directories(refine_with_egadslite PRIVATE ${EGADS_INCLUDE_DIRS})
+    target_link_libraries(refine_with_egadslite PRIVATE ${EGADSLITE_LIBRARIES})
+endif ()
 
-if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
-  target_compile_options(ref_phys_test PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
-  target_compile_options(ref_migrate_test PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
-endif()
+add_library(refine_without_mpi STATIC ${REF_MPI_SRC})
+if (MPI_FOUND)
+    add_library(refine_with_mpi STATIC ${REF_MPI_SRC})
+    target_include_directories(refine_with_mpi PRIVATE ${MPI_INCLUDE_PATH})
+    target_link_libraries(refine_with_mpi PRIVATE ${MPI_C_LIBRARIES})
+    target_compile_definitions(refine_with_mpi PRIVATE HAVE_MPI)
+endif ()
 
-install_target(ref)
-install_target(ref_phys_test)
-install_target(ref_migrate_test)
+add_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
+target_link_libraries(refine_core PRIVATE ${THIRD_PARTY_LIBRARIES})
+target_include_directories(refine_core PRIVATE ${THIRD_PARTY_INCLUDES})
+target_compile_definitions(refine_core PRIVATE ${EXTRA_DEFINITIONS})
+
+create_program(ref ref_subcommand.c)
+target_link_libraries(ref PRIVATE refine_core refine_without_mpi refine_with_egads)
 
 if (MPI_FOUND)
-	message("-- MPI Found: ${MPI_LIBRARIES}")
-	message("-- building refmpifull with MPI support")
-	add_executable(refmpifull ${REF_TWO_SRC} ${REF_TWO_HEADERS} ref_subcommand.c)
-	target_link_libraries(refmpifull PRIVATE ${THIRD_PARTY_LIBRARIES} ${MPI_LIBRARIES})
-	target_compile_definitions(refmpifull PRIVATE ${EXTRA_DEFINITIONS} HAVE_MPI)
-	target_include_directories(refmpifull PRIVATE ${THIRD_PARTY_INCLUDES} ${MPI_INCLUDE_PATH})
-    install_target(refmpifull)
-endif()
+    message("-- MPI Found: ${MPI_C_LIBRARIES}")
+    message("-- building refmpifull with MPI support")
+    create_program(refmpifull ref_subcommand.c)
+    target_link_libraries(refmpifull PRIVATE refine_core refine_with_mpi refine_with_egads)
+
+    message("-- building refmpi with MPI support")
+    create_program(refmpi ref_subcommand.c)
+    target_link_libraries(refmpi PRIVATE refine_core refine_with_mpi refine_with_egadslite)
+endif ()
+
+set(REF_TESTS
+        ref_adapt_test.c
+        ref_adj_test.c
+        ref_agents_test.c
+        ref_args_test.c
+        ref_axi_test.c
+        ref_cavity_test.c
+        ref_cell_test.c
+        ref_cloud_test.c
+        ref_clump_test.c
+        ref_collapse_test.c
+        ref_comprow_test.c
+        ref_dict_test.c
+        ref_dist_test.c
+        ref_edge_test.c
+        ref_egads_test.c
+        ref_elast_test.c
+        ref_export_test.c
+        ref_face_test.c
+        ref_fixture_test.c
+        ref_fortran_test.c
+        ref_gather_test.c
+        ref_geom_test.c
+        ref_grid_test.c
+        ref_histogram_test.c
+        ref_html_test.c
+        ref_import_test.c
+        ref_inflate_test.c
+        ref_interp_test.c
+        ref_layer_test.c
+        ref_list_test.c
+        ref_math_test.c
+        ref_matrix_test.c
+        ref_meshlink_test.c
+        ref_metric_test.c
+        ref_migrate_test.c
+        ref_mpi_test.c
+        ref_node_test.c
+        ref_part_test.c
+        ref_phys_test.c
+        ref_recon_test.c
+        ref_search_test.c
+        ref_shard_test.c
+        ref_smooth_test.c
+        ref_sort_test.c
+        ref_split_test.c
+        ref_subdiv_test.c
+        ref_swap_test.c
+        ref_validation_test.c
+        )
+
+foreach(REF_TEST_SRC ${REF_TESTS})
+    string(REPLACE ".c" "" REF_TEST_NAME ${REF_TEST_SRC})
+    add_executable(${REF_TEST_NAME} ${REF_TEST_SRC})
+    target_link_libraries(${REF_TEST_NAME} PRIVATE refine_core refine_without_mpi refine_with_egads)
+    add_test(NAME ${REF_TEST_NAME} COMMAND ${REF_TEST_NAME})
+endforeach()

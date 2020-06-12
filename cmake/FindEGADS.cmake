@@ -13,8 +13,10 @@ endif()
 find_path(EGADS_INCLUDE_DIR egads.h PATHS "${EGADS_PREFIX}/include")
 
 find_library(EGADS_LIBRARY egads PATHS "${EGADS_PREFIX}/lib")
+find_library(EGADSLITE_LIBRARY egadslite PATHS "${EGADS_PREFIX}/lib")
 
 set(EGADS_LIBRARIES ${EGADS_LIBRARY} )
+set(EGADSLITE_LIBRARIES ${EGADSLITE_LIBRARY} )
 set(EGADS_INCLUDE_DIRS ${EGADS_INCLUDE_DIR} )
 
 include(FindPackageHandleStandardArgs)
@@ -23,8 +25,8 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
         EGADS
         DEFAULT_MSG
-        EGADS_LIBRARY EGADS_INCLUDE_DIR
+        EGADS_LIBRARY EGADSLITE_LIBRARY EGADS_INCLUDE_DIR
 )
 
-mark_as_advanced(EGADS_INCLUDE_DIR EGADS_LIBRARY )
+mark_as_advanced(EGADS_INCLUDE_DIR EGADS_LIBRARY EGADSLITE_LIBRARY)
 
