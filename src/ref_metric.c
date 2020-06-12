@@ -2422,9 +2422,16 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
     u[d] = ba[d];
     pa[d] = p[d] - a[d]; /* direction flip, error in paper? */
   }
+  l = sqrt(ref_math_dot(ba, ba));
+  if (!ref_math_divisible(u[0], l) || !ref_math_divisible(u[1], l) ||
+      !ref_math_divisible(u[2], l)) { /* assume sphere */
+    REF_DBL r;
+    r = sqrt(pa[0] * pa[0] + pa[1] * pa[1] + pa[2] * pa[2]);
+    *dist = MAX(0, r - MAX(ra, rb));
+    return REF_SUCCESS;
+  }
   RSB(ref_math_normalize(u), "axis length zero",
       { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
-  l = sqrt(ref_math_dot(ba, ba));
   x = ref_math_dot(pa, u); /* sign flip, error in paper? */
   n = sqrt(ref_math_dot(pa, pa));
   y2 = n * n - x * x;
