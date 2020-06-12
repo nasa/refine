@@ -2369,6 +2369,20 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+/*
+@article{barbier-galin-fast-dist-cyl-cone-swept-sphere,
+author = {Aurelien Barbier and Eric Galin},
+title = {Fast Distance Computation Between a Point and
+         Cylinders, Cones, Line-Swept Spheres and Cone-Spheres},
+journal = {Journal of Graphics Tools},
+volume = 9,
+number = 2,
+pages = {11--19},
+year  = 2004,
+publisher = {Taylor & Francis},
+doi = {10.1080/10867651.2004.10504892}
+} % https://liris.cnrs.fr/Documents/Liris-1297.pdf
+*/
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
                                           REF_DBL *dist) {
   REF_INT d;
@@ -2399,12 +2413,12 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   for (d = 0; d < 3; d++) {
     ba[d] = b[d] - a[d];
     u[d] = ba[d];
-    pa[d] = p[d] - a[d];
+    pa[d] = p[d] - a[d]; /* direction flip, error in paper? */
   }
   RSS(ref_math_normalize(u), "axis length zero");
   l = sqrt(ref_math_dot(ba, ba));
   /*s = sqrt(l*l+delta*delta);*/
-  x = ref_math_dot(pa, u);
+  x = ref_math_dot(pa, u); /* sign flip, error in paper? */
   n = sqrt(ref_math_dot(pa, pa));
   y2 = n * n - x * x;
   printf("x %f y2 %f l %f\n", x, y2, l);
