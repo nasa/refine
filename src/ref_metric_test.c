@@ -2431,6 +2431,25 @@ int main(int argc, char *argv[]) {
     RWDS(0.5, dist, tol, "outside");
   }
 
+  { /* distance to truncated cone (core) */
+    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 0, 1};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0.5;
+    xyz[1] = 0.2;
+    xyz[2] = 0.3;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.0, dist, tol, "inside");
+    /* tip */
+    xyz[0] = -2;
+    xyz[1] = -1;
+    xyz[2] = -1;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(6), dist, tol, "tip");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

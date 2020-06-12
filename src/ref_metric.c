@@ -2474,7 +2474,7 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
     *dist = sqrt(yprime * yprime + (xprime - s) * (xprime - s));
     return REF_SUCCESS;
   }
-  *dist = yprime;
+  *dist = MAX(0, yprime);
   return REF_SUCCESS;
 }
 
