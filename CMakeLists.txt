@@ -4,6 +4,8 @@ project(refine)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(RPathHelpers)
+include(CTest)
+enable_testing()
 
 find_package(MPI QUIET)
 find_package(OpenCASCADE QUIET)

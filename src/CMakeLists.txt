@@ -50,8 +50,6 @@ set(REF_TWO_HEADERS
         ref_subdiv.h
         ref_swap.h
         ref_validation.h
-        ref_elast.h
-        ref_endian.h
         )
 
 set(REF_CORE_SRC
@@ -69,6 +67,7 @@ set(REF_CORE_SRC
         ref_dict.c
         ref_dist.c
         ref_edge.c
+        ref_elast.c
         ref_export.c
         ref_face.c
         ref_fixture.c
@@ -81,6 +80,7 @@ set(REF_CORE_SRC
         ref_import.c
         ref_inflate.c
         ref_interp.c
+        ref_layer.c
         ref_list.c
         ref_math.c
         ref_matrix.c
@@ -103,7 +103,7 @@ set(REF_CORE_SRC
 function(install_target TARGET_NAME)
     install(TARGETS ${TARGET_NAME}
             DESTINATION bin)
-    set_target_rpath(${TARGET_NAME} ../lib)
+    set_target_rpath(${TARGET_NAME})
 endfunction(install_target)
 
 function(create_program TARGET_NAME)
@@ -189,3 +189,61 @@ if (MPI_FOUND)
     create_program(refmpi ref_subcommand.c)
     target_link_libraries(refmpi PRIVATE refine_core refine_with_mpi refine_with_egadslite)
 endif ()
+
+set(REF_TESTS
+        ref_adapt_test.c
+        ref_adj_test.c
+        ref_agents_test.c
+        ref_args_test.c
+        ref_axi_test.c
+        ref_cavity_test.c
+        ref_cell_test.c
+        ref_cloud_test.c
+        ref_clump_test.c
+        ref_collapse_test.c
+        ref_comprow_test.c
+        ref_dict_test.c
+        ref_dist_test.c
+        ref_edge_test.c
+        ref_egads_test.c
+        ref_elast_test.c
+        ref_export_test.c
+        ref_face_test.c
+        ref_fixture_test.c
+        ref_fortran_test.c
+        ref_gather_test.c
+        ref_geom_test.c
+        ref_grid_test.c
+        ref_histogram_test.c
+        ref_html_test.c
+        ref_import_test.c
+        ref_inflate_test.c
+        ref_interp_test.c
+        ref_layer_test.c
+        ref_list_test.c
+        ref_math_test.c
+        ref_matrix_test.c
+        ref_meshlink_test.c
+        ref_metric_test.c
+        ref_migrate_test.c
+        ref_mpi_test.c
+        ref_node_test.c
+        ref_part_test.c
+        ref_phys_test.c
+        ref_recon_test.c
+        ref_search_test.c
+        ref_shard_test.c
+        ref_smooth_test.c
+        ref_sort_test.c
+        ref_split_test.c
+        ref_subdiv_test.c
+        ref_swap_test.c
+        ref_validation_test.c
+        )
+
+foreach(REF_TEST_SRC ${REF_TESTS})
+    string(REPLACE ".c" "" REF_TEST_NAME ${REF_TEST_SRC})
+    add_executable(${REF_TEST_NAME} ${REF_TEST_SRC})
+    target_link_libraries(${REF_TEST_NAME} PRIVATE refine_core refine_without_mpi refine_with_egads)
+    add_test(NAME ${REF_TEST_NAME} COMMAND ${REF_TEST_NAME})
+endforeach()
