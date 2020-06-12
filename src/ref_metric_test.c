@@ -2345,26 +2345,205 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* distance to truncated cone 2 */
-    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 0.5, 1};
+  { /* distance to truncated cone (cylinder) */
+    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 1, 1};
     REF_DBL dist;
     REF_DBL xyz[3];
     REF_DBL tol = -1.0;
+    /* inside */
     xyz[0] = 0;
     xyz[1] = 0;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(0.0, dist, tol, "inside");
+    /* negative axis */
     xyz[0] = -1;
-    xyz[1] = 0;
-    xyz[2] = 0;
+    xyz[1] = 0.2;
+    xyz[2] = 0.3;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(1.0, dist, tol, "inside");
+    RWDS(1.0, dist, tol, "neg axis");
+    /* positive axis */
     xyz[0] = 3;
+    xyz[1] = 0.4;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(2.0, dist, tol, "pos axis");
+    /* ra end circle position */
+    xyz[0] = -1;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "a ra circle");
+    /* inside middle radial position */
+    xyz[0] = 0.5;
+    xyz[1] = 0.5;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.0, dist, tol, "inside");
+    /* above ra radial position */
+    xyz[0] = 0;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "a ra circle");
+    /* rb end circle position */
+    xyz[0] = 2;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "a rb circle");
+    /* outside middle radial position y */
+    xyz[0] = 0.5;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "outside middle radial y");
+    /* outside middle radial position z */
+    xyz[0] = 0.5;
+    xyz[1] = 0;
+    xyz[2] = 2;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "outside middle radial z");
+    /* outside middle radial position yz */
+    xyz[0] = 0.5;
+    xyz[1] = 2;
+    xyz[2] = 2;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2 * 2 + 2 * 2) - 1, dist, tol, "outside middle radial yz");
+  }
+
+  { /* distance to truncated cone (sphere) */
+    REF_DBL cone_geom[] = {0, 0, 0, 0, 0, 0, 1, 1.5};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0;
     xyz[1] = 0;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(2.0, dist, tol, "inside");
+    RWDS(0.0, dist, tol, "inside");
+    /* outside */
+    xyz[0] = 2;
+    xyz[1] = 0;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.5, dist, tol, "outside");
+  }
+
+  { /* distance to truncated cone (core) */
+    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 0, 1};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0.5;
+    xyz[1] = 0.2;
+    xyz[2] = 0.3;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.0, dist, tol, "inside");
+    /* tip */
+    xyz[0] = -2;
+    xyz[1] = -1;
+    xyz[2] = -1;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(6), dist, tol, "tip");
+    /* side */
+    xyz[0] = 0;
+    xyz[1] = -1;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.5 * sqrt(2), dist, tol, "side");
+    /* side 11 */
+    xyz[0] = -1;
+    xyz[1] = -1;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "side 11");
+  }
+
+  { /* distance to truncated cone (core) */
+    REF_DBL cone_geom[] = {-1, -1, -1, -2, -2, -2, 0, 1};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(3), dist, tol, "inside");
+  }
+
+  { /* distance to truncated cone (line) */
+    REF_DBL cone_geom[] = {0, 0, 0, 0, 0, 1, 0, 0};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0;
+    xyz[1] = 0;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0, dist, tol, "inside line");
+    /* radius */
+    xyz[0] = 1;
+    xyz[1] = 0;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "line radii");
+    /* axis */
+    xyz[0] = 0;
+    xyz[1] = 0;
+    xyz[2] = 1.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.5, dist, tol, "line axis");
+    /* circle */
+    xyz[0] = 0;
+    xyz[1] = 1.0;
+    xyz[2] = 2.0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "line circle");
+  }
+
+  { /* parse outside box spacing */
+    char *args[] = {
+        "--uniform", "cyl", "ceil", "3",  "-0.5", "-1", "-1",
+        "-1",        "-2",  "-2",   "-2", "0",    "1",
+    };
+    int narg = 13;
+    REF_DBL tol = -1.0;
+    REF_DBL *metric;
+    REF_GRID ref_grid;
+    REF_INT node;
+    RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
+    ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      metric[0 + 6 * node] = 4.0;
+      metric[1 + 6 * node] = 0.0;
+      metric[2 + 6 * node] = 0.0;
+      metric[3 + 6 * node] = 4.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 4.0;
+    }
+    RSS(ref_metric_parse(metric, ref_grid, narg, args), "parse");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL r, h;
+      r = sqrt(pow(ref_node_xyz(ref_grid_node(ref_grid), 0, node), 2) +
+               pow(ref_node_xyz(ref_grid_node(ref_grid), 1, node), 2) +
+               pow(ref_node_xyz(ref_grid_node(ref_grid), 2, node), 2));
+      h = MIN(3.0 * pow(2.0, -r / -0.5), 0.5);
+      RWDS(1.0 / (h * h), metric[0 + 6 * node], tol, "m[0]");
+      RWDS(0.00, metric[1 + 6 * node], tol, "m[1]");
+      RWDS(0.00, metric[2 + 6 * node], tol, "m[2]");
+      RWDS(1.0 / (h * h), metric[3 + 6 * node], tol, "m[3]");
+      RWDS(0.00, metric[4 + 6 * node], tol, "m[4]");
+      RWDS(1.0 / (h * h), metric[5 + 6 * node], tol, "m[5]");
+    }
+    ref_free(metric);
+
+    RSS(ref_grid_free(ref_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");

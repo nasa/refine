@@ -2369,23 +2369,128 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
-                                          REF_DBL *dist) {
-  REF_INT i;
-  REF_DBL axis[3], s, l, dxyz[3], pos;
-  *dist = 0.0;
-  for (i = 0; i < 3; i++) {
-    axis[i] = cone_geom[i + 3] - cone_geom[i];
-    dxyz[i] = xyz[i] - cone_geom[i];
-  }
-  l = sqrt(ref_math_dot(axis, axis));
-  s = sqrt(ref_math_dot(dxyz, dxyz));
-  if (REF_SUCCESS == ref_math_normalize(axis) && ref_math_divisible(s, l)) {
-    pos = ref_math_dot(dxyz, axis);
-    if (pos < 0) *dist = -pos;
-    if (pos > l) *dist = pos - l;
-  }
+/*
+@article{barbier-galin-fast-dist-cyl-cone-swept-sphere,
+author = {Aurelien Barbier and Eric Galin},
+title = {Fast Distance Computation Between a Point and
+         Cylinders, Cones, Line-Swept Spheres and Cone-Spheres},
+journal = {Journal of Graphics Tools},
+volume = 9,
+number = 2,
+pages = {11--19},
+year  = 2004,
+publisher = {Taylor & Francis},
+doi = {10.1080/10867651.2004.10504892}
+} % https://liris.cnrs.fr/Documents/Liris-1297.pdf
+*/
+static void ref_metric_tattle_truncated_cone_dist(REF_DBL *cone_geom,
+                                                  REF_DBL *p) {
+  printf("p  %.18e %.18e %.18e\n", p[0], p[1], p[2]);
+  printf("x1 %.18e %.18e %.18e\n", cone_geom[0], cone_geom[1], cone_geom[2]);
+  printf("x2 %.18e %.18e %.18e\n", cone_geom[3], cone_geom[4], cone_geom[5]);
+  printf("r1 %.18e r2 %.18e\n", cone_geom[6], cone_geom[7]);
+}
 
+REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
+                                          REF_DBL *dist) {
+  REF_INT d;
+  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, y2, n, ra, rb, delta, s;
+  REF_DBL xprime, yprime;
+  REF_BOOL verbose = REF_FALSE;
+  if (verbose) printf("\np %f %f %f\n", p[0], p[1], p[2]);
+  if (ABS(cone_geom[6]) >= ABS(cone_geom[7])) {
+    ra = ABS(cone_geom[6]);
+    rb = ABS(cone_geom[7]);
+    for (d = 0; d < 3; d++) {
+      a[d] = cone_geom[d];
+      b[d] = cone_geom[d + 3];
+    }
+    if (verbose) printf("forward ra %f rb %f\n", ra, rb);
+  } else {
+    ra = ABS(cone_geom[7]);
+    rb = ABS(cone_geom[6]);
+    for (d = 0; d < 3; d++) {
+      a[d] = cone_geom[d + 3];
+      b[d] = cone_geom[d];
+    }
+    if (verbose) printf("reverse ra %f rb %f\n", ra, rb);
+  }
+  if (verbose) printf("a %f %f %f\n", a[0], a[1], a[2]);
+  if (verbose) printf("b %f %f %f\n", b[0], b[1], b[2]);
+  for (d = 0; d < 3; d++) {
+    ba[d] = b[d] - a[d];
+    u[d] = ba[d];
+    pa[d] = p[d] - a[d]; /* direction flip, error in paper? */
+  }
+  l = sqrt(ref_math_dot(ba, ba));
+  if (!ref_math_divisible(u[0], l) || !ref_math_divisible(u[1], l) ||
+      !ref_math_divisible(u[2], l)) { /* assume sphere */
+    REF_DBL r;
+    r = sqrt(pa[0] * pa[0] + pa[1] * pa[1] + pa[2] * pa[2]);
+    *dist = MAX(0, r - MAX(ra, rb));
+    return REF_SUCCESS;
+  }
+  RSB(ref_math_normalize(u), "axis length zero",
+      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
+  x = ref_math_dot(pa, u); /* sign flip, error in paper? */
+  n = sqrt(ref_math_dot(pa, pa));
+  y2 = n * n - x * x;
+  if (verbose) printf("n2 %f x2 %f y2 %f\n", n * n, x * x, y2);
+  if (y2 <= 0) {
+    y = 0;
+  } else {
+    y = sqrt(y2);
+  }
+  if (verbose) printf("x %f y %f l %f\n", x, y, l);
+  if (x < 0) {
+    if (y2 < ra * ra) {
+      *dist = -x;
+      return REF_SUCCESS;
+    } else {
+      *dist = sqrt((y - ra) * (y - ra) + x * x);
+      return REF_SUCCESS;
+    }
+  }
+  if (y2 < rb * rb) {
+    if (x > l) {
+      *dist = x - l;
+      return REF_SUCCESS;
+    } else {
+      *dist = 0;
+      return REF_SUCCESS;
+    }
+  }
+  delta = ra - rb;
+  s = sqrt(l * l + delta * delta);
+  RAB(ref_math_divisible(delta, s) && ref_math_divisible(l, s),
+      "div zero forming i and j",
+      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
+  if (verbose) printf("l/s %f delta/s %f\n", l / s, delta / s);
+  xprime = x * (l / s) - (y - ra) * (delta / s);
+  yprime = x * (delta / s) + (y - ra) * (l / s);
+  if (verbose) printf("xprime %f yprime %f\n", xprime, yprime);
+  if (xprime <= 0) {
+    *dist = sqrt((y - ra) * (y - ra) + x * x);
+    return REF_SUCCESS;
+  }
+  if (xprime >= s) {
+    *dist = sqrt(yprime * yprime + (xprime - s) * (xprime - s));
+    return REF_SUCCESS;
+  }
+  *dist = MAX(0, yprime);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom, REF_DBL *p,
+                                    REF_DBL *dist) {
+  REF_INT i;
+  /* distance to box, zero inside box */
+  *dist = 0;
+  for (i = 0; i < 3; i++) {
+    if (p[i] < box_geom[i]) (*dist) += pow(p[i] - box_geom[i], 2);
+    if (p[i] > box_geom[i + 3]) (*dist) += pow(p[i] - box_geom[i + 3], 2);
+  }
+  (*dist) = sqrt(*dist);
   return REF_SUCCESS;
 }
 
@@ -2394,7 +2499,7 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
   REF_INT i, node, pos;
   REF_DBL diag_system[12];
   REF_DBL h0, decay_distance;
-  REF_DBL box[6];
+  REF_DBL geom[8];
   REF_DBL r, h;
   REF_BOOL ceil;
 
@@ -2423,22 +2528,13 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
         pos++;
         h0 = ABS(h0); /* metric must be semi-positive definite */
         for (i = 0; i < 6; i++) {
-          box[i] = atof(args[pos]);
+          geom[i] = atof(args[pos]);
           pos++;
         }
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-          /* distance to box, zero inside box */
-          r = 0;
-          for (i = 0; i < 3; i++) {
-            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) < box[i])
-              r += pow(ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i],
-                       2);
-            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) > box[i + 3])
-              r += pow(
-                  ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i + 3],
-                  2);
-          }
-          r = sqrt(r);
+          RSS(ref_metric_cart_box_dist(
+                  geom, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
+              "box dist");
           h = h0;
           if (ref_math_divisible(-r, decay_distance)) {
             h = h0 * pow(2, -r / decay_distance);
@@ -2466,6 +2562,62 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
             metric[5 + 6 * node] = 1.0;
           }
         }
+        continue;
+      }
+      if (pos < narg && strncmp(args[pos], "cyl", 3) == 0) {
+        pos++;
+        RAS(pos + 10 < narg,
+            "not enough arguments for\n"
+            "  --uniform cyl {ceil,floor} h0 decay_distance x1 y1 z1 "
+            "x2 y2 z2 r1 r2");
+        RAS(strncmp(args[pos], "ceil", 4) == 0 ||
+                strncmp(args[pos], "floor", 5) == 0,
+            "ceil or floor is missing\n"
+            "  --uniform box {ceil,floor} h0 decay_distance xmin ymin zmin "
+            "xmax ymax zmax");
+        ceil = (strncmp(args[pos], "ceil", 4) == 0);
+        pos++;
+        h0 = atof(args[pos]);
+        pos++;
+        decay_distance = atof(args[pos]);
+        pos++;
+        h0 = ABS(h0); /* metric must be semi-positive definite */
+        for (i = 0; i < 8; i++) {
+          geom[i] = atof(args[pos]);
+          pos++;
+        }
+        each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+          RSS(ref_metric_truncated_cone_dist(
+                  geom, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
+              "trunc cone dist");
+          h = h0;
+          if (ref_math_divisible(-r, decay_distance)) {
+            h = h0 * pow(2, -r / decay_distance);
+          }
+          RSS(ref_matrix_diag_m(&(metric[6 * node]), diag_system), "decomp");
+          if (ceil) {
+            ref_matrix_eig(diag_system, 0) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MAX(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          } else {
+            ref_matrix_eig(diag_system, 0) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 0));
+            ref_matrix_eig(diag_system, 1) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 1));
+            ref_matrix_eig(diag_system, 2) =
+                MIN(1.0 / (h * h), ref_matrix_eig(diag_system, 2));
+          }
+          RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "reform");
+          if (ref_grid_twod(ref_grid)) {
+            metric[2 + 6 * node] = 0.0;
+            metric[4 + 6 * node] = 0.0;
+            metric[5 + 6 * node] = 1.0;
+          }
+        }
+        continue;
       }
     }
   }
