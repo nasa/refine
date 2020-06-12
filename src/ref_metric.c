@@ -2383,6 +2383,14 @@ publisher = {Taylor & Francis},
 doi = {10.1080/10867651.2004.10504892}
 } % https://liris.cnrs.fr/Documents/Liris-1297.pdf
 */
+static void ref_metric_tattle_truncated_cone_dist(REF_DBL *cone_geom,
+                                                  REF_DBL *p) {
+  printf("p  %.18e %.18e %.18e\n", p[0], p[1], p[2]);
+  printf("x1 %.18e %.18e %.18e\n", cone_geom[0], cone_geom[1], cone_geom[2]);
+  printf("x2 %.18e %.18e %.18e\n", cone_geom[3], cone_geom[4], cone_geom[5]);
+  printf("r1 %.18e r2 %.18e\n", cone_geom[6], cone_geom[7]);
+}
+
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
                                           REF_DBL *dist) {
   REF_INT d;
@@ -2414,12 +2422,14 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
     u[d] = ba[d];
     pa[d] = p[d] - a[d]; /* direction flip, error in paper? */
   }
-  RSS(ref_math_normalize(u), "axis length zero");
+  RSB(ref_math_normalize(u), "axis length zero",
+      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
   l = sqrt(ref_math_dot(ba, ba));
   x = ref_math_dot(pa, u); /* sign flip, error in paper? */
   n = sqrt(ref_math_dot(pa, pa));
   y2 = n * n - x * x;
-  RAS(y2 >= 0, "y2 is negative, no sqrt");
+  RAB(y2 >= 0, "y2 is negative, no sqrt",
+      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
   y = sqrt(y2);
   if (verbose) printf("x %f y %f l %f\n", x, y, l);
   if (x < 0) {
@@ -2442,8 +2452,9 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   }
   delta = ra - rb;
   s = sqrt(l * l + delta * delta);
-  RAS(ref_math_divisible(delta, s) && ref_math_divisible(l, s),
-      "div zero forming i and j");
+  RAB(ref_math_divisible(delta, s) && ref_math_divisible(l, s),
+      "div zero forming i and j",
+      { ref_metric_tattle_truncated_cone_dist(cone_geom, p); });
   if (verbose) printf("l/s %f delta/s %f\n", l / s, delta / s);
   xprime = x * (l / s) - (y - ra) * (delta / s);
   yprime = x * (delta / s) + (y - ra) * (l / s);
