@@ -2369,28 +2369,61 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *xyz,
+REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
                                           REF_DBL *dist) {
-  REF_INT i;
-  REF_DBL axis[3], s, l, dxyz[3], pos, r, rxyz[3], cr;
-  *dist = 0.0;
-  for (i = 0; i < 3; i++) {
-    axis[i] = cone_geom[i + 3] - cone_geom[i];
-    dxyz[i] = xyz[i] - cone_geom[i];
-  }
-  l = sqrt(ref_math_dot(axis, axis));
-  if (REF_SUCCESS == ref_math_normalize(axis)) {
-    pos = ref_math_dot(dxyz, axis);
-    s = pos / l;
-    for (i = 0; i < 3; i++) {
-      rxyz[i] = dxyz[i] - pos*axis[i];
+  REF_INT d;
+  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, n, ra, rb;
+  printf("\np %f %f %f\n", p[0], p[1], p[2]);
+  if (cone_geom[6] >= cone_geom[7]) {
+    ra = cone_geom[6];
+    rb = cone_geom[7];
+    for (d = 0; d < 3; d++) {
+      a[d] = cone_geom[d];
+      b[d] = cone_geom[d + 3];
     }
-    r = sqrt(ref_math_dot(rxyz, rxyz));
-    if (pos < 0) *dist = -pos;
-    if (pos > l) *dist = pos - l;
-    if (0 <= pos && pos <= l) {
-      cr = cone_geom[6]*(1-s) + cone_geom[7]*s;
-      *dist = MAX(r - cr,0);
+    printf("forward ra %f rb %f\n", ra, rb);
+    printf("a %f %f %f\n", a[0], a[1], a[2]);
+    printf("b %f %f %f\n", b[0], b[1], b[2]);
+  } else {
+    ra = cone_geom[7];
+    rb = cone_geom[6];
+    for (d = 0; d < 3; d++) {
+      a[d] = cone_geom[d + 3];
+      b[d] = cone_geom[d];
+    }
+    printf("reverse ra %f rb %f\n", ra, rb);
+    printf("a %f %f %f\n", a[0], a[1], a[2]);
+    printf("b %f %f %f\n", b[0], b[1], b[2]);
+  }
+  /*delta = ra-rb;*/
+  for (d = 0; d < 3; d++) {
+    ba[d] = b[d] - a[d];
+    u[d] = ba[d];
+    pa[d] = p[d] - a[d];
+  }
+  RSS(ref_math_normalize(u), "axis length zero");
+  l = sqrt(ref_math_dot(ba, ba));
+  /*s = sqrt(l*l+delta*delta);*/
+  x = ref_math_dot(pa, u);
+  n = sqrt(ref_math_dot(pa, pa));
+  y = sqrt(n * n - x * x);
+  printf("x %f y %f l %f\n", x, y, l);
+  if (x < 0) {
+    if (y < ra) {
+      *dist = -x;
+      return REF_SUCCESS;
+    } else {
+      *dist = sqrt((y - ra) * (y - ra) + x * x);
+      return REF_SUCCESS;
+    }
+  }
+  if (y < rb) {
+    if (x > l) {
+      *dist = x - l;
+      return REF_SUCCESS;
+    } else {
+      *dist = 0;
+      return REF_SUCCESS;
     }
   }
 

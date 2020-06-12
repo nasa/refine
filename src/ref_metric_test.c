@@ -2345,8 +2345,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
-  { /* distance to truncated cone 2 */
-    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 0.5, 1};
+  { /* distance to truncated cone (cylinder) */
+    REF_DBL cone_geom[] = {0, 0, 0, 1, 0, 0, 1, 1};
     REF_DBL dist;
     REF_DBL xyz[3];
     REF_DBL tol = -1.0;
@@ -2358,28 +2358,28 @@ int main(int argc, char *argv[]) {
     RWDS(0.0, dist, tol, "inside");
     /* negative axis */
     xyz[0] = -1;
-    xyz[1] = 0;
-    xyz[2] = 0;
+    xyz[1] = 0.2;
+    xyz[2] = 0.3;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(1.0, dist, tol, "inside");
+    RWDS(1.0, dist, tol, "neg axis");
     /* positive axis */
     xyz[0] = 3;
-    xyz[1] = 0;
-    xyz[2] = 0;
+    xyz[1] = 0.4;
+    xyz[2] = 0.5;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(2.0, dist, tol, "inside");
+    RWDS(2.0, dist, tol, "pos axis");
     /* end radial position */
-    xyz[0] = 0;
-    xyz[1] = 1;
+    xyz[0] = -1;
+    xyz[1] = 2;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(0.5, dist, tol, "inside");
+    RWDS(sqrt(2), dist, tol, "a circle");
     /* middle radial position */
     xyz[0] = 0.5;
-    xyz[1] = 2.0;
-    xyz[2] = 0;
+    xyz[1] = 0.5;
+    xyz[2] = 0.5;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(1.25, dist, tol, "inside");
+    RWDS(0.0, dist, tol, "inside");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
