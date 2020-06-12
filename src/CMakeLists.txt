@@ -101,9 +101,9 @@ set(REF_CORE_SRC
         )
 
 function(install_target TARGET_NAME)
+    set_target_rpath(${TARGET_NAME})
     install(TARGETS ${TARGET_NAME}
             DESTINATION bin)
-    set_target_rpath(${TARGET_NAME})
 endfunction(install_target)
 
 function(create_program TARGET_NAME)
@@ -167,7 +167,7 @@ add_library(refine_without_mpi STATIC ${REF_MPI_SRC})
 if (MPI_FOUND)
     add_library(refine_with_mpi STATIC ${REF_MPI_SRC})
     target_include_directories(refine_with_mpi PRIVATE ${MPI_INCLUDE_PATH})
-    target_link_libraries(refine_with_mpi PRIVATE ${MPI_LIBRARIES})
+    target_link_libraries(refine_with_mpi PRIVATE ${MPI_C_LIBRARIES})
     target_compile_definitions(refine_with_mpi PRIVATE HAVE_MPI)
 endif ()
 
@@ -180,7 +180,7 @@ create_program(ref ref_subcommand.c)
 target_link_libraries(ref PRIVATE refine_core refine_without_mpi refine_with_egads)
 
 if (MPI_FOUND)
-    message("-- MPI Found: ${MPI_LIBRARIES}")
+    message("-- MPI Found: ${MPI_C_LIBRARIES}")
     message("-- building refmpifull with MPI support")
     create_program(refmpifull ref_subcommand.c)
     target_link_libraries(refmpifull PRIVATE refine_core refine_with_mpi refine_with_egads)
