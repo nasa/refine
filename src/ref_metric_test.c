@@ -2448,6 +2448,18 @@ int main(int argc, char *argv[]) {
     xyz[2] = -1;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(sqrt(6), dist, tol, "tip");
+    /* side */
+    xyz[0] = 0;
+    xyz[1] = -1;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.5 * sqrt(2), dist, tol, "side");
+    /* side 11 */
+    xyz[0] = -1;
+    xyz[1] = -1;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "side 11");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
