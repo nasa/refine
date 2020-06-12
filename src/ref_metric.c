@@ -2398,17 +2398,17 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   REF_DBL xprime, yprime;
   REF_BOOL verbose = REF_FALSE;
   if (verbose) printf("\np %f %f %f\n", p[0], p[1], p[2]);
-  if (cone_geom[6] >= cone_geom[7]) {
-    ra = cone_geom[6];
-    rb = cone_geom[7];
+  if (ABS(cone_geom[6]) >= ABS(cone_geom[7])) {
+    ra = ABS(cone_geom[6]);
+    rb = ABS(cone_geom[7]);
     for (d = 0; d < 3; d++) {
       a[d] = cone_geom[d];
       b[d] = cone_geom[d + 3];
     }
     if (verbose) printf("forward ra %f rb %f\n", ra, rb);
   } else {
-    ra = cone_geom[7];
-    rb = cone_geom[6];
+    ra = ABS(cone_geom[7]);
+    rb = ABS(cone_geom[6]);
     for (d = 0; d < 3; d++) {
       a[d] = cone_geom[d + 3];
       b[d] = cone_geom[d];
