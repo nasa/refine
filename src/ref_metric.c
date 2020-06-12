@@ -2372,7 +2372,7 @@ REF_STATUS ref_metric_histogram(REF_DBL *metric, REF_GRID ref_grid,
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
                                           REF_DBL *dist) {
   REF_INT d;
-  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, n, ra, rb;
+  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, y2, n, ra, rb;
   printf("\np %f %f %f\n", p[0], p[1], p[2]);
   if (cone_geom[6] >= cone_geom[7]) {
     ra = cone_geom[6];
@@ -2406,18 +2406,20 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   /*s = sqrt(l*l+delta*delta);*/
   x = ref_math_dot(pa, u);
   n = sqrt(ref_math_dot(pa, pa));
-  y = sqrt(n * n - x * x);
-  printf("x %f y %f l %f\n", x, y, l);
+  y2 = n * n - x * x;
+  printf("x %f y2 %f l %f\n", x, y2, l);
   if (x < 0) {
-    if (y < ra) {
+    if (y2 < ra * ra) {
       *dist = -x;
       return REF_SUCCESS;
     } else {
+      RAS(y2 >= 0, "negative y2");
+      y = sqrt(y2);
       *dist = sqrt((y - ra) * (y - ra) + x * x);
       return REF_SUCCESS;
     }
   }
-  if (y < rb) {
+  if (y2 < rb * rb) {
     if (x > l) {
       *dist = x - l;
       return REF_SUCCESS;
