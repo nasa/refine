@@ -2475,6 +2475,37 @@ int main(int argc, char *argv[]) {
     RWDS(sqrt(3), dist, tol, "inside");
   }
 
+  { /* distance to truncated cone (line) */
+    REF_DBL cone_geom[] = {0, 0, 0, 0, 0, 1, 0, 0};
+    REF_DBL dist;
+    REF_DBL xyz[3];
+    REF_DBL tol = -1.0;
+    /* inside */
+    xyz[0] = 0;
+    xyz[1] = 0;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0, dist, tol, "inside line");
+    /* radius */
+    xyz[0] = 1;
+    xyz[1] = 0;
+    xyz[2] = 0.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "line radii");
+    /* axis */
+    xyz[0] = 0;
+    xyz[1] = 0;
+    xyz[2] = 1.5;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(0.5, dist, tol, "line axis");
+    /* circle */
+    xyz[0] = 0;
+    xyz[1] = 1.0;
+    xyz[2] = 2.0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "line circle");
+  }
+
   { /* parse outside box spacing */
     char *args[] = {
         "--uniform", "cyl", "ceil", "3",  "-0.5", "-1", "-1",
