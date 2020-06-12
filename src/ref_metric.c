@@ -2478,6 +2478,19 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom, REF_DBL *p,
+                                    REF_DBL *dist) {
+  REF_INT i;
+  /* distance to box, zero inside box */
+  *dist = 0;
+  for (i = 0; i < 3; i++) {
+    if (p[i] < box_geom[i]) (*dist) += pow(p[i] - box_geom[i], 2);
+    if (p[i] > box_geom[i + 3]) (*dist) += pow(p[i] - box_geom[i + 3], 2);
+  }
+  (*dist) = sqrt(*dist);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
                             char *args[]) {
   REF_INT i, node, pos;
@@ -2516,18 +2529,9 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
           pos++;
         }
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-          /* distance to box, zero inside box */
-          r = 0;
-          for (i = 0; i < 3; i++) {
-            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) < box[i])
-              r += pow(ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i],
-                       2);
-            if (ref_node_xyz(ref_grid_node(ref_grid), i, node) > box[i + 3])
-              r += pow(
-                  ref_node_xyz(ref_grid_node(ref_grid), i, node) - box[i + 3],
-                  2);
-          }
-          r = sqrt(r);
+          RSS(ref_metric_cart_box_dist(
+                  box, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),
+              "box dist");
           h = h0;
           if (ref_math_divisible(-r, decay_distance)) {
             h = h0 * pow(2, -r / decay_distance);
