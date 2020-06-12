@@ -69,7 +69,6 @@ set(REF_CORE_SRC
         ref_dict.c
         ref_dist.c
         ref_edge.c
-        ref_egads.c
         ref_export.c
         ref_face.c
         ref_fixture.c
@@ -117,7 +116,7 @@ endfunction(create_program)
 
 if (EGADS_FOUND)
     message(STATUS "EGADS Found: ${EGADS_LIBRARIES}")
-    list(APPEND THIRD_PARTY_LIBRARIES ${EGADS_LIBRARIES})
+    message(STATUS "EGADSLITE Found: ${EGADSLITE_LIBRARIES}")
     list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIR})
     list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
 endif ()
@@ -136,11 +135,6 @@ if (ZOLTAN_FOUND)
     list(APPEND EXTRA_DEFINITIONS HAVE_ZOLTAN)
 endif ()
 
-if (OpenCASCADE_FOUND)
-    message(STATUS "OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
-    list(APPEND THIRD_PARTY_LIBRARIES ${OpenCASCADE_LIBRARIES})
-endif ()
-
 find_library(MATH_LIBRARY m REQUIRED)
 if (MATH_LIBRARY)
     list(APPEND THIRD_PARTY_LIBRARIES ${MATH_LIBRARY})
@@ -151,44 +145,47 @@ set(REF_MPI_SRC
         ref_migrate.c
         )
 
+add_library(refine_with_egadslite STATIC ref_egads.c)
+target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADSLITE)
+
+add_library(refine_with_egads STATIC ref_egads.c)
+if (EGADS_FOUND)
+    target_link_libraries(refine_with_egads PRIVATE ${EGADS_LIBRARIES})
+    target_include_directories(refine_with_egads PRIVATE ${EGADS_INCLUDE_DIRS})
+    target_compile_definitions(refine_with_egads PRIVATE HAVE_EGADS)
+    if (OpenCASCADE_FOUND)
+        message(STATUS "OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
+        target_link_libraries(refine_with_egads PRIVATE ${OpenCASCADE_LIBRARIES})
+    endif ()
+
+    target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS)
+    target_include_directories(refine_with_egadslite PRIVATE ${EGADS_INCLUDE_DIRS})
+    target_link_libraries(refine_with_egadslite PRIVATE ${EGADSLITE_LIBRARIES})
+endif ()
+
 add_library(refine_without_mpi STATIC ${REF_MPI_SRC})
 if (MPI_FOUND)
     add_library(refine_with_mpi STATIC ${REF_MPI_SRC})
     target_include_directories(refine_with_mpi PRIVATE ${MPI_INCLUDE_PATH})
     target_link_libraries(refine_with_mpi PRIVATE ${MPI_LIBRARIES})
     target_compile_definitions(refine_with_mpi PRIVATE HAVE_MPI)
-endif()
+endif ()
 
 add_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
 target_link_libraries(refine_core PRIVATE ${THIRD_PARTY_LIBRARIES})
 target_include_directories(refine_core PRIVATE ${THIRD_PARTY_INCLUDES})
 target_compile_definitions(refine_core PRIVATE ${EXTRA_DEFINITIONS})
 
-#set(PROGRAMS_THAT_DO_NOT_REQUIRE_MPI
-#        ref_driver
-#        ref_translate
-#        ref_axisymmetric
-#        ref_inflatable
-#        ref_acceptance
-#        )
-#
-#foreach (PROGRAM ${PROGRAMS_THAT_DO_NOT_REQUIRE_MPI})
-#    create_program(${PROGRAM} refine ${PROGRAM}.c)
-#endforeach ()
 create_program(ref ref_subcommand.c)
-target_link_libraries(ref PRIVATE refine_core refine_without_mpi)
-
-#create_program(ref ref_subcommand.c)
+target_link_libraries(ref PRIVATE refine_core refine_without_mpi refine_with_egads)
 
 if (MPI_FOUND)
     message("-- MPI Found: ${MPI_LIBRARIES}")
-
-#    add_library(refinempi STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
-#    target_link_libraries(refinempi PRIVATE ${THIRD_PARTY_LIBRARIES} ${MPI_LIBRARIES})
-#    target_include_directories(refinempi PRIVATE ${THIRD_PARTY_INCLUDES} ${MPI_INCLUDE_PATH})
-#    target_compile_definitions(refinempi PRIVATE ${EXTRA_DEFINITIONS} HAVE_MPI)
-
     message("-- building refmpifull with MPI support")
     create_program(refmpifull ref_subcommand.c)
-    target_link_libraries(refmpifull PRIVATE refine_core refine_with_mpi)
+    target_link_libraries(refmpifull PRIVATE refine_core refine_with_mpi refine_with_egads)
+
+    message("-- building refmpi with MPI support")
+    create_program(refmpi ref_subcommand.c)
+    target_link_libraries(refmpi PRIVATE refine_core refine_with_mpi refine_with_egadslite)
 endif ()
