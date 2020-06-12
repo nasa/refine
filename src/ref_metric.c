@@ -2386,8 +2386,10 @@ doi = {10.1080/10867651.2004.10504892}
 REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
                                           REF_DBL *dist) {
   REF_INT d;
-  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, y2, n, ra, rb;
-  printf("\np %f %f %f\n", p[0], p[1], p[2]);
+  REF_DBL a[3], b[3], ba[3], u[3], pa[3], l, x, y, y2, n, ra, rb, delta, s;
+  REF_DBL xprime, yprime;
+  REF_BOOL verbose = REF_FALSE;
+  if (verbose) printf("\np %f %f %f\n", p[0], p[1], p[2]);
   if (cone_geom[6] >= cone_geom[7]) {
     ra = cone_geom[6];
     rb = cone_geom[7];
@@ -2395,9 +2397,7 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
       a[d] = cone_geom[d];
       b[d] = cone_geom[d + 3];
     }
-    printf("forward ra %f rb %f\n", ra, rb);
-    printf("a %f %f %f\n", a[0], a[1], a[2]);
-    printf("b %f %f %f\n", b[0], b[1], b[2]);
+    if (verbose) printf("forward ra %f rb %f\n", ra, rb);
   } else {
     ra = cone_geom[7];
     rb = cone_geom[6];
@@ -2405,11 +2405,10 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
       a[d] = cone_geom[d + 3];
       b[d] = cone_geom[d];
     }
-    printf("reverse ra %f rb %f\n", ra, rb);
-    printf("a %f %f %f\n", a[0], a[1], a[2]);
-    printf("b %f %f %f\n", b[0], b[1], b[2]);
+    if (verbose) printf("reverse ra %f rb %f\n", ra, rb);
   }
-  /*delta = ra-rb;*/
+  if (verbose) printf("a %f %f %f\n", a[0], a[1], a[2]);
+  if (verbose) printf("b %f %f %f\n", b[0], b[1], b[2]);
   for (d = 0; d < 3; d++) {
     ba[d] = b[d] - a[d];
     u[d] = ba[d];
@@ -2417,18 +2416,17 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
   }
   RSS(ref_math_normalize(u), "axis length zero");
   l = sqrt(ref_math_dot(ba, ba));
-  /*s = sqrt(l*l+delta*delta);*/
   x = ref_math_dot(pa, u); /* sign flip, error in paper? */
   n = sqrt(ref_math_dot(pa, pa));
   y2 = n * n - x * x;
-  printf("x %f y2 %f l %f\n", x, y2, l);
+  RAS(y2 >= 0, "y2 is negative, no sqrt");
+  y = sqrt(y2);
+  if (verbose) printf("x %f y %f l %f\n", x, y, l);
   if (x < 0) {
     if (y2 < ra * ra) {
       *dist = -x;
       return REF_SUCCESS;
     } else {
-      RAS(y2 >= 0, "negative y2");
-      y = sqrt(y2);
       *dist = sqrt((y - ra) * (y - ra) + x * x);
       return REF_SUCCESS;
     }
@@ -2442,7 +2440,23 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
       return REF_SUCCESS;
     }
   }
-
+  delta = ra - rb;
+  s = sqrt(l * l + delta * delta);
+  RAS(ref_math_divisible(delta, s) && ref_math_divisible(l, s),
+      "div zero forming i and j");
+  if (verbose) printf("l/s %f delta/s %f\n", l / s, delta / s);
+  xprime = x * (l / s) - (y - ra) * (delta / s);
+  yprime = x * (delta / s) + (y - ra) * (l / s);
+  if (verbose) printf("xprime %f yprime %f\n", xprime, yprime);
+  if (xprime <= 0) {
+    *dist = sqrt((y - ra) * (y - ra) + x * x);
+    return REF_SUCCESS;
+  }
+  if (xprime >= s) {
+    *dist = sqrt(yprime * yprime + (xprime - s) * (xprime - s));
+    return REF_SUCCESS;
+  }
+  *dist = yprime;
   return REF_SUCCESS;
 }
 

@@ -2368,18 +2368,48 @@ int main(int argc, char *argv[]) {
     xyz[2] = 0.5;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(2.0, dist, tol, "pos axis");
-    /* end radial position */
+    /* ra end circle position */
     xyz[0] = -1;
     xyz[1] = 2;
     xyz[2] = 0;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
-    RWDS(sqrt(2), dist, tol, "a circle");
-    /* middle radial position */
+    RWDS(sqrt(2), dist, tol, "a ra circle");
+    /* inside middle radial position */
     xyz[0] = 0.5;
     xyz[1] = 0.5;
     xyz[2] = 0.5;
     RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
     RWDS(0.0, dist, tol, "inside");
+    /* above ra radial position */
+    xyz[0] = 0;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "a ra circle");
+    /* rb end circle position */
+    xyz[0] = 2;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2), dist, tol, "a rb circle");
+    /* outside middle radial position y */
+    xyz[0] = 0.5;
+    xyz[1] = 2;
+    xyz[2] = 0;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "outside middle radial y");
+    /* outside middle radial position z */
+    xyz[0] = 0.5;
+    xyz[1] = 0;
+    xyz[2] = 2;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(1, dist, tol, "outside middle radial z");
+    /* outside middle radial position yz */
+    xyz[0] = 0.5;
+    xyz[1] = 2;
+    xyz[2] = 2;
+    RSS(ref_metric_truncated_cone_dist(cone_geom, xyz, &dist), "d");
+    RWDS(sqrt(2 * 2 + 2 * 2) - 1, dist, tol, "outside middle radial yz");
   }
 
   RSS(ref_mpi_free(ref_mpi), "free");
