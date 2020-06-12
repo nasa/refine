@@ -2562,6 +2562,7 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
             metric[5 + 6 * node] = 1.0;
           }
         }
+        continue;
       }
       if (pos < narg && strncmp(args[pos], "cyl", 3) == 0) {
         pos++;
@@ -2616,6 +2617,7 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
             metric[5 + 6 * node] = 1.0;
           }
         }
+        continue;
       }
     }
   }
