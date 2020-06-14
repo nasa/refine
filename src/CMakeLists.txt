@@ -114,7 +114,7 @@ function(create_library TARGET_NAME)
     add_library(refine::${TARGET_NAME} ALIAS ${TARGET_NAME})
     target_include_directories(${TARGET_NAME} PUBLIC
             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-            $<INSTALL_INTERFACE:include>
+            $<INSTALL_INTERFACE:include/refine>
             )
     install(TARGETS ${TARGET_NAME}
             EXPORT refine
