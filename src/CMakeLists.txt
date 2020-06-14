@@ -112,6 +112,10 @@ endfunction(create_program)
 function(create_library TARGET_NAME)
     add_library(${TARGET_NAME} ${ARGN})
     add_library(refine::${TARGET_NAME} ALIAS ${TARGET_NAME})
+    target_include_directories(${TARGET_NAME} PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+            $<INSTALL_INTERFACE:include>
+            )
     install(TARGETS ${TARGET_NAME}
             EXPORT refine
             LIBRARY DESTINATION lib
