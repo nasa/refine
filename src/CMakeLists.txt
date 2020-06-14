@@ -100,19 +100,24 @@ set(REF_CORE_SRC
         ref_validation.c
         )
 
-function(install_target TARGET_NAME)
-    set_target_rpath(${TARGET_NAME})
-    install(TARGETS ${TARGET_NAME}
-            DESTINATION bin)
-endfunction(install_target)
-
 function(create_program TARGET_NAME)
     add_executable(${TARGET_NAME} ${ARGN})
     if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(${TARGET_NAME} PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
     endif ()
-    install_target(${TARGET_NAME})
+    set_target_rpath(${TARGET_NAME})
+    install(TARGETS ${TARGET_NAME} DESTINATION bin)
 endfunction(create_program)
+
+function(create_library TARGET_NAME)
+    add_library(${TARGET_NAME} ${ARGN})
+    add_library(refine::${TARGET_NAME} ALIAS ${TARGET_NAME})
+    install(TARGETS ${TARGET_NAME}
+            EXPORT refine
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION lib
+            )
+endfunction(create_library)
 
 if (EGADS_FOUND)
     message(STATUS "EGADS Found: ${EGADS_LIBRARIES}")
@@ -145,10 +150,10 @@ set(REF_MPI_SRC
         ref_migrate.c
         )
 
-add_library(refine_with_egadslite STATIC ref_egads.c)
+create_library(refine_with_egadslite STATIC ref_egads.c)
 target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS_LITE)
 
-add_library(refine_with_egads STATIC ref_egads.c)
+create_library(refine_with_egads STATIC ref_egads.c)
 if (EGADS_FOUND)
     target_link_libraries(refine_with_egads PRIVATE ${EGADS_LIBRARIES})
     target_include_directories(refine_with_egads PRIVATE ${EGADS_INCLUDE_DIRS})
@@ -163,21 +168,27 @@ if (EGADS_FOUND)
     target_link_libraries(refine_with_egadslite PRIVATE ${EGADSLITE_LIBRARIES})
 endif ()
 
-add_library(refine_without_mpi STATIC ${REF_MPI_SRC})
+create_library(refine_without_mpi STATIC ${REF_MPI_SRC})
 if (MPI_FOUND)
-    add_library(refine_with_mpi STATIC ${REF_MPI_SRC})
+    create_library(refine_with_mpi STATIC ${REF_MPI_SRC})
     target_include_directories(refine_with_mpi PRIVATE ${MPI_INCLUDE_PATH})
     target_link_libraries(refine_with_mpi PRIVATE ${MPI_C_LIBRARIES})
     target_compile_definitions(refine_with_mpi PRIVATE HAVE_MPI)
 endif ()
 
-add_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
+create_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
 target_link_libraries(refine_core PRIVATE ${THIRD_PARTY_LIBRARIES})
 target_include_directories(refine_core PRIVATE ${THIRD_PARTY_INCLUDES})
 target_compile_definitions(refine_core PRIVATE ${EXTRA_DEFINITIONS})
 
 create_program(ref ref_subcommand.c)
 target_link_libraries(ref PRIVATE refine_core refine_without_mpi refine_with_egads)
+
+install(EXPORT refine
+        NAMESPACE refine::
+        DESTINATION cmake)
+install(FILES ${REF_TWO_HEADERS}
+        DESTINATION include/refine)
 
 if (MPI_FOUND)
     message("-- MPI Found: ${MPI_C_LIBRARIES}")
