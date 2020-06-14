@@ -1144,7 +1144,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
-    node_part[node] = part[n];
+    node_part[node] = (REF_INT)part[n];
     n++;
   }
 
