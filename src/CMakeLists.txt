@@ -193,6 +193,8 @@ install(EXPORT refine
         DESTINATION cmake)
 install(FILES ${REF_TWO_HEADERS}
         DESTINATION include/refine)
+install(FILES refineConfig.cmake
+        DESTINATION cmake)
 
 if (MPI_FOUND)
     message("-- MPI Found: ${MPI_C_LIBRARIES}")
