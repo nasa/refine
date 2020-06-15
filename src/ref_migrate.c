@@ -926,7 +926,7 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
 
   nparts = ref_mpi_n(ref_mpi);
   proc = ref_mpi_rank(ref_mpi);
-  n = vtxdist[proc + 1] - vtxdist[proc];
+  n = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   ncon = 1;
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
   ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
