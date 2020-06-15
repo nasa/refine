@@ -826,10 +826,10 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
       xadj[i] += xadj[vtxdist[proc]];
     }
   }
-  ref_malloc_init(adjncy, xadj[n], REF_INT, REF_EMPTY);
-  ref_malloc_init(adjwgt, xadj[n], REF_INT, REF_EMPTY);
+  ref_malloc_init(adjncy, xadj[n], PARM_INT, REF_EMPTY);
+  ref_malloc_init(adjwgt, xadj[n], PARM_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]];
+    count[proc] = (REF_INT)(xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]]);
   }
   RSS(ref_mpi_allgatherv(ref_mpi, adjncydist, count, adjncy, REF_INT_TYPE),
       "gather adjncy");
