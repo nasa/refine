@@ -804,59 +804,42 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                             PARM_INT *adjncydist,
                                             PARM_INT *adjwgtdist,
                                             PARM_INT *partdist) {
-  PARM_INT n, *count, *xadj, *adjncy, *adjwgt, *part;
+  REF_INT *count;
+  PARM_INT global;
+  PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT options[METIS_NOPTIONS];
-  REF_INT i, proc, node0, node1, j, hits;
-  REF_BOOL check_graph = REF_FALSE;
+  REF_INT i, proc;
+
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
-  ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
+  ref_malloc_init(xadj, n + 1, PARM_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+    count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   }
   RSS(ref_mpi_allgatherv(ref_mpi, &(xadjdist[1]), count, &(xadj[1]),
                          REF_INT_TYPE),
       "gather adj");
   xadj[0] = 0;
   each_ref_mpi_part(ref_mpi, proc) {
-    for (i = vtxdist[proc] + 1; i <= vtxdist[proc + 1]; i++) {
-      xadj[i] += xadj[vtxdist[proc]];
+    for (global = vtxdist[proc] + 1; global <= vtxdist[proc + 1]; global++) {
+      xadj[global] += xadj[vtxdist[proc]];
     }
   }
-  ref_malloc_init(adjncy, xadj[n], REF_INT, REF_EMPTY);
-  ref_malloc_init(adjwgt, xadj[n], REF_INT, REF_EMPTY);
+  ref_malloc_init(adjncy, xadj[n], PARM_INT, REF_EMPTY);
+  ref_malloc_init(adjwgt, xadj[n], PARM_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]];
+    count[proc] = (REF_INT)(xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]]);
   }
   RSS(ref_mpi_allgatherv(ref_mpi, adjncydist, count, adjncy, REF_INT_TYPE),
       "gather adjncy");
   RSS(ref_mpi_allgatherv(ref_mpi, adjwgtdist, count, adjwgt, REF_INT_TYPE),
       "gather adjwgt");
 
-  if (check_graph) {
-    for (node0 = 0; node0 < n; node0++) {
-      for (i = xadj[node0]; i < xadj[node0 + 1]; i++) {
-        node1 = adjncy[i];
-        if (node0 == node1) {
-          printf("edge %d %d\n", node0, node1);
-          THROW("diag in adjncy");
-        }
-        hits = 0;
-        for (j = xadj[node1]; j < xadj[node1 + 1]; j++) {
-          if (node0 == adjncy[j]) {
-            hits++;
-            REIS(adjwgt[i], adjwgt[j], "adj weights different");
-          }
-        }
-        REIS(1, hits, "expect edge twice");
-      }
-    }
-  }
   ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
 
-  ref_malloc_init(part, n, REF_INT, REF_EMPTY);
+  ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
 
   ncon = 1;
   vsize = NULL;
@@ -884,7 +867,7 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(vwgt);
 
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+    count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   }
   if (ref_mpi_once(ref_mpi)) {
     for (i = 0; i < vtxdist[1]; i++) {
@@ -925,7 +908,7 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
 
   nparts = ref_mpi_n(ref_mpi);
   proc = ref_mpi_rank(ref_mpi);
-  n = vtxdist[proc + 1] - vtxdist[proc];
+  n = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   ncon = 1;
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
   ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
@@ -946,9 +929,10 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
 static REF_STATUS ref_migrate_parmetis_subset(
     REF_MPI ref_mpi, REF_INT newproc, PARM_INT *vtxdist, PARM_INT *xadjdist,
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
-  REF_INT ntotal;
-  REF_INT proc, nold, nnew, i, n0, n1, first;
+  REF_INT proc, nold, nnew, i, first;
   REF_INT nsend, nrecv, *send_size, *recv_size;
+  PARM_INT ntotal;
+  PARM_INT n0, n1;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *deg, *newdeg;
   REF_MPI split_mpi;
@@ -956,8 +940,8 @@ static REF_STATUS ref_migrate_parmetis_subset(
   RAS(0 < newproc && newproc <= ref_mpi_n(ref_mpi),
       "newproc negative or larger then nproc");
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
-  ref_malloc_init(send_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
-  ref_malloc_init(recv_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
+  ref_malloc_init(send_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(recv_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   /* use ref_part machinery to set the first global index on the subset parts */
   for (proc = 0; proc < newproc; proc++) {
     vtx[proc] = ref_part_first(ntotal, newproc, proc);
@@ -968,24 +952,25 @@ static REF_STATUS ref_migrate_parmetis_subset(
     vtx[proc] = vtx[newproc];
   }
   /* new and old vertex count for my rank */
-  nold = vtxdist[1 + ref_mpi_rank(ref_mpi)] - vtxdist[ref_mpi_rank(ref_mpi)];
-  nnew = vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)];
+  nold = (REF_INT)(vtxdist[1 + ref_mpi_rank(ref_mpi)] -
+                   vtxdist[ref_mpi_rank(ref_mpi)]);
+  nnew = (REF_INT)(vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)]);
   ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
   ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
   ref_malloc_init(deg, nold, PARM_INT, 0);
   ref_malloc_init(newdeg, nnew, PARM_INT, 0);
   for (i = 0; i < nold; i++) {
-    deg[i] = xadjdist[i + 1] - xadjdist[i];
+    deg[i] = (REF_INT)(xadjdist[i + 1] - xadjdist[i]);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    send_size[proc] = MAX(0, n1 - n0);
+    send_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
-    recv_size[proc] = MAX(0, n1 - n0);
+    recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   RSS(ref_mpi_alltoallv(ref_mpi, deg, send_size, newdeg, recv_size, 1,
                         REF_INT_TYPE),
@@ -999,11 +984,11 @@ static REF_STATUS ref_migrate_parmetis_subset(
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    nsend = MAX(0, n1 - n0);
+    nsend = (REF_INT)MAX(0, n1 - n0);
     send_size[proc] = 0;
     if (0 < nsend) {
-      first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
-      send_size[proc] = xadjdist[first + nsend] - xadjdist[first];
+      first = (REF_INT)(n0 - vtxdist[ref_mpi_rank(ref_mpi)]);
+      send_size[proc] = (REF_INT)(xadjdist[first + nsend] - xadjdist[first]);
     }
   }
   RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
@@ -1041,12 +1026,12 @@ static REF_STATUS ref_migrate_parmetis_subset(
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
-    send_size[proc] = MAX(0, n1 - n0);
+    send_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    recv_size[proc] = MAX(0, n1 - n0);
+    recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, part, send_size, partdist, recv_size, 1,
@@ -1068,7 +1053,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   PARM_INT *xadj, *adjncy, *adjwgt;
   PARM_INT *part;
 
-  REF_INT node, n, proc, *partition_size, *implied, shift, degree;
+  REF_GLOB *implied, shift;
+  REF_INT node, n, proc, *partition_size, degree;
   REF_INT item, ref;
   REF_INT newpart;
 
@@ -1089,7 +1075,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
       "gather size of each part");
 
   ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
-  ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
+  ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_GLOB, REF_EMPTY);
   ref_malloc(xadj, n + 1, PARM_INT);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
@@ -1102,13 +1088,13 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   n = 0;
   xadj[0] = 0;
   each_ref_migrate_node(ref_migrate, node) {
-    implied[node] = shift + n;
+    implied[node] = shift + (REF_GLOB)n;
     RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
     RAS(0 < degree, "hanging node island, zero degree");
     xadj[n + 1] = xadj[n] + degree;
     n++;
   }
-  RSS(ref_node_ghost_int(ref_node, implied, 1), "implied ghosts");
+  RSS(ref_node_ghost_glob(ref_node, implied, 1), "implied ghosts");
 
   ref_malloc(adjncy, xadj[n], PARM_INT);
   ref_malloc(adjwgt, xadj[n], PARM_INT);
@@ -1118,7 +1104,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
     degree = 0;
     each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                     ref) {
-      adjncy[xadj[n] + degree] = implied[ref];
+      adjncy[xadj[n] + degree] = (PARM_INT)implied[ref];
       adjwgt[xadj[n] + degree] = ref_migrate_age(ref_migrate, node) +
                                  ref_migrate_age(ref_migrate, ref) + 1;
       degree++;
@@ -1143,7 +1129,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
 
   n = 0;
   each_ref_migrate_node(ref_migrate, node) {
-    node_part[node] = part[n];
+    node_part[node] = (REF_INT)part[n];
     n++;
   }
 

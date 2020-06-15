@@ -84,7 +84,6 @@ partitioning
  diffusion
 
 configure with metis only, when parmetis not provided
-warn about 64bit metis/parmetis?
 
 split public/private ref_defs.h
 namespace ABS, MIN, MAX
@@ -240,7 +239,7 @@ egads recon
 
 ooooooooooooooooo
 
-
++ supports 64bit metis/parmetis
 
 +++++++++++++++++
 
