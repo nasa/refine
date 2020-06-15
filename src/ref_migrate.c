@@ -857,7 +857,7 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   }
   ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
 
-  ref_malloc_init(part, n, REF_INT, REF_EMPTY);
+  ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
 
   ncon = 1;
   vsize = NULL;
@@ -885,7 +885,7 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   ref_free(vwgt);
 
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+    count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   }
   if (ref_mpi_once(ref_mpi)) {
     for (i = 0; i < vtxdist[1]; i++) {
