@@ -810,7 +810,6 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT options[METIS_NOPTIONS];
   REF_INT i, proc, node0, node1, j, hits;
-  REF_BOOL check_graph = REF_FALSE;
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
   ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
@@ -836,25 +835,6 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   RSS(ref_mpi_allgatherv(ref_mpi, adjwgtdist, count, adjwgt, REF_INT_TYPE),
       "gather adjwgt");
 
-  if (check_graph) {
-    for (node0 = 0; node0 < n; node0++) {
-      for (i = xadj[node0]; i < xadj[node0 + 1]; i++) {
-        node1 = adjncy[i];
-        if (node0 == node1) {
-          printf("edge %d %d\n", node0, node1);
-          THROW("diag in adjncy");
-        }
-        hits = 0;
-        for (j = xadj[node1]; j < xadj[node1 + 1]; j++) {
-          if (node0 == adjncy[j]) {
-            hits++;
-            REIS(adjwgt[i], adjwgt[j], "adj weights different");
-          }
-        }
-        REIS(1, hits, "expect edge twice");
-      }
-    }
-  }
   ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
 
   ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
