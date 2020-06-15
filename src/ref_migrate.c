@@ -1069,7 +1069,8 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   PARM_INT *xadj, *adjncy, *adjwgt;
   PARM_INT *part;
 
-  REF_INT node, n, proc, *partition_size, *implied, shift, degree;
+  REF_GLOB *implied, shift;
+  REF_INT node, n, proc, *partition_size, degree;
   REF_INT item, ref;
   REF_INT newpart;
 
@@ -1090,7 +1091,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
       "gather size of each part");
 
   ref_malloc(vtxdist, ref_mpi_n(ref_mpi) + 1, PARM_INT);
-  ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_INT, REF_EMPTY);
+  ref_malloc_init(implied, ref_migrate_max(ref_migrate), REF_GLOB, REF_EMPTY);
   ref_malloc(xadj, n + 1, PARM_INT);
   ref_malloc_init(part, n, PARM_INT, ref_mpi_rank(ref_mpi));
 
@@ -1103,13 +1104,13 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   n = 0;
   xadj[0] = 0;
   each_ref_migrate_node(ref_migrate, node) {
-    implied[node] = shift + n;
+    implied[node] = shift + (REF_GLOB)n;
     RSS(ref_adj_degree(ref_migrate_conn(ref_migrate), node, &degree), "deg");
     RAS(0 < degree, "hanging node island, zero degree");
     xadj[n + 1] = xadj[n] + degree;
     n++;
   }
-  RSS(ref_node_ghost_int(ref_node, implied, 1), "implied ghosts");
+  RSS(ref_node_ghost_glob(ref_node, implied, 1), "implied ghosts");
 
   ref_malloc(adjncy, xadj[n], PARM_INT);
   ref_malloc(adjwgt, xadj[n], PARM_INT);
@@ -1119,7 +1120,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
     degree = 0;
     each_ref_adj_node_item_with_ref(ref_migrate_conn(ref_migrate), node, item,
                                     ref) {
-      adjncy[xadj[n] + degree] = implied[ref];
+      adjncy[xadj[n] + degree] = (PARM_INT)implied[ref];
       adjwgt[xadj[n] + degree] = ref_migrate_age(ref_migrate, node) +
                                  ref_migrate_age(ref_migrate, ref) + 1;
       degree++;
