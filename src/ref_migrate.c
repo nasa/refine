@@ -809,7 +809,8 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
   PARM_INT options[METIS_NOPTIONS];
-  REF_INT i, proc, node0, node1, j, hits;
+  REF_INT i, proc;
+
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
   ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
