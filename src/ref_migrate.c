@@ -947,9 +947,10 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
 static REF_STATUS ref_migrate_parmetis_subset(
     REF_MPI ref_mpi, REF_INT newproc, PARM_INT *vtxdist, PARM_INT *xadjdist,
     PARM_INT *adjncydist, PARM_INT *adjwgtdist, PARM_INT *partdist) {
-  REF_INT ntotal;
-  REF_INT proc, nold, nnew, i, n0, n1, first;
+  REF_INT proc, nold, nnew, i, first;
   REF_INT nsend, nrecv, *send_size, *recv_size;
+  PARM_INT ntotal;
+  PARM_INT n0, n1;
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *deg, *newdeg;
   REF_MPI split_mpi;
@@ -957,8 +958,8 @@ static REF_STATUS ref_migrate_parmetis_subset(
   RAS(0 < newproc && newproc <= ref_mpi_n(ref_mpi),
       "newproc negative or larger then nproc");
   ref_malloc_init(vtx, ref_mpi_n(ref_mpi) + 1, PARM_INT, 0);
-  ref_malloc_init(send_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
-  ref_malloc_init(recv_size, ref_mpi_n(ref_mpi), PARM_INT, 0);
+  ref_malloc_init(send_size, ref_mpi_n(ref_mpi), REF_INT, 0);
+  ref_malloc_init(recv_size, ref_mpi_n(ref_mpi), REF_INT, 0);
   /* use ref_part machinery to set the first global index on the subset parts */
   for (proc = 0; proc < newproc; proc++) {
     vtx[proc] = ref_part_first(ntotal, newproc, proc);
@@ -969,24 +970,25 @@ static REF_STATUS ref_migrate_parmetis_subset(
     vtx[proc] = vtx[newproc];
   }
   /* new and old vertex count for my rank */
-  nold = vtxdist[1 + ref_mpi_rank(ref_mpi)] - vtxdist[ref_mpi_rank(ref_mpi)];
-  nnew = vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)];
+  nold = (REF_INT)(vtxdist[1 + ref_mpi_rank(ref_mpi)] -
+                   vtxdist[ref_mpi_rank(ref_mpi)]);
+  nnew = (REF_INT)(vtx[1 + ref_mpi_rank(ref_mpi)] - vtx[ref_mpi_rank(ref_mpi)]);
   ref_malloc_init(part, nnew, PARM_INT, REF_EMPTY);
   ref_malloc_init(xadj, nnew + 1, PARM_INT, 0);
   ref_malloc_init(deg, nold, PARM_INT, 0);
   ref_malloc_init(newdeg, nnew, PARM_INT, 0);
   for (i = 0; i < nold; i++) {
-    deg[i] = xadjdist[i + 1] - xadjdist[i];
+    deg[i] = (REF_INT)(xadjdist[i + 1] - xadjdist[i]);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    send_size[proc] = MAX(0, n1 - n0);
+    send_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
-    recv_size[proc] = MAX(0, n1 - n0);
+    recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   RSS(ref_mpi_alltoallv(ref_mpi, deg, send_size, newdeg, recv_size, 1,
                         REF_INT_TYPE),
@@ -1000,11 +1002,11 @@ static REF_STATUS ref_migrate_parmetis_subset(
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    nsend = MAX(0, n1 - n0);
+    nsend = (REF_INT)MAX(0, n1 - n0);
     send_size[proc] = 0;
     if (0 < nsend) {
-      first = n0 - vtxdist[ref_mpi_rank(ref_mpi)];
-      send_size[proc] = xadjdist[first + nsend] - xadjdist[first];
+      first = (REF_INT)(n0 - vtxdist[ref_mpi_rank(ref_mpi)]);
+      send_size[proc] = (REF_INT)(xadjdist[first + nsend] - xadjdist[first]);
     }
   }
   RSS(ref_mpi_alltoall(ref_mpi, send_size, recv_size, REF_INT_TYPE),
@@ -1042,12 +1044,12 @@ static REF_STATUS ref_migrate_parmetis_subset(
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[ref_mpi_rank(ref_mpi)], vtxdist[proc]);
     n1 = MIN(vtx[ref_mpi_rank(ref_mpi) + 1], vtxdist[proc + 1]);
-    send_size[proc] = MAX(0, n1 - n0);
+    send_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
   for (proc = 0; proc < ref_mpi_n(ref_mpi); proc++) {
     n0 = MAX(vtx[proc], vtxdist[ref_mpi_rank(ref_mpi)]);
     n1 = MIN(vtx[proc + 1], vtxdist[ref_mpi_rank(ref_mpi) + 1]);
-    recv_size[proc] = MAX(0, n1 - n0);
+    recv_size[proc] = (REF_INT)MAX(0, n1 - n0);
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, part, send_size, partdist, recv_size, 1,
