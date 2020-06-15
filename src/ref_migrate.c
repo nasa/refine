@@ -805,6 +805,7 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                             PARM_INT *adjwgtdist,
                                             PARM_INT *partdist) {
   REF_INT *count;
+  PARM_INT global;
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *vwgt, *vsize, nparts, ncon, objval;
   PARM_REAL *tpwgts, *ubvec;
@@ -813,17 +814,17 @@ static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
-  ref_malloc_init(xadj, n + 1, REF_INT, REF_EMPTY);
+  ref_malloc_init(xadj, n + 1, PARM_INT, REF_EMPTY);
   each_ref_mpi_part(ref_mpi, proc) {
-    count[proc] = vtxdist[proc + 1] - vtxdist[proc];
+    count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   }
   RSS(ref_mpi_allgatherv(ref_mpi, &(xadjdist[1]), count, &(xadj[1]),
                          REF_INT_TYPE),
       "gather adj");
   xadj[0] = 0;
   each_ref_mpi_part(ref_mpi, proc) {
-    for (i = vtxdist[proc] + 1; i <= vtxdist[proc + 1]; i++) {
-      xadj[i] += xadj[vtxdist[proc]];
+    for (global = vtxdist[proc] + 1; global <= vtxdist[proc + 1]; global++) {
+      xadj[global] += xadj[vtxdist[proc]];
     }
   }
   ref_malloc_init(adjncy, xadj[n], PARM_INT, REF_EMPTY);
