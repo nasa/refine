@@ -124,8 +124,8 @@ function(create_library TARGET_NAME)
 endfunction(create_library)
 
 if (EGADS_FOUND)
-    list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
     list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIRS})
+    list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
 endif ()
 
 if (PARMETIS_FOUND)

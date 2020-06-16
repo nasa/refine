@@ -7,7 +7,7 @@ include(RPathHelpers)
 include(CTest)
 enable_testing()
 
-set(THIRD_PARTY_PACKAGES ZOLTAN PARMETIS OPENCASCADE EGADS MPI)
+set(THIRD_PARTY_PACKAGES ZOLTAN PARMETIS OpenCASCADE EGADS MPI)
 foreach(TPL ${THIRD_PARTY_PACKAGES})
     option(ENABLE_${TPL} "Enable ${TPL} support" ON)
     if (ENABLE_${TPL})
