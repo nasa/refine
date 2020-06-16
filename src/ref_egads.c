@@ -1442,8 +1442,9 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
       {
         best_node = node0;
         param[0] = trange[0];
-        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
-                                  ref_node_xyz_ptr(ref_node, best_node), param),
+        RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
+                                   ref_node_xyz_ptr(ref_node, best_node),
+                                   param),
             "inv wrapper");
         REIS(EGADS_SUCCESS, EG_evaluate(object, &(param[0]), closest),
              "EG eval");
@@ -1495,9 +1496,9 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
           if (!have_faceid0 || !have_faceid1)
             continue; /* must have expected faceids */
           param[0] = t;
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
-                                    ref_node_xyz_ptr(ref_node, next_node),
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
+                                     ref_node_xyz_ptr(ref_node, next_node),
+                                     param),
               "inv wrapper");
           REIS(EGADS_SUCCESS, EG_evaluate(object, &(param[0]), closest),
                "EG eval");
@@ -1614,8 +1615,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[1]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -1634,8 +1635,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[2]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -1654,8 +1655,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[0]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -2018,6 +2019,119 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
       for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = 0.0;
     }
   }
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                  REF_DBL *xyz, REF_DBL *param) {
+#ifdef HAVE_EGADS
+  ego object = (ego)NULL;
+  int i, guess_status, noguess_status;
+  REF_DBL guess_param[2], noguess_param[2];
+  REF_DBL guess_closest[3], noguess_closest[3];
+  REF_DBL guess_dist, noguess_dist;
+
+  ego ref, *pchldrn;
+  int oclass, mtype, nchild, *psens;
+  double range[4];
+
+  REF_BOOL guess_in_range, noguess_in_range;
+
+  REF_BOOL verbose = REF_FALSE;
+
+  switch (type) {
+    case (REF_GEOM_NODE):
+      printf("GEOM_NODE ref_geom_inverse_eval not defined\n");
+      return REF_IMPLEMENT;
+      break;
+    case (REF_GEOM_EDGE):
+      RNS(ref_geom->edges, "edges not loaded");
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      RNS(ref_geom->faces, "faces not loaded");
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom");
+  }
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(object, &ref, &oclass, &mtype, range, &nchild, &pchldrn,
+                      &psens),
+       "EG topo node");
+
+  for (i = 0; i < type; i++) guess_param[i] = param[i];
+  for (i = 0; i < type; i++) noguess_param[i] = param[i];
+  guess_status = EG_invEvaluateGuess(object, xyz, guess_param, guess_closest);
+  noguess_status = EG_invEvaluate(object, xyz, noguess_param, noguess_closest);
+  if (verbose) {
+    printf("guess %d noguess %d type %d id %d xyz %f %f %f\n", guess_status,
+           noguess_status, type, id, xyz[0], xyz[1], xyz[2]);
+    for (i = 0; i < type; i++) {
+      printf("%d: start %f guess %f noguess %f\n", i, param[i], guess_param[i],
+             noguess_param[i]);
+    }
+  }
+  if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS != noguess_status)
+    return REF_FAILURE;
+
+  if (EGADS_SUCCESS == guess_status && EGADS_SUCCESS != noguess_status) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS == noguess_status) {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+    return REF_SUCCESS;
+  }
+
+  guess_dist = sqrt(pow(guess_closest[0] - xyz[0], 2) +
+                    pow(guess_closest[1] - xyz[1], 2) +
+                    pow(guess_closest[2] - xyz[2], 2));
+  noguess_dist = sqrt(pow(noguess_closest[0] - xyz[0], 2) +
+                      pow(noguess_closest[1] - xyz[1], 2) +
+                      pow(noguess_closest[2] - xyz[2], 2));
+
+  guess_in_range = REF_TRUE;
+  for (i = 0; i < type; i++)
+    if (guess_param[i] < range[0 + 2 * i] || range[1 + 2 * i] < guess_param[i])
+      guess_in_range = REF_FALSE;
+
+  noguess_in_range = REF_TRUE;
+  for (i = 0; i < type; i++)
+    if (noguess_param[i] < range[0 + 2 * i] ||
+        range[1 + 2 * i] < noguess_param[i])
+      noguess_in_range = REF_FALSE;
+
+  if (verbose) {
+    printf("guess %e noguess %e\n", guess_dist, noguess_dist);
+    printf("guess %d noguess %d in range\n", guess_in_range, noguess_in_range);
+  }
+
+  if (guess_in_range && !noguess_in_range) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (!guess_in_range && noguess_in_range) {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (guess_dist < noguess_dist) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+  } else {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+  }
+  return REF_SUCCESS;
+
+#else
+  printf("no-op, No EGADS linked for %s type %d id %d x %f p %f n %d\n",
+         __func__, type, id, xyz[0], param[0], ref_geom_n(ref_geom));
   return REF_IMPLEMENT;
 #endif
 }

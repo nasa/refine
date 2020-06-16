@@ -222,8 +222,6 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node);
 
 REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
                          REF_DBL *dxyz_dtuv);
-REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                 REF_DBL *xyz, REF_DBL *param);
 
 REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
                                    REF_DBL *delta_radian);

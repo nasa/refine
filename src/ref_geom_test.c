@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
           face_xyz[0] = xyz[0];
           face_xyz[1] = xyz[1];
           face_xyz[2] = xyz[2];
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
               "inv");
           RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz,
                                 NULL),
