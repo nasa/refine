@@ -1878,6 +1878,14 @@ REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
   RAS(1 <= id && id <= ref_geom->nedge, "edge id out of range");
   object = edges[id - 1];
   status = EG_getRange(object, trange, &periodic);
+  /* returns -2 EGADS_NULLOBJ for EGADSlite of hemisphere
+     REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
+     "edge trange", {
+     printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
+     ref_geom_id(ref_geom, geom));
+     });
+  */
+  /* use EG_getTopology as an alternate to EG_getRange */
   if (EGADS_NULLOBJ == status) {
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
