@@ -1039,7 +1039,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
       if (ref_geom_model_loaded(ref_geom)) {
-        RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
+        RSS(ref_egads_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
             "feature size");
         hs = MIN(hs, hr * aspect_ratio);
         hn = MIN(hn, norm_ratio * hr);

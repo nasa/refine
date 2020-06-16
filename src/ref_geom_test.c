@@ -270,7 +270,7 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
+        RSS(ref_egads_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
             "get feature size");
         RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < tol) {
