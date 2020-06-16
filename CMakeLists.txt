@@ -1,3 +1,4 @@
+
 cmake_minimum_required(VERSION 3.0)
 
 project(refine)
@@ -16,3 +17,4 @@ foreach(TPL ${THIRD_PARTY_PACKAGES})
 endforeach()
 
 add_subdirectory(src)
+
