@@ -1906,3 +1906,37 @@ REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
   return REF_IMPLEMENT;
 #endif
 }
+
+REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                  REF_INT faceid, REF_INT sense, REF_DBL t,
+                                  REF_DBL *uv) {
+#ifdef HAVE_EGADS
+  ego *faces, *edges;
+  ego face_ego, edge_ego;
+
+  RNS(ref_geom->edges, "edges not loaded");
+  edges = (ego *)(ref_geom->edges);
+  RAS(1 <= edgeid && edgeid <= ref_geom->nedge, "edge id out of range");
+  edge_ego = edges[edgeid - 1];
+
+  RNS(ref_geom->faces, "faces not loaded");
+  faces = (ego *)(ref_geom->faces);
+  RAS(1 <= faceid && faceid <= ref_geom->nface, "face id out of range");
+  face_ego = faces[faceid - 1];
+
+  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+       "eval edge face uv");
+
+  return REF_SUCCESS;
+#else
+  printf("No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  SUPRESS_UNUSED_COMPILER_WARNING(sense);
+  SUPRESS_UNUSED_COMPILER_WARNING(t);
+  uv[0] = 0.0;
+  uv[1] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
