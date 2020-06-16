@@ -49,6 +49,11 @@ REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
 REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                REF_DBL *tolerance);
 
+REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
+                                    REF_DBL *normal);
+REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                    REF_DBL *s);
 END_C_DECLORATION
 
 #endif /* REF_EGADS_H */

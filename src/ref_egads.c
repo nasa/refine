@@ -1758,3 +1758,110 @@ REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
+                                    REF_DBL *normal) {
+#ifdef HAVE_EGADS
+  double curvature[4];
+  ego *edges;
+  ego object;
+  int edgeid;
+  double t;
+  REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
+  RNS(ref_geom->edges, "edges not loaded");
+  edgeid = ref_geom_id(ref_geom, geom);
+  edges = (ego *)(ref_geom->edges);
+  object = edges[edgeid - 1];
+  RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+  t = ref_geom_param(ref_geom, 0, geom);
+
+  REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
+  *k = curvature[0];
+  normal[0] = curvature[1];
+  normal[1] = curvature[2];
+  normal[2] = curvature[3];
+  return REF_SUCCESS;
+#else
+  printf("curvature 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *k = 0.0;
+  normal[0] = 1.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                    REF_DBL *s) {
+#ifdef HAVE_EGADS
+  double curvature[8];
+  ego *faces;
+  ego object;
+  int egads_status;
+  int faceid;
+  double uv[2];
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
+  RNS(ref_geom->faces, "faces not loaded");
+  faceid = ref_geom_id(ref_geom, geom);
+  faces = (ego *)(ref_geom->faces);
+  object = faces[faceid - 1];
+  RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+  uv[0] = ref_geom_param(ref_geom, 0, geom);
+  uv[1] = ref_geom_param(ref_geom, 1, geom);
+  egads_status = EG_curvature(object, uv, curvature);
+  if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
+    REF_DBL du, dv;
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double uv_range[4];
+    double params[2];
+    double eval[18];
+    REF_DBL shift = 1.0e-2;
+    params[0] = uv[0];
+    params[1] = uv[1];
+    REIS(EGADS_SUCCESS, EG_evaluate(object, params, eval), "eval derivs");
+    du = sqrt(ref_math_dot(&(eval[3]), &(eval[3])));
+    dv = sqrt(ref_math_dot(&(eval[6]), &(eval[6])));
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, uv_range, &nchild,
+                        &pchldrn, &psens),
+         "EG topo face");
+    if (du > dv) {
+      params[0] =
+          (1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
+    } else {
+      params[1] =
+          (1.0 - shift) * params[1] + shift * 0.5 * (uv_range[2] + uv_range[3]);
+    }
+    egads_status = EG_curvature(object, params, curvature);
+  }
+  REIS(EGADS_SUCCESS, egads_status, "curve");
+  *kr = curvature[0];
+  r[0] = curvature[1];
+  r[1] = curvature[2];
+  r[2] = curvature[3];
+  *ks = curvature[4];
+  s[0] = curvature[5];
+  s[1] = curvature[6];
+  s[2] = curvature[7];
+  return REF_SUCCESS;
+#else
+  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}

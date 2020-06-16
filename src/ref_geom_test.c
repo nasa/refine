@@ -301,7 +301,7 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+        RSS(ref_egads_edge_curvature(ref_geom, geom, &kr, r), "curve");
         kr = ABS(kr);
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;
@@ -336,7 +336,7 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+        RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
         kr = ABS(kr);
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;

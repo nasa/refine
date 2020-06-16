@@ -230,10 +230,6 @@ REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
                                    REF_DBL *delta_radian);
 
-REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
-                                   REF_DBL *normal);
-REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
-                                   REF_DBL *r, REF_DBL *ks, REF_DBL *s);
 REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
                              REF_DBL *r, REF_DBL *s, REF_DBL *n);
 REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
