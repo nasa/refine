@@ -10,10 +10,10 @@ find_package_handle_standard_args(
 
 mark_as_advanced(ZOLTAN_INCLUDE_DIR ZOLTAN_LIBRARY)
 
-if(ZOLTAN_FOUND AND NOT TARGET ZOLTAN::ZOLTAN)
+if(Zoltan_FOUND AND NOT TARGET Zoltan::Zoltan)
     message(STATUS "ZOLTAN Found: ${ZOLTAN_LIBRARY}")
-    add_library(ZOLTAN::ZOLTAN UNKNOWN IMPORTED)
-    set_target_properties(ZOLTAN::ZOLTAN PROPERTIES
+    add_library(Zoltan::Zoltan UNKNOWN IMPORTED)
+    set_target_properties(Zoltan::Zoltan PROPERTIES
             IMPORTED_LOCATION ${ZOLTAN_LIBRARY}
             INTERFACE_INCLUDE_DIRECTORIES ${ZOLTAN_INCLUDE_DIR}
             )
