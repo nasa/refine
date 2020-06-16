@@ -1682,18 +1682,18 @@ REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
   uv[1] = ref_geom_param(ref_geom, 1, geom);
   egads_status = EG_curvature(object, uv, curvature);
   if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
-    REF_DBL xyz[3], dxyz_duv[15], du, dv;
+    REF_DBL du, dv;
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
     double uv_range[4];
     double params[2];
+    double eval[18];
     REF_DBL shift = 1.0e-2;
     params[0] = uv[0];
     params[1] = uv[1];
-    RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, faceid, uv, xyz, dxyz_duv),
-        "eval at");
-    du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
-    dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
+    REIS(EGADS_SUCCESS, EG_evaluate(object, params, eval), "eval derivs");
+    du = sqrt(ref_math_dot(&(eval[3]), &(eval[3])));
+    dv = sqrt(ref_math_dot(&(eval[6]), &(eval[6])));
     REIS(EGADS_SUCCESS,
          EG_getTopology(object, &ref, &oclass, &mtype, uv_range, &nchild,
                         &pchldrn, &psens),
