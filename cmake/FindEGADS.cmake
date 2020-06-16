@@ -5,15 +5,10 @@
 #  EGADS_LIBRARIES - The libraries needed to use EGADS
 #  EGADS_DEFINITIONS - Compiler switches required for using EGADS
 
-set(EGADS_PREFIX "${EGADS_PREFIX_DEFAULT}" CACHE STRING "EGADS install directory")
-if(EGADS_PREFIX)
-    message(STATUS "EGADS_PREFIX ${EGADS_PREFIX}")
-endif()
+find_path(EGADS_INCLUDE_DIR egads.h)
 
-find_path(EGADS_INCLUDE_DIR egads.h PATHS "${EGADS_PREFIX}/include")
-
-find_library(EGADS_LIBRARY egads PATHS "${EGADS_PREFIX}/lib")
-find_library(EGADSLITE_LIBRARY egadslite PATHS "${EGADS_PREFIX}/lib")
+find_library(EGADS_LIBRARY egads)
+find_library(EGADSLITE_LIBRARY egadslite)
 
 set(EGADS_LIBRARIES ${EGADS_LIBRARY} )
 set(EGADSLITE_LIBRARIES ${EGADSLITE_LIBRARY} )

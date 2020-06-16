@@ -5,14 +5,8 @@
 #  METIS_LIBRARIES - The libraries needed to use METIS
 #  METIS_DEFINITIONS - Compiler switches required for using METIS
 
-set(_PREFIX "${METIS_PREFIX_DEFAULT}" CACHE STRING "Metis install directory")
-if(METIS_PREFIX)
-    message(STATUS "METIS_PREFIX ${METIS_PREFIX}")
-endif()
-
-find_path(METIS_INCLUDE_DIR metis.h PATHS "${METIS_PREFIX}/include")
-
-find_library(METIS_LIBRARY metis PATHS "${METIS_PREFIX}/lib")
+find_path(METIS_INCLUDE_DIR metis.h)
+find_library(METIS_LIBRARY metis)
 
 set(METIS_LIBRARIES ${METIS_LIBRARY} )
 set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR} )

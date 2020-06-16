@@ -7,15 +7,8 @@
 
 find_package(METIS)
 if(METIS_FOUND)
-
-    set(_PREFIX "${PARMETIS_PREFIX_DEFAULT}" CACHE STRING "ParMETIS install directory")
-    if(PARMETIS_PREFIX)
-        message(STATUS "PARMETIS_PREFIX ${PARMETIS_PREFIX}")
-    endif()
-
-    find_path(PARMETIS_INCLUDE_DIR parmetis.h PATHS "${PARMETIS_PREFIX}/include")
-
-    find_library(PARMETIS_LIBRARY parmetis PATHS "${PARMETIS_PREFIX}/lib")
+    find_path(PARMETIS_INCLUDE_DIR parmetis.h)
+    find_library(PARMETIS_LIBRARY parmetis)
 
     set(PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES})
     set(PARMETIS_INCLUDE_DIRS ${PARMETIS_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
