@@ -22,14 +22,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-#ifdef HAVE_EGADS
-#include "egads.h"
-#endif
-
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_egads.h"
