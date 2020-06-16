@@ -351,7 +351,7 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &q, dq_dxyz), "qual");
-    RSS(ref_geom_eval(ref_geom, geom, xyz, dxyz_duv), "eval face");
+    RSS(ref_egads_eval(ref_geom, geom, xyz, dxyz_duv), "eval face");
     dq_duv1[0] = dq_dxyz[0] * dxyz_duv[0] + dq_dxyz[1] * dxyz_duv[1] +
                  dq_dxyz[2] * dxyz_duv[2];
     dq_duv1[1] = dq_dxyz[0] * dxyz_duv[3] + dq_dxyz[1] * dxyz_duv[4] +

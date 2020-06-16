@@ -1214,7 +1214,7 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   }
 
   if (have_geom_node) { /* update T of edges? update UV of (degen) faces? */
-    RSS(ref_geom_eval(ref_geom, node_geom, xyz, NULL), "eval edge");
+    RSS(ref_egads_eval(ref_geom, node_geom, xyz, NULL), "eval edge");
     node = ref_geom_node(ref_geom, node_geom);
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
@@ -1234,7 +1234,7 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
 
   /* edge geom, evaluate edge and update face uv */
   if (have_geom_edge) {
-    RSS(ref_geom_eval(ref_geom, edge_geom, xyz, NULL), "eval edge");
+    RSS(ref_egads_eval(ref_geom, edge_geom, xyz, NULL), "eval edge");
     node = ref_geom_node(ref_geom, edge_geom);
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
@@ -1256,7 +1256,7 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
 
   /* face geom, evaluate on face uv */
   if (have_geom_face) {
-    RSS(ref_geom_eval(ref_geom, face_geom, xyz, NULL), "eval face");
+    RSS(ref_egads_eval(ref_geom, face_geom, xyz, NULL), "eval face");
     node = ref_geom_node(ref_geom, face_geom);
     ref_node_xyz(ref_node, 0, node) = xyz[0];
     ref_node_xyz(ref_node, 1, node) = xyz[1];
@@ -1264,28 +1264,6 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
     return REF_SUCCESS;
   }
 
-  return REF_SUCCESS;
-}
-/*
-  [x_t,y_t,z_t] edge [6]
-  [x_tt,y_tt,z_tt]
-  [x_u,y_u,z_u] [x_v,y_v,z_v] face [15]
-  [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
-*/
-REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
-                         REF_DBL *dxyz_dtuv) {
-  REF_INT type, id, i;
-  REF_DBL params[2];
-  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
-  params[0] = 0.0;
-  params[1] = 0.0;
-  type = ref_geom_type(ref_geom, geom);
-  id = ref_geom_id(ref_geom, geom);
-
-  for (i = 0; i < type; i++) {
-    params[i] = ref_geom_param(ref_geom, i, geom);
-  }
-  RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv), "eval at");
   return REF_SUCCESS;
 }
 
@@ -1492,7 +1470,7 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
-    RSS(ref_geom_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
     dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                 pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                 pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
@@ -1507,7 +1485,7 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   each_ref_geom_edge(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
-    RSS(ref_geom_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
     dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                 pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                 pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
@@ -1532,7 +1510,7 @@ REF_STATUS ref_geom_verify_param(REF_GRID ref_grid) {
   each_ref_geom_face(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     if (ref_mpi_rank(ref_mpi) != ref_node_part(ref_node, node)) continue;
-    RSS(ref_geom_eval(ref_geom, geom, xyz, NULL), "eval xyz");
+    RSS(ref_egads_eval(ref_geom, geom, xyz, NULL), "eval xyz");
     dist = sqrt(pow(xyz[0] - ref_node_xyz(ref_node, 0, node), 2) +
                 pow(xyz[1] - ref_node_xyz(ref_node, 1, node), 2) +
                 pow(xyz[2] - ref_node_xyz(ref_node, 2, node), 2));
@@ -2007,7 +1985,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                           &mtype, trange, &ncadnode, &cadnodes, &senses),
            "EG topo edge");
       RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
-      RSS(ref_geom_eval(ref_geom, edge_geom, xyz, dxyz_dt), "eval edge");
+      RSS(ref_egads_eval(ref_geom, edge_geom, xyz, dxyz_dt), "eval edge");
       tangent[0] = dxyz_dt[0];
       tangent[1] = dxyz_dt[1];
       tangent[2] = dxyz_dt[2];
@@ -2136,13 +2114,13 @@ REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
   }
   each_ref_geom_having_node(ref_geom, node, item, geom) {
     if (type == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_geom_eval(ref_geom, geom, gap_xyz, NULL), "eval");
+      RSS(ref_egads_eval(ref_geom, geom, gap_xyz, NULL), "eval");
     }
   }
 
   each_ref_geom_having_node(ref_geom, node, item, geom) {
     if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_geom_eval(ref_geom, geom, face_xyz, NULL), "eval");
+      RSS(ref_egads_eval(ref_geom, geom, face_xyz, NULL), "eval");
       dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
                   pow(face_xyz[1] - gap_xyz[1], 2) +
                   pow(face_xyz[2] - gap_xyz[2], 2));

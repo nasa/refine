@@ -60,6 +60,8 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
                                   REF_INT faceid, REF_INT sense, REF_DBL t,
                                   REF_DBL *uv);
 
+REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                          REF_DBL *dxyz_dtuv);
 REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                              REF_DBL *params, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
 REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,

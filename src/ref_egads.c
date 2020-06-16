@@ -1943,6 +1943,29 @@ REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
 #endif
 }
 
+/*
+  [x_t,y_t,z_t] edge [6]
+  [x_tt,y_tt,z_tt]
+  [x_u,y_u,z_u] [x_v,y_v,z_v] face [15]
+  [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
+*/
+REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                          REF_DBL *dxyz_dtuv) {
+  REF_INT type, id, i;
+  REF_DBL params[2];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
+  params[0] = 0.0;
+  params[1] = 0.0;
+  type = ref_geom_type(ref_geom, geom);
+  id = ref_geom_id(ref_geom, geom);
+
+  for (i = 0; i < type; i++) {
+    params[i] = ref_geom_param(ref_geom, i, geom);
+  }
+  RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv), "eval at");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                              REF_DBL *params, REF_DBL *xyz,
                              REF_DBL *dxyz_dtuv) {
