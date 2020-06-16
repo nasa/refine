@@ -12,7 +12,8 @@ function(set_target_rpath NAME)
     set_target_properties(${NAME} PROPERTIES INSTALL_RPATH_USE_LINK_PATH TRUE)
 
     foreach(rpath_link_dir ${CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES})
-        # append RPATH to be used when installing, but only if it's not a system directory
+        # append RPATH to be used when installing,
+        # but only if it's not a system directory
         list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${rpath_link_dir}" isSystemDir)
         if("${isSystemDir}" STREQUAL "-1")
             list(APPEND target_rpath_directories ${rpath_link_dir})

@@ -10,7 +10,7 @@ find_path(EGADS_INCLUDE_DIR egads.h)
 find_library(EGADS_LIBRARY egads)
 find_library(EGADSLITE_LIBRARY egadslite)
 
-set(EGADS_INCLUDE_DIRS ${EGADS_INCLUDE_DIR} )
+set(EGADS_INCLUDE_DIRS ${EGADS_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set EGADS_FOUND to TRUE

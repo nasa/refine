@@ -8,8 +8,8 @@
 find_path(METIS_INCLUDE_DIR metis.h)
 find_library(METIS_LIBRARY metis)
 
-set(METIS_LIBRARIES ${METIS_LIBRARY} )
-set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR} )
+set(METIS_LIBRARIES ${METIS_LIBRARY})
+set(METIS_INCLUDE_DIRS ${METIS_INCLUDE_DIR})
 
 include(FindPackageHandleStandardArgs)
 # handle the QUIETLY and REQUIRED arguments and set METIS_FOUND to TRUE
@@ -20,5 +20,5 @@ find_package_handle_standard_args(
         METIS_LIBRARY METIS_INCLUDE_DIR
 )
 
-mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY )
+mark_as_advanced(METIS_INCLUDE_DIR METIS_LIBRARY)
 
