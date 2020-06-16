@@ -2673,7 +2673,7 @@ static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
 }
 
 static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
-                                          REF_DBL *curve) {
+                                          REF_DBL *curve, REF_DBL *location) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
 
   REF_INT edge_geom, node;
@@ -2684,6 +2684,9 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
   REF_DBL curvature_ratio = 1.0 / 20.0;
 
   *curve = 2.0;
+  location[0] = 0.0;
+  location[1] = 0.0;
+  location[2] = 0.0;
 
   RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
 
@@ -2709,10 +2712,20 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
 
       RSS(ref_geom_reliability(ref_geom, face_geom, &slop), "edge tol");
       if (hr < slop) {
-        *curve = MIN(*curve, hr / slop);
+        if (*curve > hr / slop) {
+          *curve = hr / slop;
+          location[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, node);
+          location[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, node);
+          location[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, node);
+        }
       }
       if (hs < slop) {
-        *curve = MIN(*curve, hs / slop);
+        if (*curve > hs / slop) {
+          *curve = hs / slop;
+          location[0] = ref_node_xyz(ref_grid_node(ref_grid), 0, node);
+          location[1] = ref_node_xyz(ref_grid_node(ref_grid), 1, node);
+          location[2] = ref_node_xyz(ref_grid_node(ref_grid), 2, node);
+        }
       }
     }
   }
@@ -2728,6 +2741,7 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   REF_DBL short_edge_tol = 1e-3;
   REF_DBL short_edge, diag;
   REF_DBL curve;
+  REF_DBL location[3];
   each_ref_geom_node(ref_geom, geom) {
     node = ref_geom_node(ref_geom, geom);
     RSS(ref_geom_node_min_angle(ref_grid, node, &angle), "node angle");
@@ -2752,19 +2766,11 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid) {
   }
   if (ref_geom_model_loaded(ref_geom)) {
     for (faceid = 1; faceid <= ref_geom->nedge; faceid++) {
-      RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve), "curved face");
+      RSS(ref_geom_face_curve_tol(ref_grid, faceid, &curve, location),
+          "curved face");
       if (curve < 1.0) {
-#ifdef HAVE_EGADS
-        ego object = ((ego *)(ref_geom->faces))[faceid - 1];
-        double box[6];
-        REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
-        printf("%f %f %f # box corner with curve/tol %e\n", box[0], box[1],
-               box[2], curve);
-        printf("%f %f %f # box corner for face id %d\n", box[3], box[4], box[5],
-               faceid);
-#else
-        printf("# face id %d curve/tol %e\n", faceid, curve);
-#endif
+        printf("%f %f %f# face id %d curve/tol %e\n", location[0], location[1],
+               location[2], faceid, curve);
       }
     }
   }
