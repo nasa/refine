@@ -2045,7 +2045,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
               dx[1] = xyz1[1] - xyz[1];
               dx[2] = xyz1[2] - xyz[2];
               len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
-              RSS(ref_geom_gap(ref_geom, node, &gap), "edge gap");
+              RSS(ref_egads_gap(ref_geom, node, &gap), "edge gap");
               len = MAX(len, gap);
               RSS(ref_math_normalize(dx), "direction across face");
               if (len < *h0) {
@@ -2097,40 +2097,6 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
-  REF_INT item, geom, type;
-  REF_DBL dist, face_xyz[3], gap_xyz[3];
-  REF_BOOL has_node, has_edge;
-  *gap = 0.0;
-
-  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &has_node), "n");
-  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &has_edge), "n");
-  if (!has_edge) return REF_SUCCESS;
-
-  if (has_node) {
-    type = REF_GEOM_NODE;
-  } else {
-    type = REF_GEOM_FACE;
-  }
-  each_ref_geom_having_node(ref_geom, node, item, geom) {
-    if (type == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_egads_eval(ref_geom, geom, gap_xyz, NULL), "eval");
-    }
-  }
-
-  each_ref_geom_having_node(ref_geom, node, item, geom) {
-    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
-      RSS(ref_egads_eval(ref_geom, geom, face_xyz, NULL), "eval");
-      dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
-                  pow(face_xyz[1] - gap_xyz[1], 2) +
-                  pow(face_xyz[2] - gap_xyz[2], 2));
-      (*gap) = MAX((*gap), dist);
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
                                 REF_DBL *slop) {
   REF_DBL tol, gap;
@@ -2147,7 +2113,7 @@ REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
       *slop = MAX(*slop, ref_geom_tolerance_protection(ref_geom) * tol);
     }
   */
-  RSS(ref_geom_gap(ref_geom, ref_geom_node(ref_geom, geom), &gap), "gap");
+  RSS(ref_egads_gap(ref_geom, ref_geom_node(ref_geom, geom), &gap), "gap");
   *slop = MAX(*slop, ref_geom_gap_protection(ref_geom) * gap);
   return REF_SUCCESS;
 }

@@ -2158,3 +2158,37 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   return REF_IMPLEMENT;
 #endif
 }
+
+REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
+  REF_INT item, geom, type;
+  REF_DBL dist, face_xyz[3], gap_xyz[3];
+  REF_BOOL has_node, has_edge;
+  *gap = 0.0;
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &has_node), "n");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &has_edge), "n");
+  if (!has_edge) return REF_SUCCESS;
+
+  if (has_node) {
+    type = REF_GEOM_NODE;
+  } else {
+    type = REF_GEOM_FACE;
+  }
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (type == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_egads_eval(ref_geom, geom, gap_xyz, NULL), "eval");
+    }
+  }
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_egads_eval(ref_geom, geom, face_xyz, NULL), "eval");
+      dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
+                  pow(face_xyz[1] - gap_xyz[1], 2) +
+                  pow(face_xyz[2] - gap_xyz[2], 2));
+      (*gap) = MAX((*gap), dist);
+    }
+  }
+
+  return REF_SUCCESS;
+}

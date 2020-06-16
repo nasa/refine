@@ -67,6 +67,8 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
                                   REF_DBL *xyz, REF_DBL *param);
 
+REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
+
 END_C_DECLORATION
 
 #endif /* REF_EGADS_H */

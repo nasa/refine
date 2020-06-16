@@ -241,7 +241,6 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
                                  REF_DBL *h2, REF_DBL *dir2);
 
-REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
 REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom, REF_DBL *slop);
 
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid);
