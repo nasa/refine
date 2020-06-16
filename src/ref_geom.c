@@ -629,7 +629,6 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   REF_INT node_per;
   REF_INT id, edgeid, geom, from, from_geom;
   REF_INT node_index, cell_node;
-  ego face_ego, edge_ego;
   double trange[2], uv[2], uv0[2], uv1[2], uvtmin[2], uvtmax[2];
   REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
@@ -701,12 +700,8 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         edgeid = ref_geom_jump(ref_geom, geom);
         RSS(ref_geom_tuv(ref_geom, from, REF_GEOM_FACE, id, uv), "from uv");
         RSS(ref_geom_tuv(ref_geom, node, REF_GEOM_EDGE, edgeid, &t), "edge t0");
-        face_ego = ((ego *)(ref_geom->faces))[id - 1];
-        edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
-        REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, 1, t, uv0),
-             "eval edge face uv sens = 1");
-        REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, -1, t, uv1),
-             "eval edge face uv sens = -1");
+        RSS(ref_egads_edge_face_uv(ref_geom, edgeid, id, 1, t, uv0), "uv 1");
+        RSS(ref_egads_edge_face_uv(ref_geom, edgeid, id, -1, t, uv1), "uv -1");
         dist0 = sqrt(pow(uv0[0] - uv[0], 2) + pow(uv0[1] - uv[1], 2));
         dist1 = sqrt(pow(uv1[0] - uv[0], 2) + pow(uv1[1] - uv[1], 2));
         if (dist0 < dist1) {
@@ -740,23 +735,15 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
 
         *sens = 0;
         edgeid = ABS(ref_geom_degen(ref_geom, geom));
-        edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
-        face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
         RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
-        REIB(EGADS_SUCCESS,
-             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
-             "edge uv tmin", {
-               printf("for edge %d (%p) face %d (%p)\n", edgeid,
-                      (void *)edge_ego, ref_geom_id(ref_geom, geom),
-                      (void *)face_ego);
-             });
-        REIB(EGADS_SUCCESS,
-             EG_getEdgeUV(face_ego, edge_ego, *sens, trange[1], uvtmax),
-             "edge uv tmax", {
-               printf("for edge %d face %d\n", edgeid,
-                      ref_geom_id(ref_geom, geom));
-             });
-
+        RSS(ref_egads_edge_face_uv(ref_geom, edgeid,
+                                   ref_geom_id(ref_geom, geom), *sens,
+                                   trange[0], uvtmin),
+            "uv t min");
+        RSS(ref_egads_edge_face_uv(ref_geom, edgeid,
+                                   ref_geom_id(ref_geom, geom), *sens,
+                                   trange[1], uvtmax),
+            "uv t max");
         /* edgeid sign convention defined in ref_geom_mark_jump_degen */
         if (0 < ref_geom_degen(ref_geom, geom)) {
           param[0] = ref_geom_param(ref_geom, 0, geom);
@@ -794,8 +781,6 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   double t;
   double uv[2], edgeuv[2], invuv[2], edgedist, invdist, edgexyz[18], invxyz[19];
   int sense;
-  ego *edges, *faces;
-  ego edge, face;
   REF_INT faceid;
   REF_BOOL have_jump;
 
@@ -833,24 +818,19 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
       }
     }
   } else {
-    edges = (ego *)(ref_geom->edges);
-    edge = edges[ref_geom_id(ref_geom, edge_geom) - 1];
-    faces = (ego *)(ref_geom->faces);
     each_ref_adj_node_item_with_ref(ref_adj, node, geom_item, face_geom) {
       if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
         faceid = ref_geom_id(ref_geom, face_geom);
-        face = faces[faceid - 1];
         sense = 0;
-        REIB(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, edgeuv),
-             "edge uv", {
-               printf("edge %d face %d\n", ref_geom_id(ref_geom, edge_geom),
-                      faceid);
-               ref_geom_tattle(ref_geom, node);
-             });
+        RSS(ref_egads_edge_face_uv(ref_geom, ref_geom_id(ref_geom, edge_geom),
+                                   faceid, sense, t, edgeuv),
+            "edge uv");
         if (REF_TRUE) { /* use edgeuv */
           ref_geom_param(ref_geom, 0, face_geom) = edgeuv[0];
           ref_geom_param(ref_geom, 1, face_geom) = edgeuv[1];
         } else { /* check if inverse eval on face is closer */
+          ego *faces = (ego *)(ref_geom->faces);
+          ego face = faces[faceid - 1];
           invuv[0] = edgeuv[0];
           invuv[1] = edgeuv[1];
           RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid,
