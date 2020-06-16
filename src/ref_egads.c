@@ -2194,8 +2194,8 @@ REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
 }
 
 REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
-                                 REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
-                                 REF_DBL *h2, REF_DBL *dir2) {
+                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
+                                  REF_DBL *h2, REF_DBL *dir2) {
 #ifdef HAVE_EGADS
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT edge_item, face_item, edge_geom, face_geom, edgeid, faceid, iloop;
@@ -2349,4 +2349,3 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
 #endif
   return REF_SUCCESS;
 }
-
