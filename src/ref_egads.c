@@ -1865,3 +1865,36 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   return REF_IMPLEMENT;
 #endif
 }
+
+REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                 REF_DBL *trange) {
+#ifdef HAVE_EGADS
+  ego *edges;
+  ego object;
+  int periodic;
+  int status;
+  RNS(ref_geom->edges, "edges not loaded");
+  edges = (ego *)(ref_geom->edges);
+  RAS(1 <= id && id <= ref_geom->nedge, "edge id out of range");
+  object = edges[id - 1];
+  status = EG_getRange(object, trange, &periodic);
+  if (EGADS_NULLOBJ == status) {
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                        &pchldrn, &psens),
+         "topo for edge range");
+  } else {
+    REIS(EGADS_SUCCESS, status, "edge range");
+  }
+  return REF_SUCCESS;
+#else
+  printf("No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  trange[0] = 0.0;
+  trange[1] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}

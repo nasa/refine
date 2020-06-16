@@ -54,6 +54,9 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
 REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
                                     REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
                                     REF_DBL *s);
+REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                 REF_DBL *trange);
+
 END_C_DECLORATION
 
 #endif /* REF_EGADS_H */
