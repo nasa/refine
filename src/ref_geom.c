@@ -1070,31 +1070,20 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       ref_geom_jump(ref_geom, face_geom) = ref_geom_jump(ref_geom, geom0);
     }
 
-#ifdef HAVE_EGADS
     /* if there is an edge between, set the face uv based on edge t */
     if (ref_geom_model_loaded(ref_geom) && has_edge_support) {
-      ego *edges, *faces;
-      ego edge, face;
       REF_INT faceid, edgeid;
       REF_DBL t;
       edgeid = ref_geom_id(ref_geom, edge_geom);
-      edges = (ego *)(ref_geom->edges);
-      edge = edges[edgeid - 1];
-      faces = (ego *)(ref_geom->faces);
       faceid = ref_geom_id(ref_geom, face_geom);
-      face = faces[faceid - 1];
       t = ref_geom_param(ref_geom, 0, edge_geom);
       sense = 0;
       if (0 != ref_geom_jump(ref_geom, face_geom)) sense = 1;
-      REIB(EGADS_SUCCESS, EG_getEdgeUV(face, edge, sense, t, param), "edge uv",
-           {
-             printf("edge %d face %d sense %d\n", edgeid, faceid, sense);
-             ref_geom_tattle(ref_geom, ref_geom_node(ref_geom, edge_geom));
-           });
+      RSS(ref_egads_edge_face_uv(ref_geom, edgeid, faceid, sense, t, param),
+          "edge t param");
       ref_geom_param(ref_geom, 0, face_geom) = param[0];
       ref_geom_param(ref_geom, 1, face_geom) = param[1];
     }
-#endif
   }
 
   return REF_SUCCESS;
