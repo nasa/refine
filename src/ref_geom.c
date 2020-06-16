@@ -631,7 +631,6 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
   REF_INT node_index, cell_node;
   ego face_ego, edge_ego;
   double trange[2], uv[2], uv0[2], uv1[2], uvtmin[2], uvtmax[2];
-  int periodic;
   REF_DBL from_param[2], t;
   REF_DBL dist0, dist1;
   REF_INT hits;
@@ -663,9 +662,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
 
   switch (type) {
     case REF_GEOM_EDGE:
-      edge_ego = ((ego *)(ref_geom->edges))[id - 1];
-      REIS(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
-           "edge range");
+      RSS(ref_egads_edge_trange(ref_geom, id, trange), "trange");
       from = nodes[1 - node_index];
       RSS(ref_geom_tuv(ref_geom, from, type, id, from_param), "from tuv");
       dist0 = from_param[0] - trange[0];
@@ -745,22 +742,7 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
         edgeid = ABS(ref_geom_degen(ref_geom, geom));
         edge_ego = ((ego *)(ref_geom->edges))[edgeid - 1];
         face_ego = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
-        /* returns -2 EGADS_NULLOBJ for EGADSlite of hemisphere
-           REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
-           "edge trange", {
-           printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
-           ref_geom_id(ref_geom, geom));
-           });
-        */
-        /* use EG_getTopology as an alternate to EG_getRange */
-        {
-          ego ref, *pchldrn;
-          int oclass, mtype, nchild, *psens;
-          REIS(EGADS_SUCCESS,
-               EG_getTopology(edge_ego, &ref, &oclass, &mtype, trange, &nchild,
-                              &pchldrn, &psens),
-               "topo");
-        }
+        RSS(ref_egads_edge_trange(ref_geom, edgeid, trange), "trange");
         REIB(EGADS_SUCCESS,
              EG_getEdgeUV(face_ego, edge_ego, *sens, trange[0], uvtmin),
              "edge uv tmin", {
@@ -1423,17 +1405,9 @@ REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   status = EG_evaluate(object, params, eval);
   if (EGADS_SUCCESS != status) {
-    ego ref, *pchldrn;
-    int oclass, mtype, nchild, *psens;
-    double trange[2];
     printf("type %d id %d\n", type, id);
     if (type > 0) printf("param[0] = %f\n", params[0]);
     if (type > 1) printf("param[1] = %f\n", params[1]);
-    REIS(EGADS_SUCCESS,
-         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
-                        &pchldrn, &psens),
-         "EG topo node");
-    printf("trange %f %f\n", trange[0], trange[1]);
     REIS(EGADS_SUCCESS, status, "eval");
   }
   xyz[0] = eval[0];
