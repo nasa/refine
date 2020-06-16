@@ -1676,3 +1676,42 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
   return REF_IMPLEMENT;
 #endif
 }
+
+REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
+#ifdef HAVE_EGADS
+  ego object;
+  double box[6];
+
+  object = (ego)(ref_geom->solid);
+  RNS(object, "EGADS solid object is NULL. Has the geometry been loaded?");
+
+  if (geom < 0) {
+    object = (ego)(ref_geom->solid);
+  } else {
+    switch (ref_geom_type(ref_geom, geom)) {
+      case REF_GEOM_EDGE:
+        object = ((ego *)(ref_geom->edges))[ref_geom_id(ref_geom, geom) - 1];
+        break;
+      case REF_GEOM_FACE:
+        object = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
+        break;
+      default:
+        *diag = 0.0; /* for node */
+        return REF_SUCCESS;
+    }
+  }
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
+  *diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+               (box[1] - box[4]) * (box[1] - box[4]) +
+               (box[2] - box[5]) * (box[2] - box[5]));
+
+#else
+  printf("returning 1.0 from %s, No EGADS\n", __func__);
+  *diag = 1.0;
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+#endif
+
+  return REF_SUCCESS;
+}

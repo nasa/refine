@@ -248,8 +248,6 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
 
-REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
-REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
 REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
                                  REF_DBL *h2, REF_DBL *dir2);

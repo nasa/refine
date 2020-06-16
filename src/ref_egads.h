@@ -45,6 +45,8 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
 
 REF_STATUS ref_egads_recon(REF_GRID ref_grid);
 
+REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
+
 END_C_DECLORATION
 
 #endif /* REF_EGADS_H */

@@ -26,6 +26,7 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_edge.h"
+#include "ref_egads.h"
 #include "ref_grid.h"
 #include "ref_interp.h"
 #include "ref_malloc.h"
@@ -1019,7 +1020,7 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
   REF_DBL crease_dot_prod, ramp, scale;
 
   if (ref_geom_model_loaded(ref_geom)) {
-    RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "egads bbox diag");
+    RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "egads bbox diag");
   } else if (ref_geom_meshlinked(ref_geom)) {
     RSS(ref_node_bounding_box_diagonal(ref_node, &hmax), "bbox diag");
   } else {

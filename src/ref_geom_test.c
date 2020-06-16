@@ -290,7 +290,7 @@ int main(int argc, char *argv[]) {
       REF_DBL drad, hmax, rlimit, hr;
 
       drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
       hmax *= 0.1;          /* normal spacing and max tangential spacing */
       rlimit = hmax / drad; /* h = r*drad, r = h/drad */
 
@@ -325,7 +325,7 @@ int main(int argc, char *argv[]) {
       REF_DBL drad, hmax, rlimit, hr, hs;
 
       drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
       hmax *= 0.1;          /* normal spacing and max tangential spacing */
       rlimit = hmax / drad; /* h = r*drad, r = h/drad */
 

@@ -2358,59 +2358,6 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag) {
-#ifdef HAVE_EGADS
-  ego solid;
-  double box[6];
-  solid = (ego)(ref_geom->solid);
-
-  RNS(solid, "EGADS solid object is NULL. Has the geometry been loaded?");
-
-  REIS(EGADS_SUCCESS, EG_getBoundingBox(solid, box), "EG bounding box");
-  *diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-               (box[1] - box[4]) * (box[1] - box[4]) +
-               (box[2] - box[5]) * (box[2] - box[5]));
-
-#else
-  printf("returning 1.0 from %s, No EGADS\n", __func__);
-  *diag = 1.0;
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-#endif
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
-#ifdef HAVE_EGADS
-  ego object;
-  double box[6];
-  switch (ref_geom_type(ref_geom, geom)) {
-    case REF_GEOM_EDGE:
-      object = ((ego *)(ref_geom->edges))[ref_geom_id(ref_geom, geom) - 1];
-      break;
-    case REF_GEOM_FACE:
-      object = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
-      break;
-    default:
-      *diag = 0.0; /* for node */
-      return REF_SUCCESS;
-  }
-
-  REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
-  *diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
-               (box[1] - box[4]) * (box[1] - box[4]) +
-               (box[2] - box[5]) * (box[2] - box[5]));
-
-#else
-  printf("returning 1.0 from %s, No EGADS\n", __func__);
-  *diag = 1.0;
-  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-  SUPRESS_UNUSED_COMPILER_WARNING(geom);
-#endif
-
-  return REF_SUCCESS;
-}
-
 REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
                                  REF_DBL *h2, REF_DBL *dir2) {
@@ -2434,7 +2381,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
   int status;
 
   /* initialize isotropic with bounding box */
-  RSS(ref_geom_egads_diagonal(ref_geom, &diagonal), "bbox diag init");
+  RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &diagonal), "bbox diag init");
   *h0 = diagonal;
   dir0[0] = 1.0;
   dir0[1] = 0.0;
@@ -2529,7 +2476,8 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
                   dir0[0] = dx[0];
                   dir0[1] = dx[1];
                   dir0[2] = dx[2];
-                  RSS(ref_geom_diagonal(ref_geom, edge_geom, h1), "local diag");
+                  RSS(ref_egads_diagonal(ref_geom, edge_geom, h1),
+                      "local diag");
                   dir1[0] = orth[0];
                   dir1[1] = orth[1];
                   dir1[2] = orth[2];
@@ -2554,7 +2502,7 @@ REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
   }
 #else
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  RSS(ref_geom_egads_diagonal(ref_geom, h0), "bbox diag init");
+  RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, h0), "bbox diag init");
   dir0[0] = 1.0;
   dir0[1] = 0.0;
   dir0[2] = 0.0;
@@ -2710,7 +2658,7 @@ static REF_STATUS ref_geom_node_short_edge(REF_GRID ref_grid, REF_INT node,
   max_diag = REF_DBL_MIN;
   each_ref_geom_having_node(ref_geom, node, item, geom) {
     if (REF_GEOM_EDGE != ref_geom_type(ref_geom, geom)) continue;
-    RSS(ref_geom_diagonal(ref_geom, geom, &diag), "edge diag");
+    RSS(ref_egads_diagonal(ref_geom, geom, &diag), "edge diag");
     if (diag < min_diag) {
       min_diag = diag;
       *short_diag = diag;
@@ -2737,7 +2685,7 @@ static REF_STATUS ref_geom_face_curve_tol(REF_GRID ref_grid, REF_INT faceid,
 
   *curve = 2.0;
 
-  RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+  RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
 
   each_ref_geom_face(ref_geom, face_geom) {
     if (faceid != ref_geom_id(ref_geom, face_geom)) continue;
