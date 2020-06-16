@@ -73,7 +73,7 @@ mkdir -p meshlink
 ( cd meshlink && \
       ../configure \
 	  --prefix=`pwd` \
-	  --with-mpi=${metis_path} \
+	  --with-mpi=${mpi_path} \
 	  --with-metis=${metis_path} \
 	  --with-parmetis=${parmetis_path} \
 	  --with-MeshLink=${meshlink_path} \
@@ -81,6 +81,15 @@ mkdir -p meshlink
 	  CC=clang++ \
     ) \
     || exit
+
+mkdir -p all
+( cd all && \
+      cmake .. \
+	    -DCMAKE_INSTALL_PREFIX=`pwd` \
+	    -DCMAKE_PREFIX_PATH="${mpi_path};${metis_path};${parmetis_path};${egads_path};${opencascade_path}/lib/cmake/opencascade"
+) \
+    || exit
+
 
 exit
 
