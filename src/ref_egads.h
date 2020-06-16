@@ -46,6 +46,8 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
 REF_STATUS ref_egads_recon(REF_GRID ref_grid);
 
 REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
+REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                               REF_DBL *tolerance);
 
 END_C_DECLORATION
 

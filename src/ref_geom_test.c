@@ -196,7 +196,7 @@ int main(int argc, char *argv[]) {
       REF_INT id = REF_EMPTY;
       REF_INT min_id, max_id;
       REF_DBL min_tol, max_tol;
-      RSS(ref_geom_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
+      RSS(ref_egads_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
       printf("%e solid tolerance\n", tol);
 
       min_id = REF_EMPTY;
@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_node_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_edge_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_face_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -271,7 +271,7 @@ int main(int argc, char *argv[]) {
         xyz[2] = ref_node_xyz(ref_node, 2, node);
         RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
             "get feature size");
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < tol) {
           printf("type %d id %d node %d xyz %f %f %f h %.3e tol %.3e\n", type,
                  id, node, xyz[0], xyz[1], xyz[2], hr, tol);
@@ -306,7 +306,7 @@ int main(int argc, char *argv[]) {
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;
 
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "edge tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "edge tol");
         if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
                  xyz[0], xyz[1], xyz[2], hr, tol);
@@ -344,7 +344,7 @@ int main(int argc, char *argv[]) {
         hs = hmax;
         if (1.0 / rlimit < ks) hs = drad / ks;
 
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
             hs < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f hr %.3e hs %.3e tol %.3e\n", id,

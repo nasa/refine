@@ -1715,3 +1715,46 @@ REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                               REF_DBL *tolerance) {
+#ifdef HAVE_EGADS
+  ego object, *objects;
+  double tol;
+
+  object = (ego)NULL;
+  switch (type) {
+    case REF_GEOM_NODE:
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      objects = (ego *)(ref_geom->nodes);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_EDGE:
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      objects = (ego *)(ref_geom->edges);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_FACE:
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      objects = (ego *)(ref_geom->faces);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_SOLID:
+      object = (ego)(ref_geom->solid);
+      break;
+    default:
+      printf("ref_geom type %d unknown\n", type);
+      RSS(REF_IMPLEMENT, "unknown surface type");
+  }
+
+  REIS(EGADS_SUCCESS, EG_getTolerance(object, &tol), "EG tolerance");
+  *tolerance = tol;
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  *tolerance = -1.0;
+#endif
+  return REF_SUCCESS;
+}
