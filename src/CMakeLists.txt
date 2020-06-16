@@ -102,12 +102,12 @@ set(REF_CORE_SRC
 
 function(create_program TARGET_NAME)
     add_executable(${TARGET_NAME} ${ARGN})
-    if ("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
+    if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(${TARGET_NAME} PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
-    endif ()
+    endif()
     set_target_rpath(${TARGET_NAME})
     install(TARGETS ${TARGET_NAME} DESTINATION bin)
-endfunction(create_program)
+endfunction()
 
 function(create_library TARGET_NAME)
     add_library(${TARGET_NAME} ${ARGN})
@@ -121,27 +121,27 @@ function(create_library TARGET_NAME)
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION lib
             )
-endfunction(create_library)
+endfunction()
 
-if (EGADS_FOUND)
+if(EGADS_FOUND)
     list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIRS})
     list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
-endif ()
+endif()
 
-if (ParMETIS_FOUND)
+if(ParMETIS_FOUND)
     list(APPEND THIRD_PARTY_LIBRARIES ParMETIS::ParMETIS)
     list(APPEND EXTRA_DEFINITIONS HAVE_PARMETIS)
-endif ()
+endif()
 
-if (Zoltan_FOUND)
+if(Zoltan_FOUND)
     list(APPEND THIRD_PARTY_LIBRARIES Zoltan::Zoltan)
     list(APPEND EXTRA_DEFINITIONS HAVE_ZOLTAN)
-endif ()
+endif()
 
 find_library(MATH_LIBRARY m REQUIRED)
-if (MATH_LIBRARY)
+if(MATH_LIBRARY)
     list(APPEND THIRD_PARTY_LIBRARIES ${MATH_LIBRARY})
-endif ()
+endif()
 
 set(REF_MPI_SRC
         ref_mpi.c
@@ -152,24 +152,24 @@ create_library(refine_with_egadslite STATIC ref_egads.c)
 target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS_LITE)
 
 create_library(refine_with_egads STATIC ref_egads.c)
-if (EGADS_FOUND)
+if(EGADS_FOUND)
     target_link_libraries(refine_with_egads PRIVATE EGADS::EGADS)
-    if (OpenCASCADE_FOUND)
+    if(OpenCASCADE_FOUND)
         message(STATUS "OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
         target_link_libraries(refine_with_egads PRIVATE ${OpenCASCADE_LIBRARIES})
-    endif ()
+    endif()
 
     target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS)
     target_link_libraries(refine_with_egadslite PRIVATE EGADS::EGADSLITE)
-endif ()
+endif()
 
 create_library(refine_without_mpi STATIC ${REF_MPI_SRC})
-if (MPI_FOUND)
+if(MPI_FOUND)
     create_library(refine_with_mpi STATIC ${REF_MPI_SRC})
     target_include_directories(refine_with_mpi PRIVATE ${MPI_INCLUDE_PATH})
     target_link_libraries(refine_with_mpi PRIVATE ${MPI_C_LIBRARIES})
     target_compile_definitions(refine_with_mpi PRIVATE HAVE_MPI)
-endif ()
+endif()
 
 create_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
 target_link_libraries(refine_core PRIVATE ${THIRD_PARTY_LIBRARIES})
@@ -187,7 +187,7 @@ install(FILES ${REF_TWO_HEADERS}
 install(FILES refineConfig.cmake
         DESTINATION cmake)
 
-if (MPI_FOUND)
+if(MPI_FOUND)
     message("-- MPI Found: ${MPI_C_LIBRARIES}")
     message("-- building refmpifull with MPI support")
     create_program(refmpifull ref_subcommand.c)
@@ -196,7 +196,7 @@ if (MPI_FOUND)
     message("-- building refmpi with MPI support")
     create_program(refmpi ref_subcommand.c)
     target_link_libraries(refmpi PRIVATE refine_core refine_with_mpi refine_with_egadslite)
-endif ()
+endif()
 
 set(REF_TESTS
         ref_adapt_test.c
