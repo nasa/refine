@@ -5,7 +5,7 @@
 #  METIS_LIBRARIES - The libraries needed to use METIS
 #  METIS_DEFINITIONS - Compiler switches required for using METIS
 
-set(_PREFIX "${METIS_PREFIX_DEFAULT}" CACHE STRING "Zoltan install directory")
+set(_PREFIX "${METIS_PREFIX_DEFAULT}" CACHE STRING "Metis install directory")
 if(METIS_PREFIX)
     message(STATUS "METIS_PREFIX ${METIS_PREFIX}")
 endif()
