@@ -1,30 +1,20 @@
-# - Try to find zoltan
-# Once done this will define
-#  ZOLTAN_FOUND - System has ZOLTAN
-#  ZOLTAN_INCLUDE_DIRS - The ZOLTAN include directories
-#  ZOLTAN_LIBRARIES - The libraries needed to use ZOLTAN
-#  ZOLTAN_DEFINITIONS - Compiler switches required for using ZOLTAN
-
-set(ZOLTAN_PREFIX "${ZOLTAN_PREFIX_DEFAULT}" CACHE STRING "Zoltan install directory")
-if(ZOLTAN_PREFIX)
-    message(STATUS "ZOLTAN_PREFIX ${ZOLTAN_PREFIX}")
-endif()
-
-find_path(ZOLTAN_INCLUDE_DIR zoltan.h PATHS "${ZOLTAN_PREFIX}/include")
-
-find_library(ZOLTAN_LIBRARY zoltan PATHS "${ZOLTAN_PREFIX}/lib")
-
-set(ZOLTAN_LIBRARIES ${ZOLTAN_LIBRARY} )
-set(ZOLTAN_INCLUDE_DIRS ${ZOLTAN_INCLUDE_DIR} )
+find_path(ZOLTAN_INCLUDE_DIR zoltan.h)
+find_library(ZOLTAN_LIBRARY zoltan)
 
 include(FindPackageHandleStandardArgs)
-# handle the QUIETLY and REQUIRED arguments and set ZOLTAN_FOUND to TRUE
-# if all listed variables are TRUE
 find_package_handle_standard_args(
         ZOLTAN
         DEFAULT_MSG
         ZOLTAN_LIBRARY ZOLTAN_INCLUDE_DIR
 )
 
-mark_as_advanced(ZOLTAN_INCLUDE_DIR ZOLTAN_LIBRARY )
+mark_as_advanced(ZOLTAN_INCLUDE_DIR ZOLTAN_LIBRARY)
 
+if(Zoltan_FOUND AND NOT TARGET Zoltan::Zoltan)
+    message(STATUS "ZOLTAN Found: ${ZOLTAN_LIBRARY}")
+    add_library(Zoltan::Zoltan UNKNOWN IMPORTED)
+    set_target_properties(Zoltan::Zoltan PROPERTIES
+            IMPORTED_LOCATION ${ZOLTAN_LIBRARY}
+            INTERFACE_INCLUDE_DIRECTORIES ${ZOLTAN_INCLUDE_DIR}
+            )
+endif()

@@ -7,15 +7,8 @@
 
 find_package(METIS)
 if(METIS_FOUND)
-
-    set(_PREFIX "${PARMETIS_PREFIX_DEFAULT}" CACHE STRING "ParMETIS install directory")
-    if(PARMETIS_PREFIX)
-        message(STATUS "PARMETIS_PREFIX ${PARMETIS_PREFIX}")
-    endif()
-
-    find_path(PARMETIS_INCLUDE_DIR parmetis.h PATHS "${PARMETIS_PREFIX}/include")
-
-    find_library(PARMETIS_LIBRARY parmetis PATHS "${PARMETIS_PREFIX}/lib")
+    find_path(PARMETIS_INCLUDE_DIR parmetis.h)
+    find_library(PARMETIS_LIBRARY parmetis)
 
     set(PARMETIS_LIBRARIES ${PARMETIS_LIBRARY} ${METIS_LIBRARIES})
     set(PARMETIS_INCLUDE_DIRS ${PARMETIS_INCLUDE_DIR} ${METIS_INCLUDE_DIRS})
@@ -24,14 +17,22 @@ if(METIS_FOUND)
     # handle the QUIETLY and REQUIRED arguments and set PARMETIS_FOUND to TRUE
     # if all listed variables are TRUE
     find_package_handle_standard_args(
-            PARMETIS
+            ParMETIS
             DEFAULT_MSG
             PARMETIS_LIBRARY PARMETIS_INCLUDE_DIR
     )
 
     mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY )
+    if(ParMETIS_FOUND AND NOT TARGET ParMETIS::ParMETIS)
+        message(STATUS "PARMETIS Found: ${PARMETIS_LIBRARY}")
+        add_library(ParMETIS::ParMETIS UNKNOWN IMPORTED)
+        set_target_properties(ParMETIS::ParMETIS PROPERTIES
+                IMPORTED_LOCATION ${PARMETIS_LIBRARY}
+                INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIR}
+                )
+    endif()
 else()
-    set(PARMETIS_FOUND FALSE)
+    set(ParMETIS_FOUND FALSE)
 endif()
 
 
