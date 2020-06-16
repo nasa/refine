@@ -23,6 +23,14 @@ if(METIS_FOUND)
     )
 
     mark_as_advanced(PARMETIS_INCLUDE_DIR PARMETIS_LIBRARY )
+    if(PARMETIS_FOUND AND NOT TARGET PARMETIS::PARMETIS)
+        message(STATUS "PARMETIS Found: ${PARMETIS_LIBRARY}")
+        add_library(PARMETIS::PARMETIS UNKNOWN IMPORTED)
+        set_target_properties(PARMETIS::PARMETIS PROPERTIES
+                IMPORTED_LOCATION ${PARMETIS_LIBRARY}
+                INTERFACE_INCLUDE_DIRECTORIES ${PARMETIS_INCLUDE_DIR}
+                )
+    endif()
 else()
     set(PARMETIS_FOUND FALSE)
 endif()
