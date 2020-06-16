@@ -750,7 +750,8 @@ static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
         uv0 = &(uv[2 * n0]);
         uv1 = &(uv[2 * n1]);
         for (i = 0; i < 2; i++) uvm[i] = 0.5 * (uv0[i] + uv1[i]);
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uvm, xyz, NULL),
+        RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uvm, xyz,
+                              NULL),
             "eval mid uv");
         for (i = 0; i < 3; i++) dside[i] = xyz1[i] - xyz0[i];
         for (i = 0; i < 3; i++) dmid[i] = xyz[i] - 0.5 * (xyz1[i] + xyz0[i]);
@@ -1199,8 +1200,8 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid) {
       if (REF_EMPTY != face_geom) {
         uv[0] = ref_geom_param(ref_geom, 0, face_geom);
         uv[1] = ref_geom_param(ref_geom, 1, face_geom);
-        RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uv, xyz,
-                             dxyz_duv),
+        RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, face + 1, uv, xyz,
+                              dxyz_duv),
             "eval at");
         du = sqrt(ref_math_dot(&(dxyz_duv[0]), &(dxyz_duv[0])));
         dv = sqrt(ref_math_dot(&(dxyz_duv[3]), &(dxyz_duv[3])));
@@ -1441,8 +1442,9 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
       {
         best_node = node0;
         param[0] = trange[0];
-        RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
-                                  ref_node_xyz_ptr(ref_node, best_node), param),
+        RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
+                                   ref_node_xyz_ptr(ref_node, best_node),
+                                   param),
             "inv wrapper");
         REIS(EGADS_SUCCESS, EG_evaluate(object, &(param[0]), closest),
              "EG eval");
@@ -1494,9 +1496,9 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
           if (!have_faceid0 || !have_faceid1)
             continue; /* must have expected faceids */
           param[0] = t;
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
-                                    ref_node_xyz_ptr(ref_node, next_node),
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_EDGE, id,
+                                     ref_node_xyz_ptr(ref_node, next_node),
+                                     param),
               "inv wrapper");
           REIS(EGADS_SUCCESS, EG_evaluate(object, &(param[0]), closest),
                "EG eval");
@@ -1613,8 +1615,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[1]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -1633,8 +1635,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[2]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -1653,8 +1655,8 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
         if (inv_eval_wrapper && surface_type == PLANE) {
           for (i = 0; i < 3; i++)
             closest[i] = ref_node_xyz(ref_node, i, nodes[0]);
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
-                                    param),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, faceid, closest,
+                                     param),
               "inv eval");
         } else {
           REIS(EGADS_SUCCESS,
@@ -1675,4 +1677,675 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
   printf("No EGADS linked for %s\n", __func__);
   return REF_IMPLEMENT;
 #endif
+}
+
+REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag) {
+#ifdef HAVE_EGADS
+  ego object;
+  double box[6];
+
+  object = (ego)(ref_geom->solid);
+  RNS(object, "EGADS solid object is NULL. Has the geometry been loaded?");
+
+  if (geom < 0) {
+    object = (ego)(ref_geom->solid);
+  } else {
+    switch (ref_geom_type(ref_geom, geom)) {
+      case REF_GEOM_EDGE:
+        object = ((ego *)(ref_geom->edges))[ref_geom_id(ref_geom, geom) - 1];
+        break;
+      case REF_GEOM_FACE:
+        object = ((ego *)(ref_geom->faces))[ref_geom_id(ref_geom, geom) - 1];
+        break;
+      default:
+        *diag = 0.0; /* for node */
+        return REF_SUCCESS;
+    }
+  }
+
+  REIS(EGADS_SUCCESS, EG_getBoundingBox(object, box), "EG bounding box");
+  *diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+               (box[1] - box[4]) * (box[1] - box[4]) +
+               (box[2] - box[5]) * (box[2] - box[5]));
+
+#else
+  printf("returning 1.0 from %s, No EGADS\n", __func__);
+  *diag = 1.0;
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+#endif
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                               REF_DBL *tolerance) {
+#ifdef HAVE_EGADS
+  ego object, *objects;
+  double tol;
+
+  object = (ego)NULL;
+  switch (type) {
+    case REF_GEOM_NODE:
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      objects = (ego *)(ref_geom->nodes);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_EDGE:
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      objects = (ego *)(ref_geom->edges);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_FACE:
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      objects = (ego *)(ref_geom->faces);
+      object = objects[id - 1];
+      break;
+    case REF_GEOM_SOLID:
+      object = (ego)(ref_geom->solid);
+      break;
+    default:
+      printf("ref_geom type %d unknown\n", type);
+      RSS(REF_IMPLEMENT, "unknown surface type");
+  }
+
+  REIS(EGADS_SUCCESS, EG_getTolerance(object, &tol), "EG tolerance");
+  *tolerance = tol;
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  *tolerance = -1.0;
+#endif
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
+                                    REF_DBL *normal) {
+#ifdef HAVE_EGADS
+  double curvature[4];
+  ego *edges;
+  ego object;
+  int edgeid;
+  double t;
+  REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
+  RNS(ref_geom->edges, "edges not loaded");
+  edgeid = ref_geom_id(ref_geom, geom);
+  edges = (ego *)(ref_geom->edges);
+  object = edges[edgeid - 1];
+  RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+  t = ref_geom_param(ref_geom, 0, geom);
+
+  REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
+  *k = curvature[0];
+  normal[0] = curvature[1];
+  normal[1] = curvature[2];
+  normal[2] = curvature[3];
+  return REF_SUCCESS;
+#else
+  printf("curvature 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *k = 0.0;
+  normal[0] = 1.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                    REF_DBL *s) {
+#ifdef HAVE_EGADS
+  double curvature[8];
+  ego *faces;
+  ego object;
+  int egads_status;
+  int faceid;
+  double uv[2];
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
+  RNS(ref_geom->faces, "faces not loaded");
+  faceid = ref_geom_id(ref_geom, geom);
+  faces = (ego *)(ref_geom->faces);
+  object = faces[faceid - 1];
+  RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
+
+  uv[0] = ref_geom_param(ref_geom, 0, geom);
+  uv[1] = ref_geom_param(ref_geom, 1, geom);
+  egads_status = EG_curvature(object, uv, curvature);
+  if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
+    REF_DBL du, dv;
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double uv_range[4];
+    double params[2];
+    double eval[18];
+    REF_DBL shift = 1.0e-2;
+    params[0] = uv[0];
+    params[1] = uv[1];
+    REIS(EGADS_SUCCESS, EG_evaluate(object, params, eval), "eval derivs");
+    du = sqrt(ref_math_dot(&(eval[3]), &(eval[3])));
+    dv = sqrt(ref_math_dot(&(eval[6]), &(eval[6])));
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, uv_range, &nchild,
+                        &pchldrn, &psens),
+         "EG topo face");
+    if (du > dv) {
+      params[0] =
+          (1.0 - shift) * params[0] + shift * 0.5 * (uv_range[0] + uv_range[1]);
+    } else {
+      params[1] =
+          (1.0 - shift) * params[1] + shift * 0.5 * (uv_range[2] + uv_range[3]);
+    }
+    egads_status = EG_curvature(object, params, curvature);
+  }
+  REIS(EGADS_SUCCESS, egads_status, "curve");
+  *kr = curvature[0];
+  r[0] = curvature[1];
+  r[1] = curvature[2];
+  r[2] = curvature[3];
+  *ks = curvature[4];
+  s[0] = curvature[5];
+  s[1] = curvature[6];
+  s[2] = curvature[7];
+  return REF_SUCCESS;
+#else
+  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                 REF_DBL *trange) {
+#ifdef HAVE_EGADS
+  ego *edges;
+  ego object;
+  int periodic;
+  int status;
+  RNS(ref_geom->edges, "edges not loaded");
+  edges = (ego *)(ref_geom->edges);
+  RAS(1 <= id && id <= ref_geom->nedge, "edge id out of range");
+  object = edges[id - 1];
+  status = EG_getRange(object, trange, &periodic);
+  /* returns -2 EGADS_NULLOBJ for EGADSlite of hemisphere
+     REIB(EGADS_SUCCESS, EG_getRange(edge_ego, trange, &periodic),
+     "edge trange", {
+     printf("for edge %d (%p) face %d\n", edgeid, (void *)edge_ego,
+     ref_geom_id(ref_geom, geom));
+     });
+  */
+  /* use EG_getTopology as an alternate to EG_getRange */
+  if (EGADS_NULLOBJ == status) {
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(object, &ref, &oclass, &mtype, trange, &nchild,
+                        &pchldrn, &psens),
+         "topo for edge range");
+  } else {
+    REIS(EGADS_SUCCESS, status, "edge range");
+  }
+  return REF_SUCCESS;
+#else
+  printf("No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+  trange[0] = 0.0;
+  trange[1] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                  REF_INT faceid, REF_INT sense, REF_DBL t,
+                                  REF_DBL *uv) {
+#ifdef HAVE_EGADS
+  ego *faces, *edges;
+  ego face_ego, edge_ego;
+
+  RNS(ref_geom->edges, "edges not loaded");
+  edges = (ego *)(ref_geom->edges);
+  RAS(1 <= edgeid && edgeid <= ref_geom->nedge, "edge id out of range");
+  edge_ego = edges[edgeid - 1];
+
+  RNS(ref_geom->faces, "faces not loaded");
+  faces = (ego *)(ref_geom->faces);
+  RAS(1 <= faceid && faceid <= ref_geom->nface, "face id out of range");
+  face_ego = faces[faceid - 1];
+
+  REIS(EGADS_SUCCESS, EG_getEdgeUV(face_ego, edge_ego, sense, t, uv),
+       "eval edge face uv");
+
+  return REF_SUCCESS;
+#else
+  printf("No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(edgeid);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  SUPRESS_UNUSED_COMPILER_WARNING(sense);
+  SUPRESS_UNUSED_COMPILER_WARNING(t);
+  uv[0] = 0.0;
+  uv[1] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+/*
+  [x_t,y_t,z_t] edge [6]
+  [x_tt,y_tt,z_tt]
+  [x_u,y_u,z_u] [x_v,y_v,z_v] face [15]
+  [x_uu,y_uu,z_uu] [x_uv,y_uv,z_uv] [x_vv,y_vv,z_vv]
+*/
+REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                          REF_DBL *dxyz_dtuv) {
+  REF_INT type, id, i;
+  REF_DBL params[2];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
+  params[0] = 0.0;
+  params[1] = 0.0;
+  type = ref_geom_type(ref_geom, geom);
+  id = ref_geom_id(ref_geom, geom);
+
+  for (i = 0; i < type; i++) {
+    params[i] = ref_geom_param(ref_geom, i, geom);
+  }
+  RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv), "eval at");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                             REF_DBL *params, REF_DBL *xyz,
+                             REF_DBL *dxyz_dtuv) {
+#ifdef HAVE_EGADS
+  double eval[18];
+  REF_INT i;
+  ego *nodes, *edges, *faces;
+  ego object;
+  int status;
+
+  object = (ego)NULL;
+  switch (type) {
+    case (REF_GEOM_NODE):
+      RNS(ref_geom->nodes, "nodes not loaded");
+      if (id < 1 || id > ref_geom->nnode) return REF_INVALID;
+      nodes = (ego *)(ref_geom->nodes);
+      object = nodes[id - 1];
+      {
+        ego ref, *pchldrn;
+        int oclass, mtype, nchild, *psens;
+        REIS(EGADS_SUCCESS,
+             EG_getTopology(object, &ref, &oclass, &mtype, xyz, &nchild,
+                            &pchldrn, &psens),
+             "EG topo node");
+      }
+      return REF_SUCCESS;
+      break;
+    case (REF_GEOM_EDGE):
+      RNS(ref_geom->edges, "edges not loaded");
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      edges = (ego *)(ref_geom->edges);
+      object = edges[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      RNS(ref_geom->faces, "faces not loaded");
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      faces = (ego *)(ref_geom->faces);
+      object = faces[id - 1];
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom");
+  }
+
+  status = EG_evaluate(object, params, eval);
+  if (EGADS_SUCCESS != status) {
+    printf("type %d id %d\n", type, id);
+    if (type > 0) printf("param[0] = %f\n", params[0]);
+    if (type > 1) printf("param[1] = %f\n", params[1]);
+    REIS(EGADS_SUCCESS, status, "eval");
+  }
+  xyz[0] = eval[0];
+  xyz[1] = eval[1];
+  xyz[2] = eval[2];
+  if (NULL != dxyz_dtuv) {
+    for (i = 0; i < 6; i++) dxyz_dtuv[i] = eval[3 + i];
+    if (REF_GEOM_FACE == type)
+      for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = eval[9 + i];
+  }
+  return REF_SUCCESS;
+#else
+  REF_INT i;
+  printf("evaluating to (0,0,0), No EGADS linked for %s\n", __func__);
+  printf("type %d id %d\n", type, id);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(params);
+  xyz[0] = 0.0;
+  xyz[1] = 0.0;
+  xyz[2] = 0.0;
+  if (NULL != dxyz_dtuv) {
+    for (i = 0; i < 6; i++) {
+      dxyz_dtuv[i] = 0.0;
+    }
+    if (REF_GEOM_FACE == type) {
+      for (i = 0; i < 9; i++) dxyz_dtuv[6 + i] = 0.0;
+    }
+  }
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                  REF_DBL *xyz, REF_DBL *param) {
+#ifdef HAVE_EGADS
+  ego object = (ego)NULL;
+  int i, guess_status, noguess_status;
+  REF_DBL guess_param[2], noguess_param[2];
+  REF_DBL guess_closest[3], noguess_closest[3];
+  REF_DBL guess_dist, noguess_dist;
+
+  ego ref, *pchldrn;
+  int oclass, mtype, nchild, *psens;
+  double range[4];
+
+  REF_BOOL guess_in_range, noguess_in_range;
+
+  REF_BOOL verbose = REF_FALSE;
+
+  switch (type) {
+    case (REF_GEOM_NODE):
+      printf("GEOM_NODE ref_geom_inverse_eval not defined\n");
+      return REF_IMPLEMENT;
+      break;
+    case (REF_GEOM_EDGE):
+      RNS(ref_geom->edges, "edges not loaded");
+      if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case (REF_GEOM_FACE):
+      RNS(ref_geom->faces, "faces not loaded");
+      if (id < 1 || id > ref_geom->nface) return REF_INVALID;
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    default:
+      RSS(REF_IMPLEMENT, "unknown geom");
+  }
+
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(object, &ref, &oclass, &mtype, range, &nchild, &pchldrn,
+                      &psens),
+       "EG topo node");
+
+  for (i = 0; i < type; i++) guess_param[i] = param[i];
+  for (i = 0; i < type; i++) noguess_param[i] = param[i];
+  guess_status = EG_invEvaluateGuess(object, xyz, guess_param, guess_closest);
+  noguess_status = EG_invEvaluate(object, xyz, noguess_param, noguess_closest);
+  if (verbose) {
+    printf("guess %d noguess %d type %d id %d xyz %f %f %f\n", guess_status,
+           noguess_status, type, id, xyz[0], xyz[1], xyz[2]);
+    for (i = 0; i < type; i++) {
+      printf("%d: start %f guess %f noguess %f\n", i, param[i], guess_param[i],
+             noguess_param[i]);
+    }
+  }
+  if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS != noguess_status)
+    return REF_FAILURE;
+
+  if (EGADS_SUCCESS == guess_status && EGADS_SUCCESS != noguess_status) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (EGADS_SUCCESS != guess_status && EGADS_SUCCESS == noguess_status) {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+    return REF_SUCCESS;
+  }
+
+  guess_dist = sqrt(pow(guess_closest[0] - xyz[0], 2) +
+                    pow(guess_closest[1] - xyz[1], 2) +
+                    pow(guess_closest[2] - xyz[2], 2));
+  noguess_dist = sqrt(pow(noguess_closest[0] - xyz[0], 2) +
+                      pow(noguess_closest[1] - xyz[1], 2) +
+                      pow(noguess_closest[2] - xyz[2], 2));
+
+  guess_in_range = REF_TRUE;
+  for (i = 0; i < type; i++)
+    if (guess_param[i] < range[0 + 2 * i] || range[1 + 2 * i] < guess_param[i])
+      guess_in_range = REF_FALSE;
+
+  noguess_in_range = REF_TRUE;
+  for (i = 0; i < type; i++)
+    if (noguess_param[i] < range[0 + 2 * i] ||
+        range[1 + 2 * i] < noguess_param[i])
+      noguess_in_range = REF_FALSE;
+
+  if (verbose) {
+    printf("guess %e noguess %e\n", guess_dist, noguess_dist);
+    printf("guess %d noguess %d in range\n", guess_in_range, noguess_in_range);
+  }
+
+  if (guess_in_range && !noguess_in_range) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (!guess_in_range && noguess_in_range) {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+    return REF_SUCCESS;
+  }
+
+  if (guess_dist < noguess_dist) {
+    for (i = 0; i < type; i++) param[i] = guess_param[i];
+  } else {
+    for (i = 0; i < type; i++) param[i] = noguess_param[i];
+  }
+  return REF_SUCCESS;
+
+#else
+  printf("no-op, No EGADS linked for %s type %d id %d x %f p %f n %d\n",
+         __func__, type, id, xyz[0], param[0], ref_geom_n(ref_geom));
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
+  REF_INT item, geom, type;
+  REF_DBL dist, face_xyz[3], gap_xyz[3];
+  REF_BOOL has_node, has_edge;
+  *gap = 0.0;
+
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &has_node), "n");
+  RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &has_edge), "n");
+  if (!has_edge) return REF_SUCCESS;
+
+  if (has_node) {
+    type = REF_GEOM_NODE;
+  } else {
+    type = REF_GEOM_FACE;
+  }
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (type == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_egads_eval(ref_geom, geom, gap_xyz, NULL), "eval");
+    }
+  }
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_FACE == ref_geom_type(ref_geom, geom)) {
+      RSS(ref_egads_eval(ref_geom, geom, face_xyz, NULL), "eval");
+      dist = sqrt(pow(face_xyz[0] - gap_xyz[0], 2) +
+                  pow(face_xyz[1] - gap_xyz[1], 2) +
+                  pow(face_xyz[2] - gap_xyz[2], 2));
+      (*gap) = MAX((*gap), dist);
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
+                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
+                                  REF_DBL *h2, REF_DBL *dir2) {
+#ifdef HAVE_EGADS
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_INT edge_item, face_item, edge_geom, face_geom, edgeid, faceid, iloop;
+  ego ref, *cadnodes, *edges, *loops;
+  int oclass, mtype, ncadnode, nedge, nloop, *senses;
+  double data[18];
+  double trange[2];
+  REF_DBL xyz[3];
+  REF_DBL dxyz_dt[6];
+  REF_DBL xyz1[3];
+  REF_INT ineligible_cad_node0, ineligible_cad_node1;
+  REF_INT cad_node0, cad_node1;
+  REF_DBL param[2];
+  REF_INT other_edgeid, iedge;
+  REF_DBL len, diagonal;
+  REF_DBL tangent[3], dx[3], dot, orth[3];
+  REF_DBL gap;
+  int status;
+
+  /* initialize isotropic with bounding box */
+  RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &diagonal), "bbox diag init");
+  *h0 = diagonal;
+  dir0[0] = 1.0;
+  dir0[1] = 0.0;
+  dir0[2] = 0.0;
+  *h1 = diagonal;
+  dir1[0] = 0.0;
+  dir1[1] = 1.0;
+  dir1[2] = 0.0;
+  *h2 = diagonal;
+  dir2[0] = 0.0;
+  dir2[1] = 0.0;
+  dir2[2] = 1.0;
+
+  each_ref_geom_having_node(ref_geom, node, edge_item, edge_geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom)) {
+      edgeid = ref_geom_id(ref_geom, edge_geom);
+      REIS(EGADS_SUCCESS,
+           EG_getTopology(((ego *)(ref_geom->edges))[edgeid - 1], &ref, &oclass,
+                          &mtype, trange, &ncadnode, &cadnodes, &senses),
+           "EG topo edge");
+      RAS(mtype != DEGENERATE, "edge interior DEGENERATE");
+      RSS(ref_egads_eval(ref_geom, edge_geom, xyz, dxyz_dt), "eval edge");
+      tangent[0] = dxyz_dt[0];
+      tangent[1] = dxyz_dt[1];
+      tangent[2] = dxyz_dt[2];
+      if (REF_SUCCESS != ref_math_normalize(tangent)) {
+        tangent[0] = 0.0;
+        tangent[1] = 0.0;
+        tangent[2] = 0.0;
+      }
+      RAS(0 < ncadnode && ncadnode < 3, "edge children");
+      ineligible_cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
+      if (2 == ncadnode) {
+        ineligible_cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes[1]);
+      } else {
+        ineligible_cad_node1 = ineligible_cad_node0; /* ONENODE edge */
+      }
+      each_ref_geom_having_node(ref_geom, node, face_item, face_geom) {
+        if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
+          faceid = ref_geom_id(ref_geom, face_geom);
+          REIS(EGADS_SUCCESS,
+               EG_getTopology(((ego *)(ref_geom->faces))[faceid - 1], &ref,
+                              &oclass, &mtype, data, &nloop, &loops, &senses),
+               "topo");
+          for (iloop = 0; iloop < nloop; iloop++) {
+            /* loop through all Edges associated with this Loop */
+            REIS(EGADS_SUCCESS,
+                 EG_getTopology(loops[iloop], &ref, &oclass, &mtype, data,
+                                &nedge, &edges, &senses),
+                 "topo");
+            for (iedge = 0; iedge < nedge; iedge++) {
+              other_edgeid =
+                  EG_indexBodyTopo((ego)(ref_geom->solid), edges[iedge]);
+              /* qualified? does not share geom nodes */
+              REIS(EGADS_SUCCESS,
+                   EG_getTopology(((ego *)(ref_geom->edges))[other_edgeid - 1],
+                                  &ref, &oclass, &mtype, trange, &ncadnode,
+                                  &cadnodes, &senses),
+                   "EG topo node");
+              if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+              RAS(0 < ncadnode && ncadnode < 3, "edge children");
+              cad_node0 = EG_indexBodyTopo(ref_geom->solid, cadnodes[0]);
+              if (2 == ncadnode) {
+                cad_node1 = EG_indexBodyTopo(ref_geom->solid, cadnodes[1]);
+              } else {
+                cad_node1 = cad_node0; /* ONENODE edge */
+              }
+              if (cad_node0 == ineligible_cad_node0 ||
+                  cad_node0 == ineligible_cad_node1 ||
+                  cad_node1 == ineligible_cad_node0 ||
+                  cad_node1 == ineligible_cad_node1)
+                continue;
+              /* inverse projection */
+              status =
+                  EG_invEvaluate(((ego *)(ref_geom->edges))[other_edgeid - 1],
+                                 xyz, param, xyz1);
+              REIS(EGADS_SUCCESS, status, "EG_invEvaluate opp edge");
+              dx[0] = xyz1[0] - xyz[0];
+              dx[1] = xyz1[1] - xyz[1];
+              dx[2] = xyz1[2] - xyz[2];
+              len = sqrt(dx[0] * dx[0] + dx[1] * dx[1] + dx[2] * dx[2]);
+              RSS(ref_egads_gap(ref_geom, node, &gap), "edge gap");
+              len = MAX(len, gap);
+              RSS(ref_math_normalize(dx), "direction across face");
+              if (len < *h0) {
+                dot = ref_math_dot(tangent, dx);
+                orth[0] = tangent[0] - dot * dx[0];
+                orth[1] = tangent[1] - dot * dx[1];
+                orth[2] = tangent[2] - dot * dx[2];
+                if (REF_SUCCESS == ref_math_normalize(orth)) {
+                  *h0 = len;
+                  dir0[0] = dx[0];
+                  dir0[1] = dx[1];
+                  dir0[2] = dx[2];
+                  RSS(ref_egads_diagonal(ref_geom, edge_geom, h1),
+                      "local diag");
+                  dir1[0] = orth[0];
+                  dir1[1] = orth[1];
+                  dir1[2] = orth[2];
+                  *h2 = diagonal;
+                  ref_math_cross_product(dir0, dir1, dir2);
+                } else {
+                  *h0 = len;
+                  dir0[0] = dx[0];
+                  dir0[1] = dx[1];
+                  dir0[2] = dx[2];
+                  *h1 = diagonal;
+                  *h2 = diagonal;
+                  RSS(ref_math_orthonormal_system(dir0, dir1, dir2),
+                      "arbitrary orthonormal dir1 dir2");
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+#else
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, h0), "bbox diag init");
+  dir0[0] = 1.0;
+  dir0[1] = 0.0;
+  dir0[2] = 0.0;
+  *h1 = *h0;
+  *h2 = *h0;
+  RSS(ref_math_orthonormal_system(dir0, dir1, dir2),
+      "arbitrary orthonormal dir1 dir2");
+  SUPRESS_UNUSED_COMPILER_WARNING(node);
+#endif
+  return REF_SUCCESS;
 }

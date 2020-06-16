@@ -45,6 +45,34 @@ REF_STATUS ref_egads_mark_jump_degen(REF_GRID ref_grid);
 
 REF_STATUS ref_egads_recon(REF_GRID ref_grid);
 
+REF_STATUS ref_egads_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
+REF_STATUS ref_egads_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                               REF_DBL *tolerance);
+
+REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
+                                    REF_DBL *normal);
+REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
+                                    REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
+                                    REF_DBL *s);
+REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
+                                 REF_DBL *trange);
+REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,
+                                  REF_INT faceid, REF_INT sense, REF_DBL t,
+                                  REF_DBL *uv);
+
+REF_STATUS ref_egads_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
+                          REF_DBL *dxyz_dtuv);
+REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                             REF_DBL *params, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
+REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                                  REF_DBL *xyz, REF_DBL *param);
+
+REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
+
+REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
+                                  REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
+                                  REF_DBL *h2, REF_DBL *dir2);
+
 END_C_DECLORATION
 
 #endif /* REF_EGADS_H */

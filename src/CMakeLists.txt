@@ -123,11 +123,6 @@ function(create_library TARGET_NAME)
             )
 endfunction()
 
-if(EGADS_FOUND)
-    list(APPEND THIRD_PARTY_INCLUDES ${EGADS_INCLUDE_DIRS})
-    list(APPEND EXTRA_DEFINITIONS HAVE_EGADS)
-endif()
-
 if(ParMETIS_FOUND)
     list(APPEND THIRD_PARTY_LIBRARIES ParMETIS::ParMETIS)
     list(APPEND EXTRA_DEFINITIONS HAVE_PARMETIS)
@@ -149,11 +144,13 @@ set(REF_MPI_SRC
         )
 
 create_library(refine_with_egadslite STATIC ref_egads.c)
+# HAVE_EGADS_LITE nested in HAVE_EGADS block, safe to set
 target_compile_definitions(refine_with_egadslite PRIVATE HAVE_EGADS_LITE)
 
 create_library(refine_with_egads STATIC ref_egads.c)
 if(EGADS_FOUND)
     target_link_libraries(refine_with_egads PRIVATE EGADS::EGADS)
+    target_compile_definitions(refine_with_egads PRIVATE HAVE_EGADS)
     if(OpenCASCADE_FOUND)
         message(STATUS "OpenCASCADE Found: ${OpenCASCADE_LIBRARIES}")
         target_link_libraries(refine_with_egads PRIVATE ${OpenCASCADE_LIBRARIES})

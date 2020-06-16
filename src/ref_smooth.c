@@ -25,6 +25,7 @@
 #include "ref_adapt.h"
 #include "ref_cell.h"
 #include "ref_clump.h"
+#include "ref_egads.h"
 #include "ref_geom.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -350,7 +351,7 @@ static REF_STATUS ref_smooth_tri_ideal_uv(REF_GRID ref_grid, REF_INT node,
     RSS(ref_geom_add(ref_geom, node, REF_GEOM_FACE, id, uv), "set uv");
     RSS(ref_geom_constrain(ref_grid, node), "constrain");
     RSS(ref_node_tri_dquality_dnode0(ref_node, nodes, &q, dq_dxyz), "qual");
-    RSS(ref_geom_eval(ref_geom, geom, xyz, dxyz_duv), "eval face");
+    RSS(ref_egads_eval(ref_geom, geom, xyz, dxyz_duv), "eval face");
     dq_duv1[0] = dq_dxyz[0] * dxyz_duv[0] + dq_dxyz[1] * dxyz_duv[1] +
                  dq_dxyz[2] * dxyz_duv[2];
     dq_duv1[1] = dq_dxyz[0] * dxyz_duv[3] + dq_dxyz[1] * dxyz_duv[4] +
@@ -493,8 +494,8 @@ static REF_STATUS ref_smooth_tri_pliant_uv(REF_GRID ref_grid, REF_INT node,
     dxyz[ixyz] =
         ref_grid_adapt(ref_grid, smooth_pliant_alpha) * total_force[ixyz];
 
-  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
-                       dxyz_duv),
+  RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, ideal_uv, xyz_orig,
+                        dxyz_duv),
       "eval face derivatives");
   RSS(ref_geom_face_rsn(ref_geom, id, ideal_uv, r, s, n),
       "eval orthonormal face system");
@@ -1440,7 +1441,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
         ref_geom_tattle(ref_geom, nodes[1]);
       });
 
-  RSS(ref_geom_eval_at(ref_geom, REF_GEOM_EDGE, id, &t_orig, xyz_orig, dxyz_dt),
+  RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, id, &t_orig, xyz_orig,
+                        dxyz_dt),
       "eval edge derivatives");
   for (ixyz = 0; ixyz < 3; ixyz++) tangent[ixyz] = dxyz_dt[ixyz];
   dt_ds = sqrt(ref_math_dot(dxyz_dt, dxyz_dt));

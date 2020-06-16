@@ -130,9 +130,10 @@ int main(int argc, char *argv[]) {
           face_xyz[0] = xyz[0];
           face_xyz[1] = xyz[1];
           face_xyz[2] = xyz[2];
-          RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
+          RSS(ref_egads_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
               "inv");
-          RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz, NULL),
+          RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz,
+                                NULL),
               "eval at");
           dist =
               sqrt(pow(face_xyz[0] - xyz[0], 2) + pow(face_xyz[1] - xyz[1], 2));
@@ -196,7 +197,7 @@ int main(int argc, char *argv[]) {
       REF_INT id = REF_EMPTY;
       REF_INT min_id, max_id;
       REF_DBL min_tol, max_tol;
-      RSS(ref_geom_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
+      RSS(ref_egads_tolerance(ref_geom, REF_GEOM_SOLID, id, &tol), "solid tol");
       printf("%e solid tolerance\n", tol);
 
       min_id = REF_EMPTY;
@@ -204,7 +205,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_node_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_NODE, id, &tol), "node tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -222,7 +223,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_edge_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_EDGE, id, &tol), "edge tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -240,7 +241,7 @@ int main(int argc, char *argv[]) {
       min_tol = -1.0;
       max_tol = -1.0;
       each_ref_geom_face_id(ref_geom, id) {
-        RSS(ref_geom_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, REF_GEOM_FACE, id, &tol), "face tol");
         if (REF_EMPTY == min_id || tol < min_tol) {
           min_id = id;
           min_tol = tol;
@@ -269,9 +270,9 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
+        RSS(ref_egads_feature_size(ref_grid, node, &hr, r, &hs, s, &hn, n),
             "get feature size");
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < tol) {
           printf("type %d id %d node %d xyz %f %f %f h %.3e tol %.3e\n", type,
                  id, node, xyz[0], xyz[1], xyz[2], hr, tol);
@@ -290,7 +291,7 @@ int main(int argc, char *argv[]) {
       REF_DBL drad, hmax, rlimit, hr;
 
       drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
       hmax *= 0.1;          /* normal spacing and max tangential spacing */
       rlimit = hmax / drad; /* h = r*drad, r = h/drad */
 
@@ -301,12 +302,12 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_edge_curvature(ref_geom, geom, &kr, r), "curve");
+        RSS(ref_egads_edge_curvature(ref_geom, geom, &kr, r), "curve");
         kr = ABS(kr);
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;
 
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "edge tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "edge tol");
         if (hr < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f edge hr %.3e tol %.3e\n", id, node,
                  xyz[0], xyz[1], xyz[2], hr, tol);
@@ -325,7 +326,7 @@ int main(int argc, char *argv[]) {
       REF_DBL drad, hmax, rlimit, hr, hs;
 
       drad = 1.0 / ref_geom_segments_per_radian_of_curvature(ref_geom);
-      RSS(ref_geom_egads_diagonal(ref_geom, &hmax), "bbox diag");
+      RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &hmax), "bbox diag");
       hmax *= 0.1;          /* normal spacing and max tangential spacing */
       rlimit = hmax / drad; /* h = r*drad, r = h/drad */
 
@@ -336,7 +337,7 @@ int main(int argc, char *argv[]) {
         xyz[0] = ref_node_xyz(ref_node, 0, node);
         xyz[1] = ref_node_xyz(ref_node, 1, node);
         xyz[2] = ref_node_xyz(ref_node, 2, node);
-        RSS(ref_geom_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+        RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
         kr = ABS(kr);
         hr = hmax;
         if (1.0 / rlimit < kr) hr = drad / kr;
@@ -344,7 +345,7 @@ int main(int argc, char *argv[]) {
         hs = hmax;
         if (1.0 / rlimit < ks) hs = drad / ks;
 
-        RSS(ref_geom_tolerance(ref_geom, type, id, &tol), "face tol");
+        RSS(ref_egads_tolerance(ref_geom, type, id, &tol), "face tol");
         if (hr < ref_geom_tolerance_protection(ref_geom) * tol ||
             hs < ref_geom_tolerance_protection(ref_geom) * tol) {
           printf("id %d node %d xyz %f %f %f hr %.3e hs %.3e tol %.3e\n", id,
@@ -658,9 +659,11 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_create(&ref_geom), "create");
 
     geom = -1;
-    REIS(REF_INVALID, ref_geom_eval(ref_geom, geom, xyz, NULL), "invalid geom");
+    REIS(REF_INVALID, ref_egads_eval(ref_geom, geom, xyz, NULL),
+         "invalid geom");
     geom = 1 + ref_geom_max(ref_geom);
-    REIS(REF_INVALID, ref_geom_eval(ref_geom, geom, xyz, NULL), "invalid geom");
+    REIS(REF_INVALID, ref_egads_eval(ref_geom, geom, xyz, NULL),
+         "invalid geom");
 
     RSS(ref_geom_free(ref_geom), "free");
   }

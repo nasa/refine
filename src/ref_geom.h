@@ -220,20 +220,9 @@ REF_STATUS ref_geom_tri_uv_bounding_box2(REF_GRID ref_grid, REF_INT node0,
 REF_STATUS ref_geom_constrain_all(REF_GRID ref_grid);
 REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node);
 
-REF_STATUS ref_geom_eval(REF_GEOM ref_geom, REF_INT geom, REF_DBL *xyz,
-                         REF_DBL *dxyz_dtuv);
-REF_STATUS ref_geom_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                            REF_DBL *tuv, REF_DBL *xyz, REF_DBL *dxyz_dtuv);
-REF_STATUS ref_geom_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                                 REF_DBL *xyz, REF_DBL *param);
-
 REF_STATUS ref_geom_radian_request(REF_GEOM ref_geom, REF_INT geom,
                                    REF_DBL *delta_radian);
 
-REF_STATUS ref_geom_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
-                                   REF_DBL *normal);
-REF_STATUS ref_geom_face_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *kr,
-                                   REF_DBL *r, REF_DBL *ks, REF_DBL *s);
 REF_STATUS ref_geom_face_rsn(REF_GEOM ref_geom, REF_INT faceid, REF_DBL *uv,
                              REF_DBL *r, REF_DBL *s, REF_DBL *n);
 REF_STATUS ref_geom_uv_rsn(REF_DBL *uv, REF_DBL *r, REF_DBL *s, REF_DBL *n,
@@ -248,15 +237,6 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
 
-REF_STATUS ref_geom_egads_diagonal(REF_GEOM ref_geom, REF_DBL *diag);
-REF_STATUS ref_geom_diagonal(REF_GEOM ref_geom, REF_INT geom, REF_DBL *diag);
-REF_STATUS ref_geom_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
-                                 REF_DBL *dir0, REF_DBL *h1, REF_DBL *dir1,
-                                 REF_DBL *h2, REF_DBL *dir2);
-
-REF_STATUS ref_geom_tolerance(REF_GEOM ref_geom, REF_INT type, REF_INT id,
-                              REF_DBL *tolerance);
-REF_STATUS ref_geom_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap);
 REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom, REF_DBL *slop);
 
 REF_STATUS ref_geom_feedback(REF_GRID ref_grid);
