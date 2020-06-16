@@ -625,7 +625,6 @@ REF_STATUS ref_geom_cell_tuv_supported(REF_GEOM ref_geom, REF_INT *nodes,
 
 REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
                              REF_INT type, REF_DBL *param, REF_INT *sens) {
-#ifdef HAVE_EGADS
   REF_INT node_per;
   REF_INT id, edgeid, geom, from, from_geom;
   REF_INT node_index, cell_node;
@@ -762,10 +761,6 @@ REF_STATUS ref_geom_cell_tuv(REF_GEOM ref_geom, REF_INT node, REF_INT *nodes,
       RSS(REF_IMPLEMENT, "can't to geom type yet");
   }
 
-#else
-  *sens = 0;
-  RSS(ref_geom_tuv(ref_geom, node, type, nodes[type + 1], param), "tuv");
-#endif
   return REF_SUCCESS;
 }
 
