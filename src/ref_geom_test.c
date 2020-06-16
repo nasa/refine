@@ -132,7 +132,8 @@ int main(int argc, char *argv[]) {
           face_xyz[2] = xyz[2];
           RSS(ref_geom_inverse_eval(ref_geom, REF_GEOM_FACE, id, face_xyz, uv),
               "inv");
-          RSS(ref_geom_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz, NULL),
+          RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, uv, face_xyz,
+                                NULL),
               "eval at");
           dist =
               sqrt(pow(face_xyz[0] - xyz[0], 2) + pow(face_xyz[1] - xyz[1], 2));
