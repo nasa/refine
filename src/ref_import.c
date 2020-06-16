@@ -783,6 +783,14 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             VTK_WEDGE_TO_UGRID(nodes);
             RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "tri");
             break;
+          case VTK_HEXAHEDRON:
+            REIS(9,
+                 sscanf(line, "%d %d %d %d %d %d %d %d %d", &cell_type,
+                        &(nodes[0]), &(nodes[1]), &(nodes[2]), &(nodes[3]),
+                        &(nodes[4]), &(nodes[5]), &(nodes[6]), &(nodes[7])),
+                 "parse element");
+            RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "tri");
+            break;
           default:
             printf("cell_type = %d\n", cell_type);
             THROW("unknown SU2/VTK ELEM type");
