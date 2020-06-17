@@ -154,6 +154,8 @@ REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
 REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded, REF_GRID twod);
 REF_STATUS ref_grid_orient_edg(REF_GRID ref_grid, REF_INT *nodes);
 
+REF_STATUS ref_grid_drop_volume(REF_GRID ref_grid);
+
 END_C_DECLORATION
 
 #endif /* REF_GRID_H */
