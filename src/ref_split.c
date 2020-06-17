@@ -204,8 +204,13 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, node0, node1,
                                      new_node),
           "form edge split cav");
-      if (transcript)
-        printf("try cavity status %d\n", (int)ref_cavity_state(ref_cavity));
+      if (transcript) {
+        REF_BOOL normdev_improved;
+        RSS(ref_cavity_normdev(ref_cavity, &normdev_improved), "nd");
+        printf("form cavity status %d min normdev %f\n",
+               (int)ref_cavity_state(ref_cavity),
+               ref_cavity_min_normdev(ref_cavity));
+      }
       if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity)) {
         RSS(ref_node_location(ref_node, node0), "n0");
         RSS(ref_geom_tattle(ref_grid_geom(ref_grid), node0), "t0");
@@ -239,8 +244,11 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
           continue;
         }
       } else {
-        if (transcript)
+        if (transcript) {
+          REF_BOOL normdev_improved;
+          RSS(ref_cavity_normdev(ref_cavity, &normdev_improved), "nd");
           printf("cavity not visible %d\n", (int)ref_cavity_state(ref_cavity));
+        }
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");
