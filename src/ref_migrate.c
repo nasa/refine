@@ -799,7 +799,6 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-/* allgather allgatherv send recv alltoall alltoallv */
 static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
                                             PARM_INT *adjncy, PARM_INT *adjwgt,
                                             PARM_INT nparts, PARM_INT *part) {
@@ -841,6 +840,8 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT nparts;
   REF_INT i, proc;
+  REF_TYPE parm_type;
+  RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
 
   n = vtxdist[ref_mpi_n(ref_mpi)];
   ref_malloc_init(count, ref_mpi_n(ref_mpi), REF_INT, REF_EMPTY);
@@ -848,8 +849,7 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
   }
-  RSS(ref_mpi_allgatherv(ref_mpi, &(xadjdist[1]), count, &(xadj[1]),
-                         REF_INT_TYPE),
+  RSS(ref_mpi_allgatherv(ref_mpi, &(xadjdist[1]), count, &(xadj[1]), parm_type),
       "gather adj");
   xadj[0] = 0;
   each_ref_mpi_part(ref_mpi, proc) {
@@ -862,9 +862,9 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = (REF_INT)(xadj[vtxdist[proc + 1]] - xadj[vtxdist[proc]]);
   }
-  RSS(ref_mpi_allgatherv(ref_mpi, adjncydist, count, adjncy, REF_INT_TYPE),
+  RSS(ref_mpi_allgatherv(ref_mpi, adjncydist, count, adjncy, parm_type),
       "gather adjncy");
-  RSS(ref_mpi_allgatherv(ref_mpi, adjwgtdist, count, adjwgt, REF_INT_TYPE),
+  RSS(ref_mpi_allgatherv(ref_mpi, adjwgtdist, count, adjwgt, parm_type),
       "gather adjwgt");
 
   ref_mpi_stopwatch_stop(ref_mpi, "metis gather");
@@ -886,13 +886,13 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
       partdist[i] = part[i];
     }
     each_ref_mpi_worker(ref_mpi, proc) {
-      RSS(ref_mpi_send(ref_mpi, &(part[vtxdist[proc]]), count[proc],
-                       REF_INT_TYPE, proc),
+      RSS(ref_mpi_send(ref_mpi, &(part[vtxdist[proc]]), count[proc], parm_type,
+                       proc),
           "send part");
     }
   } else {
     proc = ref_mpi_rank(ref_mpi);
-    RSS(ref_mpi_recv(ref_mpi, partdist, count[proc], REF_INT_TYPE, 0),
+    RSS(ref_mpi_recv(ref_mpi, partdist, count[proc], parm_type, 0),
         "recv part");
   }
 
@@ -948,6 +948,9 @@ static REF_STATUS ref_migrate_parmetis_subset(
   PARM_INT *vtx, *xadj, *adjncy, *adjwgt, *part;
   PARM_INT *deg, *newdeg;
   REF_MPI split_mpi;
+  REF_TYPE parm_type;
+  RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
+
   ntotal = vtxdist[ref_mpi_n(ref_mpi)];
   RAS(0 < newproc && newproc <= ref_mpi_n(ref_mpi),
       "newproc negative or larger then nproc");
@@ -1013,10 +1016,10 @@ static REF_STATUS ref_migrate_parmetis_subset(
   ref_malloc_init(adjncy, nrecv, PARM_INT, 0);
   ref_malloc_init(adjwgt, nrecv, PARM_INT, 0);
   RSS(ref_mpi_alltoallv(ref_mpi, adjncydist, send_size, adjncy, recv_size, 1,
-                        REF_INT_TYPE),
+                        parm_type),
       "alltoallv adjncy");
   RSS(ref_mpi_alltoallv(ref_mpi, adjwgtdist, send_size, adjwgt, recv_size, 1,
-                        REF_INT_TYPE),
+                        parm_type),
       "alltoallv adjwgt");
   ref_mpi_stopwatch_stop(ref_mpi, "parmetis subset");
 
@@ -1047,7 +1050,7 @@ static REF_STATUS ref_migrate_parmetis_subset(
   }
 
   RSS(ref_mpi_alltoallv(ref_mpi, part, send_size, partdist, recv_size, 1,
-                        REF_INT_TYPE),
+                        parm_type),
       "alltoallv adjwgt");
   ref_mpi_stopwatch_stop(ref_mpi, "subset part");
 
@@ -1069,6 +1072,9 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   REF_INT node, n, proc, *partition_size, degree;
   REF_INT item, ref;
   REF_INT newpart;
+
+  REF_TYPE parm_type;
+  RSS(ref_mpi_int_size_type(sizeof(PARM_INT), &parm_type), "calc parm_type");
 
   RSS(ref_node_synchronize_globals(ref_node), "sync global nodes");
   RSS(ref_node_collect_ghost_age(ref_node), "collect ghost age");
