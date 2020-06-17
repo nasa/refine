@@ -799,6 +799,7 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+/* allgather allgatherv send recv alltoall alltoallv */
 static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
                                             PARM_INT *adjncy, PARM_INT *adjwgt,
                                             PARM_INT nparts, PARM_INT *part) {
