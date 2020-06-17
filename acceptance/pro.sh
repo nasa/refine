@@ -177,8 +177,6 @@ cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2-mpt.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
-
 find ${source_dir} -name FAILED
 
 echo -e \\n\
