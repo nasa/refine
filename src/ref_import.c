@@ -751,6 +751,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         ref_node_xyz(ref_node, 1, new_node) = y;
         ref_node_xyz(ref_node, 2, new_node) = z;
       }
+      RSS(ref_node_initialize_n_global(ref_node, npoin), "init glob");
     }
     if (NULL != strstr(line, "NELEM")) {
       nelem = atoi(location + 1);
