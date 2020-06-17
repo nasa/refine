@@ -751,6 +751,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         ref_node_xyz(ref_node, 1, new_node) = y;
         ref_node_xyz(ref_node, 2, new_node) = z;
       }
+      RSS(ref_node_initialize_n_global(ref_node, npoin), "init glob");
     }
     if (NULL != strstr(line, "NELEM")) {
       nelem = atoi(location + 1);
@@ -766,6 +767,14 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                  "parse element");
             RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &new_cell), "tet");
             break;
+          case VTK_PYRAMID:
+            REIS(6,
+                 sscanf(line, "%d %d %d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4])),
+                 "parse element");
+            VTK_PYRAMID_TO_UGRID(nodes);
+            RSS(ref_cell_add(ref_grid_pyr(ref_grid), nodes, &new_cell), "pyr");
+            break;
           case VTK_WEDGE:
             REIS(7,
                  sscanf(line, "%d %d %d %d %d %d %d", &cell_type, &(nodes[0]),
@@ -775,13 +784,13 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
             VTK_WEDGE_TO_UGRID(nodes);
             RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &new_cell), "tri");
             break;
-          case VTK_PYRAMID:
-            REIS(6,
-                 sscanf(line, "%d %d %d %d %d %d", &cell_type, &(nodes[0]),
-                        &(nodes[1]), &(nodes[2]), &(nodes[3]), &(nodes[4])),
+          case VTK_HEXAHEDRON:
+            REIS(9,
+                 sscanf(line, "%d %d %d %d %d %d %d %d %d", &cell_type,
+                        &(nodes[0]), &(nodes[1]), &(nodes[2]), &(nodes[3]),
+                        &(nodes[4]), &(nodes[5]), &(nodes[6]), &(nodes[7])),
                  "parse element");
-            VTK_PYRAMID_TO_UGRID(nodes);
-            RSS(ref_cell_add(ref_grid_pyr(ref_grid), nodes, &new_cell), "pyr");
+            RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "tri");
             break;
           default:
             printf("cell_type = %d\n", cell_type);
