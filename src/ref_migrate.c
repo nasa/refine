@@ -799,6 +799,37 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
+static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
+                                            PARM_INT *adjncy, PARM_INT *adjwgt,
+                                            PARM_INT nparts, PARM_INT *part) {
+  PARM_INT ncon;
+  PARM_INT *vwgt, *vsize, objval;
+  PARM_REAL *tpwgts, *ubvec;
+  PARM_INT options[METIS_NOPTIONS];
+
+  ncon = 1;
+  vsize = NULL;
+
+  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
+  ref_malloc_init(tpwgts, ncon * nparts, PARM_REAL, 1.0 / (PARM_REAL)nparts);
+  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.001);
+
+  METIS_SetDefaultOptions(options);
+  options[METIS_OPTION_NUMBERING] = 0;
+  options[METIS_OPTION_SEED] = 42;
+  options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB; /* zero part less likely */
+  /* options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN; */
+  REIS(METIS_OK,
+       METIS_PartGraphKway(&n, &ncon, xadj, adjncy, vwgt, vsize, adjwgt,
+                           &nparts, tpwgts, ubvec, options, &objval, part),
+       "METIS is not o.k.");
+
+  ref_free(ubvec);
+  ref_free(tpwgts);
+  ref_free(vwgt);
+
+  return REF_SUCCESS;
+}
 static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
                                            PARM_INT *xadjdist,
                                            PARM_INT *adjncydist,
@@ -807,9 +838,7 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
   REF_INT *count;
   PARM_INT global;
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
-  PARM_INT *vwgt, *vsize, nparts, ncon, objval;
-  PARM_REAL *tpwgts, *ubvec;
-  PARM_INT options[METIS_NOPTIONS];
+  PARM_INT nparts;
   REF_INT i, proc;
 
   n = vtxdist[ref_mpi_n(ref_mpi)];
@@ -841,30 +870,12 @@ static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
 
   ref_malloc_init(part, n, PARM_INT, REF_EMPTY);
 
-  ncon = 1;
-  vsize = NULL;
   nparts = ref_mpi_n(ref_mpi);
 
-  ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
-  ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
-                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
-  ref_malloc_init(ubvec, ncon, PARM_REAL, 1.001);
-
-  METIS_SetDefaultOptions(options);
-  options[METIS_OPTION_NUMBERING] = 0;
-  options[METIS_OPTION_SEED] = 42;
-  options[METIS_OPTION_PTYPE] = METIS_PTYPE_RB; /* zero part less likely */
-  /* options[METIS_OPTION_DBGLVL] = METIS_DBG_COARSEN; */
   if (ref_mpi_once(ref_mpi)) {
-    REIS(METIS_OK,
-         METIS_PartGraphKway(&n, &ncon, xadj, adjncy, vwgt, vsize, adjwgt,
-                             &nparts, tpwgts, ubvec, options, &objval, part),
-         "METIS is not o.k.");
+    RSS(ref_migrate_metis_wrapper(n, xadj, adjncy, adjwgt, nparts, part),
+        "metis wrap");
   }
-
-  ref_free(ubvec);
-  ref_free(tpwgts);
-  ref_free(vwgt);
 
   each_ref_mpi_part(ref_mpi, proc) {
     count[proc] = (REF_INT)(vtxdist[proc + 1] - vtxdist[proc]);
