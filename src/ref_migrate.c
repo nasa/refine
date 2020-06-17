@@ -799,11 +799,11 @@ REF_STATUS ref_migrate_zoltan_part(REF_GRID ref_grid, REF_INT *node_part) {
 #endif
 
 #if defined(HAVE_PARMETIS) && defined(HAVE_MPI)
-static REF_STATUS ref_migrate_metis_wrapper(REF_MPI ref_mpi, PARM_INT *vtxdist,
-                                            PARM_INT *xadjdist,
-                                            PARM_INT *adjncydist,
-                                            PARM_INT *adjwgtdist,
-                                            PARM_INT *partdist) {
+static REF_STATUS ref_migrate_metis_subset(REF_MPI ref_mpi, PARM_INT *vtxdist,
+                                           PARM_INT *xadjdist,
+                                           PARM_INT *adjncydist,
+                                           PARM_INT *adjwgtdist,
+                                           PARM_INT *partdist) {
   REF_INT *count;
   PARM_INT global;
   PARM_INT n, *xadj, *adjncy, *adjwgt, *part;
@@ -1118,7 +1118,7 @@ REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
   if (ref_node_n_global(ref_node) < 100000) newpart = 1;
 
   if (1 == newpart) {
-    RSS(ref_migrate_metis_wrapper(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
+    RSS(ref_migrate_metis_subset(ref_mpi, vtxdist, xadj, adjncy, adjwgt, part),
         "metis wrapper");
     ref_mpi_stopwatch_stop(ref_mpi, "metis part");
   } else {
