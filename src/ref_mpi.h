@@ -25,6 +25,12 @@
 BEGIN_C_DECLORATION
 typedef struct REF_MPI_STRUCT REF_MPI_STRUCT;
 typedef REF_MPI_STRUCT *REF_MPI;
+typedef int REF_TYPE;
+#define REF_UNKNOWN_TYPE (0)
+#define REF_INT_TYPE (1)
+#define REF_LONG_TYPE (2)
+#define REF_DBL_TYPE (3)
+#define REF_BYTE_TYPE (4)
 END_C_DECLORATION
 
 BEGIN_C_DECLORATION
@@ -64,14 +70,10 @@ REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi, REF_MPI original);
 REF_STATUS ref_mpi_start(int argc, char *argv[]);
 REF_STATUS ref_mpi_stop();
 
+REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
+
 REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
 REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message);
-
-typedef int REF_TYPE;
-#define REF_INT_TYPE (1)
-#define REF_LONG_TYPE (2)
-#define REF_DBL_TYPE (3)
-#define REF_BYTE_TYPE (4)
 
 REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n, REF_TYPE type);
 

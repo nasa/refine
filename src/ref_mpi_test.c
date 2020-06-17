@@ -38,6 +38,18 @@ int main(int argc, char *argv[]) {
     RAS(ref_mpi_once(ref_mpi), "master");
   }
 
+  /* type */
+  {
+    REF_SIZE size;
+    REF_TYPE type;
+    size = sizeof(REF_INT);
+    RSS(ref_mpi_int_size_type(size, &type), "int");
+    REIS(REF_INT_TYPE, type, "expected int");
+    size = sizeof(REF_LONG);
+    RSS(ref_mpi_int_size_type(size, &type), "long");
+    REIS(REF_LONG_TYPE, type, "expected long");
+  }
+
   /* bcast */
   {
     REF_INT bc;

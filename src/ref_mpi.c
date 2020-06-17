@@ -201,6 +201,24 @@ REF_STATUS ref_mpi_stop() {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
+  *type = REF_UNKNOWN_TYPE;
+  switch (size) {
+    case sizeof(REF_INT):
+      *type = REF_INT_TYPE;
+      break;
+    case sizeof(REF_LONG):
+      *type = REF_LONG_TYPE;
+      break;
+    default:
+      RSB(REF_IMPLEMENT, "data size", {
+        printf("size %ld not %ld %ld\n", size, sizeof(REF_INT),
+               sizeof(REF_LONG));
+      });
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
 #ifdef HAVE_MPI
   if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));
