@@ -137,7 +137,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         }
       }
     }
-    weight_node1 = MIN(1, MAX(0, weight_node1));
+    weight_node1 = MIN(0.95, MAX(0.05, weight_node1));
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
