@@ -13,6 +13,17 @@ ref-accept-k:
       - "refine-*.tar.gz"
     expire_in: 1 week
 
+pro-accept-k:
+  only:
+    - merge_requests
+  tags:
+    - gitlab_runner
+  script: ./acceptance/pro-wrapper.sh
+  artifacts:
+    paths:
+      - "log.*"
+    expire_in: 1 week
+
 c2s-accept-k:
   only:
     - merge_requests
