@@ -153,206 +153,29 @@ trap - EXIT
 
 date
 
-wait
-sleep 2
-
-# 2 procs
-LOG=${root_dir}/log.accept-2d-linear-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/linear
-( ./accept-2d-linear-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-2d-masabl-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/masabl
-( ./accept-2d-masabl-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-2d-polar-2-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/polar-2
-( ./accept-2d-polar-2-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 2 procs
-LOG=${root_dir}/log.accept-2d-linear-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/linear
-( ./accept-2d-linear-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
- # 4 procs
-LOG=${root_dir}/log.accept-2d-masabl-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/masabl
-( ./accept-2d-masabl-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-2d-polar-2-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/2d/polar-2
-( ./accept-2d-polar-2-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 2 procs
-LOG=${root_dir}/log.accept-facebody-side-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/facebody/side
-( ./accept-facebody-side-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 2 procs
-LOG=${root_dir}/log.accept-3d-linear-para-32
+LOG=${root_dir}/log.accept-3d-linear-mpt-32
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear
-( ./accept-3d-linear-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-3d-linear-mpt.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-# 1-1-4-4 procs
-LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para-32
+LOG=${root_dir}/log.accept-cube-cylinder-polar-2-mpt-32
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2
-( ./accept-cube-cylinder-polar-2-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-cube-cylinder-polar-2-mpt.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-# 4 procs
-LOG=${root_dir}/log.accept-hemisphere-uniform-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/hemisphere/uniform
-( ./accept-hemisphere-uniform-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 2 procs
-LOG=${root_dir}/log.accept-facebody-side-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/facebody/side
-( ./accept-facebody-side-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 2 procs
-LOG=${root_dir}/log.accept-3d-linear-para-64
+LOG=${root_dir}/log.accept-3d-linear-mpt-64
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear
-( ./accept-3d-linear-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-3d-linear-mpt.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-# 1-1-4-4 procs
-LOG=${root_dir}/log.accept-cube-cylinder-polar-2-para-64
+LOG=${root_dir}/log.accept-cube-cylinder-polar-2-mpt-64
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2
-( ./accept-cube-cylinder-polar-2-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
+( ./accept-cube-cylinder-polar-2-mpt.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-hemisphere-uniform-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/hemisphere/uniform
-( ./accept-hemisphere-uniform-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-normal-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-3d-subset-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/subset
-( ./accept-3d-subset-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-normal-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/normal
-( ./inflate-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-3d-subset-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/3d/subset
-( ./accept-3d-subset-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-radial-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/radial
-( ./inflate-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-cube-subset-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube/subset
-( ./accept-cube-subset-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-radial-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/radial
-( ./inflate-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-# 4 procs
-LOG=${root_dir}/log.accept-cube-subset-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/cube/subset
-( ./accept-cube-subset-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-mapbc-para-32
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/mapbc
-( ./inflate-para.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
-
-# 8 procs
-LOG=${root_dir}/log.accept-inflate-mapbc-para-64
-trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/inflate/mapbc
-( ./inflate-para.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
-trap - EXIT
-
-wait
-sleep 2
 
 grep RAC ${root_dir}/log.accept-* > ${root_dir}/log.summary
 
