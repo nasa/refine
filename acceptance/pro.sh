@@ -35,6 +35,7 @@ ${source_dir}/configure \
     --with-parmetis=${parmetis32_path} \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
+    --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check' \
     CC=mpicc \
     > $LOG 2>&1
@@ -98,6 +99,7 @@ ${source_dir}/configure \
     --with-parmetis=${parmetis64_path} \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
+    --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check' \
     CC=mpicc \
     > $LOG 2>&1
