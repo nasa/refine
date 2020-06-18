@@ -212,7 +212,7 @@ REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
       break;
     default:
       RSB(REF_IMPLEMENT, "data size", {
-        printf("size %ld not %ld %ld\n", (unsigned long)size,
+        printf("size %lu not %lu %lu\n", (unsigned long)size,
                (unsigned long)sizeof(REF_INT), (unsigned long)sizeof(REF_LONG));
       });
   }

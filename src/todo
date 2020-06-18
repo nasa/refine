@@ -3,15 +3,13 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 sync surf/tri/face zone titles
 
 meshlink
+  - robust add geom and xyz between
   - vote on quilt orientation, not range
   - check curvature metric on non-associated surfaces
   - metric conformity for non-associated surfaces (drivAer)
-  - protect surface step inside a sheet
-  - bootstrap drop volume with option to use pw volume
+  - protect an underlying surface step inside a sheet
   - automate mapbc generation
-  - tolerence/reliability/gap discrete estimate to replace percent bbox
   - feature size (need with virtual topo?)
-  - geometry constraint metric (add edges?)
   - pcurve eval (only supports uv area?) 
   - degeneracy mark and uv update (only supports uv area?)
   + ref adapt
@@ -27,6 +25,9 @@ meshlink
   + adapt surface only and rebuild volume
   + startup time shorter with MeshLink patch
   + shift tri id to negative before extracting assoc tri and shift back uniq
+  + bootstrap drop volume with option to use pw volume
+  + gap discrete estimate to replace percent bbox
+  + add edges to geometry constraint metric
 
 non smooth optimization nso of face uv
 
@@ -35,6 +36,8 @@ surrogate surface
   share via meshb
   when EGADS not available
   support virtual topology
+
+robust add geom and xyz between in egads
 
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
