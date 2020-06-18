@@ -213,27 +213,7 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(argv[pos], "--drop-volume") == 0) {
       printf("%d: --drop-volume\n", pos);
-      RSS(ref_cell_free(ref_grid_hex(ref_grid)), "hex free");
-      RSS(ref_cell_free(ref_grid_pri(ref_grid)), "pri free");
-      RSS(ref_cell_free(ref_grid_pyr(ref_grid)), "pyr free");
-      RSS(ref_cell_free(ref_grid_tet(ref_grid)), "tet free");
-      RSS(ref_cell_create(&ref_grid_tet(ref_grid), REF_CELL_TET), "tet create");
-      RSS(ref_cell_create(&ref_grid_pyr(ref_grid), REF_CELL_PYR), "pyr create");
-      RSS(ref_cell_create(&ref_grid_pri(ref_grid), REF_CELL_PRI), "pri create");
-      RSS(ref_cell_create(&ref_grid_hex(ref_grid), REF_CELL_HEX), "hex create");
-      ref_mpi_stopwatch_stop(ref_mpi, "dump vol cells");
-      each_ref_node_valid_node(ref_node, node) {
-        if (ref_cell_node_empty(ref_grid_qua(ref_grid), node) &&
-            ref_cell_node_empty(ref_grid_tri(ref_grid), node) &&
-            ref_cell_node_empty(ref_grid_edg(ref_grid), node)) {
-          RSS(ref_node_remove_invalidates_sorted(ref_node, node), "rm node");
-        }
-      }
-      ref_mpi_stopwatch_stop(ref_mpi, "del nodes");
-      RSS(ref_node_rebuild_sorted_global(ref_node), "rebuild");
-      ref_mpi_stopwatch_stop(ref_mpi, "rebuild nodes");
-      RSS(ref_node_synchronize_globals(ref_node), "sync, lazy delete globals");
-      ref_mpi_stopwatch_stop(ref_mpi, "sync nodes");
+      RSS(ref_grid_drop_volume(ref_grid), "drop vol");
       RSS(ref_grid_pack(ref_grid), "pack");
       ref_mpi_stopwatch_stop(ref_mpi, "pack");
     }

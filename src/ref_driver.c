@@ -175,7 +175,9 @@ int main(int argc, char *argv[]) {
       ref_grid_surf(ref_grid) = REF_TRUE;
     }
     curvature_constraint = REF_TRUE;
-    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+      RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    }
     RSS(ref_geom_verify_topo(ref_grid), "geom topo");
     RSS(ref_geom_verify_param(ref_grid), "geom param");
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");

@@ -137,7 +137,7 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         }
       }
     }
-    weight_node1 = MIN(1, MAX(0, weight_node1));
+    weight_node1 = MIN(0.95, MAX(0.05, weight_node1));
 
     RSS(ref_node_next_global(ref_node, &global), "next global");
     RSS(ref_node_add(ref_node, global, &new_node), "new node");
@@ -153,11 +153,35 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
         "geom support");
     if (transcript && geom_support) printf("geom support\n");
 
-    if (transcript)
-      printf("weight_node1 %f xyz %f %f %f\n", weight_node1,
-             ref_node_xyz(ref_node, 0, new_node),
+    if (transcript) {
+      REF_DBL d0, d1;
+      d0 = sqrt(pow(ref_node_xyz(ref_node, 0, node0) -
+                        ref_node_xyz(ref_node, 0, new_node),
+                    2) +
+                pow(ref_node_xyz(ref_node, 1, node0) -
+                        ref_node_xyz(ref_node, 1, new_node),
+                    2) +
+                pow(ref_node_xyz(ref_node, 2, node0) -
+                        ref_node_xyz(ref_node, 2, new_node),
+                    2));
+      d1 = sqrt(pow(ref_node_xyz(ref_node, 0, node1) -
+                        ref_node_xyz(ref_node, 0, new_node),
+                    2) +
+                pow(ref_node_xyz(ref_node, 1, node1) -
+                        ref_node_xyz(ref_node, 1, new_node),
+                    2) +
+                pow(ref_node_xyz(ref_node, 2, node1) -
+                        ref_node_xyz(ref_node, 2, new_node),
+                    2));
+      printf("w1 %f xyz %f %f %f d %f %f\nbetween %f %f %f %f %f %f\n",
+             weight_node1, ref_node_xyz(ref_node, 0, new_node),
              ref_node_xyz(ref_node, 1, new_node),
-             ref_node_xyz(ref_node, 2, new_node));
+             ref_node_xyz(ref_node, 2, new_node), d0, d1,
+             ref_node_xyz(ref_node, 0, node0), ref_node_xyz(ref_node, 1, node0),
+             ref_node_xyz(ref_node, 2, node0), ref_node_xyz(ref_node, 0, node1),
+             ref_node_xyz(ref_node, 1, node1),
+             ref_node_xyz(ref_node, 2, node1));
+    }
 
     RSS(ref_split_edge_tet_quality(ref_grid, node0, node1, new_node,
                                    &allowed_tet_quality),
@@ -204,8 +228,13 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
       RSS(ref_cavity_form_edge_split(ref_cavity, ref_grid, node0, node1,
                                      new_node),
           "form edge split cav");
-      if (transcript)
-        printf("try cavity status %d\n", (int)ref_cavity_state(ref_cavity));
+      if (transcript) {
+        REF_BOOL normdev_improved;
+        RSS(ref_cavity_normdev(ref_cavity, &normdev_improved), "nd");
+        printf("form cavity status %d min normdev %f\n",
+               (int)ref_cavity_state(ref_cavity),
+               ref_cavity_min_normdev(ref_cavity));
+      }
       if (REF_SUCCESS != ref_cavity_enlarge_combined(ref_cavity)) {
         RSS(ref_node_location(ref_node, node0), "n0");
         RSS(ref_geom_tattle(ref_grid_geom(ref_grid), node0), "t0");
@@ -239,8 +268,11 @@ REF_STATUS ref_split_pass(REF_GRID ref_grid) {
           continue;
         }
       } else {
-        if (transcript)
+        if (transcript) {
+          REF_BOOL normdev_improved;
+          RSS(ref_cavity_normdev(ref_cavity, &normdev_improved), "nd");
           printf("cavity not visible %d\n", (int)ref_cavity_state(ref_cavity));
+        }
       }
       if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
         if (span_parts) RSS(ref_list_push(para_cavity, edge), "push");

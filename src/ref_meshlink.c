@@ -636,7 +636,10 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
       "tri normal");
   /* collapse attempts could create zero area, reject the step with -2.0 */
   status = ref_math_normalize(tri_normal);
-  if (REF_DIV_ZERO == status) return REF_SUCCESS;
+  if (REF_DIV_ZERO == status) {
+    *dot_product = -4.0;
+    return REF_SUCCESS;
+  }
   RSS(status, "normalize");
 
   RNS(ref_geom->uv_area_sign, "uv_area_sign NULL");

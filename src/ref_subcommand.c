@@ -234,7 +234,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_tet(ref_grid), &ntet),
       "global tets");
   if (0 == ntet) ref_grid_surf(ref_grid) = REF_TRUE;
-  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  }
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
@@ -247,14 +249,16 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     passes = atoi(argv[pos + 1]);
-    printf("-s %d adaptation passes\n", passes);
+    if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
   }
 
   RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("--partioner %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
+    if (ref_mpi_once(ref_mpi))
+      printf("--partioner %d partitioner\n",
+             (int)ref_grid_partitioner(ref_grid));
   }
 
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
@@ -456,13 +460,14 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != mesher_pos && mesher_pos < argc - 1) {
     mesher = argv[mesher_pos + 1];
-    printf("--mesher %s requested\n", mesher);
+    if (ref_mpi_once(ref_mpi)) printf("--mesher %s requested\n", mesher);
   }
 
   RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != s_pos && s_pos < argc - 1) {
     passes = atoi(argv[s_pos + 1]);
-    printf("-s %d surface adaptation passes\n", passes);
+    if (ref_mpi_once(ref_mpi))
+      printf("-s %d surface adaptation passes\n", passes);
   }
 
   RSS(ref_adapt_surf_to_geom(ref_grid, passes), "ad");
@@ -793,7 +798,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: --norm-power <norm power>\n");
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --norm-power <norm power>\n");
       goto shutdown;
     }
     p = atoi(argv[pos + 1]);
@@ -804,7 +810,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: --gradation <gradation>\n");
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --gradation <gradation>\n");
       goto shutdown;
     }
     gradation = atof(argv[pos + 1]);
@@ -980,7 +987,9 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(metric);
 
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
-  RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+  }
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
   ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
@@ -1184,7 +1193,8 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: --norm-power <norm power>\n");
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --norm-power <norm power>\n");
       goto shutdown;
     }
     p = atoi(argv[pos + 1]);
@@ -1195,7 +1205,8 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     if (pos >= argc - 1) {
-      printf("option missing value: --gradation <gradation>\n");
+      if (ref_mpi_once(ref_mpi))
+        printf("option missing value: --gradation <gradation>\n");
       goto shutdown;
     }
     gradation = atof(argv[pos + 1]);
