@@ -75,6 +75,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->face_min_length = NULL;
   ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature = 2.0;
+  ref_geom->segments_per_bounding_box_diagonal = 10.0;
   ref_geom->tolerance_protection = 100.0;
   ref_geom->gap_protection = 10.0;
 
@@ -134,6 +135,8 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->face_seg_per_rad = NULL;
   ref_geom->segments_per_radian_of_curvature =
       original->segments_per_radian_of_curvature;
+  ref_geom->segments_per_bounding_box_diagonal =
+      original->segments_per_bounding_box_diagonal;
   ref_geom->tolerance_protection = original->tolerance_protection;
   ref_geom->gap_protection = original->gap_protection;
 

@@ -1027,7 +1027,8 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
     printf("\nNo geometry model, did you forget to load it?\n\n");
     RSS(REF_IMPLEMENT, "...or implement non-CAD curvature estimate");
   }
-  hmax *= 0.1; /* normal spacing and max tangential spacing */
+  /* normal spacing and max tangential spacing */
+  hmax /= MAX(1.0, ref_geom_segments_per_bounding_box_diagonal(ref_geom));
 
   /* limit aspect ratio via curvature */
   aspect_ratio = 20.0;

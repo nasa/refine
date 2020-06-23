@@ -55,6 +55,7 @@ struct REF_GEOM_STRUCT {
   REF_DBL *face_min_length;
   REF_DBL *face_seg_per_rad;
   REF_DBL segments_per_radian_of_curvature;
+  REF_DBL segments_per_bounding_box_diagonal;
   REF_DBL tolerance_protection;
   REF_DBL gap_protection;
   REF_ADJ ref_adj;
@@ -118,6 +119,8 @@ struct REF_GEOM_STRUCT {
        : -999.0)
 #define ref_geom_segments_per_radian_of_curvature(ref_geom) \
   ((ref_geom)->segments_per_radian_of_curvature)
+#define ref_geom_segments_per_bounding_box_diagonal(ref_geom) \
+  ((ref_geom)->segments_per_bounding_box_diagonal)
 #define ref_geom_curvature_unlimited(ref_geom) \
   (0.1 > ref_geom_segments_per_radian_of_curvature(ref_geom))
 #define ref_geom_tolerance_protection(ref_geom) \
