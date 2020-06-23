@@ -391,6 +391,52 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_meshlink_mapbc(REF_GRID ref_grid, const char *mapbc_name) {
+#ifdef HAVE_MESHLINK
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  REF_INT key_index, dict_key, dict_value;
+  REF_DICT ref_dict;
+
+  FILE *file;
+
+  /* creates a dumb mapbc */
+  RSS(ref_dict_create(&ref_dict), "create");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_store(ref_dict, nodes[ref_cell_node_per(ref_cell)], REF_EMPTY),
+        "mark all faces empty");
+  }
+  each_ref_geom_face(ref_geom, geom) {
+    RSS(ref_dict_store(ref_dict, ref_geom_id(ref_geom, geom),
+                       ref_geom_id(ref_geom, geom)),
+        "mark all face assoc with id");
+  }
+
+  file = fopen(mapbc_name, "w");
+  if (NULL == (void *)file) printf("unable to open %s\n", mapbc_name);
+  RNS(file, "unable to open file");
+
+  fprintf(file, "%d\n", ref_dict_n(ref_dict));
+  each_ref_dict_key_value(ref_dict, key_index, dict_key, dict_value) {
+    if (dict_value > 0) {
+      fprintf(file, "%d %d gref-%d\n", dict_key, 4000, dict_value);
+    } else {
+      fprintf(file, "%d %d not-associated\n", dict_key, 4000);
+    }
+  }
+  fclose(file);
+
+  RSS(ref_dict_free(ref_dict), "free");
+
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
+  SUPRESS_UNUSED_COMPILER_WARNING(mapbc_name);
+#endif
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 #ifdef HAVE_MESHLINK
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
