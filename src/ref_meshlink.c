@@ -417,6 +417,32 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
     node_xyz[0] = ref_node_xyz(ref_node, 0, node);
     node_xyz[1] = ref_node_xyz(ref_node, 1, node);
     node_xyz[2] = ref_node_xyz(ref_node, 2, node);
+
+    return REF_SUCCESS;
+  }
+
+  each_ref_geom_having_node(ref_geom, node, item, geom) {
+    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
+      gref = (MLINT)ref_geom_id(ref_geom, geom);
+      point[0] = ref_node_xyz(ref_node, 0, node);
+      point[1] = ref_node_xyz(ref_node, 1, node);
+      point[2] = ref_node_xyz(ref_node, 2, node);
+
+      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
+      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
+      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
+           "prj");
+      REIS(0,
+           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
+                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
+           "info");
+
+      ref_node_xyz(ref_node, 0, node) = projected_point[0];
+      ref_node_xyz(ref_node, 1, node) = projected_point[1];
+      ref_node_xyz(ref_node, 2, node) = projected_point[2];
+
+      return REF_SUCCESS;
+    }
   }
 
   each_ref_geom_having_node(ref_geom, node, item, geom) {
@@ -445,35 +471,9 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
         ref_node_xyz(ref_node, 1, node) = projected_point[1];
         ref_node_xyz(ref_node, 2, node) = projected_point[2];
       }
+
+      return REF_SUCCESS;
     }
-  }
-
-  each_ref_geom_having_node(ref_geom, node, item, geom) {
-    if (REF_GEOM_EDGE == ref_geom_type(ref_geom, geom)) {
-      gref = (MLINT)ref_geom_id(ref_geom, geom);
-      point[0] = ref_node_xyz(ref_node, 0, node);
-      point[1] = ref_node_xyz(ref_node, 1, node);
-      point[2] = ref_node_xyz(ref_node, 2, node);
-
-      REIS(0, ML_getActiveGeometryKernel(mesh_assoc, &geom_kernel), "kern");
-      REIS(0, ML_getGeometryGroupByID(mesh_assoc, gref, &geom_group), "grp");
-      REIS(0, ML_projectPoint(geom_kernel, geom_group, point, projection_data),
-           "prj");
-      REIS(0,
-           ML_getProjectionInfo(geom_kernel, projection_data, projected_point,
-                                uv, entity_name, REF_MESHLINK_MAX_STRING_SIZE),
-           "info");
-
-      ref_node_xyz(ref_node, 0, node) = projected_point[0];
-      ref_node_xyz(ref_node, 1, node) = projected_point[1];
-      ref_node_xyz(ref_node, 2, node) = projected_point[2];
-    }
-  }
-
-  if (is_node) {
-    ref_node_xyz(ref_node, 0, node) = node_xyz[0];
-    ref_node_xyz(ref_node, 1, node) = node_xyz[1];
-    ref_node_xyz(ref_node, 2, node) = node_xyz[2];
   }
 
 #else
