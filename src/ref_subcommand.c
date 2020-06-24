@@ -226,7 +226,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
         RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
         ref_mpi_stopwatch_stop(ref_mpi, "load egads");
       } else {
-        THROW("No geometry available via .meshb or -g option");
+        if (ref_mpi_once(ref_mpi))
+          printf("warning: no geometry loaded, assuming planar faces.\n");
       }
     }
   }
@@ -237,9 +238,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   }
-  RSS(ref_geom_verify_topo(ref_grid), "geom topo");
-  RSS(ref_geom_verify_param(ref_grid), "geom param");
-  ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+  }
 
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos)
@@ -274,9 +278,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
   } else {
-    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
-    RSS(ref_validation_cell_volume(ref_grid), "vol");
-    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+    if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+        ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+      RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+      RSS(ref_validation_cell_volume(ref_grid), "vol");
+      ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+    }
     RSS(ref_grid_cache_background(ref_grid), "cache");
     ref_mpi_stopwatch_stop(ref_mpi, "cache background metric");
   }
@@ -881,12 +888,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[pos + 1]), "load egads");
       ref_mpi_stopwatch_stop(ref_mpi, "load egads");
     } else {
-      RAS(0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid)),
-          "project.meshb is missing the geometry model record");
-      if (ref_mpi_once(ref_mpi))
-        printf("load egadslite from .meshb byte stream\n");
-      RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
-      ref_mpi_stopwatch_stop(ref_mpi, "load egadslite cad data");
+      if (0 < ref_geom_cad_data_size(ref_grid_geom(ref_grid))) {
+        if (ref_mpi_once(ref_mpi))
+          printf("load egadslite from .meshb byte stream\n");
+        RSS(ref_egads_load(ref_grid_geom(ref_grid), NULL), "load egads");
+        ref_mpi_stopwatch_stop(ref_mpi, "load egadslite cad data");
+      } else {
+        if (ref_mpi_once(ref_mpi))
+          printf("warning: no geometry loaded, assuming planar faces.\n");
+      }
     }
   }
 
@@ -990,13 +1000,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {
     RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
   }
-  RSS(ref_geom_verify_topo(ref_grid), "geom topo");
-  RSS(ref_geom_verify_param(ref_grid), "geom param");
-  ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
-
-  RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
-  RSS(ref_validation_cell_volume(ref_grid), "vol");
-  ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+    ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
+    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+    RSS(ref_validation_cell_volume(ref_grid), "vol");
+    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  }
   RSS(ref_grid_cache_background(ref_grid), "cache");
   RSS(ref_node_store_aux(ref_grid_node(ref_grid_background(ref_grid)), ldim,
                          initial_field),
