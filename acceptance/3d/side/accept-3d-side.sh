@@ -25,7 +25,7 @@ function adapt_cycle {
     ${two}/ref_acceptance -ugawg ${field} ${proj}.b8.ugrid ${proj}.solb
     
     rm ref_adapt_test.b8.ugrid
-    ${two}/ref_driver -i ${proj}.b8.ugrid -m ${proj}.solb \
+    ${two}/ref adapt ${proj}.b8.ugrid -m ${proj}.solb \
           -x ref_adapt_test.b8.ugrid -t
     cp ref_gather_movie.tec ${proj}_movie.tec
     cp ref_gather_histo.tec ${proj}_histo.tec
