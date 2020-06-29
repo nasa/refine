@@ -380,7 +380,8 @@ REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
                          ref_edge_e2n(ref_edge, 0, edge),
                          ref_edge_e2n(ref_edge, 1, edge), &ratio),
           "rat");
-      RSS(ref_histogram_add(ref_histogram, ratio), "add");
+      RSB(ref_histogram_add(ref_histogram, ratio), "add",
+          { printf("ratio %e\n", ratio); });
     }
   }
 
