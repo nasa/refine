@@ -381,7 +381,8 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   }
   RSS(ref_dict_free(ref_dict), "free");
 
-  RSS(ref_geom_constrain_all(ref_grid), "constrain");
+  if (REF_FALSE) RSS(ref_geom_constrain_all(ref_grid), "constrain");
+
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
 
