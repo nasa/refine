@@ -3,7 +3,6 @@ ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 sync surf/tri/face zone titles
 
 meshlink
-  - vote on quilt orientation, not range
   - robust add geom and xyz between
   - metric conformity for non-associated surfaces (drivAer cavity coarsen)
   - protect an underlying surface step inside a sheet
@@ -29,6 +28,7 @@ meshlink
   + add edges to geometry constraint metric
   + automate mapbc generation
   + check curvature metric on non-associated surfaces
+  + vote on quilt orientation, not range
 
 non smooth optimization nso of face uv
 
