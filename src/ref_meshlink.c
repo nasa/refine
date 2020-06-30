@@ -381,7 +381,8 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
   }
   RSS(ref_dict_free(ref_dict), "free");
 
-  RSS(ref_geom_constrain_all(ref_grid), "constrain");
+  if (REF_FALSE) RSS(ref_geom_constrain_all(ref_grid), "constrain");
+
   RSS(ref_geom_verify_topo(ref_grid), "geom topo");
   RSS(ref_geom_verify_param(ref_grid), "geom param");
 
@@ -949,6 +950,7 @@ REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT min_id, max_id, id;
   REF_DBL normdev, min_normdev, max_normdev;
+  REF_INT negative, positive;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   RSS(ref_cell_id_range(ref_cell, ref_mpi, &min_id, &max_id), "id range");
   RAS(min_id > 0, "expected min_id greater then zero");
@@ -958,11 +960,18 @@ REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
   for (id = min_id; id <= max_id; id++) {
     min_normdev = 2.0;
     max_normdev = -2.0;
+    negative = 0;
+    positive = 0;
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
       if (id != nodes[ref_cell_id_index(ref_cell)]) continue;
       RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &normdev), "norm dev");
       min_normdev = MIN(min_normdev, normdev);
       max_normdev = MAX(max_normdev, normdev);
+      if (normdev < 0.0) {
+        negative++;
+      } else {
+        positive++;
+      }
     }
     normdev = min_normdev;
     RSS(ref_mpi_min(ref_mpi, &normdev, &min_normdev, REF_DBL_TYPE), "mpi max");
@@ -970,13 +979,16 @@ REF_STATUS ref_meshlink_infer_orientation(REF_GRID ref_grid) {
     normdev = max_normdev;
     RSS(ref_mpi_max(ref_mpi, &normdev, &max_normdev, REF_DBL_TYPE), "mpi max");
     RSS(ref_mpi_bcast(ref_mpi, &max_normdev, 1, REF_DBL_TYPE), "max");
+    RSS(ref_mpi_allsum(ref_mpi, &positive, 1, REF_INT_TYPE), "mpi sum");
+    RSS(ref_mpi_allsum(ref_mpi, &negative, 1, REF_INT_TYPE), "mpi sum");
     if (min_normdev > 1.5 && max_normdev < -1.5) {
       ref_geom->uv_area_sign[id - 1] = 0.0;
     } else {
-      if (min_normdev < -max_normdev) ref_geom->uv_area_sign[id - 1] = -1.0;
+      if (positive < negative) ref_geom->uv_area_sign[id - 1] = -1.0;
       if (ref_mpi_once(ref_mpi))
-        printf("gref %3d orientation%6.2f inferred from %6.2f %6.2f\n", id,
-               ref_geom->uv_area_sign[id - 1], min_normdev, max_normdev);
+        printf("gref %3d orientation%6.2f inferred from %6.2f %d %d %6.2f \n",
+               id, ref_geom->uv_area_sign[id - 1], min_normdev, negative,
+               positive, max_normdev);
     }
   }
 

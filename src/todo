@@ -4,14 +4,12 @@ sync surf/tri/face zone titles
 
 meshlink
   - robust add geom and xyz between
-  - vote on quilt orientation, not range
-  - check curvature metric on non-associated surfaces
-  - metric conformity for non-associated surfaces (drivAer)
+  - metric conformity for non-associated surfaces (drivAer cavity coarsen)
   - protect an underlying surface step inside a sheet
-  - automate mapbc generation
   - feature size (need with virtual topo?)
   - pcurve eval (only supports uv area?) 
   - degeneracy mark and uv update (only supports uv area?)
+  o discuss PW BC system
   + ref adapt
   + orientation for uv sign
   + initial mesh via API, not xml parse
@@ -28,6 +26,9 @@ meshlink
   + bootstrap drop volume with option to use pw volume
   + gap discrete estimate to replace percent bbox
   + add edges to geometry constraint metric
+  + automate mapbc generation
+  + check curvature metric on non-associated surfaces
+  + vote on quilt orientation, not range
 
 non smooth optimization nso of face uv
 
