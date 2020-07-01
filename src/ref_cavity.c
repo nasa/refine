@@ -1555,8 +1555,12 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   face_nodes[3] = face_nodes[0];
   RSB(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
       "found too many tets with face_nodes", {
-        printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
-               face_nodes[1], face_nodes[2], face_nodes[3]);
+        printf("%d face_nodes %d %d %d %d\n%f %f %f\n", face, face_nodes[0],
+               face_nodes[1], face_nodes[2], face_nodes[3],
+               ref_node_xyz(ref_node, 0, face_nodes[0]),
+               ref_node_xyz(ref_node, 1, face_nodes[0]),
+               ref_node_xyz(ref_node, 2, face_nodes[0]));
+        ref_cavity_tec(ref_cavity, "ref_cavity_too_many_tet.tec");
       });
   if (REF_EMPTY == tet0) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
