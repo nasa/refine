@@ -211,6 +211,7 @@ REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;
   REF_CELL ref_cell;
   REF_INT *hits;
@@ -218,7 +219,7 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   REF_INT group, cell, cell_face;
   REF_INT node;
   REF_INT nodes[4];
-  REF_BOOL problem;
+  REF_BOOL problem, report;
   REF_STATUS code;
 
   problem = REF_FALSE;
@@ -268,7 +269,19 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   }
 
   for (face = 0; face < ref_face_n(ref_face); face++) {
-    if (2 != hits[face]) {
+    report = REF_FALSE;
+    if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      report = report || (2 < hits[face]);
+      if (ref_node_owned(ref_node, ref_face_f2n(ref_face, 0, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 1, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 2, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 3, face))) {
+        report = report || (2 > hits[face]);
+      }
+    } else {
+      report = report || (2 != hits[face]);
+    }
+    if (report) {
       problem = REF_TRUE;
       printf(" hits %d\n", hits[face]);
       for (node = 0; node < 3; node++) {
