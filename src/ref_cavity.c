@@ -2190,9 +2190,10 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
                                       nodes[n1], nodes[n2]),
             "cavity gem");
         RSS(ref_cavity_check_visible(ref_cavity), "enlarge viz");
-        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-        if (ref_cavity_debug(ref_cavity))
+        if (ref_cavity_debug(ref_cavity)) {
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
           printf("cavity accepted %f -> %f\n", min_del, min_add);
+        }
         RSS(ref_cavity_replace(ref_cavity), "replace");
         RSS(ref_cavity_free(ref_cavity), "free");
       }
