@@ -1421,6 +1421,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   REF_INT face;
   REF_BOOL visible;
   REF_BOOL keep_growing;
+  REF_BOOL manifold;
 
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
