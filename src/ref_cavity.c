@@ -1465,6 +1465,13 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
 
+  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
+  if (!manifold) {
+    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
+  }
+
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
   RSS(ref_cavity_verify_face_manifold(ref_cavity), "final manifold check");
