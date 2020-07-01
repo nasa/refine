@@ -1244,8 +1244,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
 static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
                                       REF_BOOL *manifold) {
   REF_INT node;
-  REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
-  REF_INT seg;
+  REF_CELL ref_cell;
+  REF_INT seg, face;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
 
@@ -1253,6 +1253,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
 
   *manifold = REF_FALSE;
 
+  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     /* skip a seg attached to node */
     if (node == ref_cavity_s2n(ref_cavity, 0, seg) ||
@@ -1268,6 +1269,31 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
         "with manifold seach failed");
     if (REF_EMPTY != cell) {
       RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell, &contains),
+          "contains a plan to remove");
+      if (!contains) {
+        *manifold = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    /* skip a face attached to node */
+    if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
+        node == ref_cavity_f2n(ref_cavity, 1, face) ||
+        node == ref_cavity_f2n(ref_cavity, 2, face))
+      continue;
+
+    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+    nodes[3] = node;
+
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
+        "with manifold seach failed");
+    if (REF_EMPTY != cell) {
+      RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell, &contains),
           "contains a plan to remove");
       if (!contains) {
         *manifold = REF_FALSE;
