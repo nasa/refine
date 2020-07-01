@@ -211,6 +211,7 @@ REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;
   REF_CELL ref_cell;
   REF_INT *hits;
@@ -218,7 +219,7 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   REF_INT group, cell, cell_face;
   REF_INT node;
   REF_INT nodes[4];
-  REF_BOOL problem;
+  REF_BOOL problem, report;
   REF_STATUS code;
 
   problem = REF_FALSE;
@@ -232,8 +233,9 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   each_ref_grid_3d_ref_cell(ref_grid, group, ref_cell) {
     each_ref_cell_valid_cell(ref_cell, cell) {
       each_ref_cell_cell_face(ref_cell, cell_face) {
-        for (node = 0; node < 4; node++)
+        for (node = 0; node < 4; node++) {
           nodes[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
+        }
         RSS(ref_face_with(ref_face, nodes, &face), "find cell face");
         hits[face]++;
       }
@@ -242,8 +244,9 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
 
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell(ref_cell, cell) {
-    for (node = 0; node < 3; node++)
+    for (node = 0; node < 3; node++) {
       nodes[node] = ref_cell_c2n(ref_cell, node, cell);
+    }
     nodes[3] = nodes[0];
     code = ref_face_with(ref_face, nodes, &face);
     if (REF_SUCCESS != code) {
@@ -258,18 +261,32 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
 
   ref_cell = ref_grid_qua(ref_grid);
   each_ref_cell_valid_cell(ref_cell, cell) {
-    for (node = 0; node < 4; node++)
+    for (node = 0; node < 4; node++) {
       nodes[node] = ref_cell_c2n(ref_cell, node, cell);
+    }
     RSS(ref_face_with(ref_face, nodes, &face), "find qua");
     hits[face]++;
   }
 
-  for (face = 0; face < ref_face_n(ref_face); face++)
-    if (2 != hits[face]) {
+  for (face = 0; face < ref_face_n(ref_face); face++) {
+    report = REF_FALSE;
+    if (ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      report = report || (2 < hits[face]);
+      if (ref_node_owned(ref_node, ref_face_f2n(ref_face, 0, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 1, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 2, face)) ||
+          ref_node_owned(ref_node, ref_face_f2n(ref_face, 3, face))) {
+        report = report || (2 > hits[face]);
+      }
+    } else {
+      report = report || (2 != hits[face]);
+    }
+    if (report) {
       problem = REF_TRUE;
       printf(" hits %d\n", hits[face]);
-      for (node = 0; node < 3; node++)
+      for (node = 0; node < 3; node++) {
         nodes[node] = ref_face_f2n(ref_face, node, face);
+      }
       printf("face %d nodes %d %d %d global " REF_GLOB_FMT " " REF_GLOB_FMT
              " " REF_GLOB_FMT "\n",
              face, nodes[0], nodes[1], nodes[2],
@@ -280,6 +297,7 @@ REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
       RSS(ref_node_location(ref_grid_node(ref_grid), nodes[1]), "n1");
       RSS(ref_node_location(ref_grid_node(ref_grid), nodes[2]), "n2");
     }
+  }
 
   free(hits);
 

@@ -1244,8 +1244,8 @@ REF_STATUS ref_cavity_form_edge_collapse(REF_CAVITY ref_cavity,
 static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
                                       REF_BOOL *manifold) {
   REF_INT node;
-  REF_CELL ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
-  REF_INT seg;
+  REF_CELL ref_cell;
+  REF_INT seg, face;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
 
@@ -1253,6 +1253,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
 
   *manifold = REF_FALSE;
 
+  ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     /* skip a seg attached to node */
     if (node == ref_cavity_s2n(ref_cavity, 0, seg) ||
@@ -1268,6 +1269,31 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
         "with manifold seach failed");
     if (REF_EMPTY != cell) {
       RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell, &contains),
+          "contains a plan to remove");
+      if (!contains) {
+        *manifold = REF_FALSE;
+        return REF_SUCCESS;
+      }
+    }
+  }
+
+  ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
+  each_ref_cavity_valid_face(ref_cavity, face) {
+    /* skip a face attached to node */
+    if (node == ref_cavity_f2n(ref_cavity, 0, face) ||
+        node == ref_cavity_f2n(ref_cavity, 1, face) ||
+        node == ref_cavity_f2n(ref_cavity, 2, face))
+      continue;
+
+    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
+    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
+    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
+    nodes[3] = node;
+
+    RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
+        "with manifold seach failed");
+    if (REF_EMPTY != cell) {
+      RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell, &contains),
           "contains a plan to remove");
       if (!contains) {
         *manifold = REF_FALSE;
@@ -1421,6 +1447,7 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
   REF_INT face;
   REF_BOOL visible;
   REF_BOOL keep_growing;
+  REF_BOOL manifold;
 
   RAS(ref_node_owned(ref_node, node), "cavity part must own node");
 
@@ -1464,6 +1491,13 @@ REF_STATUS ref_cavity_enlarge_visible(REF_CAVITY ref_cavity) {
            ref_cavity_nface(ref_cavity));
 
   if (ref_cavity_debug(ref_cavity)) RSS(ref_cavity_topo(ref_cavity), "topo");
+
+  RSS(ref_cavity_manifold(ref_cavity, &manifold), "manifold");
+  if (!manifold) {
+    if (ref_cavity_debug(ref_cavity)) printf(" conforming not manifold\n");
+    ref_cavity_state(ref_cavity) = REF_CAVITY_MANIFOLD_CONSTRAINED;
+    return REF_SUCCESS;
+  }
 
   ref_cavity_state(ref_cavity) = REF_CAVITY_VISIBLE;
 
@@ -1555,8 +1589,12 @@ REF_STATUS ref_cavity_enlarge_face(REF_CAVITY ref_cavity, REF_INT face) {
   face_nodes[3] = face_nodes[0];
   RSB(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
       "found too many tets with face_nodes", {
-        printf("%d face_nodes %d %d %d %d\n", face, face_nodes[0],
-               face_nodes[1], face_nodes[2], face_nodes[3]);
+        printf("%d face_nodes %d %d %d %d\n%f %f %f\n", face, face_nodes[0],
+               face_nodes[1], face_nodes[2], face_nodes[3],
+               ref_node_xyz(ref_node, 0, face_nodes[0]),
+               ref_node_xyz(ref_node, 1, face_nodes[0]),
+               ref_node_xyz(ref_node, 2, face_nodes[0]));
+        ref_cavity_tec(ref_cavity, "ref_cavity_too_many_tet.tec");
       });
   if (REF_EMPTY == tet0) {
     ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
@@ -2152,9 +2190,10 @@ static REF_STATUS ref_cavity_swap_tet_pass(REF_GRID ref_grid) {
                                       nodes[n1], nodes[n2]),
             "cavity gem");
         RSS(ref_cavity_check_visible(ref_cavity), "enlarge viz");
-        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
-        if (ref_cavity_debug(ref_cavity))
+        if (ref_cavity_debug(ref_cavity)) {
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "change");
           printf("cavity accepted %f -> %f\n", min_del, min_add);
+        }
         RSS(ref_cavity_replace(ref_cavity), "replace");
         RSS(ref_cavity_free(ref_cavity), "free");
       }
