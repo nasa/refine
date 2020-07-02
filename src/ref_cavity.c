@@ -1249,10 +1249,9 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
 
-  node = ref_cavity_seg_node(ref_cavity);
-
   *manifold = REF_FALSE;
 
+  node = ref_cavity_seg_node(ref_cavity);
   ref_cell = ref_grid_tri(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_seg(ref_cavity, seg) {
     /* skip a seg attached to node */
@@ -1277,6 +1276,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
     }
   }
 
+  node = ref_cavity_node(ref_cavity);
   ref_cell = ref_grid_tet(ref_cavity_grid(ref_cavity));
   each_ref_cavity_valid_face(ref_cavity, face) {
     /* skip a face attached to node */
