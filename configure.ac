@@ -2,7 +2,7 @@
 
 AC_PREREQ(2.53)
 
-define([git_describe], esyscmd([sh -c "git describe --tag | tr -d '\n'"]))dnl
+define([git_describe], esyscmd([sh -c "git describe --tag | sed -e 's/-g/+g/' | tr -d '\n'"]))dnl
 AC_INIT([refine], [git_describe], [fun3d-support@lists.nasa.gov])
 
 dnl AC_INIT([refine], [1.9.3], [fun3d-support@lists.nasa.gov])
