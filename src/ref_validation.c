@@ -210,6 +210,36 @@ REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tet = ref_grid_tet(ref_grid);
+  REF_INT item, cell, cell_face;
+  REF_INT face_node, face_nodes[4];
+  REF_INT cell0, cell1;
+
+  each_ref_cell_having_node(tet, node, item, cell) {
+    each_ref_cell_cell_face(tet, cell_face) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        face_nodes[face_node] = ref_cell_f2n(tet, face_node, cell_face, cell);
+      }
+      if (ref_node_owned(ref_node, face_nodes[0]) ||
+          ref_node_owned(ref_node, face_nodes[1]) ||
+          ref_node_owned(ref_node, face_nodes[2]) ||
+          ref_node_owned(ref_node, face_nodes[3])) {
+        RSB(ref_cell_with_face(tet, face_nodes, &cell0, &cell1), "two expected",
+            {
+              ref_node_location(ref_node, face_nodes[0]);
+              ref_node_location(ref_node, face_nodes[1]);
+              ref_node_location(ref_node, face_nodes[2]);
+              ref_node_location(ref_node, face_nodes[3]);
+            });
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;
