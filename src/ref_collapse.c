@@ -468,7 +468,9 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
 
   ref_cell = ref_grid_tri(ref_grid);
 
-  {
+  { /* ensure the tri node neighbors shared by node0 and node1 are
+       involved in the collapse (i.e. there are no new connections to
+       created) */
     REF_INT safe_list[4], nsafe;
     REF_INT nnode0, node_list0[MAX_NODE_LIST];
     REF_INT nnode1, node_list1[MAX_NODE_LIST];
