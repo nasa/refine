@@ -288,7 +288,8 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     *actual_node0 = node0;
     RSS(ref_collapse_edge(ref_grid, node0, node1), "col!");
     if (ref_grid_adapt(ref_grid, watch_topo))
-      RSS(ref_validation_cell_face_node(ref_grid, node0), "standard topo");
+      RSB(ref_validation_cell_face_node(ref_grid, node0), "standard topo",
+          { printf("node0 %d node1 %d\n", node0, node1); });
     return REF_SUCCESS;
   }
 
