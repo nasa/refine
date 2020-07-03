@@ -213,9 +213,10 @@ REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
 REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL tet = ref_grid_tet(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
   REF_INT item, cell, cell_face;
   REF_INT face_node, face_nodes[4];
-  REF_INT cell0, cell1;
+  REF_INT cell0, cell1, tri_cell;
 
   each_ref_cell_having_node(tet, node, item, cell) {
     each_ref_cell_cell_face(tet, cell_face) {
@@ -233,6 +234,14 @@ REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
               ref_node_location(ref_node, face_nodes[2]);
               ref_node_location(ref_node, face_nodes[3]);
             });
+        if (REF_EMPTY == cell1) { /* should have tri on other side */
+          RSB(ref_cell_with(tri, face_nodes, &tri_cell), "matching tri", {
+            ref_node_location(ref_node, face_nodes[0]);
+            ref_node_location(ref_node, face_nodes[1]);
+            ref_node_location(ref_node, face_nodes[2]);
+            ref_node_location(ref_node, face_nodes[3]);
+          });
+        }
       }
     }
   }
