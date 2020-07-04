@@ -231,7 +231,11 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
                  ref_cell_c2n(tet, 3, fcell1));
         printf("with2 %d %d\n", 133222, 133202);
         each_ref_cell_having_node2(tet, 133222, 133202, fitem, fcell_node,
-                                   fcell) {}
+                                   fcell) {
+          printf("fell %d: %d %d %d %d\n", fcell, ref_cell_c2n(tet, 0, fcell),
+                 ref_cell_c2n(tet, 1, fcell), ref_cell_c2n(tet, 2, fcell),
+                 ref_cell_c2n(tet, 3, fcell));
+        }
       }
     }
 
