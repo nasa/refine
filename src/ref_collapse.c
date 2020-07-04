@@ -196,6 +196,7 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       if ((node0 == 128348) && (node1 == 128343)) {
         REF_CELL tet = ref_grid_tet(ref_grid);
         REF_INT fnodes[4], fcell0, fcell1;
+        REF_INT fitem, fcell_node, fcell;
         printf("pre %d %d\n", node0, node1);
         fnodes[0] = 133222;
         fnodes[1] = 133202;
@@ -228,6 +229,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
           printf("%d %d %d %d\n", ref_cell_c2n(tet, 0, fcell1),
                  ref_cell_c2n(tet, 1, fcell1), ref_cell_c2n(tet, 2, fcell1),
                  ref_cell_c2n(tet, 3, fcell1));
+        printf("with2 %d %d\n", 133222, 133202);
+        each_ref_cell_having_node2(tet, 133222, 133202, fitem, fcell_node,
+                                   fcell) {}
       }
     }
 
