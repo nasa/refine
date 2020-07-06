@@ -192,6 +192,53 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
     if (!allowed && audit) printf("   geom\n");
     if (!allowed) continue;
 
+    if (ref_grid_adapt(ref_grid, watch_topo)) {
+      if ((node0 == 128348) && (node1 == 128343)) {
+        REF_CELL tet = ref_grid_tet(ref_grid);
+        REF_INT fnodes[4], fcell0, fcell1;
+        REF_INT fitem, fcell_node, fcell;
+        printf("pre %d %d\n", node0, node1);
+        fnodes[0] = 133222;
+        fnodes[1] = 133202;
+        fnodes[3] = 133222;
+
+        fnodes[2] = node0;
+        printf("node0 %d %d %d %d stat %d\n", fnodes[0], fnodes[1], fnodes[2],
+               fnodes[3], ref_cell_with_face(tet, fnodes, &fcell0, &fcell1));
+        printf("fcell0 %d\n", fcell0);
+        if (fcell0 > 0)
+          printf("%d %d %d %d\n", ref_cell_c2n(tet, 0, fcell0),
+                 ref_cell_c2n(tet, 1, fcell0), ref_cell_c2n(tet, 2, fcell0),
+                 ref_cell_c2n(tet, 3, fcell0));
+        printf("fcell1 %d\n", fcell1);
+        if (fcell1 > 0)
+          printf("%d %d %d %d\n", ref_cell_c2n(tet, 0, fcell1),
+                 ref_cell_c2n(tet, 1, fcell1), ref_cell_c2n(tet, 2, fcell1),
+                 ref_cell_c2n(tet, 3, fcell1));
+
+        fnodes[2] = node1;
+        printf("node1 %d %d %d %d stat %d\n", fnodes[0], fnodes[1], fnodes[2],
+               fnodes[3], ref_cell_with_face(tet, fnodes, &fcell0, &fcell1));
+        printf("fcell0 %d\n", fcell0);
+        if (fcell0 > 0)
+          printf("%d %d %d %d\n", ref_cell_c2n(tet, 0, fcell0),
+                 ref_cell_c2n(tet, 1, fcell0), ref_cell_c2n(tet, 2, fcell0),
+                 ref_cell_c2n(tet, 3, fcell0));
+        printf("fcell1 %d\n", fcell1);
+        if (fcell1 > 0)
+          printf("%d %d %d %d\n", ref_cell_c2n(tet, 0, fcell1),
+                 ref_cell_c2n(tet, 1, fcell1), ref_cell_c2n(tet, 2, fcell1),
+                 ref_cell_c2n(tet, 3, fcell1));
+        printf("with2 %d %d\n", 133222, 133202);
+        each_ref_cell_having_node2(tet, 133222, 133202, fitem, fcell_node,
+                                   fcell) {
+          printf("fell %d: %d %d %d %d\n", fcell, ref_cell_c2n(tet, 0, fcell),
+                 ref_cell_c2n(tet, 1, fcell), ref_cell_c2n(tet, 2, fcell),
+                 ref_cell_c2n(tet, 3, fcell));
+        }
+      }
+    }
+
     RSS(ref_collapse_edge_manifold(ref_grid, node0, node1, &allowed),
         "col manifold");
     if (!allowed && audit) printf("   manifold\n");
@@ -247,38 +294,50 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
       continue;
     }
 
-    RSS(ref_cavity_create(&ref_cavity), "cav create");
-    if ((REF_SUCCESS ==
-         ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) &&
-        (REF_CAVITY_INCONSISTENT != ref_cavity_state(ref_cavity))) {
-      RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
-      if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
-        RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
-            "cavity ratio");
-        RSS(ref_cavity_change(ref_cavity, &min_del, &min_add), "cavity change");
-        valid_cavity =
-            allowed_cavity_ratio &&
-            (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
-        if (REF_FALSE && valid_cavity)
-          printf("new %f old %f\n", min_add, min_del);
-        if (valid_cavity) {
-          *actual_node0 = node0;
-          RSS(ref_cavity_replace(ref_cavity), "cav replace");
-          RSS(ref_cavity_free(ref_cavity), "cav free");
-          ref_cavity = (REF_CAVITY)NULL;
-          if (ref_grid_adapt(ref_grid, watch_topo))
-            RSS(ref_validation_cell_face_node(ref_grid, node0), "cavity topo");
-          return REF_SUCCESS;
+    if (!allowed) {
+      RSS(ref_cavity_create(&ref_cavity), "cav create");
+      if ((REF_SUCCESS ==
+           ref_cavity_form_edge_collapse(ref_cavity, ref_grid, node0, node1)) &&
+          (REF_CAVITY_INCONSISTENT != ref_cavity_state(ref_cavity))) {
+        RSS(ref_cavity_enlarge_visible(ref_cavity), "enlarge");
+        if (REF_CAVITY_VISIBLE == ref_cavity_state(ref_cavity)) {
+          RSS(ref_cavity_ratio(ref_cavity, &allowed_cavity_ratio),
+              "cavity ratio");
+          RSS(ref_cavity_change(ref_cavity, &min_del, &min_add),
+              "cavity change");
+          valid_cavity =
+              allowed_cavity_ratio &&
+              (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
+          if (REF_FALSE && valid_cavity)
+            printf("new %f old %f\n", min_add, min_del);
+          if (valid_cavity) {
+            *actual_node0 = node0;
+            RSS(ref_cavity_replace(ref_cavity), "cav replace");
+            RSS(ref_cavity_free(ref_cavity), "cav free");
+            ref_cavity = (REF_CAVITY)NULL;
+            if (ref_grid_adapt(ref_grid, watch_topo))
+              RSS(ref_validation_cell_face_node(ref_grid, node0),
+                  "cavity topo");
+            return REF_SUCCESS;
+          }
+        }
+        if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
+          ref_node_age(ref_node, node0)++;
+          ref_node_age(ref_node, node1)++;
         }
       }
-      if (REF_CAVITY_PARTITION_CONSTRAINED == ref_cavity_state(ref_cavity)) {
-        ref_node_age(ref_node, node0)++;
-        ref_node_age(ref_node, node1)++;
-      }
+      RSS(ref_cavity_free(ref_cavity), "cav free");
+      ref_cavity = (REF_CAVITY)NULL;
+      if (!allowed && audit) printf("   cav unsuccessful\n");
+      continue;
     }
-    RSS(ref_cavity_free(ref_cavity), "cav free");
-    ref_cavity = (REF_CAVITY)NULL;
-    if (!allowed && audit) printf("   cav unsuccessful\n");
+
+    *actual_node0 = node0;
+    RSS(ref_collapse_edge(ref_grid, node0, node1), "col!");
+    if (ref_grid_adapt(ref_grid, watch_topo))
+      RSB(ref_validation_cell_face_node(ref_grid, node0), "standard topo",
+          { printf("node0 %d node1 %d\n", node0, node1); });
+    return REF_SUCCESS;
   }
 
   return REF_SUCCESS;

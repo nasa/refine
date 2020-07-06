@@ -528,7 +528,7 @@ exisiting
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  if (REF_FALSE) { /* top big */
+  { /* top big */
     REF_GRID ref_grid;
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
@@ -582,7 +582,7 @@ exisiting
     RSS(ref_grid_free(ref_grid), "free grid");
   }
 
-  if (REF_FALSE) { /* top big, twod */
+  { /* top big, twod */
     REF_GRID ref_grid;
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "set up");

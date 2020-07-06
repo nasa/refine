@@ -421,30 +421,21 @@ REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
         "find side 01");
     if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
       return REF_SUCCESS;
-    if (REF_EMPTY == found_face) {
-      ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
-      return REF_SUCCESS;
-    }
+    RUS(REF_EMPTY, found_face, "side 01 missing");
     RSS(ref_cavity_find_face_with_side(
             ref_cavity, ref_cavity_f2n(ref_cavity, 2, face),
             ref_cavity_f2n(ref_cavity, 1, face), &found_face),
         "find side 12");
     if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
       return REF_SUCCESS;
-    if (REF_EMPTY == found_face) {
-      ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
-      return REF_SUCCESS;
-    }
+    RUS(REF_EMPTY, found_face, "side 12 missing");
     RSS(ref_cavity_find_face_with_side(
             ref_cavity, ref_cavity_f2n(ref_cavity, 0, face),
             ref_cavity_f2n(ref_cavity, 2, face), &found_face),
         "find side 20");
     if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
       return REF_SUCCESS;
-    if (REF_EMPTY == found_face) {
-      ref_cavity_state(ref_cavity) = REF_CAVITY_INCONSISTENT;
-      return REF_SUCCESS;
-    }
+    RUS(REF_EMPTY, found_face, "side 20 missing");
   }
 
   return REF_SUCCESS;
