@@ -301,7 +301,7 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
           ref_node_xyz(ref_node, ixyz, old);
     }
   }
-  RSS(ref_node_initialize_n_global(ref_node, ref_dict_n(node_dict)),
+  RSS(ref_node_initialize_n_global(loc_node, ref_dict_n(node_dict)),
       "init glob");
 
   ref_cell = ref_grid_tet(ref_grid);
@@ -313,7 +313,7 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
     }
     RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
-    if (REF_EMPTY != new_cell) {
+    if (REF_EMPTY == new_cell) {
       RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
     }
   }
@@ -324,7 +324,7 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
     }
     RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
-    if (REF_EMPTY != new_cell) {
+    if (REF_EMPTY == new_cell) {
       RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
     }
   }
@@ -338,7 +338,7 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
     }
     RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
-    if (REF_EMPTY != new_cell) {
+    if (REF_EMPTY == new_cell) {
       RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
     }
   }
@@ -349,7 +349,7 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
       RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
     }
     RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
-    if (REF_EMPTY != new_cell) {
+    if (REF_EMPTY == new_cell) {
       RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
     }
   }
