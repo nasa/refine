@@ -25,6 +25,7 @@
 #include "ref_adapt.h"
 #include "ref_cavity.h"
 #include "ref_cell.h"
+#include "ref_clump.h"
 #include "ref_edge.h"
 #include "ref_gather.h"
 #include "ref_malloc.h"
@@ -236,6 +237,8 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
                  ref_cell_c2n(tet, 1, fcell), ref_cell_c2n(tet, 2, fcell),
                  ref_cell_c2n(tet, 3, fcell));
         }
+	RSS(ref_clump_between_export_to(ref_grid, node0, node1, "dump.ugrid"),
+	    "dump");
       }
     }
 
