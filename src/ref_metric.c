@@ -1523,6 +1523,37 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
+				     REF_DBL target_complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT i, node;
+  REF_DBL current_complexity;
+  REF_DBL complexity_scale;
+
+  complexity_scale = 2.0 / 3.0;
+  if (ref_grid_twod(ref_grid)) {
+    complexity_scale = 1.0;
+  }
+
+  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (!ref_math_divisible(target_complexity, current_complexity)) {
+    return REF_DIV_ZERO;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+	pow(target_complexity / current_complexity, complexity_scale);
+    }
+          if (ref_grid_twod(ref_grid)) {
+        metric[2 + 6 * node] = 0.0;
+        metric[4 + 6 * node] = 0.0;
+        metric[5 + 6 * node] = 1.0;
+      }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_metric_limit_h(REF_DBL *metric, REF_GRID ref_grid, REF_DBL hmin,
                               REF_DBL hmax) {
   REF_DBL diag_system[12];
