@@ -18,6 +18,7 @@
 
 #include "ref_gather.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +28,7 @@
 #include "ref_export.h"
 #include "ref_histogram.h"
 #include "ref_malloc.h"
+#include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
 
@@ -591,6 +593,35 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
     }
     RSS(ref_edge_free(ref_edge), "free edges");
+  }
+
+  if (ref_grid_twod(ref_grid)) {
+    REF_DBL area;
+    REF_DBL mlog0[6], mlog1[6], mlog2[6];
+    REF_DBL mlog[6], m[6], det;
+    REF_INT i, *hits;
+    ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+    each_ref_node_valid_node(ref_node, node) { scalar[3 + ldim * node] = 0.0; }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_node_tri_area(ref_node, nodes, &area), "tri area");
+      RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+      RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+      RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
+      for (i = 0; i < 6; i++) mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i]) / 3.0;
+      RSS(ref_matrix_exp_m(mlog, m), "exp");
+      RSS(ref_matrix_det_m(m, &det), "det(mavg)");
+      area *= sqrt(3.0) / 4.0 * sqrt(det);
+      for (i = 0; i < 3; i++) {
+        scalar[3 + ldim * nodes[i]] += area;
+        (hits[nodes[i]])++;
+      }
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      if (hits[node] > 0) {
+        scalar[3 + ldim * node] /= ((REF_DBL)hits[node]);
+      }
+    }
+    ref_free(hits);
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,
