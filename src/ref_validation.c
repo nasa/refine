@@ -210,6 +210,62 @@ REF_STATUS ref_validation_boundary_all(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_validation_node_cell(REF_CELL ref_cell, REF_INT node) {
+  REF_INT item, cell, cell_node, nodes[REF_CELL_MAX_SIZE_PER];
+  printf("node %d\n", node);
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    printf("cell %d:", cell);
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "get cell");
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      printf(" %d", nodes[cell_node]);
+    }
+    printf("\n");
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_validation_cell_face_node(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL tet = ref_grid_tet(ref_grid);
+  REF_CELL tri = ref_grid_tri(ref_grid);
+  REF_INT item, cell, cell_face;
+  REF_INT face_node, face_nodes[4];
+  REF_INT cell0, cell1, tri_cell;
+
+  each_ref_cell_having_node(tet, node, item, cell) {
+    each_ref_cell_cell_face(tet, cell_face) {
+      for (face_node = 0; face_node < 4; face_node++) {
+        face_nodes[face_node] = ref_cell_f2n(tet, face_node, cell_face, cell);
+      }
+      if (ref_node_owned(ref_node, face_nodes[0]) ||
+          ref_node_owned(ref_node, face_nodes[1]) ||
+          ref_node_owned(ref_node, face_nodes[2]) ||
+          ref_node_owned(ref_node, face_nodes[3])) {
+        RSB(ref_cell_with_face(tet, face_nodes, &cell0, &cell1), "two expected",
+            {
+              ref_node_location(ref_node, face_nodes[0]);
+              ref_node_location(ref_node, face_nodes[1]);
+              ref_node_location(ref_node, face_nodes[2]);
+              ref_node_location(ref_node, face_nodes[3]);
+              ref_validation_node_cell(tet, face_nodes[0]);
+              ref_validation_node_cell(tet, face_nodes[1]);
+              ref_validation_node_cell(tet, face_nodes[2]);
+            });
+        if (REF_EMPTY == cell1) { /* should have tri on other side */
+          RSB(ref_cell_with(tri, face_nodes, &tri_cell), "matching tri", {
+            ref_node_location(ref_node, face_nodes[0]);
+            ref_node_location(ref_node, face_nodes[1]);
+            ref_node_location(ref_node, face_nodes[2]);
+            ref_node_location(ref_node, face_nodes[3]);
+          });
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_validation_cell_face(REF_GRID ref_grid) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_FACE ref_face;

@@ -254,6 +254,119 @@ REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, const char *filename) {
+  REF_GRID loc_grid;
+  REF_NODE ref_node, loc_node;
+  REF_CELL ref_cell, loc_cell;
+  REF_INT item, cell, cell_node;
+  REF_INT old, index, new_cell, new_node, ixyz;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DICT node_dict;
+
+  RSS(ref_grid_create(&loc_grid, ref_grid_mpi(ref_grid)), "create grid");
+
+  RSS(ref_dict_create(&node_dict), "create nodes");
+
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node)
+        RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+  }
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node)
+        RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+  }
+
+  ref_cell = ref_grid_tet(ref_grid);
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node)
+        RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+  }
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node)
+        RSS(ref_dict_store(node_dict, nodes[cell_node], 0), "store");
+  }
+
+  ref_node = ref_grid_node(ref_grid);
+  loc_node = ref_grid_node(loc_grid);
+  each_ref_dict_key(node_dict, index, old) {
+    RSS(ref_node_add(loc_node, index, &new_node), "new_node");
+    for (ixyz = 0; ixyz < 3; ixyz++) {
+      ref_node_xyz(loc_node, ixyz, new_node) =
+          ref_node_xyz(ref_node, ixyz, old);
+    }
+  }
+  RSS(ref_node_initialize_n_global(loc_node, ref_dict_n(node_dict)),
+      "init glob");
+
+  ref_cell = ref_grid_tet(ref_grid);
+  loc_cell = ref_grid_tet(loc_grid);
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      old = nodes[cell_node];
+      RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
+    }
+    RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
+    if (REF_EMPTY == new_cell) {
+      RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
+    }
+  }
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      old = nodes[cell_node];
+      RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
+    }
+    RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
+    if (REF_EMPTY == new_cell) {
+      RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
+    }
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  loc_cell = ref_grid_tri(loc_grid);
+  each_ref_cell_having_node(ref_cell, node0, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      old = nodes[cell_node];
+      RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
+    }
+    RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
+    if (REF_EMPTY == new_cell) {
+      RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
+    }
+  }
+  each_ref_cell_having_node(ref_cell, node1, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "n");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      old = nodes[cell_node];
+      RSS(ref_dict_location(node_dict, old, &(nodes[cell_node])), "map");
+    }
+    RXS(ref_cell_with(loc_cell, nodes, &new_cell), REF_NOT_FOUND, "exists?");
+    if (REF_EMPTY == new_cell) {
+      RSS(ref_cell_add(loc_cell, nodes, &new_cell), "new cell");
+    }
+  }
+
+  RSS(ref_dict_location(node_dict, node0, &(nodes[0])), "map0");
+  RSS(ref_dict_location(node_dict, node1, &(nodes[1])), "map1");
+  printf("node0 %d node1 %d\n", nodes[0], nodes[1]);
+
+  RSS(ref_dict_free(node_dict), "free nodes");
+
+  RSS(ref_export_by_extension(loc_grid, filename), "dump");
+
+  RSS(ref_grid_free(loc_grid), "free loc grid");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
                                 const char *filename) {
   REF_DICT node_dict, tri_dict;

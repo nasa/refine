@@ -33,6 +33,8 @@ REF_STATUS ref_clump_around(REF_GRID ref_grid, REF_INT node,
                             const char *filename);
 REF_STATUS ref_clump_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                              const char *filename);
+REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
+                                       REF_INT node1, const char *filename);
 REF_STATUS ref_clump_tri_around(REF_GRID ref_grid, REF_INT node,
                                 const char *filename);
 REF_STATUS ref_clump_short_edges(REF_GRID ref_grid, REF_DBL ratio_tol);

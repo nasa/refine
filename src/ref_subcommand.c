@@ -265,6 +265,12 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
              (int)ref_grid_partitioner(ref_grid));
   }
 
+  RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    ref_grid_adapt(ref_grid, watch_topo) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--topo checks active\n");
+  }
+
   RXS(ref_args_char(argc, argv, "-m", &in_metric), REF_NOT_FOUND,
       "metric arg search");
   if (NULL != in_metric) {
@@ -871,7 +877,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
-    printf("--partioner %d partitioner\n", (int)ref_grid_partitioner(ref_grid));
+    if (ref_mpi_once(ref_mpi))
+      printf("--partioner %d partitioner\n",
+             (int)ref_grid_partitioner(ref_grid));
+  }
+
+  RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos) {
+    ref_grid_adapt(ref_grid, watch_topo) = REF_TRUE;
+    if (ref_mpi_once(ref_mpi)) printf("--topo checks active\n");
   }
 
   RXS(ref_args_find(argc, argv, "--meshlink", &pos), REF_NOT_FOUND,

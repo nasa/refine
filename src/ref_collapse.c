@@ -25,12 +25,14 @@
 #include "ref_adapt.h"
 #include "ref_cavity.h"
 #include "ref_cell.h"
+#include "ref_clump.h"
 #include "ref_edge.h"
 #include "ref_gather.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
+#include "ref_validation.h"
 
 #define MAX_CELL_COLLAPSE (100)
 #define MAX_NODE_LIST (1000)
@@ -267,6 +269,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
             RSS(ref_cavity_replace(ref_cavity), "cav replace");
             RSS(ref_cavity_free(ref_cavity), "cav free");
             ref_cavity = (REF_CAVITY)NULL;
+            if (ref_grid_adapt(ref_grid, watch_topo))
+              RSS(ref_validation_cell_face_node(ref_grid, node0),
+                  "cavity topo");
             return REF_SUCCESS;
           }
         }
@@ -283,6 +288,9 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
 
     *actual_node0 = node0;
     RSS(ref_collapse_edge(ref_grid, node0, node1), "col!");
+    if (ref_grid_adapt(ref_grid, watch_topo))
+      RSB(ref_validation_cell_face_node(ref_grid, node0), "standard topo",
+          { printf("node0 %d node1 %d\n", node0, node1); });
     return REF_SUCCESS;
   }
 
@@ -462,7 +470,9 @@ REF_STATUS ref_collapse_edge_manifold(REF_GRID ref_grid, REF_INT node0,
 
   ref_cell = ref_grid_tri(ref_grid);
 
-  {
+  { /* ensure the tri node neighbors shared by node0 and node1 are
+       involved in the collapse (i.e. there are no new connections to
+       created) */
     REF_INT safe_list[4], nsafe;
     REF_INT nnode0, node_list0[MAX_NODE_LIST];
     REF_INT nnode1, node_list1[MAX_NODE_LIST];

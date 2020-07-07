@@ -54,6 +54,7 @@ struct REF_ADAPT_STRUCT {
 
   REF_BOOL instrument;
   REF_BOOL watch_param;
+  REF_BOOL watch_topo;
 };
 
 REF_STATUS ref_adapt_create(REF_ADAPT *ref_adapt);
