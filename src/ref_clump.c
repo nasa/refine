@@ -354,6 +354,10 @@ REF_STATUS ref_clump_between_export_to(REF_GRID ref_grid, REF_INT node0,
     }
   }
 
+  RSS(ref_dict_location(node_dict, node0, &(nodes[0])), "map0");
+  RSS(ref_dict_location(node_dict, node1, &(nodes[1])), "map1");
+  printf("node0 %d node1 %d\n", nodes[0], nodes[1]);
+
   RSS(ref_dict_free(node_dict), "free nodes");
 
   RSS(ref_export_by_extension(loc_grid, filename), "dump");
