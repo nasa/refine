@@ -1,4 +1,8 @@
 
+- git describe versioning uses + to separate sha metadata for module load
+- 64bit integer METIS and ParMETIS supported
+- ref adapt --implied-complexity [complexity] imply metric from input mesh
+
 Mon, Jun  4, 2020 : Released Refine 1.9.2
 
 - ref interp learned --face
