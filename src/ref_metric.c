@@ -996,6 +996,8 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
     RSS(ref_node_metric_get(ref_node, node, m), "get");
     RSS(ref_matrix_intersect(&(curvature_metric[6 * node]), m, m_constrained),
         "intersect");
+    if (ref_grid_twod(ref_grid))
+      RSS(ref_matrix_twod_m(m_constrained), "enforce twod");
     RSS(ref_node_metric_set(ref_node, node, m_constrained), "set node met");
   }
 
@@ -1183,6 +1185,14 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       RSS(ref_matrix_intersect(previous_metric, curvature_metric,
                                &(metric[6 * node])),
           "intersect to update metric");
+    }
+  }
+
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        RSS(ref_matrix_twod_m(&(metric[6 * node])), "enforce twod");
+      }
     }
   }
 
