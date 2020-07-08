@@ -1534,7 +1534,7 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
-				     REF_DBL target_complexity) {
+                                     REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL current_complexity;
@@ -1552,13 +1552,13 @@ REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] *=
-	pow(target_complexity / current_complexity, complexity_scale);
+          pow(target_complexity / current_complexity, complexity_scale);
     }
-          if (ref_grid_twod(ref_grid)) {
-        metric[2 + 6 * node] = 0.0;
-        metric[4 + 6 * node] = 0.0;
-        metric[5 + 6 * node] = 1.0;
-      }
+    if (ref_grid_twod(ref_grid)) {
+      metric[2 + 6 * node] = 0.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
+    }
   }
 
   return REF_SUCCESS;
