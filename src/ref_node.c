@@ -1303,12 +1303,49 @@ REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_node_ratio_log_quadrature(REF_NODE ref_node,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_DBL *ratio) {
+  REF_DBL mlog0[6], mlog1[6];
+  REF_DBL mlog[6], m[6];
+  REF_DBL direction[3];
+  REF_INT im;
+  REF_DBL w0, w1;
+  REF_DBL x[] = {-sqrt(3.0 / 5.0), 0.0, sqrt(3.0 / 5.0)};
+  REF_DBL w[] = {5.0 / 9.0, 8.0 / 9.0, 5.0 / 9.0};
+  REF_INT i, n = 3;
+
+  *ratio = 0.0;
+
+  direction[0] =
+      (ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0));
+  direction[1] =
+      (ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0));
+  direction[2] =
+      (ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0));
+  RSS(ref_node_metric_get_log(ref_node, node0, mlog0), "node0 m");
+  RSS(ref_node_metric_get_log(ref_node, node1, mlog1), "node1 m");
+
+  for (i = 0; i < n; i++) {
+    w1 = 0.5 * x[i] + 0.5;
+    w0 = 1.0 - w1;
+    for (im = 0; im < 6; im++) {
+      mlog[im] = w0 * mlog0[im] + w1 * mlog1[im];
+    }
+    RSS(ref_matrix_exp_m(mlog, m), "exp");
+    *ratio += 0.5 * w[i] * ref_matrix_sqrt_vt_m_v(m, direction);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio) {
   REF_DBL direction[3], length;
   REF_DBL ratio0, ratio1;
   REF_DBL r, r_min, r_max;
   REF_DBL m[6];
+  REF_BOOL log_quadrature = REF_FALSE;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -1327,6 +1364,11 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
       !ref_math_divisible(direction[1], length) ||
       !ref_math_divisible(direction[2], length)) {
     *ratio = 0.0;
+    return REF_SUCCESS;
+  }
+
+  if (log_quadrature) {
+    RSS(ref_node_ratio_log_quadrature(ref_node, node0, node1, ratio), "ratio");
     return REF_SUCCESS;
   }
 
