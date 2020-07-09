@@ -131,6 +131,14 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
   REF_BOOL metric_recognized = REF_FALSE;
 
   each_ref_node_valid_node(ref_node, node) {
+    if (strcmp(version, "iso01") == 0) {
+      metric_recognized = REF_TRUE;
+      h = 0.1;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (h * h), 0, 0,
+                               1.0 / (h * h), 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "isorad") == 0) {
       metric_recognized = REF_TRUE;
       r = sqrt(pow(ref_node_xyz(ref_node, 0, node), 2) +
