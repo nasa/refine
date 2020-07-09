@@ -30,6 +30,11 @@ meshlink
   + check curvature metric on non-associated surfaces
   + vote on quilt orientation, not range
 
+quadrature based ratio
+  + function
+  derivative for node0
+  test
+
 smoothing
   use graph distance from boundary (and edge, node) to prioritize smoothing
   minmax non smooth optimization (nso) of face uv
