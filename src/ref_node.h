@@ -184,6 +184,8 @@ REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node, REF_INT *nodes,
                                          REF_BOOL *valid);
 REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
                                    REF_INT node, REF_DBL *angle);
+REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_DBL *area);
 REF_STATUS ref_node_tri_area(REF_NODE ref_node, REF_INT *nodes, REF_DBL *area);
 REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                      REF_DBL *area, REF_DBL *darea_dnode0);

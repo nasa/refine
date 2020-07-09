@@ -2179,6 +2179,25 @@ REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_DBL *area) {
+  REF_DBL mlog0[6], mlog1[6], mlog2[6];
+  REF_DBL mlog[6], m[6], det;
+  REF_INT i;
+
+  RSS(ref_node_tri_area(ref_node, nodes, area), "tri area");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
+  for (i = 0; i < 6; i++) mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i]) / 3.0;
+  RSS(ref_matrix_exp_m(mlog, m), "exp");
+  RSS(ref_matrix_det_m(m, &det), "det(mavg)");
+  (*area) *= sqrt(det);
+  (*area) *= 4.0 / sqrt(3.0);
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_tri_area(REF_NODE ref_node, REF_INT *nodes, REF_DBL *area) {
   REF_DBL normal[3];
 

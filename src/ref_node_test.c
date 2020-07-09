@@ -1333,6 +1333,9 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     RWDS(0.25 * sqrt(3.0), area, -1.0, "expected area");
 
+    RSS(ref_node_tri_metric_area(ref_node, nodes, &area), "area");
+    RWDS(1.0, area, -1.0, "expected area");
+
     RSS(ref_node_tri_quality(ref_node, nodes, &qual), "q");
     RWDS(1.0, qual, -1.0, "qual expected");
 
