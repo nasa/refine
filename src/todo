@@ -30,7 +30,12 @@ meshlink
   + check curvature metric on non-associated surfaces
   + vote on quilt orientation, not range
 
-non smooth optimization nso of face uv
+smoothing
+  use graph distance from boundary (and edge, node) to prioritize smoothing
+  minmax non smooth optimization (nso) of face uv
+  smooth verify improvement
+  flow/migration solved by preventing over refinement
+  requeue neighbors with large changes? particularly quality drops
 
 surrogate surface
   support twod geom
@@ -76,8 +81,6 @@ C2S
  tutorials
 
 reject insertion based on near tree
-
-use graph distance from boundary (and edge, node) to prioritize smoothing
 
 cavity operator in 2D/3D
   replace classic surf swap with cavity
@@ -137,8 +140,6 @@ get rid of aux and interp instead
 extract cell orient from tri_node_angle and correct _dnode0 uses in code
 
 input means for all these parameters for optimizer setting
-smooth ordering
-smooth verify improvement
 optimized 4th tet node placement
 
 - buffer / metric diffusion for LES and guide multiscale 
@@ -160,13 +161,6 @@ robustness and metric conformity
   examine triangle MR
   prevent slivers
   smooth after collapse?
- smooth
-  better new smooth location with metric gradation? Flow/migration?
-   ideal tet using principle direction? but faces dissaggree? optimizer?
-  sort worst to best? sort biggest neighbor difference?
-    for edge, surface, volume sequence
-  requeue neighbors with large changes? particulary quality drops
-  minmax optimize uv
 
 memory
  quantify and reduce memory usage
