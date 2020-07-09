@@ -50,12 +50,16 @@ struct REF_NODE_STRUCT {
   REF_DBL same_normal_tol;
   REF_INT tet_quality;
   REF_INT tri_quality;
+  REF_INT ratio_method;
 };
 
 #define REF_NODE_REAL_PER (15) /* x,y,z, m[6], log_m[6] */
 
 #define REF_NODE_EPIC_QUALITY (1)
 #define REF_NODE_JAC_QUALITY (2)
+
+#define REF_NODE_RATIO_GEOMETRIC (1)
+#define REF_NODE_RATIO_QUADRATURE (2)
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)

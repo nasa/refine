@@ -79,6 +79,7 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
 
   ref_node->tet_quality = REF_NODE_JAC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
+  ref_node->ratio_method = REF_NODE_RATIO_GEOMETRIC;
 
   return REF_SUCCESS;
 }
@@ -162,6 +163,7 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
 
   ref_node->tet_quality = original->tet_quality;
   ref_node->tri_quality = original->tri_quality;
+  ref_node->ratio_method = original->ratio_method;
 
   return REF_SUCCESS;
 }
@@ -1352,7 +1354,6 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
   REF_DBL ratio0, ratio1;
   REF_DBL r, r_min, r_max;
   REF_DBL m[6];
-  REF_BOOL log_quadrature = REF_FALSE;
 
   if (!ref_node_valid(ref_node, node0) || !ref_node_valid(ref_node, node1))
     RSS(REF_INVALID, "node invalid");
@@ -1374,7 +1375,7 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
     return REF_SUCCESS;
   }
 
-  if (log_quadrature) {
+  if (REF_NODE_RATIO_QUADRATURE == ref_node->ratio_method) {
     RSS(ref_node_ratio_log_quadrature(ref_node, node0, node1, ratio), "ratio");
     return REF_SUCCESS;
   }
