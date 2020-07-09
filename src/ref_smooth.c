@@ -1386,7 +1386,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_INT id;
   REF_INT nodes[2], nnode;
   REF_DBL t_orig, t0, t1;
-  REF_DBL r0, r1;
+  REF_DBL r0, r1, r0orig, r1orig;
   REF_DBL q_orig;
   REF_DBL normdev_orig, normdev;
   REF_DBL min_uv_area;
@@ -1403,6 +1403,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL accept;
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -1478,6 +1479,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     printf("dxyz_dt %f %f %f\n", dxyz_dt[0], dxyz_dt[1], dxyz_dt[2]);
   }
 
+  RSS(ref_node_ratio(ref_node, nodes[0], node, &r0orig), "get r0");
+  RSS(ref_node_ratio(ref_node, nodes[1], node, &r1orig), "get r1");
   if (ref_grid_surf(ref_grid)) {
     q_orig = 1.0;
   } else {
@@ -1520,11 +1523,15 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
 
+    accept = (q > ref_grid_adapt(ref_grid, smooth_min_quality));
+    accept = accept && (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+                        normdev > normdev_orig);
+    accept = accept && (min_uv_area > ref_node_min_uv_area(ref_node));
+    accept = accept && (MIN(r0, r1) > 0.9 * MIN(r0orig, r1orig));
+    accept = accept && (MAX(r0, r1) < 1.1 * MAX(r0orig, r1orig));
+
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
-    if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev > normdev_orig) &&
-        (min_uv_area > ref_node_min_uv_area(ref_node))) {
+    if (accept) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;
