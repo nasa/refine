@@ -1311,9 +1311,16 @@ static REF_STATUS ref_node_ratio_log_quadrature(REF_NODE ref_node,
   REF_DBL direction[3];
   REF_INT im;
   REF_DBL w0, w1;
+  REF_INT i;
+
+  /*
+  REF_INT n = 3;
   REF_DBL x[] = {-sqrt(3.0 / 5.0), 0.0, sqrt(3.0 / 5.0)};
   REF_DBL w[] = {5.0 / 9.0, 8.0 / 9.0, 5.0 / 9.0};
-  REF_INT i, n = 3;
+  */
+  REF_INT n = 1;
+  REF_DBL x[] = {0.0};
+  REF_DBL w[] = {2.0};
 
   *ratio = 0.0;
 
