@@ -909,17 +909,18 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   REF_DBL backoff, tri_quality0, tri_quality, tet_quality, min_ratio, max_ratio;
   REF_INT ixyz;
   REF_INT n_ids, ids[2];
-  REF_BOOL allowed, geom_face;
+  REF_BOOL allowed, accept, geom_face;
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing = REF_FALSE;
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
   /* won't keep an edg straight */
   if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
-  /* don't move edge nodes */
+  /* don't move edge nodes that span face ids */
   RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, 2, &n_ids, ids),
       REF_INCREASE_LIMIT, "count faceids");
   if (n_ids > 1) return REF_SUCCESS;
@@ -944,11 +945,12 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
   RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
       "ratio");
+  pliant_smoothing = (tri_quality0 > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
 
-  if (tri_quality0 < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
-    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
-  } else {
+  if (pliant_smoothing) {
     RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
   }
 
   backoff = 1.0;
@@ -959,13 +961,24 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
-      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if (allowed && (tri_quality > tri_quality0) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &accept), "twod tri");
+      accept =
+          accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+      accept =
+          accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+
+      if (pliant_smoothing) {
+        accept = accept && (tri_quality > 0.9 * tri_quality0);
+        accept = accept && (tri_quality > 0.4);
+      } else {
+        accept = accept && (tri_quality > tri_quality0);
+      }
+
+      if (accept) {
         if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
           return REF_SUCCESS;
         } else {
