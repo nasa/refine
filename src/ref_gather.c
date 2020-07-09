@@ -611,6 +611,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       RSS(ref_matrix_exp_m(mlog, m), "exp");
       RSS(ref_matrix_det_m(m, &det), "det(mavg)");
       area *= sqrt(det);
+      area *= 4.0 / sqrt(3.0);
       for (i = 0; i < 3; i++) {
         scalar[3 + ldim * nodes[i]] += area;
         (hits[nodes[i]])++;
