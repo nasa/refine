@@ -79,7 +79,7 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
 
   ref_node->tet_quality = REF_NODE_JAC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
-  ref_node->ratio_method = REF_NODE_RATIO_GEOMETRIC;
+  ref_node->ratio_method = REF_NODE_RATIO_QUADRATURE;
 
   return REF_SUCCESS;
 }
