@@ -952,12 +952,45 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
-  { /* derivative of node0 distance in metric  gen */
+  { /* geometric derivative of node0 distance in metric  gen */
     REF_NODE ref_node;
     REF_INT node0, node1, global;
     REF_DBL ratio, f_ratio, d_ratio[3];
 
     RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    ref_node->ratio_method = REF_NODE_RATIO_GEOMETRIC;
+
+    global = 0;
+    RSS(ref_node_add(ref_node, global, &node0), "add");
+    ref_node_xyz(ref_node, 0, node0) = 0.0;
+    ref_node_xyz(ref_node, 1, node0) = 0.0;
+    ref_node_xyz(ref_node, 2, node0) = 0.0;
+    RSS(ref_node_metric_form(ref_node, node0, 1.0, 1.3, 0.4, 1.8, 0.5, 0.5),
+        "node0 set");
+
+    global = 1;
+    RSS(ref_node_add(ref_node, global, &node1), "add");
+    ref_node_xyz(ref_node, 0, node1) = 0.6;
+    ref_node_xyz(ref_node, 1, node1) = 0.7;
+    ref_node_xyz(ref_node, 2, node1) = 0.8;
+
+    FD_NODE0(ref_node_dratio_dnode0);
+
+    RSS(ref_node_dratio_dnode0(ref_node, node0, node1, &f_ratio, d_ratio),
+        "ratio deriv");
+    RSS(ref_node_ratio(ref_node, node0, node1, &ratio), "ratio");
+    RWDS(ratio, f_ratio, -1.0, "ratio expected");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
+  { /* quadrature derivative of node0 distance in metric  gen */
+    REF_NODE ref_node;
+    REF_INT node0, node1, global;
+    REF_DBL ratio, f_ratio, d_ratio[3];
+
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+    ref_node->ratio_method = REF_NODE_RATIO_QUADRATURE;
 
     global = 0;
     RSS(ref_node_add(ref_node, global, &node0), "add");
