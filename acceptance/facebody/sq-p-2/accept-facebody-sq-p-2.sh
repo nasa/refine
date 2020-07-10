@@ -12,7 +12,7 @@ fi
 
 tecplot=-t
 metric="-twod polar-2"
-egads="-g icecream.egads"
+egads="-g square.egads"
 
 function adapt_cycle {
     inproj=$1
@@ -37,7 +37,7 @@ function adapt_cycle {
 	  > ${outproj}.status
 }
 
-cp icecream.meshb cycle00.meshb
+cp square.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 10
 adapt_cycle cycle01 cycle02 10
