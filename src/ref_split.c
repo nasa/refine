@@ -653,6 +653,57 @@ REF_STATUS ref_split_edge_ratio(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_split_edge_density(REF_GRID ref_grid, REF_INT node0,
+                                  REF_INT node1, REF_INT new_node,
+                                  REF_BOOL *allowed) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell_node;
+  REF_INT node;
+  REF_DBL area, density, hits;
+
+  *allowed = REF_TRUE;
+
+  if (!ref_grid_twod(ref_grid)) {
+    return REF_SUCCESS;
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+
+  density = 0.0;
+  hits = 0.0;
+  each_ref_cell_having_node2(ref_cell, node0, node1, item, cell_node, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node0 == nodes[node]) nodes[node] = new_node;
+    }
+    RSS(ref_node_tri_metric_area(ref_node, nodes, &area), "tri area");
+    density += area;
+    hits += 1.0;
+
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (new_node == nodes[node]) nodes[node] = node0;
+    }
+    for (node = 0; node < ref_cell_node_per(ref_cell); node++) {
+      if (node1 == nodes[node]) nodes[node] = new_node;
+    }
+    RSS(ref_node_tri_metric_area(ref_node, nodes, &area), "tri area");
+    density += area;
+    hits += 1.0;
+  }
+
+  if (hits > 0.5) density /= hits;
+
+  if (density > 0.5) {
+    *allowed = REF_TRUE;
+  } else {
+    *allowed = REF_FALSE;
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_split_edge_tri_conformity(REF_GRID ref_grid, REF_INT node0,
                                          REF_INT node1, REF_INT new_node,
                                          REF_BOOL *allowed) {
