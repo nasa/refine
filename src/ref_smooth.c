@@ -945,7 +945,7 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
   RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
       "ratio");
-  pliant_smoothing = (tri_quality0 > 0.2 && min_ratio > 0.5 && max_ratio < 2.0);
+  pliant_smoothing = (tri_quality0 > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
 
   if (pliant_smoothing) {
     RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
