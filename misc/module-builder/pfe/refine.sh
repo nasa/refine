@@ -60,7 +60,6 @@ set base    $MODULE_BASE
 set version $VERSION
 
 prereq ${INTEL_MODULE}
-prereq ${ESP_MODULE}
 
 set logr "/bin"
 
