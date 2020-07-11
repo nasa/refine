@@ -37,13 +37,14 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,
                                               REF_DBL *total_force_vector) {
   REF_INT ixyz;
-  REF_DBL norm[3], force, ratio;
+  REF_DBL norm[3], force, l4, ratio;
   for (ixyz = 0; ixyz < 3; ixyz++)
     norm[ixyz] = ref_node_xyz(ref_node, ixyz, center) -
                  ref_node_xyz(ref_node, ixyz, neighbor);
   RSS(ref_node_ratio(ref_node, center, neighbor, &ratio), "get r0");
-  /* avro force without l^4 */
-  force = (1.0 - ratio) * exp(-ratio);
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ratio < 1.0) force += (1.0 - ratio) * (1.0 - ratio);
   for (ixyz = 0; ixyz < 3; ixyz++)
     total_force_vector[ixyz] += force * norm[ixyz];
 
