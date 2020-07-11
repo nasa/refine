@@ -37,7 +37,7 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,
                                               REF_DBL *total_force_vector) {
   REF_INT ixyz;
-  REF_DBL norm[3], l4, force, ratio;
+  REF_DBL norm[3], force, ratio;
   for (ixyz = 0; ixyz < 3; ixyz++)
     norm[ixyz] = ref_node_xyz(ref_node, ixyz, center) -
                  ref_node_xyz(ref_node, ixyz, neighbor);
