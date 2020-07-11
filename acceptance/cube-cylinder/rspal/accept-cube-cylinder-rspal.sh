@@ -17,12 +17,14 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_acceptance -ugawg ${field} ${inproj}.meshb ${inproj}-metric.solb
-    ${two}/ref adapt ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -x ${outproj}.meshb -s ${sweeps} -t -f ${outproj}_stat.tec | tee ${outproj}_refine_out
+    egads="-g cube-cylinder.egads"
+
+    ${src}/ref_acceptance -ugawg ${field} ${inproj}.meshb ${inproj}-metric.solb
+    ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb -x ${outproj}.meshb -s ${sweeps} -t -f ${outproj}_stat.tec | tee ${outproj}_refine_out
     cp ref_gather_movie.tec ${outproj}_movie.tec
     cp ref_gather_histo.tec ${outproj}_histo.tec
-    ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
-    ${two}/ref_metric_test ${outproj}.meshb ${outproj}-metric.solb > ${outproj}.status
+    ${src}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
+    ${src}/ref_metric_test ${outproj}.meshb ${outproj}-metric.solb > ${outproj}.status
 }
 
 adapt_cycle cube-cylinder00 cube-cylinder01 2
