@@ -126,7 +126,7 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
                                          const char *version) {
   REF_INT node;
   REF_DBL x = 0, y = 0, r, t;
-  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1;
+  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1, d0;
   REF_DBL d[12], m[6];
   REF_BOOL metric_recognized = REF_FALSE;
 
@@ -201,6 +201,8 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       h_t = 0.1;
       h0 = 0.001;
       h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
+      d0 = MIN(10.0 * ABS(r - 0.5), 1.0);
+      h_t = 0.1 * d0 + 0.025 * (1.0 - d0);
     }
     if (strcmp(version, "radial-1") == 0) {
       metric_recognized = REF_TRUE;
