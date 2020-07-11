@@ -5,11 +5,9 @@ set -e # exit on first error
 set -u # Treat unset variables as error
 
 if [ $# -gt 0 ] ; then
-    one=$1/one
-    two=$1/src
+    src=$1/src
 else
-    one=${HOME}/refine/egads/one
-    two=${HOME}/refine/egads/src
+    src=${HOME}/refine/egads/src
 fi
 
 field=polar-2
@@ -19,24 +17,20 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${two}/ref_driver -i ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -o ${outproj} -s ${sweeps} -t -f ${outproj}_stat.tec | tee ${inproj}_refine_out
-    cp ref_gather_movie.tec ${inproj}_movie.tec
-    cp ref_gather_histo.tec ${inproj}_histo.tec
+    ${two}/ref_acceptance -ugawg ${field} ${inproj}.meshb ${inproj}-metric.solb
+    ${two}/ref adapt ${inproj}.meshb -g ega.egads -m ${inproj}-metric.solb -x ${outproj}.meshb -s ${sweeps} -t -f ${outproj}_stat.tec | tee ${outproj}_refine_out
+    cp ref_gather_movie.tec ${outproj}_movie.tec
+    cp ref_gather_histo.tec ${outproj}_histo.tec
     ${two}/ref_acceptance -ugawg ${field} ${outproj}.meshb ${outproj}-metric.solb
     ${two}/ref_metric_test ${outproj}.meshb ${outproj}-metric.solb > ${outproj}.status
 }
 
-# ${two}/ref_geom_test ega.egads
-# ${two}/ref_geom_test ega.egads ega.ugrid
+adapt_cycle cube-cylinder00 cube-cylinder01 2
+adapt_cycle cube-cylinder01 cube-cylinder02 5
+adapt_cycle cube-cylinder02 cube-cylinder03 5
+adapt_cycle cube-cylinder03 cube-cylinder04 5
 
-${two}/ref_acceptance -ugawg ${field} ega.meshb ega-metric.solb
-
-adapt_cycle ega cycle01 2
-adapt_cycle cycle01 cycle02 15
-adapt_cycle cycle02 cycle03 15
-adapt_cycle cycle03 cycle04 15
-
-cat cycle04.status
-../../check.rb cycle04.status 0.2 3.0
+cat cube-cylinder04.status
+../../check.rb cube-cylinder04.status 0.2 3.0
 
 exit
