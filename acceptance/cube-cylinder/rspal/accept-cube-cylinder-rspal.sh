@@ -21,7 +21,10 @@ function adapt_cycle {
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}-uplus.solb
 
-    ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
+    ${src}/ref_gather_test ${inproj}.meshb \
+	  ${inproj}-uplus.solb ${inproj}-uplus.tec
+    
+    ${src}/ref multiscale ${inproj}.meshb ${inproj}-uplus.solb \
 	  ${complexity} ${inproj}-metric.solb \
 	  --gradation 10 | tee ${inproj}-multi.txt
     
@@ -33,16 +36,16 @@ function adapt_cycle {
 	  -t -f ${outproj}_stat.tec | tee ${outproj}_refine_out
     cp ref_gather_movie.tec ${outproj}_movie.tec
     cp ref_gather_histo.tec ${outproj}_histo.tec
-    
+
     ${src}/ref_acceptance ${field} ${outproj}.meshb ${outproj}-uplus.solb
+
+    ${src}/ref_gather_test ${outproj}.meshb \
+	  ${outproj}-uplus.solb ${outproj}-uplus.tec
 }
 
 adapt_cycle cube-cylinder00 cube-cylinder01 500
-adapt_cycle cube-cylinder01 cube-cylinder02 500
-adapt_cycle cube-cylinder02 cube-cylinder03 1000
-adapt_cycle cube-cylinder03 cube-cylinder04 2000
-
-cat cube-cylinder04.status
-../../check.rb cube-cylinder04.status 0.2 3.0
+adapt_cycle cube-cylinder01 cube-cylinder02 1000
+adapt_cycle cube-cylinder02 cube-cylinder03 2000
+adapt_cycle cube-cylinder03 cube-cylinder04 4000
 
 exit
