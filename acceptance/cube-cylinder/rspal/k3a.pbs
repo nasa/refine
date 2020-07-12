@@ -38,6 +38,11 @@ function adapt_cycle {
 	  ${outproj}-uplus.solb ${outproj}-uplus.tec
 }
 
+serveCSM -batch cube-cylinder.csm
+ref boostrap cube-cylinder.egads
+mpiexec refmpi adapt cube-cylinder-vol.meshb \
+      -x cube-cylinder00.meshb
+
 adapt_cycle cube-cylinder00 cube-cylinder01 500
 adapt_cycle cube-cylinder01 cube-cylinder02 1000
 adapt_cycle cube-cylinder02 cube-cylinder03 2000
