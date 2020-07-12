@@ -47,5 +47,8 @@ adapt_cycle cube-cylinder00 cube-cylinder01 500
 adapt_cycle cube-cylinder01 cube-cylinder02 1000
 adapt_cycle cube-cylinder02 cube-cylinder03 2000
 adapt_cycle cube-cylinder03 cube-cylinder04 4000
+adapt_cycle cube-cylinder04 cube-cylinder05 8000
+adapt_cycle cube-cylinder05 cube-cylinder06 16000
+adapt_cycle cube-cylinder06 cube-cylinder07 32000
 
 exit
