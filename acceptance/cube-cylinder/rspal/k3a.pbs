@@ -45,7 +45,7 @@ function adapt_cycle {
 
 serveCSM -batch cube-cylinder.csm
 ref boostrap cube-cylinder.egads
-mpiexec refmpi adapt cube-cylinder-vol.meshb \
+mpiexec -np 1 refmpi adapt cube-cylinder-vol.meshb \
       -x cube-cylinder00.meshb
 
 adapt_cycle cube-cylinder00 cube-cylinder01 500 1
