@@ -113,7 +113,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       step = MAX(0, (REF_INT)uplus - 25);
       combined = uplus + hop * (REF_DBL)step;
       scalar[node] = combined;
-    } else if (strcmp(function_name, "cyluplus") == 0) {
+    } else if (strcmp(function_name, "sphuplus") == 0) {
       REF_DBL x0 = 1, y0 = 1, z0 = 1;
       REF_DBL uplus;
       REF_DBL yplus, r, radius, scale;
@@ -123,7 +123,7 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
       yplus = scale * (r - radius);
       RSS(ref_phys_spalding_uplus(yplus, &uplus), "uplus");
       scalar[node] = uplus;
-    } else if (strcmp(function_name, "sphuplus") == 0) {
+    } else if (strcmp(function_name, "cyluplus") == 0) {
       REF_DBL uplus;
       REF_DBL yplus, r, radius, scale;
       radius = 0.5;

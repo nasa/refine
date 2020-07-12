@@ -8,7 +8,7 @@ set -u # Treat unset variables as error
 
 cd ${PBS_O_WORKDIR}
 
-field="-u cyluplus"
+field="-u sphuplus"
 egads="-g cube-sphere.egads"
 
 function adapt_cycle {
