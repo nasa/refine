@@ -6,6 +6,8 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
+cd ${PBS_O_WORKDIR}
+
 field="-u cyluplus"
 egads="-g cube-cylinder.egads"
 
