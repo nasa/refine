@@ -1,0 +1,58 @@
+#!/bin/bash
+#PBS -q K3a-route -l select=2:ncpus=16:mpiprocs=16 -l min_walltime=2:00:00 -l max_walltime=72:00:00
+#PBS -m n -N cs-rspal
+
+set -x # echo commands
+set -e # exit on first error
+set -u # Treat unset variables as error
+
+cd ${PBS_O_WORKDIR}
+
+field="-u cyluplus"
+egads="-g cube-sphere.egads"
+
+function adapt_cycle {
+    inproj=$1
+    outproj=$2
+    complexity=$3
+    cores=$4
+
+    ref_acceptance ${field} ${inproj}.meshb ${inproj}-uplus.solb
+
+    ref_gather_test ${inproj}.meshb \
+	  ${inproj}-uplus.solb ${inproj}-uplus.tec
+    
+    mpiexec -np ${cores} refmpi \
+	    multiscale ${inproj}.meshb \
+	    ${inproj}-uplus.solb \
+	    ${complexity} ${inproj}-metric.solb \
+	    --gradation 10 | tee ${inproj}-multi.txt
+    
+    mpiexec -np ${cores} refmpi \
+	    adapt ${inproj}.meshb \
+	    -m ${inproj}-metric.solb \
+	    -x ${outproj}.meshb \
+	    -t -f ${outproj}_stat.tec | tee ${outproj}_refine_out
+    preplot ref_gather_movie.tec
+    cp ref_gather_movie.plt ${outproj}_movie.plt
+    cp ref_gather_histo.tec ${outproj}_histo.tec
+
+    ref_acceptance ${field} ${outproj}.meshb ${outproj}-uplus.solb
+
+    ref_gather_test ${outproj}.meshb \
+	  ${outproj}-uplus.solb ${outproj}-uplus.tec
+}
+
+serveCSM -batch cube-sphere.csm
+ref boostrap cube-sphere.egads
+mpiexec -np 1 refmpi adapt cube-sphere-vol.meshb \
+      -x cube-sphere00.meshb
+
+adapt_cycle cube-sphere00 cube-sphere01 500 1
+adapt_cycle cube-sphere01 cube-sphere02 1000 1
+adapt_cycle cube-sphere02 cube-sphere03 2000 2
+adapt_cycle cube-sphere03 cube-sphere04 4000 4
+adapt_cycle cube-sphere04 cube-sphere05 8000 8
+adapt_cycle cube-sphere05 cube-sphere06 16000 16
+adapt_cycle cube-sphere06 cube-sphere07 32000 32
+
