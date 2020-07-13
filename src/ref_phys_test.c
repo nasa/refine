@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
   REF_INT convdiff_flux_pos = REF_EMPTY;
   REF_INT mask_pos = REF_EMPTY;
   REF_INT cont_res_pos = REF_EMPTY;
+  REF_INT uplus_pos = REF_EMPTY;
 
   REF_MPI ref_mpi;
   RSS(ref_mpi_start(argc, argv), "start");
@@ -90,6 +91,51 @@ int main(int argc, char *argv[]) {
       "arg search");
   RXS(ref_args_find(argc, argv, "--cont-res", &cont_res_pos), REF_NOT_FOUND,
       "arg search");
+  RXS(ref_args_find(argc, argv, "--uplus", &uplus_pos), REF_NOT_FOUND,
+      "arg search");
+
+  if (uplus_pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_DBL *scalar, yplus, uplus;
+    REF_INT ldim, node;
+    ref_mpi_stopwatch_start(ref_mpi);
+    REIS(1, uplus_pos,
+         "required args: --uplus grid.meshb dist.solb yplus uplus.solb");
+    if (8 > argc) {
+      printf("required args: --uplus grid.meshb dist.solb yplus uplus.solb");
+      return REF_FAILURE;
+    }
+    if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
+        "unable to load target grid in position 2");
+    ref_mpi_stopwatch_stop(ref_mpi, "read grid");
+
+    if (ref_mpi_once(ref_mpi)) printf("reading distance %s\n", argv[3]);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar, argv[3]),
+        "unable to load distance in position 3");
+    REIS(1, ldim, "expected one distance");
+    ref_mpi_stopwatch_stop(ref_mpi, "read distance");
+
+    yplus = atof(argv[4]);
+    if (ref_mpi_once(ref_mpi)) printf("yplus=1 of %f\n", yplus);
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RSS(ref_phys_spalding_uplus(scalar[node] * yplus, &uplus), "uplus");
+      scalar[node] = uplus;
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute uplus");
+
+    if (ref_mpi_once(ref_mpi)) printf("writing uplus %s\n", argv[5]);
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[5]),
+        "export uplus");
+    ref_mpi_stopwatch_stop(ref_mpi, "write uplus");
+
+    ref_free(scalar);
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (laminar_flux_pos != REF_EMPTY) {
     REF_GRID ref_grid;
