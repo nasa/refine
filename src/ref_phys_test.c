@@ -119,7 +119,9 @@ int main(int argc, char *argv[]) {
     yplus = atof(argv[4]);
     if (ref_mpi_once(ref_mpi)) printf("yplus=1 of %f\n", yplus);
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RSS(ref_phys_spalding_uplus(scalar[node] * yplus, &uplus), "uplus");
+      RAS(ref_math_divisible(scalar[node], yplus),
+          "distance not divisible by yplus=1")
+      RSS(ref_phys_spalding_uplus(scalar[node] / yplus, &uplus), "uplus");
       scalar[node] = uplus;
     }
     ref_mpi_stopwatch_stop(ref_mpi, "compute uplus");
