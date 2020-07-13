@@ -100,9 +100,10 @@ int main(int argc, char *argv[]) {
     REF_INT ldim, node;
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, uplus_pos,
-         "required args: --uplus grid.meshb dist.solb yplus uplus.solb");
+         "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
     if (6 > argc) {
-      printf("required args: --uplus grid.meshb dist.solb yplus uplus.solb");
+      printf(
+          "required args: --uplus grid.meshb dist.solb [yplus=1] uplus.solb");
       return REF_FAILURE;
     }
     if (ref_mpi_once(ref_mpi)) printf("reading grid %s\n", argv[2]);
