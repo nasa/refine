@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_start(ref_mpi);
     REIS(1, uplus_pos,
          "required args: --uplus grid.meshb dist.solb yplus uplus.solb");
-    if (8 > argc) {
+    if (6 > argc) {
       printf("required args: --uplus grid.meshb dist.solb yplus uplus.solb");
       return REF_FAILURE;
     }
