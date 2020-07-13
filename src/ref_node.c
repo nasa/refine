@@ -79,6 +79,7 @@ REF_STATUS ref_node_create(REF_NODE *ref_node_ptr, REF_MPI ref_mpi) {
 
   ref_node->tet_quality = REF_NODE_JAC_QUALITY;
   ref_node->tri_quality = REF_NODE_JAC_QUALITY;
+  ref_node->ratio_method = REF_NODE_RATIO_QUADRATURE;
 
   return REF_SUCCESS;
 }
@@ -162,6 +163,7 @@ REF_STATUS ref_node_deep_copy(REF_NODE *ref_node_ptr, REF_NODE original) {
 
   ref_node->tet_quality = original->tet_quality;
   ref_node->tri_quality = original->tri_quality;
+  ref_node->ratio_method = original->ratio_method;
 
   return REF_SUCCESS;
 }
@@ -1303,6 +1305,49 @@ REF_STATUS ref_node_metric_get_log(REF_NODE ref_node, REF_INT node,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_node_ratio_log_quadrature(REF_NODE ref_node,
+                                                REF_INT node0, REF_INT node1,
+                                                REF_DBL *ratio) {
+  REF_DBL mlog0[6], mlog1[6];
+  REF_DBL mlog[6], m[6];
+  REF_DBL direction[3];
+  REF_INT im;
+  REF_DBL w0, w1;
+  REF_INT i;
+
+  /*
+  REF_INT n = 3;
+  REF_DBL x[] = {-sqrt(3.0 / 5.0), 0.0, sqrt(3.0 / 5.0)};
+  REF_DBL w[] = {5.0 / 9.0, 8.0 / 9.0, 5.0 / 9.0};
+  */
+  REF_INT n = 1;
+  REF_DBL x[] = {0.0};
+  REF_DBL w[] = {2.0};
+
+  *ratio = 0.0;
+
+  direction[0] =
+      (ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0));
+  direction[1] =
+      (ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0));
+  direction[2] =
+      (ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0));
+  RSS(ref_node_metric_get_log(ref_node, node0, mlog0), "node0 m");
+  RSS(ref_node_metric_get_log(ref_node, node1, mlog1), "node1 m");
+
+  for (i = 0; i < n; i++) {
+    w1 = 0.5 * x[i] + 0.5;
+    w0 = 1.0 - w1;
+    for (im = 0; im < 6; im++) {
+      mlog[im] = w0 * mlog0[im] + w1 * mlog1[im];
+    }
+    RSS(ref_matrix_exp_m(mlog, m), "exp");
+    *ratio += 0.5 * w[i] * ref_matrix_sqrt_vt_m_v(m, direction);
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
                           REF_DBL *ratio) {
   REF_DBL direction[3], length;
@@ -1330,6 +1375,11 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
     return REF_SUCCESS;
   }
 
+  if (REF_NODE_RATIO_QUADRATURE == ref_node->ratio_method) {
+    RSS(ref_node_ratio_log_quadrature(ref_node, node0, node1, ratio), "ratio");
+    return REF_SUCCESS;
+  }
+
   RSS(ref_node_metric_get(ref_node, node0, m), "node0 m");
   ratio0 = ref_matrix_sqrt_vt_m_v(m, direction);
   RSS(ref_node_metric_get(ref_node, node1, m), "node1 m");
@@ -1354,6 +1404,60 @@ REF_STATUS ref_node_ratio(REF_NODE ref_node, REF_INT node0, REF_INT node1,
   }
 
   *ratio = r_min * (r - 1.0) / (r * log(r));
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_node_dratio_dnode0_quadrature(REF_NODE ref_node,
+                                                    REF_INT node0,
+                                                    REF_INT node1,
+                                                    REF_DBL *ratio,
+                                                    REF_DBL *d_ratio) {
+  REF_DBL mlog0[6], mlog1[6];
+  REF_DBL mlog[6], m[6];
+  REF_DBL direction[3];
+  REF_INT im;
+  REF_DBL w0, w1;
+  REF_INT i;
+  REF_DBL ratio_func, ratio_deriv[3];
+
+  /*
+  REF_INT n = 3;
+  REF_DBL x[] = {-sqrt(3.0 / 5.0), 0.0, sqrt(3.0 / 5.0)};
+  REF_DBL w[] = {5.0 / 9.0, 8.0 / 9.0, 5.0 / 9.0};
+  */
+  REF_INT n = 1;
+  REF_DBL x[] = {0.0};
+  REF_DBL w[] = {2.0};
+
+  *ratio = 0.0;
+  d_ratio[0] = 0.0;
+  d_ratio[1] = 0.0;
+  d_ratio[2] = 0.0;
+
+  direction[0] =
+      (ref_node_xyz(ref_node, 0, node1) - ref_node_xyz(ref_node, 0, node0));
+  direction[1] =
+      (ref_node_xyz(ref_node, 1, node1) - ref_node_xyz(ref_node, 1, node0));
+  direction[2] =
+      (ref_node_xyz(ref_node, 2, node1) - ref_node_xyz(ref_node, 2, node0));
+  RSS(ref_node_metric_get_log(ref_node, node0, mlog0), "node0 m");
+  RSS(ref_node_metric_get_log(ref_node, node1, mlog1), "node1 m");
+
+  for (i = 0; i < n; i++) {
+    w1 = 0.5 * x[i] + 0.5;
+    w0 = 1.0 - w1;
+    for (im = 0; im < 6; im++) {
+      mlog[im] = w0 * mlog0[im] + w1 * mlog1[im];
+    }
+    RSS(ref_matrix_exp_m(mlog, m), "exp");
+    RSS(ref_matrix_sqrt_vt_m_v_deriv(m, direction, &ratio_func, ratio_deriv),
+        "vt m v0");
+    *ratio += 0.5 * w[i] * ratio_func;
+    d_ratio[0] -= 0.5 * w[i] * ratio_deriv[0];
+    d_ratio[1] -= 0.5 * w[i] * ratio_deriv[1];
+    d_ratio[2] -= 0.5 * w[i] * ratio_deriv[2];
+  }
 
   return REF_SUCCESS;
 }
@@ -1388,6 +1492,13 @@ REF_STATUS ref_node_dratio_dnode0(REF_NODE ref_node, REF_INT node0,
     d_ratio[0] = 0.0;
     d_ratio[1] = 0.0;
     d_ratio[2] = 0.0;
+    return REF_SUCCESS;
+  }
+
+  if (REF_NODE_RATIO_QUADRATURE == ref_node->ratio_method) {
+    RSS(ref_node_dratio_dnode0_quadrature(ref_node, node0, node1, ratio,
+                                          d_ratio),
+        "dratio quad");
     return REF_SUCCESS;
   }
 
@@ -2175,6 +2286,25 @@ REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
   RSS(ref_math_normalize(edge1), "normalize zero length edge1");
   RSS(ref_math_normalize(edge2), "normalize zero length edge2");
   *angle = acos(ref_math_dot(edge1, edge2));
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_DBL *area) {
+  REF_DBL mlog0[6], mlog1[6], mlog2[6];
+  REF_DBL mlog[6], m[6], det;
+  REF_INT i;
+
+  RSS(ref_node_tri_area(ref_node, nodes, area), "tri area");
+  RSS(ref_node_metric_get_log(ref_node, nodes[0], mlog0), "log0");
+  RSS(ref_node_metric_get_log(ref_node, nodes[1], mlog1), "log1");
+  RSS(ref_node_metric_get_log(ref_node, nodes[2], mlog2), "log2");
+  for (i = 0; i < 6; i++) mlog[i] = (mlog0[i] + mlog1[i] + mlog2[i]) / 3.0;
+  RSS(ref_matrix_exp_m(mlog, m), "exp");
+  RSS(ref_matrix_det_m(m, &det), "det(mavg)");
+  (*area) *= sqrt(det);
+  (*area) *= 4.0 / sqrt(3.0);
 
   return REF_SUCCESS;
 }

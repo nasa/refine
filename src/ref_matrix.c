@@ -629,6 +629,13 @@ REF_STATUS ref_matrix_show_m(REF_DBL *m) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_twod_m(REF_DBL *m) {
+  m[2] = 0;
+  m[4] = 0;
+  m[5] = 1;
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   REF_INT row, col;
   char format[] = "%12.4e";

@@ -50,12 +50,16 @@ struct REF_NODE_STRUCT {
   REF_DBL same_normal_tol;
   REF_INT tet_quality;
   REF_INT tri_quality;
+  REF_INT ratio_method;
 };
 
 #define REF_NODE_REAL_PER (15) /* x,y,z, m[6], log_m[6] */
 
 #define REF_NODE_EPIC_QUALITY (1)
 #define REF_NODE_JAC_QUALITY (2)
+
+#define REF_NODE_RATIO_GEOMETRIC (1)
+#define REF_NODE_RATIO_QUADRATURE (2)
 
 #define ref_node_n(ref_node) ((ref_node)->n)
 #define ref_node_max(ref_node) ((ref_node)->max)
@@ -184,6 +188,8 @@ REF_STATUS ref_node_tri_twod_orientation(REF_NODE ref_node, REF_INT *nodes,
                                          REF_BOOL *valid);
 REF_STATUS ref_node_tri_node_angle(REF_NODE ref_node, REF_INT *nodes,
                                    REF_INT node, REF_DBL *angle);
+REF_STATUS ref_node_tri_metric_area(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_DBL *area);
 REF_STATUS ref_node_tri_area(REF_NODE ref_node, REF_INT *nodes, REF_DBL *area);
 REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                      REF_DBL *area, REF_DBL *darea_dnode0);

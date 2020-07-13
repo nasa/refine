@@ -289,11 +289,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_DBL *metric;
     complexity = atof(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi))
-      printf(" --implied-complexity %f implied metric scaled to complexity\n", complexity);
+      printf(" --implied-complexity %f implied metric scaled to complexity\n",
+             complexity);
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(metric, ref_grid), "imply metric");
     ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
-    RSS(ref_metric_set_complexity(metric, ref_grid, complexity), "scale metric");
+    RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+        "scale metric");
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
     ref_free(metric);
     curvature_metric = REF_FALSE;

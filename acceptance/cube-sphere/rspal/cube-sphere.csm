@@ -1,0 +1,5 @@
+box 0 0 0 1 1 1
+sphere 1 1 1 0.5
+subtract
+dump cube-sphere.egads
+end

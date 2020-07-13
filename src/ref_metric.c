@@ -126,11 +126,19 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
                                          const char *version) {
   REF_INT node;
   REF_DBL x = 0, y = 0, r, t;
-  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1;
+  REF_DBL h_z = 1, h_t = 1, h_r = 1, h0, h, hh, hy, hx, c, k1, d0;
   REF_DBL d[12], m[6];
   REF_BOOL metric_recognized = REF_FALSE;
 
   each_ref_node_valid_node(ref_node, node) {
+    if (strcmp(version, "iso01") == 0) {
+      metric_recognized = REF_TRUE;
+      h = 0.1;
+      RSS(ref_node_metric_form(ref_node, node, 1.0 / (h * h), 0, 0,
+                               1.0 / (h * h), 0, 1.0),
+          "set node met");
+      continue;
+    }
     if (strcmp(version, "isorad") == 0) {
       metric_recognized = REF_TRUE;
       r = sqrt(pow(ref_node_xyz(ref_node, 0, node), 2) +
@@ -193,6 +201,8 @@ REF_STATUS ref_metric_twod_analytic_node(REF_NODE ref_node,
       h_t = 0.1;
       h0 = 0.001;
       h_r = h0 + 2 * (0.1 - h0) * ABS(r - 0.5);
+      d0 = MIN(10.0 * ABS(r - 0.5), 1.0);
+      h_t = 0.1 * d0 + 0.025 * (1.0 - d0);
     }
     if (strcmp(version, "radial-1") == 0) {
       metric_recognized = REF_TRUE;
@@ -996,6 +1006,8 @@ REF_STATUS ref_metric_constrain_curvature(REF_GRID ref_grid) {
     RSS(ref_node_metric_get(ref_node, node, m), "get");
     RSS(ref_matrix_intersect(&(curvature_metric[6 * node]), m, m_constrained),
         "intersect");
+    if (ref_grid_twod(ref_grid))
+      RSS(ref_matrix_twod_m(m_constrained), "enforce twod");
     RSS(ref_node_metric_set(ref_node, node, m_constrained), "set node met");
   }
 
@@ -1183,6 +1195,14 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       RSS(ref_matrix_intersect(previous_metric, curvature_metric,
                                &(metric[6 * node])),
           "intersect to update metric");
+    }
+  }
+
+  if (ref_grid_twod(ref_grid)) {
+    each_ref_node_valid_node(ref_node, node) {
+      if (ref_node_owned(ref_node, node)) {
+        RSS(ref_matrix_twod_m(&(metric[6 * node])), "enforce twod");
+      }
     }
   }
 
@@ -1524,7 +1544,7 @@ REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
 }
 
 REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
-				     REF_DBL target_complexity) {
+                                     REF_DBL target_complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT i, node;
   REF_DBL current_complexity;
@@ -1542,13 +1562,13 @@ REF_STATUS ref_metric_set_complexity(REF_DBL *metric, REF_GRID ref_grid,
   each_ref_node_valid_node(ref_node, node) {
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] *=
-	pow(target_complexity / current_complexity, complexity_scale);
+          pow(target_complexity / current_complexity, complexity_scale);
     }
-          if (ref_grid_twod(ref_grid)) {
-        metric[2 + 6 * node] = 0.0;
-        metric[4 + 6 * node] = 0.0;
-        metric[5 + 6 * node] = 1.0;
-      }
+    if (ref_grid_twod(ref_grid)) {
+      metric[2 + 6 * node] = 0.0;
+      metric[4 + 6 * node] = 0.0;
+      metric[5 + 6 * node] = 1.0;
+    }
   }
 
   return REF_SUCCESS;

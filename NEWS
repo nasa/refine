@@ -1,4 +1,5 @@
 
+- edge length in metric computed with one point quadrature on log metric space
 - git describe versioning uses + to separate sha metadata for module load
 - 64bit integer METIS and ParMETIS supported
 - ref adapt --implied-complexity [complexity] imply metric from input mesh

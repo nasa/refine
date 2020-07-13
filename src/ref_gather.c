@@ -18,6 +18,7 @@
 
 #include "ref_gather.h"
 
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,6 +28,7 @@
 #include "ref_export.h"
 #include "ref_histogram.h"
 #include "ref_malloc.h"
+#include "ref_matrix.h"
 #include "ref_mpi.h"
 #include "ref_sort.h"
 
@@ -591,6 +593,26 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
       scalar[2 + ldim * node1] = MAX(scalar[2 + ldim * node1], edge_ratio);
     }
     RSS(ref_edge_free(ref_edge), "free edges");
+  }
+
+  if (ref_grid_twod(ref_grid)) {
+    REF_DBL area;
+    REF_INT i, *hits;
+    ref_malloc_init(hits, ref_node_max(ref_node), REF_INT, 0);
+    each_ref_node_valid_node(ref_node, node) { scalar[3 + ldim * node] = 0.0; }
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_node_tri_metric_area(ref_node, nodes, &area), "tri area");
+      for (i = 0; i < 3; i++) {
+        scalar[3 + ldim * nodes[i]] += area;
+        (hits[nodes[i]])++;
+      }
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      if (hits[node] > 0) {
+        scalar[3 + ldim * node] /= ((REF_DBL)hits[node]);
+      }
+    }
+    ref_free(hits);
   }
 
   RSS(ref_gather_node_tec_part(ref_node, nnode, l2c, ldim, scalar,

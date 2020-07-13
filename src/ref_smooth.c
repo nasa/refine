@@ -37,14 +37,11 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,
                                               REF_DBL *total_force_vector) {
   REF_INT ixyz;
-  REF_DBL norm[3], l4, force, ratio;
+  REF_DBL norm[3], force, l4, ratio;
   for (ixyz = 0; ixyz < 3; ixyz++)
     norm[ixyz] = ref_node_xyz(ref_node, ixyz, center) -
                  ref_node_xyz(ref_node, ixyz, neighbor);
   RSS(ref_node_ratio(ref_node, center, neighbor, &ratio), "get r0");
-  l4 = ratio * ratio * ratio * ratio;
-  force = (1.0 - l4) * exp(-l4);
-  if (ratio < 1.0) force += (1.0 - ratio) * (1.0 - ratio);
   if (ref_math_divisible(norm[0], ratio) &&
       ref_math_divisible(norm[1], ratio) &&
       ref_math_divisible(norm[2], ratio)) {
@@ -52,6 +49,9 @@ static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
   } else {
     return REF_DIV_ZERO;
   }
+  l4 = ratio * ratio * ratio * ratio;
+  force = (1.0 - l4) * exp(-l4);
+  if (ratio < 1.0) force += (1.0 - ratio) * (1.0 - ratio);
   for (ixyz = 0; ixyz < 3; ixyz++)
     total_force_vector[ixyz] += force * norm[ixyz];
 
@@ -909,17 +909,18 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   REF_DBL backoff, tri_quality0, tri_quality, tet_quality, min_ratio, max_ratio;
   REF_INT ixyz;
   REF_INT n_ids, ids[2];
-  REF_BOOL allowed, geom_face;
+  REF_BOOL allowed, accept, geom_face;
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL pliant_smoothing = REF_FALSE;
 
   /* can't handle mixed elements */
   if (!ref_cell_node_empty(ref_grid_qua(ref_grid), node)) return REF_SUCCESS;
   /* won't keep an edg straight */
   if (!ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
 
-  /* don't move edge nodes */
+  /* don't move edge nodes that span face ids */
   RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), node, 2, &n_ids, ids),
       REF_INCREASE_LIMIT, "count faceids");
   if (n_ids > 1) return REF_SUCCESS;
@@ -944,11 +945,12 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
   RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality0), "q");
   RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
       "ratio");
+  pliant_smoothing = (tri_quality0 > 0.5 && min_ratio > 0.5 && max_ratio < 2.0);
 
-  if (tri_quality0 < 0.5 || min_ratio < 0.5 || max_ratio > 2.0) {
-    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
-  } else {
+  if (pliant_smoothing) {
     RSS(ref_smooth_tri_pliant(ref_grid, node, ideal), "ideal");
+  } else {
+    RSS(ref_smooth_tri_weighted_ideal(ref_grid, node, ideal), "ideal");
   }
 
   backoff = 1.0;
@@ -959,13 +961,24 @@ static REF_STATUS ref_smooth_no_geom_tri_improve(REF_GRID ref_grid,
     interp_status = ref_metric_interpolate_node(ref_grid, node);
     RXS(interp_status, REF_NOT_FOUND, "ref_metric_interpolate_node failed");
     if (REF_SUCCESS == interp_status) {
-      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &allowed), "twod tri");
       RSS(ref_smooth_tri_quality_around(ref_grid, node, &tri_quality), "q");
       RSS(ref_smooth_tri_ratio_around(ref_grid, node, &min_ratio, &max_ratio),
           "ratio");
-      if (allowed && (tri_quality > tri_quality0) &&
-          (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
-          (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+
+      RSS(ref_smooth_valid_no_geom_tri(ref_grid, node, &accept), "twod tri");
+      accept =
+          accept && (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio));
+      accept =
+          accept && (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio));
+
+      if (pliant_smoothing) {
+        accept = accept && (tri_quality > 0.9 * tri_quality0);
+        accept = accept && (tri_quality > 0.4);
+      } else {
+        accept = accept && (tri_quality > tri_quality0);
+      }
+
+      if (accept) {
         if (ref_cell_node_empty(ref_grid_tet(ref_grid), node)) {
           return REF_SUCCESS;
         } else {
@@ -1373,7 +1386,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_INT id;
   REF_INT nodes[2], nnode;
   REF_DBL t_orig, t0, t1;
-  REF_DBL r0, r1;
+  REF_DBL r0, r1, r0orig, r1orig;
   REF_DBL q_orig;
   REF_DBL normdev_orig, normdev;
   REF_DBL min_uv_area;
@@ -1390,6 +1403,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_STATUS interp_status;
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
+  REF_BOOL accept;
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
@@ -1465,6 +1479,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     printf("dxyz_dt %f %f %f\n", dxyz_dt[0], dxyz_dt[1], dxyz_dt[2]);
   }
 
+  RSS(ref_node_ratio(ref_node, nodes[0], node, &r0orig), "get r0");
+  RSS(ref_node_ratio(ref_node, nodes[1], node, &r1orig), "get r1");
   if (ref_grid_surf(ref_grid)) {
     q_orig = 1.0;
   } else {
@@ -1507,11 +1523,15 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev), "nd");
     RSS(ref_smooth_tri_uv_area_around(ref_grid, node, &min_uv_area), "a");
 
+    accept = (q > ref_grid_adapt(ref_grid, smooth_min_quality));
+    accept = accept && (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
+                        normdev > normdev_orig);
+    accept = accept && (min_uv_area > ref_node_min_uv_area(ref_node));
+    accept = accept && (MIN(r0, r1) > 0.9 * MIN(r0orig, r1orig));
+    accept = accept && (MAX(r0, r1) < 1.1 * MAX(r0orig, r1orig));
+
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
-    if ((q > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
-        (normdev > ref_grid_adapt(ref_grid, post_min_normdev) ||
-         normdev > normdev_orig) &&
-        (min_uv_area > ref_node_min_uv_area(ref_node))) {
+    if (accept) {
       return REF_SUCCESS;
     }
     backoff *= 0.5;

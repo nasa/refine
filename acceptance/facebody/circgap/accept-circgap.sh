@@ -28,8 +28,8 @@ function adapt_cycle {
 	  ${inproj}.solb ${inproj}-uplus.tec
 
     ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  1000 ${inproj}-metric.solb --eig-bal | tee ${inproj}-multi.txt
-    cp hess.tec ${inproj}-hess.tec
+	  4000 ${inproj}-metric.solb --eig-bal | tee ${inproj}-multi.txt
+#    cp hess.tec ${inproj}-hess.tec
 
     ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
 	  -x ${outproj}.meshb -f ${outproj}.tec > ${inproj}-adapt.txt
