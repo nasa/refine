@@ -10,8 +10,7 @@ else
     src=${HOME}/refine/egads/src
 fi
 
-field="-u cyluplus"
-egads="-g cube-cylinder.egads"
+egads="-g cube-wire.egads"
 
 function adapt_cycle {
     inproj=$1
@@ -21,9 +20,8 @@ function adapt_cycle {
 
     ${src}/ref translate ${inproj}.meshb ${inproj}.lb8.ugrid
     ParallelDistanceCalculator ${inproj}.lb8.ugrid --tags 7
-    
-    
-    ${src}/ref_physics_test --uplus ${inproj}.meshb \
+
+    ${src}/ref_phys_test --uplus ${inproj}.meshb \
 	  ${inproj}-distance.solb 0.001 ${inproj}-uplus.solb 
 
     ${src}/ref_gather_test ${inproj}.meshb \
@@ -42,10 +40,6 @@ function adapt_cycle {
     cp ref_gather_movie.tec ${outproj}_movie.tec
     cp ref_gather_histo.tec ${outproj}_histo.tec
 
-    ${src}/ref_acceptance ${field} ${outproj}.meshb ${outproj}-uplus.solb
-
-    ${src}/ref_gather_test ${outproj}.meshb \
-	  ${outproj}-uplus.solb ${outproj}-uplus.tec
 }
 
 adapt_cycle cube-wire00 cube-wire01 2000
