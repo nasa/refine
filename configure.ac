@@ -505,7 +505,7 @@ then
   fi
   if test "$geode_lib_path" != 'no'
   then
-      meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath"
+      meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath -lstdc++"
   fi
   
   AC_SUBST([meshlink_include])
