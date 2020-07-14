@@ -21,7 +21,13 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 lib_LIBRARIES =
 
 lib_LIBRARIES += libref2.a
-libref2_a_SOURCES = \
+libref2_a_SOURCES =
+libref2_a_LIBADD = librefcore.a
+
+noinst_LIBRARIES =
+
+noinst_LIBRARIES += librefcore.a
+librefcore_a_SOURCES = \
 	ref_adapt.c \
 	ref_adj.c \
 	ref_agents.c \
@@ -71,9 +77,9 @@ libref2_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
+librefcore_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
 
-default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd = librefcore.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 
 bin_PROGRAMS =
@@ -84,7 +90,7 @@ ref_LDADD = $(default_ldadd)
 
 if BUILD_MPI
 bin_PROGRAMS += refmpi
-refmpi_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
+refmpi_SOURCES = ref_subcommand.c $(librefcore_a_SOURCES)
 refmpi_CFLAGS = \
 	-DHAVE_MPI -DHAVE_EGADS_LITE \
 	@zoltan_include@ @parmetis_include@ \
@@ -92,7 +98,7 @@ refmpi_CFLAGS = \
 refmpi_LDADD = @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += refmpifull
-refmpifull_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
+refmpifull_SOURCES = ref_subcommand.c $(librefcore_a_SOURCES)
 refmpifull_CFLAGS = \
 	-DHAVE_MPI \
 	@zoltan_include@ @parmetis_include@ \
