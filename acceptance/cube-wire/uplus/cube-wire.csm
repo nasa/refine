@@ -1,0 +1,5 @@
+box 0 0 0 1 1 1
+cylinder 1 0 0.5 1 1 0.5 0.01
+subtract
+dump cube-wire.ugrid
+dump cube-wire.egads
