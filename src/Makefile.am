@@ -64,8 +64,6 @@ librefcore_a_SOURCES = \
 	ref_matrix.c \
 	ref_meshlink.c \
 	ref_metric.c \
-	ref_migrate.c \
-	ref_mpi.c \
 	ref_node.c \
 	ref_part.c \
 	ref_phys.c \
@@ -78,9 +76,27 @@ librefcore_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-librefcore_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
+librefcore_a_CFLAGS = @egads_include@ @meshlink_include@
 
-default_ldadd = librefcore.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+if BUILD_MPI
+libref2_a_LIBADD += librefmpi.a
+noinst_LIBRARIES += librefmpi.a
+librefmpi_a_SOURCES = \
+	ref_migrate.c \
+	ref_mpi.c
+librefmpi_a_CFLAGS = -DHAVE_MPI @zoltan_include@ @parmetis_include@ @mpi_include@
+else
+libref2_a_LIBADD += librefseq.a
+endif
+
+noinst_LIBRARIES += librefseq.a
+librefseq_a_SOURCES = \
+	ref_migrate.c \
+	ref_mpi.c
+# partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
+librefseq_a_CFLAGS = @zoltan_include@ @parmetis_include@ @mpi_include@
+
+default_ldadd = librefcore.a librefseq.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 
 bin_PROGRAMS =
