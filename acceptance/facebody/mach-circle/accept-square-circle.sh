@@ -33,7 +33,7 @@ function adapt_cycle {
     ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}-u.tec
 }
 
-serveCSM square-circle.csm
+serveCSM -batch square-circle.csm
 ${src}/ref bootstrap square-circle.egads
 cp square-circle-vol.meshb cycle00.meshb
 
