@@ -105,6 +105,7 @@ function(create_program TARGET_NAME)
     if("${CMAKE_C_COMPILER_ID}" STREQUAL "GNU")
         target_compile_options(${TARGET_NAME} PRIVATE -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized)
     endif()
+    set_target_properties(${TARGET_NAME} PROPERTIES LINKER_LANGUAGE CXX)
     set_target_rpath(${TARGET_NAME})
     install(TARGETS ${TARGET_NAME} DESTINATION bin)
 endfunction()
@@ -172,6 +173,18 @@ create_library(refine_core STATIC ${REF_CORE_SRC} ${REF_TWO_HEADERS})
 target_link_libraries(refine_core PRIVATE ${THIRD_PARTY_LIBRARIES})
 target_include_directories(refine_core PRIVATE ${THIRD_PARTY_INCLUDES})
 target_compile_definitions(refine_core PRIVATE ${EXTRA_DEFINITIONS})
+
+if (meshlink_FOUND)
+    message(STATUS "meshlink Found")
+    target_link_libraries(refine_core PRIVATE
+            meshlink::meshlink
+            meshlink::mlparser_xerces
+            meshlink::mlkernel_geode
+            )
+    target_compile_definitions(refine_core PRIVATE HAVE_MESHLINK)
+else()
+    message(STATUS "meshlink NOT Found")
+endif ()
 
 create_program(ref ref_subcommand.c)
 target_link_libraries(ref PRIVATE refine_core refine_without_mpi refine_with_egads)
