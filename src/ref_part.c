@@ -1762,7 +1762,12 @@ static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
     if (ref_mpi_once(ref_mpi))
       printf("file %ld ref_node " REF_GLOB_FMT " %s\n", nnode,
              ref_node_n_global(ref_node), filename);
-    THROW("global count mismatch");
+    if( nnode > ref_node_n_global(ref_node)) {
+      if (ref_mpi_once(ref_mpi))
+	REF_WHERE("WARNING: global count mismatch, too many");
+    }else{
+      THROW("ERROR: global count mismatch, too few");
+    }
   }
 
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
