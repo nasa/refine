@@ -22,10 +22,11 @@ lib_LIBRARIES =
 
 lib_LIBRARIES += libref2.a
 libref2_a_SOURCES =
-libref2_a_LIBADD = librefcore.a
+libref2_a_LIBADD =
 
 noinst_LIBRARIES =
 
+libref2_a_LIBADD += librefcore.a
 noinst_LIBRARIES += librefcore.a
 librefcore_a_SOURCES = \
 	ref_adapt.c \
