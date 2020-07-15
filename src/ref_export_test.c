@@ -157,14 +157,17 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  if (REF_FALSE) /* removes gnuplot dependency from unit tests */
-  {              /* export .eps pri */
+  /* removes gnuplot dependency from unit tests */
+  /* export .eps pri */
+  /*
+  {
     REF_GRID ref_grid;
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up tet");
     RSS(ref_export_by_extension(ref_grid, "ref_export_test.eps"), "export");
     REIS(0, remove("ref_export_test.eps"), "test clean up");
     RSS(ref_grid_free(ref_grid), "free");
   }
+  */
 
   { /* export .html */
     REF_GRID ref_grid;

@@ -271,11 +271,13 @@ exisiting
     0---1---5
     */
     nodes[0] = 1;
-    nodes[1] = 4, nodes[2] = 2;
+    nodes[1] = 4;
+    nodes[2] = 2;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri1), "add tri");
     nodes[0] = 1;
-    nodes[1] = 5, nodes[2] = 4;
+    nodes[1] = 5;
+    nodes[2] = 4;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri2), "add tri");
 
@@ -346,11 +348,13 @@ exisiting
     0---1---5
     */
     nodes[0] = 1;
-    nodes[1] = 4, nodes[2] = 2;
+    nodes[1] = 4;
+    nodes[2] = 2;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri1), "add tri");
     nodes[0] = 1;
-    nodes[1] = 5, nodes[2] = 4;
+    nodes[1] = 5;
+    nodes[2] = 4;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri2), "add tri");
 
@@ -417,11 +421,13 @@ exisiting
     ref_node_xyz(ref_grid_node(ref_grid), 2, node) = 0.0;
 
     nodes[0] = 1;
-    nodes[1] = 4, nodes[2] = 2;
+    nodes[1] = 4;
+    nodes[2] = 2;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri1), "add tri");
     nodes[0] = 1;
-    nodes[1] = 5, nodes[2] = 4;
+    nodes[1] = 5;
+    nodes[2] = 4;
     nodes[3] = 10;
     RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &tri2), "add tri");
 

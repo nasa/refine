@@ -95,6 +95,7 @@ int main(int argc, char *argv[]) {
     }
 
     RSS(ref_elast_assemble(ref_elast), "elast");
+    l2norm = 1.0;
     for (sweep = 0; sweep < 2; sweep++) {
       RSS(ref_elast_relax(ref_elast, &l2norm), "elast");
     }
@@ -128,17 +129,18 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_elast_create(&ref_elast, ref_grid), "create");
 
-    each_ref_node_valid_node(
-        ref_grid_node(ref_grid),
-        node) if ((-0.01 < ref_node_xyz(ref_grid_node(ref_grid), 2, node) &&
-                   0.01 > ref_node_xyz(ref_grid_node(ref_grid), 2, node))) {
-      dxyz[0] = 0.0;
-      dxyz[1] = 0.0;
-      dxyz[2] = 1.0;
-      RSS(ref_elast_displace(ref_elast, node, dxyz), "create");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      if ((-0.01 < ref_node_xyz(ref_grid_node(ref_grid), 2, node) &&
+           0.01 > ref_node_xyz(ref_grid_node(ref_grid), 2, node))) {
+        dxyz[0] = 0.0;
+        dxyz[1] = 0.0;
+        dxyz[2] = 1.0;
+        RSS(ref_elast_displace(ref_elast, node, dxyz), "create");
+      }
     }
 
     RSS(ref_elast_assemble(ref_elast), "elast");
+    l2norm = 1.0;
     for (sweep = 0; sweep < 1000; sweep++) {
       RSS(ref_elast_relax(ref_elast, &l2norm), "elast");
     }
