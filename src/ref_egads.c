@@ -108,7 +108,7 @@ REF_STATUS ref_egads_load(REF_GEOM ref_geom, const char *filename) {
          "EG load");
   }
 #else
-  RNS(filename, "filename NULL for EGADS(full) load");
+  if (NULL == filename) THROW("filename NULL for EGADS(full) load");
   REIS(EGADS_SUCCESS, EG_loadModel(context, 0, filename, &model), "EG load");
 
   {
@@ -1992,7 +1992,6 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
              "EG topo node");
       }
       return REF_SUCCESS;
-      break;
     case (REF_GEOM_EDGE):
       RNS(ref_geom->edges, "edges not loaded");
       if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
@@ -2067,7 +2066,6 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
     case (REF_GEOM_NODE):
       printf("GEOM_NODE ref_geom_inverse_eval not defined\n");
       return REF_IMPLEMENT;
-      break;
     case (REF_GEOM_EDGE):
       RNS(ref_geom->edges, "edges not loaded");
       if (id < 1 || id > ref_geom->nedge) return REF_INVALID;
