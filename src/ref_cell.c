@@ -70,7 +70,6 @@ static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
       break;
     default:
       return REF_IMPLEMENT;
-      break;
   }
 
   ref_cell_size_per(ref_cell) = ref_cell_node_per(ref_cell) +
@@ -535,7 +534,6 @@ REF_STATUS ref_cell_meshb_keyword(REF_CELL ref_cell, REF_INT *keyword) {
       break;
     default:
       return REF_IMPLEMENT;
-      break;
   }
   return REF_SUCCESS;
 }
