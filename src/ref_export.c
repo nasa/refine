@@ -2016,6 +2016,7 @@ static REF_STATUS ref_export_plt_tet_zone(REF_GRID ref_grid, FILE *file) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file);
 REF_STATUS ref_export_plt_surf_zone(REF_GRID ref_grid, FILE *file) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
