@@ -61,7 +61,6 @@ librefcore_a_SOURCES = \
 	ref_list.c \
 	ref_math.c \
 	ref_matrix.c \
-	ref_meshlink.c \
 	ref_metric.c \
 	ref_node.c \
 	ref_part.c \
@@ -75,7 +74,6 @@ librefcore_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-librefcore_a_CFLAGS = @meshlink_include@
 
 default_ldadd = librefcore.a
 
@@ -126,9 +124,11 @@ libreflink_a_SOURCES = \
 	ref_meshlink.c
 libreflink_a_CFLAGS = -DHAVE_MESHLINK @meshlink_include@
 default_ldadd += libreflink.a
+meshlink_lib = libreflink.a
 else
 default_ldadd += librefnolink.a
 libref2_a_LIBADD += librefnolink.a
+meshlink_lib = librefnolink.a
 endif
 
 # ensure ref_meshlink compiles without flags
@@ -147,11 +147,11 @@ ref_LDADD = $(default_ldadd)
 if BUILD_MPI
 bin_PROGRAMS += refmpi
 refmpi_SOURCES = ref_subcommand.c
-refmpi_LDADD = librefcore.a librefmpi.a libreflite.a @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpi_LDADD = librefcore.a librefmpi.a libreflite.a $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += refmpifull
 refmpifull_SOURCES = ref_subcommand.c
-refmpifull_LDADD = librefcore.a librefmpi.a libreffull.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpifull_LDADD = librefcore.a librefmpi.a libreffull.a $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver

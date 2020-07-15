@@ -28,8 +28,6 @@ mkdir -p egads
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     --with-MeshLink=${meshlink_path} \
-    CFLAGS="${gccflags}" \
-    CC=gcc-9 \
     ) \
     || exit
 
