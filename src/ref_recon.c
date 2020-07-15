@@ -626,8 +626,8 @@ REF_STATUS ref_recon_mask_tri(REF_GRID ref_grid, REF_BOOL *replace,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
-                              REF_INT ldim) {
+static REF_STATUS ref_recon_mask_edg(REF_GRID ref_grid, REF_BOOL *replace,
+                                     REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_edg(ref_grid);
   REF_INT i, node;
@@ -656,6 +656,7 @@ REF_STATUS ref_recon_extrapolate_zeroth(REF_GRID ref_grid, REF_DBL *recon,
   RSS(ref_node_ghost_int(ref_node, replace, ldim), "update ghosts");
   RSS(ref_node_ghost_dbl(ref_node, recon, ldim), "update ghosts");
 
+  remain = 1;
   for (pass = 0; pass < 10; pass++) {
     each_ref_node_valid_node(ref_node, node) {
       if (ref_node_owned(ref_node, node)) {
@@ -815,6 +816,7 @@ REF_STATUS ref_recon_gradient(REF_GRID ref_grid, REF_DBL *scalar, REF_DBL *grad,
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, grad, NULL),
           "k-exact");
       break;
+    case REF_RECON_LAST:
     default:
       THROW("reconstruction not available");
   }
@@ -865,6 +867,7 @@ REF_STATUS ref_recon_signed_hessian(REF_GRID ref_grid, REF_DBL *scalar,
       RSS(ref_recon_kexact_gradient_hessian(ref_grid, scalar, NULL, hessian),
           "k-exact");
       break;
+    case REF_RECON_LAST:
     default:
       THROW("reconstruction not available");
   }
