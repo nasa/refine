@@ -148,8 +148,8 @@ REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
-                                         REF_DBL *min_uv_area) {
+static REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
+                                                REF_DBL *min_uv_area) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT id, item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
@@ -177,8 +177,8 @@ REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_valid_no_geom_tri(REF_GRID ref_grid, REF_INT node,
-                                        REF_BOOL *allowed) {
+static REF_STATUS ref_smooth_valid_no_geom_tri(REF_GRID ref_grid, REF_INT node,
+                                               REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -276,9 +276,10 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node, REF_INT id,
-                                  REF_INT *nodes, REF_DBL *uv, REF_DBL *dq_duv,
-                                  REF_DBL step, REF_DBL *qnew) {
+static REF_STATUS ref_smooth_tri_quality(REF_GRID ref_grid, REF_INT node,
+                                         REF_INT id, REF_INT *nodes,
+                                         REF_DBL *uv, REF_DBL *dq_duv,
+                                         REF_DBL step, REF_DBL *qnew) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_DBL uvnew[2];
@@ -639,7 +640,8 @@ static REF_STATUS ref_smooth_node_same_tangent(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
+static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
+                                                  REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
@@ -732,7 +734,8 @@ REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid, REF_INT node) {
+static REF_STATUS ref_smooth_meshlink_edge_improve(REF_GRID ref_grid,
+                                                   REF_INT node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT node0, node1;
   REF_INT tries;
@@ -1281,8 +1284,8 @@ REF_STATUS ref_smooth_tet_weighted_ideal(REF_GRID ref_grid, REF_INT node,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tet_pliant(REF_GRID ref_grid, REF_INT node,
-                                 REF_DBL *ideal_location) {
+static REF_STATUS ref_smooth_tet_pliant(REF_GRID ref_grid, REF_INT node,
+                                        REF_DBL *ideal_location) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT ixyz;
   REF_INT max_node = 100, nnode;
@@ -1560,7 +1563,7 @@ REF_STATUS ref_smooth_geom_face(REF_GRID ref_grid, REF_INT node) {
   REF_INT id;
   REF_DBL uv_orig[2], uv_ideal[2];
   REF_DBL qtet_orig, qtri_orig;
-  REF_DBL qtri, qtet, min_uv_area, min_ratio, max_ratio;
+  REF_DBL qtri = 0.0, qtet = 0.0, min_uv_area, min_ratio, max_ratio;
   REF_DBL normdev_orig, normdev;
   REF_DBL backoff, uv[2];
   REF_INT tries, iuv;
@@ -1850,34 +1853,14 @@ REF_STATUS ref_smooth_post_edge_split(REF_GRID ref_grid, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_smooth_tet_report_quality_around(REF_GRID ref_grid,
-                                                REF_INT node) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT item, cell, i;
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL quality;
-
-  i = 0;
-  each_ref_cell_having_node(ref_cell, node, item, cell) {
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
-    RSS(ref_node_tet_quality(ref_node, nodes, &quality), "qual");
-    printf(" %d:%5.3f", i, quality);
-    i++;
-  }
-  printf("\n");
-
-  return REF_SUCCESS;
-}
-
 /* does not have ratio limits */
-REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
-                                   REF_BOOL *complete) {
+static REF_STATUS ref_smooth_tet_nso_step(REF_GRID ref_grid, REF_INT node,
+                                          REF_BOOL *complete) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT item, cell;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL quality, d_quality[3];
+  REF_DBL quality = 0.0, d_quality[3];
   REF_INT *cells, *active;
   REF_DBL *quals, *grads;
   REF_INT worst, degree;
