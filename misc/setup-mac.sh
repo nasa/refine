@@ -6,7 +6,13 @@ set -x
 
 ./bootstrap
 
-gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wconversion'
+clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-macros -Wno-unreachable-code-return -Wno-padded -Wno-covered-switch-default -Wno-reserved-id-macro -Wno-documentation-unknown-command'
+# -Wno-padded ref_mpi struct
+# -Wno-covered-switch-default allow default on ENUM case
+# -Wno-reserved-id-macro egads.h uses reserved macro names
+# -Wdocumentation-unknown-command meshlink Types.h
+
+gcc9flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
 
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
@@ -28,6 +34,7 @@ mkdir -p egads
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     --with-MeshLink=${meshlink_path} \
+    CFLAGS="${clangflags}" \
     ) \
     || exit
 
