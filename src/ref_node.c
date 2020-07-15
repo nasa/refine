@@ -1599,8 +1599,8 @@ REF_STATUS ref_node_ratio_node0(REF_NODE ref_node, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
-                                     REF_DBL *quality) {
+static REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
+                                            REF_DBL *quality) {
   REF_DBL l0, l1, l2, l3, l4, l5;
 
   REF_DBL det, min_det, volume;
@@ -1655,9 +1655,10 @@ REF_STATUS ref_node_tet_epic_quality(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                             REF_DBL *quality,
-                                             REF_DBL *d_quality) {
+static REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node,
+                                                    REF_INT *nodes,
+                                                    REF_DBL *quality,
+                                                    REF_DBL *d_quality) {
   REF_DBL l0, l1, l2, l3, l4, l5;
   REF_DBL d_l0[3], d_l1[3], d_l2[3];
 
@@ -1726,9 +1727,10 @@ REF_STATUS ref_node_tet_epic_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tet_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                            REF_DBL *quality,
-                                            REF_DBL *d_quality) {
+static REF_STATUS ref_node_tet_jac_dquality_dnode0(REF_NODE ref_node,
+                                                   REF_INT *nodes,
+                                                   REF_DBL *quality,
+                                                   REF_DBL *d_quality) {
   REF_DBL mlog0[6], mlog1[6], mlog2[6], mlog3[6];
   REF_DBL mlog[6], m[6], jac[9];
   REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
@@ -1831,13 +1833,12 @@ REF_STATUS ref_node_tet_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
       break;
     default:
       THROW("case not recognized");
-      break;
   }
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_tet_jac_quality(REF_NODE ref_node, REF_INT *nodes,
-                                    REF_DBL *quality) {
+static REF_STATUS ref_node_tet_jac_quality(REF_NODE ref_node, REF_INT *nodes,
+                                           REF_DBL *quality) {
   REF_DBL mlog0[6], mlog1[6], mlog2[6], mlog3[6];
   REF_DBL mlog[6], m[6], jac[9];
   REF_DBL e0[3], e1[3], e2[3], e3[3], e4[3], e5[3];
@@ -1901,13 +1902,6 @@ REF_STATUS ref_node_tet_jac_quality(REF_NODE ref_node, REF_INT *nodes,
 }
 REF_STATUS ref_node_tet_quality(REF_NODE ref_node, REF_INT *nodes,
                                 REF_DBL *quality) {
-  if (REF_FALSE) {
-    REF_DBL epic, jac;
-    RSS(ref_node_tet_epic_quality(ref_node, nodes, &epic), "epic");
-    RSS(ref_node_tet_jac_quality(ref_node, nodes, &jac), "epic");
-    printf("tet epic %11.8f jac %11.8f\n", epic, jac);
-  }
-
   switch (ref_node->tet_quality) {
     case REF_NODE_EPIC_QUALITY:
       RSS(ref_node_tet_epic_quality(ref_node, nodes, quality), "epic");
@@ -1917,7 +1911,6 @@ REF_STATUS ref_node_tet_quality(REF_NODE ref_node, REF_INT *nodes,
       break;
     default:
       THROW("case not recognized");
-      break;
   }
   return REF_SUCCESS;
 }
@@ -2008,13 +2001,6 @@ static REF_STATUS ref_node_tri_jac_quality(REF_NODE ref_node, REF_INT *nodes,
 }
 REF_STATUS ref_node_tri_quality(REF_NODE ref_node, REF_INT *nodes,
                                 REF_DBL *quality) {
-  if (REF_FALSE) {
-    REF_DBL epic, jac;
-    RSS(ref_node_tri_epic_quality(ref_node, nodes, &epic), "epic");
-    RSS(ref_node_tri_jac_quality(ref_node, nodes, &jac), "epic");
-    printf("tri epic %11.8f jac %11.8f\n", epic, jac);
-  }
-
   switch (ref_node->tri_quality) {
     case REF_NODE_EPIC_QUALITY:
       RSS(ref_node_tri_epic_quality(ref_node, nodes, quality), "epic");
@@ -2024,7 +2010,6 @@ REF_STATUS ref_node_tri_quality(REF_NODE ref_node, REF_INT *nodes,
       break;
     default:
       THROW("case not recognized");
-      break;
   }
   return REF_SUCCESS;
 }
@@ -2083,9 +2068,11 @@ static REF_STATUS ref_node_tri_epic_dquality_dnode0(REF_NODE ref_node,
 
   return REF_SUCCESS;
 }
-REF_STATUS ref_node_tri_jac_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
-                                            REF_DBL *quality,
-                                            REF_DBL *d_quality) {
+
+static REF_STATUS ref_node_tri_jac_dquality_dnode0(REF_NODE ref_node,
+                                                   REF_INT *nodes,
+                                                   REF_DBL *quality,
+                                                   REF_DBL *d_quality) {
   REF_DBL mlog0[6], mlog1[6], mlog2[6];
   REF_DBL mlog[6], m[6], jac[9];
   REF_DBL xyz0[3], xyz1[3], xyz2[3];
@@ -2177,13 +2164,12 @@ REF_STATUS ref_node_tri_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
       break;
     default:
       THROW("case not recognized");
-      break;
   }
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_node_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
-                               REF_DBL *normal) {
+static REF_STATUS ref_node_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
+                                      REF_DBL *xyz2, REF_DBL *normal) {
   REF_DBL edge10[3], edge20[3];
 
   edge10[0] = xyz1[0] - xyz0[0];

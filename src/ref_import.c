@@ -1015,10 +1015,10 @@ static REF_STATUS meshb_real(FILE *file, REF_INT version, REF_DBL *real) {
 
   if (1 == version) {
     REIS(1, fread(&temp_float, sizeof(temp_float), 1, file), "read float");
-    *real = temp_float;
+    *real = (REF_DBL)temp_float;
   } else {
     REIS(1, fread(&temp_double, sizeof(temp_double), 1, file), "read double");
-    *real = temp_double;
+    *real = (REF_DBL)temp_double;
   }
 
   return REF_SUCCESS;

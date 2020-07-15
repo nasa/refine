@@ -21,7 +21,14 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 lib_LIBRARIES =
 
 lib_LIBRARIES += libref2.a
-libref2_a_SOURCES = \
+libref2_a_SOURCES =
+libref2_a_LIBADD =
+
+noinst_LIBRARIES =
+
+libref2_a_LIBADD += librefcore.a
+noinst_LIBRARIES += librefcore.a
+librefcore_a_SOURCES = \
 	ref_adapt.c \
 	ref_adj.c \
 	ref_agents.c \
@@ -36,7 +43,6 @@ libref2_a_SOURCES = \
 	ref_dict.c \
 	ref_dist.c \
 	ref_edge.c \
-	ref_egads.c \
 	ref_elast.c \
 	ref_endian.h \
 	ref_export.c \
@@ -55,10 +61,7 @@ libref2_a_SOURCES = \
 	ref_list.c \
 	ref_math.c \
 	ref_matrix.c \
-	ref_meshlink.c \
 	ref_metric.c \
-	ref_migrate.c \
-	ref_mpi.c \
 	ref_node.c \
 	ref_part.c \
 	ref_phys.c \
@@ -71,10 +74,74 @@ libref2_a_SOURCES = \
 	ref_subdiv.c \
 	ref_swap.c \
 	ref_validation.c
-libref2_a_CFLAGS = @zoltan_include@ @parmetis_include@ @egads_include@ @meshlink_include@
 
-default_ldadd = libref2.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd = librefcore.a
 
+if BUILD_MPI
+libref2_a_LIBADD += librefmpi.a
+noinst_LIBRARIES += librefmpi.a
+librefmpi_a_SOURCES = \
+	ref_migrate.c \
+	ref_mpi.c
+librefmpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
+else
+libref2_a_LIBADD += librefseq.a
+endif
+default_ldadd += librefseq.a
+
+noinst_LIBRARIES += librefseq.a
+librefseq_a_SOURCES = \
+	ref_migrate.c \
+	ref_mpi.c
+# partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
+librefseq_a_CFLAGS = @zoltan_include@ @parmetis_include@
+
+if BUILD_EGADS
+noinst_LIBRARIES += libreffull.a
+libreffull_a_SOURCES = \
+	ref_egads.c
+libreffull_a_CFLAGS = -DHAVE_EGADS @egads_include@
+
+noinst_LIBRARIES += libreflite.a
+libreflite_a_SOURCES = \
+	ref_egads.c
+libreflite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
+
+if BUILD_EGADS_LITE
+default_ldadd += libreflite.a
+else
+default_ldadd += libreffull.a
+endif
+
+else
+default_ldadd += librefnogads.a
+libref2_a_LIBADD += librefnogads.a
+endif
+
+# ensure ref_egads compiles without flags
+noinst_LIBRARIES += librefnogads.a
+librefnogads_a_SOURCES = \
+	ref_egads.c
+
+if BUILD_MESHLINK
+noinst_LIBRARIES += libreflink.a
+libreflink_a_SOURCES = \
+	ref_meshlink.c
+libreflink_a_CFLAGS = -DHAVE_MESHLINK @meshlink_include@
+default_ldadd += libreflink.a
+meshlink_lib = libreflink.a
+else
+default_ldadd += librefnolink.a
+libref2_a_LIBADD += librefnolink.a
+meshlink_lib = librefnolink.a
+endif
+
+# ensure ref_meshlink compiles without flags
+noinst_LIBRARIES += librefnolink.a
+librefnolink_a_SOURCES = \
+	ref_meshlink.c
+
+default_ldadd += @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 bin_PROGRAMS =
 
@@ -84,20 +151,12 @@ ref_LDADD = $(default_ldadd)
 
 if BUILD_MPI
 bin_PROGRAMS += refmpi
-refmpi_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
-refmpi_CFLAGS = \
-	-DHAVE_MPI -DHAVE_EGADS_LITE \
-	@zoltan_include@ @parmetis_include@ \
-	@egads_include@ @meshlink_include@ @mpi_include@
-refmpi_LDADD = @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpi_SOURCES = ref_subcommand.c
+refmpi_LDADD = librefcore.a librefmpi.a libreflite.a $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += refmpifull
-refmpifull_SOURCES = ref_subcommand.c $(libref2_a_SOURCES)
-refmpifull_CFLAGS = \
-	-DHAVE_MPI \
-	@zoltan_include@ @parmetis_include@ \
-	@egads_include@ @meshlink_include@ @mpi_include@
-refmpifull_LDADD = @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpifull_SOURCES = ref_subcommand.c
+refmpifull_LDADD = librefcore.a librefmpi.a libreffull.a $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver

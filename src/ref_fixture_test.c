@@ -81,18 +81,6 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  if (REF_FALSE) { /* export for viz */
-    REF_GRID ref_grid;
-
-    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "fix");
-
-    RSS(ref_validation_cell_node(ref_grid), "invalid pri");
-
-    RSS(ref_export_by_extension(ref_grid, "twod.tec"), "tec");
-
-    RSS(ref_grid_free(ref_grid), "free");
-  }
-
   {
     REF_GRID ref_grid;
 

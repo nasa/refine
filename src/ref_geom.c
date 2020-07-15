@@ -1200,6 +1200,7 @@ REF_STATUS ref_geom_constrain(REF_GRID ref_grid, REF_INT node) {
   }
 
   have_geom_node = REF_FALSE;
+  node_geom = REF_EMPTY;
   each_ref_adj_node_item_with_ref(ref_adj, node, item, geom) {
     if (REF_GEOM_NODE == ref_geom_type(ref_geom, geom)) {
       have_geom_node = REF_TRUE;

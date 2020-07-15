@@ -6,7 +6,13 @@ set -x
 
 ./bootstrap
 
-gccflags='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized -Wconversion'
+clangflags='-g -O2  -Werror -Wall -Wextra -Wpedantic -Weverything -Wno-unused-macros -Wno-unreachable-code-return -Wno-padded -Wno-covered-switch-default -Wno-reserved-id-macro -Wno-documentation-unknown-command'
+# -Wno-padded ref_mpi struct
+# -Wno-covered-switch-default allow default on ENUM case
+# -Wno-reserved-id-macro egads.h uses reserved macro names
+# -Wdocumentation-unknown-command meshlink Types.h
+
+gcc9flags='-g -O2 -Werror -pedantic-errors -Wall -Wextra -Wunused -Wuninitialized -Wconversion'
 
 zoltan_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/zoltan-3.83-5uh3ojfi7bp5ge7aavovf6lldduugwep"
 egads_path="/Users/mpark/local/pkgs/EngSketchPad"
@@ -27,58 +33,8 @@ mkdir -p egads
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS="${gccflags}" \
-    CC=gcc-9 \
-    ) \
-    || exit
-
-mkdir -p parmetis
-( cd parmetis && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    FC=mpif90 \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-mkdir -p 64bit
-( cd 64bit && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
-    --with-parmetis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    FC=mpif90 \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-mkdir -p strict
-( cd strict && \
-    ../configure \
-    --prefix=`pwd` \
-    CFLAGS="${gccflags}" \
-    CC=gcc-9 \
-    ) \
-    || exit
-
-mkdir -p meshlink
-( cd meshlink && \
-      ../configure \
-	  --prefix=`pwd` \
-	  --with-mpi=${mpi_path} \
-	  --with-metis=${metis_path} \
-	  --with-parmetis=${parmetis_path} \
-	  --with-MeshLink=${meshlink_path} \
-	  CFLAGS="-g -O2 -Wall -Wextra -Wno-deprecated -Wno-old-style-cast -Wno-padded -Werror" \
-	  CC=clang++ \
+    --with-MeshLink=${meshlink_path} \
+    CFLAGS="${clangflags}" \
     ) \
     || exit
 
@@ -89,32 +45,3 @@ mkdir -p all
 	    -DCMAKE_PREFIX_PATH="${mpi_path};${metis_path};${parmetis_path};${egads_path};${opencascade_path}/lib/cmake/opencascade"
 ) \
     || exit
-
-
-exit
-
-mkdir -p para
-( cd para && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-
-mkdir -p zoltan
-( cd zoltan && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-zoltan=${zoltan_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-

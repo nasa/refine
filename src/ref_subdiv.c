@@ -421,8 +421,8 @@ REF_STATUS ref_subdiv_mark_relax(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
-                                        REF_INT e1) {
+static REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv,
+                                               REF_INT e0, REF_INT e1) {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_GLOB e0min, e0max;
@@ -458,9 +458,10 @@ REF_STATUS ref_subdiv_unmark_one_of_two(REF_SUBDIV ref_subdiv, REF_INT e0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
-                                      REF_INT cell, REF_BOOL *again, REF_INT s0,
-                                      REF_INT s1, REF_INT s2) {
+static REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv,
+                                             REF_CELL ref_cell, REF_INT cell,
+                                             REF_BOOL *again, REF_INT s0,
+                                             REF_INT s1, REF_INT s2) {
   REF_INT e0, e1, e2;
   e0 = ref_subdiv_c2e(ref_subdiv, ref_cell, s0, cell);
   e1 = ref_subdiv_c2e(ref_subdiv, ref_cell, s1, cell);
@@ -484,10 +485,10 @@ REF_STATUS ref_subdiv_unmark_tet_face(REF_SUBDIV ref_subdiv, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
-                                          REF_CELL ref_cell, REF_INT cell,
-                                          REF_BOOL *again, REF_INT s0,
-                                          REF_INT s1) {
+static REF_STATUS ref_subdiv_unmark_tet_opp_edge(REF_SUBDIV ref_subdiv,
+                                                 REF_CELL ref_cell,
+                                                 REF_INT cell, REF_BOOL *again,
+                                                 REF_INT s0, REF_INT s1) {
   REF_INT e0, e1;
   e0 = ref_subdiv_c2e(ref_subdiv, ref_cell, s0, cell);
   e1 = ref_subdiv_c2e(ref_subdiv, ref_cell, s1, cell);
@@ -606,8 +607,8 @@ REF_STATUS ref_subdiv_unmark_relax(REF_SUBDIV ref_subdiv) {
     (nodes)[(b)] = nst;          \
   }
 
-REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
-                                                  REF_BOOL *again) {
+static REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
+                                                         REF_BOOL *again) {
   REF_NODE ref_node = ref_grid_node(ref_subdiv_grid(ref_subdiv));
   REF_CELL ref_cell = ref_grid_tet(ref_subdiv_grid(ref_subdiv));
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], new_nodes[REF_CELL_MAX_SIZE_PER];
@@ -799,7 +800,7 @@ REF_STATUS ref_subdiv_unmark_neg_tet_geom_support(REF_SUBDIV ref_subdiv,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
+static REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
   REF_INT nsweeps, nmark;
   REF_BOOL again;
 
@@ -847,7 +848,7 @@ REF_STATUS ref_subdiv_unmark_neg_tet_relax(REF_SUBDIV ref_subdiv) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
+static REF_STATUS ref_subdiv_unmark_geom_support(REF_SUBDIV ref_subdiv) {
   REF_EDGE ref_edge = ref_subdiv_edge(ref_subdiv);
   REF_INT edge;
   REF_BOOL needs_support;

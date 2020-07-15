@@ -68,7 +68,7 @@ REF_STATUS ref_mpi_free(REF_MPI ref_mpi);
 REF_STATUS ref_mpi_deep_copy(REF_MPI *ref_mpi, REF_MPI original);
 
 REF_STATUS ref_mpi_start(int argc, char *argv[]);
-REF_STATUS ref_mpi_stop();
+REF_STATUS ref_mpi_stop(void);
 
 REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
 

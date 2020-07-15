@@ -262,19 +262,16 @@ then
   if test "$egadslite" != 'no'
   then
     egads_lib_root="egadslite"
+    AM_CONDITIONAL(BUILD_EGADS_LITE,true)
   else
     egads_lib_root="egads"
+    AM_CONDITIONAL(BUILD_EGADS_LITE,false)
   fi
 
   AC_CHECK_FILE([$with_egads/include/egads.h],
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
   if test "$egads_h_path" != 'no'
   then
-    AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
-    if test "$egadslite" != 'no'
-    then
-      AC_DEFINE([HAVE_EGADS_LITE],[1],[EGADS is available in lite form])
-    fi
     egads_include="-I${egads_h_path}"
   else
     AC_MSG_ERROR([egads.h not found in ${with_egads}/include])
@@ -359,7 +356,10 @@ then
 
   AC_SUBST([egadslite_include])
   AC_SUBST([egadslite_ldadd])
-
+  AM_CONDITIONAL(BUILD_EGADS,true)
+else
+  AM_CONDITIONAL(BUILD_EGADS,false)
+  AM_CONDITIONAL(BUILD_EGADS_LITE,false)
 fi
 
 AC_ARG_WITH(OpenCASCADE,
@@ -505,12 +505,14 @@ then
   fi
   if test "$geode_lib_path" != 'no'
   then
-      meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath"
+      meshlink_ldadd="${meshlink_ldadd} -L${geode_lib_path} -lnmb -lgeom -lvmath -lstdc++"
   fi
   
   AC_SUBST([meshlink_include])
   AC_SUBST([meshlink_ldadd])
-  AC_DEFINE([HAVE_MESHLINK],[1],[MeshLink is available])
+  AM_CONDITIONAL(BUILD_MESHLINK,true)
+else
+  AM_CONDITIONAL(BUILD_MESHLINK,false)
 fi
   
 AC_CONFIG_FILES( \

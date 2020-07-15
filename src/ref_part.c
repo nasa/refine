@@ -142,6 +142,10 @@ static REF_STATUS ref_part_node(FILE *file, REF_BOOL swap_endian,
   return REF_SUCCESS;
 }
 
+/* used by SANS? */
+REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
+                                         REF_INT type, REF_NODE ref_node,
+                                         REF_INT nnode, FILE *file);
 REF_STATUS ref_part_meshb_geom_delete_me(REF_GEOM ref_geom, REF_INT ngeom,
                                          REF_INT type, REF_NODE ref_node,
                                          REF_INT nnode, FILE *file) {
@@ -628,7 +632,7 @@ static REF_STATUS ref_part_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   REF_BOOL verbose = REF_FALSE;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_FILEPOS next_position;
+  REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_GRID ref_grid;
   REF_NODE ref_node;
@@ -779,7 +783,7 @@ REF_STATUS ref_part_cad_data(REF_GRID ref_grid, const char *filename) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   FILE *file;
-  REF_INT version, dim;
+  REF_INT version = REF_EMPTY, dim = REF_EMPTY;
   REF_BOOL available;
   REF_FILEPOS next_position;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
@@ -863,7 +867,7 @@ REF_STATUS ref_part_cad_association(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_FILEPOS next_position;
+  REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_INT type, geom_keyword;
   REF_LONG ngeom;
@@ -929,7 +933,7 @@ REF_STATUS ref_part_cad_discrete_edge(REF_GRID ref_grid, const char *filename) {
   FILE *file;
   REF_INT version, dim;
   REF_BOOL available;
-  REF_FILEPOS next_position;
+  REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   REF_LONG ncell;
   REF_BOOL verbose = REF_FALSE;
@@ -1384,9 +1388,10 @@ static REF_STATUS ref_part_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_part_metric_solb(REF_NODE ref_node, const char *filename) {
+static REF_STATUS ref_part_metric_solb(REF_NODE ref_node,
+                                       const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_FILEPOS next_position;
+  REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
   REF_INT chunk;
@@ -1706,7 +1711,7 @@ REF_STATUS ref_part_bamg_metric(REF_GRID ref_grid, const char *filename) {
 static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
                                        REF_DBL **scalar, const char *filename) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_FILEPOS next_position;
+  REF_FILEPOS next_position = REF_EMPTY;
   REF_FILEPOS key_pos[REF_IMPORT_MESHB_LAST_KEYWORD];
   FILE *file;
   REF_INT chunk;
@@ -1762,10 +1767,10 @@ static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
     if (ref_mpi_once(ref_mpi))
       printf("file %ld ref_node " REF_GLOB_FMT " %s\n", nnode,
              ref_node_n_global(ref_node), filename);
-    if( nnode > ref_node_n_global(ref_node)) {
+    if (nnode > ref_node_n_global(ref_node)) {
       if (ref_mpi_once(ref_mpi))
-	REF_WHERE("WARNING: global count mismatch, too many");
-    }else{
+        REF_WHERE("WARNING: global count mismatch, too many");
+    } else {
       THROW("ERROR: global count mismatch, too few");
     }
   }

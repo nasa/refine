@@ -66,8 +66,8 @@ REF_STATUS ref_layer_attach(REF_LAYER ref_layer, REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_layer_normal(REF_LAYER ref_layer, REF_GRID ref_grid,
-                            REF_INT node, REF_DBL *norm) {
+static REF_STATUS ref_layer_normal(REF_LAYER ref_layer, REF_GRID ref_grid,
+                                   REF_INT node, REF_DBL *norm) {
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT i, item, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_BOOL contains;
@@ -97,7 +97,7 @@ REF_STATUS ref_layer_normal(REF_LAYER ref_layer, REF_GRID ref_grid,
       !ref_math_divisible(norm[2], total))
     return REF_DIV_ZERO;
 
-  for (i = 0; i < 3; i++) norm[i] /= angle;
+  for (i = 0; i < 3; i++) norm[i] /= total;
 
   RSS(ref_math_normalize(norm), "normalize average norm");
 

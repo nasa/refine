@@ -451,7 +451,6 @@ int main(int argc, char *argv[]) {
         break;
       default:
         THROW("case not recognized");
-        break;
     }
     RSS(ref_export_by_extension(ref_grid, argv[2]), "out");
 

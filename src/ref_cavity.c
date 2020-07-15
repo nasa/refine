@@ -128,8 +128,8 @@ REF_STATUS ref_cavity_inspect(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
-                                      REF_INT *seg_nodes) {
+static REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
+                                             REF_INT *seg_nodes) {
   REF_INT face, face_nodes[3];
   REF_BOOL reversed;
 
@@ -153,7 +153,8 @@ REF_STATUS ref_cavity_remove_seg_face(REF_CAVITY ref_cavity,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity, REF_INT *seg_nodes) {
+static REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity,
+                                          REF_INT *seg_nodes) {
   REF_INT face_nodes[3];
 
   if (ref_list_n(ref_cavity_tet_list(ref_cavity)) == 0) return REF_SUCCESS;
@@ -171,8 +172,8 @@ REF_STATUS ref_cavity_add_seg_face(REF_CAVITY ref_cavity, REF_INT *seg_nodes) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
-                                          REF_INT *seg_nodes) {
+static REF_STATUS ref_cavity_remove_seg_add_tets(REF_CAVITY ref_cavity,
+                                                 REF_INT *seg_nodes) {
   REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
@@ -383,8 +384,9 @@ REF_STATUS ref_cavity_find_face(REF_CAVITY ref_cavity, REF_INT *nodes,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity, REF_INT node0,
-                                          REF_INT node1, REF_INT *found_face) {
+static REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity,
+                                                 REF_INT node0, REF_INT node1,
+                                                 REF_INT *found_face) {
   REF_INT face;
 
   *found_face = REF_EMPTY;
@@ -408,7 +410,7 @@ REF_STATUS ref_cavity_find_face_with_side(REF_CAVITY ref_cavity, REF_INT node0,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
+static REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
   REF_INT face, found_face;
 
   if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
@@ -441,7 +443,7 @@ REF_STATUS ref_cavity_verify_face_manifold(REF_CAVITY ref_cavity) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
+static REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
   REF_INT seg0, seg1, found_seg;
 
   if (REF_CAVITY_INCONSISTENT == ref_cavity_state(ref_cavity))
@@ -462,60 +464,6 @@ REF_STATUS ref_cavity_verify_seg_manifold(REF_CAVITY ref_cavity) {
     RUS(REF_EMPTY, found_seg, "seg missing");
   }
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_cavity_add_tri_tet(REF_CAVITY ref_cavity, REF_INT tri) {
-  REF_NODE ref_node = ref_grid_node(ref_cavity_grid(ref_cavity));
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT tet0, tet1;
-  REF_INT face_nodes[3], cell_face, face_node;
-  REF_BOOL all_local, is_tri, already_have_it;
-
-  RSS(ref_cell_nodes(ref_grid_tri(ref_cavity_grid(ref_cavity)), tri, nodes),
-      "rm");
-  nodes[3] = nodes[0];
-  RSS(ref_cell_with_face(ref_grid_tet(ref_cavity_grid(ref_cavity)), nodes,
-                         &tet0, &tet1),
-      "tet with tri");
-  RUS(REF_EMPTY, tet0, "tet0 missing");
-  RES(REF_EMPTY, tet1, "tet1 should not be found on boundary");
-  RSS(ref_cell_all_local(ref_grid_tet(ref_cavity_grid(ref_cavity)), ref_node,
-                         tet0, &all_local),
-      "local cell");
-  if (!all_local) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_PARTITION_CONSTRAINED;
-    return REF_SUCCESS;
-  }
-
-  RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), tet0,
-                        &already_have_it),
-      "have tet0?");
-  if (already_have_it) {
-    ref_cavity_state(ref_cavity) = REF_CAVITY_BOUNDARY_CONSTRAINED;
-    return REF_SUCCESS;
-  }
-
-  RSS(ref_list_push(ref_cavity_tet_list(ref_cavity), tet0), "save tet");
-  each_ref_cell_cell_face(ref_grid_tet(ref_cavity_grid(ref_cavity)),
-                          cell_face) {
-    each_ref_cavity_face_node(ref_cavity, face_node) {
-      face_nodes[face_node] =
-          ref_cell_f2n(ref_grid_tet(ref_cavity_grid(ref_cavity)), face_node,
-                       cell_face, tet0);
-    }
-    is_tri = REF_TRUE;
-    is_tri = is_tri && (nodes[0] == face_nodes[0] ||
-                        nodes[0] == face_nodes[1] || nodes[0] == face_nodes[2]);
-    is_tri = is_tri && (nodes[1] == face_nodes[0] ||
-                        nodes[1] == face_nodes[1] || nodes[1] == face_nodes[2]);
-    is_tri = is_tri && (nodes[2] == face_nodes[0] ||
-                        nodes[2] == face_nodes[1] || nodes[2] == face_nodes[2]);
-
-    if (!is_tri) {
-      RSS(ref_cavity_insert_face(ref_cavity, face_nodes), "tet side");
-    }
-  }
   return REF_SUCCESS;
 }
 
@@ -579,43 +527,6 @@ REF_STATUS ref_cavity_add_tet(REF_CAVITY ref_cavity, REF_INT tet) {
     if (REF_CAVITY_UNKNOWN != ref_cavity_state(ref_cavity)) return REF_SUCCESS;
   }
 
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_cavity_check_faces(REF_CAVITY ref_cavity) {
-  REF_GRID ref_grid = ref_cavity_grid(ref_cavity);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
-  REF_INT face_node, face, node, tet0, tet1, tri_cell;
-  REF_INT face_nodes[4];
-  REF_INT cell_face;
-
-  node = ref_cavity_node(ref_cavity);
-  each_ref_cavity_valid_face(ref_cavity, face) {
-    nodes[0] = ref_cavity_f2n(ref_cavity, 0, face);
-    nodes[1] = ref_cavity_f2n(ref_cavity, 1, face);
-    nodes[2] = ref_cavity_f2n(ref_cavity, 2, face);
-    nodes[3] = node;
-    if (node == nodes[0] || node == nodes[1] || node == nodes[2])
-      continue; /* attached face */
-    each_ref_cell_cell_face(ref_cell, cell_face) {
-      for (face_node = 0; face_node < 4; face_node++) {
-        face_nodes[face_node] =
-            nodes[ref_cell_f2n_gen(ref_cell, face_node, cell_face)];
-      }
-      RSS(ref_cell_with_face(ref_grid_tet(ref_grid), face_nodes, &tet0, &tet1),
-          "found too many tets with face_nodes");
-      RAS(REF_EMPTY != tet0, "no tet for cavity face");
-      if (REF_EMPTY == tet1) {
-        RSB(ref_cell_with(ref_grid_tri(ref_grid), face_nodes, &tri_cell),
-            "no tri for missing tet1", {
-              printf("%d face %d cell face %d %d %d nodes\n", face, cell_face,
-                     face_nodes[0], face_nodes[1], face_nodes[2]);
-              ref_cavity_inspect(ref_cavity);
-            });
-      }
-    }
-  }
   return REF_SUCCESS;
 }
 

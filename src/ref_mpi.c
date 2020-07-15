@@ -65,6 +65,7 @@
 
 REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
   REF_MPI ref_mpi;
+  clock_t ticks;
 
   ref_malloc(*ref_mpi_ptr, 1, REF_MPI_STRUCT);
   ref_mpi = (*ref_mpi_ptr);
@@ -74,7 +75,8 @@ REF_STATUS ref_mpi_create_from_comm(REF_MPI *ref_mpi_ptr, void *comm_ptr) {
 
   ref_mpi->comm = NULL;
 
-  ref_mpi->first_time = (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC);
+  ticks = clock();
+  ref_mpi->first_time = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
   ref_mpi->start_time = ref_mpi->first_time;
 
   ref_mpi->debug = REF_FALSE;
@@ -193,7 +195,7 @@ REF_STATUS ref_mpi_start(int argc, char *argv[]) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_mpi_stop() {
+REF_STATUS ref_mpi_stop(void) {
 #ifdef HAVE_MPI
   MPI_Finalize();
 #endif
@@ -224,7 +226,9 @@ REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
   if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));
   ref_mpi->start_time = (REF_DBL)MPI_Wtime();
 #else
-  ref_mpi->start_time = (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC);
+  clock_t ticks;
+  ticks = clock();
+  ref_mpi->start_time = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
 #endif
 
   return REF_SUCCESS;
@@ -248,10 +252,12 @@ REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message) {
   }
   RSS(ref_mpi_stopwatch_start(ref_mpi), "restart");
 #else
+  clock_t ticks;
+  ticks = clock();
   printf("%9.4f: %10.6f (%10.6f) %6.2f%% %s\n",
-         (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->first_time,
-         (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
-         (REF_DBL)clock() / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
+         ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->first_time,
+         ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
+         ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time,
          110.0, message);
   fflush(stdout);
   RSS(ref_mpi_stopwatch_start(ref_mpi), "restart");

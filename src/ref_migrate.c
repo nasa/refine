@@ -811,7 +811,8 @@ static REF_STATUS ref_migrate_metis_wrapper(PARM_INT n, PARM_INT *xadj,
   vsize = NULL;
 
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
-  ref_malloc_init(tpwgts, ncon * nparts, PARM_REAL, 1.0 / (PARM_REAL)nparts);
+  ref_malloc_init(tpwgts, ncon * nparts, PARM_REAL,
+                  (PARM_REAL)1.0 / (PARM_REAL)nparts);
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.001);
 
   METIS_SetDefaultOptions(options);
@@ -924,7 +925,7 @@ static REF_STATUS ref_migrate_parmetis_wrapper(
   ncon = 1;
   ref_malloc_init(vwgt, ncon * n, PARM_INT, 1);
   ref_malloc_init(tpwgts, ncon * ref_mpi_n(ref_mpi), PARM_REAL,
-                  1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
+                  (PARM_REAL)1.0 / (PARM_REAL)ref_mpi_n(ref_mpi));
   ref_malloc_init(ubvec, ncon, PARM_REAL, 1.01);
 
   REIS(METIS_OK,
@@ -1060,7 +1061,9 @@ static REF_STATUS ref_migrate_parmetis_subset(
   ref_free(vtx);
   return REF_SUCCESS;
 }
-REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid, REF_INT *node_part) {
+
+static REF_STATUS ref_migrate_parmetis_part(REF_GRID ref_grid,
+                                            REF_INT *node_part) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_MIGRATE ref_migrate;
@@ -1206,6 +1209,7 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
       break;
 #endif
+    case REF_MIGRATE_LAST:
     default:
       if (ref_grid_once(ref_grid))
         printf(

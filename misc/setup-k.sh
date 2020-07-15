@@ -17,62 +17,17 @@ mpi_path="/opt/hpe/hpc/mpt/mpt-2.19"
 gcc_flags="-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized"
 icc_flags="-g -O2 -traceback -Wall -w3 -wd1418,2259,2547,981,11074,11076,1572,49,1419 -ftrapuv"
 
-mkdir -p strict
-( cd strict && \
-    ../configure \
-    --prefix=`pwd` \
-    CFLAGS="${gcc_flags}" \
-    ) \
-    || exit
-
 mkdir -p egads
 ( cd egads && \
     ../configure \
     --prefix=`pwd` \
+    --with-MeshLink=${meshlink_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${occ_path} \
     --with-mpi=${mpi_path} \
     --with-parmetis=${parmetis_path} \
+    --with-zoltan=${zoltan_path} \
     CC=icc \
     CFLAGS="${icc_flags}" \
     ) \
     || exit
-
-mkdir -p zoltan
-( cd zoltan && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-zoltan=${zoltan_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=icc \
-    CFLAGS="-DHAVE_MPI ${icc_flags}" \
-    LIBS=-lmpi \
-    ) \
-    || exit
-
-mkdir -p parmetis
-( cd parmetis && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=icc \
-    CFLAGS="-DHAVE_MPI ${icc_flags}" \
-    LIBS=-lmpi \
-    ) \
-    || exit
-
-mkdir -p meshlink
-( cd meshlink && \
-      ../configure \
-	  --prefix=`pwd` \
-	  --with-MeshLink=${meshlink_path} \
-          --with-mpi=${mpi_path} \
-          --with-parmetis=${gcc_parmetis_path} \
-	  CFLAGS="-g -O2" \
-	  CC=mpicxx \
-    ) \
-    || exit
-

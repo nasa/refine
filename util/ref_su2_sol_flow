@@ -16,7 +16,7 @@ File.open(ARGV[2],'w') do |f|
   printf("%d ldim\n",ldim)
   nnode.times do |i|
     line = lines[i+7]
-    f.printf( "%d %s", i+1, line )
+    f.printf( "%d, %s", i, line.gsub(/ /,', ') )
   end
 end
 

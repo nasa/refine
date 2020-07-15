@@ -418,7 +418,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* recycle tet brick lb8.ugrid */
-    REF_GRID seq_grid, para_grid;
+    REF_GRID seq_grid = NULL, para_grid;
     char seq_file[] = "ref_gather_test_seq.lb8.ugrid";
     char para_file[] = "ref_gather_test_para.lb8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
@@ -444,7 +444,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* recycle tet brick b8.ugrid */
-    REF_GRID seq_grid, para_grid;
+    REF_GRID seq_grid = NULL, para_grid;
     char seq_file[] = "ref_gather_test_seq.b8.ugrid";
     char para_file[] = "ref_gather_test_para.b8.ugrid";
     if (ref_mpi_once(ref_mpi)) {
@@ -470,7 +470,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* recycle tet brick lb8l.ugrid */
-    REF_GRID seq_grid, para_grid;
+    REF_GRID seq_grid = NULL, para_grid;
     char seq_file[] = "ref_gather_test_seq.lb8l.ugrid";
     char para_file[] = "ref_gather_test_para.lb8l.ugrid";
     if (ref_mpi_once(ref_mpi)) {
@@ -496,7 +496,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* recycle tet brick b8l.ugrid */
-    REF_GRID seq_grid, para_grid;
+    REF_GRID seq_grid = NULL, para_grid;
     char seq_file[] = "ref_gather_test_seq.b8l.ugrid";
     char para_file[] = "ref_gather_test_para.b8l.ugrid";
     if (ref_mpi_once(ref_mpi)) {

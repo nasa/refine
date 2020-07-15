@@ -261,7 +261,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
+    REF_INT part_int = atoi(argv[pos + 1]);
+    ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)part_int;
     if (ref_mpi_once(ref_mpi))
       printf("--partioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
@@ -898,7 +899,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(argv[pos + 1]);
+    REF_INT part_int = atoi(argv[pos + 1]);
+    ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)part_int;
     if (ref_mpi_once(ref_mpi))
       printf("--partioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
