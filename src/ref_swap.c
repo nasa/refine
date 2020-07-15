@@ -422,8 +422,8 @@ REF_STATUS ref_swap_manifold(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
-                                 REF_INT node1, REF_BOOL *allowed) {
+static REF_STATUS ref_swap_outward_norm(REF_GRID ref_grid, REF_INT node0,
+                                        REF_INT node1, REF_BOOL *allowed) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node2, node3;

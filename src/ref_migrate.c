@@ -1206,6 +1206,7 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
       RSS(ref_migrate_native_rcb_part(ref_grid, new_part), "single by method");
       break;
 #endif
+    case REF_MIGRATE_LAST:
     default:
       if (ref_grid_once(ref_grid))
         printf(
