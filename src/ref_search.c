@@ -59,8 +59,8 @@ REF_STATUS ref_search_free(REF_SEARCH ref_search) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a, REF_INT b,
-                               REF_DBL *distance) {
+static REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a,
+                                      REF_INT b, REF_DBL *distance) {
   REF_INT i;
   *distance = 0.0;
   for (i = 0; i < ref_search->d; i++)
@@ -71,8 +71,8 @@ REF_STATUS ref_search_distance(REF_SEARCH ref_search, REF_INT a, REF_INT b,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_home(REF_SEARCH ref_search, REF_INT child,
-                           REF_INT parent) {
+static REF_STATUS ref_search_home(REF_SEARCH ref_search, REF_INT child,
+                                  REF_INT parent) {
   REF_DBL child_distance;
   REF_DBL left_distance, right_distance;
 
@@ -136,9 +136,9 @@ REF_STATUS ref_search_insert(REF_SEARCH ref_search, REF_INT item,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
-                             REF_INT parent, REF_DBL *position,
-                             REF_DBL radius) {
+static REF_STATUS ref_search_gather(REF_SEARCH ref_search, REF_LIST ref_list,
+                                    REF_INT parent, REF_DBL *position,
+                                    REF_DBL radius) {
   REF_INT i;
   REF_DBL distance;
 
@@ -263,6 +263,7 @@ REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
     return REF_SUCCESS;
   }
 
+  mid_val = 0.5 * (low_val + high_val); /* ensure initialized */
   for (bisection = 0; bisection < 40; bisection++) {
     mid_val = 0.5 * (low_val + high_val);
     count = 0;
