@@ -121,7 +121,10 @@ int main(int argc, char *argv[]) {
         break;
       case 'p':
         RNS(ref_grid, "input grid must be loaded before geom");
-        ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)atoi(optarg);
+        {
+          REF_INT part_int = atoi(optarg);
+          ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)part_int;
+        }
         break;
       case 'x':
         break;
