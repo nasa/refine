@@ -24,7 +24,7 @@
 #include "ref_malloc.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
+static REF_STATUS ref_cell_initialize(REF_CELL ref_cell, REF_CELL_TYPE type) {
   ref_cell_type(ref_cell) = type;
 
   ref_cell_last_node_is_an_id(ref_cell) = REF_FALSE;
