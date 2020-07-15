@@ -111,7 +111,7 @@ REF_STATUS ref_agents_population(REF_AGENTS ref_agents, const char *context) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
+static REF_STATUS ref_agents_new(REF_AGENTS ref_agents, REF_INT *id) {
   if (REF_EMPTY == ref_agents->blank) {
     REF_INT orig, chunk, extra;
     orig = ref_agents->max;
@@ -231,7 +231,8 @@ REF_STATUS ref_agents_delete(REF_AGENTS ref_agents, REF_INT node) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id, REF_INT *dest) {
+static REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id,
+                                  REF_INT *dest) {
   *dest = REF_EMPTY;
   switch (ref_agent_mode(ref_agents, id)) {
     case REF_AGENT_WALKING:
@@ -252,7 +253,9 @@ REF_STATUS ref_agents_dest(REF_AGENTS ref_agents, REF_INT id, REF_INT *dest) {
     case REF_AGENT_TERMINATED:
       *dest = ref_agent_home(ref_agents, id);
       break;
-    default:
+    case REF_AGENT_UNUSED:
+    case REF_AGENT_NEW:
+    case REF_AGENT_MODE_LAST:
       THROW("has no dest");
   }
   return REF_SUCCESS;
