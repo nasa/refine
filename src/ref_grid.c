@@ -682,8 +682,9 @@ static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
   return REF_NOT_FOUND;
 }
 
-REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz,
-                                             REF_INT *tet, REF_DBL *bary) {
+static REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid,
+                                                    REF_DBL *xyz, REF_INT *tet,
+                                                    REF_DBL *bary) {
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
