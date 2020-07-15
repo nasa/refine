@@ -40,7 +40,7 @@
 #include "ref_node.h"
 #include "ref_sort.h"
 
-REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
+static REF_STATUS ref_validation_lb8_ugrid_volume(const char *filename) {
   FILE *file;
   REF_INT nnode, ntri, nqua, ntet, npyr, npri, nhex;
   REF_FILEPOS conn_offset, ibyte = 4;

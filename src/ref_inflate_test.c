@@ -38,19 +38,6 @@
 #include "ref_sort.h"
 
 int main() {
-  if (REF_FALSE) {
-    REF_DBL H, h0, rate;
-    REF_INT n;
-    H = 100.0;
-    h0 = 0.1;
-    n = 80;
-    RSS(ref_inflate_rate(n, h0, H, &rate), "rate");
-
-    printf("H=%f;\n", H);
-    printf("REF_INT nz=%d;\n", n);
-    printf("REF_DBL h0=%f, rate=%f;\n", h0, rate);
-  }
-
   {
     REF_DBL H, h0, rate;
     REF_INT n;
@@ -71,6 +58,7 @@ int main() {
     RWDS(1.1469, rate, 1.0e-3, "growth");
   }
 
+  /*
   SKIP_BLOCK("intel compiler") {
     REF_DBL H, h0, rate;
     REF_INT n;
@@ -80,6 +68,7 @@ int main() {
     RSS(ref_inflate_rate(n, h0, H, &rate), "rate");
     RWDS(1.0, rate, 1.0e-6, "growth");
   }
+  */
 
   {
     REF_DBL H, h0, rate;
@@ -105,37 +94,6 @@ int main() {
     RSS(ref_inflate_dthickness(n, h0, rate, &dHdr), "deriv");
 
     RWDS(fd, dHdr, 1.0e-8, "not total");
-  }
-
-  if (REF_FALSE) {
-    REF_DBL x, y;
-    x = 0.0001;
-    y = 1;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-    x = -0.0001;
-    y = 1;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-
-    x = 0.0001;
-    y = -1;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-    x = -0.0001;
-    y = -1;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-
-    x = 1;
-    y = 0.0001;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-    x = 1;
-    y = -0.0001;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-
-    x = -1;
-    y = 0.0001;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
-    x = -1;
-    y = -0.0001;
-    printf("%f = atan2(%f, %f)\n", atan2(y, x), y, x);
   }
 
   {

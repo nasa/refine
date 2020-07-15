@@ -293,7 +293,8 @@ ee =
                        0   1.301229165569645e+08                       0
                        0                       0   1.391622322116382e+11
    */
-  if (REF_FALSE) { /* diag decom, poorly conditioned */
+  /* diag decom, poorly conditioned */
+  /*{
     REF_DBL m[6] = {2.656600171239854e+10 - 1.553315064215467e+10,
                     5.234282331017903e+10, 9.082258454339514e+09,
                     -3.060805186711674e+10, 1.036440949614571e+11};
@@ -318,7 +319,7 @@ ee =
     RWDS(1.0, d[9], -1, "x2");
     RWDS(0.0, d[10], -1, "y2");
     RWDS(0.0, d[11], -1, "z2");
-  }
+    }*/
 
   { /* diag decom, exercise self check */
     REF_DBL m[6] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
@@ -1372,19 +1373,19 @@ m12 = m1half'*m12bar*m1half
   }
 
   { /* diag report inf */
-    REF_DBL m[6] = {INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m[6] = {(REF_DBL)INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL d[12];
     REIS(REF_INVALID, ref_matrix_diag_m(m, d), "worked?");
   }
 
   { /* diag report nan */
-    REF_DBL m[6] = {NAN, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m[6] = {(REF_DBL)NAN, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL d[12];
     REIS(REF_INVALID, ref_matrix_diag_m(m, d), "worked?");
   }
 
   { /* intersect fail with show_m seg fault */
-    REF_DBL m1[6] = {INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
+    REF_DBL m1[6] = {(REF_DBL)INFINITY, 0.0, 0.0, 1.0, 0.0, 1.0};
     REF_DBL m2[6] = {1.0, 0.0, 0.0, -1.0, 0.0, -1.0};
     REF_DBL m12[6];
     REIS(REF_INVALID, ref_matrix_intersect(m1, m2, m12), "worked?");
