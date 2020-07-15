@@ -262,8 +262,10 @@ then
   if test "$egadslite" != 'no'
   then
     egads_lib_root="egadslite"
+    AM_CONDITIONAL(BUILD_EGADS_LITE,true)
   else
     egads_lib_root="egads"
+    AM_CONDITIONAL(BUILD_EGADS_LITE,false)
   fi
 
   AC_CHECK_FILE([$with_egads/include/egads.h],
@@ -357,6 +359,7 @@ then
   AM_CONDITIONAL(BUILD_EGADS,true)
 else
   AM_CONDITIONAL(BUILD_EGADS,false)
+  AM_CONDITIONAL(BUILD_EGADS_LITE,false)
 fi
 
 AC_ARG_WITH(OpenCASCADE,

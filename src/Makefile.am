@@ -107,7 +107,12 @@ libreflite_a_SOURCES = \
 	ref_egads.c
 libreflite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
 
+if BUILD_EGADS_LITE
+default_ldadd += libreflite.a
+else
 default_ldadd += libreffull.a
+endif
+
 else
 default_ldadd += librefnogads.a
 libref2_a_LIBADD += librefnogads.a
