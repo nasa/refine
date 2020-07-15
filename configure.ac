@@ -507,7 +507,6 @@ then
   
   AC_SUBST([meshlink_include])
   AC_SUBST([meshlink_ldadd])
-  AC_DEFINE([HAVE_MESHLINK],[1],[MeshLink is available])
   AM_CONDITIONAL(BUILD_MESHLINK,true)
 else
   AM_CONDITIONAL(BUILD_MESHLINK,false)
