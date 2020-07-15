@@ -76,6 +76,17 @@ REF_STATUS ref_histogram_free(REF_HISTOGRAM ref_histogram) {
   return REF_SUCCESS;
 }
 
+REF_INT ref_histogram_to_bin(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
+  REF_DBL dbin;
+  REF_INT ibin;
+  dbin = ref_histogram_exp(ref_histogram) * log2((observation));
+  dbin += ref_histogram_nbin(ref_histogram) / 2;
+  ibin = (REF_INT)dbin;
+  ibin = MAX(0, ibin);
+  ibin = MIN(ref_histogram_nbin(ref_histogram) - 1, ibin);
+  return ibin;
+}
+
 REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
   REF_INT i;
 
@@ -87,7 +98,7 @@ REF_STATUS ref_histogram_add(REF_HISTOGRAM ref_histogram, REF_DBL observation) {
       MIN(ref_histogram_min(ref_histogram), observation);
   ref_histogram_log_total(ref_histogram) += log2(observation);
 
-  i = ref_histogram_to_bin(observation);
+  i = ref_histogram_to_bin(ref_histogram, observation);
   i = MIN(i, ref_histogram_nbin(ref_histogram) - 1);
   i = MAX(i, 0);
 
