@@ -452,7 +452,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
   MLVector2D uv;
   char entity_name[REF_MESHLINK_MAX_STRING_SIZE];
   MLINT gref;
-  REF_DBL node_xyz[3];
   REF_INT item, geom;
 
   RNS(ref_geom->meshlink, "meshlink NULL");
@@ -461,10 +460,6 @@ REF_STATUS ref_meshlink_constrain(REF_GRID ref_grid, REF_INT node) {
 
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &is_node), "node");
   if (is_node) {
-    node_xyz[0] = ref_node_xyz(ref_node, 0, node);
-    node_xyz[1] = ref_node_xyz(ref_node, 1, node);
-    node_xyz[2] = ref_node_xyz(ref_node, 2, node);
-
     return REF_SUCCESS;
   }
 
