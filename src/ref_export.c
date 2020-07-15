@@ -835,7 +835,7 @@ static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
         RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
         RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
         RSS(ref_math_normalize(normal), "norm");
-        offset = 1.0e-4 * sqrt(area);
+        offset = 1.0e-4 * sqrt(max_area);
         if (offset > 1.0e-12) {
           nhole += 1;
         }
@@ -859,7 +859,7 @@ static REF_STATUS ref_export_poly(REF_GRID ref_grid, const char *filename) {
         RSS(ref_cell_nodes(ref_cell, largest_triangle, nodes), "tri nodes");
         RSS(ref_node_tri_normal(ref_node, nodes, normal), "normal");
         RSS(ref_math_normalize(normal), "norm");
-        offset = 1.0e-4 * sqrt(area);
+        offset = 1.0e-4 * sqrt(max_area);
         if (offset > 1.0e-12) {
           RSS(ref_node_tri_centroid(ref_node, nodes, center), "center");
           hole[0] = center[0] - offset * normal[0];
