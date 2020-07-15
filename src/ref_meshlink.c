@@ -712,7 +712,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
        ML_getProjectionInfo(geom_kernel, projection_data, projected_point, uv,
                             entity_name, REF_MESHLINK_MAX_STRING_SIZE),
        "info");
-  if (REF_FALSE) printf(" pre to %f %f of %s\n", uv[0], uv[1], entity_name);
   REIS(0,
        ML_evalCurvatureOnSurface(geom_kernel, uv, entity_name, eval_point,
                                  dXYZdU, dXYZdV, d2XYZdU2, d2XYZdUdV, d2XYZdV2,
@@ -725,11 +724,6 @@ REF_STATUS ref_meshlink_tri_norm_deviation(REF_GRID ref_grid, REF_INT *nodes,
   area_sign *= ref_geom->uv_area_sign[id - 1];
 
   *dot_product = area_sign * ref_math_dot(normal, tri_normal);
-
-  if (REF_FALSE) {
-    printf("surf %.3f %.3f %.3f disc %.3f %.3f %.3f\n", normal[0], normal[1],
-           normal[2], tri_normal[0], tri_normal[1], tri_normal[2]);
-  }
 
 #else
   SUPRESS_UNUSED_COMPILER_WARNING(ref_grid);
