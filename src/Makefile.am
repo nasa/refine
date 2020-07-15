@@ -77,6 +77,8 @@ librefcore_a_SOURCES = \
 	ref_validation.c
 librefcore_a_CFLAGS = @meshlink_include@
 
+default_ldadd = librefcore.a
+
 if BUILD_MPI
 libref2_a_LIBADD += librefmpi.a
 noinst_LIBRARIES += librefmpi.a
@@ -87,6 +89,7 @@ librefmpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include
 else
 libref2_a_LIBADD += librefseq.a
 endif
+default_ldadd += librefseq.a
 
 noinst_LIBRARIES += librefseq.a
 librefseq_a_SOURCES = \
@@ -95,19 +98,31 @@ librefseq_a_SOURCES = \
 # partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
 librefseq_a_CFLAGS = @zoltan_include@ @parmetis_include@
 
+if BUILD_EGADS
 noinst_LIBRARIES += libreffull.a
 libreffull_a_SOURCES = \
 	ref_egads.c
 # partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
-libreffull_a_CFLAGS = @egads_include@
+libreffull_a_CFLAGS = -DHAVE_EGADS @egads_include@
 
 noinst_LIBRARIES += libreflite.a
 libreflite_a_SOURCES = \
 	ref_egads.c
 # lite flags nested, safe for compile without HAVE_EGADS
-libreflite_a_CFLAGS = -DHAVE_EGADS_LITE @egads_include@
+libreflite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
 
-default_ldadd = librefcore.a librefseq.a libreffull.a @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
+default_ldadd += libreffull.a
+else
+default_ldadd += librefnogads.a
+libref2_a_LIBADD += librefnogads.a
+endif
+
+# ensure ref_egads compiles without flags
+noinst_LIBRARIES += librefnogads.a
+librefnogads_a_SOURCES = \
+	ref_egads.c
+
+default_ldadd += @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
 
 bin_PROGRAMS =
 

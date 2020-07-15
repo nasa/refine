@@ -270,11 +270,6 @@ then
                 [egads_h_path=$with_egads/include],[egads_h_path='no'])
   if test "$egads_h_path" != 'no'
   then
-    AC_DEFINE([HAVE_EGADS],[1],[EGADS is available])
-    if test "$egadslite" != 'no'
-    then
-      AC_DEFINE([HAVE_EGADS_LITE],[1],[EGADS is available in lite form])
-    fi
     egads_include="-I${egads_h_path}"
   else
     AC_MSG_ERROR([egads.h not found in ${with_egads}/include])
@@ -359,7 +354,9 @@ then
 
   AC_SUBST([egadslite_include])
   AC_SUBST([egadslite_ldadd])
-
+  AM_CONDITIONAL(BUILD_EGADS,true)
+else
+  AM_CONDITIONAL(BUILD_EGADS,false)
 fi
 
 AC_ARG_WITH(OpenCASCADE,
