@@ -27,58 +27,9 @@ mkdir -p egads
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
+    --with-MeshLink=${meshlink_path} \
     CFLAGS="${gccflags}" \
     CC=gcc-9 \
-    ) \
-    || exit
-
-mkdir -p parmetis
-( cd parmetis && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    FC=mpif90 \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-mkdir -p 64bit
-( cd 64bit && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
-    --with-parmetis=/Users/mpark/local/pkgs/parmetis-4.0.3/64bit \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    FC=mpif90 \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-mkdir -p strict
-( cd strict && \
-    ../configure \
-    --prefix=`pwd` \
-    CFLAGS="${gccflags}" \
-    CC=gcc-9 \
-    ) \
-    || exit
-
-mkdir -p meshlink
-( cd meshlink && \
-      ../configure \
-	  --prefix=`pwd` \
-	  --with-mpi=${mpi_path} \
-	  --with-metis=${metis_path} \
-	  --with-parmetis=${parmetis_path} \
-	  --with-MeshLink=${meshlink_path} \
-	  CFLAGS="-g -O2 -Wall -Wextra -Wno-deprecated -Wno-old-style-cast -Wno-padded -Werror" \
-	  CC=clang++ \
     ) \
     || exit
 
@@ -89,32 +40,3 @@ mkdir -p all
 	    -DCMAKE_PREFIX_PATH="${mpi_path};${metis_path};${parmetis_path};${egads_path};${opencascade_path}/lib/cmake/opencascade"
 ) \
     || exit
-
-
-exit
-
-mkdir -p para
-( cd para && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-metis=${metis_path} \
-    --with-parmetis=${parmetis_path} \
-    --with-EGADS=${egads_path} \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
-
-mkdir -p zoltan
-( cd zoltan && \
-    ../configure \
-    --prefix=`pwd` \
-    --with-zoltan=${zoltan_path} \
-    --with-EGADS=${egads_path} \
-    --enable-lite \
-    CC=mpicc \
-    CFLAGS="-DHAVE_MPI ${gccflags} -Wno-long-long" \
-    ) \
-    || exit
-
