@@ -262,8 +262,6 @@ REF_STATUS ref_collapse_to_remove_node1(REF_GRID ref_grid,
           valid_cavity =
               allowed_cavity_ratio &&
               (min_add > ref_grid_adapt(ref_grid, collapse_quality_absolute));
-          if (REF_FALSE && valid_cavity)
-            printf("new %f old %f\n", min_add, min_del);
           if (valid_cavity) {
             *actual_node0 = node0;
             RSS(ref_cavity_replace(ref_cavity), "cav replace");
