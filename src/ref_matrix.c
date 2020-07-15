@@ -73,26 +73,25 @@ REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
 }
 
 REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
-  char format[] = "%24.15e";
   printf("eig");
-  printf(format, ref_matrix_eig(d, 0));
-  printf(format, ref_matrix_eig(d, 0));
-  printf(format, ref_matrix_eig(d, 0));
+  printf("%24.15e", ref_matrix_eig(d, 0));
+  printf("%24.15e", ref_matrix_eig(d, 0));
+  printf("%24.15e", ref_matrix_eig(d, 0));
   printf("\n");
   printf("valx");
-  printf(format, ref_matrix_vec(d, 0, 0));
-  printf(format, ref_matrix_vec(d, 0, 1));
-  printf(format, ref_matrix_vec(d, 0, 2));
+  printf("%24.15e", ref_matrix_vec(d, 0, 0));
+  printf("%24.15e", ref_matrix_vec(d, 0, 1));
+  printf("%24.15e", ref_matrix_vec(d, 0, 2));
   printf("\n");
   printf("valy");
-  printf(format, ref_matrix_vec(d, 1, 0));
-  printf(format, ref_matrix_vec(d, 1, 1));
-  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("%24.15e", ref_matrix_vec(d, 1, 0));
+  printf("%24.15e", ref_matrix_vec(d, 1, 1));
+  printf("%24.15e", ref_matrix_vec(d, 1, 2));
   printf("\n");
   printf("valz");
-  printf(format, ref_matrix_vec(d, 1, 0));
-  printf(format, ref_matrix_vec(d, 1, 1));
-  printf(format, ref_matrix_vec(d, 1, 2));
+  printf("%24.15e", ref_matrix_vec(d, 1, 0));
+  printf("%24.15e", ref_matrix_vec(d, 1, 1));
+  printf("%24.15e", ref_matrix_vec(d, 1, 2));
   printf("\n");
   return REF_SUCCESS;
 }
@@ -246,18 +245,6 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
     d[l] = d[l] + f;
   } /* row_loop */
 
-  if (REF_FALSE) {
-    REF_DBL m2[6];
-    REF_DBL tol = -1.0;
-    RSS(ref_matrix_form_m(d, m2), "reform m");
-    RWDS(m2[0], m[0], tol, "m[0]");
-    RWDS(m2[1], m[1], tol, "m[1]");
-    RWDS(m2[2], m[2], tol, "m[2]");
-    RWDS(m2[3], m[3], tol, "m[3]");
-    RWDS(m2[4], m[4], tol, "m[4]");
-    RWDS(m2[5], m[5], tol, "m[5]");
-  }
-
   return REF_SUCCESS;
 }
 
@@ -393,19 +380,18 @@ REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
 }
 
 REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
-  char format[] = "%24.15e";
 
-  printf(format, j[0]);
-  printf(format, j[3]);
-  printf(format, j[6]);
+  printf("%24.15e", j[0]);
+  printf("%24.15e", j[3]);
+  printf("%24.15e", j[6]);
   printf("\n");
-  printf(format, j[1]);
-  printf(format, j[4]);
-  printf(format, j[7]);
+  printf("%24.15e", j[1]);
+  printf("%24.15e", j[4]);
+  printf("%24.15e", j[7]);
   printf("\n");
-  printf(format, j[2]);
-  printf(format, j[5]);
-  printf(format, j[8]);
+  printf("%24.15e", j[2]);
+  printf("%24.15e", j[5]);
+  printf("%24.15e", j[8]);
   printf("\n");
 
   return REF_SUCCESS;
@@ -611,19 +597,17 @@ REF_STATUS ref_matrix_healthy_m(REF_DBL *m) {
 }
 
 REF_STATUS ref_matrix_show_m(REF_DBL *m) {
-  char format[] = "%24.15e";
-
-  printf(format, m[0]);
-  printf(format, m[1]);
-  printf(format, m[2]);
+  printf("%24.15e", m[0]);
+  printf("%24.15e", m[1]);
+  printf("%24.15e", m[2]);
   printf("\n");
-  printf(format, m[1]);
-  printf(format, m[3]);
-  printf(format, m[4]);
+  printf("%24.15e", m[1]);
+  printf("%24.15e", m[3]);
+  printf("%24.15e", m[4]);
   printf("\n");
-  printf(format, m[2]);
-  printf(format, m[4]);
-  printf(format, m[5]);
+  printf("%24.15e", m[2]);
+  printf("%24.15e", m[4]);
+  printf("%24.15e", m[5]);
   printf("\n");
 
   return REF_SUCCESS;
@@ -638,10 +622,10 @@ REF_STATUS ref_matrix_twod_m(REF_DBL *m) {
 
 REF_STATUS ref_matrix_show_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
   REF_INT row, col;
-  char format[] = "%12.4e";
+
   for (row = 0; row < rows; row++) {
     for (col = 0; col < cols; col++) {
-      printf(format, ab[row + rows * col]);
+      printf("%12.4e", ab[row + rows * col]);
       if (col < cols - 1) printf(" ");
       if (col == rows - 1) printf("| ");
     }
@@ -773,13 +757,12 @@ REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
 REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
                                REF_DBL *r) {
   REF_INT row, col;
-  char format[] = " %12.4e";
 
   if (NULL != a) {
     printf("A\n");
     for (row = 0; row < m; row++) {
       for (col = 0; col < n; col++) {
-        printf(format, a[row + m * col]);
+        printf(" %12.4e", a[row + m * col]);
       }
       printf("\n");
     }
@@ -787,14 +770,14 @@ REF_STATUS ref_matrix_show_aqr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
   printf("Q\n");
   for (row = 0; row < m; row++) {
     for (col = 0; col < n; col++) {
-      printf(format, q[row + m * col]);
+      printf(" %12.4e", q[row + m * col]);
     }
     printf("\n");
   }
   printf("R\n");
   for (row = 0; row < n; row++) {
     for (col = 0; col < n; col++) {
-      printf(format, r[row + n * col]);
+      printf(" %12.4e", r[row + n * col]);
     }
     printf("\n");
   }
@@ -833,23 +816,21 @@ REF_STATUS ref_matrix_qr(REF_INT m, REF_INT n, REF_DBL *a, REF_DBL *q,
 REF_STATUS ref_matrix_show_eig(REF_INT n, REF_DBL *a, REF_DBL *values,
                                REF_DBL *vectors) {
   REF_INT row, col;
-  char short_format[] = "%15.7e";
-  char full_format[] = "%23.15e";
 
   if (NULL != a) {
     for (row = 0; row < n; row++) {
       for (col = 0; col < n; col++) {
         printf(" ");
-        printf(short_format, a[row + n * col]);
+        printf("%15.7e", a[row + n * col]);
       }
       printf("\n");
     }
   }
   for (row = 0; row < n; row++) {
-    printf(full_format, values[row]);
+    printf("%23.15e", values[row]);
     printf(" |");
     for (col = 0; col < n; col++) {
-      printf(short_format, vectors[row + n * col]);
+      printf("%15.7e", vectors[row + n * col]);
       if (col < n - 1) printf(" ");
     }
     printf("\n");
