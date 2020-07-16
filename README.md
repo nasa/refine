@@ -15,7 +15,7 @@ If you checked out the repository with git,
  make
  make install
 ```
-See the INSTALL file for further build instructions. Here are some examples:
+See the [INSTALL file](https://github.com/nasa/refine/blob/master/INSTALL) for further build instructions. Here are some examples:
 with MPI and Zoltan,
 ```
 ../configure --with-zoltan=/zoltan/path CC=mpicc FC=mpif90 CFLAGS='-DHAVE_MPI'
