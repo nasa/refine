@@ -20,15 +20,10 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 
 lib_LIBRARIES =
 
-lib_LIBRARIES += libref2.a
-libref2_a_SOURCES =
-libref2_a_LIBADD =
-
 noinst_LIBRARIES =
 
-libref2_a_LIBADD += librefcore.a
-noinst_LIBRARIES += librefcore.a
-librefcore_a_SOURCES = \
+lib_LIBRARIES += librefine_core.a
+librefine_core_a_SOURCES = \
 	ref_adapt.c \
 	ref_adj.c \
 	ref_agents.c \
@@ -75,70 +70,69 @@ librefcore_a_SOURCES = \
 	ref_swap.c \
 	ref_validation.c
 
-default_ldadd = librefcore.a
+default_ldadd = librefine_core.a
 
 if BUILD_MPI
-libref2_a_LIBADD += librefmpi.a
-noinst_LIBRARIES += librefmpi.a
-librefmpi_a_SOURCES = \
+lib_LIBRARIES += librefine_with_mpi.a
+librefine_with_mpi_a_SOURCES = \
 	ref_migrate.c \
 	ref_mpi.c
-librefmpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
-else
-libref2_a_LIBADD += librefseq.a
+librefine_with_mpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
 endif
-default_ldadd += librefseq.a
+default_ldadd += librefine_without_mpi.a
 
-noinst_LIBRARIES += librefseq.a
-librefseq_a_SOURCES = \
+lib_LIBRARIES += librefine_without_mpi.a
+librefine_without_mpi_a_SOURCES = \
 	ref_migrate.c \
 	ref_mpi.c
 # partitioner flags nested, safe for seq code or mpi with user CFLAG HAVE_MPI
-librefseq_a_CFLAGS = @zoltan_include@ @parmetis_include@
+librefine_without_mpi_a_CFLAGS = @zoltan_include@ @parmetis_include@
 
 if BUILD_EGADS
-noinst_LIBRARIES += libreffull.a
-libreffull_a_SOURCES = \
+lib_LIBRARIES += librefine_with_egads.a
+librefine_with_egads_a_SOURCES = \
 	ref_egads.c
-libreffull_a_CFLAGS = -DHAVE_EGADS @egads_include@
+librefine_with_egads_a_CFLAGS = -DHAVE_EGADS @egads_include@
 
-noinst_LIBRARIES += libreflite.a
-libreflite_a_SOURCES = \
+lib_LIBRARIES += librefine_with_egadslite.a
+librefine_with_egadslite_a_SOURCES = \
 	ref_egads.c
-libreflite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
+librefine_with_egadslite_a_CFLAGS =  -DHAVE_EGADS -DHAVE_EGADS_LITE @egads_include@
 
 if BUILD_EGADS_LITE
-default_ldadd += libreflite.a
+default_ldadd += librefine_with_egadslite.a
 else
-default_ldadd += libreffull.a
+default_ldadd += librefine_with_egads.a
 endif
+egads_lib = librefine_with_egads.a
+egadslite_lib = librefine_with_egadslite.a
 
 else
-default_ldadd += librefnogads.a
-libref2_a_LIBADD += librefnogads.a
+default_ldadd += librefine_without_egads.a
+egads_lib = librefine_without_egads.a
+egadslite_lib = librefine_without_egads.a
 endif
 
 # ensure ref_egads compiles without flags
-noinst_LIBRARIES += librefnogads.a
-librefnogads_a_SOURCES = \
+lib_LIBRARIES += librefine_without_egads.a
+librefine_without_egads_a_SOURCES = \
 	ref_egads.c
 
 if BUILD_MESHLINK
-noinst_LIBRARIES += libreflink.a
-libreflink_a_SOURCES = \
+lib_LIBRARIES += librefine_with_meshlink.a
+librefine_with_meshlink_a_SOURCES = \
 	ref_meshlink.c
-libreflink_a_CFLAGS = -DHAVE_MESHLINK @meshlink_include@
-default_ldadd += libreflink.a
-meshlink_lib = libreflink.a
+librefine_with_meshlink_a_CFLAGS = -DHAVE_MESHLINK @meshlink_include@
+default_ldadd += librefine_with_meshlink.a
+meshlink_lib = librefine_with_meshlink.a
 else
-default_ldadd += librefnolink.a
-libref2_a_LIBADD += librefnolink.a
-meshlink_lib = librefnolink.a
+default_ldadd += librefine_without_meshlink.a
+meshlink_lib = librefine_without_meshlink.a
 endif
 
 # ensure ref_meshlink compiles without flags
-noinst_LIBRARIES += librefnolink.a
-librefnolink_a_SOURCES = \
+lib_LIBRARIES += librefine_without_meshlink.a
+librefine_without_meshlink_a_SOURCES = \
 	ref_meshlink.c
 
 default_ldadd += @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ -lm
@@ -152,11 +146,11 @@ ref_LDADD = $(default_ldadd)
 if BUILD_MPI
 bin_PROGRAMS += refmpi
 refmpi_SOURCES = ref_subcommand.c
-refmpi_LDADD = librefcore.a librefmpi.a libreflite.a $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpi_LDADD = librefine_core.a librefine_with_mpi.a $(egadslite_lib) $(meshlink_lib) @egadslite_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 
 bin_PROGRAMS += refmpifull
 refmpifull_SOURCES = ref_subcommand.c
-refmpifull_LDADD = librefcore.a librefmpi.a libreffull.a $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
+refmpifull_LDADD = librefine_core.a librefine_with_mpi.a $(egads_lib) $(meshlink_lib) @egads_ldadd@ @opencascade_ldadd@ @meshlink_ldadd@ @zoltan_ldadd@ @parmetis_ldadd@ @mpi_ldadd@ -lm
 endif
 
 bin_PROGRAMS += ref_driver
