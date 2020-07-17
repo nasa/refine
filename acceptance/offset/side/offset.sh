@@ -4,10 +4,10 @@ set -x # echo commands
 set -e # exit on first error
 set -u # Treat unset variables as error
 
-serveCSM -batch cube.csm
+serveCSM -batch offset.csm
 
-ref boostrap cube.egads
+ref boostrap offset.egads
 
-ref adapt cube-vol.meshb -g cube.egads -x cube.meshb
+ref adapt offset-vol.meshb -g offset.egads -x offset.meshb
 
 

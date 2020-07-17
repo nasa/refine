@@ -97,7 +97,7 @@ REF_STATUS ref_metric_side_node(REF_NODE ref_node) {
   REF_DBL hh;
 
   each_ref_node_valid_node(ref_node, node) {
-    hh = h + (h0 - h) * ref_node_xyz(ref_node, 2, node);
+    hh = h + (h0 - h) * ABS(ref_node_xyz(ref_node, 2, node));
     RSS(ref_node_metric_form(ref_node, node, 1.0 / (0.1 * 0.1), 0, 0,
                              1.0 / (0.1 * 0.1), 0, 1.0 / (hh * hh)),
         "set node met");

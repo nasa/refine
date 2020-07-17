@@ -1,0 +1,11 @@
+
+set offset 0.01
+set width 0.5
+set radius 0.25
+
+cylinder 0 0 0 0 0 width radius
+cylinder 0 offset -width 0 offset 0 radius
+union 0 0 -10*offset
+
+dump offset.egads
+
