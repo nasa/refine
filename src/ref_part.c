@@ -1577,13 +1577,15 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
       }
       RUS(REF_EMPTY, dim, "Dimension keyword missing from .sol metric");
       RAS(found_keyword, "SolAtVertices keyword missing from .sol metric");
+    } else {
+      nnode = (REF_INT)ref_node_n_global(ref_node);
     }
   }
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
       "bcast nnode");
 
   chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
 
   ref_malloc_init(metric, 6 * chunk, REF_DBL, -1.0);
 
@@ -1897,7 +1899,7 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
   chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
 
   ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
 
