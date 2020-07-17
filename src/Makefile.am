@@ -20,13 +20,8 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 
 lib_LIBRARIES =
 
-lib_LIBRARIES += libref2.a
-libref2_a_SOURCES =
-libref2_a_LIBADD =
-
 noinst_LIBRARIES =
 
-libref2_a_LIBADD += librefcore.a
 noinst_LIBRARIES += librefcore.a
 librefcore_a_SOURCES = \
 	ref_adapt.c \
@@ -78,14 +73,11 @@ librefcore_a_SOURCES = \
 default_ldadd = librefcore.a
 
 if BUILD_MPI
-libref2_a_LIBADD += librefmpi.a
 noinst_LIBRARIES += librefmpi.a
 librefmpi_a_SOURCES = \
 	ref_migrate.c \
 	ref_mpi.c
 librefmpi_a_CFLAGS = -DHAVE_MPI @mpi_include@ @zoltan_include@ @parmetis_include@
-else
-libref2_a_LIBADD += librefseq.a
 endif
 default_ldadd += librefseq.a
 
@@ -115,7 +107,6 @@ endif
 
 else
 default_ldadd += librefnogads.a
-libref2_a_LIBADD += librefnogads.a
 endif
 
 # ensure ref_egads compiles without flags
@@ -132,7 +123,6 @@ default_ldadd += libreflink.a
 meshlink_lib = libreflink.a
 else
 default_ldadd += librefnolink.a
-libref2_a_LIBADD += librefnolink.a
 meshlink_lib = librefnolink.a
 endif
 
