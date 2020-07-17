@@ -2535,7 +2535,7 @@ REF_STATUS ref_metric_truncated_cone_dist(REF_DBL *cone_geom, REF_DBL *p,
 }
 
 static REF_STATUS ref_metric_cart_box_dist(REF_DBL *box_geom, REF_DBL *p,
-                                    REF_DBL *dist) {
+                                           REF_DBL *dist) {
   REF_INT i;
   /* distance to box, zero inside box */
   *dist = 0;
