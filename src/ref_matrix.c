@@ -108,7 +108,7 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   REF_INT mml, ii, k;
   REF_DBL s2;
 
-  /* potential for stack coruption, if inf or nan */
+  /* potential for stack corruption, if inf or nan */
   if (!isfinite(m[0]) || !isfinite(m[1]) || !isfinite(m[2]) ||
       !isfinite(m[3]) || !isfinite(m[4]) || !isfinite(m[5])) {
     return REF_INVALID;
@@ -116,7 +116,7 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
 
   /* one rotation to make tridiagonal ( zero out m[2] ) */
   /* http://www.geometrictools.com/Documentation/EigenSymmetricNxN.pdf */
-  /* Eigen System Solvers for Symmetric Matricies, David Eberly */
+  /* Eigen System Solvers for Symmetric Matrices, David Eberly */
 
   L = sqrt(m[1] * m[1] + m[2] * m[2]);
 
@@ -677,7 +677,7 @@ REF_STATUS ref_matrix_solve_ab(REF_INT rows, REF_INT cols, REF_DBL *ab) {
       ab[col + j * rows] /= pivot;
     }
 
-    /* elimate sub diagonal terms */
+    /* eliminate sub diagonal terms */
     for (i = col + 1; i < rows; i++) {
       factor = ab[i + col * rows];
       for (j = col; j < cols; j++)

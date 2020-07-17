@@ -186,9 +186,9 @@ int main(int argc, char *argv[]) {
     REF_INTERP ref_interp;
 
     REIS(1, pair_pos,
-         "required args: --pair donor_mesh.ext reciver_mesh.ext\n");
+         "required args: --pair donor_mesh.ext receiver_mesh.ext\n");
     if (4 > argc) {
-      printf("required args: --pair donor_mesh.ext reciver_mesh.ext\n");
+      printf("required args: --pair donor_mesh.ext receiver_mesh.ext\n");
       return REF_FAILURE;
     }
 
@@ -348,11 +348,11 @@ int main(int argc, char *argv[]) {
     REF_INT ldim;
     REIS(1, error_pos,
          "required args: --error truth_mesh.ext truth_solution.solb "
-         "canidate_mesh.ext canidate_solution.solb norm-order\n");
+         "candidate_mesh.ext candidate_solution.solb norm-order\n");
     if (7 > argc) {
       printf(
           "required args: --error truth_mesh.ext truth_solution.solb "
-          "canidate_mesh.ext canidate_solution.solb norm-order\n");
+          "candidate_mesh.ext candidate_solution.solb norm-order\n");
       return REF_FAILURE;
     }
 
@@ -902,7 +902,7 @@ int main(int argc, char *argv[]) {
       output[3 + ldim + odim * node] = rho * w / p;
       output[4 + ldim + odim * node] = -rho / p;
       if (odim == 12)
-        output[5 + ldim + odim * node] = 0; /* turb adj placholder */
+        output[5 + ldim + odim * node] = 0; /* turb adj placeholder */
     }
 
     RSS(ref_gather_scalar_by_extension(ref_grid, odim, output, NULL, argv[4]),

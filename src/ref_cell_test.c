@@ -92,14 +92,14 @@ int main(int argc, char *argv[]) {
     nodes[3] = 3;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
     RES(0, cell, "first cell is zero");
-    RES(1, ref_cell_n(ref_cell), "first cell incements n");
+    RES(1, ref_cell_n(ref_cell), "first cell increments n");
     nodes[0] = 0;
     nodes[1] = 1;
     nodes[2] = 2;
     nodes[3] = 3;
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
     RES(1, cell, "second cell is one");
-    RES(2, ref_cell_n(ref_cell), "second cell incements n");
+    RES(2, ref_cell_n(ref_cell), "second cell increments n");
 
     RSS(ref_cell_free(ref_cell), "cleanup");
   }
@@ -425,9 +425,9 @@ int main(int argc, char *argv[]) {
     nodes[1] = 1;
     nodes[2] = 2;
     nodes[3] = 3;
-    RAS(!ref_cell_valid(ref_cell, -1), "invlid -1");
-    RAS(!ref_cell_valid(ref_cell, -1), "invlid 0");
-    RAS(!ref_cell_valid(ref_cell, -1), "invlid 1");
+    RAS(!ref_cell_valid(ref_cell, -1), "invalid -1");
+    RAS(!ref_cell_valid(ref_cell, -1), "invalid 0");
+    RAS(!ref_cell_valid(ref_cell, -1), "invalid 1");
     RSS(ref_cell_add(ref_cell, nodes, &cell), "add cell");
     RAS(ref_cell_valid(ref_cell, 0), "valid 0");
 

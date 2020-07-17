@@ -60,13 +60,13 @@ ref_geom
 
 protect geom constraint metric from surface folds and high curvature
  filter based on samples of neighborhood
- descrete curvature estimate (triangle-center based?)
+ discrete curvature estimate (triangle-center based?)
  thin shells
   - near-tree for reducing geometry metric across thickness
   - single pass near-tree for grid size gradation of gaps
     + pearl in curved plate test case for blister
 
-boostrap
+bootstrap
   - thin cylinder/sphere shell test for thickness geom constraint
   - thin wavy (along training edge) training edge bootstrap
   - edge off surface testcase or surface gap testcase?
@@ -231,7 +231,7 @@ egads recon
 - virtual topology
 - split private/public header defs
 - standardize post operation conditions
-- second order boundary reconstruction of hessian and adjont
+- second order boundary reconstruction of hessian and adjoint
 - encourage first cell normal, skin friction noise
 - mesh movement
 - bootstrap all of C2S
@@ -249,8 +249,8 @@ ooooooooooooooooo
 + 1.9.2
 
 + remove fun3d ref subcommand
-+ allow surf cavity confirmity 0 normdev for thin chamfer test
-+ ref loop --partioner and --mesh-extension options
++ allow surf cavity conformity 0 normdev for thin chamfer test
++ ref loop --partitioner and --mesh-extension options
 + static ref_export function via ref_export_by_extension
 + parallel Dimension 2 metric .sol reader
 + z-lazy Dimension 2 metric .solb reader
@@ -290,7 +290,7 @@ ooooooooooooooooo
 + ref loop any number of turb equations
 
 + test for self intersecting triangles only on volume fail of bootstrap
-+ ref boostrap surface self intersection only during single part begin/end
++ ref bootstrap surface self intersection only during single part begin/end
 
 + parallel bootstrap surf adapt with single part tess and volume fill
 
@@ -308,7 +308,7 @@ ooooooooooooooooo
 + interpolate a single faceid of receptor from a donor for tunnel restart
 
 + extract init tess
-+ automatically set and increase tess parametters
++ automatically set and increase tess parameters
   + faces without tris
 
 + extract ref_grid_faceid_range ref_grid_edgeid_range from export and geom
@@ -319,7 +319,7 @@ ooooooooooooooooo
 
 + attribute to set segments per radian
 
-+ cavity opertor failure location
++ cavity operator failure location
 
 + estimate h and AR for metric with ref_metric_test --explore
 
@@ -337,7 +337,7 @@ ooooooooooooooooo
   + merge tet and surf-only tri logic for 3D surface and volume
   + ref_cavity_insert mark REF_CAVITY_BOUNDARY_CONSTRAINED without rm tri
   + ref_cavity_change check BOUNDARY_CONSTRAINED PARTITION_CONSTRAINED
-  + topo checks for tri replacment
+  + topo checks for tri replacement
   + store triangle replacement too (triangle sides?)
   + tri and geom handling
   + use faceid to center cavity on edge and span faces
@@ -386,7 +386,7 @@ ooooooooooooooooo
 + add acceptance/sphere-cube/tetgen/accept-sphere-cube-init.sh
 + isotropic edge curvature
 + anisotropic feature size, edge length tangent, dist to other edge normal?
-+ feature size accross thin shell geometry, i.e., curved cusp trailing edge
++ feature size across thin shell geometry, i.e., curved cusp trailing edge
 
 + euler conservative variable metric
 + abs value of hessian as last step
@@ -464,11 +464,11 @@ ooooooooooooooooo
 + merge ref_split_edge_local_tets ref_split_edge_local_prism
    + ref_cell_local_gem
 
-+ evaluate enthalpy as multiscale field: density/temp behavor through shock
++ evaluate enthalpy as multiscale field: density/temp behavior through shock
 + ref_interp_test --entropy multiscale field
 
 + termination recommendation based on one percent edge-metric ratio limit change
-+ edge-metric ratio post floor more aggresive once ceiling drops below 3
++ edge-metric ratio post floor more aggressive once ceiling drops below 3
 + ref_adapt_parameter is private method
 + ref_adapt_pass returns termination recommendation
 
@@ -493,11 +493,11 @@ ooooooooooooooooo
 
 + reordering for cache
   + implement grid vertex Cuthill-Magee reordering
-  + ref_edge_node unform use (remove from arg list)
+  + ref_edge_node uniform use (remove from arg list)
   + unit test the CM case in their paper for tri (empty ref_grid)
   + node and cell reordering for cache
   + cell pack: insert in first node index order
-  + compact adj (happens narturally during cell rodering)
+  + compact adj (happens naturally during cell reordering)
 
 + initialize metric to unit
 
@@ -579,7 +579,7 @@ ooooooooooooooooo
 + plot all tri uv at degen points
 
 + meshb only ref_driver option
-+ parametis config
++ parmetis config
 + id 1 for 2d, 0 for 3d
 
 + Look at the "mtype" of the Face (when you do an EG_getTopology)
@@ -603,7 +603,7 @@ ooooooooooooooooo
  + limit collapse
  + ref_smooth_tri_normdev_around
  + limit move
- + seperate volume and surface quality allow
+ + separate volume and surface quality allow
  + limit split
  + add ref_geom_degen to flags
  + set ref_geom_degen_degen 1:u or 2:v in ref_geom_jump_param
@@ -621,7 +621,7 @@ ooooooooooooooooo
  + extract ref_geom_grow for ref_geom_add and ref_geom_add_jump
  + delete ref_geom_add_jump, find_jump
  + set jumps at ONENODE
- + set jumps at mulitple edge uses
+ + set jumps at multiple edge uses
  + create method that returns sens and (t) based on a non jump geom
  + plot t jumps
  + create method that returns sens and (uv) based on a non jump geom
@@ -694,7 +694,7 @@ ooooooooooooooooo
 + meshb cad model only read (write full for now)
 + swap para builds to egads lite
 
-+ fix uninit memory in ref_adapt cmplexity
++ fix uninit memory in ref_adapt complexity
 
 + mixed element 2d for twest
 + rename ref_list_add to ref_list_push
@@ -706,7 +706,7 @@ ooooooooooooooooo
 + kill malloc.h values.h limits.h float.h
 
 + EGADS questions:
-  + degnerate edges (faces)
+  + degenerate edges (faces)
     EG_getTopology (mtype edge)
   + surface normal (direction and inside/outside orientation)
     EG_getTopology (mtype sforward is UxV out of domain)
@@ -767,7 +767,7 @@ ooooooooooooooooo
   + insert points
 
 + bob discussions
-  + INRIA meshb to store parameterization with grid (call MARCUM)
+  + INRIA meshb to store parametrization with grid (call MARCUM)
   + best way to recover uv, t (don't)
   + curvatures for metric
     + EG_curvature: when degenerate, move nearby
@@ -815,13 +815,13 @@ ooooooooooooooooo
 + include surface in metric ellipse
 
 + strip histogram gnuplot from accept test
-+ kirtosis spelling
++ kurtosis spelling
 
 + curvature adapt
 + degen curvature for cone-cone
 + smooth curve metric function
 + gradation control to curvature constraint limit matrix
-+ if descrete reconstruciton surface curvature constraints in metric needed,
++ if discrete reconstruction surface curvature constraints in metric needed,
   + Ref/aiaa-2010-0169-loseille-lohner-adapt-boom.pdf
   + Ref/frey-imr9-2000-about-surface-remeshing.pdf
   + Ref/chuang-hoffman-esaim-1992-curvature-parametric-surfaces.pdf
@@ -830,7 +830,7 @@ ooooooooooooooooo
 + improve surface smoothing with confidence?
 
 + improve smoothing with anisotropy in 45 degree to axis (cube, rotating metric)
-+ move the uv bounding box test to hihgest level
++ move the uv bounding box test to highest level
 + faster background interp (store guess)
 
 + create jenkins test
@@ -853,7 +853,7 @@ ooooooooooooooooo
 + coarsen
 
 + quality of edge primitive
-  + measure / define quaility (edge length, mean ratio, metric norm)
+  + measure / define quality (edge length, mean ratio, metric norm)
     + histogram
   + tune parameters not available in paper or extend edge primitive scheme?
 

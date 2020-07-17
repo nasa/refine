@@ -115,7 +115,7 @@ static REF_STATUS ref_face_make_canonical(REF_INT *original,
 
 REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes, REF_INT *face) {
   REF_INT item, ref, node;
-  REF_INT target[4], canidate[4], orig[4];
+  REF_INT target[4], candidate[4], orig[4];
 
   (*face) = REF_EMPTY;
 
@@ -124,9 +124,9 @@ REF_STATUS ref_face_with(REF_FACE ref_face, REF_INT *nodes, REF_INT *face) {
   each_ref_adj_node_item_with_ref(ref_face_adj(ref_face), nodes[0], item, ref) {
     for (node = 0; node < 4; node++)
       orig[node] = ref_face_f2n(ref_face, node, ref);
-    RSS(ref_face_make_canonical(orig, canidate), "canonical");
-    if (target[0] == canidate[0] && target[1] == canidate[1] &&
-        target[2] == canidate[2] && target[3] == canidate[3]) {
+    RSS(ref_face_make_canonical(orig, candidate), "canonical");
+    if (target[0] == candidate[0] && target[1] == candidate[1] &&
+        target[2] == candidate[2] && target[3] == candidate[3]) {
       (*face) = ref;
       return REF_SUCCESS;
     }

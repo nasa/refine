@@ -160,7 +160,7 @@ int main(void) {
     RWDS(1.0, d[11], -1, "z2");
   }
 
-  { /* diag decom, already diag and decending */
+  { /* diag decom, already diag and descending */
     REF_DBL m[6] = {3.0, 0.0, 0.0, 2.0, 0.0, 1.0};
     REF_DBL d[12];
 
@@ -183,7 +183,7 @@ int main(void) {
     RWDS(1.0, d[11], -1, "z2");
   }
 
-  { /* diag decom, already diag and decending */
+  { /* diag decom, already diag and descending */
     REF_DBL m[6] = {3.0, 0.0, 0.0, 2.0, 0.0, 1.0};
     REF_DBL d[12];
 
@@ -251,7 +251,7 @@ int main(void) {
     RWDS(4.0, d[2], -1, "eig 2");
   }
 
-  { /* diag decom, already diad need sort */
+  { /* diag decom, already diag need sort */
     REF_DBL m[6] = {1.0, 0.0, 0.0, 1000.0, 0.0, 1000000.0};
     REF_DBL d[12];
 

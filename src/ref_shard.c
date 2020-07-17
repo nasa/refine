@@ -194,7 +194,7 @@ REF_STATUS ref_shard_mark_cell_edge_split(REF_SHARD ref_shard, REF_INT cell,
       printf("%s: %d: %s: cell edge %d not implemented, skipping.\n", __FILE__,
              __LINE__, __func__, cell_edge);
       /*
-      RSB( REF_IMPLEMENT, "can not hadle cell edge",
+      RSB( REF_IMPLEMENT, "can not handle cell edge",
            printf("cell edge %d\n",cell_edge););
       */
       break;

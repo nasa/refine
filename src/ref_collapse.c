@@ -368,7 +368,7 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
     return REF_SUCCESS;
   }
 
-  /* geometery edge allowed if collapse is on edge */
+  /* geometry edge allowed if collapse is on edge */
   RSS(ref_geom_is_a(ref_geom, node1, REF_GEOM_EDGE, &geom_edge1),
       "edge check 1");
   if (geom_edge1) {
@@ -387,7 +387,7 @@ REF_STATUS ref_collapse_edge_geometry(REF_GRID ref_grid, REF_INT node0,
     case 3: /* geometry node never allowed to move */
       *allowed = REF_FALSE;
       break;
-    case 2: /* geometery edge allowed if collapse is on edge */
+    case 2: /* geometry edge allowed if collapse is on edge */
       RSS(ref_cell_list_with2(ref_tri, node0, node1, MAX_CELL_COLLAPSE, &ncell,
                               cell_to_collapse),
           "list");
@@ -931,7 +931,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
     new_nodes[ref_cell_node_per(ref_cell)] = nodes[ref_cell_node_per(ref_cell)];
 
     RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
-        "tuv support fororiginal configuration");
+        "tuv support for original configuration");
     RAS(supported,
         "original configuration before collapse does not support cell tuv");
     RSS(ref_geom_tri_norm_deviation(ref_grid, nodes, &orig_dev), "orig");
@@ -977,7 +977,7 @@ REF_STATUS ref_collapse_edge_normdev(REF_GRID ref_grid, REF_INT node0,
 
     /* see if new config is below limit */
     RSS(ref_geom_cell_tuv_supported(ref_geom, nodes, REF_GEOM_FACE, &supported),
-        "tuv support fororiginal configuration");
+        "tuv support for original configuration");
     RAS(supported,
         "original configuration before collapse does not support cell tuv");
     RSS(ref_geom_cell_tuv_supported(ref_geom, new_nodes, REF_GEOM_FACE,

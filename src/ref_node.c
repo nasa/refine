@@ -28,7 +28,7 @@
 #include "ref_mpi.h"
 #include "ref_sort.h"
 
-/* REF_EMPTY is terminatior, next avalable is shifted by 2*/
+/* REF_EMPTY is terminator, next available is shifted by 2*/
 #define next2index(next) (-(next)-2)
 #define index2next(index) (-2 - (index))
 
@@ -269,7 +269,7 @@ REF_STATUS ref_node_tattle_global(REF_NODE ref_node, REF_INT global) {
     }
   }
 
-  printf("%d: global %d: search%d %d exhast%d %d\n",
+  printf("%d: global %d: search%d %d exhaust%d %d\n",
          ref_mpi_rank(ref_node_mpi(ref_node)), global, found_from_sorted,
          local_from_sorted, found_from_exhaustive, local_from_exhaustive);
 
@@ -616,7 +616,7 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   REF_INT active0, active1, nactive;
   REF_INT i, local;
 
-  /* sort so that decrement of future processed unused wroks */
+  /* sort so that decrement of future processed unused works */
   RSS(ref_sort_in_place_glob(ref_node_n_unused(ref_node),
                              ref_node->unused_global),
       "in place");
@@ -630,7 +630,7 @@ REF_STATUS ref_node_eliminate_unused_globals(REF_NODE ref_node) {
   total_unused = 0;
   each_ref_mpi_part(ref_mpi, part) total_unused += counts[part];
 
-  /* hurtistic of max to process at a time */
+  /* heuristic of max to process at a time */
   chunk = (REF_INT)(total_unused / ref_mpi_n(ref_mpi) + 1);
   chunk = MAX(chunk, 100000);
 
@@ -2755,10 +2755,10 @@ REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *bary) {
     return REF_DIV_ZERO;
   }
 
-  RAS(bary[0] >= 0.0, "bary[0] not positve");
-  RAS(bary[1] >= 0.0, "bary[1] not positve");
-  RAS(bary[2] >= 0.0, "bary[2] not positve");
-  RAS(bary[3] >= 0.0, "bary[3] not positve");
+  RAS(bary[0] >= 0.0, "bary[0] not positive");
+  RAS(bary[1] >= 0.0, "bary[1] not positive");
+  RAS(bary[2] >= 0.0, "bary[2] not positive");
+  RAS(bary[3] >= 0.0, "bary[3] not positive");
 
   return REF_SUCCESS;
 }

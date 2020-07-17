@@ -68,9 +68,9 @@ static void adapt_help(const char *name) {
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
-  printf("  --partioner selects domain decomposition method.\n");
-  printf("      2: ParMETIS graph partioning.\n");
-  printf("      3: Zoltan graph partioning.\n");
+  printf("  --partitioner selects domain decomposition method.\n");
+  printf("      2: ParMETIS graph partitioning.\n");
+  printf("      3: Zoltan graph partitioning.\n");
   printf("      4: Zoltan recursive bisection.\n");
   printf("      5: native recursive bisection.\n");
   printf("\n");
@@ -142,9 +142,9 @@ static void loop_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
-  printf("   --partioner selects domain decomposition method.\n");
-  printf("       2: ParMETIS graph partioning.\n");
-  printf("       3: Zoltan graph partioning.\n");
+  printf("   --partitioner selects domain decomposition method.\n");
+  printf("       2: ParMETIS graph partitioning.\n");
+  printf("       3: Zoltan graph partitioning.\n");
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
   printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
@@ -258,13 +258,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
   }
 
-  RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--partitioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     REF_INT part_int = atoi(argv[pos + 1]);
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)part_int;
     if (ref_mpi_once(ref_mpi))
-      printf("--partioner %d partitioner\n",
+      printf("--partitioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
   }
 
@@ -896,13 +896,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_part_by_extension(&ref_grid, ref_mpi, filename), "part");
   ref_mpi_stopwatch_stop(ref_mpi, "part");
 
-  RXS(ref_args_find(argc, argv, "--partioner", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--partitioner", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     REF_INT part_int = atoi(argv[pos + 1]);
     ref_grid_partitioner(ref_grid) = (REF_MIGRATE_PARTIONER)part_int;
     if (ref_mpi_once(ref_mpi))
-      printf("--partioner %d partitioner\n",
+      printf("--partitioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
   }
 
@@ -1299,7 +1299,7 @@ static REF_STATUS multiscale(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_from_node(metric, ref_grid_node(ref_grid)), "get node");
     RSS(ref_recon_abs_value_hessian(ref_grid, metric), "abs val");
     RSS(ref_recon_roundoff_limit(metric, ref_grid),
-        "floor metric eignvalues based on grid size and solution jitter");
+        "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
         "local scale lp norm");
     RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
@@ -1422,7 +1422,7 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     REF_GRID twod_grid = ref_grid;
-    if (ref_mpi_once(ref_mpi)) printf("extrude prims\n");
+    if (ref_mpi_once(ref_mpi)) printf("extrude prisms\n");
     RSS(ref_grid_extrude_twod(&ref_grid, twod_grid), "extrude");
     RSS(ref_grid_free(twod_grid), "free");
   }

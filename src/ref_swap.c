@@ -193,8 +193,8 @@ REF_STATUS ref_swap_pass(REF_GRID ref_grid) {
     face_nodes[3] = face_nodes[0];
     RSS(ref_cell_with_face(tet, face_nodes, &tet0, &tet1),
         "unable to find tets with face");
-    if (REF_EMPTY == tet0) THROW("boundry tet missing");
-    if (REF_EMPTY != tet1) THROW("boundry tri has two tets, not manifold");
+    if (REF_EMPTY == tet0) THROW("boundary tet missing");
+    if (REF_EMPTY != tet1) THROW("boundary tri has two tets, not manifold");
 
     /* must be local to swap */
     rank = ref_mpi_rank(ref_grid_mpi(ref_grid));

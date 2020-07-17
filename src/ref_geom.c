@@ -787,7 +787,7 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
 
   if (have_jump) {
     /* uv update at jump not needed, should always depend on cell_c2n */
-    /* keeping for consistancy with non-jump */
+    /* keeping for consistency with non-jump */
     each_ref_cell_having_node(ref_cell, node, cell_item, cell) {
       RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
       faceid = nodes[3];

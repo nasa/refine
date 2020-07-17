@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     for (sweep = 0; sweep < 2; sweep++) {
       RSS(ref_elast_relax(ref_elast, &l2norm), "elast");
     }
-    RWDS(0.0, l2norm, -1.0, "not coverged on to steps");
+    RWDS(0.0, l2norm, -1.0, "not converged on to steps");
     if (REF_SUCCESS == ref_node_local(ref_node, 3, &node)) {
       RWDS(ref_elast->displacement[0 + 3 * node], 0.0, -1.0, "x");
       RWDS(ref_elast->displacement[1 + 3 * node], 0.0, -1.0, "y");
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
     for (sweep = 0; sweep < 1000; sweep++) {
       RSS(ref_elast_relax(ref_elast, &l2norm), "elast");
     }
-    RWDS(0.0, l2norm, -1.0, "not coverged on to steps");
+    RWDS(0.0, l2norm, -1.0, "not converged on to steps");
     each_ref_node_valid_node(
         ref_grid_node(ref_grid),
         node) if ((0.99 < ref_node_xyz(ref_grid_node(ref_grid), 2, node) &&

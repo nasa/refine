@@ -358,7 +358,7 @@ REF_STATUS ref_meshlink_link(REF_GRID ref_grid, const char *block_name) {
     }
   }
 
-  /* shift negative face ids (not assocated) positive */
+  /* shift negative face ids (not associated) positive */
   RSS(ref_dict_create(&ref_dict), "create");
   ref_cell = ref_grid_tri(ref_grid);
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {

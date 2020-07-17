@@ -48,7 +48,7 @@ static REF_STATUS set_up_hex_for_shard(REF_SHARD *ref_shard_ptr,
                                        REF_MPI ref_mpi) {
   REF_GRID ref_grid;
 
-  RSS(ref_fixture_hex_grid(&ref_grid, ref_mpi), "fixure hex");
+  RSS(ref_fixture_hex_grid(&ref_grid, ref_mpi), "fixture hex");
 
   RSS(ref_shard_create(ref_shard_ptr, ref_grid), "create");
 

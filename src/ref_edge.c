@@ -91,7 +91,7 @@ REF_STATUS ref_edge_uniq(REF_EDGE ref_edge, REF_INT node0, REF_INT node1) {
       "find existing");
   if (REF_EMPTY != edge) return REF_SUCCESS;
 
-  /* incemental reallocation */
+  /* incremental reallocation */
   if (ref_edge_n(ref_edge) >= ref_edge_max(ref_edge)) {
     REF_INT orig, chunk;
     orig = ref_edge_max(ref_edge);

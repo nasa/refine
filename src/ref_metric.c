@@ -1714,7 +1714,7 @@ REF_STATUS ref_metric_lp(REF_DBL *metric, REF_GRID ref_grid, REF_DBL *scalar,
                          REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
-      "floor metric eignvalues based on grid size and solution jitter");
+      "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, weight, ref_grid, p_norm),
       "local scale lp norm");
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
@@ -1774,7 +1774,7 @@ REF_STATUS ref_metric_moving_multiscale(REF_DBL *metric, REF_GRID ref_grid,
   ref_free(xyz);
 
   RSS(ref_recon_roundoff_limit(hess, ref_grid),
-      "floor metric eignvalues based on grid size and solution jitter");
+      "floor metric eigenvalues based on grid size and solution jitter");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
     RSS(ref_matrix_jac_m_jact(&(jac[9 * node]), &(hess[6 * node]),
                               &(metric[6 * node])),
@@ -1804,7 +1804,7 @@ REF_STATUS ref_metric_eig_bal(REF_DBL *metric, REF_GRID ref_grid,
                               REF_DBL target_complexity) {
   RSS(ref_recon_hessian(ref_grid, scalar, metric, reconstruction), "recon");
   RSS(ref_recon_roundoff_limit(metric, ref_grid),
-      "floor metric eignvalues based on grid size and solution jitter");
+      "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_histogram(metric, ref_grid, "hess.tec"), "histogram");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
       "local scale lp norm");

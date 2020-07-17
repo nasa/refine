@@ -1098,7 +1098,7 @@ int main(int argc, char *argv[]) {
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 6; i < 10; i++) {
-        RWDS((REF_DBL)i, field[i + 10 * node], -1.0, "not repalced");
+        RWDS((REF_DBL)i, field[i + 10 * node], -1.0, "not replaced");
       }
     }
     if (ref_mpi_once(ref_mpi)) {

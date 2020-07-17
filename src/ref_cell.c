@@ -772,7 +772,7 @@ REF_STATUS ref_cell_part_cell_node(REF_CELL ref_cell, REF_NODE ref_node,
   *cell_node = REF_EMPTY;
   if (cell < 0 || cell > ref_cell_max(ref_cell)) return REF_INVALID;
   if (REF_EMPTY == ref_cell_c2n(ref_cell, 0, cell)) return REF_INVALID;
-  /* set first node as samllest */
+  /* set first node as smallest */
   node = 0;
   global = ref_node_global(ref_node, ref_cell_c2n(ref_cell, node, cell));
   smallest_global = global;
@@ -968,7 +968,7 @@ REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
                               REF_INT *cell0, REF_INT *cell1) {
   REF_INT item, node, same, cell_face, cell;
   REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncanidate, canidate[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncandidate, candidate[REF_CELL_MAX_SIZE_PER];
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
 
   (*cell0) = REF_EMPTY;
@@ -981,12 +981,12 @@ REF_STATUS ref_cell_with_face(REF_CELL ref_cell, REF_INT *face_nodes,
       for (node = 0; node < 4; node++) {
         orig[node] = ref_cell_f2n(ref_cell, node, cell_face, cell);
       }
-      RSS(ref_sort_unique_int(4, orig, &ncanidate, canidate), "c uniq");
+      RSS(ref_sort_unique_int(4, orig, &ncandidate, candidate), "c uniq");
 
-      if (ntarget == ncanidate) {
+      if (ntarget == ncandidate) {
         same = 0;
         for (node = 0; node < ntarget; node++) {
-          if (target[node] == canidate[node]) same++;
+          if (target[node] == candidate[node]) same++;
         }
 
         if (ntarget == same) {
@@ -1041,7 +1041,7 @@ REF_STATUS ref_cell_ntri_with_tet_nodes(REF_CELL ref_cell, REF_INT *nodes,
 REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell) {
   REF_INT item, ref, node, same;
   REF_INT ntarget, target[REF_CELL_MAX_SIZE_PER];
-  REF_INT ncanidate, canidate[REF_CELL_MAX_SIZE_PER];
+  REF_INT ncandidate, candidate[REF_CELL_MAX_SIZE_PER];
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
 
   (*cell) = REF_EMPTY;
@@ -1051,13 +1051,13 @@ REF_STATUS ref_cell_with(REF_CELL ref_cell, REF_INT *nodes, REF_INT *cell) {
 
   each_ref_adj_node_item_with_ref(ref_cell_adj(ref_cell), nodes[0], item, ref) {
     RSS(ref_cell_nodes(ref_cell, ref, orig), "get orig");
-    RSS(ref_sort_unique_int(ref_cell_node_per(ref_cell), orig, &ncanidate,
-                            canidate),
+    RSS(ref_sort_unique_int(ref_cell_node_per(ref_cell), orig, &ncandidate,
+                            candidate),
         "canonical");
-    if (ntarget == ncanidate) {
+    if (ntarget == ncandidate) {
       same = 0;
       for (node = 0; node < ntarget; node++)
-        if (target[node] == canidate[node]) same++;
+        if (target[node] == candidate[node]) same++;
       if (ntarget == same) {
         (*cell) = ref;
         return REF_SUCCESS;

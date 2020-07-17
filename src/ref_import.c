@@ -495,7 +495,7 @@ static REF_STATUS ref_import_bin_ugrid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &npri), "npri");
   RSS(ref_import_bin_ugrid_chunk(file, swap, fat, 1, &nhex), "nhex");
 
-  /* large block reads reccomended for IO performance */
+  /* large block reads recommended for IO performance */
   max_chunk = MIN(1000000, nnode);
   ref_malloc(xyz, 3 * max_chunk, REF_DBL);
   nread = 0;
@@ -964,7 +964,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
       for (node = 0; node < nnode; node++) {
         REIS(4, fscanf(file, "%d %lf %lf %lf", &row, &x, &y, &z),
              "read $Nodes xyz");
-        REIS(node + 1, row, "row index missmatch in $Nodes");
+        REIS(node + 1, row, "row index miss match in $Nodes");
         RSS(ref_node_add(ref_node, node, &new_node), "add node");
         ref_node_xyz(ref_node, 0, new_node) = x;
         ref_node_xyz(ref_node, 1, new_node) = y;
@@ -981,7 +981,7 @@ static REF_STATUS ref_import_msh(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
              fscanf(file, "%d %d %d %d %d %d", &row, &type, &three, &id, &flag,
                     &zero),
              "$Elements description");
-        REIS(elem + 1, row, "row index missmatch in $Elements");
+        REIS(elem + 1, row, "row index miss match in $Elements");
         switch (type) {
           case 5:
             ref_cell = ref_grid_hex(ref_grid);
@@ -1245,7 +1245,7 @@ static REF_STATUS ref_import_meshb(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
         }
         if (REF_CELL_PYR == ref_cell_type(ref_cell)) {
           /* convention: square basis is 0-1-2-3
-             (oriented conter clockwise like trias) and top vertex is 4 */
+             (oriented counter clockwise like trias) and top vertex is 4 */
           n0 = nodes[0];
           n1 = nodes[1];
           n2 = nodes[2];
@@ -1472,7 +1472,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
         printf(" geom face assoc\n");
         break;
       case 62:
-        printf(" soluton at vertices\n");
+        printf(" solution at vertices\n");
         break;
       case 126:
         printf(" CAD data\n");

@@ -204,8 +204,8 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_malloc_init(ref_interp->cell, max, REF_INT, REF_EMPTY);
   ref_malloc_init(ref_interp->part, max, REF_INT, REF_EMPTY);
   ref_malloc(ref_interp->bary, 4 * max, REF_DBL);
-  ref_interp->inside = -1.0e-12; /* inside tolerence */
-  ref_interp->bound = -0.1;      /* bound tolerence */
+  ref_interp->inside = -1.0e-12; /* inside tolerance */
+  ref_interp->bound = -0.1;      /* bound tolerance */
 
   RSS(ref_agents_create(&(ref_interp->ref_agents), ref_interp_mpi(ref_interp)),
       "add agents");
@@ -605,7 +605,7 @@ REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
     return REF_SUCCESS;
   }
   if (node >= ref_interp_max(ref_interp)) {
-    printf("max %d too samll for %d\n", ref_interp_max(ref_interp), node);
+    printf("max %d too small for %d\n", ref_interp_max(ref_interp), node);
     return REF_SUCCESS;
   }
   if (REF_EMPTY == ref_interp->cell[node]) {
@@ -907,7 +907,7 @@ static REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
            REF_AGENT_TERMINATED == ref_agent_mode(ref_agents, id)) &&
           ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
         node = ref_agent_node(ref_agents, id);
-        RAS(ref_node_valid(to_node, node), "not vaild");
+        RAS(ref_node_valid(to_node, node), "not valid");
         RAS(ref_node_owned(to_node, node), "ghost, not owned");
         REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
         RAS(ref_interp->agent_hired[node], "should have an agent");
@@ -915,8 +915,8 @@ static REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
           (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
           (ref_interp->n_terminated)++;
         }
-        ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-        RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+        ref_interp->agent_hired[node] = REF_FALSE; /* but no more */
+        RSS(ref_agents_remove(ref_agents, id), "no longer needed");
       }
     }
 
@@ -924,7 +924,7 @@ static REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
       if (REF_AGENT_ENCLOSING == ref_agent_mode(ref_agents, id) &&
           ref_agent_home(ref_agents, id) == ref_mpi_rank(ref_mpi)) {
         node = ref_agent_node(ref_agents, id);
-        RAS(ref_node_valid(to_node, node), "not vaild");
+        RAS(ref_node_valid(to_node, node), "not valid");
         RAS(ref_node_owned(to_node, node), "ghost, not owned");
         REIS(REF_EMPTY, ref_interp->cell[node], "already found?");
         RAS(ref_interp->agent_hired[node], "should have an agent");
@@ -936,8 +936,8 @@ static REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
         (ref_interp->walk_steps) += (ref_agent_step(ref_agents, id) + 1);
         (ref_interp->n_walk)++;
 
-        ref_interp->agent_hired[node] = REF_FALSE; /* but nore more */
-        RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+        ref_interp->agent_hired[node] = REF_FALSE; /* but no more */
+        RSS(ref_agents_remove(ref_agents, id), "no longer needed");
         RSS(ref_interp_push_onto_queue(ref_interp, node), "push");
       }
     }
@@ -1269,7 +1269,7 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
         }
       } else {
         *increase_fuzz =
-            REF_TRUE; /* candate not found, try again larger fuzz */
+            REF_TRUE; /* candidate not found, try again larger fuzz */
       }
       nsend++;
     }
@@ -1405,7 +1405,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
     best_bary[node] = 1.0e20; /* negative for min, until use max*/
     RSS(ref_search_nearest_candidates(ref_search, ref_list,
                                       &(global_xyz[3 * node])),
-        "near canidates");
+        "near candidates");
     if (ref_list_n(ref_list) > 0) {
       RSS(ref_interp_best_tri_in_list(from_grid, ref_list,
                                       &(global_xyz[3 * node]),
@@ -1565,7 +1565,7 @@ static REF_STATUS ref_interp_seed_tree(REF_INTERP ref_interp) {
   }
 
   /* use approximately 1 percent of existing targets sampled uniformly,
-     betwwen 10 or 100, less than or equal ntarget */
+     between 10 or 100, less than or equal ntarget */
   seed_target = ntarget / 100;
   seed_target = MAX(seed_target, 10);
   seed_target = MIN(seed_target, 100);
@@ -1906,7 +1906,7 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     ref_interp->cell[node] = REF_EMPTY;
   }
   ref_interp->agent_hired[node] = REF_FALSE; /* dismissed */
-  RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+  RSS(ref_agents_remove(ref_agents, id), "no longer needed");
 
   if (!ref_mpi_para(ref_node_mpi(ref_node)) &&
       REF_EMPTY == ref_interp->cell[node]) {
@@ -1974,7 +1974,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
     RSS(ref_interp_walk_agent(ref_interp, id), "walking");
     if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
       ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
-      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      RSS(ref_agents_remove(ref_agents, id), "no longer needed");
       id = REF_EMPTY;
     }
   }
@@ -1990,7 +1990,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
     RSS(ref_interp_walk_agent(ref_interp, id), "walking");
     if (REF_AGENT_ENCLOSING != ref_agent_mode(ref_agents, id)) {
       ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
-      RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+      RSS(ref_agents_remove(ref_agents, id), "no longer needed");
       id = REF_EMPTY;
     }
   }
@@ -2009,7 +2009,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
       ref_interp->cell[new_node] = REF_EMPTY;
     }
     ref_interp->agent_hired[new_node] = REF_FALSE; /* dismissed */
-    RSS(ref_agents_remove(ref_agents, id), "no longer neeeded");
+    RSS(ref_agents_remove(ref_agents, id), "no longer needed");
   }
 
   if (!ref_mpi_para(ref_mpi) && REF_EMPTY == ref_interp->cell[new_node]) {
@@ -2534,7 +2534,7 @@ static double wq[] = {
     0.064285714285714, 0.064285714285714, 0.064285714285714, 0.064285714285714,
     0.064285714285714, 0.064285714285714, 0.064285714285714, 0.064285714285714,
     0.064285714285714, 0.064285714285714, 0.064285714285714, 0.064285714285714};
-REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
+REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *candidate,
                                 REF_DBL *truth, REF_INT norm_power,
                                 REF_DBL *error) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
@@ -2542,7 +2542,7 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
   REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_INT i, cell, cell_node, node, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL diff, volume, total_volume, bary[4];
-  REF_DBL canidate_at_gauss_point, truth_at_gauss_point;
+  REF_DBL candidate_at_gauss_point, truth_at_gauss_point;
   REF_INT part;
   *error = 0.0;
   total_volume = 0.0;
@@ -2556,14 +2556,14 @@ REF_STATUS ref_interp_integrate(REF_GRID ref_grid, REF_DBL *canidate,
       bary[2] = 0.5 * (1.0 + yq[i]);
       bary[3] = 0.5 * (1.0 + zq[i]);
       bary[0] = 1.0 - bary[1] - bary[2] - bary[3];
-      canidate_at_gauss_point = 0.0;
+      candidate_at_gauss_point = 0.0;
       truth_at_gauss_point = 0.0;
       each_ref_cell_cell_node(ref_cell, cell_node) {
         node = nodes[cell_node];
-        canidate_at_gauss_point += bary[cell_node] * canidate[node];
+        candidate_at_gauss_point += bary[cell_node] * candidate[node];
         truth_at_gauss_point += bary[cell_node] * truth[node];
       }
-      diff = ABS(canidate_at_gauss_point - truth_at_gauss_point);
+      diff = ABS(candidate_at_gauss_point - truth_at_gauss_point);
       *error += (6.0 / 8.0) * wq[i] * volume * pow(diff, norm_power);
     }
   }
@@ -2654,7 +2654,7 @@ static REF_STATUS ref_interp_plt_header(FILE *file, REF_INT *nvar,
 
   for (var = 0; var < numvar; var++) {
     RSS(ref_interp_plt_string(file, varname, 1024), "read variable name");
-    printf("plt varable name %d '%s'\n", var, varname);
+    printf("plt variable name %d '%s'\n", var, varname);
   }
 
   REIS(1, fread(&zonemarker, sizeof(float), 1, file), "zonemarker");
@@ -2666,7 +2666,7 @@ static REF_STATUS ref_interp_plt_header(FILE *file, REF_INT *nvar,
     REIS(1, fread(&strand, sizeof(int), 1, file), "strand");
     REIS(1, fread(&solutiontime, sizeof(double), 1, file), "solutiontime");
     REIS(1, fread(&notused, sizeof(int), 1, file), "notused");
-    REIS(-1, notused, "not unused shoud be -1 plt");
+    REIS(-1, notused, "not unused should be -1 plt");
     REIS(1, fread(&zonetype, sizeof(int), 1, file), "zonetype");
     REIS(5, zonetype, "only FEBRICK plt zone implemented");
     REIS(1, fread(&packing, sizeof(int), 1, file), "packing");
@@ -2674,7 +2674,7 @@ static REF_STATUS ref_interp_plt_header(FILE *file, REF_INT *nvar,
     REIS(1, fread(&location, sizeof(int), 1, file), "location");
     REIS(0, location, "only node data location plt implemented");
     REIS(1, fread(&neighbor, sizeof(int), 1, file), "neighbor");
-    REIS(0, neighbor, "no face nieghbor  plt implemented");
+    REIS(0, neighbor, "no face neighbor  plt implemented");
 
     for (i = 0; i < numvar; i++) {
       REIS(1, fread(&miscellaneous, sizeof(int), 1, file), "mystery");
@@ -2728,7 +2728,7 @@ static REF_STATUS ref_interp_plt_data(FILE *file, REF_INT nvar,
   if (1 == passive) {
     for (i = 0; i < nvar; i++) {
       REIS(1, fread(&passive, sizeof(int), 1, file), "dim");
-      REIS(0, passive, "passive varaible nonzero plt");
+      REIS(0, passive, "passive variable nonzero plt");
     }
   }
   REIS(1, fread(&sharing, sizeof(int), 1, file), "dim");
@@ -2803,7 +2803,7 @@ REF_STATUS ref_interp_plt(REF_GRID ref_grid, const char *filename,
   *ldim = nvar - 3;
   ref_malloc_init(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL, -999.0);
 
-  RSS(ref_list_create(&touching), "tounching list");
+  RSS(ref_list_create(&touching), "touching list");
   for (zone = 0; zone < nzone; zone++) {
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_interp_plt_data(file, nvar, zone_nnode, zone_nelem, &length,
