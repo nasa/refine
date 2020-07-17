@@ -380,7 +380,6 @@ REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
 }
 
 REF_STATUS ref_matrix_show_jacob(REF_DBL *j) {
-
   printf("%24.15e", j[0]);
   printf("%24.15e", j[3]);
   printf("%24.15e", j[6]);

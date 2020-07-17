@@ -1577,17 +1577,20 @@ REF_STATUS ref_part_metric(REF_NODE ref_node, const char *filename) {
       }
       RUS(REF_EMPTY, dim, "Dimension keyword missing from .sol metric");
       RAS(found_keyword, "SolAtVertices keyword missing from .sol metric");
+    } else {
+      nnode = (REF_INT)ref_node_n_global(ref_node);
     }
   }
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+      "bcast nnode");
 
-  chunk = (REF_INT)MAX(
-      100000, ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
 
   ref_malloc_init(metric, 6 * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
-  while (nnode_read < ref_node_n_global(ref_node)) {
+  while (nnode_read < nnode) {
     section_size =
         (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
@@ -1784,7 +1787,7 @@ static REF_STATUS ref_part_scalar_solb(REF_NODE ref_node, REF_INT *ldim,
   ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
-  while (nnode_read < ref_node_n_global(ref_node)) {
+  while (nnode_read < nnode) {
     section_size = MIN(chunk, (REF_INT)(nnode - nnode_read));
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       REIS((*ldim) * section_size,
@@ -1891,16 +1894,17 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   }
   RSS(ref_mpi_bcast(ref_node_mpi(ref_node), ldim, 1, REF_INT_TYPE),
       "bcast ldim");
+  RSS(ref_mpi_bcast(ref_node_mpi(ref_node), &nnode, 1, REF_INT_TYPE),
+      "bcast ldim");
   ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
 
-  chunk = (REF_INT)MAX(
-      100000, ref_node_n_global(ref_node) / ref_mpi_n(ref_node_mpi(ref_node)));
-  chunk = (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node));
+  chunk = (REF_INT)MAX(100000, nnode / ref_mpi_n(ref_node_mpi(ref_node)));
+  chunk = (REF_INT)MIN((REF_GLOB)chunk, nnode);
 
   ref_malloc_init(data, (*ldim) * chunk, REF_DBL, -1.0);
 
   nnode_read = 0;
-  while (nnode_read < ref_node_n_global(ref_node)) {
+  while (nnode_read < nnode) {
     section_size =
         (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {

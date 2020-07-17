@@ -536,7 +536,8 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
         printf("unable to open ref_gather_movie.tec\n");
       RNS(ref_gather->grid_file, "unable to open file");
 
-      fprintf(ref_gather->grid_file, "title=\"tecplot refine partition file\"\n");
+      fprintf(ref_gather->grid_file,
+              "title=\"tecplot refine partition file\"\n");
       fprintf(ref_gather->grid_file,
               "variables = \"x\" \"y\" \"z\" \"n\" \"s\" \"l\" \"p\"\n");
     }
