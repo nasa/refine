@@ -484,7 +484,7 @@ static REF_STATUS ref_egads_tess_fill_edg(REF_GRID ref_grid, ego tess,
     }
     if (!degenerate)
       for (node = 0; node < (plen - 1); node++) {
-        /* assue edge index is 1-bias */
+        /* assume edge index is 1-bias */
         REIS(EGADS_SUCCESS,
              EG_localToGlobal(tess, -(edge + 1), node + 1, &(nodes[0])),
              "l2g0");
@@ -842,7 +842,7 @@ static REF_STATUS ref_egads_update_tparams_attributes(
       }
       if (EGADS_SUCCESS == EG_attributeRet(faceobj, ".tParams", &atype, &len,
                                            &pints, &preals, &string)) {
-        /* examine exisiting .tParams and detect change within tol */
+        /* examine existing .tParams and detect change within tol */
         if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
         each_ref_cloud_aux(face_tp_augment, i) {
           needs_update =
@@ -881,7 +881,7 @@ static REF_STATUS ref_egads_update_tparams_attributes(
       }
       if (EGADS_SUCCESS == EG_attributeRet(edgeobj, ".tParams", &atype, &len,
                                            &pints, &preals, &string)) {
-        /* examine exisiting .tParams and detect change within tol */
+        /* examine existing .tParams and detect change within tol */
         if (ATTRREAL != atype || len != 3) THROW("malformed .tParams");
         each_ref_cloud_aux(edge_tp_augment, i) {
           needs_update =
@@ -1482,7 +1482,7 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
           next_node = node_list[i];
           if (REF_SUCCESS ==
               ref_geom_find(ref_geom, next_node, REF_GEOM_EDGE, id, &geom))
-            continue; /* this canidate is already part of the edge */
+            continue; /* this candidate is already part of the edge */
           RXS(ref_cell_id_list_around(ref_grid_tri(ref_grid), next_node,
                                       REF_GEOM_MAX_FACEIDS, &nfaceid, faceids),
               REF_INCREASE_LIMIT, "count faceids");
@@ -1552,7 +1552,7 @@ REF_STATUS ref_egads_recon(REF_GRID ref_grid) {
   ref_free(node_list);
   ref_free(e2f);
 
-  printf("seting face UV under edges\n");
+  printf("setting face UV under edges\n");
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(ref_grid), cell,
                                       edge_nodes) {
     REF_INT edgeid, faceid;

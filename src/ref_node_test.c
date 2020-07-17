@@ -374,7 +374,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_node_remove(ref_node, node), "remove node");
 
-    RSS(ref_node_next_global(ref_node, &next), "next gloabal");
+    RSS(ref_node_next_global(ref_node, &next), "next global");
     REIS(global, next, "not reused");
 
     RSS(ref_node_free(ref_node), "free");
@@ -2084,7 +2084,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_dist_to_edge(ref_node, nodes, xyz, &dist), "bary");
     RWDS(1.0, dist, -1.0, "b0");
 
-    /* 3:4:5 traiangle */
+    /* 3:4:5 triangle */
     xyz[0] = 2.5;
     xyz[1] = 1.5;
     xyz[2] = 2.0;
@@ -2092,7 +2092,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_dist_to_edge(ref_node, nodes, xyz, &dist), "bary");
     RWDS(2.5, dist, -1.0, "b0");
 
-    /* 3:4:5 traiangle, shift edge */
+    /* 3:4:5 triangle, shift edge */
     ref_node_xyz(ref_node, 0, nodes[0]) = 5.0;
     ref_node_xyz(ref_node, 0, nodes[1]) = 10.0;
     xyz[0] = 2.5;

@@ -1176,7 +1176,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
     nodes[3] = ref_cavity_s2n(ref_cavity, 2, seg);
 
     RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
-        "with manifold seach failed");
+        "with manifold search failed");
     if (REF_EMPTY != cell) {
       RSS(ref_list_contains(ref_cavity_tri_list(ref_cavity), cell, &contains),
           "contains a plan to remove");
@@ -1202,7 +1202,7 @@ static REF_STATUS ref_cavity_manifold(REF_CAVITY ref_cavity,
     nodes[3] = node;
 
     RXS(ref_cell_with(ref_cell, nodes, &cell), REF_NOT_FOUND,
-        "with manifold seach failed");
+        "with manifold search failed");
     if (REF_EMPTY != cell) {
       RSS(ref_list_contains(ref_cavity_tet_list(ref_cavity), cell, &contains),
           "contains a plan to remove");

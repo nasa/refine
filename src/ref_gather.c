@@ -536,7 +536,7 @@ REF_STATUS ref_gather_tec_movie_frame(REF_GRID ref_grid,
         printf("unable to open ref_gather_movie.tec\n");
       RNS(ref_gather->grid_file, "unable to open file");
 
-      fprintf(ref_gather->grid_file, "title=\"tecplot refine partion file\"\n");
+      fprintf(ref_gather->grid_file, "title=\"tecplot refine partition file\"\n");
       fprintf(ref_gather->grid_file,
               "variables = \"x\" \"y\" \"z\" \"n\" \"s\" \"l\" \"p\"\n");
     }
@@ -687,7 +687,7 @@ REF_STATUS ref_gather_tec_part(REF_GRID ref_grid, const char *filename) {
     if (NULL == (void *)file) printf("unable to open %s\n", filename);
     RNS(file, "unable to open file");
 
-    fprintf(file, "title=\"tecplot refine partion file\"\n");
+    fprintf(file, "title=\"tecplot refine partition file\"\n");
     fprintf(file, "variables = \"x\" \"y\" \"z\" \"p\" \"a\"\n");
     fprintf(file,
             "zone t=\"part\", nodes=" REF_GLOB_FMT
@@ -1190,7 +1190,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
         if (always_id && REF_CELL_PYR == ref_cell_type(ref_cell)) {
           REF_LONG n0, n1, n2, n3, n4;
           /* convention: square basis is 0-1-2-3
-             (oriented conter clockwise like trias) and top vertex is 4 */
+             (oriented counter clockwise like trias) and top vertex is 4 */
           n0 = globals[0];
           n1 = globals[3];
           n2 = globals[4];
@@ -1261,7 +1261,7 @@ static REF_STATUS ref_gather_cell(REF_NODE ref_node, REF_CELL ref_cell,
           if (always_id && REF_CELL_PYR == ref_cell_type(ref_cell)) {
             REF_LONG n0, n1, n2, n3, n4;
             /* convention: square basis is 0-1-2-3
-               (oriented conter clockwise like trias) and top vertex is 4 */
+               (oriented counter clockwise like trias) and top vertex is 4 */
             n0 = globals[0];
             n1 = globals[3];
             n2 = globals[4];

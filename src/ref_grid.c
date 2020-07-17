@@ -727,7 +727,7 @@ REF_STATUS ref_grid_enclosing_tet(REF_GRID ref_grid, REF_DBL *xyz, REF_INT *tet,
   }
 
   limit = 1000;      /* was 10e6^(1/3), required 108 for twod testcase  */
-  inside = -1.0e-12; /* initial inside tolerence  */
+  inside = -1.0e-12; /* initial inside tolerance  */
 
   for (step = 0; step < limit; step++) {
     /* exhaustive search if cell is invalid */
@@ -884,7 +884,7 @@ REF_STATUS ref_grid_extrude_twod(REF_GRID *extruded_grid, REF_GRID twod_grid) {
     RSS(ref_cell_add(ref_grid_qua(ref_grid), new_nodes, &new_cell), "boundary");
   }
 
-  /* find two unsed faceids for the symmetry planes */
+  /* find two unused faceids for the symmetry planes */
   max_faceid = REF_INT_MIN;
   each_ref_cell_valid_cell_with_nodes(ref_grid_edg(twod_grid), cell, nodes) {
     max_faceid = MAX(max_faceid, nodes[2]);

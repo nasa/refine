@@ -829,7 +829,7 @@ REF_STATUS ref_recon_abs_value_hessian(REF_GRID ref_grid, REF_DBL *hessian) {
   REF_DBL diag_system[12];
   REF_INT node;
 
-  /* positive eignevalues to make positive definite */
+  /* positive eigenvalues to make positive definite */
   each_ref_node_valid_node(ref_node, node) {
     if (ref_node_owned(ref_node, node)) {
       RSS(ref_matrix_diag_m(&(hessian[6 * node]), diag_system), "decomp");

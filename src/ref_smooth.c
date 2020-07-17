@@ -112,7 +112,7 @@ REF_STATUS ref_smooth_tri_quality_around(REF_GRID ref_grid, REF_INT node,
 
   if (none_found) {
     *min_quality = -2.0;
-    THROW("no triagle found, can not compute quality");
+    THROW("no triangle found, can not compute quality");
   }
 
   return REF_SUCCESS;
@@ -142,7 +142,7 @@ REF_STATUS ref_smooth_tri_normdev_around(REF_GRID ref_grid, REF_INT node,
 
   if (none_found) {
     *min_normdev = -2.0;
-    THROW("no triagle found, can not compute normdev");
+    THROW("no triangle found, can not compute normdev");
   }
 
   return REF_SUCCESS;
@@ -172,7 +172,7 @@ static REF_STATUS ref_smooth_tri_uv_area_around(REF_GRID ref_grid, REF_INT node,
     }
   }
 
-  if (none_found) THROW("no triagle found, can not compute min uv area");
+  if (none_found) THROW("no triangle found, can not compute min uv area");
 
   return REF_SUCCESS;
 }
@@ -267,7 +267,7 @@ REF_STATUS ref_smooth_tri_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tri,
   if (ref_math_divisible(scale, length_in_metric)) {
     scale = scale / length_in_metric;
   } else {
-    printf(" length_in_metric = %e, not invertable\n", length_in_metric);
+    printf(" length_in_metric = %e, not invertible\n", length_in_metric);
     return REF_DIV_ZERO;
   }
 
@@ -1241,7 +1241,7 @@ REF_STATUS ref_smooth_tet_ideal(REF_GRID ref_grid, REF_INT node, REF_INT tet,
   if (ref_math_divisible(scale, length_in_metric)) {
     scale = scale / length_in_metric;
   } else {
-    printf(" length_in_metric = %e, not invertable\n", length_in_metric);
+    printf(" length_in_metric = %e, not invertible\n", length_in_metric);
     return REF_DIV_ZERO;
   }
 
@@ -1417,7 +1417,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   RSS(ref_cell_node_list_around(edg, node, 2, &nnode, nodes), "edge neighbors");
   REIS(2, nnode, "expected two nodes");
 
-  /* if node0 or node1 constrainted by geoemetry, give precedence */
+  /* if node0 or node1 constrained by geometry, give precedence */
   RSS(ref_geom_is_a(ref_geom, nodes[0], REF_GEOM_NODE, &geom_node0), "node0");
   RSS(ref_geom_is_a(ref_geom, nodes[1], REF_GEOM_NODE, &geom_node1), "node1");
 
@@ -1472,7 +1472,7 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   }
   t_target = t_orig + dt;
 
-  /* reject a smooth point canidate outside of trange */
+  /* reject a smooth point candidate outside of trange */
   if (t_target < MIN(t0, t1) || MAX(t0, t1) < t_target) {
     return REF_SUCCESS;
   }

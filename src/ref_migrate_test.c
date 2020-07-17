@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
     REIS(1, update_part, "part");
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
-    RSS(ref_grid_free(ref_grid), "free gride");
+    RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   if (!ref_mpi_para(ref_mpi)) { /* keep ghost, lose local */
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
     RAS(ref_adj_empty(ref_adj, keep), "part");
 
     RSS(ref_migrate_free(ref_migrate), "free migrate");
-    RSS(ref_grid_free(ref_grid), "free gride");
+    RSS(ref_grid_free(ref_grid), "free grid");
   }
 
   if (1 == argc) { /* part and migrate tet b8.ugrid, world comm */

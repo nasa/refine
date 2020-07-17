@@ -25,7 +25,7 @@
 #endif
 
 #if defined(HAVE_ZOLTAN) && defined(HAVE_MPI)
-#undef HAVE_MPI /* sometines defined by zoltan.h */
+#undef HAVE_MPI /* sometimes defined by zoltan.h */
 #include "zoltan.h"
 #ifndef HAVE_MPI
 #define HAVE_MPI
@@ -1213,7 +1213,7 @@ static REF_STATUS ref_migrate_new_part(REF_GRID ref_grid, REF_INT *new_part) {
     default:
       if (ref_grid_once(ref_grid))
         printf(
-            "requested partioner method %d"
+            "requested partitioner method %d"
             " is not recognized or configured\n",
             (int)ref_grid_partitioner(ref_grid));
       RSS(REF_IMPLEMENT, "ref_migrate_method");

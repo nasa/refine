@@ -240,7 +240,7 @@ int main(int argc, char *argv[]) {
     RSS(tear_down(ref_subdiv), "tear down");
   }
 
-  if (ref_mpi_n(ref_mpi) <= 4) { /* relax tet oppisite edges */
+  if (ref_mpi_n(ref_mpi) <= 4) { /* relax tet opposite edges */
     REF_SUBDIV ref_subdiv;
     RSS(set_up_tet_for_subdiv(&ref_subdiv, ref_mpi), "set up");
 

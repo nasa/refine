@@ -1677,7 +1677,7 @@ static REF_STATUS ref_export_meshb(REF_GRID ref_grid, const char *filename) {
         }
         if (REF_CELL_PYR == ref_cell_type(ref_cell)) {
           /* convention: square basis is 0-1-2-3
-             (oriented conter clockwise like trias) and top vertex is 4 */
+             (oriented counter clockwise like trias) and top vertex is 4 */
           n0 = nodes[0];
           n1 = nodes[3];
           n2 = nodes[4];
@@ -2260,7 +2260,7 @@ REF_STATUS ref_export_order_segments(REF_INT n, REF_INT *c2n, REF_INT *order) {
     }
   }
 
-  /* arbitray for loops */
+  /* arbitrary for loops */
   loop = REF_FALSE;
   if (REF_EMPTY == first_cell) {
     loop = REF_TRUE;

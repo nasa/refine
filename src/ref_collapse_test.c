@@ -226,7 +226,7 @@ quad 6251 6252
 replaced
  item 0 cell 12155 nodes 6252 5937 6251 id 1186
  item 1 cell 12783 nodes 6560 6252 6251 id 1186
-exisiting
+existing
  item 2 cell 12150 nodes 6252 6251 5936 id 1191
  item 3 cell 12780 nodes 6251 6252 6253 id 1192
 

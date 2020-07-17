@@ -417,7 +417,7 @@ int main(int argc, char *argv[]) {
 
     if (ref_mpi_once(ref_mpi)) printf("reading displaced %s\n", argv[3]);
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &displaced, argv[3]),
-        "unable to load dispaced in position 3");
+        "unable to load displaced in position 3");
     REIS(3, ldim, "expected 3 [x,y,z]");
     ref_mpi_stopwatch_stop(ref_mpi, "read scalar");
 
