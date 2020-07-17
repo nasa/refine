@@ -1,7 +1,10 @@
 #! /bin/bash -xue
 
 PACKAGE='refine'
+
 VERSION="$(git describe --always --tag | tr -d '\n')"
+. ./test-module-string.sh
+VERSION="$(module-string ${VERSION})"
 
 if [ $# -gt 0 ] ; then
    . common.sh  $1
