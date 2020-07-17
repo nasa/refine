@@ -4,6 +4,7 @@ set(REF_TWO_HEADERS
         ref_agents.h
         ref_args.h
         ref_axi.h
+        ref_blend.h
         ref_cavity.h
         ref_cell.h
         ref_cloud.h
@@ -58,6 +59,7 @@ set(REF_CORE_SRC
         ref_adj.c
         ref_args.c
         ref_axi.c
+        ref_blend.c
         ref_cavity.c
         ref_cell.c
         ref_cloud.c
@@ -214,6 +216,7 @@ set(REF_TESTS
         ref_agents_test.c
         ref_args_test.c
         ref_axi_test.c
+        ref_blend_test.c
         ref_cavity_test.c
         ref_cell_test.c
         ref_cloud_test.c
