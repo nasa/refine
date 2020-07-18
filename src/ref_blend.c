@@ -28,12 +28,15 @@
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   REF_BLEND ref_blend;
+  REF_INT n;
 
   ref_malloc(*ref_blend_ptr, 1, REF_BLEND_STRUCT);
 
   ref_blend = *ref_blend_ptr;
 
   RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
+  n = ref_geom_max(ref_grid_geom(ref_blend_grid(ref_blend)));
+  ref_malloc_init(ref_blend->displacement, 3 * n, REF_DBL, 0.0);
 
   return REF_SUCCESS;
 }
@@ -41,6 +44,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
 REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   if (NULL == (void *)ref_blend) return REF_NULL;
 
+  ref_free(ref_blend->displacement);
   ref_grid_free(ref_blend_grid(ref_blend));
   ref_free(ref_blend);
 
