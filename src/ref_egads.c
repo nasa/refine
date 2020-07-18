@@ -2208,22 +2208,24 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
   REF_INT cad_node0, cad_node1;
   REF_DBL param[2];
   REF_INT other_edgeid, iedge;
-  REF_DBL len, diagonal;
+  REF_DBL len, diagonal, hmax;
   REF_DBL tangent[3], dx[3], dot, orth[3];
   REF_DBL gap;
   int status;
 
   /* initialize isotropic with bounding box */
   RSS(ref_egads_diagonal(ref_geom, REF_EMPTY, &diagonal), "bbox diag init");
-  *h0 = diagonal;
+  hmax = diagonal;
+  hmax /= MAX(1.0, ref_geom_segments_per_bounding_box_diagonal(ref_geom));
+  *h0 = hmax;
   dir0[0] = 1.0;
   dir0[1] = 0.0;
   dir0[2] = 0.0;
-  *h1 = diagonal;
+  *h1 = hmax;
   dir1[0] = 0.0;
   dir1[1] = 1.0;
   dir1[2] = 0.0;
-  *h2 = diagonal;
+  *h2 = hmax;
   dir2[0] = 0.0;
   dir2[1] = 0.0;
   dir2[2] = 1.0;
