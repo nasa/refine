@@ -33,7 +33,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
 
   ref_blend = *ref_blend_ptr;
 
-  ref_blend_grid(ref_blend) = ref_grid;
+  RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
 
   return REF_SUCCESS;
 }
@@ -41,6 +41,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
 REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   if (NULL == (void *)ref_blend) return REF_NULL;
 
+  ref_grid_free(ref_blend_grid(ref_blend));
   ref_free(ref_blend);
 
   return REF_SUCCESS;
