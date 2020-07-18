@@ -38,6 +38,8 @@ struct REF_BLEND_STRUCT {
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend, REF_GRID ref_grid);
 REF_STATUS ref_blend_free(REF_BLEND ref_blend);
 
+REF_STATUS ref_blend_initialize(REF_BLEND ref_blend);
+
 END_C_DECLORATION
 
 #endif /* REF_BLEND_H */

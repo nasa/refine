@@ -22,9 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_egads.h"
 #include "ref_malloc.h"
 
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
+#define ref_blend_displacement(ref_blend, ixyz, geom) \
+  ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   REF_BLEND ref_blend;
@@ -48,5 +51,29 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   ref_grid_free(ref_blend_grid(ref_blend));
   ref_free(ref_blend);
 
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DBL edge_xyz[3], face_xyz[3];
+  REF_INT i, edge_geom, face_geom, node, item;
+
+  /* also displace edge and face to geom nodes */
+
+  each_ref_geom_edge(ref_geom, edge_geom) {
+    RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval edge");
+    node = ref_geom_node(ref_geom, edge_geom);
+    each_ref_geom_having_node(ref_geom, node, item, face_geom) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, node)) {
+        RSS(ref_egads_eval(ref_geom, face_geom, face_xyz, NULL), "eval face");
+        for (i = 0; i < 3; i++) {
+          ref_blend_displacement(ref_blend, i, face_geom) =
+              edge_xyz[i] - face_xyz[i];
+        }
+      }
+    }
+  }
   return REF_SUCCESS;
 }
