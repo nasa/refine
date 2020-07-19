@@ -61,6 +61,7 @@ struct REF_GEOM_STRUCT {
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   REF_BOOL manifold;
+  REF_BOOL contex_owned;
   void *context;
   void *solid;
   void *faces;

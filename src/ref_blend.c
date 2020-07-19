@@ -26,8 +26,8 @@
 #include "ref_egads.h"
 #include "ref_malloc.h"
 
-#define ref_blend_geom(ref_blend) ((ref_blend)->geom)
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
+#define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
@@ -39,8 +39,6 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   ref_malloc(*ref_blend_ptr, 1, REF_BLEND_STRUCT);
 
   ref_blend = *ref_blend_ptr;
-
-  ref_blend_geom(ref_blend) = ref_grid_geom(ref_grid);
 
   RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
   n = ref_geom_max(ref_grid_geom(ref_blend_grid(ref_blend)));

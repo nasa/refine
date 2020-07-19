@@ -83,6 +83,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
   ref_geom->manifold = REF_TRUE;
+  ref_geom->contex_owned = REF_TRUE;
   ref_geom->context = NULL;
   RSS(ref_egads_open(ref_geom), "open egads");
   ref_geom->solid = NULL;
@@ -102,7 +103,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
 REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
   ref_free(ref_geom->cad_data);
-  RSS(ref_egads_close(ref_geom), "open egads");
+  if (ref_geom->contex_owned) RSS(ref_egads_close(ref_geom), "open egads");
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
   ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->face_min_length);
@@ -151,15 +152,16 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   RSS(ref_adj_deep_copy(&(ref_geom->ref_adj), original->ref_adj),
       "deep copy ref_adj for ref_geom");
 
-  ref_geom->nnode = REF_EMPTY;
-  ref_geom->nedge = REF_EMPTY;
-  ref_geom->nface = REF_EMPTY;
+  ref_geom->contex_owned = REF_FALSE;
+  ref_geom->nnode = original->nnode;
+  ref_geom->nedge = original->nedge;
+  ref_geom->nface = original->nface;
   ref_geom->manifold = original->manifold;
-  ref_geom->context = NULL;
-  ref_geom->solid = NULL;
-  ref_geom->faces = NULL;
-  ref_geom->edges = NULL;
-  ref_geom->nodes = NULL;
+  ref_geom->context = original->context;
+  ref_geom->solid = original->solid;
+  ref_geom->faces = original->faces;
+  ref_geom->edges = original->edges;
+  ref_geom->nodes = original->nodes;
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
