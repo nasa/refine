@@ -26,6 +26,7 @@
 #include "ref_egads.h"
 #include "ref_malloc.h"
 
+#define ref_blend_geom(ref_blend) ((ref_blend)->geom)
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
@@ -37,6 +38,8 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   ref_malloc(*ref_blend_ptr, 1, REF_BLEND_STRUCT);
 
   ref_blend = *ref_blend_ptr;
+
+  ref_blend_geom(ref_blend) = ref_grid_geom(ref_grid);
 
   RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
   n = ref_geom_max(ref_grid_geom(ref_blend_grid(ref_blend)));
@@ -50,14 +53,14 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
 
   ref_free(ref_blend->displacement);
   ref_grid_free(ref_blend_grid(ref_blend));
+  /* geom is a pointer to the orig */
   ref_free(ref_blend);
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
 
@@ -84,7 +87,7 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_DICT ref_dict, ref_dict_jump, ref_dict_degen;
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, local, node;
@@ -237,8 +240,7 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
 }
 
 REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   FILE *file;
   REF_INT geom, id, min_id, max_id;
 

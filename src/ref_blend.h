@@ -26,11 +26,13 @@ typedef struct REF_BLEND_STRUCT REF_BLEND_STRUCT;
 typedef REF_BLEND_STRUCT *REF_BLEND;
 END_C_DECLORATION
 
+#include "ref_geom.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
 
 struct REF_BLEND_STRUCT {
+  REF_GEOM geom;
   REF_GRID grid;
   REF_DBL *displacement;
 };
