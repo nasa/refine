@@ -30,6 +30,7 @@
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
+#define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   REF_BLEND ref_blend;
@@ -44,6 +45,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
   n = ref_geom_max(ref_grid_geom(ref_blend_grid(ref_blend)));
   ref_malloc_init(ref_blend->displacement, 3 * n, REF_DBL, 0.0);
+  ref_malloc_init(ref_blend->strong_bc, n, REF_BOOL, REF_FALSE);
 
   return REF_SUCCESS;
 }
@@ -51,6 +53,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
 REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   if (NULL == (void *)ref_blend) return REF_NULL;
 
+  ref_free(ref_blend->strong_bc);
   ref_free(ref_blend->displacement);
   ref_grid_free(ref_blend_grid(ref_blend));
   /* geom is a pointer to the orig */
@@ -70,8 +73,9 @@ REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
     RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval edge");
     node = ref_geom_node(ref_geom, edge_geom);
     each_ref_geom_having_node(ref_geom, node, item, face_geom) {
-      if (REF_GEOM_FACE == ref_geom_type(ref_geom, node)) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
         RSS(ref_egads_eval(ref_geom, face_geom, face_xyz, NULL), "eval face");
+        ref_blend_strong_bc(ref_blend, face_geom) = REF_TRUE;
         for (i = 0; i < 3; i++) {
           ref_blend_displacement(ref_blend, i, face_geom) =
               edge_xyz[i] - face_xyz[i];

@@ -35,6 +35,7 @@ struct REF_BLEND_STRUCT {
   REF_GEOM geom;
   REF_GRID grid;
   REF_DBL *displacement;
+  REF_BOOL *strong_bc;
 };
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend, REF_GRID ref_grid);
