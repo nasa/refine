@@ -37,6 +37,17 @@ smoothing
   flow/migration solved by preventing over refinement
   requeue neighbors with large changes? particularly quality drops
 
+blend tolerance reduction
+  more complete geom deep copy (except context,nodes,edges,faces?)
+  find enclosing tri in uv
+  interpolate displacement in tri
+  augment eval
+  augment inverse eval
+  edge node displacements and solve
+  actual Laplacian?
+  + set face boundary displacements
+  + solve face boundary displacements
+
 surrogate surface
   support twod geom
   share via meshb
