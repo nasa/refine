@@ -23,8 +23,10 @@
 #include <stdlib.h>
 
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_dict.h"
+#include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_face.h"
 #include "ref_gather.h"
@@ -39,8 +41,33 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT pos = REF_EMPTY;
+
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  RXS(ref_args_find(argc, argv, "--viz", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REF_BLEND ref_blend;
+    REIS(4, argc, "required args: --viz grid.ext geom.egads");
+    REIS(1, pos, "required args: --viz grid.ext geom.egads");
+    printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    printf("load geom %s\n", argv[3]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    printf("write tec %s\n", "ref_geom_viz.tec");
+    RSS(ref_blend_create(&ref_blend, ref_grid), "create");
+    RSS(ref_blend_initialize(ref_blend), "init disp");
+    RSS(ref_blend_tec(ref_blend, "ref_blend_viz.tec"), "blend tec");
+    RSS(ref_blend_free(ref_blend), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   {
     REF_BLEND ref_blend;
