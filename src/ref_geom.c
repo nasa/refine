@@ -2855,3 +2855,41 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
+                          REF_DBL *bary) {
+  REF_DBL uv0[2], uv1[2], uv2[2];
+  REF_INT sens;
+  REF_DBL total;
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_FACE, uv1, &sens),
+      "uv1");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[2], nodes, REF_GEOM_FACE, uv2, &sens),
+      "uv2");
+
+  bary[0] = -uv1[0] * uv[1] + uv2[0] * uv[1] + uv[0] * uv1[1] -
+            uv2[0] * uv1[1] - uv[0] * uv2[1] + uv1[0] * uv2[1];
+  bary[1] = -uv[0] * uv0[1] + uv2[0] * uv0[1] + uv0[0] * uv[1] -
+            uv2[0] * uv[1] - uv0[0] * uv2[1] + uv[0] * uv2[1];
+  bary[2] = -uv1[0] * uv0[1] + uv[0] * uv0[1] + uv0[0] * uv1[1] -
+            uv[0] * uv1[1] - uv0[0] * uv[1] + uv1[0] * uv[1];
+
+  total = bary[0] + bary[1] + bary[2];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total) &&
+      ref_math_divisible(bary[2], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+    bary[2] /= total;
+  } else {
+    REF_INT i;
+    printf("%s: %d: %s: div zero total %.18e norms %.18e %.18e %.18e\n",
+           __FILE__, __LINE__, __func__, total, bary[0], bary[1], bary[2]);
+    for (i = 0; i < 3; i++) bary[i] = 0.0;
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}

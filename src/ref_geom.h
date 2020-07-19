@@ -268,6 +268,9 @@ REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
 
 REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid);
 
+REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
+                          REF_DBL *bary);
+
 END_C_DECLORATION
 
 #endif /* REF_GEOM_H */
