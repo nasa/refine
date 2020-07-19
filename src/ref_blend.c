@@ -62,6 +62,47 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_solve(REF_BLEND ref_blend) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell_node, other_geom, center;
+  REF_DBL disp[3], hits;
+
+  /* psudo laplace */
+  each_ref_geom_face(ref_geom, center_geom) {
+    if (!ref_blend_strong_bc(ref_blend, center_geom)) {
+      center = ref_geom_node(ref_geom, center_geom);
+      hits = 0.0;
+      disp[0] = 0.0;
+      disp[1] = 0.0;
+      disp[2] = 0.0;
+      each_ref_cell_having_node(ref_cell, center, item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          if (nodes[cell_node] != center) {
+            RSS(ref_geom_find(ref_geom, nodes[cell_node], REF_GEOM_FACE,
+                              ref_geom_id(ref_geom, center_geom), &other_geom),
+                "other geom");
+            hits += 0.5;
+            disp[0] += 0.5 * ref_blend_displacement(ref_blend, 0, other_geom);
+            disp[1] += 0.5 * ref_blend_displacement(ref_blend, 1, other_geom);
+            disp[2] += 0.5 * ref_blend_displacement(ref_blend, 2, other_geom);
+          }
+        }
+        if (hits > 0.1) {
+          ref_blend_displacement(ref_blend, 0, center_geom) = disp[0] / hits;
+          ref_blend_displacement(ref_blend, 1, center_geom) = disp[1] / hits;
+          ref_blend_displacement(ref_blend, 2, center_geom) = disp[2] / hits;
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_DBL edge_xyz[3], face_xyz[3];
@@ -83,6 +124,9 @@ REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
       }
     }
   }
+
+  for (i = 0; i < 10; i++) RSS(ref_blend_solve(ref_blend), "solve");
+
   return REF_SUCCESS;
 }
 
