@@ -173,6 +173,58 @@ REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+                               REF_DBL *param, REF_INT *cell, REF_DBL *bary) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_LIST ref_list;
+  REF_SEARCH ref_search;
+  REF_CELL ref_cell;
+  REF_DBL parampad[3];
+  REF_DBL fuzz = 1.0e-12;
+  REF_INT item, candidate, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL current_bary[3], best_bary, min_bary;
+  REF_INT best_candidate;
+
+  *cell = REF_EMPTY;
+  bary[0] = 0.0;
+  bary[1] = 0.0;
+  bary[2] = 0.0;
+
+  REIS(REF_GEOM_FACE, type, "only implemented for face uv");
+  RSS(ref_list_create(&ref_list), "create list");
+  ref_search = ref_blend_search(ref_blend, id - 1);
+  ref_cell = ref_grid_tri(ref_grid);
+  parampad[0] = param[0];
+  parampad[1] = param[1];
+  parampad[2] = 0.0;
+
+  RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
+  RAS(0 < ref_list_n(ref_list), "list empty");
+  best_candidate = REF_EMPTY;
+  best_bary = -999.0;
+  each_ref_list_item(ref_list, item) {
+    candidate = ref_list_value(ref_list, item);
+    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+    RSS(ref_geom_bary3(ref_geom, nodes, param, current_bary), "bary");
+    min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
+    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+      best_candidate = candidate;
+      best_bary = min_bary;
+    }
+  }
+
+  RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+  *cell = best_candidate;
+  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+  RSS(ref_geom_bary3(ref_geom, nodes, param, bary), "bary");
+
+  RSS(ref_list_free(ref_list), "free list");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                                           FILE *file) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
