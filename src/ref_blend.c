@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_egads.h"
 #include "ref_malloc.h"
@@ -31,6 +32,39 @@
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
+#define ref_blend_search(ref_blend, iface) ((ref_blend)->search[(iface)])
+
+static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
+  REF_INT nface, iface;
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  /*
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  */
+
+  ref_blend->search = NULL;
+
+  nface = ref_geom->nface;
+
+  if (0 > nface) return REF_SUCCESS;
+
+  ref_malloc_init(ref_blend->search, nface, REF_SEARCH, NULL);
+  for (iface = 0; iface < nface; iface++) {
+    RSS(ref_search_create(&(ref_blend_search(ref_blend, iface)),
+                          ref_cell_n(ref_cell)),
+        "create search");
+  }
+
+  /* cache each uv tri */
+  /*
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+
+  }
+  */
+
+  return REF_SUCCESS;
+}
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   REF_BLEND ref_blend;
@@ -41,16 +75,24 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
   ref_blend = *ref_blend_ptr;
 
   RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
-  n = ref_geom_max(ref_grid_geom(ref_blend_grid(ref_blend)));
+  n = ref_geom_max(ref_blend_geom(ref_blend));
   ref_malloc_init(ref_blend->displacement, 3 * n, REF_DBL, 0.0);
   ref_malloc_init(ref_blend->strong_bc, n, REF_BOOL, REF_FALSE);
+
+  RSS(ref_blend_cache_search(ref_blend), "cache tri uv");
 
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
+  REF_INT i;
   if (NULL == (void *)ref_blend) return REF_NULL;
 
+  if (NULL != ref_blend->search) {
+    for (i = 0; i < ref_blend_geom(ref_blend)->nface; i++)
+      ref_search_free(ref_blend_search(ref_blend, i));
+    ref_free(ref_blend->search);
+  }
   ref_free(ref_blend->strong_bc);
   ref_free(ref_blend->displacement);
   ref_grid_free(ref_blend_grid(ref_blend));
