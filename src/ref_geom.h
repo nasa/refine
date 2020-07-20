@@ -41,6 +41,7 @@ typedef REF_GEOM_STRUCT *REF_GEOM;
 END_C_DECLORATION
 
 #include "ref_adj.h"
+#include "ref_blend.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
@@ -71,6 +72,7 @@ struct REF_GEOM_STRUCT {
   REF_BYTE *cad_data;
   void *meshlink;
   void *meshlink_projection;
+  REF_BLEND ref_blend;
 };
 
 #define ref_geom_n(ref_geom) ((ref_geom)->n)
@@ -80,6 +82,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_manifold(ref_geom) ((ref_geom)->manifold)
 #define ref_geom_cad_data(ref_geom) ((ref_geom)->cad_data)
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)
+#define ref_geom_blend(ref_geom) ((ref_geom)->ref_blend)
 
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 #define ref_geom_meshlinked(ref_geom) (NULL != (void *)((ref_geom)->meshlink))
