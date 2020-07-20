@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--viz", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REF_BLEND ref_blend;
     REIS(4, argc, "required args: --viz grid.ext geom.egads");
     REIS(1, pos, "required args: --viz grid.ext geom.egads");
     printf("import grid %s\n", argv[2]);
@@ -59,10 +58,10 @@ int main(int argc, char *argv[]) {
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
     printf("write tec %s\n", "ref_blend_viz.tec");
-    RSS(ref_blend_create(&ref_blend, ref_grid), "create");
-    RSS(ref_blend_initialize(ref_blend), "init disp");
-    RSS(ref_blend_tec(ref_blend, "ref_blend_viz.tec"), "blend tec");
-    RSS(ref_blend_free(ref_blend), "free");
+    RSS(ref_blend_attach(ref_grid), "attach");
+    RSS(ref_blend_tec(ref_geom_blend(ref_grid_geom(ref_grid)),
+                      "ref_blend_viz.tec"),
+        "blend tec");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");

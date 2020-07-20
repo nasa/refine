@@ -173,6 +173,14 @@ REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
+  REF_BLEND ref_blend;
+  RSS(ref_blend_create(&ref_blend, ref_grid), "create");
+  ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
+  RSS(ref_blend_initialize(ref_blend), "init disp");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
                                REF_DBL *param, REF_INT *cell, REF_DBL *bary) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);

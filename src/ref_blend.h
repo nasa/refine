@@ -43,6 +43,8 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend);
 
 REF_STATUS ref_blend_initialize(REF_BLEND ref_blend);
 
+REF_STATUS ref_blend_attach(REF_GRID ref_grid);
+
 REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
                                REF_DBL *param, REF_INT *cell, REF_DBL *bary);
 
