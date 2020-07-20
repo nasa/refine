@@ -270,6 +270,8 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid);
 
 REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
                           REF_DBL *bary);
+REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
+                                            REF_DBL *center, REF_DBL *radius);
 
 END_C_DECLORATION
 

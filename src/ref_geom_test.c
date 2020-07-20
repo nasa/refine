@@ -797,7 +797,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
-  { /* uv tri bary */
+  { /* uv tri bary and bounding sphere */
     REF_GEOM ref_geom;
     REF_INT node;
     REF_INT type, id;
@@ -805,6 +805,7 @@ int main(int argc, char *argv[]) {
     REF_INT nodes[4];
     REF_DBL uv[2];
     REF_DBL bary[3];
+    REF_DBL center[2], radius;
 
     RSS(ref_geom_create(&ref_geom), "create");
 
@@ -827,6 +828,13 @@ int main(int argc, char *argv[]) {
     nodes[1] = 1;
     nodes[2] = 2;
     nodes[3] = id;
+
+    RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
+        "bary");
+    RWDS(2.0 / 3.0, center[0], -1.0, "c0");
+    RWDS(10.0 / 3.0, center[1], -1.0, "c1");
+    RWDS(sqrt(pow(1 - 2.0 / 3.0, 2) + pow(10 - 10.0 / 3.0, 2)), radius, -1.0,
+         "r");
 
     uv[0] = 1.0;
     uv[1] = 5.0;

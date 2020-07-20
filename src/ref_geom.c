@@ -2893,3 +2893,29 @@ REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
+                                            REF_DBL *center, REF_DBL *radius) {
+  REF_DBL uv0[2], uv1[2], uv2[2];
+  REF_INT sens;
+
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_FACE, uv1, &sens),
+      "uv1");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[2], nodes, REF_GEOM_FACE, uv2, &sens),
+      "uv2");
+
+  center[0] = (uv0[0] + uv1[0] + uv2[0]) / 3.0;
+  center[1] = (uv0[1] + uv1[1] + uv2[1]) / 3.0;
+
+  *radius = 0.0;
+  *radius = MAX(*radius,
+                sqrt(pow(uv0[0] - center[0], 2) + pow(uv0[1] - center[1], 2)));
+  *radius = MAX(*radius,
+                sqrt(pow(uv1[0] - center[0], 2) + pow(uv1[1] - center[1], 2)));
+  *radius = MAX(*radius,
+                sqrt(pow(uv2[0] - center[0], 2) + pow(uv2[1] - center[1], 2)));
+
+  return REF_SUCCESS;
+}
