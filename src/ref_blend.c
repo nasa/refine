@@ -233,6 +233,38 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+                             REF_DBL *params, REF_DBL *xyz,
+                             REF_DBL *dxyz_dtuv) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL bary[3];
+  RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
+      "egads eval");
+  if (REF_GEOM_FACE == id) {
+    RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
+        "enclose");
+    RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
+
+    RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, id, &geom), "find 0");
+    xyz[0] += bary[0] * ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += bary[0] * ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += bary[0] * ref_blend_displacement(ref_blend, 2, geom);
+
+    RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, id, &geom), "find 1");
+    xyz[0] += bary[1] * ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += bary[1] * ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += bary[1] * ref_blend_displacement(ref_blend, 2, geom);
+
+    RSS(ref_geom_find(ref_geom, nodes[2], REF_GEOM_FACE, id, &geom), "find 2");
+    xyz[0] += bary[2] * ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += bary[2] * ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += bary[2] * ref_blend_displacement(ref_blend, 2, geom);
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                                           FILE *file) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
