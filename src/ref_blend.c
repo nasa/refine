@@ -39,9 +39,8 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  /*
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  */
+  REF_DBL center[3], radius, scale = 2.0;
 
   ref_blend->search = NULL;
 
@@ -57,11 +56,15 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   }
 
   /* cache each uv tri */
-  /*
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-
+    RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
+        "bound with circle");
+    center[2] = 0.0;
+    iface = nodes[3] - 1;
+    RSS(ref_search_insert(ref_blend_search(ref_blend, iface), cell, center,
+                          scale * radius),
+        "ins");
   }
-  */
 
   return REF_SUCCESS;
 }
