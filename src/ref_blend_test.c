@@ -62,6 +62,7 @@ int main(int argc, char *argv[]) {
     RSS(ref_blend_tec(ref_geom_blend(ref_grid_geom(ref_grid)),
                       "ref_blend_viz.tec"),
         "blend tec");
+    RSS(ref_geom_tec(ref_grid, "ref_blend_geom.tec"), "blend tec");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");
