@@ -242,7 +242,7 @@ REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   REF_DBL bary[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
-  if (REF_GEOM_FACE == id) {
+  if (REF_GEOM_FACE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
