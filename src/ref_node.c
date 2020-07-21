@@ -2763,6 +2763,77 @@ REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *bary) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_clip_bary3(REF_DBL *orig_bary, REF_DBL *bary) {
+  REF_DBL total;
+
+  bary[0] = MAX(0.0, orig_bary[0]);
+  bary[1] = MAX(0.0, orig_bary[1]);
+  bary[2] = MAX(0.0, orig_bary[2]);
+
+  total = bary[0] + bary[1] + bary[2];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total) &&
+      ref_math_divisible(bary[2], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+    bary[2] /= total;
+  } else {
+    REF_INT i, largest;
+    printf("%s: %d: %s: div zero\ntot %.18e\nbary %.18e %.18e %.18e\n",
+           __FILE__, __LINE__, __func__, total, orig_bary[0], orig_bary[1],
+           orig_bary[2]);
+    printf("clipped bary\n%.18e %.18e %.18e\n", bary[0], bary[1], bary[2]);
+    /* chose one node */
+    largest = 0;
+    for (i = 1; i < 3; i++)
+      if (bary[i] > bary[largest]) largest = i;
+    for (i = 0; i < 3; i++) bary[i] = 0.0;
+    bary[largest] = 1.0;
+    printf("modified bary\n%.18e %.18e %.18e\n", bary[0], bary[1], bary[2]);
+    return REF_DIV_ZERO;
+  }
+
+  RAS(bary[0] >= 0.0, "bary[0] not positive");
+  RAS(bary[1] >= 0.0, "bary[1] not positive");
+  RAS(bary[2] >= 0.0, "bary[2] not positive");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_node_clip_bary2(REF_DBL *orig_bary, REF_DBL *bary) {
+  REF_DBL total;
+
+  bary[0] = MAX(0.0, orig_bary[0]);
+  bary[1] = MAX(0.0, orig_bary[1]);
+
+  total = bary[0] + bary[1];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+  } else {
+    REF_INT i, largest;
+    printf("%s: %d: %s: div zero\ntot %.18e\nbary %.18e %.18e\n", __FILE__,
+           __LINE__, __func__, total, orig_bary[0], orig_bary[1]);
+    printf("clipped bary\n%.18e %.18e\n", bary[0], bary[1]);
+    /* chose one node */
+    largest = 0;
+    for (i = 1; i < 2; i++)
+      if (bary[i] > bary[largest]) largest = i;
+    for (i = 0; i < 2; i++) bary[i] = 0.0;
+    bary[largest] = 1.0;
+    printf("modified bary\n%.18e %.18e\n", bary[0], bary[1]);
+    return REF_DIV_ZERO;
+  }
+
+  RAS(bary[0] >= 0.0, "bary[0] not positive");
+  RAS(bary[1] >= 0.0, "bary[1] not positive");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_tri_projection(REF_NODE ref_node, REF_INT *nodes,
                                    REF_DBL *xyz, REF_DBL *projection) {
   REF_DBL area;
