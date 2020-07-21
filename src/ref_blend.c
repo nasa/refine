@@ -183,7 +183,7 @@ static REF_STATUS ref_blend_solve(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
+static REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
