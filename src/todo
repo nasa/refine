@@ -38,12 +38,12 @@ smoothing
   requeue neighbors with large changes? particularly quality drops
 
 blend tolerance reduction
-  find enclosing tri in uv
-  interpolate displacement in tri
-  augment eval
   augment inverse eval
-  edge node displacements and solve
   actual Laplacian?
+  + find enclosing tri in uv
+  + interpolate displacement in tri
+  + augment eval
+  + edge node displacements and solve
   + more complete geom deep copy (except context,nodes,edges,faces?)
   + set face boundary displacements
   + solve face boundary displacements
