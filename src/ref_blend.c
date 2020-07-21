@@ -318,7 +318,10 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
     parampad[2] = 0.0;
 
     RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
-    RAS(0 < ref_list_n(ref_list), "list empty");
+    if (0 >= ref_list_n(ref_list)) {
+      RSS(ref_list_free(ref_list), "free list");
+      return REF_SUCCESS;
+    }
     best_candidate = REF_EMPTY;
     best_bary = -999.0;
     each_ref_list_item(ref_list, item) {
@@ -350,7 +353,10 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
     parampad[2] = 0.0;
 
     RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
-    RAS(0 < ref_list_n(ref_list), "list empty");
+    if (0 >= ref_list_n(ref_list)) {
+      RSS(ref_list_free(ref_list), "free list");
+      return REF_SUCCESS;
+    }
     best_candidate = REF_EMPTY;
     best_bary = -999.0;
     each_ref_list_item(ref_list, item) {
@@ -390,6 +396,7 @@ static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
   if (REF_GEOM_EDGE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
+    if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
     RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "nodes");
 
@@ -406,6 +413,7 @@ static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
   if (REF_GEOM_FACE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
+    if (REF_EMPTY == cell) return REF_SUCCESS;
     RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
 
