@@ -2069,6 +2069,12 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   REF_BOOL verbose = REF_FALSE;
 
+  if (NULL != ref_geom_blend(ref_geom)) {
+    RSS(ref_blend_inverse_eval(ref_geom_blend(ref_geom), type, id, xyz, param),
+        "blend inv eval wrapper");
+    return REF_SUCCESS;
+  }
+
   switch (type) {
     case (REF_GEOM_NODE):
       printf("GEOM_NODE ref_geom_inverse_eval not defined\n");

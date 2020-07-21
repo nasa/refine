@@ -38,10 +38,10 @@ smoothing
   requeue neighbors with large changes? particularly quality drops
 
 blend tolerance reduction
-  augment inverse eval
-  chain rule derivatives
   serialize to disk
+  chain rule derivatives?
   actual Laplacian?
+  + augment inverse eval
   + find enclosing tri in uv
   + clip displacement interpolation bary (convex)
   + interpolate displacement in tri

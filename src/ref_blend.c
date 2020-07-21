@@ -443,6 +443,30 @@ REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
+                                  REF_DBL *xyz, REF_DBL *param) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_DBL geom_xyz[3];
+  REF_DBL displacement[3];
+
+  geom_xyz[0] = xyz[0];
+  geom_xyz[1] = xyz[1];
+  geom_xyz[2] = xyz[2];
+  RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
+      "inv eval before");
+
+  RSS(ref_blend_displacement_at(ref_blend, type, id, param, displacement),
+      "blend displacement");
+
+  geom_xyz[0] -= displacement[0];
+  geom_xyz[1] -= displacement[1];
+  geom_xyz[2] -= displacement[2];
+  RSS(ref_egads_inverse_eval(ref_geom, type, id, geom_xyz, param),
+      "inv eval before");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
                                           FILE *file) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
