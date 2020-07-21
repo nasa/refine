@@ -860,6 +860,54 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
+  { /* t edg bary and bounding sphere */
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id;
+    REF_DBL params;
+    REF_INT nodes[3];
+    REF_DBL t;
+    REF_DBL bary[2];
+    REF_DBL center, radius;
+
+    RSS(ref_geom_create(&ref_geom), "create");
+
+    type = REF_GEOM_EDGE;
+    id = 15;
+    node = 0;
+    params = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, &params), "node face");
+    node = 1;
+    params = 1.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, &params), "node face");
+
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = id;
+
+    RSS(ref_geom_edg_t_bounding_sphere2(ref_geom, nodes, &center, &radius),
+        "bary");
+    RWDS(0.5, center, -1.0, "c0");
+    RWDS(0.5, radius, -1.0, "r");
+
+    t = 1.0;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(0.0, bary[0], -1.0, "b0");
+    RWDS(1.0, bary[1], -1.0, "b1");
+
+    t = 0.0;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(1.0, bary[0], -1.0, "b0");
+    RWDS(0.0, bary[1], -1.0, "b1");
+
+    t = 0.4;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(0.6, bary[0], -1.0, "b0");
+    RWDS(0.4, bary[1], -1.0, "b1");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

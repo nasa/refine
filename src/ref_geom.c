@@ -2924,3 +2924,52 @@ REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
+                          REF_DBL *bary) {
+  REF_DBL t0, t1;
+  REF_INT sens;
+  REF_DBL total;
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &t0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &t1, &sens),
+      "uv1");
+
+  bary[0] = ABS(t1 - t);
+  bary[1] = ABS(t - t0);
+
+  total = bary[0] + bary[1];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+  } else {
+    REF_INT i;
+    printf("%s: %d: %s: div zero total %.18e norms %.18e %.18e\n", __FILE__,
+           __LINE__, __func__, total, bary[0], bary[1]);
+    for (i = 0; i < 2; i++) bary[i] = 0.0;
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
+                                           REF_DBL *center, REF_DBL *radius) {
+  REF_DBL t0, t1;
+  REF_INT sens;
+
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &t0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &t1, &sens),
+      "uv1");
+
+  *center = (t0 + t1) * 0.5;
+
+  *radius = 0.0;
+  *radius = MAX(*radius, ABS(t0 - (*center)));
+  *radius = MAX(*radius, ABS(t1 - (*center)));
+
+  return REF_SUCCESS;
+}
