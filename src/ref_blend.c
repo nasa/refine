@@ -142,7 +142,7 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_solve(REF_BLEND ref_blend) {
+static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
@@ -183,7 +183,7 @@ static REF_STATUS ref_blend_solve(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
+static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend) {
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
@@ -205,7 +205,7 @@ static REF_STATUS ref_blend_initialize(REF_BLEND ref_blend) {
     }
   }
 
-  for (i = 0; i < 10; i++) RSS(ref_blend_solve(ref_blend), "solve");
+  for (i = 0; i < 10; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
 
   return REF_SUCCESS;
 }
@@ -214,7 +214,7 @@ REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   REF_BLEND ref_blend;
   RSS(ref_blend_create(&ref_blend, ref_grid), "create");
   ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
-  RSS(ref_blend_initialize(ref_blend), "init disp");
+  RSS(ref_blend_initialize_face(ref_blend), "init disp");
   return REF_SUCCESS;
 }
 
