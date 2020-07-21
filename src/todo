@@ -39,6 +39,8 @@ smoothing
 
 blend tolerance reduction
   augment inverse eval
+  chain rule derivatives
+  serialize to disk
   actual Laplacian?
   + find enclosing tri in uv
   + interpolate displacement in tri
