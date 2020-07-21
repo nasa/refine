@@ -281,6 +281,25 @@ static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_apply(REF_BLEND ref_blend) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_blend_grid(ref_blend));
+  REF_DBL xyz[3];
+  REF_INT geom;
+  each_ref_geom_face(ref_geom, geom) {
+    RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, ref_geom_id(ref_geom, geom),
+                          &(ref_geom_param(ref_geom, 0, geom)), xyz, NULL),
+        "eval at");
+    xyz[0] += ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += ref_blend_displacement(ref_blend, 2, geom);
+    ref_node_xyz(ref_node, 0, ref_geom_node(ref_geom, geom)) = xyz[0];
+    ref_node_xyz(ref_node, 1, ref_geom_node(ref_geom, geom)) = xyz[1];
+    ref_node_xyz(ref_node, 2, ref_geom_node(ref_geom, geom)) = xyz[2];
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   REF_BLEND ref_blend;
   RSS(ref_blend_create(&ref_blend, ref_grid), "create");
@@ -288,6 +307,7 @@ REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   RSS(ref_blend_initialize_edge(ref_blend), "init disp");
   RSS(ref_blend_initialize_face(ref_blend, ref_grid_geom(ref_grid)),
       "init disp");
+  RSS(ref_blend_apply(ref_blend), "apply");
   return REF_SUCCESS;
 }
 
