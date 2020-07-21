@@ -26,6 +26,7 @@
 #include "ref_dict.h"
 #include "ref_egads.h"
 #include "ref_malloc.h"
+#include "ref_node.h"
 
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
 #define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
@@ -381,7 +382,7 @@ static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
   REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL bary[3];
+  REF_DBL bary[3], clip[3];
   displacement[0] = 0.0;
   displacement[1] = 0.0;
   displacement[2] = 0.0;
@@ -389,37 +390,39 @@ static REF_STATUS ref_blend_displacement_at(REF_BLEND ref_blend, REF_INT type,
   if (REF_GEOM_EDGE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
+    RSS(ref_node_clip_bary2(bary, clip), "clip edge bary");
     RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_EDGE, id, &geom), "find 0");
-    displacement[0] += bary[0] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += bary[0] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += bary[0] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[0] * ref_blend_displacement(ref_blend, 0, geom);
+    displacement[1] += clip[0] * ref_blend_displacement(ref_blend, 1, geom);
+    displacement[2] += clip[0] * ref_blend_displacement(ref_blend, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_EDGE, id, &geom), "find 1");
-    displacement[0] += bary[1] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += bary[1] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += bary[1] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[1] * ref_blend_displacement(ref_blend, 0, geom);
+    displacement[1] += clip[1] * ref_blend_displacement(ref_blend, 1, geom);
+    displacement[2] += clip[1] * ref_blend_displacement(ref_blend, 2, geom);
   }
   if (REF_GEOM_FACE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
+    RSS(ref_node_clip_bary3(bary, clip), "clip face bary");
     RSS(ref_cell_nodes(ref_grid_tri(ref_grid), cell, nodes), "nodes");
 
     RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_FACE, id, &geom), "find 0");
-    displacement[0] += bary[0] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += bary[0] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += bary[0] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[0] * ref_blend_displacement(ref_blend, 0, geom);
+    displacement[1] += clip[0] * ref_blend_displacement(ref_blend, 1, geom);
+    displacement[2] += clip[0] * ref_blend_displacement(ref_blend, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_FACE, id, &geom), "find 1");
-    displacement[0] += bary[1] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += bary[1] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += bary[1] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[1] * ref_blend_displacement(ref_blend, 0, geom);
+    displacement[1] += clip[1] * ref_blend_displacement(ref_blend, 1, geom);
+    displacement[2] += clip[1] * ref_blend_displacement(ref_blend, 2, geom);
 
     RSS(ref_geom_find(ref_geom, nodes[2], REF_GEOM_FACE, id, &geom), "find 2");
-    displacement[0] += bary[2] * ref_blend_displacement(ref_blend, 0, geom);
-    displacement[1] += bary[2] * ref_blend_displacement(ref_blend, 1, geom);
-    displacement[2] += bary[2] * ref_blend_displacement(ref_blend, 2, geom);
+    displacement[0] += clip[2] * ref_blend_displacement(ref_blend, 0, geom);
+    displacement[1] += clip[2] * ref_blend_displacement(ref_blend, 1, geom);
+    displacement[2] += clip[2] * ref_blend_displacement(ref_blend, 2, geom);
   }
 
   return REF_SUCCESS;

@@ -43,6 +43,7 @@ blend tolerance reduction
   serialize to disk
   actual Laplacian?
   + find enclosing tri in uv
+  + clip displacement interpolation bary (convex)
   + interpolate displacement in tri
   + augment eval
   + edge node displacements and solve
