@@ -183,8 +183,8 @@ static REF_STATUS ref_blend_solve_face(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend) {
-  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
+                                            REF_GEOM ref_geom) {
   REF_DBL edge_xyz[3], face_xyz[3];
   REF_INT i, edge_geom, face_geom, node, item;
 
@@ -210,11 +210,81 @@ static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_solve_edge(REF_BLEND ref_blend) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_INT center_geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, cell_node, other_geom, center;
+  REF_DBL disp[3], hits;
+
+  /* psudo laplace */
+  each_ref_geom_edge(ref_geom, center_geom) {
+    if (!ref_blend_strong_bc(ref_blend, center_geom)) {
+      center = ref_geom_node(ref_geom, center_geom);
+      hits = 0.0;
+      disp[0] = 0.0;
+      disp[1] = 0.0;
+      disp[2] = 0.0;
+      each_ref_cell_having_node(ref_cell, center, item, cell) {
+        RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          if (nodes[cell_node] != center) {
+            RSS(ref_geom_find(ref_geom, nodes[cell_node], REF_GEOM_EDGE,
+                              ref_geom_id(ref_geom, center_geom), &other_geom),
+                "other geom");
+            hits += 0.5;
+            disp[0] += 0.5 * ref_blend_displacement(ref_blend, 0, other_geom);
+            disp[1] += 0.5 * ref_blend_displacement(ref_blend, 1, other_geom);
+            disp[2] += 0.5 * ref_blend_displacement(ref_blend, 2, other_geom);
+          }
+        }
+        if (hits > 0.1) {
+          ref_blend_displacement(ref_blend, 0, center_geom) = disp[0] / hits;
+          ref_blend_displacement(ref_blend, 1, center_geom) = disp[1] / hits;
+          ref_blend_displacement(ref_blend, 2, center_geom) = disp[2] / hits;
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_DBL node_xyz[3], edge_xyz[3];
+  REF_INT i, node_geom, edge_geom, node, item;
+
+  /* also displace edge and face to geom nodes */
+
+  each_ref_geom_node(ref_geom, node_geom) {
+    RSS(ref_egads_eval(ref_geom, node_geom, node_xyz, NULL), "eval node");
+    node = ref_geom_node(ref_geom, node_geom);
+    each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
+      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom)) {
+        RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval face");
+        ref_blend_strong_bc(ref_blend, edge_geom) = REF_TRUE;
+        for (i = 0; i < 3; i++) {
+          ref_blend_displacement(ref_blend, i, edge_geom) =
+              node_xyz[i] - edge_xyz[i];
+        }
+      }
+    }
+  }
+
+  for (i = 0; i < 10; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   REF_BLEND ref_blend;
   RSS(ref_blend_create(&ref_blend, ref_grid), "create");
   ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
-  RSS(ref_blend_initialize_face(ref_blend), "init disp");
+  RSS(ref_blend_initialize_edge(ref_blend), "init disp");
+  RSS(ref_blend_initialize_face(ref_blend, ref_grid_geom(ref_grid)),
+      "init disp");
   return REF_SUCCESS;
 }
 
@@ -236,36 +306,69 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   bary[1] = 0.0;
   bary[2] = 0.0;
 
-  REIS(REF_GEOM_FACE, type, "only implemented for face uv");
-  RSS(ref_list_create(&ref_list), "create list");
-  ref_search = ref_blend_face_search(ref_blend, id - 1);
-  ref_cell = ref_grid_tri(ref_grid);
-  parampad[0] = param[0];
-  parampad[1] = param[1];
-  parampad[2] = 0.0;
+  if (REF_GEOM_EDGE == type) {
+    RSS(ref_list_create(&ref_list), "create list");
+    ref_search = ref_blend_edge_search(ref_blend, id - 1);
+    ref_cell = ref_grid_edg(ref_grid);
+    parampad[0] = param[0];
+    parampad[1] = 0.0;
+    parampad[2] = 0.0;
 
-  RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
-  RAS(0 < ref_list_n(ref_list), "list empty");
-  best_candidate = REF_EMPTY;
-  best_bary = -999.0;
-  each_ref_list_item(ref_list, item) {
-    candidate = ref_list_value(ref_list, item);
-    RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
-    RSS(ref_geom_bary3(ref_geom, nodes, param, current_bary), "bary");
-    min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
-    if (REF_EMPTY == best_candidate || min_bary > best_bary) {
-      best_candidate = candidate;
-      best_bary = min_bary;
+    RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
+    RAS(0 < ref_list_n(ref_list), "list empty");
+    best_candidate = REF_EMPTY;
+    best_bary = -999.0;
+    each_ref_list_item(ref_list, item) {
+      candidate = ref_list_value(ref_list, item);
+      RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+      RSS(ref_geom_bary2(ref_geom, nodes, param[0], current_bary), "bary");
+      min_bary = MIN(current_bary[0], current_bary[1]);
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
     }
+
+    RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+    *cell = best_candidate;
+    RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+    RSS(ref_geom_bary2(ref_geom, nodes, param[0], bary), "bary");
+
+    RSS(ref_list_free(ref_list), "free list");
   }
 
-  RUS(REF_EMPTY, best_candidate, "failed to find cell");
+  if (REF_GEOM_FACE == type) {
+    RSS(ref_list_create(&ref_list), "create list");
+    ref_search = ref_blend_face_search(ref_blend, id - 1);
+    ref_cell = ref_grid_tri(ref_grid);
+    parampad[0] = param[0];
+    parampad[1] = param[1];
+    parampad[2] = 0.0;
 
-  *cell = best_candidate;
-  RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
-  RSS(ref_geom_bary3(ref_geom, nodes, param, bary), "bary");
+    RSS(ref_search_touching(ref_search, ref_list, parampad, fuzz), "touching");
+    RAS(0 < ref_list_n(ref_list), "list empty");
+    best_candidate = REF_EMPTY;
+    best_bary = -999.0;
+    each_ref_list_item(ref_list, item) {
+      candidate = ref_list_value(ref_list, item);
+      RSS(ref_cell_nodes(ref_cell, candidate, nodes), "cell");
+      RSS(ref_geom_bary3(ref_geom, nodes, param, current_bary), "bary");
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
+      if (REF_EMPTY == best_candidate || min_bary > best_bary) {
+        best_candidate = candidate;
+        best_bary = min_bary;
+      }
+    }
 
-  RSS(ref_list_free(ref_list), "free list");
+    RUS(REF_EMPTY, best_candidate, "failed to find cell");
+
+    *cell = best_candidate;
+    RSS(ref_cell_nodes(ref_cell, best_candidate, nodes), "cell");
+    RSS(ref_geom_bary3(ref_geom, nodes, param, bary), "bary");
+
+    RSS(ref_list_free(ref_list), "free list");
+  }
 
   return REF_SUCCESS;
 }
@@ -279,6 +382,21 @@ REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   REF_DBL bary[3];
   RSS(ref_egads_eval_at(ref_geom, type, id, params, xyz, dxyz_dtuv),
       "egads eval");
+  if (REF_GEOM_EDGE == type) {
+    RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
+        "enclose");
+    RSS(ref_cell_nodes(ref_grid_edg(ref_grid), cell, nodes), "nodes");
+
+    RSS(ref_geom_find(ref_geom, nodes[0], REF_GEOM_EDGE, id, &geom), "find 0");
+    xyz[0] += bary[0] * ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += bary[0] * ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += bary[0] * ref_blend_displacement(ref_blend, 2, geom);
+
+    RSS(ref_geom_find(ref_geom, nodes[1], REF_GEOM_EDGE, id, &geom), "find 1");
+    xyz[0] += bary[1] * ref_blend_displacement(ref_blend, 0, geom);
+    xyz[1] += bary[1] * ref_blend_displacement(ref_blend, 1, geom);
+    xyz[2] += bary[1] * ref_blend_displacement(ref_blend, 2, geom);
+  }
   if (REF_GEOM_FACE == type) {
     RSS(ref_blend_enclosing(ref_blend, type, id, params, &cell, bary),
         "enclose");
