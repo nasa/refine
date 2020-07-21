@@ -420,6 +420,138 @@ REF_STATUS ref_blend_eval_at(REF_BLEND ref_blend, REF_INT type, REF_INT id,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
+                                          FILE *file) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_edg(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_DICT ref_dict;
+  REF_INT geom, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT item, local, node;
+  REF_INT nnode, nedg, sens;
+  REF_INT jump_geom = REF_EMPTY;
+  REF_DBL *t, tvalue;
+  REF_DBL radius, normal[3], xyz[3];
+
+  RSS(ref_dict_create(&ref_dict), "create dict");
+
+  each_ref_geom_edge(ref_geom, geom) {
+    if (id == ref_geom_id(ref_geom, geom)) {
+      RSS(ref_dict_store(ref_dict, ref_geom_node(ref_geom, geom), geom),
+          "mark nodes");
+      if (0 != ref_geom_jump(ref_geom, geom)) {
+        REIS(REF_EMPTY, jump_geom, "should be only one jump per edge");
+        jump_geom = geom;
+      }
+    }
+  }
+  nnode = ref_dict_n(ref_dict);
+  if (REF_EMPTY != jump_geom) nnode++;
+
+  nedg = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
+      nedg++;
+    }
+  }
+
+  /* skip degenerate */
+  if (0 == nnode || 0 == nedg) {
+    RSS(ref_dict_free(ref_dict), "free dict");
+    return REF_SUCCESS;
+  }
+
+  fprintf(
+      file,
+      "zone t=\"edge%d\", nodes=%d, elements=%d, datapacking=%s, zonetype=%s\n",
+      id, nnode, nedg, "point", "felineseg");
+
+  ref_malloc(t, nnode, REF_DBL);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
+      RSB(ref_dict_location(ref_dict, nodes[0], &local), "localize", {
+        printf("edg %d %d id %d no edge geom\n", nodes[0], nodes[1], nodes[2]);
+        RSS(ref_node_location(ref_node, nodes[0]), "loc");
+        RSS(ref_geom_tattle(ref_geom, nodes[0]), "tatt");
+      });
+      RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &tvalue,
+                            &sens),
+          "from");
+      if (-1 == sens) local = nnode - 1;
+      t[local] = tvalue;
+      RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
+      RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &tvalue,
+                            &sens),
+          "from");
+      if (-1 == sens) local = nnode - 1;
+      t[local] = tvalue;
+    }
+  }
+
+  each_ref_dict_key_value(ref_dict, item, node, geom) {
+    radius = 0;
+    xyz[0] = ref_node_xyz(ref_node, 0, node);
+    xyz[1] = ref_node_xyz(ref_node, 1, node);
+    xyz[2] = ref_node_xyz(ref_node, 2, node);
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_egads_edge_curvature(ref_geom, geom, &radius, normal), "curve");
+      radius = ABS(radius);
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, id, &(t[item]), xyz, NULL),
+          "eval at");
+    }
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
+            xyz[1], xyz[2], t[item], 0.0,
+            ref_blend_displacement(ref_blend, 0, geom),
+            ref_blend_displacement(ref_blend, 1, geom),
+            ref_blend_displacement(ref_blend, 2, geom));
+  }
+  if (REF_EMPTY != jump_geom) {
+    node = ref_geom_node(ref_geom, jump_geom);
+    radius = 0;
+    xyz[0] = ref_node_xyz(ref_node, 0, node);
+    xyz[1] = ref_node_xyz(ref_node, 1, node);
+    xyz[2] = ref_node_xyz(ref_node, 2, node);
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_egads_edge_curvature(ref_geom, jump_geom, &radius, normal),
+          "curve");
+      radius = ABS(radius);
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, id, &(t[nnode - 1]), xyz,
+                            NULL),
+          "eval at");
+    }
+    node = ref_geom_node(ref_geom, jump_geom);
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
+            xyz[1], xyz[2], t[nnode - 1], 0.0,
+            ref_blend_displacement(ref_blend, 0, jump_geom),
+            ref_blend_displacement(ref_blend, 1, jump_geom),
+            ref_blend_displacement(ref_blend, 2, jump_geom));
+  }
+  ref_free(t);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (id == nodes[2]) {
+      RSS(ref_dict_location(ref_dict, nodes[0], &local), "localize");
+      RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &tvalue,
+                            &sens),
+          "from");
+      if (-1 == sens) local = nnode - 1;
+      fprintf(file, " %d", local + 1);
+      RSS(ref_dict_location(ref_dict, nodes[1], &local), "localize");
+      RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &tvalue,
+                            &sens),
+          "from");
+      if (-1 == sens) local = nnode - 1;
+      fprintf(file, " %d", local + 1);
+      fprintf(file, "\n");
+    }
+  }
+
+  RSS(ref_dict_free(ref_dict), "free dict");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                                           FILE *file) {
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
@@ -513,7 +645,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
-
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id, &(uv[2 * item]), xyz,
+                            NULL),
+          "eval at");
+    }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item],
             ref_blend_displacement(ref_blend, 0, geom),
@@ -524,6 +660,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id,
+                            &(uv[2 * (nnode_sens0 + item)]), xyz, NULL),
+          "eval at");
+    }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_sens0 + item)],
             uv[1 + 2 * (nnode_sens0 + item)],
@@ -535,6 +676,11 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
+    if (ref_geom_model_loaded(ref_geom)) {
+      RSS(ref_egads_eval_at(ref_geom, REF_GEOM_FACE, id,
+                            &(uv[2 * (nnode_degen + item)]), xyz, NULL),
+          "eval at");
+    }
     fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
             xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
             uv[1 + 2 * (nnode_degen + item)],
@@ -589,6 +735,16 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
   fprintf(file, "title=\"refine watertight cad displacement\"\n");
   fprintf(file,
           "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"dx\" \"dy\" \"dz\"\n");
+
+  min_id = REF_INT_MAX;
+  max_id = REF_INT_MIN;
+  each_ref_geom_edge(ref_geom, geom) {
+    min_id = MIN(min_id, ref_geom_id(ref_geom, geom));
+    max_id = MAX(max_id, ref_geom_id(ref_geom, geom));
+  }
+
+  for (id = min_id; id <= max_id; id++)
+    RSS(ref_blend_edge_tec_zone(ref_blend, id, file), "tec edge");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
