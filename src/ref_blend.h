@@ -35,6 +35,7 @@ struct REF_BLEND_STRUCT {
   REF_GRID grid;
   REF_DBL *displacement;
   REF_BOOL *strong_bc;
+  REF_SEARCH *edge_search;
   REF_SEARCH *face_search;
 };
 

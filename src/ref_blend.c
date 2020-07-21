@@ -32,39 +32,70 @@
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
+#define ref_blend_edge_search(ref_blend, iedge) \
+  ((ref_blend)->edge_search[(iedge)])
 #define ref_blend_face_search(ref_blend, iface) \
   ((ref_blend)->face_search[(iface)])
 
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
-  REF_INT nface, iface;
+  REF_INT nedge, iedge, nface, iface;
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
   REF_GEOM ref_geom = ref_blend_geom(ref_blend);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius, scale = 2.0;
+
+  ref_blend->edge_search = NULL;
+
+  nedge = ref_geom->nedge;
+
+  if (0 < nedge) {
+    ref_cell = ref_grid_edg(ref_grid);
+
+    ref_malloc_init(ref_blend->edge_search, nedge, REF_SEARCH, NULL);
+    for (iedge = 0; iedge < nedge; iedge++) {
+      RSS(ref_search_create(&(ref_blend_edge_search(ref_blend, iedge)),
+                            ref_cell_n(ref_cell)),
+          "create edge search");
+    }
+
+    /* cache each t edg */
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_geom_edg_t_bounding_sphere2(ref_geom, nodes, center, &radius),
+          "bound with circle");
+      center[1] = 0.0;
+      center[2] = 0.0;
+      iedge = nodes[2] - 1;
+      RSS(ref_search_insert(ref_blend_edge_search(ref_blend, iedge), cell,
+                            center, scale * radius),
+          "ins");
+    }
+  }
 
   ref_blend->face_search = NULL;
 
   nface = ref_geom->nface;
 
-  if (0 > nface) return REF_SUCCESS;
+  if (0 < nface) {
+    ref_cell = ref_grid_tri(ref_grid);
 
-  ref_malloc_init(ref_blend->face_search, nface, REF_SEARCH, NULL);
-  for (iface = 0; iface < nface; iface++) {
-    RSS(ref_search_create(&(ref_blend_face_search(ref_blend, iface)),
-                          ref_cell_n(ref_cell)),
-        "create face search");
-  }
+    ref_malloc_init(ref_blend->face_search, nface, REF_SEARCH, NULL);
+    for (iface = 0; iface < nface; iface++) {
+      RSS(ref_search_create(&(ref_blend_face_search(ref_blend, iface)),
+                            ref_cell_n(ref_cell)),
+          "create face search");
+    }
 
-  /* cache each uv tri */
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
-        "bound with circle");
-    center[2] = 0.0;
-    iface = nodes[3] - 1;
-    RSS(ref_search_insert(ref_blend_face_search(ref_blend, iface), cell, center,
-                          scale * radius),
-        "ins");
+    /* cache each uv tri */
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
+          "bound with circle");
+      center[2] = 0.0;
+      iface = nodes[3] - 1;
+      RSS(ref_search_insert(ref_blend_face_search(ref_blend, iface), cell,
+                            center, scale * radius),
+          "ins");
+    }
   }
 
   return REF_SUCCESS;
@@ -92,6 +123,11 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   REF_INT i;
   if (NULL == (void *)ref_blend) return REF_NULL;
 
+  if (NULL != ref_blend->edge_search) {
+    for (i = 0; i < ref_blend_geom(ref_blend)->nedge; i++)
+      ref_search_free(ref_blend_edge_search(ref_blend, i));
+    ref_free(ref_blend->edge_search);
+  }
   if (NULL != ref_blend->face_search) {
     for (i = 0; i < ref_blend_geom(ref_blend)->nface; i++)
       ref_search_free(ref_blend_face_search(ref_blend, i));
