@@ -194,7 +194,8 @@ static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
     RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval edge");
     node = ref_geom_node(ref_geom, edge_geom);
     each_ref_geom_having_node(ref_geom, node, item, face_geom) {
-      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom)) {
+      if (REF_GEOM_FACE == ref_geom_type(ref_geom, face_geom) &&
+          !ref_blend_strong_bc(ref_blend, face_geom)) {
         RSS(ref_egads_eval(ref_geom, face_geom, face_xyz, NULL), "eval face");
         ref_blend_strong_bc(ref_blend, face_geom) = REF_TRUE;
         for (i = 0; i < 3; i++) {
@@ -262,7 +263,8 @@ static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
     RSS(ref_egads_eval(ref_geom, node_geom, node_xyz, NULL), "eval node");
     node = ref_geom_node(ref_geom, node_geom);
     each_ref_geom_having_node(ref_geom, node, item, edge_geom) {
-      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom)) {
+      if (REF_GEOM_EDGE == ref_geom_type(ref_geom, edge_geom) &&
+          !ref_blend_strong_bc(ref_blend, edge_geom)) {
         RSS(ref_egads_eval(ref_geom, edge_geom, edge_xyz, NULL), "eval face");
         ref_blend_strong_bc(ref_blend, edge_geom) = REF_TRUE;
         for (i = 0; i < 3; i++) {
