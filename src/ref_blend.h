@@ -35,7 +35,7 @@ struct REF_BLEND_STRUCT {
   REF_GRID grid;
   REF_DBL *displacement;
   REF_BOOL *strong_bc;
-  REF_SEARCH *search;
+  REF_SEARCH *face_search;
 };
 
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend, REF_GRID ref_grid);

@@ -32,7 +32,8 @@
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
-#define ref_blend_search(ref_blend, iface) ((ref_blend)->search[(iface)])
+#define ref_blend_face_search(ref_blend, iface) \
+  ((ref_blend)->face_search[(iface)])
 
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT nface, iface;
@@ -42,17 +43,17 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius, scale = 2.0;
 
-  ref_blend->search = NULL;
+  ref_blend->face_search = NULL;
 
   nface = ref_geom->nface;
 
   if (0 > nface) return REF_SUCCESS;
 
-  ref_malloc_init(ref_blend->search, nface, REF_SEARCH, NULL);
+  ref_malloc_init(ref_blend->face_search, nface, REF_SEARCH, NULL);
   for (iface = 0; iface < nface; iface++) {
-    RSS(ref_search_create(&(ref_blend_search(ref_blend, iface)),
+    RSS(ref_search_create(&(ref_blend_face_search(ref_blend, iface)),
                           ref_cell_n(ref_cell)),
-        "create search");
+        "create face search");
   }
 
   /* cache each uv tri */
@@ -61,7 +62,7 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
         "bound with circle");
     center[2] = 0.0;
     iface = nodes[3] - 1;
-    RSS(ref_search_insert(ref_blend_search(ref_blend, iface), cell, center,
+    RSS(ref_search_insert(ref_blend_face_search(ref_blend, iface), cell, center,
                           scale * radius),
         "ins");
   }
@@ -91,10 +92,10 @@ REF_STATUS ref_blend_free(REF_BLEND ref_blend) {
   REF_INT i;
   if (NULL == (void *)ref_blend) return REF_NULL;
 
-  if (NULL != ref_blend->search) {
+  if (NULL != ref_blend->face_search) {
     for (i = 0; i < ref_blend_geom(ref_blend)->nface; i++)
-      ref_search_free(ref_blend_search(ref_blend, i));
-    ref_free(ref_blend->search);
+      ref_search_free(ref_blend_face_search(ref_blend, i));
+    ref_free(ref_blend->face_search);
   }
   ref_free(ref_blend->strong_bc);
   ref_free(ref_blend->displacement);
@@ -201,7 +202,7 @@ REF_STATUS ref_blend_enclosing(REF_BLEND ref_blend, REF_INT type, REF_INT id,
 
   REIS(REF_GEOM_FACE, type, "only implemented for face uv");
   RSS(ref_list_create(&ref_list), "create list");
-  ref_search = ref_blend_search(ref_blend, id - 1);
+  ref_search = ref_blend_face_search(ref_blend, id - 1);
   ref_cell = ref_grid_tri(ref_grid);
   parampad[0] = param[0];
   parampad[1] = param[1];
