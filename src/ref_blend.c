@@ -28,7 +28,6 @@
 #include "ref_malloc.h"
 #include "ref_node.h"
 
-#define ref_blend_grid(ref_blend) ((ref_blend)->grid)
 #define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
   ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
