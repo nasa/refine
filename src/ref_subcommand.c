@@ -556,6 +556,8 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_export_by_extension(ref_blend_grid(ref_blend),
                                   argv[blend_pos + 1]),
           "blend export");
+      sprintf(filename, "%s-blend-geom.tec", project);
+      RSS(ref_blend_tec(ref_blend, filename), "blend viz");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
     if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
