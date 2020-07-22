@@ -968,6 +968,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
+  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
+    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
+  }
+
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY == pos) {
     sprintf(filename, "%s_volume.solb", in_project);
