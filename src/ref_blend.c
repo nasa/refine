@@ -25,6 +25,7 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_egads.h"
+#include "ref_import.h"
 #include "ref_malloc.h"
 #include "ref_node.h"
 
@@ -310,6 +311,20 @@ REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   RSS(ref_blend_initialize_face(ref_blend, ref_grid_geom(ref_grid)),
       "init disp");
   RSS(ref_blend_apply(ref_blend), "apply");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
+  REF_GRID freeable_ref_grid;
+  REF_BLEND ref_blend;
+  RSS(ref_import_by_extension(&freeable_ref_grid, ref_grid_mpi(ref_grid),
+                              filename),
+      "import");
+  RSS(ref_geom_share_context(ref_grid_geom(freeable_ref_grid),
+                             ref_grid_geom(ref_grid)),
+      "share context");
+  RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
+  ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
   return REF_SUCCESS;
 }
 

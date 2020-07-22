@@ -75,6 +75,34 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
+  RXS(ref_args_find(argc, argv, "--import", &pos), REF_NOT_FOUND, "arg search");
+  if (pos != REF_EMPTY) {
+    REF_GRID ref_grid;
+    REIS(5, argc, "required args: --import grid.ext geom.egads blend.meshb");
+    REIS(1, pos, "required args: --import grid.ext geom.egads blend.meshb");
+    printf("import grid %s\n", argv[2]);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
+    printf("load geom %s\n", argv[3]);
+    RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    printf("import blend %s\n", argv[4]);
+    RSS(ref_blend_import(ref_grid, argv[4]), "attach");
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "blend load");
+    {
+      REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+      RSS(ref_blend_tec(ref_blend, "ref_blend_import_viz.tec"), "blend tec");
+      RSS(ref_geom_tec(ref_grid, "ref_blend_import_geom.tec"), "blend tec");
+      RSS(ref_export_tec_surf(ref_blend_grid(ref_blend),
+                              "ref_blend_import_surf.tec"),
+          "blend tec");
+    }
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_free(ref_mpi), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
   {
     REF_BLEND ref_blend;
     REF_GRID freeable_ref_grid;
