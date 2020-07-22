@@ -101,7 +101,8 @@ static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
+REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr,
+                            REF_GRID freeable_ref_grid) {
   REF_BLEND ref_blend;
   REF_INT n;
 
@@ -109,7 +110,7 @@ REF_STATUS ref_blend_create(REF_BLEND *ref_blend_ptr, REF_GRID ref_grid) {
 
   ref_blend = *ref_blend_ptr;
 
-  RSS(ref_grid_deep_copy(&ref_blend_grid(ref_blend), ref_grid), "deep copy");
+  ref_blend_grid(ref_blend) = freeable_ref_grid;
   n = ref_geom_max(ref_blend_geom(ref_blend));
   ref_malloc_init(ref_blend->displacement, 3 * n, REF_DBL, 0.0);
   ref_malloc_init(ref_blend->strong_bc, n, REF_BOOL, REF_FALSE);
@@ -300,8 +301,10 @@ static REF_STATUS ref_blend_apply(REF_BLEND ref_blend) {
 }
 
 REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
+  REF_GRID freeable_ref_grid;
   REF_BLEND ref_blend;
-  RSS(ref_blend_create(&ref_blend, ref_grid), "create");
+  RSS(ref_grid_deep_copy(&freeable_ref_grid, ref_grid), "deep copy");
+  RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
   ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
   RSS(ref_blend_initialize_edge(ref_blend), "init disp");
   RSS(ref_blend_initialize_face(ref_blend, ref_grid_geom(ref_grid)),

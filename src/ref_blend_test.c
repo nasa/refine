@@ -77,11 +77,10 @@ int main(int argc, char *argv[]) {
 
   {
     REF_BLEND ref_blend;
-    REF_GRID ref_grid;
-    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
-    RSS(ref_blend_create(&ref_blend, ref_grid), "create");
+    REF_GRID freeable_ref_grid;
+    RSS(ref_grid_create(&freeable_ref_grid, ref_mpi), "create");
+    RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
     RSS(ref_blend_free(ref_blend), "free");
-    RSS(ref_grid_free(ref_grid), "free");
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
