@@ -14,7 +14,7 @@ fi
 
 cp ../recon/onera-m6-sharp-te.egads .
 
-${two}/ref bootstrap onera-m6-sharp-te.egads
+${two}/ref bootstrap onera-m6-sharp-te.egads --blend om6-blend.meshb
 
 ${two}/ref_driver \
     -i onera-m6-sharp-te-vol.meshb \
