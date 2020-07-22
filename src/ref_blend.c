@@ -38,6 +38,11 @@
 #define ref_blend_face_search(ref_blend, iface) \
   ((ref_blend)->face_search[(iface)])
 
+#define ref_blend_distance(ref_blend, geom)                  \
+  (sqrt(pow(ref_blend_displacement(ref_blend, 0, geom), 2) + \
+        pow(ref_blend_displacement(ref_blend, 1, geom), 2) + \
+        pow(ref_blend_displacement(ref_blend, 2, geom), 2)))
+
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT nedge, iedge, nface, iface;
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
@@ -611,9 +616,9 @@ static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
       RSS(ref_egads_eval_at(ref_geom, REF_GEOM_EDGE, id, &(t[item]), xyz, NULL),
           "eval at");
     }
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[item], 0.0,
-            ref_blend_displacement(ref_blend, 0, geom),
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            t[item], 0.0, ref_blend_displacement(ref_blend, 0, geom),
             ref_blend_displacement(ref_blend, 1, geom),
             ref_blend_displacement(ref_blend, 2, geom));
   }
@@ -632,9 +637,9 @@ static REF_STATUS ref_blend_edge_tec_zone(REF_BLEND ref_blend, REF_INT id,
           "eval at");
     }
     node = ref_geom_node(ref_geom, jump_geom);
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], t[nnode - 1], 0.0,
-            ref_blend_displacement(ref_blend, 0, jump_geom),
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, jump_geom),
+            t[nnode - 1], 0.0, ref_blend_displacement(ref_blend, 0, jump_geom),
             ref_blend_displacement(ref_blend, 1, jump_geom),
             ref_blend_displacement(ref_blend, 2, jump_geom));
   }
@@ -761,8 +766,9 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                             NULL),
           "eval at");
     }
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * item], uv[1 + 2 * item],
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            uv[0 + 2 * item], uv[1 + 2 * item],
             ref_blend_displacement(ref_blend, 0, geom),
             ref_blend_displacement(ref_blend, 1, geom),
             ref_blend_displacement(ref_blend, 2, geom));
@@ -776,9 +782,9 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                             &(uv[2 * (nnode_sens0 + item)]), xyz, NULL),
           "eval at");
     }
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_sens0 + item)],
-            uv[1 + 2 * (nnode_sens0 + item)],
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            uv[0 + 2 * (nnode_sens0 + item)], uv[1 + 2 * (nnode_sens0 + item)],
             ref_blend_displacement(ref_blend, 0, geom),
             ref_blend_displacement(ref_blend, 1, geom),
             ref_blend_displacement(ref_blend, 2, geom));
@@ -792,9 +798,9 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
                             &(uv[2 * (nnode_degen + item)]), xyz, NULL),
           "eval at");
     }
-    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n", xyz[0],
-            xyz[1], xyz[2], uv[0 + 2 * (nnode_degen + item)],
-            uv[1 + 2 * (nnode_degen + item)],
+    fprintf(file, " %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e %.16e\n",
+            xyz[0], xyz[1], xyz[2], ref_blend_distance(ref_blend, geom),
+            uv[0 + 2 * (nnode_degen + item)], uv[1 + 2 * (nnode_degen + item)],
             ref_blend_displacement(ref_blend, 0, geom),
             ref_blend_displacement(ref_blend, 1, geom),
             ref_blend_displacement(ref_blend, 2, geom));
@@ -844,8 +850,9 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
   RNS(file, "unable to open file");
 
   fprintf(file, "title=\"refine watertight cad displacement\"\n");
-  fprintf(file,
-          "variables = \"x\" \"y\" \"z\" \"u\" \"v\" \"dx\" \"dy\" \"dz\"\n");
+  fprintf(
+      file,
+      "variables = \"x\" \"y\" \"z\" \"d\" \"u\" \"v\" \"dx\" \"dy\" \"dz\"\n");
 
   min_id = REF_INT_MAX;
   max_id = REF_INT_MIN;
