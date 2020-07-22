@@ -397,6 +397,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
   REF_INT mesher_pos = REF_EMPTY;
+  REF_INT blend_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
   REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
   const char *mesher = "tetgen";
@@ -534,6 +535,23 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_geom_feedback(ref_grid), "feedback");
   ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
+
+  RXS(ref_args_find(argc, argv, "--blend", &blend_pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != blend_pos && blend_pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--blend %s requested\n", argv[blend_pos + 1]);
+      RSS(ref_blend_attach(ref_grid), "attach");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "blend attached");
+    if (ref_mpi_once(ref_mpi)) {
+      REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+      RSS(ref_export_by_extension(ref_blend_grid(ref_blend),
+                                  argv[blend_pos + 1]),
+          "blend export");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
+  }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {

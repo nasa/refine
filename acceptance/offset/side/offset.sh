@@ -6,8 +6,7 @@ set -u # Treat unset variables as error
 
 serveCSM -batch offset.csm
 
-ref boostrap offset.egads -s 0
+ref boostrap offset.egads --blend offset-blend.meshb
 
 ref adapt offset-vol.meshb -g offset.egads -x offset.meshb
-
 
