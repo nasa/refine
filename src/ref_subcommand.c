@@ -247,6 +247,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
   }
 
+  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
+    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
+  }
+
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -551,6 +558,9 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
           "blend export");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
   }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {

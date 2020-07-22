@@ -8,5 +8,5 @@ serveCSM -batch offset.csm
 
 ref boostrap offset.egads --blend offset-blend.meshb
 
-ref adapt offset-vol.meshb -g offset.egads -x offset.meshb
+ref adapt offset-vol.meshb -g offset.egads --blend offset-blend.meshb -x offset.meshb
 

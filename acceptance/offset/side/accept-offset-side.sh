@@ -22,6 +22,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
 	  -g offset.egads \
+	  --blend offset-blend.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
