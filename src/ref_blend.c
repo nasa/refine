@@ -314,6 +314,24 @@ REF_STATUS ref_blend_attach(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_infer_displacement(REF_BLEND ref_blend) {
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_blend_grid(ref_blend));
+  REF_DBL geom_xyz[3];
+  REF_INT i, geom, node;
+
+  each_ref_geom(ref_geom, geom) {
+    RSS(ref_egads_eval(ref_geom, geom, geom_xyz, NULL), "eval geom");
+    node = ref_geom_node(ref_geom, geom);
+    for (i = 0; i < 3; i++) {
+      ref_blend_displacement(ref_blend, i, geom) =
+          ref_node_xyz(ref_node, i, node) - geom_xyz[i];
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
   REF_GRID freeable_ref_grid;
   REF_BLEND ref_blend;
@@ -325,6 +343,7 @@ REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
       "share context");
   RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
   ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
+  RSS(ref_blend_infer_displacement(ref_blend), "infer displacement");
   return REF_SUCCESS;
 }
 
