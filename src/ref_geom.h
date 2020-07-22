@@ -172,6 +172,8 @@ REF_STATUS ref_geom_initialize(REF_GEOM ref_geom);
 REF_STATUS ref_geom_free(REF_GEOM ref_geom);
 
 REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom, REF_GEOM original);
+REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
+                                  REF_GEOM ref_geom_donor);
 REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n);
 
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid);

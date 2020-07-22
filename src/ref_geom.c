@@ -106,7 +106,8 @@ REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
   ref_blend_free(ref_geom_blend(ref_geom));
   ref_free(ref_geom->cad_data);
-  if (ref_geom->contex_owned) RSS(ref_egads_close(ref_geom), "open egads");
+  if (ref_geom->contex_owned)
+    RSS(ref_egads_close(ref_geom), "close egads contex");
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
   ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->face_min_length);
@@ -156,15 +157,7 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
       "deep copy ref_adj for ref_geom");
 
   ref_geom->contex_owned = REF_FALSE;
-  ref_geom->nnode = original->nnode;
-  ref_geom->nedge = original->nedge;
-  ref_geom->nface = original->nface;
-  ref_geom->manifold = original->manifold;
-  ref_geom->context = original->context;
-  ref_geom->solid = original->solid;
-  ref_geom->faces = original->faces;
-  ref_geom->edges = original->edges;
-  ref_geom->nodes = original->nodes;
+  RSS(ref_geom_share_context(ref_geom, original), "share egads");
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
@@ -173,6 +166,25 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   ref_geom->meshlink_projection = NULL;
 
   ref_geom->ref_blend = NULL;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
+                                  REF_GEOM ref_geom_donor) {
+  if (ref_geom_recipient->contex_owned)
+    RSS(ref_egads_close(ref_geom_recipient), "close egads contex");
+
+  ref_geom_recipient->contex_owned = REF_FALSE;
+  ref_geom_recipient->nnode = ref_geom_donor->nnode;
+  ref_geom_recipient->nedge = ref_geom_donor->nedge;
+  ref_geom_recipient->nface = ref_geom_donor->nface;
+  ref_geom_recipient->manifold = ref_geom_donor->manifold;
+  ref_geom_recipient->context = ref_geom_donor->context;
+  ref_geom_recipient->solid = ref_geom_donor->solid;
+  ref_geom_recipient->faces = ref_geom_donor->faces;
+  ref_geom_recipient->edges = ref_geom_donor->edges;
+  ref_geom_recipient->nodes = ref_geom_donor->nodes;
 
   return REF_SUCCESS;
 }
