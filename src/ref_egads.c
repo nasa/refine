@@ -1976,6 +1976,13 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   ego object;
   int status;
 
+  if (NULL != ref_geom_blend(ref_geom)) {
+    RSS(ref_blend_eval_at(ref_geom_blend(ref_geom), type, id, params, xyz,
+                          dxyz_dtuv),
+        "blend eval wrapper");
+    return REF_SUCCESS;
+  }
+
   object = (ego)NULL;
   switch (type) {
     case (REF_GEOM_NODE):
@@ -2061,6 +2068,12 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
   REF_BOOL guess_in_range, noguess_in_range;
 
   REF_BOOL verbose = REF_FALSE;
+
+  if (NULL != ref_geom_blend(ref_geom)) {
+    RSS(ref_blend_inverse_eval(ref_geom_blend(ref_geom), type, id, xyz, param),
+        "blend inv eval wrapper");
+    return REF_SUCCESS;
+  }
 
   switch (type) {
     case (REF_GEOM_NODE):

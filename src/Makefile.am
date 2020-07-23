@@ -2,6 +2,7 @@
 EXTRA_DIST = test.sh
 
 include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
+	ref_blend.h \
 	ref_cavity.h ref_cell.h ref_cloud.h \
 	ref_clump.h ref_collapse.h ref_comprow.h \
 	ref_dict.h ref_dist.h ref_defs.h \
@@ -29,6 +30,7 @@ librefine_core_a_SOURCES = \
 	ref_agents.c \
 	ref_args.c \
 	ref_axi.c \
+	ref_blend.c \
 	ref_cavity.c \
 	ref_cell.c \
 	ref_cloud.c \
@@ -200,6 +202,11 @@ TESTS += ref_axi_test
 noinst_PROGRAMS += ref_axi_test
 ref_axi_test_SOURCES = ref_axi_test.c
 ref_axi_test_LDADD = $(default_ldadd)
+
+TESTS += ref_blend_test
+noinst_PROGRAMS += ref_blend_test
+ref_blend_test_SOURCES = ref_blend_test.c
+ref_blend_test_LDADD = $(default_ldadd)
 
 TESTS += ref_cavity_test
 noinst_PROGRAMS += ref_cavity_test

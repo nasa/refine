@@ -22,6 +22,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
 	  -g offset.egads \
+	  --blend offset-blend.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
@@ -32,7 +33,11 @@ function adapt_cycle {
     ${src}/ref_metric_test ${outproj}.meshb ${outproj}.solb > ${outproj}.status
 }
 
-# ./cube.sh
+serveCSM -batch offset.csm
+
+${src}/ref boostrap offset.egads --blend offset-blend.meshb
+
+${src}/ref adapt offset-vol.meshb -g offset.egads --blend offset-blend.meshb -x offset.meshb
 
 adapt_cycle offset cycle01 2
 adapt_cycle cycle01 cycle02 15

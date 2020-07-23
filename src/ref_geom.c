@@ -83,6 +83,7 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->nedge = REF_EMPTY;
   ref_geom->nface = REF_EMPTY;
   ref_geom->manifold = REF_TRUE;
+  ref_geom->contex_owned = REF_TRUE;
   ref_geom->context = NULL;
   RSS(ref_egads_open(ref_geom), "open egads");
   ref_geom->solid = NULL;
@@ -96,13 +97,17 @@ REF_STATUS ref_geom_create(REF_GEOM *ref_geom_ptr) {
   ref_geom->meshlink = NULL;
   ref_geom->meshlink_projection = NULL;
 
+  ref_geom->ref_blend = NULL;
+
   return REF_SUCCESS;
 }
 
 REF_STATUS ref_geom_free(REF_GEOM ref_geom) {
   if (NULL == (void *)ref_geom) return REF_NULL;
+  ref_blend_free(ref_geom_blend(ref_geom));
   ref_free(ref_geom->cad_data);
-  RSS(ref_egads_close(ref_geom), "open egads");
+  if (ref_geom->contex_owned)
+    RSS(ref_egads_close(ref_geom), "close egads contex");
   RSS(ref_adj_free(ref_geom->ref_adj), "adj free");
   ref_free(ref_geom->face_seg_per_rad);
   ref_free(ref_geom->face_min_length);
@@ -151,21 +156,35 @@ REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom_ptr, REF_GEOM original) {
   RSS(ref_adj_deep_copy(&(ref_geom->ref_adj), original->ref_adj),
       "deep copy ref_adj for ref_geom");
 
-  ref_geom->nnode = REF_EMPTY;
-  ref_geom->nedge = REF_EMPTY;
-  ref_geom->nface = REF_EMPTY;
-  ref_geom->manifold = original->manifold;
-  ref_geom->context = NULL;
-  ref_geom->solid = NULL;
-  ref_geom->faces = NULL;
-  ref_geom->edges = NULL;
-  ref_geom->nodes = NULL;
+  ref_geom->contex_owned = REF_FALSE;
+  RSS(ref_geom_share_context(ref_geom, original), "share egads");
 
   ref_geom->cad_data_size = 0;
   ref_geom->cad_data = (REF_BYTE *)NULL;
 
   ref_geom->meshlink = NULL;
   ref_geom->meshlink_projection = NULL;
+
+  ref_geom->ref_blend = NULL;
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
+                                  REF_GEOM ref_geom_donor) {
+  if (ref_geom_recipient->contex_owned)
+    RSS(ref_egads_close(ref_geom_recipient), "close egads contex");
+
+  ref_geom_recipient->contex_owned = REF_FALSE;
+  ref_geom_recipient->nnode = ref_geom_donor->nnode;
+  ref_geom_recipient->nedge = ref_geom_donor->nedge;
+  ref_geom_recipient->nface = ref_geom_donor->nface;
+  ref_geom_recipient->manifold = ref_geom_donor->manifold;
+  ref_geom_recipient->context = ref_geom_donor->context;
+  ref_geom_recipient->solid = ref_geom_donor->solid;
+  ref_geom_recipient->faces = ref_geom_donor->faces;
+  ref_geom_recipient->edges = ref_geom_donor->edges;
+  ref_geom_recipient->nodes = ref_geom_donor->nodes;
 
   return REF_SUCCESS;
 }
@@ -2850,6 +2869,119 @@ REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid) {
     printf("normdev %f area %.5e  %.5e uv area  %.5e  %.5e\n", min_normdev,
            min_area, max_area, min_uv_area, max_uv_area);
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
+                          REF_DBL *bary) {
+  REF_DBL uv0[2], uv1[2], uv2[2];
+  REF_INT sens;
+  REF_DBL total;
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_FACE, uv1, &sens),
+      "uv1");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[2], nodes, REF_GEOM_FACE, uv2, &sens),
+      "uv2");
+
+  bary[0] = -uv1[0] * uv[1] + uv2[0] * uv[1] + uv[0] * uv1[1] -
+            uv2[0] * uv1[1] - uv[0] * uv2[1] + uv1[0] * uv2[1];
+  bary[1] = -uv[0] * uv0[1] + uv2[0] * uv0[1] + uv0[0] * uv[1] -
+            uv2[0] * uv[1] - uv0[0] * uv2[1] + uv[0] * uv2[1];
+  bary[2] = -uv1[0] * uv0[1] + uv[0] * uv0[1] + uv0[0] * uv1[1] -
+            uv[0] * uv1[1] - uv0[0] * uv[1] + uv1[0] * uv[1];
+
+  total = bary[0] + bary[1] + bary[2];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total) &&
+      ref_math_divisible(bary[2], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+    bary[2] /= total;
+  } else {
+    REF_INT i;
+    printf("%s: %d: %s: div zero total %.18e norms %.18e %.18e %.18e\n",
+           __FILE__, __LINE__, __func__, total, bary[0], bary[1], bary[2]);
+    for (i = 0; i < 3; i++) bary[i] = 0.0;
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
+                                            REF_DBL *center, REF_DBL *radius) {
+  REF_DBL uv0[2], uv1[2], uv2[2];
+  REF_INT sens;
+
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_FACE, uv0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_FACE, uv1, &sens),
+      "uv1");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[2], nodes, REF_GEOM_FACE, uv2, &sens),
+      "uv2");
+
+  center[0] = (uv0[0] + uv1[0] + uv2[0]) / 3.0;
+  center[1] = (uv0[1] + uv1[1] + uv2[1]) / 3.0;
+
+  *radius = 0.0;
+  *radius = MAX(*radius,
+                sqrt(pow(uv0[0] - center[0], 2) + pow(uv0[1] - center[1], 2)));
+  *radius = MAX(*radius,
+                sqrt(pow(uv1[0] - center[0], 2) + pow(uv1[1] - center[1], 2)));
+  *radius = MAX(*radius,
+                sqrt(pow(uv2[0] - center[0], 2) + pow(uv2[1] - center[1], 2)));
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
+                          REF_DBL *bary) {
+  REF_DBL t0, t1;
+  REF_INT sens;
+  REF_DBL total;
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &t0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &t1, &sens),
+      "uv1");
+
+  bary[0] = ABS(t1 - t);
+  bary[1] = ABS(t - t0);
+
+  total = bary[0] + bary[1];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+  } else {
+    REF_INT i;
+    printf("%s: %d: %s: div zero total %.18e norms %.18e %.18e\n", __FILE__,
+           __LINE__, __func__, total, bary[0], bary[1]);
+    for (i = 0; i < 2; i++) bary[i] = 0.0;
+    return REF_DIV_ZERO;
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
+                                           REF_DBL *center, REF_DBL *radius) {
+  REF_DBL t0, t1;
+  REF_INT sens;
+
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[0], nodes, REF_GEOM_EDGE, &t0, &sens),
+      "uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, nodes[1], nodes, REF_GEOM_EDGE, &t1, &sens),
+      "uv1");
+
+  *center = (t0 + t1) * 0.5;
+
+  *radius = 0.0;
+  *radius = MAX(*radius, ABS(t0 - (*center)));
+  *radius = MAX(*radius, ABS(t1 - (*center)));
 
   return REF_SUCCESS;
 }

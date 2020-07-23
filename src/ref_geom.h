@@ -41,6 +41,7 @@ typedef REF_GEOM_STRUCT *REF_GEOM;
 END_C_DECLORATION
 
 #include "ref_adj.h"
+#include "ref_blend.h"
 #include "ref_grid.h"
 
 BEGIN_C_DECLORATION
@@ -61,6 +62,7 @@ struct REF_GEOM_STRUCT {
   REF_ADJ ref_adj;
   REF_INT nnode, nedge, nface;
   REF_BOOL manifold;
+  REF_BOOL contex_owned;
   void *context;
   void *solid;
   void *faces;
@@ -70,6 +72,7 @@ struct REF_GEOM_STRUCT {
   REF_BYTE *cad_data;
   void *meshlink;
   void *meshlink_projection;
+  REF_BLEND ref_blend;
 };
 
 #define ref_geom_n(ref_geom) ((ref_geom)->n)
@@ -79,6 +82,7 @@ struct REF_GEOM_STRUCT {
 #define ref_geom_manifold(ref_geom) ((ref_geom)->manifold)
 #define ref_geom_cad_data(ref_geom) ((ref_geom)->cad_data)
 #define ref_geom_cad_data_size(ref_geom) ((ref_geom)->cad_data_size)
+#define ref_geom_blend(ref_geom) ((ref_geom)->ref_blend)
 
 #define ref_geom_model_loaded(ref_geom) (NULL != (void *)((ref_geom)->solid))
 #define ref_geom_meshlinked(ref_geom) (NULL != (void *)((ref_geom)->meshlink))
@@ -168,6 +172,8 @@ REF_STATUS ref_geom_initialize(REF_GEOM ref_geom);
 REF_STATUS ref_geom_free(REF_GEOM ref_geom);
 
 REF_STATUS ref_geom_deep_copy(REF_GEOM *ref_geom, REF_GEOM original);
+REF_STATUS ref_geom_share_context(REF_GEOM ref_geom_recipient,
+                                  REF_GEOM ref_geom_donor);
 REF_STATUS ref_geom_pack(REF_GEOM ref_geom, REF_INT *o2n);
 
 REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid);
@@ -266,6 +272,15 @@ REF_STATUS ref_geom_edgeid_range(REF_GRID ref_grid, REF_INT *min_edgeid,
                                  REF_INT *max_edgeid);
 
 REF_STATUS ref_geom_report_tri_area_normdev(REF_GRID ref_grid);
+
+REF_STATUS ref_geom_bary3(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL *uv,
+                          REF_DBL *bary);
+REF_STATUS ref_geom_tri_uv_bounding_sphere3(REF_GEOM ref_geom, REF_INT *nodes,
+                                            REF_DBL *center, REF_DBL *radius);
+REF_STATUS ref_geom_bary2(REF_GEOM ref_geom, REF_INT *nodes, REF_DBL t,
+                          REF_DBL *bary);
+REF_STATUS ref_geom_edg_t_bounding_sphere2(REF_GEOM ref_geom, REF_INT *nodes,
+                                           REF_DBL *center, REF_DBL *radius);
 
 END_C_DECLORATION
 

@@ -247,6 +247,13 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "geom assoc");
   }
 
+  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
+    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
+  }
+
   RXS(ref_args_find(argc, argv, "-t", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos)
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
@@ -397,6 +404,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
   REF_INT mesher_pos = REF_EMPTY;
+  REF_INT blend_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
   REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
   const char *mesher = "tetgen";
@@ -534,6 +542,32 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_geom_feedback(ref_grid), "feedback");
   ref_mpi_stopwatch_stop(ref_mpi, "geom feedback");
+
+  RXS(ref_args_find(argc, argv, "--blend", &blend_pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != blend_pos && blend_pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--blend %s requested\n", argv[blend_pos + 1]);
+      RSS(ref_blend_attach(ref_grid), "attach");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "blend attached");
+    if (ref_mpi_once(ref_mpi)) {
+      REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+      RSS(ref_export_by_extension(ref_blend_grid(ref_blend),
+                                  argv[blend_pos + 1]),
+          "blend export");
+      sprintf(filename, "%s-blend-geom.tec", project);
+      RSS(ref_blend_tec(ref_blend, filename), "blend viz");
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
+    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
+    RSS(ref_geom_constrain_all(ref_grid), "constrain");
+    ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    RSS(ref_adapt_surf_to_geom(ref_grid, 3), "ad");
+    ref_mpi_stopwatch_stop(ref_mpi, "untangle");
+    RSS(ref_grid_pack(ref_grid), "pack");
+    ref_mpi_stopwatch_stop(ref_mpi, "pack");
+  }
 
   if (ref_geom_manifold(ref_grid_geom(ref_grid))) {
     if (strncmp(mesher, "t", 1) == 0) {
@@ -936,6 +970,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
           printf("warning: no geometry loaded, assuming planar faces.\n");
       }
     }
+  }
+
+  RXS(ref_args_find(argc, argv, "--blend", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    if (ref_mpi_once(ref_mpi)) printf("--blend %s import\n", argv[pos + 1]);
+    RSS(ref_blend_import(ref_grid, argv[pos + 1]), "attach");
+    ref_mpi_stopwatch_stop(ref_mpi, "blend loaded");
   }
 
   RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND, "arg search");

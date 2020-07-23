@@ -797,6 +797,117 @@ int main(int argc, char *argv[]) {
     RSS(ref_geom_free(ref_geom), "free");
   }
 
+  { /* uv tri bary and bounding sphere */
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id;
+    REF_DBL params[2];
+    REF_INT nodes[4];
+    REF_DBL uv[2];
+    REF_DBL bary[3];
+    REF_DBL center[2], radius;
+
+    RSS(ref_geom_create(&ref_geom), "create");
+
+    type = REF_GEOM_FACE;
+    id = 5;
+    node = 0;
+    params[0] = 0.0;
+    params[1] = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "node face");
+    node = 1;
+    params[0] = 1.0;
+    params[1] = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "node face");
+    node = 2;
+    params[0] = 1.0;
+    params[1] = 10.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, params), "node face");
+
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = id;
+
+    RSS(ref_geom_tri_uv_bounding_sphere3(ref_geom, nodes, center, &radius),
+        "bary");
+    RWDS(2.0 / 3.0, center[0], -1.0, "c0");
+    RWDS(10.0 / 3.0, center[1], -1.0, "c1");
+    RWDS(sqrt(pow(1 - 2.0 / 3.0, 2) + pow(10 - 10.0 / 3.0, 2)), radius, -1.0,
+         "r");
+
+    uv[0] = 1.0;
+    uv[1] = 5.0;
+    RSS(ref_geom_bary3(ref_geom, nodes, uv, bary), "bary");
+    RWDS(0.0, bary[0], -1.0, "b0");
+    RWDS(0.5, bary[1], -1.0, "b1");
+    RWDS(0.5, bary[2], -1.0, "b2");
+
+    uv[0] = 0.5;
+    uv[1] = 5.0;
+    RSS(ref_geom_bary3(ref_geom, nodes, uv, bary), "bary");
+    RWDS(0.5, bary[0], -1.0, "b0");
+    RWDS(0.0, bary[1], -1.0, "b1");
+    RWDS(0.5, bary[2], -1.0, "b2");
+
+    uv[0] = 0.5;
+    uv[1] = 0.0;
+    RSS(ref_geom_bary3(ref_geom, nodes, uv, bary), "bary");
+    RWDS(0.5, bary[0], -1.0, "b0");
+    RWDS(0.5, bary[1], -1.0, "b1");
+    RWDS(0.0, bary[2], -1.0, "b2");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
+  { /* t edg bary and bounding sphere */
+    REF_GEOM ref_geom;
+    REF_INT node;
+    REF_INT type, id;
+    REF_DBL params;
+    REF_INT nodes[3];
+    REF_DBL t;
+    REF_DBL bary[2];
+    REF_DBL center, radius;
+
+    RSS(ref_geom_create(&ref_geom), "create");
+
+    type = REF_GEOM_EDGE;
+    id = 15;
+    node = 0;
+    params = 0.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, &params), "node face");
+    node = 1;
+    params = 1.0;
+    RSS(ref_geom_add(ref_geom, node, type, id, &params), "node face");
+
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = id;
+
+    RSS(ref_geom_edg_t_bounding_sphere2(ref_geom, nodes, &center, &radius),
+        "bary");
+    RWDS(0.5, center, -1.0, "c0");
+    RWDS(0.5, radius, -1.0, "r");
+
+    t = 1.0;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(0.0, bary[0], -1.0, "b0");
+    RWDS(1.0, bary[1], -1.0, "b1");
+
+    t = 0.0;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(1.0, bary[0], -1.0, "b0");
+    RWDS(0.0, bary[1], -1.0, "b1");
+
+    t = 0.4;
+    RSS(ref_geom_bary2(ref_geom, nodes, t, bary), "bary");
+    RWDS(0.6, bary[0], -1.0, "b0");
+    RWDS(0.4, bary[1], -1.0, "b1");
+
+    RSS(ref_geom_free(ref_geom), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
