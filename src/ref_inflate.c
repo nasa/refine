@@ -97,6 +97,8 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
   REF_INT ref_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, ref;
 
+  REF_DBL *ymin, *ymax, dy, y0, y1;
+  REF_DBL *orient;
   REF_DBL *tmin, *tmax;
   REF_INT *imin, *imax;
   REF_DBL *face_normal;
@@ -111,6 +113,44 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
 
   /* determine each faceids normal, only needed if my part has a tri */
 
+  ref_malloc_init(ymin, ref_dict_n(faceids), REF_DBL, REF_DBL_MAX);
+  ref_malloc_init(ymax, ref_dict_n(faceids), REF_DBL, -REF_DBL_MAX);
+  ref_malloc_init(orient, ref_dict_n(faceids), REF_DBL, 1);
+
+  y0 = REF_DBL_MAX;
+  y1 = -REF_DBL_MAX;
+  each_ref_cell_valid_cell_with_nodes(tri, cell, nodes) {
+    if (ref_dict_has_key(faceids, nodes[3])) {
+      for (tri_node = 0; tri_node < 3; tri_node++) {
+        RSS(ref_dict_location(faceids, nodes[3], &i), "key loc");
+        node = nodes[tri_node];
+        dy = ref_node_xyz(ref_node, 1, node) - origin[1];
+        if (ymin[i] > dy) {
+          ymin[i] = dy;
+        }
+        if (ymax[i] < dy) {
+          ymax[i] = dy;
+        }
+        if (y0 > dy) {
+          y0 = dy;
+        }
+        if (y1 < dy) {
+          y1 = dy;
+        }
+      }
+    }
+  }
+
+  printf("y %f %f\n", y0, y1);
+  each_ref_dict_key_index(faceids, i) {
+    if (y1 - ymax[i] > ymin[i] - y0) {
+      orient[i] = -1.0;
+    } else {
+      orient[i] = 1.0;
+    }
+    printf("%d z %f %f o %f\n", i, ymin[i], ymax[i], orient[i]);
+  }
+
   ref_malloc_init(tmin, ref_dict_n(faceids), REF_DBL, 4.0 * ref_math_pi);
   ref_malloc_init(tmax, ref_dict_n(faceids), REF_DBL, -4.0 * ref_math_pi);
   ref_malloc_init(imin, ref_dict_n(faceids), REF_INT, REF_EMPTY);
@@ -121,8 +161,9 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
       for (tri_node = 0; tri_node < 3; tri_node++) {
         RSS(ref_dict_location(faceids, nodes[3], &i), "key loc");
         node = nodes[tri_node];
-        theta = atan2(ref_node_xyz(ref_node, 1, node) - origin[1],
-                      ref_node_xyz(ref_node, 2, node) - origin[2]);
+        theta =
+            atan2((ref_node_xyz(ref_node, 2, node) - origin[2]),
+                  orient[i] * (ref_node_xyz(ref_node, 1, node) - origin[1]));
 
         if (tmin[i] > theta) {
           tmin[i] = theta;
@@ -150,22 +191,31 @@ REF_STATUS ref_inflate_face(REF_GRID ref_grid, REF_DICT faceids,
                                 ref_node_xyz(ref_node, 2, imin[i]));
       face_normal[2 + 3 * i] = -(ref_node_xyz(ref_node, 1, imax[i]) -
                                  ref_node_xyz(ref_node, 1, imin[i]));
+      face_normal[1 + 3 * i] *= -orient[i];
+      face_normal[2 + 3 * i] *= -orient[i];
       if (debug)
         printf("n=(%f,%f,%f)\n", face_normal[0 + 3 * i], face_normal[1 + 3 * i],
                face_normal[2 + 3 * i]);
       RSS(ref_math_normalize(&(face_normal[3 * i])), "make face norm");
       if (ref_mpi_once(ref_mpi))
-        printf("f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f\n",
-               ref_dict_key(faceids, i), face_normal[0 + 3 * i],
-               face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
-               ABS(tmin[i] - tmax[i]));
+        printf(
+            "f=%5d n=(%7.4f,%7.4f,%7.4f) t=(%7.4f,%7.4f) angle %7.4f"
+            " or %4.1f\n",
+            ref_dict_key(faceids, i), face_normal[0 + 3 * i],
+            face_normal[1 + 3 * i], face_normal[2 + 3 * i], tmin[i], tmax[i],
+            ABS(tmin[i] - tmax[i]), orient[i]);
     }
   }
 
-  ref_free(tmax);
-  ref_free(tmin);
   ref_free(imax);
   ref_free(imin);
+  ref_free(tmax);
+  ref_free(tmin);
+
+  ref_free(orient);
+
+  ref_free(ymax);
+  ref_free(ymin);
 
   o2n_max = ref_node_max(ref_node);
   ref_malloc_init(o2n, ref_node_max(ref_node), REF_INT, REF_EMPTY);
