@@ -1,0 +1,13 @@
+
+set n 1
+
+box 0 -1 -1 4 2 2
+patbeg i n
+  set angle 90/(n+1)*i
+  box 0 -1 -1 4 2 2
+  rotatex angle 0 0
+  intersect
+patend
+
+dump poly.egads
+
