@@ -436,8 +436,8 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 
     u = u - error / dyplus_duplus;
 
-    if (ref_math_divisible(error, u) && ABS(u) > 1.0e-3) {
-      keep_going = (ABS(error / u) > 1.0e-12);
+    if (ref_math_divisible(error, y) && ABS(y) > 1.0e-3) {
+      keep_going = (ABS(error / y) > 1.0e-12);
     } else {
       keep_going = (ABS(error) > 1.0e-15);
     }
