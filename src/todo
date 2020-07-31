@@ -38,8 +38,11 @@ smoothing
   requeue neighbors with large changes? particularly quality drops
 
 blend tolerance reduction
+  provide displacement distance as multiscale field
+  normal tagent hessian
+  blend distance multiscale adapt
   chain rule derivatives?
-  actual Laplacian?
+  actual Laplacian for blend smoothing?
   + augment inverse eval
   + find enclosing tri in uv
   + clip displacement interpolation bary (convex)
