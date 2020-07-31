@@ -38,7 +38,6 @@ smoothing
   requeue neighbors with large changes? particularly quality drops
 
 blend tolerance reduction
-  serialize to disk
   chain rule derivatives?
   actual Laplacian?
   + augment inverse eval
@@ -50,6 +49,7 @@ blend tolerance reduction
   + more complete geom deep copy (except context,nodes,edges,faces?)
   + set face boundary displacements
   + solve face boundary displacements
+  + serialize to disk (seperate .meshb and use current position as displacement)
 
 surrogate surface
   support twod geom
