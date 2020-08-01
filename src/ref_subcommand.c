@@ -275,6 +275,14 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
              (int)ref_grid_partitioner(ref_grid));
   }
 
+  RXS(ref_args_find(argc, argv, "--ratio-method", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_grid_node(ref_grid)->ratio_method = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("--ratio-method %d\n", ref_grid_node(ref_grid)->ratio_method);
+  }
+
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos) {
     ref_grid_adapt(ref_grid, watch_topo) = REF_TRUE;
@@ -938,6 +946,14 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi))
       printf("--partitioner %d partitioner\n",
              (int)ref_grid_partitioner(ref_grid));
+  }
+
+  RXS(ref_args_find(argc, argv, "--ratio-method", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    ref_grid_node(ref_grid)->ratio_method = atoi(argv[pos + 1]);
+    if (ref_mpi_once(ref_mpi))
+      printf("--ratio-method %d\n", ref_grid_node(ref_grid)->ratio_method);
   }
 
   RXS(ref_args_find(argc, argv, "--topo", &pos), REF_NOT_FOUND, "arg search");
