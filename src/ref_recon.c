@@ -907,6 +907,7 @@ REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal) {
     normal[0] /= total;
     normal[1] /= total;
     normal[2] /= total;
+    RSS(ref_math_normalize(normal), "norm");
   } else {
     normal[0] = 0.0;
     normal[1] = 0.0;
