@@ -881,3 +881,37 @@ REF_STATUS ref_recon_hessian(REF_GRID ref_grid, REF_DBL *scalar,
   RSS(ref_recon_abs_value_hessian(ref_grid, hessian), "abs hess");
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL total, area, tri_norm[3];
+
+  normal[0] = 0.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  total = 0.0;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+    RSS(ref_node_tri_normal(ref_node, nodes, tri_norm), "cell nodes");
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    normal[0] += area * tri_norm[0];
+    normal[1] += area * tri_norm[1];
+    normal[2] += area * tri_norm[2];
+    total += area;
+  }
+  if (ref_math_divisible(normal[0], total) &&
+      ref_math_divisible(normal[1], total) &&
+      ref_math_divisible(normal[2], total)) {
+    normal[0] /= total;
+    normal[1] /= total;
+    normal[2] /= total;
+  } else {
+    normal[0] = 0.0;
+    normal[1] = 0.0;
+    normal[2] = 0.0;
+    return REF_DIV_ZERO;
+  }
+  return REF_SUCCESS;
+}

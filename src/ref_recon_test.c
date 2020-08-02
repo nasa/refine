@@ -623,6 +623,25 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_INT node;
+    REF_DBL normal[3];
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "fixture");
+    node = 3; /* one tri */
+    RSS(ref_recon_normal(ref_grid, node, normal), "norm");
+    RWDS(0.0, normal[0], tol, "nx");
+    RWDS(0.0, normal[1], tol, "ny");
+    RWDS(-1.0, normal[2], tol, "nz");
+    node = 0; /* two tri */
+    RSS(ref_recon_normal(ref_grid, node, normal), "norm");
+    RWDS(0.0, normal[0], tol, "nx");
+    RWDS(0.0, normal[1], tol, "ny");
+    RWDS(-1.0, normal[2], tol, "nz");
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
