@@ -916,3 +916,50 @@ REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal) {
   }
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
+                         REF_DBL *s, REF_DBL *n) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+  REF_DBL small_dot, dot;
+  REF_DBL dr[3];
+
+  r[0] = 0.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+
+  small_dot = 2.0;
+  RSS(ref_recon_normal(ref_grid, node, n), "norm");
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "cell nodes");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      if (node != nodes[cell_node]) {
+        dr[0] = ref_node_xyz(ref_node, 0, nodes[cell_node]) -
+                ref_node_xyz(ref_node, 0, node);
+        dr[1] = ref_node_xyz(ref_node, 1, nodes[cell_node]) -
+                ref_node_xyz(ref_node, 1, node);
+        dr[2] = ref_node_xyz(ref_node, 2, nodes[cell_node]) -
+                ref_node_xyz(ref_node, 2, node);
+        RSS(ref_math_normalize(dr), "norm dr");
+        dot = ABS(ref_math_dot(dr, n));
+        if (dot < small_dot) {
+          small_dot = dot;
+          r[0] = dr[0];
+          r[1] = dr[1];
+          r[2] = dr[2];
+        }
+      }
+    }
+  }
+
+  dot = ref_math_dot(r, n);
+  r[0] -= dot * n[0];
+  r[1] -= dot * n[1];
+  r[2] -= dot * n[2];
+  RSS(ref_math_normalize(r), "norm r");
+
+  ref_math_cross_product(n, r, s);
+
+  return REF_SUCCESS;
+}

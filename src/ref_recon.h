@@ -61,6 +61,8 @@ REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
                                     REF_DBL max_jump);
 
 REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal);
+REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
+                         REF_DBL *s, REF_DBL *n);
 
 END_C_DECLORATION
 

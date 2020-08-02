@@ -642,6 +642,26 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_INT node;
+    REF_DBL r[3], s[3], n[3];
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "fixture");
+    node = 3; /* one tri */
+    RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
+    RWDS(1.0, r[0], tol, "rx");
+    RWDS(0.0, r[1], tol, "ry");
+    RWDS(0.0, r[2], tol, "rz");
+    RWDS(0.0, s[0], tol, "sx");
+    RWDS(-1.0, s[1], tol, "sy");
+    RWDS(0.0, s[2], tol, "sz");
+    RWDS(0.0, n[0], tol, "nx");
+    RWDS(0.0, n[1], tol, "ny");
+    RWDS(-1.0, n[2], tol, "nz");
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
