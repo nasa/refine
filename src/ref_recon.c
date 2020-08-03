@@ -963,3 +963,80 @@ REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
+                               REF_DBL *rn, REF_DBL *sn, REF_DBL *hessian) {
+  REF_DBL geom[3], ab[12];
+  REF_DBL dxyz[3], dq, dr, ds;
+  REF_DBL *a, *q, *r;
+  REF_INT m, n;
+  REF_GLOB cloud_global;
+  REF_INT item, im, i, j;
+  REF_DBL xyzs[4];
+  REF_BOOL verbose = REF_FALSE;
+
+  RSS(ref_cloud_item(ref_cloud, center_global, &item), "missing center");
+  each_ref_cloud_aux(ref_cloud, i) {
+    xyzs[i] = ref_cloud_aux(ref_cloud, i, item);
+  }
+  /* solve A with QR factorization size m x n */
+  m = ref_cloud_n(ref_cloud) - 1; /* skip self */
+  n = 3;
+  if (verbose)
+    printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
+  if (m < n) {           /* underdetermined, will end badly */
+    return REF_DIV_ZERO; /* signal cloud growth required */
+  }
+  ref_malloc(a, m * n, REF_DBL);
+  ref_malloc(q, m * n, REF_DBL);
+  ref_malloc(r, n * n, REF_DBL);
+  i = 0;
+  each_ref_cloud_global(ref_cloud, item, cloud_global) {
+    if (center_global == cloud_global) continue; /* skip self */
+    dxyz[0] = ref_cloud_aux(ref_cloud, 0, item) - xyzs[0];
+    dxyz[1] = ref_cloud_aux(ref_cloud, 1, item) - xyzs[1];
+    dxyz[2] = ref_cloud_aux(ref_cloud, 2, item) - xyzs[2];
+    dr = ref_math_dot(dxyz, rn);
+    ds = ref_math_dot(dxyz, sn);
+    geom[0] = 0.5 * dr * dr;
+    geom[1] = dr * ds;
+    geom[2] = 0.5 * ds * ds;
+    for (j = 0; j < n; j++) {
+      a[i + m * j] = geom[j];
+      if (verbose) printf(" %12.4e", geom[j]);
+    }
+    if (verbose) printf(" %f %f %d\n", dr, ds, i);
+    i++;
+  }
+  REIS(m, i, "A row miscount");
+  RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
+  if (verbose) RSS(ref_matrix_show_aqr(m, n, a, q, r), "show qr");
+  for (i = 0; i < m * n; i++) ab[i] = 0.0;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < n; j++) {
+      ab[i + n * j] += r[i + n * j];
+    }
+  }
+  i = 0;
+  each_ref_cloud_global(ref_cloud, item, cloud_global) {
+    if (center_global == cloud_global) continue; /* skip self */
+    dq = ref_cloud_aux(ref_cloud, 3, item) - xyzs[3];
+    for (j = 0; j < n; j++) {
+      ab[j + n * n] += q[i + m * j] * dq;
+    }
+    i++;
+  }
+  REIS(m, i, "b row miscount");
+  if (verbose) RSS(ref_matrix_show_ab(n * n, m * n, ab), "show");
+  RAISE(ref_matrix_solve_ab(n * n, m * n, ab));
+  if (verbose) RSS(ref_matrix_show_ab(n * n, m * n, ab), "show");
+  j = n;
+  for (im = 0; im < 3; im++) {
+    hessian[im] = ab[im + n * n * j];
+  }
+  ref_free(r);
+  ref_free(q);
+  ref_free(a);
+
+  return REF_SUCCESS;
+}
