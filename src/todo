@@ -40,6 +40,9 @@ smoothing
 blend tolerance reduction
   provide displacement distance as multiscale field
   normal tagent hessian
+    ref_recon_local_immediate_cloud_disp
+    ref_recon_kexact_surf_aux(r,s,n)
+    ref_recon_kexact_surf_hessian
   blend distance multiscale adapt
   chain rule derivatives?
   actual Laplacian for blend smoothing?
