@@ -877,3 +877,19 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
   fclose(file);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_INT geom, node;
+
+  each_ref_node_valid_node(ref_node, node) { distance[node] = 0.0; }
+
+  each_ref_geom(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    distance[node] = MAX(distance[node], ref_blend_distance(ref_blend, geom));
+  }
+
+  return REF_SUCCESS;
+}
