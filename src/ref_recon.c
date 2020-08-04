@@ -1011,7 +1011,7 @@ REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
   REIS(m, i, "A row miscount");
   RSS(ref_matrix_qr(m, n, a, q, r), "kexact lsq hess qr");
   if (verbose) RSS(ref_matrix_show_aqr(m, n, a, q, r), "show qr");
-  for (i = 0; i < m * n; i++) ab[i] = 0.0;
+  for (i = 0; i < (n + 1) * n; i++) ab[i] = 0.0;
   for (i = 0; i < n; i++) {
     for (j = 0; j < n; j++) {
       ab[i + n * j] += r[i + n * j];
@@ -1027,16 +1027,77 @@ REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
     i++;
   }
   REIS(m, i, "b row miscount");
-  if (verbose) RSS(ref_matrix_show_ab(n * n, m * n, ab), "show");
-  RAISE(ref_matrix_solve_ab(n * n, m * n, ab));
-  if (verbose) RSS(ref_matrix_show_ab(n * n, m * n, ab), "show");
+  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
+  RAISE(ref_matrix_solve_ab(n, n + 1, ab));
+  if (verbose) RSS(ref_matrix_show_ab(n, n + 1, ab), "show");
   j = n;
   for (im = 0; im < 3; im++) {
-    hessian[im] = ab[im + n * n * j];
+    hessian[im] = ab[im + n * j];
   }
   ref_free(r);
   ref_free(q);
   ref_free(a);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
+                              REF_DBL *hessian) {
+  REF_CLOUD *one_layer;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT node, im;
+  REF_CLOUD ref_cloud;
+  REF_DBL r[3], s[3], n[3];
+  REF_DBL node_hessian[3];
+  REF_STATUS status;
+  REF_INT layer;
+
+  ref_malloc_init(one_layer, ref_node_max(ref_node), REF_CLOUD, NULL);
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_cloud_create(&(one_layer[node]), 4), "cloud storage");
+  }
+  RSS(ref_recon_local_immediate_cloud(one_layer, ref_node, ref_cell, scalar),
+      "fill immediate cloud");
+  RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
+
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
+      /* use ref_cloud to get a unique list of halo(2) nodes */
+      RSS(ref_cloud_deep_copy(&ref_cloud, one_layer[node]), "create ref_cloud");
+      status = REF_INVALID;
+      for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
+        RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
+            "grow");
+
+        status = ref_recon_kexact_rs(ref_node_global(ref_node, node), ref_cloud,
+                                     r, s, node_hessian);
+        if (REF_DIV_ZERO == status && layer > 4) {
+          ref_node_location(ref_node, node);
+          printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                 "REF_DIV_ZERO", layer);
+        }
+        if (REF_ILL_CONDITIONED == status && layer > 4) {
+          ref_node_location(ref_node, node);
+          printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                 "REF_ILL_CONDITIONED", layer);
+        }
+      }
+      RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
+      for (im = 0; im < 3; im++) {
+        hessian[im + 3 * node] = node_hessian[im];
+      }
+      RSS(ref_cloud_free(ref_cloud), "free ref_cloud");
+    }
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    ref_cloud_free(one_layer[node]); /* no-op for null */
+  }
+  ref_free(one_layer);
+
+  RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
 
   return REF_SUCCESS;
 }

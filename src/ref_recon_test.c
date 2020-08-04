@@ -662,6 +662,33 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node, center;
+    REF_DBL distance[4];
+    REF_DBL hess[3 * 4];
+    REF_DBL r, s;
+    center = 0; /* two tri */
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "fixture");
+    ref_node = ref_grid_node(ref_grid);
+    ref_node_xyz(ref_node, 1, 3) = -1.0;
+    each_ref_node_valid_node(ref_node, node) {
+      r = ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
+      s = ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
+      distance[node] = 2.0 * r * r + 3.0 * s * s;
+    }
+
+    RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
+
+    RWDS(5.0, hess[0 + 3 * center], tol, "rx");
+    RWDS(-1.0, hess[1 + 3 * center], tol, "ry");
+    RWDS(5.0, hess[2 + 3 * center], tol, "rz");
+
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

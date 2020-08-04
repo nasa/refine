@@ -65,6 +65,8 @@ REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
                          REF_DBL *s, REF_DBL *n);
 REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
                                REF_DBL *rn, REF_DBL *sn, REF_DBL *hessian);
+REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
+                              REF_DBL *hessian);
 
 END_C_DECLORATION
 
