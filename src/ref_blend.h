@@ -58,6 +58,7 @@ REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
 REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename);
 
 REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance);
+REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend);
 
 END_C_DECLORATION
 

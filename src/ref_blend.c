@@ -28,6 +28,7 @@
 #include "ref_import.h"
 #include "ref_malloc.h"
 #include "ref_node.h"
+#include "ref_recon.h"
 
 #define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
 #define ref_blend_displacement(ref_blend, ixyz, geom) \
@@ -890,6 +891,26 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
     node = ref_geom_node(ref_geom, geom);
     distance[node] = MAX(distance[node], ref_blend_distance(ref_blend, geom));
   }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL *distance;
+  REF_DBL *hess;
+  REF_INT node;
+
+  ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  0.0);
+  ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  0.0);
+  RSS(ref_blend_max_distance(ref_blend, distance), "dist");
+  RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
+  each_ref_node_valid_node(ref_node, node) {}
+  ref_free(hess);
+  ref_free(distance);
 
   return REF_SUCCESS;
 }
