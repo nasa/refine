@@ -115,6 +115,7 @@ int main(void) {
   { /* 2x2 diag decom, zeros */
     REF_DBL m[3] = {0.0, 0.0, 0.0};
     REF_DBL d[6];
+    REF_DBL m2[3];
 
     RSS(ref_matrix_diag_m2(m, d), "diag");
 
@@ -126,11 +127,17 @@ int main(void) {
 
     RWDS(0.0, d[4], -1, "x1");
     RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
   }
 
   { /* 2x2 diag decom, eye */
     REF_DBL m[3] = {1.0, 0.0, 1.0};
     REF_DBL d[6];
+    REF_DBL m2[3];
 
     RSS(ref_matrix_diag_m2(m, d), "diag");
 
@@ -142,11 +149,17 @@ int main(void) {
 
     RWDS(0.0, d[4], -1, "x1");
     RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
   }
 
   { /* 2x2 diag decom, 2-5 */
     REF_DBL m[3] = {2.0, 0.0, 5.0};
     REF_DBL d[6];
+    REF_DBL m2[3];
 
     RSS(ref_matrix_diag_m2(m, d), "diag");
 
@@ -158,11 +171,17 @@ int main(void) {
 
     RWDS(0.0, d[4], -1, "x1");
     RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
   }
 
   { /* 2x2 diag decom, 5-2 */
     REF_DBL m[3] = {5.0, 0.0, 2.0};
     REF_DBL d[6];
+    REF_DBL m2[3];
 
     RSS(ref_matrix_diag_m2(m, d), "diag");
 
@@ -174,11 +193,17 @@ int main(void) {
 
     RWDS(0.0, d[4], -1, "x1");
     RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
   }
 
   { /* 2x2 diag decom, 2-1-2 */
     REF_DBL m[3] = {2.0, 1.0, 2.0};
     REF_DBL d[6];
+    REF_DBL m2[3];
 
     RSS(ref_matrix_diag_m2(m, d), "diag");
 
@@ -190,6 +215,11 @@ int main(void) {
 
     RWDS(0.5 * sqrt(2.0), d[4], -1, "x1");
     RWDS(0.5 * sqrt(2.0), d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
   }
 
   { /* twod sort, z last */

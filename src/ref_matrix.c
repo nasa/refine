@@ -415,6 +415,26 @@ REF_STATUS ref_matrix_form_m(REF_DBL *d, REF_DBL *m) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_form_m2(REF_DBL *d, REF_DBL *m) {
+  /* m = d * e * d' */
+
+  /*  d * e
+     d[ 2] d[ 4]   d[0]   0
+     d[ 3] d[ 5] *   0   d[1]
+  */
+
+  /*  (d * e) * d'
+     d[ 2]*d[0] d[ 4]*d[1]   d[2]  d[3]
+     d[ 3]*d[0] d[ 5]*d[1] * d[4]  d[5]
+  */
+
+  m[0] = d[2] * d[0] * d[2] + d[4] * d[1] * d[4];
+  m[1] = d[2] * d[0] * d[3] + d[4] * d[1] * d[5];
+  m[2] = d[3] * d[0] * d[3] + d[5] * d[1] * d[5];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_jacob_m(REF_DBL *m_upper_tri, REF_DBL *j) {
   REF_DBL d[12];
 
