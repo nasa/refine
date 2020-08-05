@@ -1041,6 +1041,27 @@ REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_abs_value_hessian2(REF_GRID ref_grid,
+                                               REF_DBL *hessian) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL diag_system[6];
+  REF_INT node;
+
+  /* positive eigenvalues to make positive definite */
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      RSS(ref_matrix_diag_m2(&(hessian[3 * node]), diag_system), "decomp");
+      ref_matrix_eig2(diag_system, 0) = ABS(ref_matrix_eig2(diag_system, 0));
+      ref_matrix_eig2(diag_system, 1) = ABS(ref_matrix_eig2(diag_system, 1));
+      RSS(ref_matrix_form_m2(diag_system, &(hessian[3 * node])), "re-form");
+    }
+  }
+
+  RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
                               REF_DBL *hessian) {
   REF_CLOUD *one_layer;
@@ -1098,6 +1119,8 @@ REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
   ref_free(one_layer);
 
   RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
+
+  RSS(ref_recon_abs_value_hessian2(ref_grid, hessian), "abs(H)");
 
   return REF_SUCCESS;
 }

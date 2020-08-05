@@ -677,7 +677,7 @@ int main(int argc, char *argv[]) {
     each_ref_node_valid_node(ref_node, node) {
       r = ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
       s = ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
-      distance[node] = 2.0 * r * r + 3.0 * s * s;
+      distance[node] = 2.0 * r * r - 3.0 * s * s;
     }
 
     RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
