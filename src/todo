@@ -43,7 +43,7 @@ blend tolerance reduction
     ref_recon_local_immediate_cloud_disp
     ref_recon_kexact_surf_aux(r,s,n)
     ref_recon_kexact_surf_hessian
-    diag 2x2
+    + diag 2x2
     multiscale on surface
     form 3x3 metric from ev1ev2n
   blend distance multiscale adapt
