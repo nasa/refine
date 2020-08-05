@@ -26,6 +26,8 @@ BEGIN_C_DECLORATION
 #define ref_matrix_eig(d, e) ((d)[(e)])
 #define ref_matrix_vec(d, xyz, v) ((d)[(xyz) + 3 + 3 * (v)])
 #define ref_matrix_vec_ptr(d, v) (&((d)[3 + 3 * (v)]))
+#define ref_matrix_eig2(d, e) ((d)[(e)])
+#define ref_matrix_vec2(d, xy, v) ((d)[(xy) + 2 + 2 * (v)])
 
 #define ref_matrix_vt_m_v(m, v)                                     \
   ((v)[0] * ((m)[0] * (v)[0] + (m)[1] * (v)[1] + (m)[2] * (v)[2]) + \
@@ -43,6 +45,7 @@ REF_STATUS ref_matrix_det_m(REF_DBL *m_upper_tri, REF_DBL *det);
 
 REF_STATUS ref_matrix_show_diag_sys(REF_DBL *diagonal_system);
 REF_STATUS ref_matrix_diag_m(REF_DBL *m_upper_tri, REF_DBL *diagonal_system);
+REF_STATUS ref_matrix_diag_m2(REF_DBL *m_upper_tri, REF_DBL *diagonal_system);
 
 REF_STATUS ref_matrix_ascending_eig(REF_DBL *diagonal_system);
 REF_STATUS ref_matrix_ascending_eig_twod(REF_DBL *diagonal_system);

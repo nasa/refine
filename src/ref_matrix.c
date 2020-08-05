@@ -248,6 +248,66 @@ REF_STATUS ref_matrix_diag_m(REF_DBL *m, REF_DBL *d) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_diag_m2(REF_DBL *m, REF_DBL *d) {
+  REF_DBL c2, s2, norm, l, c, s, cc, ss, mid;
+  /* if inf or nan */
+  if (!isfinite(m[0]) || !isfinite(m[1]) || !isfinite(m[2])) {
+    return REF_INVALID;
+  }
+
+  /* one rotation ( zero out m[2] ) */
+  /* http://www.geometrictools.com/Documentation/ */
+  /* Eigen System Solvers for Symmetric Matrices, David Eberly */
+
+  c2 = 0.5 * (m[0] - m[2]);
+  s2 = m[1];
+  norm = MAX(ABS(c2), ABS(s2));
+
+  if (ref_math_divisible(c2, norm) && ref_math_divisible(s2, norm)) {
+    c2 /= norm;
+    s2 /= norm;
+    l = sqrt(c2 * c2 + s2 * s2);
+    RAS(ref_math_divisible(c2, l), "c2/l");
+    RAS(ref_math_divisible(s2, l), "s2/l");
+    c2 /= l;
+    s2 /= l;
+    if (c2 > 0.0) {
+      c2 = -c2;
+      s2 = -s2;
+    }
+  } else {
+    c2 = -1.0;
+    s2 = 0.0;
+  }
+
+  s = sqrt(0.5 * (1.0 - c2));
+  c = 0.5 * s2 / s;
+  cc = c * c;
+  ss = s * s;
+  mid = s2 * m[1];
+
+  /*
+  printf("  m00 %f m01 %f m11 %f\n", m[0], m[1], m[2]);
+  printf("  c2 %f s2 %f c %f s %f\n", c2, s2, c, s);
+  printf("  cc %f ss %f mid %f\n", cc, ss, mid);
+  printf("  e %f %f %f e %f %f %f\n", cc * m[2], -mid, ss * m[0], cc * m[0],
+         mid, ss * m[2]);
+  printf("  e %f e %f\n", cc * m[2] - mid + ss * m[0],
+         cc * m[0] + mid + ss * m[2]);
+  */
+
+  ref_matrix_eig2(d, 0) = cc * m[2] - mid + ss * m[0];
+  ref_matrix_eig2(d, 1) = cc * m[0] + mid + ss * m[2];
+
+  ref_matrix_vec2(d, 0, 0) = s;
+  ref_matrix_vec2(d, 1, 0) = -c;
+
+  ref_matrix_vec2(d, 0, 1) = c;
+  ref_matrix_vec2(d, 1, 1) = s;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_ascending_eig(REF_DBL *d) {
   REF_DBL temp;
   REF_INT i;

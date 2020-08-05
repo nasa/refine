@@ -112,6 +112,86 @@ int main(void) {
     RWDS(fd[2], d[2], tol, "d[2] expected");
   }
 
+  { /* 2x2 diag decom, zeros */
+    REF_DBL m[3] = {0.0, 0.0, 0.0};
+    REF_DBL d[6];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(0.0, d[0], -1, "eig 0");
+    RWDS(0.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+  }
+
+  { /* 2x2 diag decom, eye */
+    REF_DBL m[3] = {1.0, 0.0, 1.0};
+    REF_DBL d[6];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(1.0, d[0], -1, "eig 0");
+    RWDS(1.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+  }
+
+  { /* 2x2 diag decom, 2-5 */
+    REF_DBL m[3] = {2.0, 0.0, 5.0};
+    REF_DBL d[6];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(2.0, d[0], -1, "eig 0");
+    RWDS(5.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+  }
+
+  { /* 2x2 diag decom, 5-2 */
+    REF_DBL m[3] = {5.0, 0.0, 2.0};
+    REF_DBL d[6];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(5.0, d[0], -1, "eig 0");
+    RWDS(2.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+  }
+
+  { /* 2x2 diag decom, 2-1-2 */
+    REF_DBL m[3] = {2.0, 1.0, 2.0};
+    REF_DBL d[6];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(1.0, d[0], -1, "eig 0");
+    RWDS(3.0, d[1], -1, "eig 1");
+
+    RWDS(0.5 * sqrt(2.0), d[2], -1, "x0");
+    RWDS(-0.5 * sqrt(2.0), d[3], -1, "y0");
+
+    RWDS(0.5 * sqrt(2.0), d[4], -1, "x1");
+    RWDS(0.5 * sqrt(2.0), d[5], -1, "y1");
+  }
+
   { /* twod sort, z last */
     REF_DBL m[6] = {0.5, 0.0, 0.0, 2.0, 0.0, 1.0};
     REF_DBL d[12];
