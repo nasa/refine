@@ -87,6 +87,8 @@ int main(int argc, char *argv[]) {
     printf("load geom %s\n", argv[3]);
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
     printf("write tec %s\n", "ref_blend_viz.tec");
     RSS(ref_blend_attach(ref_grid), "attach");
     {
