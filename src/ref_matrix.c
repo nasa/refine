@@ -89,9 +89,9 @@ REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
   printf("%24.15e", ref_matrix_vec(d, 1, 2));
   printf("\n");
   printf("valz");
-  printf("%24.15e", ref_matrix_vec(d, 1, 0));
-  printf("%24.15e", ref_matrix_vec(d, 1, 1));
-  printf("%24.15e", ref_matrix_vec(d, 1, 2));
+  printf("%24.15e", ref_matrix_vec(d, 2, 0));
+  printf("%24.15e", ref_matrix_vec(d, 2, 1));
+  printf("%24.15e", ref_matrix_vec(d, 2, 2));
   printf("\n");
   return REF_SUCCESS;
 }
