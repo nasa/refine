@@ -27,6 +27,8 @@
 #include "ref_egads.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
+#include "ref_matrix.h"
+#include "ref_metric.h"
 #include "ref_node.h"
 #include "ref_recon.h"
 
@@ -902,24 +904,83 @@ REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend) {
   REF_DBL *hess, *metric;
   REF_INT node, i;
   REF_INT dimension = 2, p_norm = 2;
+  REF_INT gradation = -1.0;
   REF_DBL det, exponent;
+  REF_DBL curve_complexity, target_complexity;
+  REF_DBL diag_system2[6];
+  REF_DBL diag_system[12];
+  REF_DBL m[6], combined[6];
+  REF_DBL r[3], s[3], n[3];
+  REF_BOOL verbose = REF_FALSE;
+
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
 
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
-  ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                  0.0);
+  RSS(ref_metric_from_node(metric, ref_node), "from");
+  RSS(ref_metric_complexity(metric, ref_grid, &curve_complexity), "cmp");
+  target_complexity =
+      MIN(curve_complexity, 1.0 * (REF_DBL)ref_node_n_global(ref_node));
+
   ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  0.0);
+  ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
   RSS(ref_blend_max_distance(ref_blend, distance), "dist");
   RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
+  ref_free(distance);
   each_ref_node_valid_node(ref_node, node) {
     det = hess[0 + 3 * node] * hess[2 + 3 * node] * -2.0 * hess[1 + 3 * node];
-    if (det > 0.0) {
+    if (det > 0.0) { /* local scaling */
       for (i = 0; i < 3; i++) hess[i + 3 * node] *= pow(det, exponent);
     }
   }
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
+    RSS(ref_matrix_diag_m2(&(hess[3 * node]), diag_system2), "decomp");
+    ref_matrix_eig(diag_system, 0) = ref_matrix_eig2(diag_system2, 0);
+    for (i = 0; i < 3; i++) {
+      ref_matrix_vec(diag_system, i, 0) =
+          ref_matrix_vec2(diag_system2, 0, 0) * r[i] +
+          ref_matrix_vec2(diag_system2, 1, 0) * s[i];
+    }
+    ref_matrix_eig(diag_system, 1) = ref_matrix_eig2(diag_system2, 1);
+    for (i = 0; i < 3; i++) {
+      ref_matrix_vec(diag_system, i, 1) =
+          ref_matrix_vec2(diag_system2, 0, 1) * r[i] +
+          ref_matrix_vec2(diag_system2, 1, 1) * s[i];
+    }
+    ref_matrix_eig(diag_system, 2) =
+        MIN(ref_matrix_eig2(diag_system2, 0), ref_matrix_eig2(diag_system2, 1));
+    for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 2) = n[i];
+
+    RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
+    if (verbose) {
+      ref_matrix_show_diag_sys(diag_system);
+      ref_metric_show(&(metric[6 * node]));
+      printf("n %f %f %f\n", n[0], n[1], n[2]);
+      printf("v %f %f %f\n", diag_system[0 + 9], diag_system[1 + 9],
+             diag_system[2 + 9]);
+    }
+  }
   ref_free(hess);
-  ref_free(distance);
+
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         target_complexity),
+      "gradation at complexity");
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_metric_get(ref_node, node, m), "curve metric");
+    RSS(ref_matrix_intersect(&(metric[6 * node]), m, combined), "intersect");
+    if (verbose) {
+      ref_metric_show(&(metric[6 * node]));
+      ref_metric_show(m);
+      ref_metric_show(combined);
+      printf("\n");
+    }
+    for (i = 0; i < 6; i++) metric[i + 6 * node] = combined[i];
+  }
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "to");
+
   ref_free(metric);
 
   return REF_SUCCESS;
