@@ -234,7 +234,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
   ref_grid_surf(ref_grid) = ref_grid_twod(ref_grid);
-  RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_tet(ref_grid), &ntet),
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_grid_node(ref_grid), &ntet),
       "global tets");
   if (0 == ntet) ref_grid_surf(ref_grid) = REF_TRUE;
   if (ref_geom_model_loaded(ref_grid_geom(ref_grid))) {

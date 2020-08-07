@@ -844,6 +844,24 @@ REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
+                          REF_LONG *ncell) {
+  REF_MPI ref_mpi = ref_node_mpi(ref_node);
+  REF_INT cell, part;
+
+  *ncell = 0;
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "cell part");
+    if (ref_mpi_rank(ref_mpi) == part) {
+      (*ncell)++;
+    }
+  }
+
+  RSS(ref_mpi_allsum(ref_mpi, ncell, 1, REF_LONG_TYPE), "sum");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes) {
   REF_INT temp;
   REIS(4, nnode, "only implemented for tets");

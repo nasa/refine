@@ -65,8 +65,6 @@ REF_STATUS ref_gather_metric(REF_GRID ref_grid, const char *filename);
 REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
                                        REF_DBL *scalar, const char *filename);
 
-REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
-                            REF_LONG *ncell);
 REF_STATUS ref_gather_ngeom(REF_NODE ref_node, REF_GEOM ref_geom, REF_INT type,
                             REF_INT *ngeom);
 
