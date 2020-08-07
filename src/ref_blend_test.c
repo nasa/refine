@@ -92,23 +92,10 @@ int main(int argc, char *argv[]) {
     printf("complexity %f\n", complexity);
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-    printf("write tec %s\n", "ref_blend_viz.tec");
-    RSS(ref_blend_attach(ref_grid), "attach");
-    {
-      REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
-      RSS(ref_blend_tec(ref_blend, "ref_blend_viz.tec"), "blend tec");
-      RSS(ref_geom_tec(ref_grid, "ref_blend_geom.tec"), "blend tec");
-      RSS(ref_export_tec_surf(ref_blend_grid(ref_blend), "ref_blend_surf.tec"),
-          "blend tec");
-      RSS(ref_export_by_extension(ref_blend_grid(ref_blend),
-                                  "ref_blend_surrogate.meshb"),
-          "blend export");
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_curve"), "al");
-      RSS(ref_blend_multiscale(ref_grid, complexity), "blend multiscale");
-      RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_multiscale"),
-          "al");
-    }
+    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_curve"), "al");
+    RSS(ref_blend_multiscale(ref_grid, complexity), "blend multiscale");
+    RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_multiscale"), "al");
     RSS(ref_grid_free(ref_grid), "free");
     RSS(ref_mpi_free(ref_mpi), "free");
     RSS(ref_mpi_stop(), "stop");

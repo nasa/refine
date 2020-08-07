@@ -898,7 +898,7 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
 }
 
 REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
-  REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+  REF_BLEND ref_blend;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *distance;
   REF_DBL *hess, *metric;
@@ -911,6 +911,13 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_DBL m[6], combined[6];
   REF_DBL r[3], s[3], n[3];
   REF_BOOL verbose = REF_FALSE;
+
+  /* reset blend to match grid */
+  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+  if (NULL != ref_blend) ref_blend_free(ref_blend);
+  ref_blend = NULL;
+  RSS(ref_blend_attach(ref_grid), "attach");
+  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
 
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
 
