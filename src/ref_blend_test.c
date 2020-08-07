@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
           "blend export");
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_curve"), "al");
-      RSS(ref_blend_multiscale(ref_blend), "blend multiscale");
+      RSS(ref_blend_multiscale(ref_grid), "blend multiscale");
       RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_multiscale"),
           "al");
     }

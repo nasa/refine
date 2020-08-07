@@ -897,8 +897,8 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend) {
-  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+REF_STATUS ref_blend_multiscale(REF_GRID ref_grid) {
+  REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *distance;
   REF_DBL *hess, *metric;
