@@ -906,7 +906,7 @@ REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend) {
   REF_INT dimension = 2, p_norm = 2;
   REF_INT gradation = -1.0;
   REF_DBL det, exponent;
-  REF_DBL curve_complexity, target_complexity;
+  REF_DBL curve_complexity, target_complexity, nnode_complexity;
   REF_DBL diag_system2[6];
   REF_DBL diag_system[12];
   REF_DBL m[6], combined[6];
@@ -918,8 +918,11 @@ REF_STATUS ref_blend_multiscale(REF_BLEND ref_blend) {
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
   RSS(ref_metric_from_node(metric, ref_node), "from");
   RSS(ref_metric_complexity(metric, ref_grid, &curve_complexity), "cmp");
-  target_complexity =
-      MIN(curve_complexity, 1.0 * (REF_DBL)ref_node_n_global(ref_node));
+  nnode_complexity = 1.0 * (REF_DBL)ref_node_n_global(ref_node);
+  target_complexity = MIN(curve_complexity, nnode_complexity);
+  if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+    printf("curve %e nnode %e target %e\n", curve_complexity, nnode_complexity,
+           target_complexity);
 
   ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
