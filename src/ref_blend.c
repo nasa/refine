@@ -897,7 +897,7 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_blend_multiscale(REF_GRID ref_grid) {
+REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_BLEND ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_DBL *distance;
@@ -906,7 +906,6 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid) {
   REF_INT dimension = 2, p_norm = 2;
   REF_INT gradation = -1.0;
   REF_DBL det, exponent;
-  REF_DBL curve_complexity, target_complexity, nnode_complexity;
   REF_DBL diag_system2[6];
   REF_DBL diag_system[12];
   REF_DBL m[6], combined[6];
@@ -916,14 +915,6 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid) {
   exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
 
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
-  RSS(ref_metric_from_node(metric, ref_node), "from");
-  RSS(ref_metric_complexity(metric, ref_grid, &curve_complexity), "cmp");
-  nnode_complexity = 1.0 * (REF_DBL)ref_node_n_global(ref_node);
-  target_complexity = MIN(curve_complexity, nnode_complexity);
-  if (ref_mpi_once(ref_grid_mpi(ref_grid)))
-    printf("curve %e nnode %e target %e\n", curve_complexity, nnode_complexity,
-           target_complexity);
-
   ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
   ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
@@ -937,6 +928,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid) {
       for (i = 0; i < 3; i++) hess[i + 3 * node] *= pow(det, exponent);
     }
   }
+
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
     RSS(ref_matrix_diag_m2(&(hess[3 * node]), diag_system2), "decomp");

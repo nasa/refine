@@ -79,14 +79,17 @@ int main(int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--metric", &pos), REF_NOT_FOUND, "arg search");
   if (pos != REF_EMPTY) {
     REF_GRID ref_grid;
-    REIS(4, argc, "required args: --metric grid.ext geom.egads");
-    REIS(1, pos, "required args: --metric grid.ext geom.egads");
+    REF_DBL complexity;
+    REIS(5, argc, "required args: --metric grid.ext geom.egads complexity");
+    REIS(1, pos, "required args: --metric grid.ext geom.egads complexity");
     printf("import grid %s\n", argv[2]);
     RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "argv import");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "grid import");
     printf("load geom %s\n", argv[3]);
     RSS(ref_egads_load(ref_grid_geom(ref_grid), argv[3]), "ld egads");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "geom load");
+    complexity = atof(argv[4]);
+    printf("complexity %f\n", complexity);
     RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
     ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
     printf("write tec %s\n", "ref_blend_viz.tec");
@@ -102,7 +105,7 @@ int main(int argc, char *argv[]) {
           "blend export");
       RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
       RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_curve"), "al");
-      RSS(ref_blend_multiscale(ref_grid), "blend multiscale");
+      RSS(ref_blend_multiscale(ref_grid, complexity), "blend multiscale");
       RSS(ref_export_tec_metric_ellipse(ref_grid, "ref_blend_multiscale"),
           "al");
     }
