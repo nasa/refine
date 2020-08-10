@@ -18,7 +18,7 @@ ${src}/ref adapt \
       -g onera-m6-sharp-te.egads \
       --blend-metric 100000 \
       -x blend-adapt.meshb \
-      -t -s 10
+      -t -s 4
 
 ${src}/ref_blend_test \
       --viz blend-adapt.meshb onera-m6-sharp-te.egads

@@ -984,6 +984,9 @@ REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
   n = 3;
   if (verbose)
     printf("m %d at %f %f %f %f\n", m, xyzs[0], xyzs[1], xyzs[2], xyzs[3]);
+  if (verbose)
+    printf("r %f %f %f\ns %f %f %f\n", rn[0], rn[1], rn[2], sn[0], sn[1],
+           sn[2]);
   if (m < n) {           /* underdetermined, will end badly */
     return REF_DIV_ZERO; /* signal cloud growth required */
   }

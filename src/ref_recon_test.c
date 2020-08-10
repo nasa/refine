@@ -682,10 +682,43 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
 
-    RWDS(5.0, hess[0 + 3 * center], tol, "rx");
-    RWDS(-1.0, hess[1 + 3 * center], tol, "ry");
-    RWDS(5.0, hess[2 + 3 * center], tol, "rz");
+    RWDS(5.0, hess[0 + 3 * center], tol, "dr2");
+    RWDS(-1.0, hess[1 + 3 * center], tol, "drds");
+    RWDS(5.0, hess[2 + 3 * center], tol, "ds2");
 
+    ref_grid_free(ref_grid);
+  }
+
+  if (!ref_mpi_para(ref_mpi)) {
+    REF_DBL tol = -1.0;
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node, center;
+    REF_DBL *distance;
+    REF_DBL *hess;
+    REF_DBL r, s;
+    center = 6; /* two tri */
+    RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "fixture");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+    ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    0.0);
+
+    each_ref_node_valid_node(ref_node, node) {
+      r = ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
+      s = ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
+      distance[node] = 5.0 * r * r - 7.0 * s * s;
+    }
+
+    RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
+
+    RWDS(12.0, hess[0 + 3 * center], tol, "dr2");
+    RWDS(2.0, hess[1 + 3 * center], tol, "drds");
+    RWDS(12.0, hess[2 + 3 * center], tol, "ds2");
+
+    ref_free(distance);
+    ref_free(hess);
     ref_grid_free(ref_grid);
   }
 
