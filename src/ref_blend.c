@@ -216,7 +216,7 @@ static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
     }
   }
 
-  for (i = 0; i < 10; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
+  for (i = 0; i < 1000; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
 
   return REF_SUCCESS;
 }
@@ -285,7 +285,7 @@ static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
     }
   }
 
-  for (i = 0; i < 10; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
+  for (i = 0; i < 100; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
 
   return REF_SUCCESS;
 }
