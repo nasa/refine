@@ -1230,8 +1230,8 @@ REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian) {
     each_ref_node_valid_node(ref_node, node) {
       ref_cloud_free(one_layer[node]); /* no-op for null */
     }
-    ref_free(one_layer);
   }
+  ref_free(one_layer);
 
   RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
 
