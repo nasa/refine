@@ -930,7 +930,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
   ref_free(distance);
   each_ref_node_valid_node(ref_node, node) {
-    det = hess[0 + 3 * node] * hess[2 + 3 * node] * -2.0 * hess[1 + 3 * node];
+    RSS(ref_matrix_det_m2(&(hess[3 * node]), &det), "2x2 det");
     if (det > 0.0) { /* local scaling */
       for (i = 0; i < 3; i++) hess[i + 3 * node] *= pow(det, exponent);
     }
