@@ -1025,7 +1025,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   }
 
   if (!ref_math_divisible(target_complexity, complexity)) {
-    return REF_DIV_ZERO;
+    RSS(REF_DIV_ZERO, "zero compelxity");
   }
 
   complexity_scale = 1.0;
