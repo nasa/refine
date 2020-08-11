@@ -19,7 +19,7 @@ ${src}/ref_blend_test \
 ${src}/ref adapt \
       offset-adapt-surf.meshb \
       -g offset.egads \
-      --blend-metric 100 \
+      --blend-metric 400 \
       -x blend-adapt.meshb \
       -t -s 10
 

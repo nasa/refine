@@ -41,7 +41,6 @@
 #define ref_blend_face_search(ref_blend, iface) \
   ((ref_blend)->face_search[(iface)])
 
-
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT nedge, iedge, nface, iface;
   REF_GRID ref_grid = ref_blend_grid(ref_blend);
@@ -971,7 +970,6 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_BLEND ref_blend;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  REF_DBL *distance;
   REF_DBL *hess, *metric;
   REF_INT node, i;
   REF_INT dimension = 2, p_norm = 2;
@@ -997,11 +995,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
   ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
-  ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
-                  0.0);
-  RSS(ref_blend_max_distance(ref_blend, distance), "dist");
-  RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
-  ref_free(distance);
+  RSS(ref_recon_rsn_hess_face(ref_grid, hess), "rsn");
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_matrix_det_m2(&(hess[3 * node]), &det), "2x2 det");
     if (det > 0.0) { /* local scaling */
