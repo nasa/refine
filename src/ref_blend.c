@@ -27,6 +27,7 @@
 #include "ref_egads.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_node.h"
@@ -900,17 +901,19 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
 REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_BLEND ref_blend;
   REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
   REF_DBL *distance;
   REF_DBL *hess, *metric;
   REF_INT node, i;
   REF_INT dimension = 2, p_norm = 2;
   REF_INT gradation = -1.0;
-  REF_DBL det, exponent;
+  REF_DBL det, exponent, complexity, area, complexity_scale;
   REF_DBL diag_system2[6];
   REF_DBL diag_system[12];
   REF_DBL m[6], combined[6];
   REF_DBL r[3], s[3], n[3];
   REF_BOOL verbose = REF_FALSE;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
 
   /* reset blend to match grid */
   ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
@@ -934,6 +937,32 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
     if (det > 0.0) { /* local scaling */
       for (i = 0; i < 3; i++) hess[i + 3 * node] *= pow(det, exponent);
     }
+  }
+
+  complexity = 0.0;
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        RSS(ref_matrix_det_m2(&(hess[3 * nodes[cell_node]]), &det), "2x2 det");
+        if (det > 0.0) {
+          complexity +=
+              sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+        }
+      }
+    }
+  }
+
+  if (!ref_math_divisible(target_complexity, complexity)) {
+    return REF_DIV_ZERO;
+  }
+
+  complexity_scale = 1.0;
+  each_ref_node_valid_node(ref_node, node) { /* global scaling */
+    for (i = 0; i < 3; i++)
+      hess[i + 3 * node] *=
+          pow(target_complexity / complexity, complexity_scale);
   }
 
   each_ref_node_valid_node(ref_node, node) {
