@@ -25,6 +25,7 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_egads.h"
+#include "ref_export.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -913,6 +914,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   REF_DBL m[6], combined[6];
   REF_DBL r[3], s[3], n[3];
   REF_BOOL verbose = REF_FALSE;
+  REF_BOOL steps = REF_FALSE;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
 
   /* reset blend to match grid */
@@ -995,6 +997,14 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   }
   ref_free(hess);
 
+  if (steps) {
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+        "to");
+    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
+                                      "ref_blend_raw"),
+        "al");
+  }
+
   RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
                                          target_complexity),
       "gradation at complexity");
@@ -1011,6 +1021,14 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
     for (i = 0; i < 6; i++) metric[i + 6 * node] = combined[i];
   }
   RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "to");
+
+  if (steps) {
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+        "to");
+    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
+                                      "ref_blend_grad"),
+        "al");
+  }
 
   ref_free(metric);
 
