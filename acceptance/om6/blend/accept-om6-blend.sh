@@ -16,9 +16,9 @@ cp ../bootstrap/onera-m6-sharp-te-adapt-surf.meshb .
 ${src}/ref adapt \
       onera-m6-sharp-te-adapt-surf.meshb \
       -g onera-m6-sharp-te.egads \
-      --blend-metric 100000 \
+      --blend-metric 5000 \
       -x blend-adapt.meshb \
-      -t -s 4
+      -t -s 10
 
 ${src}/ref_blend_test \
       --viz blend-adapt.meshb onera-m6-sharp-te.egads

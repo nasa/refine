@@ -904,14 +904,17 @@ static REF_STATUS ref_blend_complexity(REF_DBL *metric, REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL area, det;
+  REF_DBL area, det, m2[3], r[3], s[3], n[3];
   ref_cell = ref_grid_tri(ref_grid);
   *complexity = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {
-        RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
+        RSS(ref_recon_rsn(ref_grid, nodes[cell_node], r, s, n), "rsn");
+        RSS(ref_matrix_extract2(&(metric[6 * nodes[cell_node]]), r, s, m2),
+            "extract");
+        RSS(ref_matrix_det_m2(m2, &det), "2x2 det");
         if (det > 0.0) {
           (*complexity) +=
               sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
