@@ -1228,3 +1228,17 @@ REF_STATUS ref_matrix_jac_m_jact(REF_DBL *jac, REF_DBL *m,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_matrix_extract2(REF_DBL *m, REF_DBL *r, REF_DBL *s, REF_DBL *e) {
+  REF_DBL q[9];
+  REF_DBL m3[6];
+  REF_INT i;
+  for (i = 0; i < 3; i++) q[i] = r[i];
+  for (i = 0; i < 3; i++) q[i + 3] = s[i];
+  for (i = 0; i < 3; i++) q[i + 6] = 0;
+  RSS(ref_matrix_jac_m_jact(q, m, m3), "trans");
+  e[0] = m3[0];
+  e[1] = m3[1];
+  e[2] = m3[3];
+  return REF_SUCCESS;
+}

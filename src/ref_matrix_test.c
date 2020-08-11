@@ -1610,5 +1610,17 @@ jac*m
     RWDS(21130.0, jac_m_jact[5], tol, "m[5]");
   }
 
+  { /* extract 2x2 from 3x3 */
+    REF_DBL m[6] = {1, 2, 0, 3, 0, 1};
+    REF_DBL r[3] = {1, 0, 0};
+    REF_DBL s[3] = {0, 1, 0};
+    REF_DBL e[3];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_extract2(m, r, s, e), "extract");
+    RWDS(1, e[0], tol, "e[0]");
+    RWDS(2, e[1], tol, "e[1]");
+    RWDS(3, e[2], tol, "e[2]");
+  }
+
   return 0;
 }
