@@ -595,6 +595,33 @@ m=[
     RWDS(9.38923919771131e+28, det, tol, "det");
   }
 
+  { /* 2x2 symm det zero */
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {0.0, 0.0, 0.0};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(0.0, det, tol, "check det");
+  }
+
+  { /* 2x2 symm det 1-2-3*/
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {1.0, 2.0, 3.0};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(-1.0, det, tol, "check det");
+  }
+
+  { /* 2x2 symm det 1-2-3 x 10^15 */
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {1.0e15, 2.0e15, 3.0e15};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(-1.0e30, det, tol, "check det");
+  }
+
   { /* inv diag */
     REF_DBL tol = -1.0;
     REF_DBL m[6] = {10.0, 0.0, 0.0, 2.0, 0.0, 5.0};

@@ -72,6 +72,12 @@ REF_STATUS ref_matrix_det_m(REF_DBL *m, REF_DBL *det) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_matrix_det_m2(REF_DBL *m, REF_DBL *det) {
+  *det = m[0] * m[2] - m[1] * m[1];
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_matrix_show_diag_sys(REF_DBL *d) {
   printf("eig");
   printf("%24.15e", ref_matrix_eig(d, 0));
