@@ -355,6 +355,39 @@ static REF_STATUS ref_recon_local_immediate_cloud(REF_CLOUD *one_layer,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_recon_local_immediate_cloud_geom(REF_CLOUD *one_layer,
+                                                       REF_GRID ref_grid,
+                                                       REF_INT id) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_BLEND ref_blend = ref_geom_blend(ref_geom);
+  REF_INT node, item, cell, cell_node, target, geom;
+  REF_GLOB global;
+  REF_DBL xyzs[4];
+  each_ref_node_valid_node(ref_node, node) {
+    if (ref_node_owned(ref_node, node)) {
+      each_ref_cell_having_node(ref_cell, node, item, cell) {
+        if (id == ref_cell_c2n(ref_cell, ref_cell_id_index(ref_cell), cell)) {
+          each_ref_cell_cell_node(ref_cell, cell_node) {
+            target = ref_cell_c2n(ref_cell, cell_node, cell);
+            global = ref_node_global(ref_node, target);
+            xyzs[0] = ref_node_xyz(ref_node, 0, target);
+            xyzs[1] = ref_node_xyz(ref_node, 1, target);
+            xyzs[2] = ref_node_xyz(ref_node, 2, target);
+            RSS(ref_geom_find(ref_geom, target, REF_GEOM_FACE, id, &geom),
+                "find geom");
+            xyzs[3] = ref_blend_distance(ref_blend, geom);
+            RSS(ref_cloud_store(one_layer[node], global, xyzs),
+                "store could stencil");
+          }
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_recon_ghost_cloud(REF_CLOUD *one_layer, REF_NODE ref_node) {
   REF_MPI ref_mpi = ref_node_mpi(ref_node);
   REF_CLOUD ref_cloud;
@@ -1120,6 +1153,85 @@ REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
     ref_cloud_free(one_layer[node]); /* no-op for null */
   }
   ref_free(one_layer);
+
+  RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
+
+  RSS(ref_recon_abs_value_hessian2(ref_grid, hessian), "abs(H)");
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian) {
+  REF_CLOUD *one_layer;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT node, im, min_id, max_id, id;
+  REF_CLOUD ref_cloud;
+  REF_DBL r[3], s[3], n[3];
+  REF_DBL node_hessian[3];
+  REF_STATUS status;
+  REF_INT layer;
+  REF_BOOL has_support;
+
+  each_ref_node_valid_node(ref_node, node) {
+    hessian[0 + 3 * node] = 0.0;
+    hessian[1 + 3 * node] = 0.0;
+    hessian[2 + 3 * node] = 0.0;
+  }
+
+  ref_malloc_init(one_layer, ref_node_max(ref_node), REF_CLOUD, NULL);
+  RSS(ref_cell_id_range(ref_cell, ref_grid_mpi(ref_grid), &min_id, &max_id),
+      "face id range");
+
+  for (id = min_id; id <= max_id; id++) {
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_cloud_create(&(one_layer[node]), 4), "cloud storage");
+    }
+    RSS(ref_recon_local_immediate_cloud_geom(one_layer, ref_grid, id),
+        "fill immediate cloud");
+    RSS(ref_recon_ghost_cloud(one_layer, ref_node), "fill ghosts");
+
+    each_ref_node_valid_node(ref_node, node) {
+      RSS(ref_geom_id_supported(ref_grid_geom(ref_grid), node, REF_GEOM_FACE,
+                                id, &has_support),
+          "geom support");
+      if (has_support && ref_node_owned(ref_node, node)) {
+        RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
+        /* use ref_cloud to get a unique list of halo(2) nodes */
+        RSS(ref_cloud_deep_copy(&ref_cloud, one_layer[node]),
+            "create ref_cloud");
+        status = REF_INVALID;
+        for (layer = 2; status != REF_SUCCESS && layer <= 8; layer++) {
+          RSS(ref_recon_grow_cloud_one_layer(ref_cloud, one_layer, ref_node),
+              "grow");
+
+          status = ref_recon_kexact_rs(ref_node_global(ref_node, node),
+                                       ref_cloud, r, s, node_hessian);
+          if (REF_DIV_ZERO == status && layer > 4) {
+            ref_node_location(ref_node, node);
+            printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                   "REF_DIV_ZERO", layer);
+          }
+          if (REF_ILL_CONDITIONED == status && layer > 4) {
+            ref_node_location(ref_node, node);
+            printf(" caught %s, for %d layers to kexact cloud; retry\n",
+                   "REF_ILL_CONDITIONED", layer);
+          }
+        }
+        RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
+        for (im = 0; im < 3; im++) {
+          hessian[im + 3 * node] =
+              MAX(hessian[im + 3 * node], node_hessian[im]);
+        }
+        RSS(ref_cloud_free(ref_cloud), "free ref_cloud");
+      }
+    }
+
+    each_ref_node_valid_node(ref_node, node) {
+      ref_cloud_free(one_layer[node]); /* no-op for null */
+    }
+    ref_free(one_layer);
+  }
 
   RSS(ref_node_ghost_dbl(ref_node, hessian, 3), "update ghosts");
 
