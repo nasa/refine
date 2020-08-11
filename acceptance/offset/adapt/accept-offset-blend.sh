@@ -14,14 +14,14 @@ cp ../side/offset.egads .
 cp ../side/offset-adapt-surf.meshb .
 
 ${src}/ref_blend_test \
-      --metric offset-adapt-surf.meshb offset.egads 4000
+      --metric offset-adapt-surf.meshb offset.egads 100
 
 ${src}/ref adapt \
       offset-adapt-surf.meshb \
       -g offset.egads \
-      --blend-metric 5000 \
+      --blend-metric 100 \
       -x blend-adapt.meshb \
-      -t
+      -t -s 10
 
 ${src}/ref_blend_test \
       --viz blend-adapt.meshb offset.egads
