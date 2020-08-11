@@ -190,6 +190,8 @@ REF_STATUS ref_geom_supported(REF_GEOM ref_geom, REF_INT node,
                               REF_BOOL *has_support);
 REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
                                   REF_BOOL *has_support);
+REF_STATUS ref_geom_id_supported(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                 REF_INT id, REF_BOOL *has_support);
 
 REF_STATUS ref_geom_add(REF_GEOM ref_geom, REF_INT node, REF_INT type,
                         REF_INT id, REF_DBL *param);

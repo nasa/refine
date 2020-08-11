@@ -409,6 +409,22 @@ REF_STATUS ref_geom_tri_supported(REF_GEOM ref_geom, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_id_supported(REF_GEOM ref_geom, REF_INT node, REF_INT type,
+                                 REF_INT id, REF_BOOL *has_support) {
+  REF_INT geom;
+  REF_STATUS status;
+  *has_support = REF_FALSE;
+
+  status = ref_geom_find(ref_geom, node, type, id, &geom);
+  if (REF_NOT_FOUND == status) { /* no geom support */
+    *has_support = REF_FALSE;
+    return REF_SUCCESS;
+  }
+  RSS(status, "error testing geom support");
+  *has_support = REF_TRUE;
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_geom_grow(REF_GEOM ref_geom) {
   REF_INT geom;
   REF_INT orig, chunk;
