@@ -899,6 +899,44 @@ REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_blend_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                       REF_DBL *complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL volume, det;
+  REF_BOOL have_tet;
+  REF_LONG ntet;
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "count");
+  have_tet = (0 < ntet);
+  if (have_tet) {
+    ref_cell = ref_grid_tet(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
+  *complexity = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (have_tet) {
+      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    } else {
+      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
+    }
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        RSS(ref_matrix_det_m(&(metric[6 * nodes[cell_node]]), &det), "det");
+        if (det > 0.0) {
+          (*complexity) +=
+              sqrt(det) * volume / ((REF_DBL)ref_cell_node_per(ref_cell));
+        }
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), complexity, 1, REF_DBL_TYPE),
+      "dbl sum");
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
                                                     REF_GRID ref_grid,
                                                     REF_DBL gradation,
@@ -909,13 +947,10 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
   REF_DBL complexity_scale;
   REF_INT node, i;
 
-  complexity_scale = 2.0 / 3.0;
-  if (ref_grid_twod(ref_grid)) {
-    complexity_scale = 1.0;
-  }
+  complexity_scale = 1.0; /* "2D" along surf */
 
   for (relaxations = 0; relaxations < 20; relaxations++) {
-    RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+    RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
     if (!ref_math_divisible(complexity, current_complexity)) {
       return REF_DIV_ZERO;
     }
@@ -923,11 +958,6 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
       for (i = 0; i < 6; i++) {
         metric[i + 6 * node] *=
             pow(complexity / current_complexity, complexity_scale);
-      }
-      if (ref_grid_twod(ref_grid)) {
-        metric[2 + 6 * node] = 0.0;
-        metric[4 + 6 * node] = 0.0;
-        metric[5 + 6 * node] = 1.0;
       }
     }
     if (gradation < 1.0) {
@@ -937,15 +967,8 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
       RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
           "gradation");
     }
-    if (ref_grid_twod(ref_grid)) {
-      each_ref_node_valid_node(ref_node, node) {
-        metric[2 + 6 * node] = 0.0;
-        metric[4 + 6 * node] = 0.0;
-        metric[5 + 6 * node] = 1.0;
-      }
-    }
   }
-  RSS(ref_metric_complexity(metric, ref_grid, &current_complexity), "cmp");
+  RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
   if (!ref_math_divisible(complexity, current_complexity)) {
     return REF_DIV_ZERO;
   }
@@ -953,11 +976,6 @@ static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
     for (i = 0; i < 6; i++) {
       metric[i + 6 * node] *=
           pow(complexity / current_complexity, complexity_scale);
-    }
-    if (ref_grid_twod(ref_grid)) {
-      metric[2 + 6 * node] = 0.0;
-      metric[4 + 6 * node] = 0.0;
-      metric[5 + 6 * node] = 1.0;
     }
   }
 
