@@ -35,18 +35,12 @@
 #include "ref_recon.h"
 
 #define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
-#define ref_blend_displacement(ref_blend, ixyz, geom) \
-  ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
 #define ref_blend_edge_search(ref_blend, iedge) \
   ((ref_blend)->edge_search[(iedge)])
 #define ref_blend_face_search(ref_blend, iface) \
   ((ref_blend)->face_search[(iface)])
 
-#define ref_blend_distance(ref_blend, geom)                  \
-  (sqrt(pow(ref_blend_displacement(ref_blend, 0, geom), 2) + \
-        pow(ref_blend_displacement(ref_blend, 1, geom), 2) + \
-        pow(ref_blend_displacement(ref_blend, 2, geom), 2)))
 
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT nedge, iedge, nface, iface;
