@@ -670,21 +670,32 @@ int main(int argc, char *argv[]) {
     REF_DBL distance[4];
     REF_DBL hess[3 * 4];
     REF_DBL r, s;
+    REF_DBL rn[3], sn[3], nn[3];
+    REF_DBL dxyz[3];
     center = 0; /* two tri */
     RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "fixture");
     ref_node = ref_grid_node(ref_grid);
     ref_node_xyz(ref_node, 1, 3) = -1.0;
+
+    RSS(ref_recon_rsn(ref_grid, center, rn, sn, nn), "rsn");
+
     each_ref_node_valid_node(ref_node, node) {
-      r = ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
-      s = ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
-      distance[node] = 2.0 * r * r - 3.0 * s * s;
+      dxyz[0] =
+          ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
+      dxyz[1] =
+          ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
+      dxyz[2] =
+          ref_node_xyz(ref_node, 2, node) - ref_node_xyz(ref_node, 2, center);
+      r = ref_math_dot(rn, dxyz);
+      s = ref_math_dot(sn, dxyz);
+      distance[node] = 2.0 * (0.5 * r * r) - 3.0 * (0.5 * s * s);
     }
 
     RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
 
-    RWDS(5.0, hess[0 + 3 * center], tol, "dr2");
-    RWDS(-1.0, hess[1 + 3 * center], tol, "drds");
-    RWDS(5.0, hess[2 + 3 * center], tol, "ds2");
+    RWDS(2.0, hess[0 + 3 * center], tol, "dr2");
+    RWDS(0.0, hess[1 + 3 * center], tol, "drds");
+    RWDS(3.0, hess[2 + 3 * center], tol, "ds2");
 
     ref_grid_free(ref_grid);
   }
@@ -697,6 +708,8 @@ int main(int argc, char *argv[]) {
     REF_DBL *distance;
     REF_DBL *hess;
     REF_DBL r, s;
+    REF_DBL rn[3], sn[3], nn[3];
+    REF_DBL dxyz[3];
     center = 6; /* two tri */
     RSS(ref_fixture_twod_brick_grid(&ref_grid, ref_mpi), "fixture");
     ref_node = ref_grid_node(ref_grid);
@@ -705,17 +718,25 @@ int main(int argc, char *argv[]) {
     ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                     0.0);
 
+    RSS(ref_recon_rsn(ref_grid, center, rn, sn, nn), "rsn");
+
     each_ref_node_valid_node(ref_node, node) {
-      r = ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
-      s = ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
-      distance[node] = 5.0 * r * r - 7.0 * s * s;
+      dxyz[0] =
+          ref_node_xyz(ref_node, 0, node) - ref_node_xyz(ref_node, 0, center);
+      dxyz[1] =
+          ref_node_xyz(ref_node, 1, node) - ref_node_xyz(ref_node, 1, center);
+      dxyz[2] =
+          ref_node_xyz(ref_node, 2, node) - ref_node_xyz(ref_node, 2, center);
+      r = ref_math_dot(rn, dxyz);
+      s = ref_math_dot(sn, dxyz);
+      distance[node] = 5.0 * (0.5 * r * r) - 7.0 * (0.5 * s * s);
     }
 
     RSS(ref_recon_rsn_hess(ref_grid, distance, hess), "rsn");
 
-    RWDS(12.0, hess[0 + 3 * center], tol, "dr2");
-    RWDS(2.0, hess[1 + 3 * center], tol, "drds");
-    RWDS(12.0, hess[2 + 3 * center], tol, "ds2");
+    RWDS(5.0, hess[0 + 3 * center], tol, "dr2");
+    RWDS(0.0, hess[1 + 3 * center], tol, "drds");
+    RWDS(7.0, hess[2 + 3 * center], tol, "ds2");
 
     ref_free(distance);
     ref_free(hess);
