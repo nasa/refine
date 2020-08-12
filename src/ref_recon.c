@@ -1218,14 +1218,18 @@ REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian) {
                    "REF_ILL_CONDITIONED", layer);
           }
         }
-        RSB(status, "kexact qr node", { ref_node_location(ref_node, node); });
-
-        if (ref_math_dot(&(hessian[3 * node]), &(hessian[3 * node])) <
-            ref_math_dot(node_hessian, node_hessian)) {
-          for (im = 0; im < 3; im++) {
-            hessian[im + 3 * node] = node_hessian[im];
+        if (REF_SUCCESS == status) {
+          if (ref_math_dot(&(hessian[3 * node]), &(hessian[3 * node])) <
+              ref_math_dot(node_hessian, node_hessian)) {
+            for (im = 0; im < 3; im++) {
+              hessian[im + 3 * node] = node_hessian[im];
+            }
           }
+        } else {
+          printf("skip contribution to face %d at ", id);
+          RSS(ref_node_location(ref_node, node), "loc");
         }
+
         RSS(ref_cloud_free(ref_cloud), "free ref_cloud");
       }
     }
