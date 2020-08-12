@@ -1500,13 +1500,14 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL *dist, *field, *metric, m[6], m0[6];
     REF_INT ldim, i, node, gradation;
+    REF_DBL x0, x1, h;
 
     REIS(1, wake_pos,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb");
-    REIS(6, argc,
+         "metric.solb x0 x1 h");
+    REIS(9, argc,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb");
+         "metric.solb x0 x1 h");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to part grid in position 2");
@@ -1524,6 +1525,10 @@ int main(int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("ldim %d\n", ldim);
     ref_mpi_stopwatch_stop(ref_mpi, "read vol");
     REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
+    x0 = atof(argv[6]);
+    x1 = atof(argv[7]);
+    h = atof(argv[8]);
+    if (ref_mpi_once(ref_mpi)) printf("x0 %f x1 %f h %f\n", x0, x1, h);
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1532,17 +1537,10 @@ int main(int argc, char *argv[]) {
 
     if (ref_grid_twod(ref_grid)) {
       each_ref_node_valid_node(ref_node, node) {
-        REF_DBL x0 = -0.1;
-        REF_DBL x1 = 2;
-        REF_DBL y0 = -2;
-        REF_DBL y1 = 2;
-        REF_DBL h = 1.0 / 100.0;
         REF_DBL slen = dist[node];
         REF_DBL turb1 = field[5 + ldim * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
-            ref_node_xyz(ref_node, 0, node) <= x1 &&
-            y0 <= ref_node_xyz(ref_node, 1, node) &&
-            ref_node_xyz(ref_node, 1, node) <= y1 && (4 <= turb1 || h > slen)) {
+            ref_node_xyz(ref_node, 0, node) <= x1 && (4 <= turb1 || h > slen)) {
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
@@ -1555,21 +1553,10 @@ int main(int argc, char *argv[]) {
       }
     } else {
       each_ref_node_valid_node(ref_node, node) {
-        REF_DBL x0 = 530;
-        REF_DBL x1 = 670;
-        REF_DBL y0 = -572.8;
-        REF_DBL y1 = -507.4;
-        REF_DBL z0 = 100.0;
-        REF_DBL z1 = 151.2;
-        REF_DBL h = 0.25;
         REF_DBL slen = dist[node];
         REF_DBL turb1 = field[5 + ldim * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
-            ref_node_xyz(ref_node, 0, node) <= x1 &&
-            y0 <= ref_node_xyz(ref_node, 1, node) &&
-            ref_node_xyz(ref_node, 1, node) <= y1 &&
-            z0 <= ref_node_xyz(ref_node, 2, node) &&
-            ref_node_xyz(ref_node, 2, node) <= z1 && (4 <= turb1 || h > slen)) {
+            ref_node_xyz(ref_node, 0, node) <= x1 && (4 <= turb1 || h > slen)) {
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
