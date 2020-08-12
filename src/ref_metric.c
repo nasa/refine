@@ -1516,16 +1516,24 @@ REF_STATUS ref_metric_smr(REF_DBL *metric0, REF_DBL *metric1, REF_DBL *metric,
 REF_STATUS ref_metric_complexity(REF_DBL *metric, REF_GRID ref_grid,
                                  REF_DBL *complexity) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell;
   REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL volume, det;
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+  REF_BOOL have_tet;
+  REF_LONG ntet;
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "count");
+  have_tet = (0 < ntet);
+  if (have_tet) {
+    ref_cell = ref_grid_tet(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
   *complexity = 0.0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    if (ref_grid_twod(ref_grid)) {
-      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
-    } else {
+    if (have_tet) {
       RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    } else {
+      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
     }
     for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
       if (ref_node_owned(ref_node, nodes[cell_node])) {

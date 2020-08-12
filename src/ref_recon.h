@@ -60,6 +60,15 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid);
 REF_STATUS ref_recon_max_jump_limit(REF_DBL *recon, REF_GRID ref_grid,
                                     REF_DBL max_jump);
 
+REF_STATUS ref_recon_normal(REF_GRID ref_grid, REF_INT node, REF_DBL *normal);
+REF_STATUS ref_recon_rsn(REF_GRID ref_grid, REF_INT node, REF_DBL *r,
+                         REF_DBL *s, REF_DBL *n);
+REF_STATUS ref_recon_kexact_rs(REF_GLOB center_global, REF_CLOUD ref_cloud,
+                               REF_DBL *rn, REF_DBL *sn, REF_DBL *hessian);
+REF_STATUS ref_recon_rsn_hess(REF_GRID ref_grid, REF_DBL *scalar,
+                              REF_DBL *hessian);
+REF_STATUS ref_recon_rsn_hess_face(REF_GRID ref_grid, REF_DBL *hessian);
+
 END_C_DECLORATION
 
 #endif /* REF_RECON_H */

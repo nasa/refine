@@ -82,8 +82,7 @@ int main(int argc, char *argv[]) {
       RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[1]), "import");
     }
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "import");
-    RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_hex(ref_grid),
-                         &nhex),
+    RSS(ref_cell_ncell(ref_grid_hex(ref_grid), ref_grid_node(ref_grid), &nhex),
         "nhex");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "nhex");
     if (0 < nhex) {

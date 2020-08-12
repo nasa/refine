@@ -112,6 +112,116 @@ int main(void) {
     RWDS(fd[2], d[2], tol, "d[2] expected");
   }
 
+  { /* 2x2 diag decom, zeros */
+    REF_DBL m[3] = {0.0, 0.0, 0.0};
+    REF_DBL d[6];
+    REF_DBL m2[3];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(0.0, d[0], -1, "eig 0");
+    RWDS(0.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
+  }
+
+  { /* 2x2 diag decom, eye */
+    REF_DBL m[3] = {1.0, 0.0, 1.0};
+    REF_DBL d[6];
+    REF_DBL m2[3];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(1.0, d[0], -1, "eig 0");
+    RWDS(1.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
+  }
+
+  { /* 2x2 diag decom, 2-5 */
+    REF_DBL m[3] = {2.0, 0.0, 5.0};
+    REF_DBL d[6];
+    REF_DBL m2[3];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(2.0, d[0], -1, "eig 0");
+    RWDS(5.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
+  }
+
+  { /* 2x2 diag decom, 5-2 */
+    REF_DBL m[3] = {5.0, 0.0, 2.0};
+    REF_DBL d[6];
+    REF_DBL m2[3];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(5.0, d[0], -1, "eig 0");
+    RWDS(2.0, d[1], -1, "eig 1");
+
+    RWDS(1.0, d[2], -1, "x0");
+    RWDS(0.0, d[3], -1, "y0");
+
+    RWDS(0.0, d[4], -1, "x1");
+    RWDS(1.0, d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
+  }
+
+  { /* 2x2 diag decom, 2-1-2 */
+    REF_DBL m[3] = {2.0, 1.0, 2.0};
+    REF_DBL d[6];
+    REF_DBL m2[3];
+
+    RSS(ref_matrix_diag_m2(m, d), "diag");
+
+    RWDS(1.0, d[0], -1, "eig 0");
+    RWDS(3.0, d[1], -1, "eig 1");
+
+    RWDS(0.5 * sqrt(2.0), d[2], -1, "x0");
+    RWDS(-0.5 * sqrt(2.0), d[3], -1, "y0");
+
+    RWDS(0.5 * sqrt(2.0), d[4], -1, "x1");
+    RWDS(0.5 * sqrt(2.0), d[5], -1, "y1");
+
+    RSS(ref_matrix_form_m2(d, m2), "reform m");
+    RWDS(m[0], m2[0], -1, "m 0");
+    RWDS(m[1], m2[1], -1, "m 1");
+    RWDS(m[2], m2[2], -1, "m 2");
+  }
+
   { /* twod sort, z last */
     REF_DBL m[6] = {0.5, 0.0, 0.0, 2.0, 0.0, 1.0};
     REF_DBL d[12];
@@ -483,6 +593,33 @@ m=[
     RSS(ref_matrix_det_m(m, &det), "inv");
 
     RWDS(9.38923919771131e+28, det, tol, "det");
+  }
+
+  { /* 2x2 symm det zero */
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {0.0, 0.0, 0.0};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(0.0, det, tol, "check det");
+  }
+
+  { /* 2x2 symm det 1-2-3*/
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {1.0, 2.0, 3.0};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(-1.0, det, tol, "check det");
+  }
+
+  { /* 2x2 symm det 1-2-3 x 10^15 */
+    REF_DBL tol = -1.0;
+    REF_DBL m[3] = {1.0e15, 2.0e15, 3.0e15};
+    REF_DBL det;
+
+    RSS(ref_matrix_det_m2(m, &det), "comp det");
+    RWDS(-1.0e30, det, tol, "check det");
   }
 
   { /* inv diag */
@@ -1471,6 +1608,18 @@ jac*m
     RWDS(8560.0, jac_m_jact[3], tol, "m[3]");
     RWDS(13450.0, jac_m_jact[4], tol, "m[4]");
     RWDS(21130.0, jac_m_jact[5], tol, "m[5]");
+  }
+
+  { /* extract 2x2 from 3x3 */
+    REF_DBL m[6] = {1, 2, 0, 3, 0, 1};
+    REF_DBL r[3] = {1, 0, 0};
+    REF_DBL s[3] = {0, 1, 0};
+    REF_DBL e[3];
+    REF_DBL tol = -1.0;
+    RSS(ref_matrix_extract2(m, r, s, e), "extract");
+    RWDS(1, e[0], tol, "e[0]");
+    RWDS(2, e[1], tol, "e[1]");
+    RWDS(3, e[2], tol, "e[2]");
   }
 
   return 0;

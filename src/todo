@@ -38,9 +38,17 @@ smoothing
   requeue neighbors with large changes? particularly quality drops
 
 blend tolerance reduction
-  serialize to disk
+  provide displacement distance as multiscale field
+  normal tagent hessian
+    ref_recon_local_immediate_cloud_disp
+    ref_recon_kexact_surf_aux(r,s,n)
+    ref_recon_kexact_surf_hessian
+    + diag 2x2
+    multiscale on surface
+    form 3x3 metric from ev1ev2n
+  blend distance multiscale adapt
   chain rule derivatives?
-  actual Laplacian?
+  actual Laplacian for blend smoothing?
   + augment inverse eval
   + find enclosing tri in uv
   + clip displacement interpolation bary (convex)
@@ -50,6 +58,7 @@ blend tolerance reduction
   + more complete geom deep copy (except context,nodes,edges,faces?)
   + set face boundary displacements
   + solve face boundary displacements
+  + serialize to disk (seperate .meshb and use current position as displacement)
 
 surrogate surface
   support twod geom

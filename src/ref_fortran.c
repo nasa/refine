@@ -120,9 +120,9 @@ REF_STATUS REF_FORT_(ref_fortran_adapt, REF_FORTRAN_ADAPT)(void) {
   REF_LONG ntet, npri;
   REF_BOOL all_done = REF_FALSE;
 
-  RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_tet(ref_grid), &ntet),
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_grid_node(ref_grid), &ntet),
       "ntet");
-  RSS(ref_gather_ncell(ref_grid_node(ref_grid), ref_grid_pri(ref_grid), &npri),
+  RSS(ref_cell_ncell(ref_grid_pri(ref_grid), ref_grid_node(ref_grid), &npri),
       "npri");
 
   if (ref_grid_once(ref_grid)) {

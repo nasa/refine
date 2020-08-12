@@ -161,6 +161,8 @@ REF_STATUS ref_cell_all_local(REF_CELL ref_cell, REF_NODE ref_node,
                               REF_INT cell, REF_BOOL *all_local_nodes);
 REF_STATUS ref_cell_local_gem(REF_CELL ref_cell, REF_NODE ref_node,
                               REF_INT node0, REF_INT node1, REF_BOOL *local);
+REF_STATUS ref_cell_ncell(REF_CELL ref_cell, REF_NODE ref_node,
+                          REF_LONG *ncell);
 
 REF_STATUS ref_cell_orient_node0(REF_INT nnode, REF_INT node0, REF_INT *nodes);
 

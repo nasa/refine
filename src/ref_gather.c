@@ -1519,7 +1519,7 @@ static REF_STATUS ref_gather_meshb(REF_GRID ref_grid, const char *filename) {
     REIS(next_position, ftell(file), "vertex inconsistent");
 
   each_ref_grid_all_ref_cell(ref_grid, group, ref_cell) {
-    RSS(ref_gather_ncell(ref_node, ref_cell, &ncell), "ncell");
+    RSS(ref_cell_ncell(ref_cell, ref_node, &ncell), "ncell");
     if (ncell > 0) {
       if (ref_grid_once(ref_grid)) {
         RSS(ref_cell_meshb_keyword(ref_cell, &keyword_code), "kw");
@@ -1606,13 +1606,13 @@ static REF_STATUS ref_gather_bin_ugrid(REF_GRID ref_grid, const char *filename,
 
   nnode = (REF_INT)ref_node_n_global(ref_node);
 
-  RSS(ref_gather_ncell(ref_node, ref_grid_tri(ref_grid), &ntri), "ntri");
-  RSS(ref_gather_ncell(ref_node, ref_grid_qua(ref_grid), &nqua), "nqua");
+  RSS(ref_cell_ncell(ref_grid_tri(ref_grid), ref_node, &ntri), "ntri");
+  RSS(ref_cell_ncell(ref_grid_qua(ref_grid), ref_node, &nqua), "nqua");
 
-  RSS(ref_gather_ncell(ref_node, ref_grid_tet(ref_grid), &ntet), "ntet");
-  RSS(ref_gather_ncell(ref_node, ref_grid_pyr(ref_grid), &npyr), "npyr");
-  RSS(ref_gather_ncell(ref_node, ref_grid_pri(ref_grid), &npri), "npri");
-  RSS(ref_gather_ncell(ref_node, ref_grid_hex(ref_grid), &nhex), "nhex");
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
+  RSS(ref_cell_ncell(ref_grid_pyr(ref_grid), ref_node, &npyr), "npyr");
+  RSS(ref_cell_ncell(ref_grid_pri(ref_grid), ref_node, &npri), "npri");
+  RSS(ref_cell_ncell(ref_grid_hex(ref_grid), ref_node, &nhex), "nhex");
 
   file = NULL;
   if (ref_grid_once(ref_grid)) {
@@ -1860,8 +1860,8 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
 
   RSS(ref_node_synchronize_globals(ref_node), "sync");
 
-  RSS(ref_gather_ncell(ref_node, ref_grid_tet(ref_grid), &ntet), "ntet");
-  RSS(ref_gather_ncell(ref_node, ref_grid_pri(ref_grid), &npri), "npri");
+  RSS(ref_cell_ncell(ref_grid_tet(ref_grid), ref_node, &ntet), "ntet");
+  RSS(ref_cell_ncell(ref_grid_pri(ref_grid), ref_node, &npri), "npri");
   cell_keyword = REF_EMPTY;
   if (ntet > 0 && npri == 0) {
     /* GmfSolAtTetrahedra 113 - 47 = 66 */
@@ -1997,24 +1997,6 @@ REF_STATUS ref_gather_scalar_cell_solb(REF_GRID ref_grid, REF_INT ldim,
   }
 
   if (ref_grid_once(ref_grid)) fclose(file);
-
-  return REF_SUCCESS;
-}
-
-REF_STATUS ref_gather_ncell(REF_NODE ref_node, REF_CELL ref_cell,
-                            REF_LONG *ncell) {
-  REF_MPI ref_mpi = ref_node_mpi(ref_node);
-  REF_INT cell, part;
-
-  *ncell = 0;
-  each_ref_cell_valid_cell(ref_cell, cell) {
-    RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "cell part");
-    if (ref_mpi_rank(ref_mpi) == part) {
-      (*ncell)++;
-    }
-  }
-
-  RSS(ref_mpi_allsum(ref_mpi, ncell, 1, REF_LONG_TYPE), "sum");
 
   return REF_SUCCESS;
 }

@@ -25,23 +25,21 @@
 #include "ref_cell.h"
 #include "ref_dict.h"
 #include "ref_egads.h"
+#include "ref_export.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
+#include "ref_matrix.h"
+#include "ref_metric.h"
 #include "ref_node.h"
+#include "ref_recon.h"
 
 #define ref_blend_geom(ref_blend) (ref_grid_geom(ref_blend_grid(ref_blend)))
-#define ref_blend_displacement(ref_blend, ixyz, geom) \
-  ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
 #define ref_blend_strong_bc(ref_blend, geom) ((ref_blend)->strong_bc[(geom)])
 #define ref_blend_edge_search(ref_blend, iedge) \
   ((ref_blend)->edge_search[(iedge)])
 #define ref_blend_face_search(ref_blend, iface) \
   ((ref_blend)->face_search[(iface)])
-
-#define ref_blend_distance(ref_blend, geom)                  \
-  (sqrt(pow(ref_blend_displacement(ref_blend, 0, geom), 2) + \
-        pow(ref_blend_displacement(ref_blend, 1, geom), 2) + \
-        pow(ref_blend_displacement(ref_blend, 2, geom), 2)))
 
 static REF_STATUS ref_blend_cache_search(REF_BLEND ref_blend) {
   REF_INT nedge, iedge, nface, iface;
@@ -213,7 +211,7 @@ static REF_STATUS ref_blend_initialize_face(REF_BLEND ref_blend,
     }
   }
 
-  for (i = 0; i < 10; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
+  for (i = 0; i < 1000; i++) RSS(ref_blend_solve_face(ref_blend), "solve");
 
   return REF_SUCCESS;
 }
@@ -282,7 +280,7 @@ static REF_STATUS ref_blend_initialize_edge(REF_BLEND ref_blend) {
     }
   }
 
-  for (i = 0; i < 10; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
+  for (i = 0; i < 100; i++) RSS(ref_blend_solve_edge(ref_blend), "solve");
 
   return REF_SUCCESS;
 }
@@ -875,5 +873,226 @@ REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename) {
     RSS(ref_blend_face_tec_zone(ref_blend, id, file), "tec face");
 
   fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance) {
+  REF_GRID ref_grid = ref_blend_grid(ref_blend);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_GEOM ref_geom = ref_blend_geom(ref_blend);
+  REF_INT geom, node;
+
+  each_ref_node_valid_node(ref_node, node) { distance[node] = 0.0; }
+
+  each_ref_geom(ref_geom, geom) {
+    node = ref_geom_node(ref_geom, geom);
+    distance[node] = MAX(distance[node], ref_blend_distance(ref_blend, geom));
+  }
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_blend_complexity(REF_DBL *metric, REF_GRID ref_grid,
+                                       REF_DBL *complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL area, det, m2[3], r[3], s[3], n[3];
+  ref_cell = ref_grid_tri(ref_grid);
+  *complexity = 0.0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        RSS(ref_recon_rsn(ref_grid, nodes[cell_node], r, s, n), "rsn");
+        RSS(ref_matrix_extract2(&(metric[6 * nodes[cell_node]]), r, s, m2),
+            "extract");
+        RSS(ref_matrix_det_m2(m2, &det), "2x2 det");
+        if (det > 0.0) {
+          (*complexity) +=
+              sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+        }
+      }
+    }
+  }
+  RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), complexity, 1, REF_DBL_TYPE),
+      "dbl sum");
+
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ref_blend_gradation_at_complexity(REF_DBL *metric,
+                                                    REF_GRID ref_grid,
+                                                    REF_DBL gradation,
+                                                    REF_DBL complexity) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT relaxations;
+  REF_DBL current_complexity;
+  REF_DBL complexity_scale;
+  REF_INT node, i;
+
+  complexity_scale = 1.0; /* "2D" along surf */
+
+  for (relaxations = 0; relaxations < 20; relaxations++) {
+    RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
+    if (!ref_math_divisible(complexity, current_complexity)) {
+      return REF_DIV_ZERO;
+    }
+    each_ref_node_valid_node(ref_node, node) {
+      for (i = 0; i < 6; i++) {
+        metric[i + 6 * node] *=
+            pow(complexity / current_complexity, complexity_scale);
+      }
+    }
+    if (gradation < 1.0) {
+      RSS(ref_metric_mixed_space_gradation(metric, ref_grid, -1.0, -1.0),
+          "gradation");
+    } else {
+      RSS(ref_metric_metric_space_gradation(metric, ref_grid, gradation),
+          "gradation");
+    }
+  }
+  RSS(ref_blend_complexity(metric, ref_grid, &current_complexity), "cmp");
+  if (!ref_math_divisible(complexity, current_complexity)) {
+    return REF_DIV_ZERO;
+  }
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < 6; i++) {
+      metric[i + 6 * node] *=
+          pow(complexity / current_complexity, complexity_scale);
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
+  REF_BLEND ref_blend;
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_DBL *hess, *metric;
+  REF_INT node, i;
+  REF_INT dimension = 2, p_norm = 2;
+  REF_INT gradation = -1.0;
+  REF_DBL det, exponent, complexity, area, complexity_scale;
+  REF_DBL diag_system2[6];
+  REF_DBL diag_system[12];
+  REF_DBL m[6], combined[6];
+  REF_DBL r[3], s[3], n[3];
+  REF_BOOL verbose = REF_FALSE;
+  REF_BOOL steps = REF_FALSE;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  /* reset blend to match grid */
+  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+  if (NULL != ref_blend) ref_blend_free(ref_blend);
+  ref_blend = NULL;
+  RSS(ref_blend_attach(ref_grid), "attach");
+  ref_blend = ref_geom_blend(ref_grid_geom(ref_grid));
+
+  exponent = -1.0 / ((REF_DBL)(2 * p_norm + dimension));
+
+  ref_malloc(metric, 6 * ref_node_max(ref_node), REF_DBL);
+  ref_malloc_init(hess, 3 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  0.0);
+  RSS(ref_recon_rsn_hess_face(ref_grid, hess), "rsn");
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_matrix_det_m2(&(hess[3 * node]), &det), "2x2 det");
+    if (det > 0.0) { /* local scaling */
+      for (i = 0; i < 3; i++) hess[i + 3 * node] *= pow(det, exponent);
+    }
+  }
+
+  complexity = 0.0;
+  ref_cell = ref_grid_tri(ref_grid);
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_tri_area(ref_node, nodes, &area), "area");
+    for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell); cell_node++) {
+      if (ref_node_owned(ref_node, nodes[cell_node])) {
+        RSS(ref_matrix_det_m2(&(hess[3 * nodes[cell_node]]), &det), "2x2 det");
+        if (det > 0.0) {
+          complexity +=
+              sqrt(det) * area / ((REF_DBL)ref_cell_node_per(ref_cell));
+        }
+      }
+    }
+  }
+
+  if (!ref_math_divisible(target_complexity, complexity)) {
+    RSS(REF_DIV_ZERO, "zero compelxity");
+  }
+
+  complexity_scale = 1.0;
+  each_ref_node_valid_node(ref_node, node) { /* global scaling */
+    for (i = 0; i < 3; i++)
+      hess[i + 3 * node] *=
+          pow(target_complexity / complexity, complexity_scale);
+  }
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_recon_rsn(ref_grid, node, r, s, n), "rsn");
+    RSS(ref_matrix_diag_m2(&(hess[3 * node]), diag_system2), "decomp");
+    ref_matrix_eig(diag_system, 0) = ref_matrix_eig2(diag_system2, 0);
+    for (i = 0; i < 3; i++) {
+      ref_matrix_vec(diag_system, i, 0) =
+          ref_matrix_vec2(diag_system2, 0, 0) * r[i] +
+          ref_matrix_vec2(diag_system2, 1, 0) * s[i];
+    }
+    ref_matrix_eig(diag_system, 1) = ref_matrix_eig2(diag_system2, 1);
+    for (i = 0; i < 3; i++) {
+      ref_matrix_vec(diag_system, i, 1) =
+          ref_matrix_vec2(diag_system2, 0, 1) * r[i] +
+          ref_matrix_vec2(diag_system2, 1, 1) * s[i];
+    }
+    ref_matrix_eig(diag_system, 2) =
+        MIN(ref_matrix_eig2(diag_system2, 0), ref_matrix_eig2(diag_system2, 1));
+    for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 2) = n[i];
+
+    RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
+    if (verbose) {
+      ref_matrix_show_diag_sys(diag_system);
+      ref_metric_show(&(metric[6 * node]));
+      printf("n %f %f %f\n", n[0], n[1], n[2]);
+      printf("v %f %f %f\n", diag_system[0 + 9], diag_system[1 + 9],
+             diag_system[2 + 9]);
+    }
+  }
+  ref_free(hess);
+
+  if (steps) {
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+        "to");
+    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
+                                      "ref_blend_raw"),
+        "al");
+  }
+
+  RSS(ref_blend_gradation_at_complexity(metric, ref_grid, gradation,
+                                        target_complexity),
+      "gradation at complexity");
+
+  each_ref_node_valid_node(ref_node, node) {
+    RSS(ref_node_metric_get(ref_node, node, m), "curve metric");
+    RSS(ref_matrix_intersect(&(metric[6 * node]), m, combined), "intersect");
+    if (verbose) {
+      ref_metric_show(&(metric[6 * node]));
+      ref_metric_show(m);
+      ref_metric_show(combined);
+      printf("\n");
+    }
+    for (i = 0; i < 6; i++) metric[i + 6 * node] = combined[i];
+  }
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "to");
+
+  if (steps) {
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
+        "to");
+    RSS(ref_export_tec_metric_ellipse(ref_blend_grid(ref_blend),
+                                      "ref_blend_grad"),
+        "al");
+  }
+
+  ref_free(metric);
+
   return REF_SUCCESS;
 }

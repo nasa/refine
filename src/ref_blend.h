@@ -41,6 +41,13 @@ struct REF_BLEND_STRUCT {
 
 #define ref_blend_grid(ref_blend) ((ref_blend)->grid)
 
+#define ref_blend_displacement(ref_blend, ixyz, geom) \
+  ((ref_blend)->displacement[(ixyz) + 3 * (geom)])
+#define ref_blend_distance(ref_blend, geom)                  \
+  (sqrt(pow(ref_blend_displacement(ref_blend, 0, geom), 2) + \
+        pow(ref_blend_displacement(ref_blend, 1, geom), 2) + \
+        pow(ref_blend_displacement(ref_blend, 2, geom), 2)))
+
 REF_STATUS ref_blend_create(REF_BLEND *ref_blend, REF_GRID freeable_ref_grid);
 REF_STATUS ref_blend_free(REF_BLEND ref_blend);
 
@@ -56,6 +63,9 @@ REF_STATUS ref_blend_inverse_eval(REF_BLEND ref_blend, REF_INT type, REF_INT id,
                                   REF_DBL *xyz, REF_DBL *param);
 
 REF_STATUS ref_blend_tec(REF_BLEND ref_blend, const char *filename);
+
+REF_STATUS ref_blend_max_distance(REF_BLEND ref_blend, REF_DBL *distance);
+REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL complexity);
 
 END_C_DECLORATION
 

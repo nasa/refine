@@ -370,8 +370,8 @@ REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   }
 
   global[0] = 0;
-  global[1] = 1;
-  global[2] = 3;
+  global[1] = 3;
+  global[2] = 1;
   global[3] = 101;
   if (ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
@@ -380,8 +380,8 @@ REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
       ref_mpi_rank(ref_mpi) ==
           ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
     add_that_node(0, 0.0, 0.0, 0.0);
-    add_that_node(1, 0.0, 1.0, 0.0);
-    add_that_node(2, -1.0, 0.0, 0.0);
+    add_that_node(1, -1.0, 0.0, 0.0);
+    add_that_node(2, 0.0, 1.0, 0.0);
 
     RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
   }
