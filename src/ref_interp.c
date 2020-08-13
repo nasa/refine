@@ -2296,7 +2296,17 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RSS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar local");
+    }
+  }
   RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RSS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar ghost");
+    }
+  }
 
   return REF_SUCCESS;
 }
