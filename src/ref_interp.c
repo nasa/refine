@@ -2264,6 +2264,8 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
               donor_bary[ibary + 4 * donation] *
               from_scalar[im + leading_dim * nodes[ibary]];
         }
+        RSS(isfinite(donor_scalar[im + leading_dim * donation]),
+            "donor_scalar");
       }
     }
   }
@@ -2284,6 +2286,8 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
     for (im = 0; im < leading_dim; im++) {
+      RSS(isfinite(recept_scalar[im + leading_dim * receptor]),
+          "recept_scalar");
       to_scalar[im + leading_dim * node] =
           recept_scalar[im + leading_dim * receptor];
     }
