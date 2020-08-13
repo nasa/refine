@@ -2113,14 +2113,14 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
         "node needs to be localized");
     for (im = 0; im < leading_dim; im++) {
       donor_scalar[im + leading_dim * donation] = 0.0;
-      for (ibary = 0; ibary < 4; ibary++) {
+      for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
         donor_scalar[im + leading_dim * donation] +=
             donor_bary[ibary + 4 * donation] *
             from_scalar[im + leading_dim * nodes[ibary]];
       }
       RAB(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar", {
         printf("%.20e\n", donor_scalar[im + leading_dim * donation]);
-        for (ibary = 0; ibary < 4; ibary++) {
+        for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
           printf("%.20e %.20e %.20e\n",
                  donor_bary[ibary + 4 * donation] *
                      from_scalar[im + leading_dim * nodes[ibary]],
