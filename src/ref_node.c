@@ -2722,6 +2722,11 @@ REF_STATUS ref_node_bary4(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
 REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *bary) {
   REF_DBL total;
 
+  RAS(isfinite(orig_bary[0]), "orig_bary[0] not finite");
+  RAS(isfinite(orig_bary[1]), "orig_bary[1] not finite");
+  RAS(isfinite(orig_bary[2]), "orig_bary[2] not finite");
+  RAS(isfinite(orig_bary[3]), "orig_bary[3] not finite");
+
   bary[0] = MAX(0.0, orig_bary[0]);
   bary[1] = MAX(0.0, orig_bary[1]);
   bary[2] = MAX(0.0, orig_bary[2]);
@@ -2759,6 +2764,11 @@ REF_STATUS ref_node_clip_bary4(REF_DBL *orig_bary, REF_DBL *bary) {
   RAS(bary[1] >= 0.0, "bary[1] not positive");
   RAS(bary[2] >= 0.0, "bary[2] not positive");
   RAS(bary[3] >= 0.0, "bary[3] not positive");
+
+  RAS(isfinite(bary[0]), "bary[0] not finite");
+  RAS(isfinite(bary[1]), "bary[1] not finite");
+  RAS(isfinite(bary[2]), "bary[2] not finite");
+  RAS(isfinite(bary[3]), "bary[3] not finite");
 
   return REF_SUCCESS;
 }

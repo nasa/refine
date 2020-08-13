@@ -476,3 +476,20 @@ REF_STATUS ref_validation_twod_outward_normal(REF_GRID ref_grid) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_validation_finite(REF_GRID ref_grid, REF_INT ldim,
+                                 REF_DBL *field) {
+  REF_INT i, node, n;
+  n = 0;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < ldim; i++) {
+      if (!isfinite(field[i + ldim * node])) n++;
+    }
+  }
+  RSS(ref_mpi_allsum(ref_grid_mpi(ref_grid), &n, 1, REF_INT_TYPE), "global");
+  if (n > 0) {
+    if (ref_mpi_once(ref_grid_mpi(ref_grid))) printf("%d not finite\n", n);
+    return REF_INVALID;
+  }
+  return REF_SUCCESS;
+}

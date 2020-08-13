@@ -1026,6 +1026,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
   if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
   ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
   if (strcmp(interpolant, "incomp") == 0) {
@@ -1197,13 +1198,18 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
-  ref_malloc(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc_init(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                  REF_DBL, 0.0);
   RSS(ref_node_extract_aux(ref_grid_node(ref_grid_background(ref_grid)), &ldim,
                            &initial_field),
       "store init field with background");
+  RSS(ref_validation_finite(ref_grid_background(ref_grid), ldim, initial_field),
+      "recall background field");
+
   RSS(ref_interp_scalar(ref_grid_interp(ref_grid), ldim, initial_field,
                         ref_field),
       "interp scalar");
+  RSS(ref_validation_finite(ref_grid, ldim, ref_field), "interp field");
   ref_free(initial_field);
   /* free interp and background grid */
   RSS(ref_grid_free(ref_grid_background(ref_grid)),
@@ -1219,6 +1225,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
                                extruded_field),
         "extrude field");
+    RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
+        "extruded field");
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY == pos) {

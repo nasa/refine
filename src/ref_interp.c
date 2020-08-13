@@ -2111,15 +2111,25 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (ibary = 0; ibary < 4; ibary++) {
-      for (im = 0; im < leading_dim; im++) {
-        donor_scalar[im + leading_dim * donation] = 0.0;
-        for (ibary = 0; ibary < 4; ibary++) {
-          donor_scalar[im + leading_dim * donation] +=
-              donor_bary[ibary + 4 * donation] *
-              from_scalar[im + leading_dim * nodes[ibary]];
-        }
+    for (im = 0; im < leading_dim; im++) {
+      donor_scalar[im + leading_dim * donation] = 0.0;
+      for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
+        donor_scalar[im + leading_dim * donation] +=
+            donor_bary[ibary + 4 * donation] *
+            from_scalar[im + leading_dim * nodes[ibary]];
       }
+      /*
+      RAB(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar", {
+        printf("%.20e\n", donor_scalar[im + leading_dim * donation]);
+        for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
+          printf("%.20e %.20e %.20e\n",
+                 donor_bary[ibary + 4 * donation] *
+                     from_scalar[im + leading_dim * nodes[ibary]],
+                 donor_bary[ibary + 4 * donation],
+                 from_scalar[im + leading_dim * nodes[ibary]]);
+        }
+      });
+      */
     }
   }
   ref_free(donor_cell);
@@ -2139,6 +2149,8 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
     for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(recept_scalar[im + leading_dim * receptor]),
+          "recept_scalar");
       to_scalar[im + leading_dim * node] =
           recept_scalar[im + leading_dim * receptor];
     }
@@ -2147,7 +2159,19 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
+  /*
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar local");
+    }
+  }
+  */
   RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar ghost");
+    }
+  }
 
   return REF_SUCCESS;
 }
@@ -2256,14 +2280,12 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (ibary = 0; ibary < 4; ibary++) {
-      for (im = 0; im < leading_dim; im++) {
-        donor_scalar[im + leading_dim * donation] = 0.0;
-        for (ibary = 0; ibary < 4; ibary++) {
-          donor_scalar[im + leading_dim * donation] +=
-              donor_bary[ibary + 4 * donation] *
-              from_scalar[im + leading_dim * nodes[ibary]];
-        }
+    for (im = 0; im < leading_dim; im++) {
+      donor_scalar[im + leading_dim * donation] = 0.0;
+      for (ibary = 0; ibary < 4; ibary++) {
+        donor_scalar[im + leading_dim * donation] +=
+            donor_bary[ibary + 4 * donation] *
+            from_scalar[im + leading_dim * nodes[ibary]];
       }
     }
   }
