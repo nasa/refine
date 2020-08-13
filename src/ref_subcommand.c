@@ -1198,7 +1198,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   if (ref_mpi_once(ref_mpi)) printf("interpolate receptor nodes\n");
-  ref_malloc(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc_init(ref_field, ldim * ref_node_max(ref_grid_node(ref_grid)),
+                  REF_DBL, 0.0);
   RSS(ref_node_extract_aux(ref_grid_node(ref_grid_background(ref_grid)), &ldim,
                            &initial_field),
       "store init field with background");
