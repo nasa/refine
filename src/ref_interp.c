@@ -2118,7 +2118,8 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
             donor_bary[ibary + 4 * donation] *
             from_scalar[im + leading_dim * nodes[ibary]];
       }
-      RAS(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar");
+      RAB(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar",
+          { printf("%.20e\n", donor_scalar[im + leading_dim * donation]); });
     }
   }
   ref_free(donor_cell);
