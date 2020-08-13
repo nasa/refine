@@ -2111,14 +2111,12 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (ibary = 0; ibary < 4; ibary++) {
-      for (im = 0; im < leading_dim; im++) {
-        donor_scalar[im + leading_dim * donation] = 0.0;
-        for (ibary = 0; ibary < 4; ibary++) {
-          donor_scalar[im + leading_dim * donation] +=
-              donor_bary[ibary + 4 * donation] *
-              from_scalar[im + leading_dim * nodes[ibary]];
-        }
+    for (im = 0; im < leading_dim; im++) {
+      donor_scalar[im + leading_dim * donation] = 0.0;
+      for (ibary = 0; ibary < 4; ibary++) {
+	donor_scalar[im + leading_dim * donation] +=
+	  donor_bary[ibary + 4 * donation] *
+	  from_scalar[im + leading_dim * nodes[ibary]];
       }
     }
   }
@@ -2256,17 +2254,15 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   for (donation = 0; donation < n_donor; donation++) {
     RSS(ref_cell_nodes(from_cell, donor_cell[donation], nodes),
         "node needs to be localized");
-    for (ibary = 0; ibary < 4; ibary++) {
-      for (im = 0; im < leading_dim; im++) {
-        donor_scalar[im + leading_dim * donation] = 0.0;
-        for (ibary = 0; ibary < 4; ibary++) {
-          donor_scalar[im + leading_dim * donation] +=
-              donor_bary[ibary + 4 * donation] *
-              from_scalar[im + leading_dim * nodes[ibary]];
-        }
-        RSS(isfinite(donor_scalar[im + leading_dim * donation]),
-            "donor_scalar");
+    for (im = 0; im < leading_dim; im++) {
+      donor_scalar[im + leading_dim * donation] = 0.0;
+      for (ibary = 0; ibary < 4; ibary++) {
+	donor_scalar[im + leading_dim * donation] +=
+	  donor_bary[ibary + 4 * donation] *
+	  from_scalar[im + leading_dim * nodes[ibary]];
       }
+      RSS(isfinite(donor_scalar[im + leading_dim * donation]),
+	  "donor_scalar");
     }
   }
   ref_free(donor_cell);
