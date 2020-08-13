@@ -2114,10 +2114,11 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
     for (im = 0; im < leading_dim; im++) {
       donor_scalar[im + leading_dim * donation] = 0.0;
       for (ibary = 0; ibary < 4; ibary++) {
-	donor_scalar[im + leading_dim * donation] +=
-	  donor_bary[ibary + 4 * donation] *
-	  from_scalar[im + leading_dim * nodes[ibary]];
+        donor_scalar[im + leading_dim * donation] +=
+            donor_bary[ibary + 4 * donation] *
+            from_scalar[im + leading_dim * nodes[ibary]];
       }
+      RAS(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar");
     }
   }
   ref_free(donor_cell);
@@ -2137,6 +2138,8 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
     for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(recept_scalar[im + leading_dim * receptor]),
+          "recept_scalar");
       to_scalar[im + leading_dim * node] =
           recept_scalar[im + leading_dim * receptor];
     }
@@ -2145,7 +2148,17 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar local");
+    }
+  }
   RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
+  each_ref_node_valid_node(to_node, node) {
+    for (im = 0; im < leading_dim; im++) {
+      RAS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar ghost");
+    }
+  }
 
   return REF_SUCCESS;
 }
@@ -2257,12 +2270,10 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
     for (im = 0; im < leading_dim; im++) {
       donor_scalar[im + leading_dim * donation] = 0.0;
       for (ibary = 0; ibary < 4; ibary++) {
-	donor_scalar[im + leading_dim * donation] +=
-	  donor_bary[ibary + 4 * donation] *
-	  from_scalar[im + leading_dim * nodes[ibary]];
+        donor_scalar[im + leading_dim * donation] +=
+            donor_bary[ibary + 4 * donation] *
+            from_scalar[im + leading_dim * nodes[ibary]];
       }
-      RSS(isfinite(donor_scalar[im + leading_dim * donation]),
-	  "donor_scalar");
     }
   }
   ref_free(donor_cell);
@@ -2282,8 +2293,6 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   for (receptor = 0; receptor < n_recept; receptor++) {
     node = recept_node[receptor];
     for (im = 0; im < leading_dim; im++) {
-      RSS(isfinite(recept_scalar[im + leading_dim * receptor]),
-          "recept_scalar");
       to_scalar[im + leading_dim * node] =
           recept_scalar[im + leading_dim * receptor];
     }
@@ -2292,17 +2301,7 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
-  each_ref_node_valid_node(to_node, node) {
-    for (im = 0; im < leading_dim; im++) {
-      RSS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar local");
-    }
-  }
   RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
-  each_ref_node_valid_node(to_node, node) {
-    for (im = 0; im < leading_dim; im++) {
-      RSS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar ghost");
-    }
-  }
 
   return REF_SUCCESS;
 }
