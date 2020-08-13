@@ -1216,9 +1216,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
     ref_malloc(extruded_field,
                ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
+    RSS(ref_validation_finite(ref_grid, ldim, ref_field), "twod field");
     RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
                                extruded_field),
         "extrude field");
+    RSS(ref_validation_finite(extruded_grid, ldim, extruded_field),
+        "extruded field");
     RXS(ref_args_find(argc, argv, "--usm3d", &pos), REF_NOT_FOUND,
         "arg search");
     if (REF_EMPTY == pos) {
