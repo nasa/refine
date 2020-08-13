@@ -92,8 +92,7 @@ static REF_STATUS ref_interp_exhaustive_tri_around_node(REF_GRID ref_grid,
     current_bary[3] = 0.0;
     RXS(status, REF_DIV_ZERO, "bary");
     if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
-      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                     MIN(current_bary[2], current_bary[3]));
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
       if (REF_EMPTY == best_candidate || min_bary > best_bary) {
         best_candidate = candidate;
         best_bary = min_bary;
@@ -398,8 +397,7 @@ static REF_STATUS ref_interp_enclosing_tri_in_list(REF_GRID ref_grid,
     RXS(status, REF_DIV_ZERO, "bary");
     if (REF_SUCCESS == status) { /* exclude REF_DIV_ZERO */
 
-      min_bary = MIN(MIN(current_bary[0], current_bary[1]),
-                     MIN(current_bary[2], current_bary[3]));
+      min_bary = MIN(MIN(current_bary[0], current_bary[1]), current_bary[2]);
       if (REF_EMPTY == best_candidate || min_bary > best_bary) {
         best_candidate = candidate;
         best_bary = min_bary;
@@ -2330,9 +2328,13 @@ REF_STATUS ref_interp_min_bary(REF_INTERP ref_interp, REF_DBL *min_bary) {
 
   each_ref_node_valid_node(to_node, node) if (ref_node_owned(to_node, node)) {
     RUS(REF_EMPTY, ref_interp->cell[node], "node needs to be localized");
-    this_bary = MIN(
-        MIN(ref_interp->bary[0 + 4 * node], ref_interp->bary[1 + 4 * node]),
-        MIN(ref_interp->bary[2 + 4 * node], ref_interp->bary[3 + 4 * node]));
+
+    this_bary =
+        MIN(MIN(ref_interp->bary[0 + 4 * node], ref_interp->bary[1 + 4 * node]),
+            ref_interp->bary[2 + 4 * node]);
+    if (!ref_grid_twod(to_grid)) {
+      this_bary = MIN(this_bary, ref_interp->bary[3 + 4 * node]);
+    }
     *min_bary = MIN(*min_bary, this_bary);
   }
   this_bary = *min_bary;
