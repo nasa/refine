@@ -1208,7 +1208,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_interp_scalar(ref_grid_interp(ref_grid), ldim, initial_field,
                         ref_field),
       "interp scalar");
-  RSS(ref_validation_finite(ref_grid, ldim, ref_field), "twod field");
+  RSS(ref_validation_finite(ref_grid, ldim, ref_field), "interp field");
   ref_free(initial_field);
   /* free interp and background grid */
   RSS(ref_grid_free(ref_grid_background(ref_grid)),
