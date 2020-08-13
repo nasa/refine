@@ -2118,6 +2118,7 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
             donor_bary[ibary + 4 * donation] *
             from_scalar[im + leading_dim * nodes[ibary]];
       }
+      /*
       RAB(isfinite(donor_scalar[im + leading_dim * donation]), "donor_scalar", {
         printf("%.20e\n", donor_scalar[im + leading_dim * donation]);
         for (ibary = 0; ibary < ref_cell_node_per(from_cell); ibary++) {
@@ -2128,6 +2129,7 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
                  from_scalar[im + leading_dim * nodes[ibary]]);
         }
       });
+      */
     }
   }
   ref_free(donor_cell);
@@ -2157,11 +2159,13 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   ref_free(recept_node);
   ref_free(recept_scalar);
 
+  /*
   each_ref_node_valid_node(to_node, node) {
     for (im = 0; im < leading_dim; im++) {
       RAS(isfinite(to_scalar[im + leading_dim * node]), "to_scalar local");
     }
   }
+  */
   RSS(ref_node_ghost_dbl(to_node, to_scalar, leading_dim), "ghost");
   each_ref_node_valid_node(to_node, node) {
     for (im = 0; im < leading_dim; im++) {
