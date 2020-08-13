@@ -1204,6 +1204,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_interp_scalar(ref_grid_interp(ref_grid), ldim, initial_field,
                         ref_field),
       "interp scalar");
+    RSS(ref_validation_finite(ref_grid, ldim, ref_field), "twod field");
   ref_free(initial_field);
   /* free interp and background grid */
   RSS(ref_grid_free(ref_grid_background(ref_grid)),
@@ -1216,7 +1217,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("extruding field of %d\n", ldim);
     ref_malloc(extruded_field,
                ldim * ref_node_max(ref_grid_node(extruded_grid)), REF_DBL);
-    RSS(ref_validation_finite(ref_grid, ldim, ref_field), "twod field");
     RSS(ref_grid_extrude_field(ref_grid, ldim, ref_field, extruded_grid,
                                extruded_field),
         "extrude field");
