@@ -20,6 +20,8 @@ bcmap[5052] = 101 # mach outflow
 bcmap[7011] = 102 # total pressure
 bcmap[7036] = 103 # total pressure
 
+bcmap[-1] = -1 # interpolation
+
 lines = IO.readlines(input)
 
 File.open(output,'w') do |f|

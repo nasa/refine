@@ -38,6 +38,8 @@ bcmap[211] = 4000 # viscous_solid for bleed
 bcmap[311] = 4000 # viscous_solid for bleed
 bcmap[411] = 4000 # viscous_solid for bleed
 
+bcmap[-1] = -1 # interpolation
+
 puts bcmap
 
 lines = IO.readlines(input)
