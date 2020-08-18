@@ -22,7 +22,7 @@ function adapt_cycle {
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
 	  -g offset.egads \
-	  --blend offset-blend.meshb \
+	  --blend offset-surrogate.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
@@ -38,10 +38,18 @@ serveCSM -batch offset.csm
 ${src}/ref boostrap offset.egads \
       --blend offset-blend.meshb
 
+${src}/ref adapt offset-adapt-surf.meshb \
+      -g offset.egads \
+      --blend-metric 100 \
+      -s 5 \
+      -x offset-surrogate.meshb \
+      -f offset-surrogate-final.tec
+
 ${src}/ref adapt offset-vol.meshb \
       -g offset.egads \
-      --blend offset-blend.meshb \
-      -x offset.meshb
+      --blend offset-surrogate.meshb \
+      -x offset.meshb \
+      -f offset-final.tec
 
 adapt_cycle offset cycle01 2
 adapt_cycle cycle01 cycle02 15
