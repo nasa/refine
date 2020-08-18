@@ -1,0 +1,13 @@
+
+set offset 0.01
+set width 0.25
+set radius 0.25
+
+cylinder 0 0 0 0 0 width radius
+sphere 0 offset 0 radius
+box -2*radius -2*radius -2*radius 4*radius 4*radius 2*radius
+intersect
+union 0 0 -10*offset
+
+dump sphcyl.egads
+
