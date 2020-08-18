@@ -503,7 +503,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "egads params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
 
-  /* slow due to edges, maybe wait for parallel? */
   if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
   ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
