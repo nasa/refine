@@ -794,6 +794,7 @@ static REF_STATUS ref_blend_face_tec_zone(REF_BLEND ref_blend, REF_INT id,
             ref_blend_displacement(ref_blend, 2, geom));
   }
   each_ref_dict_key_value(ref_dict_degen, item, cell, node) {
+    RSS(ref_geom_find(ref_geom, node, REF_GEOM_FACE, id, &geom), "find");
     xyz[0] = ref_node_xyz(ref_node, 0, node);
     xyz[1] = ref_node_xyz(ref_node, 1, node);
     xyz[2] = ref_node_xyz(ref_node, 2, node);
