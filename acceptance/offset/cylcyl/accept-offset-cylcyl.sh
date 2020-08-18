@@ -21,8 +21,8 @@ function adapt_cycle {
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb ${inproj}.solb
     ${src}/ref adapt ${inproj}.meshb \
-	  -g offset.egads \
-	  --blend offset-surrogate.meshb \
+	  -g cylcyl.egads \
+	  --blend cylcyl-surrogate.meshb \
 	  -m ${inproj}.solb \
 	  -x ${outproj}.meshb \
 	  -f ${outproj}-final.tec \
@@ -33,25 +33,25 @@ function adapt_cycle {
     ${src}/ref_metric_test ${outproj}.meshb ${outproj}.solb > ${outproj}.status
 }
 
-serveCSM -batch offset.csm
+serveCSM -batch cylcyl.csm
 
-${src}/ref boostrap offset.egads \
-      --blend offset-blend.meshb
+${src}/ref boostrap cylcyl.egads \
+      --blend cylcyl-blend.meshb
 
-${src}/ref adapt offset-adapt-surf.meshb \
-      -g offset.egads \
+${src}/ref adapt cylcyl-adapt-surf.meshb \
+      -g cylcyl.egads \
       --blend-metric 100 \
       -s 5 \
-      -x offset-surrogate.meshb \
-      -f offset-surrogate-final.tec
+      -x cylcyl-surrogate.meshb \
+      -f cylcyl-surrogate-final.tec
 
-${src}/ref adapt offset-vol.meshb \
-      -g offset.egads \
-      --blend offset-surrogate.meshb \
-      -x offset.meshb \
-      -f offset-final.tec
+${src}/ref adapt cylcyl-vol.meshb \
+      -g cylcyl.egads \
+      --blend cylcyl-surrogate.meshb \
+      -x cylcyl.meshb \
+      -f cylcyl-final.tec
 
-adapt_cycle offset cycle01 2
+adapt_cycle cylcyl cycle01 2
 adapt_cycle cycle01 cycle02 15
 
 cat cycle02.status

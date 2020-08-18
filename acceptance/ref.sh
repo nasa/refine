@@ -357,10 +357,10 @@ cd ${source_dir}/acceptance/sliver/bootstrap
 ( ./accept-sliver.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-offset-side
+LOG=${root_dir}/log.accept-offset-cylcyl
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/offset/side
-( ./accept-offset-side.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/offset/cylcyl
+( ./accept-offset-cylcyl.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
