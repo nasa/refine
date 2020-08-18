@@ -338,12 +338,18 @@ static REF_STATUS ref_blend_infer_displacement(REF_BLEND ref_blend) {
 REF_STATUS ref_blend_import(REF_GRID ref_grid, const char *filename) {
   REF_GRID freeable_ref_grid;
   REF_BLEND ref_blend;
+  REF_GEOM ref_geom;
   RSS(ref_import_by_extension(&freeable_ref_grid, ref_grid_mpi(ref_grid),
                               filename),
       "import");
-  RSS(ref_geom_share_context(ref_grid_geom(freeable_ref_grid),
-                             ref_grid_geom(ref_grid)),
+  ref_geom = ref_grid_geom(freeable_ref_grid);
+  RSS(ref_geom_share_context(ref_geom, ref_grid_geom(ref_grid)),
       "share context");
+  if (ref_geom_model_loaded(ref_geom)) {
+    RSS(ref_egads_mark_jump_degen(ref_grid), "T and UV jumps; UV degen");
+    RSS(ref_geom_verify_topo(ref_grid), "geom topo");
+    RSS(ref_geom_verify_param(ref_grid), "geom param");
+  }
   RSS(ref_blend_create(&ref_blend, freeable_ref_grid), "create");
   ref_geom_blend(ref_grid_geom(ref_grid)) = ref_blend;
   RSS(ref_blend_infer_displacement(ref_blend), "infer displacement");
