@@ -2017,6 +2017,13 @@ REF_STATUS ref_egads_eval_at(REF_GEOM ref_geom, REF_INT type, REF_INT id,
 
   status = EG_evaluate(object, params, eval);
   if (EGADS_SUCCESS != status) {
+    ego ref, *pchldrn;
+    int oclass, mtype, nchild, *psens;
+    double range[4] = {-999, -999, -999, -999};
+    printf(" %d EG_getTopology\n",
+           EG_getTopology(object, &ref, &oclass, &mtype, range, &nchild,
+                          &pchldrn, &psens));
+    printf("range %f %f %f %f\n", range[0], range[1], range[2], range[3]);
     printf("type %d id %d\n", type, id);
     if (type > 0) printf("param[0] = %f\n", params[0]);
     if (type > 1) printf("param[1] = %f\n", params[1]);

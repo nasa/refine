@@ -503,7 +503,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_geom_verify_param(ref_grid), "egads params");
   ref_mpi_stopwatch_stop(ref_mpi, "verify param");
 
-  /* slow due to edges, maybe wait for parallel? */
   if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
   RSS(ref_geom_constrain_all(ref_grid), "constrain");
   ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
@@ -584,9 +583,10 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_blend_tec(ref_blend, filename), "blend viz");
     }
     ref_mpi_stopwatch_stop(ref_mpi, "blend dumped");
-    if (ref_mpi_once(ref_mpi)) printf("constrain all\n");
     RSS(ref_geom_constrain_all(ref_grid), "constrain");
     ref_mpi_stopwatch_stop(ref_mpi, "constrain param");
+    RSS(ref_geom_verify_param(ref_grid), "blend params");
+    ref_mpi_stopwatch_stop(ref_mpi, "verify param");
     RSS(ref_adapt_surf_to_geom(ref_grid, 3), "ad");
     ref_mpi_stopwatch_stop(ref_mpi, "untangle");
     RSS(ref_grid_pack(ref_grid), "pack");
