@@ -2385,7 +2385,7 @@ REF_STATUS ref_node_tri_fitness(REF_NODE ref_node, REF_INT *nodes,
   node2 = node0 + 2;
   if (node1 > 2) node1 -= 3;
   if (node2 > 2) node2 -= 3;
-  printf("n %d %d %d\n", node0, node1, node2);
+
   for (i = 0; i < 3; i++) {
     r12[i] = ref_node_xyz(ref_node, i, nodes[node1]) -
              ref_node_xyz(ref_node, i, nodes[node0]);
