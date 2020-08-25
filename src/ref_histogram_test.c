@@ -25,6 +25,7 @@
 
 #include "ref_adapt.h"
 #include "ref_adj.h"
+#include "ref_args.h"
 #include "ref_cell.h"
 #include "ref_collapse.h"
 #include "ref_edge.h"
@@ -47,8 +48,29 @@
 
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
+  REF_INT pos = REF_EMPTY;
+
   RSS(ref_mpi_start(argc, argv), "start");
   RSS(ref_mpi_create(&ref_mpi), "make mpi");
+
+  RXS(ref_args_find(argc, argv, "--fitness", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (1 == pos && 3 == argc) {
+    REF_GRID ref_grid;
+
+    if (!ref_mpi_para(ref_mpi)) {
+      RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[2]), "import");
+    } else {
+      RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]), "part");
+    }
+
+    RSS(ref_histogram_fitness_tec(ref_grid), "qual tec");
+    RSS(ref_histogram_fitness(ref_grid), "qual");
+
+    RSS(ref_grid_free(ref_grid), "free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
 
   if (argc == 3) {
     REF_GRID ref_grid;
