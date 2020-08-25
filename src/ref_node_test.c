@@ -1508,6 +1508,48 @@ int main(int argc, char *argv[]) {
     RSS(ref_node_free(ref_node), "free");
   }
 
+  { /* right tri fitness */
+    REF_NODE ref_node;
+    REF_INT nodes[3], global;
+    REF_DBL fitness;
+
+    RSS(ref_node_create(&ref_node, ref_mpi), "create");
+
+    global = 0;
+    RSS(ref_node_add(ref_node, global, &(nodes[0])), "add");
+    global = 1;
+    RSS(ref_node_add(ref_node, global, &(nodes[1])), "add");
+    global = 2;
+    RSS(ref_node_add(ref_node, global, &(nodes[2])), "add");
+
+    for (global = 0; global < 3; global++) {
+      ref_node_xyz(ref_node, 0, nodes[global]) = 0.0;
+      ref_node_xyz(ref_node, 1, nodes[global]) = 0.0;
+      ref_node_xyz(ref_node, 2, nodes[global]) = 0.0;
+    }
+
+    ref_node_xyz(ref_node, 0, nodes[1]) = 1.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_fitness(ref_node, nodes, &fitness), "area");
+    RWDS(0.25, fitness, -1.0, "expected area");
+
+    ref_node_xyz(ref_node, 0, nodes[1]) = 10.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_fitness(ref_node, nodes, &fitness), "area");
+    RWDS(0.04950495049504974, fitness, -1.0, "expected area");
+
+    ref_node_xyz(ref_node, 0, nodes[1]) = 10.0;
+    ref_node_xyz(ref_node, 0, nodes[2]) = 5.0;
+    ref_node_xyz(ref_node, 1, nodes[2]) = 1.0;
+
+    RSS(ref_node_tri_fitness(ref_node, nodes, &fitness), "area");
+    RWDS(1.25, fitness, -1.0, "expected area");
+
+    RSS(ref_node_free(ref_node), "free");
+  }
+
   { /* right tet quality */
     REF_NODE ref_node;
     REF_INT nodes[4], global;

@@ -2355,6 +2355,65 @@ REF_STATUS ref_node_tri_darea_dnode0(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_tri_fitness(REF_NODE ref_node, REF_INT *nodes,
+                                REF_DBL *fitness) {
+  REF_DBL e01[3], e12[3], e20[3], r12[3], r13[3], rhy[3];
+  REF_INT i, node0, node1, node2;
+  REF_DBL s, num, hx, hy;
+
+  *fitness = -1.0;
+
+  node0 = 0;
+  node1 = 1;
+  node2 = 2;
+  for (i = 0; i < 3; i++) {
+    e01[i] = ref_node_xyz(ref_node, i, nodes[node1]) -
+             ref_node_xyz(ref_node, i, nodes[node0]);
+    e12[i] = ref_node_xyz(ref_node, i, nodes[node2]) -
+             ref_node_xyz(ref_node, i, nodes[node1]);
+    e20[i] = ref_node_xyz(ref_node, i, nodes[node0]) -
+             ref_node_xyz(ref_node, i, nodes[node2]);
+  }
+  node0 = 0;
+  if (ref_math_dot(e12, e12) >= ref_math_dot(e01, e01) &&
+      ref_math_dot(e12, e12) >= ref_math_dot(e20, e20))
+    node0 = 1;
+  if (ref_math_dot(e20, e20) >= ref_math_dot(e01, e01) &&
+      ref_math_dot(e20, e20) >= ref_math_dot(e12, e12))
+    node0 = 2;
+  node1 = node0 + 1;
+  node2 = node0 + 2;
+  if (node1 > 2) node1 -= 3;
+  if (node2 > 2) node2 -= 3;
+  printf("n %d %d %d\n", node0, node1, node2);
+  for (i = 0; i < 3; i++) {
+    r12[i] = ref_node_xyz(ref_node, i, nodes[node1]) -
+             ref_node_xyz(ref_node, i, nodes[node0]);
+    r13[i] = ref_node_xyz(ref_node, i, nodes[node2]) -
+             ref_node_xyz(ref_node, i, nodes[node0]);
+  }
+  if (ref_math_divisible(ref_math_dot(r12, r13), ref_math_dot(r12, r12))) {
+    s = ref_math_dot(r12, r13) / ref_math_dot(r12, r12);
+  } else {
+    s = 0.0;
+    RSS(REF_DIV_ZERO, "divide by longest edge");
+  }
+  hx = sqrt(ref_math_dot(r12, r12));
+  for (i = 0; i < 3; i++) {
+    rhy[i] = (r13[i] - s * r12[i]);
+  }
+  hy = sqrt(ref_math_dot(rhy, rhy));
+
+  num = 0.5 * hx * (s - s * s);
+  if (ref_math_divisible(num, hy)) {
+    *fitness = num / hy;
+  } else {
+    RSS(REF_DIV_ZERO, "divide by longest edge");
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume) {
   REF_DBL *a, *b, *c, *d;
   REF_DBL m11, m12, m13;
