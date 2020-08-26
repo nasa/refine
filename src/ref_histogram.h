@@ -88,11 +88,15 @@ REF_STATUS ref_histogram_add_ratio(REF_HISTOGRAM ref_histogram,
                                    REF_GRID ref_grid);
 REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
                                      REF_GRID ref_grid);
+REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
+                                     REF_GRID ref_grid);
 REF_STATUS ref_histogram_ratio(REF_GRID ref_grid);
 REF_STATUS ref_histogram_quality(REF_GRID ref_grid);
+REF_STATUS ref_histogram_fitness(REF_GRID ref_grid);
 
 REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid);
 REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid);
+REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid);
 REF_STATUS ref_histogram_node_tec(REF_GRID ref_grid, REF_DBL *observations);
 
 REF_STATUS ref_histogram_debug(REF_HISTOGRAM ref_histogram,

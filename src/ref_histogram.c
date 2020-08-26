@@ -450,6 +450,37 @@ REF_STATUS ref_histogram_add_quality(REF_HISTOGRAM ref_histogram,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_add_fitness(REF_HISTOGRAM ref_histogram,
+                                     REF_GRID ref_grid) {
+  REF_CELL ref_cell;
+  REF_INT cell;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL fitness;
+
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
+    ref_cell = ref_grid_tri(ref_grid);
+  } else {
+    ref_cell = ref_grid_tet(ref_grid);
+    RSS(REF_IMPLEMENT, "twod only");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    if (ref_node_part(ref_grid_node(ref_grid), nodes[0]) ==
+        ref_mpi_rank(ref_grid_mpi(ref_grid))) {
+      if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid)) {
+        RSS(ref_node_tri_fitness(ref_grid_node(ref_grid), nodes, &fitness),
+            "qual");
+      } else {
+        fitness = 1.0;
+      }
+      if (fitness > 0.0) RSS(ref_histogram_add(ref_histogram, fitness), "add");
+    }
+  }
+
+  RSS(ref_histogram_gather(ref_histogram, ref_grid_mpi(ref_grid)), "gather");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_ratio(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
@@ -483,6 +514,20 @@ REF_STATUS ref_histogram_quality(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_histogram_fitness(REF_GRID ref_grid) {
+  REF_HISTOGRAM ref_histogram;
+
+  RSS(ref_histogram_create(&ref_histogram), "create");
+
+  RSS(ref_histogram_add_fitness(ref_histogram, ref_grid), "add fitness");
+
+  if (ref_grid_once(ref_grid))
+    RSS(ref_histogram_print(ref_histogram, ref_grid, "fitness"), "print");
+
+  RSS(ref_histogram_free(ref_histogram), "free gram");
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_histogram_ratio_tec(REF_GRID ref_grid) {
   REF_HISTOGRAM ref_histogram;
 
@@ -508,6 +553,21 @@ REF_STATUS ref_histogram_quality_tec(REF_GRID ref_grid) {
 
   if (ref_grid_once(ref_grid))
     RSS(ref_histogram_tec(ref_histogram, "quality"), "tec");
+
+  RSS(ref_histogram_free(ref_histogram), "free gram");
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_histogram_fitness_tec(REF_GRID ref_grid) {
+  REF_HISTOGRAM ref_histogram;
+
+  RSS(ref_histogram_create(&ref_histogram), "create");
+  RSS(ref_histogram_resolution(ref_histogram, 288, 12.0), "res");
+
+  RSS(ref_histogram_add_fitness(ref_histogram, ref_grid), "add ratio");
+
+  if (ref_grid_once(ref_grid))
+    RSS(ref_histogram_tec(ref_histogram, "fitness"), "tec");
 
   RSS(ref_histogram_free(ref_histogram), "free gram");
   return REF_SUCCESS;

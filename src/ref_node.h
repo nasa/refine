@@ -200,6 +200,9 @@ REF_STATUS ref_node_tri_dquality_dnode0(REF_NODE ref_node, REF_INT *nodes,
                                         REF_DBL *quality,
                                         REF_DBL *dquality_dnode0);
 
+REF_STATUS ref_node_tri_fitness(REF_NODE ref_node, REF_INT *nodes,
+                                REF_DBL *fitness);
+
 REF_STATUS ref_node_xyz_vol(REF_DBL *xyzs[4], REF_DBL *volume);
 REF_STATUS ref_node_tet_vol(REF_NODE ref_node, REF_INT *nodes, REF_DBL *volume);
 REF_STATUS ref_node_tet_dvol_dnode0(REF_NODE ref_node, REF_INT *nodes,
