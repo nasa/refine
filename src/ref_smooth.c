@@ -1683,7 +1683,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
-  REF_BOOL vol_val = REF_FALSE;
+  REF_BOOL vol_val = REF_TRUE;
 
   if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
