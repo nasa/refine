@@ -655,7 +655,7 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
-  REF_BOOL vol_val = REF_TRUE;
+  REF_BOOL vol_val = REF_FALSE;
 
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
