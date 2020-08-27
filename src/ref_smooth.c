@@ -655,8 +655,6 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
-  REF_BOOL vol_val = REF_FALSE;
-
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
@@ -719,9 +717,6 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
                 (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
                 (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
                 (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
-              if (vol_val)
-                RSS(ref_validation_cell_volume_at_node(ref_grid, node),
-                    "edge accept");
               return REF_SUCCESS;
             }
           }
@@ -736,9 +731,6 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
   RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
-
-  if (vol_val)
-    RSS(ref_validation_cell_volume_at_node(ref_grid, node), "edge reject");
 
   return REF_SUCCESS;
 }
@@ -1417,8 +1409,6 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
   REF_BOOL accept;
 
-  REF_BOOL vol_val = REF_TRUE;
-
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RAS(!geom_node, "geom node not allowed");
@@ -1499,14 +1489,6 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     q_orig = 1.0;
   } else {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
-    if (vol_val) {
-      RSS(ref_validation_cell_volume_at_node(ref_grid, node),
-          "edge geom start");
-      RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "set t");
-      RSS(ref_geom_constrain(ref_grid, node), "constrain");
-      RSB(ref_validation_cell_volume_at_node(ref_grid, node), "edge geom const",
-          { printf("edge id %d\n", id); });
-    }
   }
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
   interp_guess = REF_EMPTY;
@@ -1554,9 +1536,6 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
 
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
     if (accept) {
-      if (vol_val)
-        RSS(ref_validation_cell_volume_at_node(ref_grid, node),
-            "edge geom accept");
       return REF_SUCCESS;
     }
     backoff *= 0.5;
@@ -1574,8 +1553,6 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
   }
   if (verbose) printf("undo q %f\n", q);
-  if (vol_val)
-    RSS(ref_validation_cell_volume_at_node(ref_grid, node), "edge geom undo");
 
   return REF_SUCCESS;
 }
@@ -1706,7 +1683,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
-  REF_BOOL vol_val = REF_TRUE;
+  REF_BOOL vol_val = REF_FALSE;
 
   if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
