@@ -1109,6 +1109,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     char solb_filename[1024];
     REF_DBL inv_total;
     REF_INT im, node;
+    REF_INT fixed_point_ldim;
     solb_middle = argv[pos + 1];
     first_timestep = atoi(argv[pos + 2]);
     timestep_increment = atoi(argv[pos + 3]);
@@ -1127,10 +1128,10 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
                timestep);
       if (ref_mpi_once(ref_mpi))
         printf("read and hess recon for %s\n", solb_filename);
-      RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar,
+      RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
                           solb_filename),
           "unable to load scalar");
-      REIS(1, ldim, "expected one scalar");
+      REIS(1, fixed_point_ldim, "expected one scalar");
       RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
       ref_free(scalar);
       total_timesteps++;
