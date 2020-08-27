@@ -148,6 +148,10 @@ static void loop_help(const char *name) {
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
   printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
+  printf("   --fixed-point <middle-string> \\\n");
+  printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
+  printf("       where <input_project_name><middle-string>N.solb are scalar\n");
+  printf("       scalar fields and N is the timestep.\n");
 
   printf("\n");
 }
@@ -1093,17 +1097,81 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
 
-  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant, scalar),
-      "field metric");
-
   ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
-  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                    gradation, complexity),
-      "lp norm");
-  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
-  ref_free(scalar);
+
+  RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 4 < argc) {
+    REF_DBL *hess;
+    REF_INT first_timestep, last_timestep, timestep_increment;
+    REF_INT timestep, total_timesteps;
+    const char *solb_middle;
+    char solb_filename[1024];
+    REF_DBL inv_total;
+    REF_INT im, node;
+    solb_middle = argv[pos + 1];
+    first_timestep = atoi(argv[pos + 2]);
+    timestep_increment = atoi(argv[pos + 3]);
+    last_timestep = atoi(argv[pos + 4]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--fixed-point\n");
+      printf("    %s%s solb project\n", in_project, solb_middle);
+      printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
+             timestep_increment, last_timestep);
+    }
+    ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    total_timesteps = 0;
+    for (timestep = first_timestep; timestep <= last_timestep;
+         timestep += timestep_increment) {
+      snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+               timestep);
+      if (ref_mpi_once(ref_mpi))
+        printf("read and hess recon for %s\n", solb_filename);
+      RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &scalar,
+                          solb_filename),
+          "unable to load scalar");
+      REIS(1, ldim, "expected one scalar");
+      RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+      ref_free(scalar);
+      total_timesteps++;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (im = 0; im < 6; im++) {
+          metric[im + 6 * node] += hess[im + 6 * node];
+        }
+      }
+    }
+    free(hess);
+    ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+    RAS(0 < total_timesteps, "expected one or more timesteps");
+    inv_total = 1.0 / (REF_DBL)total_timesteps;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] *= inv_total;
+      }
+    }
+
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local lp norm scaling");
+    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
+  } else {
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                             scalar),
+        "field metric");
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    ref_free(scalar);
+  }
 
   if (buffer) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
