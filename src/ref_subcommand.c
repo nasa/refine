@@ -148,6 +148,10 @@ static void loop_help(const char *name) {
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
   printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
+  printf("   --fixed-point <middle-string> \\\n");
+  printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
+  printf("       where <input_project_name><middle-string>N.solb are\n");
+  printf("       scalar fields and N is the timestep index.\n");
 
   printf("\n");
 }
@@ -858,6 +862,73 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
+                                       REF_DBL *initial_field,
+                                       const char *interpolant,
+                                       REF_DBL *scalar) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_INT node;
+  REF_DBL gamma = 1.4;
+
+  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
+  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
+  if (strcmp(interpolant, "incomp") == 0) {
+    RAS(4 <= ldim,
+        "expected 4 or more variables per vertex for incompressible");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL u, v, w, u2;
+      u = initial_field[0 + ldim * node];
+      v = initial_field[1 + ldim * node];
+      w = initial_field[2 + ldim * node];
+      /* press = initial_field[3 + ldim * node]; */
+      u2 = u * u + v * v + w * w;
+      scalar[node] = sqrt(u2);
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
+  } else {
+    RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      REF_DBL rho, u, v, w, press, temp, u2, mach2;
+      rho = initial_field[0 + ldim * node];
+      u = initial_field[1 + ldim * node];
+      v = initial_field[2 + ldim * node];
+      w = initial_field[3 + ldim * node];
+      press = initial_field[4 + ldim * node];
+      RAB(ref_math_divisible(press, rho), "can not divide by rho", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
+               press);
+      });
+      temp = gamma * (press / rho);
+      u2 = u * u + v * v + w * w;
+      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      mach2 = u2 / temp;
+      RAB(mach2 >= 0, "negative mach2", {
+        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
+               u, v, w, press, temp);
+      });
+      if (strcmp(interpolant, "mach") == 0) {
+        scalar[node] = sqrt(mach2);
+      } else if (strcmp(interpolant, "htot") == 0) {
+        scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
+      } else if (strcmp(interpolant, "pressure") == 0) {
+        scalar[node] = press;
+      } else if (strcmp(interpolant, "density") == 0) {
+        scalar[node] = rho;
+      } else if (strcmp(interpolant, "temperature") == 0) {
+        scalar[node] = temp;
+      } else {
+        RSS(REF_INVALID, "unknown scalar interpolant");
+      }
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -868,8 +939,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_BOOL all_done0 = REF_FALSE;
   REF_BOOL all_done1 = REF_FALSE;
   REF_INT pass, passes = 30;
-  REF_DBL gamma = 1.4;
-  REF_INT ldim, node;
+  REF_INT ldim;
   REF_DBL *initial_field, *ref_field, *extruded_field = NULL, *scalar, *metric;
   REF_INT p = 2;
   REF_DBL gradation = -1.0, complexity;
@@ -1026,71 +1096,83 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
         "part scalar");
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
-  RSS(ref_validation_finite(ref_grid, ldim, initial_field), "init field");
-  if (ref_mpi_once(ref_mpi)) printf("compute %s\n", interpolant);
-  ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  if (strcmp(interpolant, "incomp") == 0) {
-    RAS(4 <= ldim,
-        "expected 4 or more variables per vertex for incompressible");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL u, v, w, u2;
-      u = initial_field[0 + ldim * node];
-      v = initial_field[1 + ldim * node];
-      w = initial_field[2 + ldim * node];
-      /* press = initial_field[3 + ldim * node]; */
-      u2 = u * u + v * v + w * w;
-      scalar[node] = sqrt(u2);
+
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+
+  RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 4 < argc) {
+    REF_DBL *hess;
+    REF_INT first_timestep, last_timestep, timestep_increment;
+    REF_INT timestep, total_timesteps;
+    const char *solb_middle;
+    char solb_filename[1024];
+    REF_DBL inv_total;
+    REF_INT im, node;
+    REF_INT fixed_point_ldim;
+    solb_middle = argv[pos + 1];
+    first_timestep = atoi(argv[pos + 2]);
+    timestep_increment = atoi(argv[pos + 3]);
+    last_timestep = atoi(argv[pos + 4]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--fixed-point\n");
+      printf("    %s%s solb project\n", in_project, solb_middle);
+      printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
+             timestep_increment, last_timestep);
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "compute incompressible scalar");
-  } else {
-    RAS(5 <= ldim, "expected 5 or more variables per vertex for compressible");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      REF_DBL rho, u, v, w, press, temp, u2, mach2;
-      rho = initial_field[0 + ldim * node];
-      u = initial_field[1 + ldim * node];
-      v = initial_field[2 + ldim * node];
-      w = initial_field[3 + ldim * node];
-      press = initial_field[4 + ldim * node];
-      RAB(ref_math_divisible(press, rho), "can not divide by rho", {
-        printf("rho = %e  u = %e  v = %e  w = %e  press = %e\n", rho, u, v, w,
-               press);
-      });
-      temp = gamma * (press / rho);
-      u2 = u * u + v * v + w * w;
-      RAB(ref_math_divisible(u2, temp), "can not divide by temp", {
-        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
-               u, v, w, press, temp);
-      });
-      mach2 = u2 / temp;
-      RAB(mach2 >= 0, "negative mach2", {
-        printf("rho = %e  u = %e  v = %e  w = %e  press = %e  temp = %e\n", rho,
-               u, v, w, press, temp);
-      });
-      if (strcmp(interpolant, "mach") == 0) {
-        scalar[node] = sqrt(mach2);
-      } else if (strcmp(interpolant, "htot") == 0) {
-        scalar[node] = temp * (1.0 / (gamma - 1.0)) + 0.5 * u2;
-      } else if (strcmp(interpolant, "pressure") == 0) {
-        scalar[node] = press;
-      } else if (strcmp(interpolant, "density") == 0) {
-        scalar[node] = rho;
-      } else if (strcmp(interpolant, "temperature") == 0) {
-        scalar[node] = temp;
-      } else {
-        RSS(REF_INVALID, "unknown scalar interpolant");
+    ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    total_timesteps = 0;
+    for (timestep = first_timestep; timestep <= last_timestep;
+         timestep += timestep_increment) {
+      snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+               timestep);
+      if (ref_mpi_once(ref_mpi))
+        printf("read and hess recon for %s\n", solb_filename);
+      RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
+                          solb_filename),
+          "unable to load scalar");
+      REIS(1, fixed_point_ldim, "expected one scalar");
+      RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+      ref_free(scalar);
+      total_timesteps++;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        for (im = 0; im < 6; im++) {
+          metric[im + 6 * node] += hess[im + 6 * node];
+        }
       }
     }
-    ref_mpi_stopwatch_stop(ref_mpi, "compute compressible scalar");
+    free(hess);
+    ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+    RAS(0 < total_timesteps, "expected one or more timesteps");
+    inv_total = 1.0 / (REF_DBL)total_timesteps;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] *= inv_total;
+      }
+    }
+
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local lp norm scaling");
+    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+
+  } else {
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                             scalar),
+        "field metric");
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    ref_free(scalar);
   }
-
-  if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
-  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-  RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                    gradation, complexity),
-      "lp norm");
-  ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
-
-  ref_free(scalar);
 
   if (buffer) {
     if (ref_mpi_once(ref_mpi)) printf("buffer at complexity %e\n", complexity);
