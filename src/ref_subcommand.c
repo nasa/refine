@@ -150,8 +150,8 @@ static void loop_help(const char *name) {
   printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
   printf("   --fixed-point <middle-string> \\\n");
   printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
-  printf("       where <input_project_name><middle-string>N.solb are scalar\n");
-  printf("       scalar fields and N is the timestep.\n");
+  printf("       where <input_project_name><middle-string>N.solb are\n");
+  printf("       scalar fields and N is the timestep index.\n");
 
   printf("\n");
 }
