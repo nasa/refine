@@ -655,6 +655,8 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   REF_INT interp_guess;
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
 
+  REF_BOOL vol_val = REF_TRUE;
+
   /* boundaries only */
   if (ref_cell_node_empty(ref_grid_edg(ref_grid), node)) return REF_SUCCESS;
   /* protect mixed-element quads */
@@ -717,6 +719,9 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
                 (tet_quality > ref_grid_adapt(ref_grid, smooth_min_quality)) &&
                 (min_ratio >= ref_grid_adapt(ref_grid, post_min_ratio)) &&
                 (max_ratio <= ref_grid_adapt(ref_grid, post_max_ratio))) {
+              if (vol_val)
+                RSS(ref_validation_cell_volume_at_node(ref_grid, node),
+                    "edge accept");
               return REF_SUCCESS;
             }
           }
@@ -731,6 +736,9 @@ static REF_STATUS ref_smooth_no_geom_edge_improve(REF_GRID ref_grid,
   for (ixyz = 0; ixyz < 3; ixyz++)
     ref_node_xyz(ref_node, ixyz, node) = original[ixyz];
   RXS(ref_metric_interpolate_node(ref_grid, node), REF_NOT_FOUND, "interp");
+
+  if (vol_val)
+    RSS(ref_validation_cell_volume_at_node(ref_grid, node), "edge reject");
 
   return REF_SUCCESS;
 }
