@@ -1417,6 +1417,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
   REF_INTERP ref_interp = ref_grid_interp(ref_grid);
   REF_BOOL accept;
 
+  REF_BOOL vol_val = REF_TRUE;
+
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_NODE, &geom_node), "node check");
   RSS(ref_geom_is_a(ref_geom, node, REF_GEOM_EDGE, &geom_edge), "edge check");
   RAS(!geom_node, "geom node not allowed");
@@ -1497,6 +1499,9 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     q_orig = 1.0;
   } else {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
+    if (vol_val)
+      RSS(ref_validation_cell_volume_at_node(ref_grid, node),
+          "edge geom start");
   }
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
   interp_guess = REF_EMPTY;
@@ -1545,6 +1550,10 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     if (verbose) printf("t %f r %f %f q %f \n", t, r0, r1, q);
     if (accept) {
       return REF_SUCCESS;
+      RSS(ref_smooth_tet_quality_around(ref_grid, node, &q_orig), "q_orig");
+      if (vol_val)
+        RSS(ref_validation_cell_volume_at_node(ref_grid, node),
+            "edge geom accept");
     }
     backoff *= 0.5;
     if (REF_EMPTY != interp_guess && REF_SUCCESS != interp_status)
@@ -1561,6 +1570,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
     RSS(ref_smooth_tet_quality_around(ref_grid, node, &q), "q");
   }
   if (verbose) printf("undo q %f\n", q);
+  if (vol_val)
+    RSS(ref_validation_cell_volume_at_node(ref_grid, node), "edge geom undo");
 
   return REF_SUCCESS;
 }
