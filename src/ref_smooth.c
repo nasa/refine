@@ -1504,8 +1504,8 @@ REF_STATUS ref_smooth_geom_edge(REF_GRID ref_grid, REF_INT node) {
           "edge geom start");
       RSS(ref_geom_add(ref_geom, node, REF_GEOM_EDGE, id, &t_orig), "set t");
       RSS(ref_geom_constrain(ref_grid, node), "constrain");
-      RSS(ref_validation_cell_volume_at_node(ref_grid, node),
-          "edge geom const");
+      RSB(ref_validation_cell_volume_at_node(ref_grid, node), "edge geom const",
+          { printf("edge id %d\n", id); });
     }
   }
   RSS(ref_smooth_tri_normdev_around(ref_grid, node, &normdev_orig), "nd_orig");
