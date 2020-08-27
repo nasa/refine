@@ -32,6 +32,7 @@
 #include "ref_matrix.h"
 #include "ref_metric.h"
 #include "ref_mpi.h"
+#include "ref_validation.h"
 
 static REF_STATUS ref_smooth_add_pliant_force(REF_NODE ref_node, REF_INT center,
                                               REF_INT neighbor,
@@ -1682,12 +1683,15 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_INT geom, node;
   REF_BOOL allowed, geom_node, geom_edge, geom_face, interior;
+  REF_BOOL vol_val = REF_FALSE;
 
   if (ref_grid_surf(ref_grid) || ref_grid_twod(ref_grid)) {
     ref_cell = ref_grid_tri(ref_grid);
   } else {
     ref_cell = ref_grid_tet(ref_grid);
   }
+
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol start");
 
   /* smooth edges first if we have geom */
   each_ref_geom_edge(ref_geom, geom) {
@@ -1710,6 +1714,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
   }
 
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol geom edge");
+
   /* smooth edges first without geom, for 2D */
   each_ref_node_valid_node(ref_node, node) {
     /* boundaries only */
@@ -1728,6 +1734,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
     RSS(ref_smooth_no_geom_edge_improve(ref_grid, node), "improve");
   }
+
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol nogeom edge");
 
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
@@ -1753,6 +1761,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     ref_node_age(ref_node, node) = 0;
   }
 
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol face geom");
+
   /* smooth faces without geom */
   each_ref_node_valid_node(ref_node, node) {
     /* avoid edges */
@@ -1773,6 +1783,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
     }
     RSS(ref_smooth_no_geom_tri_improve(ref_grid, node), "no geom smooth");
   }
+
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol face nogeom");
 
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
@@ -1796,6 +1808,8 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
       ref_node_age(ref_node, node) = 0;
     }
   }
+
+  if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol int");
 
   if (ref_grid_adapt(ref_grid, instrument))
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov int");
@@ -1827,6 +1841,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
         }
       }
     }
+    if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol about");
   }
   return REF_SUCCESS;
 }

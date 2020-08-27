@@ -417,6 +417,33 @@ REF_STATUS ref_validation_cell_volume(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_validation_cell_volume_at_node(REF_GRID ref_grid, REF_INT node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_DBL volume;
+  REF_INT item, cell, nodes[REF_CELL_MAX_SIZE_PER];
+
+  ref_cell = ref_grid_tet(ref_grid);
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    if (ref_grid_twod(ref_grid)) {
+      RSS(ref_node_tri_area(ref_node, nodes, &volume), "area");
+    } else {
+      RSS(ref_node_tet_vol(ref_node, nodes, &volume), "vol");
+    }
+    RAB(volume > 0.0, "negative volume tet", {
+      REF_INT cell_node;
+      printf("cell %d volume %e\n", cell, volume);
+      each_ref_cell_cell_node(ref_cell, cell_node)
+          ref_node_location(ref_node, nodes[cell_node]);
+    });
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_validation_all(REF_GRID ref_grid) {
   RSS(ref_validation_unused_node(ref_grid), "unused node");
   RSS(ref_validation_boundary_face(ref_grid), "boundary face");
