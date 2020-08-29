@@ -38,6 +38,19 @@ mkdir -p egads
     ) \
     || exit
 
+mkdir -p parmetis
+( cd parmetis && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CFLAGS="-DHAVE_MPI ${clangflags}" \
+    CC=mpicc \
+    ) \
+    || exit
+
 mkdir -p all
 ( cd all && \
       cmake .. \
