@@ -20,21 +20,34 @@ opencascade_path="/Users/mpark/local/pkgs/OpenCASCADE"
 meshlink_path="/Users/mpark/local/pkgs/MeshLink"
 
 # production spack packages
-parmetis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/parmetis-4.0.3-jwaxhhbilbtvsmt2tskek4k72nel7gtc"
-metis_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/metis-5.1.0-czqd5zteq5zfccffypwbjrlb5joqeoyw"
-mpi_path="/Users/mpark/spack/opt/spack/darwin-mojave-x86_64/gcc-9.1.0/mpich-3.2.1-gtfvc44cykdfqxntezn7ud6njpthlgxe"
+parmetis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
+metis_path="/Users/mpark/local/pkgs/parmetis-4.0.3"
+mpi_path="/Users/mpark/local/pkgs/openmpi-4.0.5/build"
 
 mkdir -p egads
 ( cd egads && \
     ../configure \
     --prefix=`pwd` \
-    --with-mpi=${metis_path} \
+    --with-mpi=${mpi_path} \
     --with-metis=${metis_path} \
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     --with-MeshLink=${meshlink_path} \
     CFLAGS="${clangflags}" \
+    ) \
+    || exit
+
+mkdir -p parmetis
+( cd parmetis && \
+    ../configure \
+    --prefix=`pwd` \
+    --with-metis=${metis_path} \
+    --with-parmetis=${parmetis_path} \
+    --with-EGADS=${egads_path} \
+    --enable-lite \
+    CFLAGS="-DHAVE_MPI ${clangflags}" \
+    CC=mpicc \
     ) \
     || exit
 
