@@ -195,6 +195,10 @@ REF_STATUS ref_cell_node_list_around(REF_CELL ref_cell, REF_INT node,
 REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
                                    REF_INT max_faceid, REF_INT *nfaceid,
                                    REF_INT *faceids);
+REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
+                                        REF_CELL ref_cell_b, REF_INT node,
+                                        REF_INT max_faceid, REF_INT *nfaceid,
+                                        REF_INT *faceids);
 
 REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
                                   REF_INT *face0, REF_INT *face1);
