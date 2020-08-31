@@ -665,14 +665,18 @@ REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
 
 static REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
   REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
+  REF_CELL ref_cell;
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT i, limit;
   REF_DBL bary[4];
   REF_AGENTS ref_agents = ref_interp->ref_agents;
 
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    ref_cell = ref_interp_from_tet(ref_interp);
+  }
 
   limit = 215; /* 10e6^(1/3), required 108 for twod testcase  */
 
@@ -857,15 +861,18 @@ static REF_STATUS ref_interp_push_onto_queue(REF_INTERP ref_interp,
 static REF_STATUS ref_interp_process_agents(REF_INTERP ref_interp) {
   REF_NODE from_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_NODE to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
-  REF_CELL from_cell = ref_grid_tet(ref_interp_from_grid(ref_interp));
+  REF_CELL from_cell;
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT i, id, node;
   REF_INT n_agents;
   REF_INT sweep = 0;
 
-  if (ref_grid_twod(ref_interp_from_grid(ref_interp)))
-    from_cell = ref_grid_tri(ref_interp_from_grid(ref_interp));
+  if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   n_agents = ref_agents_n(ref_agents);
   RSS(ref_mpi_allsum(ref_mpi, &n_agents, 1, REF_INT_TYPE), "sum");
