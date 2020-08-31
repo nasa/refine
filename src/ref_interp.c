@@ -428,12 +428,12 @@ static REF_STATUS ref_interp_enclosing_tri_in_list(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
+static REF_STATUS ref_interp_enclosing_tet_in_list(REF_INTERP ref_interp,
                                                    REF_LIST ref_list,
                                                    REF_DBL *xyz, REF_INT *cell,
                                                    REF_DBL *bary) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_interp_from_tet(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
@@ -1228,7 +1228,7 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
                                              &(best_cell[node]), bary),
             "best in list");
       } else {
-        RSS(ref_interp_enclosing_tet_in_list(from_grid, ref_list,
+        RSS(ref_interp_enclosing_tet_in_list(ref_interp, ref_list,
                                              &(global_xyz[3 * node]),
                                              &(best_cell[node]), bary),
             "best in list");
@@ -1614,7 +1614,7 @@ static REF_STATUS ref_interp_seed_tree(REF_INTERP ref_interp) {
                             ref_interp_search_fuzz(ref_interp)),
         "tch");
     if (ref_list_n(ref_list) > 0) {
-      RSS(ref_interp_enclosing_tet_in_list(from_grid, ref_list,
+      RSS(ref_interp_enclosing_tet_in_list(ref_interp, ref_list,
                                            &(global_xyz[3 * node]),
                                            &(best_cell[node]), bary),
           "best in list");
@@ -1936,9 +1936,8 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
             "best tri in list");
       } else {
         RSS(ref_interp_enclosing_tet_in_list(
-                ref_interp_from_grid(ref_interp), ref_list,
-                ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
-                &(ref_interp->bary[4 * node])),
+                ref_interp, ref_list, ref_node_xyz_ptr(ref_node, node),
+                &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
             "best tet in list");
       }
     }
@@ -2039,8 +2038,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
             "best in list");
       } else {
         RSS(ref_interp_enclosing_tet_in_list(
-                ref_interp_from_grid(ref_interp), ref_list,
-                ref_node_xyz_ptr(ref_node, new_node),
+                ref_interp, ref_list, ref_node_xyz_ptr(ref_node, new_node),
                 &(ref_interp->cell[new_node]),
                 &(ref_interp->bary[4 * new_node])),
             "best in list");
