@@ -38,6 +38,9 @@ BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_MPI ref_mpi;
   REF_GRID from_grid;
+  REF_CELL from_tet;
+  REF_CELL from_tri;
+  REF_BOOL from_cell_freeable;
   REF_GRID to_grid;
   REF_BOOL instrument;
   REF_BOOL continuously;
