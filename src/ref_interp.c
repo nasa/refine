@@ -633,8 +633,8 @@ REF_STATUS ref_interp_tattle(REF_INTERP ref_interp, REF_INT node) {
          ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 1, node),
          ref_node_xyz(ref_grid_node(ref_interp_to_grid(ref_interp)), 2, node));
   if (ref_mpi_rank(ref_mpi) == ref_interp->part[node]) {
-    RSS(ref_cell_nodes(ref_interp_from_tet(ref_interp),
-                       ref_interp->cell[node], nodes),
+    RSS(ref_cell_nodes(ref_interp_from_tet(ref_interp), ref_interp->cell[node],
+                       nodes),
         "node needs to be localized");
 
     for (i = 0; i < 3; i++) xyz[i] = 0.0;
