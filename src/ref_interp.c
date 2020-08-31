@@ -153,8 +153,8 @@ static REF_STATUS ref_interp_bounding_sphere3(REF_NODE ref_node, REF_INT *nodes,
 static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_tet = ref_grid_tet(from_grid);
-  REF_CELL from_tri = ref_grid_tri(from_grid);
+  REF_CELL from_tet = ref_interp_from_tet(ref_interp);
+  REF_CELL from_tri = ref_interp_from_tri(ref_interp);
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL center[3], radius;
   REF_SEARCH ref_search;
@@ -388,12 +388,12 @@ REF_STATUS ref_interp_remove(REF_INTERP ref_interp, REF_INT node) {
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_enclosing_tri_in_list(REF_GRID ref_grid,
+static REF_STATUS ref_interp_enclosing_tri_in_list(REF_INTERP ref_interp,
                                                    REF_LIST ref_list,
                                                    REF_DBL *xyz, REF_INT *cell,
                                                    REF_DBL *bary) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_interp_from_tri(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
@@ -467,12 +467,12 @@ static REF_STATUS ref_interp_enclosing_tet_in_list(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_best_tri_in_list(REF_GRID ref_grid,
+static REF_STATUS ref_interp_best_tri_in_list(REF_INTERP ref_interp,
                                               REF_LIST ref_list, REF_DBL *xyz,
                                               REF_INT *cell, REF_DBL *bary) {
-  REF_CELL ref_tri = ref_grid_tri(ref_grid);
-  REF_CELL ref_tet = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_tri = ref_interp_from_tri(ref_interp);
+  REF_CELL ref_tet = ref_interp_from_tet(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_INT tri_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, tri_candidate, best_candidate, tet0, tet1, i, j;
@@ -1223,7 +1223,7 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
         "tch");
     if (ref_list_n(ref_list) > 0) {
       if (ref_grid_twod(from_grid)) {
-        RSS(ref_interp_enclosing_tri_in_list(from_grid, ref_list,
+        RSS(ref_interp_enclosing_tri_in_list(ref_interp, ref_list,
                                              &(global_xyz[3 * node]),
                                              &(best_cell[node]), bary),
             "best in list");
@@ -1418,7 +1418,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
                                       &(global_xyz[3 * node])),
         "near candidates");
     if (ref_list_n(ref_list) > 0) {
-      RSS(ref_interp_best_tri_in_list(from_grid, ref_list,
+      RSS(ref_interp_best_tri_in_list(ref_interp, ref_list,
                                       &(global_xyz[3 * node]),
                                       &(best_cell[node]), bary),
           "best in list");
@@ -1931,9 +1931,8 @@ REF_STATUS ref_interp_locate_node(REF_INTERP ref_interp, REF_INT node) {
     if (ref_list_n(ref_list) > 0) {
       if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
         RSS(ref_interp_enclosing_tri_in_list(
-                ref_interp_from_grid(ref_interp), ref_list,
-                ref_node_xyz_ptr(ref_node, node), &(ref_interp->cell[node]),
-                &(ref_interp->bary[4 * node])),
+                ref_interp, ref_list, ref_node_xyz_ptr(ref_node, node),
+                &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
             "best tri in list");
       } else {
         RSS(ref_interp_enclosing_tet_in_list(
@@ -2034,8 +2033,7 @@ REF_STATUS ref_interp_locate_between(REF_INTERP ref_interp, REF_INT node0,
     if (ref_list_n(ref_list) > 0) {
       if (ref_grid_twod(ref_interp_from_grid(ref_interp))) {
         RSS(ref_interp_enclosing_tri_in_list(
-                ref_interp_from_grid(ref_interp), ref_list,
-                ref_node_xyz_ptr(ref_node, new_node),
+                ref_interp, ref_list, ref_node_xyz_ptr(ref_node, new_node),
                 &(ref_interp->cell[new_node]),
                 &(ref_interp->bary[4 * new_node])),
             "best in list");
