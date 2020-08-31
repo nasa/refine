@@ -46,7 +46,7 @@ mkdir -p parmetis
     --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --enable-lite \
-    CFLAGS="-DHAVE_MPI ${clangflags}" \
+    CFLAGS="-DHAVE_MPI ${gcc9flags}" \
     CC=mpicc \
     ) \
     || exit
