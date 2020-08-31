@@ -35,15 +35,16 @@
 
 #define ref_interp_from_tet(ref_interp) ((ref_interp)->from_tet)
 #define ref_interp_from_tri(ref_interp) ((ref_interp)->from_tri)
-#define ref_interp_from_cell_freeable(ref_interp) ((ref_interp)->from_cell_freeable)
+#define ref_interp_from_cell_freeable(ref_interp) \
+  ((ref_interp)->from_cell_freeable)
 
-static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
+static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_INTERP ref_interp,
                                                         REF_INT node,
                                                         REF_DBL *xyz,
                                                         REF_INT *cell,
                                                         REF_DBL *bary) {
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_interp_from_tet(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
@@ -75,13 +76,13 @@ static REF_STATUS ref_interp_exhaustive_tet_around_node(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_exhaustive_tri_around_node(REF_GRID ref_grid,
+static REF_STATUS ref_interp_exhaustive_tri_around_node(REF_INTERP ref_interp,
                                                         REF_INT node,
                                                         REF_DBL *xyz,
                                                         REF_INT *cell,
                                                         REF_DBL *bary) {
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_interp_from_tri(ref_interp);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT item, candidate, best_candidate;
   REF_DBL current_bary[4];
@@ -192,7 +193,7 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
   ref_interp_from_tet(ref_interp) = ref_grid_tet(from_grid);
   ref_interp_from_tri(ref_interp) = ref_grid_tri(from_grid);
   ref_interp_from_cell_freeable(ref_interp) = REF_FALSE;
-  
+
   ref_interp_to_grid(ref_interp) = to_grid;
 
   ref_interp_mpi(ref_interp) = ref_grid_mpi(ref_interp_from_grid(ref_interp));
@@ -280,12 +281,12 @@ REF_STATUS ref_interp_create_identity(REF_INTERP *ref_interp_ptr,
       if (ref_grid_twod(to_grid)) {
         if (ref_cell_node_empty(ref_grid_tri(to_grid), node)) continue;
         RSS(ref_interp_exhaustive_tri_around_node(
-                from_grid, node, ref_node_xyz_ptr(to_node, node),
+                ref_interp, node, ref_node_xyz_ptr(to_node, node),
                 &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
             "tri around node");
       } else {
         RSS(ref_interp_exhaustive_tet_around_node(
-                from_grid, node, ref_node_xyz_ptr(to_node, node),
+                ref_interp, node, ref_node_xyz_ptr(to_node, node),
                 &(ref_interp->cell[node]), &(ref_interp->bary[4 * node])),
             "tet around node");
       }
@@ -315,7 +316,7 @@ REF_STATUS ref_interp_free(REF_INTERP ref_interp) {
   ref_free(ref_interp->part);
   ref_free(ref_interp->cell);
   ref_free(ref_interp->agent_hired);
-  if(ref_interp_from_cell_freeable(ref_interp)){
+  if (ref_interp_from_cell_freeable(ref_interp)) {
     ref_cell_free(ref_interp_from_tri(ref_interp));
     ref_cell_free(ref_interp_from_tet(ref_interp));
   }
@@ -1075,14 +1076,14 @@ static REF_STATUS ref_interp_geom_nodes(REF_INTERP ref_interp) {
       send_node[nsend] = global_node[to_item];
       send_proc[nsend] = source[to_item];
       if (ref_grid_twod(from_grid)) {
-        RSS(ref_interp_exhaustive_tri_around_node(from_grid, best_node[to_item],
-                                                  xyz, &(send_cell[nsend]),
-                                                  &(send_bary[4 * nsend])),
+        RSS(ref_interp_exhaustive_tri_around_node(
+                ref_interp, best_node[to_item], xyz, &(send_cell[nsend]),
+                &(send_bary[4 * nsend])),
             "tri around node");
       } else {
-        RSS(ref_interp_exhaustive_tet_around_node(from_grid, best_node[to_item],
-                                                  xyz, &(send_cell[nsend]),
-                                                  &(send_bary[4 * nsend])),
+        RSS(ref_interp_exhaustive_tet_around_node(
+                ref_interp, best_node[to_item], xyz, &(send_cell[nsend]),
+                &(send_bary[4 * nsend])),
             "tet around node");
       }
       nsend++;
