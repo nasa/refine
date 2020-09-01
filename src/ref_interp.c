@@ -1545,7 +1545,7 @@ static REF_STATUS ref_interp_seed_tree(REF_INTERP ref_interp) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_CELL from_tet = ref_interp_from_tet(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_SEARCH ref_search = ref_interp_search(ref_interp);
   REF_DBL bary[4];
@@ -2067,7 +2067,7 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_MPI ref_mpi = ref_grid_mpi(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_CELL from_cell;
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT receptor, n_recept, donation, n_donor;
@@ -2075,7 +2075,11 @@ REF_STATUS ref_interp_scalar(REF_INTERP ref_interp, REF_INT leading_dim,
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
@@ -2198,10 +2202,9 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
                                 REF_INT leading_dim, REF_DBL *from_scalar,
                                 REF_DBL *to_scalar) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
-  REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_MPI ref_mpi = ref_grid_mpi(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_CELL from_cell = ref_interp_from_tet(ref_interp);
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT receptor, n_recept, donation, n_donor;
@@ -2369,7 +2372,7 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_CELL from_cell;
   REF_NODE from_node = ref_grid_node(from_grid);
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT node;
@@ -2380,7 +2383,11 @@ REF_STATUS ref_interp_max_error(REF_INTERP ref_interp, REF_DBL *max_error) {
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   *max_error = 0.0;
 
@@ -2997,7 +3004,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_CELL from_cell;
   REF_INT node, i, cell_node;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT *from_part;
@@ -3013,7 +3020,11 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_INT *lookedup_donation, *lookedup_cell;
   REF_DBL max_error;
 
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   RSS(ref_interp_max_error(ref_interp, &max_error), "max error");
   if (ref_mpi_once(ref_grid_mpi(to_grid))) {
