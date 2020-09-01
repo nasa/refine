@@ -1167,7 +1167,7 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
+  REF_CELL from_cell;
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_SEARCH ref_search = ref_interp_search(ref_interp);
   REF_DBL bary[4];
@@ -1186,7 +1186,11 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   REF_DBL *send_bary, *recv_bary;
   REF_INT i, item;
 
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   *increase_fuzz = REF_FALSE;
 
