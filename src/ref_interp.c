@@ -1364,8 +1364,8 @@ static REF_STATUS ref_interp_tree(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
-                                                 REF_SEARCH ref_search) {
+static REF_STATUS ref_interp_nearest_tet_via_tri_in_tree(
+    REF_INTERP ref_interp, REF_SEARCH ref_search) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
@@ -1871,7 +1871,8 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
                             ref_interp_search_donor_scale(ref_interp) * radius),
           "ins");
     }
-    RSS(ref_interp_nearest_tri_in_tree(ref_interp, ref_search), "near tri");
+    RSS(ref_interp_nearest_tet_via_tri_in_tree(ref_interp, ref_search),
+        "near tri");
     RSS(ref_search_free(ref_search), "free search");
   }
 
