@@ -521,10 +521,9 @@ static REF_STATUS ref_interp_best_tri_in_list(REF_INTERP ref_interp,
 static REF_STATUS ref_update_agent_tet_seed(REF_INTERP ref_interp, REF_INT id,
                                             REF_INT node0, REF_INT node1,
                                             REF_INT node2) {
-  REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL tets = ref_grid_tet(ref_grid);
-  REF_CELL tris = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
+  REF_CELL tets = ref_interp_from_tet(ref_interp);
+  REF_CELL tris = ref_interp_from_tri(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT face_nodes[4], cell0, cell1;
   REF_INT tri, node;
@@ -568,9 +567,8 @@ static REF_STATUS ref_update_agent_tet_seed(REF_INTERP ref_interp, REF_INT id,
 
 static REF_STATUS ref_update_agent_tri_seed(REF_INTERP ref_interp, REF_INT id,
                                             REF_INT node0, REF_INT node1) {
-  REF_GRID ref_grid = ref_interp_from_grid(ref_interp);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL tris = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_interp_from_grid(ref_interp));
+  REF_CELL tris = ref_interp_from_tri(ref_interp);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT ncell, cells[2];
   REF_INT node;
