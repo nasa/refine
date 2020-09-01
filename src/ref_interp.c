@@ -1370,7 +1370,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
   REF_GRID to_grid = ref_interp_to_grid(ref_interp);
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
-  REF_CELL from_tet = ref_grid_tet(from_grid);
+  REF_CELL from_tet = ref_interp_from_tet(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_DBL bary[4];
   REF_LIST ref_list;
@@ -1423,7 +1423,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
   for (node = 0; node < total_node; node++) {
     best_node[node] = global_node[node];
     best_cell[node] = REF_EMPTY;
-    best_bary[node] = 1.0e20; /* negative for min, until use max*/
+    best_bary[node] = 1.0e20; /* negative for min, until use allmaxwho */
     RSS(ref_search_nearest_candidates(ref_search, ref_list,
                                       &(global_xyz[3 * node])),
         "near candidates");
@@ -1433,7 +1433,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
                                       &(best_cell[node]), bary),
           "best in list");
       if (REF_EMPTY != best_cell[node]) {
-        /* negative for min, until use max*/
+        /* negative for min, until use allmaxwho */
         best_bary[node] = -MIN(MIN(bary[0], bary[1]), MIN(bary[2], bary[3]));
       }
     } else {
@@ -1463,7 +1463,7 @@ static REF_STATUS ref_interp_nearest_tri_in_tree(REF_INTERP ref_interp,
       send_cell[nsend] = best_cell[node];
       if (REF_EMPTY != send_cell[nsend]) {
         RSB(ref_cell_nodes(from_tet, best_cell[node], nodes),
-            "cell should be set and valid", {
+            "tet should be set and valid via tri search", {
               printf("global %d best cell %d best bary %e\n", best_node[node],
                      best_cell[node], best_bary[node]);
             });
@@ -1839,7 +1839,7 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
 
-  REF_CELL from_tri = ref_grid_tri(from_grid);
+  REF_CELL from_tri = ref_interp_from_tri(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
 
   REF_BOOL increase_fuzz;
