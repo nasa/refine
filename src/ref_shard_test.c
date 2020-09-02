@@ -391,7 +391,7 @@ int main(int argc, char *argv[]) {
 
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       REIS(ref_cell_n(ref_grid_tri(ref_grid)) +
-               2*ref_cell_n(ref_grid_qua(ref_grid)),
+               2 * ref_cell_n(ref_grid_qua(ref_grid)),
            ref_cell_n(ref_cell), "same ntri");
     }
 
