@@ -814,20 +814,17 @@ static REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
 static REF_STATUS ref_interp_push_onto_queue(REF_INTERP ref_interp,
                                              REF_INT node) {
   REF_GRID ref_grid = ref_interp_to_grid(ref_interp);
-  REF_CELL ref_cell = ref_grid_tet(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_AGENTS ref_agents = ref_interp->ref_agents;
   REF_INT neighbor, nneighbor, neighbors[MAX_NODE_LIST];
   REF_INT id, other;
-
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
 
   RAS(ref_node_valid(ref_node, node), "invalid node");
   RAS(ref_node_owned(ref_node, node), "ghost node");
 
   RUS(REF_EMPTY, ref_interp->cell[node], "no cell for guess");
 
-  RXS(ref_cell_node_list_around(ref_cell, node, MAX_NODE_LIST, &nneighbor,
+  RXS(ref_grid_node_list_around(ref_grid, node, MAX_NODE_LIST, &nneighbor,
                                 neighbors),
       REF_INCREASE_LIMIT, "neighbors");
   for (neighbor = 0; neighbor < nneighbor; neighbor++) {
