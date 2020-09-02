@@ -417,6 +417,69 @@ REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   return REF_SUCCESS;
 }
 
+/*
+ 3 - 1
+ |   | \
+ 4 - 0 - 2
+ */
+
+REF_STATUS ref_fixture_tri_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
+  REF_GRID ref_grid;
+  REF_NODE ref_node;
+  REF_INT global[REF_CELL_MAX_SIZE_PER];
+  REF_INT local[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell;
+  REF_INT nnodesg = 5;
+
+  RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
+  ref_grid = *ref_grid_ptr;
+  ref_node = ref_grid_node(ref_grid);
+
+  ref_grid_twod(ref_grid) = REF_TRUE;
+
+  global[0] = 0;
+  global[1] = 1;
+  global[2] = 2;
+  global[3] = 101;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, 0.0, 1.0, 0.0);
+    add_that_node(2, 1.0, 0.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_tri(ref_grid), local, &cell), "add tri");
+  }
+
+  global[0] = 0;
+  global[1] = 4;
+  global[2] = 3;
+  global[3] = 1;
+  global[4] = 101;
+  if (ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[0]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[1]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[2]) ||
+      ref_mpi_rank(ref_mpi) ==
+          ref_part_implicit(nnodesg, ref_mpi_n(ref_mpi), global[3])) {
+    add_that_node(0, 0.0, 0.0, 0.0);
+    add_that_node(1, -1.0, 0.0, 0.0);
+    add_that_node(2, -1.0, 1.0, 0.0);
+    add_that_node(3, 0.0, 1.0, 0.0);
+
+    RSS(ref_cell_add(ref_grid_qua(ref_grid), local, &cell), "add tri");
+  }
+
+  RSS(ref_node_initialize_n_global(ref_node, nnodesg), "init glob");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_fixture_twod_cubic_edge(REF_GRID *ref_grid_ptr,
                                        REF_MPI ref_mpi) {
   REF_GRID ref_grid;

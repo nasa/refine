@@ -33,6 +33,7 @@ REF_STATUS ref_fixture_pyr_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_tri_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+REF_STATUS ref_fixture_tri_quad_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_twod_cubic_edge(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
