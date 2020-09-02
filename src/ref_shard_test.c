@@ -380,6 +380,25 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* shard tri+qua to tri */
+
+    REF_GRID ref_grid;
+    REF_CELL ref_cell;
+
+    RSS(ref_fixture_tri_qua_grid(&ref_grid, ref_mpi), "set up");
+
+    RSS(ref_shard_extract_tri(ref_grid, &ref_cell), "shard to tri");
+
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      REIS(ref_cell_n(ref_grid_tri(ref_grid)) +
+               2*ref_cell_n(ref_grid_qua(ref_grid)),
+           ref_cell_n(ref_cell), "same ntri");
+    }
+
+    RSS(ref_cell_free(ref_cell), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 
