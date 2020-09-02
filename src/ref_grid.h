@@ -145,6 +145,9 @@ REF_STATUS ref_grid_compact_cell_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
 REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
                                           REF_INT cell_id, REF_GLOB *nnode,
                                           REF_LONG *ncell, REF_GLOB **l2c);
+REF_STATUS ref_grid_compact_surf_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
+                                          REF_GLOB *nnode, REF_LONG *ncell,
+                                          REF_GLOB **l2c);
 
 REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid);
 

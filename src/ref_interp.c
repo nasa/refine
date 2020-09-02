@@ -2213,8 +2213,7 @@ REF_STATUS ref_interp_face_only(REF_INTERP ref_interp, REF_INT faceid,
   REF_BOOL increase_fuzz;
   REF_INT tries;
 
-  RSS(ref_grid_compact_cell_id_nodes(to_grid, ref_grid_tri(to_grid), faceid,
-                                     &nnode, &ncell, &l2c),
+  RSS(ref_grid_compact_surf_id_nodes(to_grid, faceid, &nnode, &ncell, &l2c),
       "l2c");
 
   each_ref_node_valid_node(to_node, node) {

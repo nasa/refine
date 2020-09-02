@@ -534,6 +534,70 @@ REF_STATUS ref_grid_compact_cell_id_nodes(REF_GRID ref_grid, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_grid_compact_surf_id_nodes(REF_GRID ref_grid, REF_INT cell_id,
+                                          REF_GLOB *nnode_global,
+                                          REF_LONG *ncell_global,
+                                          REF_GLOB **l2c) {
+  REF_NODE ref_node;
+  REF_MPI ref_mpi;
+  REF_INT cell, node, cell_node, part;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT nnode, ncell;
+  REF_INT proc, *counts;
+  REF_INT offset, group;
+  REF_CELL ref_cell;
+
+  ref_node = ref_grid_node(ref_grid);
+  ref_mpi = ref_node_mpi(ref_node);
+
+  ref_malloc_init(*l2c, ref_node_max(ref_node), REF_GLOB, REF_EMPTY);
+
+  (*nnode_global) = 0;
+  (*ncell_global) = 0;
+  nnode = 0;
+  ncell = 0;
+
+  each_ref_grid_2d_ref_cell(ref_grid, group,
+                            ref_cell){each_ref_cell_valid_cell_with_nodes(
+      ref_cell, cell, nodes){if (cell_id == nodes[ref_cell_id_index(ref_cell)]){
+      RSS(ref_cell_part(ref_cell, ref_node, cell, &part), "part");
+  if (ref_mpi_rank(ref_mpi) == part) {
+    ncell++;
+  }
+  each_ref_cell_cell_node(ref_cell, cell_node) {
+    if (ref_node_owned(ref_node, nodes[cell_node]) &&
+        (REF_EMPTY == (*l2c)[nodes[cell_node]])) {
+      (*l2c)[nodes[cell_node]] = nnode;
+      nnode++;
+    }
+  }
+}
+}
+}
+
+(*ncell_global) = ncell;
+RSS(ref_mpi_allsum(ref_mpi, ncell_global, 1, REF_LONG_TYPE), "allsum");
+
+ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+RSS(ref_mpi_allgather(ref_mpi, &nnode, counts, REF_INT_TYPE), "gather size");
+offset = 0;
+for (proc = 0; proc < ref_mpi_rank(ref_mpi); proc++) {
+  offset += counts[proc];
+}
+each_ref_mpi_part(ref_mpi, proc) { (*nnode_global) += counts[proc]; }
+ref_free(counts);
+
+for (node = 0; node < ref_node_max(ref_node); node++) {
+  if (REF_EMPTY != (*l2c)[node]) {
+    (*l2c)[node] += offset;
+  }
+}
+
+RSS(ref_node_ghost_glob(ref_node, (*l2c), 1), "xfer");
+
+return REF_SUCCESS;
+}
+
 REF_STATUS ref_grid_inward_boundary_orientation(REF_GRID ref_grid) {
   REF_CELL tri = ref_grid_tri(ref_grid);
   REF_CELL qua = ref_grid_qua(ref_grid);
