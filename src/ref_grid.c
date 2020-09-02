@@ -682,6 +682,39 @@ static REF_STATUS ref_update_tet_guess(REF_CELL ref_cell, REF_INT node0,
   return REF_NOT_FOUND;
 }
 
+REF_STATUS ref_grid_node_list_around(REF_GRID ref_grid, REF_INT node,
+                                     REF_INT max_node, REF_INT *nnode,
+                                     REF_INT *node_list) {
+  REF_INT cell, item, cell_node, haves, group;
+  REF_CELL ref_cell;
+  REF_BOOL already_have_it;
+
+  *nnode = 0;
+  each_ref_grid_2d_3d_ref_cell(ref_grid, group, ref_cell) {
+    each_ref_cell_having_node(ref_cell, node, item, cell) {
+      for (cell_node = 0; cell_node < ref_cell_node_per(ref_cell);
+           cell_node++) {
+        if (node == ref_cell_c2n(ref_cell, cell_node, cell)) continue;
+        already_have_it = REF_FALSE;
+        for (haves = 0; haves < *nnode; haves++)
+          if (node_list[haves] == ref_cell_c2n(ref_cell, cell_node, cell)) {
+            already_have_it = REF_TRUE;
+            break;
+          }
+        if (!already_have_it) {
+          if (*nnode >= max_node) {
+            RSS(REF_INCREASE_LIMIT, "max_node too small");
+          }
+          node_list[*nnode] = ref_cell_c2n(ref_cell, cell_node, cell);
+          (*nnode)++;
+        }
+      }
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_grid_exhaustive_enclosing_tet(REF_GRID ref_grid,
                                                     REF_DBL *xyz, REF_INT *tet,
                                                     REF_DBL *bary) {

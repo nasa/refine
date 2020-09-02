@@ -266,6 +266,33 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "cleanup");
   }
 
+  { /* around tet pri */
+    REF_GRID ref_grid;
+    REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT nnode, list[7];
+
+    RSS(ref_grid_create(&ref_grid, ref_mpi), "create");
+
+    nodes[0] = 0;
+    nodes[1] = 1;
+    nodes[2] = 2;
+    nodes[3] = 3;
+    nodes[4] = 4;
+    nodes[5] = 5;
+    RSS(ref_cell_add(ref_grid_pri(ref_grid), nodes, &cell), "add pri");
+
+    nodes[0] = 3;
+    nodes[1] = 4;
+    nodes[2] = 5;
+    nodes[3] = 6;
+    RSS(ref_cell_add(ref_grid_tet(ref_grid), nodes, &cell), "add tet");
+
+    RSS(ref_grid_node_list_around(ref_grid, 3, 7, &nnode, list), "no list");
+    REIS(6, nnode, "mis count");
+
+    RSS(ref_grid_free(ref_grid), "cleanup");
+  }
+
   { /* single tet enclosing */
     REF_GRID ref_grid;
     REF_DBL xyz[3], bary[4];
