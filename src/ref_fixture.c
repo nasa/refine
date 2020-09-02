@@ -423,7 +423,7 @@ REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
  4 - 0 - 2
  */
 
-REF_STATUS ref_fixture_tri_quad_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
+REF_STATUS ref_fixture_tri_qua_grid(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi) {
   REF_GRID ref_grid;
   REF_NODE ref_node;
   REF_INT global[REF_CELL_MAX_SIZE_PER];
