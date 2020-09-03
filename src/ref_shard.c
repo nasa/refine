@@ -800,3 +800,9 @@ REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
+  RSS(ref_cell_deep_copy(ref_cell_ptr, ref_grid_tet(ref_grid)),
+      "deep tri copy");
+  return REF_SUCCESS;
+}

@@ -63,6 +63,7 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
                                     REF_INT of_faceid);
 
 REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell);
+REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell);
 
 END_C_DECLORATION
 
