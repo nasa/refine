@@ -827,8 +827,7 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
       "deep tri copy");
   ref_cell = *ref_cell_ptr;
   each_ref_cell_valid_cell_with_nodes(ref_grid_pyr(ref_grid), cell, nodes) {
-    RSS(ref_shard_add_pyr_as_tet(ref_grid_node(ref_grid), ref_cell, nodes
-                                 ),
+    RSS(ref_shard_add_pyr_as_tet(ref_grid_node(ref_grid), ref_cell, nodes),
         "converts pyr to tets");
   }
   each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
