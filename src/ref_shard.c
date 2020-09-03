@@ -435,22 +435,6 @@ REF_STATUS ref_shard_split(REF_SHARD ref_shard) {
   return REF_SUCCESS;
 }
 
-#define check_tet_volume()                                                   \
-  {                                                                          \
-    REF_DBL vol;                                                             \
-    RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol), "tet vol");             \
-    if (vol <= 0.0) {                                                        \
-      printf("tet vol %e\n", vol);                                           \
-      printf("minnode " REF_GLOB_FMT "\n", minnode);                         \
-      printf("orig %d %d %d %d %d %d\n", orig[0], orig[1], orig[2], orig[3], \
-             orig[4], orig[5]);                                              \
-      printf("prism %d %d %d %d %d %d\n", pri_nodes[0], pri_nodes[1],        \
-             pri_nodes[2], pri_nodes[3], pri_nodes[4], pri_nodes[5]);        \
-      printf("tet %d %d %d %d\n", tet_nodes[0], tet_nodes[1], tet_nodes[2],  \
-             tet_nodes[3]);                                                  \
-    }                                                                        \
-  }
-
 static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node, REF_CELL ref_cell,
                                            REF_INT *nodes) {
   REF_BOOL has_local;
@@ -467,15 +451,141 @@ static REF_STATUS ref_shard_cell_add_local(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+#define check_tet_volume()                                                  \
+  {                                                                         \
+    REF_DBL vol;                                                            \
+    RSS(ref_node_tet_vol(ref_node, tet_nodes, &vol), "tet vol");            \
+    if (vol <= 0.0) {                                                       \
+      printf("tet vol %e\n", vol);                                          \
+      printf("minnode " REF_GLOB_FMT "\n", minnode);                        \
+      printf("nodes %d %d %d %d %d %d\n", nodes[0], nodes[1], nodes[2],     \
+             nodes[3], nodes[4], nodes[5]);                                 \
+      printf("prism %d %d %d %d %d %d\n", pri_nodes[0], pri_nodes[1],       \
+             pri_nodes[2], pri_nodes[3], pri_nodes[4], pri_nodes[5]);       \
+      printf("tet %d %d %d %d\n", tet_nodes[0], tet_nodes[1], tet_nodes[2], \
+             tet_nodes[3]);                                                 \
+    }                                                                       \
+  }
+
+static REF_STATUS ref_shard_add_pri_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
+                                           REF_INT *nodes,
+                                           REF_BOOL check_volume) {
+  REF_INT node;
+  REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
+  REF_GLOB pri_global[REF_CELL_MAX_SIZE_PER];
+  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
+
+  for (node = 0; node < 6; node++)
+    global[node] = ref_node_global(ref_node, nodes[node]);
+
+  minnode = MIN(MIN(global[0], global[1]), MIN(global[2], global[3]));
+  minnode = MIN(MIN(global[4], global[5]), minnode);
+
+  pri_nodes[0] = nodes[0];
+  pri_nodes[1] = nodes[1];
+  pri_nodes[2] = nodes[2];
+  pri_nodes[3] = nodes[3];
+  pri_nodes[4] = nodes[4];
+  pri_nodes[5] = nodes[5];
+
+  if (global[1] == minnode) {
+    pri_nodes[0] = nodes[1];
+    pri_nodes[1] = nodes[2];
+    pri_nodes[2] = nodes[0];
+    pri_nodes[3] = nodes[4];
+    pri_nodes[4] = nodes[5];
+    pri_nodes[5] = nodes[3];
+  }
+
+  if (global[2] == minnode) {
+    pri_nodes[0] = nodes[2];
+    pri_nodes[1] = nodes[0];
+    pri_nodes[2] = nodes[1];
+    pri_nodes[3] = nodes[5];
+    pri_nodes[4] = nodes[3];
+    pri_nodes[5] = nodes[4];
+  }
+
+  if (global[3] == minnode) {
+    pri_nodes[0] = nodes[3];
+    pri_nodes[1] = nodes[5];
+    pri_nodes[2] = nodes[4];
+    pri_nodes[3] = nodes[0];
+    pri_nodes[4] = nodes[2];
+    pri_nodes[5] = nodes[1];
+  }
+
+  if (global[4] == minnode) {
+    pri_nodes[0] = nodes[4];
+    pri_nodes[1] = nodes[3];
+    pri_nodes[2] = nodes[5];
+    pri_nodes[3] = nodes[1];
+    pri_nodes[4] = nodes[0];
+    pri_nodes[5] = nodes[2];
+  }
+
+  if (global[5] == minnode) {
+    pri_nodes[0] = nodes[5];
+    pri_nodes[1] = nodes[4];
+    pri_nodes[2] = nodes[3];
+    pri_nodes[3] = nodes[2];
+    pri_nodes[4] = nodes[1];
+    pri_nodes[5] = nodes[0];
+  }
+
+  /* node 0 is now the smallest global index of prism */
+
+  tet_nodes[0] = pri_nodes[0];
+  tet_nodes[1] = pri_nodes[4];
+  tet_nodes[2] = pri_nodes[5];
+  tet_nodes[3] = pri_nodes[3];
+  RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "add tet");
+  if (check_volume) check_tet_volume();
+
+  for (node = 0; node < 6; node++)
+    pri_global[node] = ref_node_global(ref_node, pri_nodes[node]);
+
+  if ((pri_global[1] < pri_global[2] && pri_global[1] < pri_global[4]) ||
+      (pri_global[5] < pri_global[2] && pri_global[5] < pri_global[4])) {
+    tet_nodes[0] = pri_nodes[0];
+    tet_nodes[1] = pri_nodes[1];
+    tet_nodes[2] = pri_nodes[5];
+    tet_nodes[3] = pri_nodes[4];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_tet_volume();
+
+    tet_nodes[0] = pri_nodes[0];
+    tet_nodes[1] = pri_nodes[1];
+    tet_nodes[2] = pri_nodes[2];
+    tet_nodes[3] = pri_nodes[5];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_tet_volume();
+  } else {
+    tet_nodes[0] = pri_nodes[2];
+    tet_nodes[1] = pri_nodes[0];
+    tet_nodes[2] = pri_nodes[4];
+    tet_nodes[3] = pri_nodes[5];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_tet_volume();
+
+    tet_nodes[0] = pri_nodes[0];
+    tet_nodes[1] = pri_nodes[1];
+    tet_nodes[2] = pri_nodes[2];
+    tet_nodes[3] = pri_nodes[4];
+    RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+    if (check_volume) check_tet_volume();
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
                                     REF_INT of_faceid) {
   REF_INT cell, tri_mark;
-  REF_GLOB minnode;
 
   REF_INT orig[REF_CELL_MAX_SIZE_PER];
   REF_GLOB global[REF_CELL_MAX_SIZE_PER];
-  REF_INT pri_nodes[REF_CELL_MAX_SIZE_PER];
-  REF_GLOB pri_global[REF_CELL_MAX_SIZE_PER];
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
   REF_CELL pri = ref_grid_pri(ref_grid);
   REF_CELL pyr = ref_grid_pyr(ref_grid);
@@ -550,107 +660,8 @@ REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
     if (mark[orig[0]] != REF_EMPTY && mark[orig[3]] != REF_EMPTY) continue;
 
     RSS(ref_cell_remove(pri, cell), "remove pri");
-
-    for (node = 0; node < ref_cell_node_per(pri); node++)
-      global[node] = ref_node_global(ref_node, orig[node]);
-
-    minnode = MIN(MIN(global[0], global[1]), MIN(global[2], global[3]));
-    minnode = MIN(MIN(global[4], global[5]), minnode);
-
-    pri_nodes[0] = orig[0];
-    pri_nodes[1] = orig[1];
-    pri_nodes[2] = orig[2];
-    pri_nodes[3] = orig[3];
-    pri_nodes[4] = orig[4];
-    pri_nodes[5] = orig[5];
-
-    if (global[1] == minnode) {
-      pri_nodes[0] = orig[1];
-      pri_nodes[1] = orig[2];
-      pri_nodes[2] = orig[0];
-      pri_nodes[3] = orig[4];
-      pri_nodes[4] = orig[5];
-      pri_nodes[5] = orig[3];
-    }
-
-    if (global[2] == minnode) {
-      pri_nodes[0] = orig[2];
-      pri_nodes[1] = orig[0];
-      pri_nodes[2] = orig[1];
-      pri_nodes[3] = orig[5];
-      pri_nodes[4] = orig[3];
-      pri_nodes[5] = orig[4];
-    }
-
-    if (global[3] == minnode) {
-      pri_nodes[0] = orig[3];
-      pri_nodes[1] = orig[5];
-      pri_nodes[2] = orig[4];
-      pri_nodes[3] = orig[0];
-      pri_nodes[4] = orig[2];
-      pri_nodes[5] = orig[1];
-    }
-
-    if (global[4] == minnode) {
-      pri_nodes[0] = orig[4];
-      pri_nodes[1] = orig[3];
-      pri_nodes[2] = orig[5];
-      pri_nodes[3] = orig[1];
-      pri_nodes[4] = orig[0];
-      pri_nodes[5] = orig[2];
-    }
-
-    if (global[5] == minnode) {
-      pri_nodes[0] = orig[5];
-      pri_nodes[1] = orig[4];
-      pri_nodes[2] = orig[3];
-      pri_nodes[3] = orig[2];
-      pri_nodes[4] = orig[1];
-      pri_nodes[5] = orig[0];
-    }
-
-    /* node 0 is now the smallest global index of prism */
-
-    tet_nodes[0] = pri_nodes[0];
-    tet_nodes[1] = pri_nodes[4];
-    tet_nodes[2] = pri_nodes[5];
-    tet_nodes[3] = pri_nodes[3];
-    RSS(ref_shard_cell_add_local(ref_node, tet, tet_nodes), "add tet");
-    check_tet_volume();
-
-    for (node = 0; node < ref_cell_node_per(pri); node++)
-      pri_global[node] = ref_node_global(ref_node, pri_nodes[node]);
-
-    if ((pri_global[1] < pri_global[2] && pri_global[1] < pri_global[4]) ||
-        (pri_global[5] < pri_global[2] && pri_global[5] < pri_global[4])) {
-      tet_nodes[0] = pri_nodes[0];
-      tet_nodes[1] = pri_nodes[1];
-      tet_nodes[2] = pri_nodes[5];
-      tet_nodes[3] = pri_nodes[4];
-      RSS(ref_shard_cell_add_local(ref_node, tet, tet_nodes), "a tet");
-      check_tet_volume();
-
-      tet_nodes[0] = pri_nodes[0];
-      tet_nodes[1] = pri_nodes[1];
-      tet_nodes[2] = pri_nodes[2];
-      tet_nodes[3] = pri_nodes[5];
-      RSS(ref_shard_cell_add_local(ref_node, tet, tet_nodes), "a tet");
-      check_tet_volume();
-    } else {
-      tet_nodes[0] = pri_nodes[2];
-      tet_nodes[1] = pri_nodes[0];
-      tet_nodes[2] = pri_nodes[4];
-      tet_nodes[3] = pri_nodes[5];
-      RSS(ref_shard_cell_add_local(ref_node, tet, tet_nodes), "a tet");
-      check_tet_volume();
-
-      tet_nodes[0] = pri_nodes[0];
-      tet_nodes[1] = pri_nodes[1];
-      tet_nodes[2] = pri_nodes[2];
-      tet_nodes[3] = pri_nodes[4];
-      RSS(ref_shard_cell_add_local(ref_node, tet, tet_nodes), "a tet");
-      check_tet_volume();
-    }
+    RSS(ref_shard_add_pri_as_tet(ref_node, tet, orig, REF_TRUE),
+        "converts to tets");
   }
 
   each_ref_cell_valid_cell_with_nodes(pyr, cell, orig) {
@@ -802,7 +813,17 @@ REF_STATUS ref_shard_extract_tri(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
 }
 
 REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_CELL ref_cell;
+
   RSS(ref_cell_deep_copy(ref_cell_ptr, ref_grid_tet(ref_grid)),
       "deep tri copy");
+  ref_cell = *ref_cell_ptr;
+  each_ref_cell_valid_cell_with_nodes(ref_grid_pri(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_pri_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
+                                 REF_FALSE),
+        "converts to tets");
+  }
+
   return REF_SUCCESS;
 }
