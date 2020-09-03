@@ -414,6 +414,24 @@ int main(int argc, char *argv[]) {
     RSS(ref_grid_free(ref_grid), "free");
   }
 
+  { /* shard pyr to tet */
+
+    REF_GRID ref_grid;
+    REF_CELL ref_cell;
+
+    RSS(ref_fixture_pyr_grid(&ref_grid, ref_mpi), "set up");
+
+    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tri");
+
+    if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
+      REIS(2 * ref_cell_n(ref_grid_pyr(ref_grid)), ref_cell_n(ref_cell),
+           "same ntet");
+    }
+
+    RSS(ref_cell_free(ref_cell), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
   { /* shard pri to tet */
 
     REF_GRID ref_grid;
