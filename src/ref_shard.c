@@ -622,8 +622,7 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node,
-                                           REF_INT *nodes){
+static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
   REF_INT hex_nodes[REF_CELL_MAX_SIZE_PER];
@@ -714,10 +713,9 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node,
     hex_nodes[7] = nodes[5];
   }
   /* node 0 is now the smallest global index of the hex */
-  printf("%d\n",hex_nodes[0]); /* temp strict compile */
+  printf("%d\n", hex_nodes[0]); /* temp strict compile */
   return REF_SUCCESS;
 }
-
 
 REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
                                     REF_INT of_faceid) {
@@ -933,8 +931,7 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
         "converts pri to tets");
   }
   each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
-    RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), nodes
-                                 ),
+    RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), nodes),
         "converts hex to tets");
   }
 
