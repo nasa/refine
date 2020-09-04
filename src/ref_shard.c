@@ -622,6 +622,103 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node,
+                                           REF_INT *nodes){
+  REF_INT node;
+  REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
+  REF_INT hex_nodes[REF_CELL_MAX_SIZE_PER];
+
+  for (node = 0; node < 6; node++)
+    global[node] = ref_node_global(ref_node, nodes[node]);
+
+  minnode = MIN(MIN(global[0], global[1]), MIN(global[2], global[3]));
+  minnode = MIN(MIN(global[4], global[5]), minnode);
+  minnode = MIN(MIN(global[6], global[7]), minnode);
+
+  hex_nodes[0] = nodes[0];
+  hex_nodes[1] = nodes[1];
+  hex_nodes[2] = nodes[2];
+  hex_nodes[3] = nodes[3];
+  hex_nodes[4] = nodes[4];
+  hex_nodes[5] = nodes[5];
+  hex_nodes[6] = nodes[6];
+  hex_nodes[7] = nodes[7];
+  if (global[1] == minnode) {
+    hex_nodes[0] = nodes[1];
+    hex_nodes[1] = nodes[0];
+    hex_nodes[2] = nodes[4];
+    hex_nodes[3] = nodes[5];
+    hex_nodes[4] = nodes[2];
+    hex_nodes[5] = nodes[3];
+    hex_nodes[6] = nodes[7];
+    hex_nodes[7] = nodes[6];
+  }
+  if (global[2] == minnode) {
+    hex_nodes[0] = nodes[2];
+    hex_nodes[1] = nodes[1];
+    hex_nodes[2] = nodes[5];
+    hex_nodes[3] = nodes[6];
+    hex_nodes[4] = nodes[3];
+    hex_nodes[5] = nodes[0];
+    hex_nodes[6] = nodes[4];
+    hex_nodes[7] = nodes[7];
+  }
+  if (global[3] == minnode) {
+    hex_nodes[0] = nodes[3];
+    hex_nodes[1] = nodes[0];
+    hex_nodes[2] = nodes[1];
+    hex_nodes[3] = nodes[2];
+    hex_nodes[4] = nodes[7];
+    hex_nodes[5] = nodes[4];
+    hex_nodes[6] = nodes[5];
+    hex_nodes[7] = nodes[6];
+  }
+  if (global[4] == minnode) {
+    hex_nodes[0] = nodes[4];
+    hex_nodes[1] = nodes[0];
+    hex_nodes[2] = nodes[3];
+    hex_nodes[3] = nodes[7];
+    hex_nodes[4] = nodes[5];
+    hex_nodes[5] = nodes[1];
+    hex_nodes[6] = nodes[2];
+    hex_nodes[7] = nodes[6];
+  }
+  if (global[5] == minnode) {
+    hex_nodes[0] = nodes[5];
+    hex_nodes[1] = nodes[1];
+    hex_nodes[2] = nodes[0];
+    hex_nodes[3] = nodes[4];
+    hex_nodes[4] = nodes[6];
+    hex_nodes[5] = nodes[2];
+    hex_nodes[6] = nodes[3];
+    hex_nodes[7] = nodes[7];
+  }
+  if (global[6] == minnode) {
+    hex_nodes[0] = nodes[6];
+    hex_nodes[1] = nodes[2];
+    hex_nodes[2] = nodes[1];
+    hex_nodes[3] = nodes[5];
+    hex_nodes[4] = nodes[7];
+    hex_nodes[5] = nodes[3];
+    hex_nodes[6] = nodes[0];
+    hex_nodes[7] = nodes[4];
+  }
+  if (global[7] == minnode) {
+    hex_nodes[0] = nodes[7];
+    hex_nodes[1] = nodes[3];
+    hex_nodes[2] = nodes[2];
+    hex_nodes[3] = nodes[6];
+    hex_nodes[4] = nodes[4];
+    hex_nodes[5] = nodes[0];
+    hex_nodes[6] = nodes[1];
+    hex_nodes[7] = nodes[5];
+  }
+  /* node 0 is now the smallest global index of the hex */
+  printf("%d\n",hex_nodes[0]); /* temp strict compile */
+  return REF_SUCCESS;
+}
+
+
 REF_STATUS ref_shard_prism_into_tet(REF_GRID ref_grid, REF_INT keeping_n_layers,
                                     REF_INT of_faceid) {
   REF_INT cell, tri_mark;
@@ -834,6 +931,11 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
     RSS(ref_shard_add_pri_as_tet(ref_grid_node(ref_grid), ref_cell, nodes,
                                  REF_FALSE),
         "converts pri to tets");
+  }
+  each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
+    RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), nodes
+                                 ),
+        "converts hex to tets");
   }
 
   return REF_SUCCESS;
