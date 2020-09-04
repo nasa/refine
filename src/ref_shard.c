@@ -622,6 +622,18 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   return REF_SUCCESS;
 }
 
+static void ref_shard_permute_hex_120(REF_INT *I) {
+  REF_INT temp;
+  temp = I[1];
+  I[1] = I[4];
+  I[4] = I[3];
+  I[3] = temp;
+  temp = I[5];
+  I[5] = I[7];
+  I[7] = I[2];
+  I[2] = temp;
+}
+
 static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
@@ -716,7 +728,7 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
     I[7] = 5;
   }
 
-  /* find the faces with diag toward */
+  /* find the faces with diag toward I[7]*/
   face0 = MIN(global[I[1]], global[I[6]]) < MIN(global[I[2]], global[I[5]]);
   face1 = MIN(global[I[3]], global[I[6]]) < MIN(global[I[2]], global[I[7]]);
   face2 = MIN(global[I[4]], global[I[6]]) < MIN(global[I[5]], global[I[7]]);
@@ -730,6 +742,13 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   if (1 == face0 && 1 == face1 && 0 == face2) deg = 120;
   if (1 == face0 && 1 == face1 && 1 == face2) deg = 0;
   printf("%d\n", deg); /* temp strict compile */
+  if (120 == deg) {
+    ref_shard_permute_hex_120(I);
+  }
+  if (240 == deg) {
+    ref_shard_permute_hex_120(I);
+    ref_shard_permute_hex_120(I);
+  }
   return REF_SUCCESS;
 }
 
