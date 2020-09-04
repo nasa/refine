@@ -626,9 +626,12 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
   REF_INT I[REF_CELL_MAX_SIZE_PER];
+  REF_INT face0, face1, face2, deg;
 
   for (node = 0; node < 6; node++)
     global[node] = ref_node_global(ref_node, nodes[node]);
+
+  /* permutaion with node 0 the smallest global index of the hex */
 
   minnode = MIN(MIN(global[0], global[1]), MIN(global[2], global[3]));
   minnode = MIN(MIN(global[4], global[5]), minnode);
@@ -712,8 +715,21 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
     I[6] = 1;
     I[7] = 5;
   }
-  /* node 0 is now the smallest global index of the hex */
-  printf("%d\n", I[0]); /* temp strict compile */
+
+  /* find the faces with diag toward */
+  face0 = MIN(global[I[1]], global[I[6]]) < MIN(global[I[2]], global[I[5]]);
+  face1 = MIN(global[I[3]], global[I[6]]) < MIN(global[I[2]], global[I[7]]);
+  face2 = MIN(global[I[4]], global[I[6]]) < MIN(global[I[5]], global[I[7]]);
+  deg = 0; /* table 5 */
+  if (0 == face0 && 0 == face1 && 0 == face2) deg = 0;
+  if (0 == face0 && 0 == face1 && 1 == face2) deg = 120;
+  if (0 == face0 && 1 == face1 && 0 == face2) deg = 240;
+  if (0 == face0 && 1 == face1 && 1 == face2) deg = 0;
+  if (1 == face0 && 0 == face1 && 0 == face2) deg = 0;
+  if (1 == face0 && 0 == face1 && 1 == face2) deg = 240;
+  if (1 == face0 && 1 == face1 && 0 == face2) deg = 120;
+  if (1 == face0 && 1 == face1 && 1 == face2) deg = 0;
+  printf("%d\n", deg); /* temp strict compile */
   return REF_SUCCESS;
 }
 
