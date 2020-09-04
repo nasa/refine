@@ -625,7 +625,7 @@ static REF_STATUS ref_shard_add_pyr_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
 static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
-  REF_INT hex_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT I[REF_CELL_MAX_SIZE_PER];
 
   for (node = 0; node < 6; node++)
     global[node] = ref_node_global(ref_node, nodes[node]);
@@ -634,86 +634,86 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
   minnode = MIN(MIN(global[4], global[5]), minnode);
   minnode = MIN(MIN(global[6], global[7]), minnode);
 
-  hex_nodes[0] = nodes[0];
-  hex_nodes[1] = nodes[1];
-  hex_nodes[2] = nodes[2];
-  hex_nodes[3] = nodes[3];
-  hex_nodes[4] = nodes[4];
-  hex_nodes[5] = nodes[5];
-  hex_nodes[6] = nodes[6];
-  hex_nodes[7] = nodes[7];
+  I[0] = 0;
+  I[1] = 1;
+  I[2] = 2;
+  I[3] = 3;
+  I[4] = 4;
+  I[5] = 5;
+  I[6] = 6;
+  I[7] = 7;
   if (global[1] == minnode) {
-    hex_nodes[0] = nodes[1];
-    hex_nodes[1] = nodes[0];
-    hex_nodes[2] = nodes[4];
-    hex_nodes[3] = nodes[5];
-    hex_nodes[4] = nodes[2];
-    hex_nodes[5] = nodes[3];
-    hex_nodes[6] = nodes[7];
-    hex_nodes[7] = nodes[6];
+    I[0] = 1;
+    I[1] = 0;
+    I[2] = 4;
+    I[3] = 5;
+    I[4] = 2;
+    I[5] = 3;
+    I[6] = 7;
+    I[7] = 6;
   }
   if (global[2] == minnode) {
-    hex_nodes[0] = nodes[2];
-    hex_nodes[1] = nodes[1];
-    hex_nodes[2] = nodes[5];
-    hex_nodes[3] = nodes[6];
-    hex_nodes[4] = nodes[3];
-    hex_nodes[5] = nodes[0];
-    hex_nodes[6] = nodes[4];
-    hex_nodes[7] = nodes[7];
+    I[0] = 2;
+    I[1] = 1;
+    I[2] = 5;
+    I[3] = 6;
+    I[4] = 3;
+    I[5] = 0;
+    I[6] = 4;
+    I[7] = 7;
   }
   if (global[3] == minnode) {
-    hex_nodes[0] = nodes[3];
-    hex_nodes[1] = nodes[0];
-    hex_nodes[2] = nodes[1];
-    hex_nodes[3] = nodes[2];
-    hex_nodes[4] = nodes[7];
-    hex_nodes[5] = nodes[4];
-    hex_nodes[6] = nodes[5];
-    hex_nodes[7] = nodes[6];
+    I[0] = 3;
+    I[1] = 0;
+    I[2] = 1;
+    I[3] = 2;
+    I[4] = 7;
+    I[5] = 4;
+    I[6] = 5;
+    I[7] = 6;
   }
   if (global[4] == minnode) {
-    hex_nodes[0] = nodes[4];
-    hex_nodes[1] = nodes[0];
-    hex_nodes[2] = nodes[3];
-    hex_nodes[3] = nodes[7];
-    hex_nodes[4] = nodes[5];
-    hex_nodes[5] = nodes[1];
-    hex_nodes[6] = nodes[2];
-    hex_nodes[7] = nodes[6];
+    I[0] = 4;
+    I[1] = 0;
+    I[2] = 3;
+    I[3] = 7;
+    I[4] = 5;
+    I[5] = 1;
+    I[6] = 2;
+    I[7] = 6;
   }
   if (global[5] == minnode) {
-    hex_nodes[0] = nodes[5];
-    hex_nodes[1] = nodes[1];
-    hex_nodes[2] = nodes[0];
-    hex_nodes[3] = nodes[4];
-    hex_nodes[4] = nodes[6];
-    hex_nodes[5] = nodes[2];
-    hex_nodes[6] = nodes[3];
-    hex_nodes[7] = nodes[7];
+    I[0] = 5;
+    I[1] = 1;
+    I[2] = 0;
+    I[3] = 4;
+    I[4] = 6;
+    I[5] = 2;
+    I[6] = 3;
+    I[7] = 7;
   }
   if (global[6] == minnode) {
-    hex_nodes[0] = nodes[6];
-    hex_nodes[1] = nodes[2];
-    hex_nodes[2] = nodes[1];
-    hex_nodes[3] = nodes[5];
-    hex_nodes[4] = nodes[7];
-    hex_nodes[5] = nodes[3];
-    hex_nodes[6] = nodes[0];
-    hex_nodes[7] = nodes[4];
+    I[0] = 6;
+    I[1] = 2;
+    I[2] = 1;
+    I[3] = 5;
+    I[4] = 7;
+    I[5] = 3;
+    I[6] = 0;
+    I[7] = 4;
   }
   if (global[7] == minnode) {
-    hex_nodes[0] = nodes[7];
-    hex_nodes[1] = nodes[3];
-    hex_nodes[2] = nodes[2];
-    hex_nodes[3] = nodes[6];
-    hex_nodes[4] = nodes[4];
-    hex_nodes[5] = nodes[0];
-    hex_nodes[6] = nodes[1];
-    hex_nodes[7] = nodes[5];
+    I[0] = 7;
+    I[1] = 3;
+    I[2] = 2;
+    I[3] = 6;
+    I[4] = 4;
+    I[5] = 0;
+    I[6] = 1;
+    I[7] = 5;
   }
   /* node 0 is now the smallest global index of the hex */
-  printf("%d\n", hex_nodes[0]); /* temp strict compile */
+  printf("%d\n", I[0]); /* temp strict compile */
   return REF_SUCCESS;
 }
 
