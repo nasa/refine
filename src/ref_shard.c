@@ -783,6 +783,38 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
       RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
       /* n=0 has 5 tets */
       break;
+    case 1:
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[5]];
+      tet_nodes[2] = nodes[I[7]];
+      tet_nodes[3] = nodes[I[4]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[1]];
+      tet_nodes[2] = nodes[I[7]];
+      tet_nodes[3] = nodes[I[5]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[1]];
+      tet_nodes[1] = nodes[I[6]];
+      tet_nodes[2] = nodes[I[7]];
+      tet_nodes[3] = nodes[I[5]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[7]];
+      tet_nodes[2] = nodes[I[2]];
+      tet_nodes[3] = nodes[I[3]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[7]];
+      tet_nodes[2] = nodes[I[1]];
+      tet_nodes[3] = nodes[I[2]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[1]];
+      tet_nodes[1] = nodes[I[7]];
+      tet_nodes[2] = nodes[I[6]];
+      tet_nodes[3] = nodes[I[2]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      break;
     default:
       RSB(REF_IMPLEMENT, "should be 0-3", printf("n %d\n", n););
       break;
