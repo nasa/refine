@@ -26,6 +26,7 @@
 #include "ref_malloc.h"
 #include "ref_math.h"
 #include "ref_search.h"
+#include "ref_shard.h"
 
 #define MAX_NODE_LIST (200)
 
@@ -185,15 +186,31 @@ REF_STATUS ref_interp_create(REF_INTERP *ref_interp_ptr, REF_GRID from_grid,
                              REF_GRID to_grid) {
   REF_INTERP ref_interp;
   REF_INT max = ref_node_max(ref_grid_node(to_grid));
+  REF_LONG nqua, npyr, npri, nhex;
 
   ref_malloc(*ref_interp_ptr, 1, REF_INTERP_STRUCT);
   ref_interp = (*ref_interp_ptr);
 
   ref_interp_from_grid(ref_interp) = from_grid;
-  ref_interp_from_tet(ref_interp) = ref_grid_tet(from_grid);
-  ref_interp_from_tri(ref_interp) = ref_grid_tri(from_grid);
-  ref_interp_from_cell_freeable(ref_interp) = REF_FALSE;
-
+  RSS(ref_cell_ncell(ref_grid_qua(from_grid), ref_grid_node(from_grid), &nqua),
+      "global nqua");
+  RSS(ref_cell_ncell(ref_grid_pyr(from_grid), ref_grid_node(from_grid), &npyr),
+      "global npyr");
+  RSS(ref_cell_ncell(ref_grid_pri(from_grid), ref_grid_node(from_grid), &npri),
+      "global npri");
+  RSS(ref_cell_ncell(ref_grid_hex(from_grid), ref_grid_node(from_grid), &nhex),
+      "global nhex");
+  if (0 < nqua || 0 < npyr || 0 < npri || 0 < nhex) {
+    ref_interp_from_tet(ref_interp) = ref_grid_tet(from_grid);
+    ref_interp_from_tri(ref_interp) = ref_grid_tri(from_grid);
+    ref_interp_from_cell_freeable(ref_interp) = REF_TRUE;
+  } else {
+    RSS(ref_shard_extract_tri(from_grid, &ref_interp_from_tri(ref_interp)),
+        "shard tri");
+    RSS(ref_shard_extract_tet(from_grid, &ref_interp_from_tet(ref_interp)),
+        "shard tet");
+    ref_interp_from_cell_freeable(ref_interp) = REF_FALSE;
+  }
   ref_interp_to_grid(ref_interp) = to_grid;
 
   ref_interp_mpi(ref_interp) = ref_grid_mpi(ref_interp_from_grid(ref_interp));
