@@ -634,11 +634,13 @@ static void ref_shard_permute_hex_120(REF_INT *I) {
   I[2] = temp;
 }
 
-static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
+static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
+                                           REF_INT *nodes) {
   REF_INT node;
   REF_GLOB minnode, global[REF_CELL_MAX_SIZE_PER];
   REF_INT I[REF_CELL_MAX_SIZE_PER];
-  REF_INT face0, face1, face2, deg;
+  REF_INT face0, face1, face2, deg, n;
+  REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
 
   for (node = 0; node < 6; node++)
     global[node] = ref_node_global(ref_node, nodes[node]);
@@ -749,6 +751,43 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_INT *nodes) {
     ref_shard_permute_hex_120(I);
     ref_shard_permute_hex_120(I);
   }
+
+  n = face0 + face1 + face2;
+
+  switch (n) {
+    case 0:
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[1]];
+      tet_nodes[2] = nodes[I[2]];
+      tet_nodes[3] = nodes[I[5]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[2]];
+      tet_nodes[2] = nodes[I[7]];
+      tet_nodes[3] = nodes[I[6]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[2]];
+      tet_nodes[2] = nodes[I[3]];
+      tet_nodes[3] = nodes[I[7]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[0]];
+      tet_nodes[1] = nodes[I[5]];
+      tet_nodes[2] = nodes[I[7]];
+      tet_nodes[3] = nodes[I[4]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      tet_nodes[0] = nodes[I[2]];
+      tet_nodes[1] = nodes[I[7]];
+      tet_nodes[2] = nodes[I[5]];
+      tet_nodes[3] = nodes[I[6]];
+      RSS(ref_shard_cell_add_local(ref_node, ref_cell, tet_nodes), "a tet");
+      /* n=0 has 5 tets */
+      break;
+    default:
+      RSB(REF_IMPLEMENT, "should be 0-3", printf("n %d\n", n););
+      break;
+  }
+
   return REF_SUCCESS;
 }
 
@@ -966,7 +1005,7 @@ REF_STATUS ref_shard_extract_tet(REF_GRID ref_grid, REF_CELL *ref_cell_ptr) {
         "converts pri to tets");
   }
   each_ref_cell_valid_cell_with_nodes(ref_grid_hex(ref_grid), cell, nodes) {
-    RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), nodes),
+    RSS(ref_shard_add_hex_as_tet(ref_grid_node(ref_grid), ref_cell, nodes),
         "converts hex to tets");
   }
 
