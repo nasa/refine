@@ -3128,6 +3128,20 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   /* shuffle from_node */
   RSS(ref_migrate_shufflin(from_grid), "shufflin from grid");
 
+  if (ref_interp_from_cell_freeable(ref_interp)) {
+    ref_cell_free(ref_interp_from_tri(ref_interp));
+    ref_cell_free(ref_interp_from_tet(ref_interp));
+    RSS(ref_shard_extract_tri(from_grid, &ref_interp_from_tri(ref_interp)),
+        "shard tri");
+    RSS(ref_shard_extract_tet(from_grid, &ref_interp_from_tet(ref_interp)),
+        "shard tet");
+    if (ref_grid_twod(from_grid)) {
+      from_cell = ref_interp_from_tri(ref_interp);
+    } else {
+      from_cell = ref_interp_from_tet(ref_interp);
+    }
+  }
+
   /* use new from part to translate nodes to cell (back and forth) */
 
   RSS(ref_mpi_blindsend(ref_mpi, donor_part, (void *)donor_nodes, 4, n_donor,
