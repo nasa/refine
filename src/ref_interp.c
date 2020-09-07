@@ -34,8 +34,6 @@
   ((bary)[0] >= (ref_interp)->inside && (bary)[1] >= (ref_interp)->inside && \
    (bary)[2] >= (ref_interp)->inside && (bary)[3] >= (ref_interp)->inside)
 
-#define ref_interp_from_tet(ref_interp) ((ref_interp)->from_tet)
-#define ref_interp_from_tri(ref_interp) ((ref_interp)->from_tri)
 #define ref_interp_from_cell_freeable(ref_interp) \
   ((ref_interp)->from_cell_freeable)
 
