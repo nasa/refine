@@ -715,8 +715,9 @@ static REF_STATUS ref_interp_walk_agent(REF_INTERP ref_interp, REF_INT id) {
     }
 
     if (ref_agent_step(ref_agents, id) > (limit)) {
-      printf("bary %e %e %e %e inside %e\n", bary[0], bary[1], bary[2], bary[3],
-             ref_interp->inside);
+      printf("bary %.4e %.4e %.4e %.4e i %.2e s %d\n", bary[0], bary[1],
+             bary[2], bary[3], ref_interp->inside,
+             ref_agent_step(ref_agents, id));
       RSS(ref_agents_tattle(ref_agents, id, "many steps"), "tat");
     }
 
