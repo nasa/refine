@@ -1168,6 +1168,52 @@ REF_STATUS ref_cell_id_list_around(REF_CELL ref_cell, REF_INT node,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_cell_id_list_around_both(REF_CELL ref_cell_a,
+                                        REF_CELL ref_cell_b, REF_INT node,
+                                        REF_INT max_ids, REF_INT *n_ids,
+                                        REF_INT *ids) {
+  REF_INT item, cell, id, deg;
+  REF_INT nodes[REF_CELL_MAX_SIZE_PER];
+  REF_BOOL already_have_it;
+  REF_CELL ref_cell;
+
+  *n_ids = 0;
+
+  ref_cell = ref_cell_a;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    id = nodes[ref_cell_node_per(ref_cell)];
+    already_have_it = REF_FALSE;
+    for (deg = 0; deg < *n_ids; deg++)
+      if (id == ids[deg]) already_have_it = REF_TRUE;
+    if (!already_have_it) {
+      if (*n_ids >= max_ids) {
+        return REF_INCREASE_LIMIT;
+      }
+      ids[*n_ids] = id;
+      (*n_ids)++;
+    }
+  }
+
+  ref_cell = ref_cell_b;
+  each_ref_cell_having_node(ref_cell, node, item, cell) {
+    RSS(ref_cell_nodes(ref_cell, cell, nodes), "nodes");
+    id = nodes[ref_cell_node_per(ref_cell)];
+    already_have_it = REF_FALSE;
+    for (deg = 0; deg < *n_ids; deg++)
+      if (id == ids[deg]) already_have_it = REF_TRUE;
+    if (!already_have_it) {
+      if (*n_ids >= max_ids) {
+        return REF_INCREASE_LIMIT;
+      }
+      ids[*n_ids] = id;
+      (*n_ids)++;
+    }
+  }
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_cell_gen_edge_face(REF_CELL ref_cell, REF_INT edge,
                                   REF_INT *face0, REF_INT *face1) {
   REF_INT face, node0, node1;

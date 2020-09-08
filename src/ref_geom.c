@@ -17,6 +17,8 @@
  * permissions and limitations under the License.
  */
 
+#include "ref_geom.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +29,6 @@
 #include "ref_egads.h"
 #include "ref_export.h"
 #include "ref_gather.h"
-#include "ref_geom.h"
 #include "ref_grid.h"
 #include "ref_malloc.h"
 #include "ref_math.h"

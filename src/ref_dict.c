@@ -21,9 +21,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ref_sort.h"
-
 #include "ref_malloc.h"
+#include "ref_sort.h"
 
 REF_STATUS ref_dict_create(REF_DICT *ref_dict_ptr) {
   REF_DICT ref_dict;

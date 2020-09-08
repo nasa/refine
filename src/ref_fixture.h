@@ -33,6 +33,7 @@ REF_STATUS ref_fixture_pyr_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_tri_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_tri2_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+REF_STATUS ref_fixture_tri_qua_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_twod_cubic_edge(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
@@ -41,6 +42,12 @@ REF_STATUS ref_fixture_pri_tet_cap_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_pri_stack_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 
 REF_STATUS ref_fixture_hex_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+
+REF_STATUS ref_fixture_hex_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
+REF_STATUS ref_fixture_hex_brick_args_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,
+                                           REF_DBL x0, REF_DBL x1, REF_DBL y0,
+                                           REF_DBL y1, REF_DBL z0, REF_DBL z1,
+                                           REF_INT l, REF_INT m, REF_INT n);
 
 REF_STATUS ref_fixture_tet_brick_grid(REF_GRID *ref_grid, REF_MPI ref_mpi);
 REF_STATUS ref_fixture_tet_brick_args_grid(REF_GRID *ref_grid, REF_MPI ref_mpi,

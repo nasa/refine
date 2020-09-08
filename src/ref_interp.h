@@ -38,6 +38,9 @@ BEGIN_C_DECLORATION
 struct REF_INTERP_STRUCT {
   REF_MPI ref_mpi;
   REF_GRID from_grid;
+  REF_CELL from_tet;
+  REF_CELL from_tri;
+  REF_BOOL from_cell_freeable;
   REF_GRID to_grid;
   REF_BOOL instrument;
   REF_BOOL continuously;
@@ -63,6 +66,8 @@ struct REF_INTERP_STRUCT {
 };
 
 #define ref_interp_from_grid(ref_interp) ((ref_interp)->from_grid)
+#define ref_interp_from_tet(ref_interp) ((ref_interp)->from_tet)
+#define ref_interp_from_tri(ref_interp) ((ref_interp)->from_tri)
 #define ref_interp_to_grid(ref_interp) ((ref_interp)->to_grid)
 #define ref_interp_mpi(ref_interp) ((ref_interp)->ref_mpi)
 #define ref_interp_cell(ref_interp, node) ((ref_interp)->cell[(node)])

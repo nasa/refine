@@ -432,8 +432,11 @@ REF_STATUS ref_metric_interpolate_node(REF_GRID ref_grid, REF_INT node) {
   ref_interp = ref_grid_interp(ref_grid);
   from_grid = ref_interp_from_grid(ref_interp);
   from_node = ref_grid_node(from_grid);
-  from_cell = ref_grid_tet(from_grid);
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   if (!ref_interp_continuously(ref_interp)) {
     ref_interp_cell(ref_interp, node) = REF_EMPTY; /* mark moved */
@@ -481,8 +484,12 @@ REF_STATUS ref_metric_interpolate_between(REF_GRID ref_grid, REF_INT node0,
   ref_interp = ref_grid_interp(ref_grid);
   from_grid = ref_interp_from_grid(ref_interp);
   from_node = ref_grid_node(from_grid);
-  from_cell = ref_grid_tet(from_grid);
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  from_node = ref_grid_node(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
   to_node = ref_grid_node(ref_interp_to_grid(ref_interp));
 
   if (new_node >= ref_interp_max(ref_interp)) {
@@ -526,8 +533,8 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE to_node = ref_grid_node(to_grid);
   REF_NODE from_node = ref_grid_node(from_grid);
+  REF_CELL from_cell;
   REF_MPI ref_mpi = ref_interp_mpi(ref_interp);
-  REF_CELL from_cell = ref_grid_tet(from_grid);
   REF_INT node, ibary, im;
   REF_INT nodes[REF_CELL_MAX_SIZE_PER];
   REF_DBL log_parent_m[4][6];
@@ -536,7 +543,11 @@ REF_STATUS ref_metric_interpolate(REF_INTERP ref_interp) {
   REF_INT *donor_node, *donor_ret, *donor_cell;
   REF_INT *recept_proc, *recept_ret, *recept_node, *recept_cell;
 
-  if (ref_grid_twod(from_grid)) from_cell = ref_grid_tri(from_grid);
+  if (ref_grid_twod(from_grid)) {
+    from_cell = ref_interp_from_tri(ref_interp);
+  } else {
+    from_cell = ref_interp_from_tet(ref_interp);
+  }
 
   n_recept = 0;
   each_ref_node_valid_node(to_node, node) {
