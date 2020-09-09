@@ -483,6 +483,7 @@ int main(int argc, char *argv[]) {
         "shard to tri");
 
     RSS(ref_validation_boundary_all(shard_grid), "valid");
+    RSS(ref_validation_all(shard_grid), "valid");
 
     RSS(ref_grid_free(shard_grid), "free");
     RSS(ref_grid_free(ref_grid), "free");
