@@ -43,6 +43,7 @@
 #include "ref_sort.h"
 #include "ref_subdiv.h"
 #include "ref_swap.h"
+#include "ref_validation.h"
 
 static REF_STATUS set_up_hex_for_shard(REF_SHARD *ref_shard_ptr,
                                        REF_MPI ref_mpi) {
@@ -406,7 +407,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tet_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tri");
+    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tet");
 
     REIS(ref_cell_n(ref_grid_tet(ref_grid)), ref_cell_n(ref_cell), "same ntet");
 
@@ -421,7 +422,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pyr_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tri");
+    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tet");
 
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       REIS(2 * ref_cell_n(ref_grid_pyr(ref_grid)), ref_cell_n(ref_cell),
@@ -439,7 +440,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_pri_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tri");
+    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tet");
 
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       REIS(3 * ref_cell_n(ref_grid_pri(ref_grid)), ref_cell_n(ref_cell),
@@ -457,7 +458,7 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_hex_grid(&ref_grid, ref_mpi), "set up");
 
-    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tri");
+    RSS(ref_shard_extract_tet(ref_grid, &ref_cell), "shard to tet");
 
     if (!ref_mpi_para(ref_grid_mpi(ref_grid))) {
       REIS(6 * ref_cell_n(ref_grid_hex(ref_grid)), ref_cell_n(ref_cell),
@@ -465,6 +466,25 @@ int main(int argc, char *argv[]) {
     }
 
     RSS(ref_cell_free(ref_cell), "free");
+    RSS(ref_grid_free(ref_grid), "free");
+  }
+
+  if (!ref_mpi_para(ref_mpi)) { /* shard hex brick */
+
+    REF_GRID ref_grid;
+    REF_GRID shard_grid;
+
+    RSS(ref_fixture_hex_brick_grid(&ref_grid, ref_mpi), "fixture hex");
+    RSS(ref_grid_deep_copy(&shard_grid, ref_grid), "deep copy");
+    RSS(ref_cell_free(ref_grid_tet(shard_grid)), "free tet");
+    RSS(ref_shard_extract_tet(ref_grid, &ref_grid_tet(shard_grid)),
+        "shard to tet");
+    RSS(ref_shard_extract_tri(ref_grid, &ref_grid_tri(shard_grid)),
+        "shard to tri");
+
+    RSS(ref_validation_boundary_all(shard_grid), "valid");
+
+    RSS(ref_grid_free(shard_grid), "free");
     RSS(ref_grid_free(ref_grid), "free");
   }
 
