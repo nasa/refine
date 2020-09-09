@@ -753,6 +753,8 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
 
   n = face0 + face1 + face2;
 
+  printf("face0 %d face1 %d face2 %d deg %d\n", face0, face1, face2, deg);
+
   switch (n) {
     case 0:
       tet_nodes[0] = nodes[I[0]];
