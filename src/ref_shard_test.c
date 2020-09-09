@@ -475,12 +475,18 @@ int main(int argc, char *argv[]) {
     REF_GRID shard_grid;
 
     RSS(ref_fixture_hex_brick_grid(&ref_grid, ref_mpi), "fixture hex");
+
     RSS(ref_grid_deep_copy(&shard_grid, ref_grid), "deep copy");
     RSS(ref_cell_free(ref_grid_tet(shard_grid)), "free tet");
     RSS(ref_shard_extract_tet(ref_grid, &ref_grid_tet(shard_grid)),
         "shard to tet");
+    RSS(ref_cell_free(ref_grid_tri(shard_grid)), "free tet");
     RSS(ref_shard_extract_tri(ref_grid, &ref_grid_tri(shard_grid)),
         "shard to tri");
+    RSS(ref_cell_free(ref_grid_qua(shard_grid)), "free qua");
+    RSS(ref_cell_create(&ref_grid_qua(shard_grid), REF_CELL_QUA), "qua create");
+    RSS(ref_cell_free(ref_grid_hex(shard_grid)), "free hex");
+    RSS(ref_cell_create(&ref_grid_hex(shard_grid), REF_CELL_HEX), "hex create");
 
     RSB(ref_validation_boundary_all(shard_grid), "valid",
         { ref_export_by_extension(shard_grid, "ref_shard_test_hex.tec"); });
