@@ -71,6 +71,8 @@ LOG=${root_dir}/log.egads-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${egads_dir} \
+    --with-mpi=${mpi_path} \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
