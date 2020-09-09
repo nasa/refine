@@ -495,7 +495,7 @@ trap - EXIT
 LOG=${root_dir}/log.accept-inflate-interp-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/interp
-( ./interp-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+( ./interp-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 4 procs
