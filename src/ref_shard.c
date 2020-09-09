@@ -642,7 +642,7 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   REF_INT face0, face1, face2, deg, n;
   REF_INT tet_nodes[REF_CELL_MAX_SIZE_PER];
 
-  for (node = 0; node < 6; node++)
+  for (node = 0; node < 8; node++)
     global[node] = ref_node_global(ref_node, nodes[node]);
 
   /* permutaion with node 0 the smallest global index of the hex */
@@ -743,7 +743,6 @@ static REF_STATUS ref_shard_add_hex_as_tet(REF_NODE ref_node, REF_CELL ref_cell,
   if (1 == face0 && 0 == face1 && 1 == face2) deg = 240;
   if (1 == face0 && 1 == face1 && 0 == face2) deg = 120;
   if (1 == face0 && 1 == face1 && 1 == face2) deg = 0;
-  printf("%d\n", deg); /* temp strict compile */
   if (120 == deg) {
     ref_shard_permute_hex_120(I);
   }

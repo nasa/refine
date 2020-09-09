@@ -71,10 +71,12 @@ LOG=${root_dir}/log.egads-configure
 trap "cat $LOG" EXIT
 ${source_dir}/configure \
     --prefix=${egads_dir} \
+    --with-mpi=${mpi_path} \
+    --with-parmetis=${parmetis_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    CC=gcc  > $LOG 2>&1
+    CC=icc  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.egads-make
@@ -403,6 +405,12 @@ cd ${source_dir}/acceptance/inflate/poly
 ( ./inflate.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-inflate-interp
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/interp
+( ./interp.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 LOG=${root_dir}/log.accept-inflate-normal
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/normal
@@ -481,6 +489,13 @@ LOG=${root_dir}/log.accept-inflate-normal-para
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/inflate/normal
 ( ./inflate-para.sh ${parmetis_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+# 2 procs
+LOG=${root_dir}/log.accept-inflate-interp-para
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/inflate/interp
+( ./interp-para.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 # 4 procs
