@@ -482,7 +482,8 @@ int main(int argc, char *argv[]) {
     RSS(ref_shard_extract_tri(ref_grid, &ref_grid_tri(shard_grid)),
         "shard to tri");
 
-    RSS(ref_validation_boundary_all(shard_grid), "valid");
+    RSB(ref_validation_boundary_all(shard_grid), "valid",
+        { ref_export_by_extension(shard_grid, "ref_shard_test_hex.tec"); });
     RSS(ref_validation_all(shard_grid), "valid");
 
     RSS(ref_grid_free(shard_grid), "free");
