@@ -1018,7 +1018,7 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
-  { /* bricks */
+  { /* tet bricks */
     REF_GRID from, to;
     char file[] = "ref_interp_test.meshb";
     REF_INTERP ref_interp;
@@ -1035,6 +1035,54 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
 
+    RSS(ref_interp_create(&ref_interp, from, to), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+    REIS(8, ref_interp->n_geom, "geom missing");
+    REIS(0, ref_interp->n_geom_fail, "geom fail");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(26, ref_interp->n_walk, "walk count");
+      REIS(30, ref_interp->n_tree, "tree count");
+    }
+    RSS(ref_interp_min_bary(ref_interp, &min_bary), "min bary");
+    RAS(-0.121 < min_bary, "large extrapolation");
+    RSS(ref_interp_max_error(ref_interp, &max_error), "err");
+    RAS(7.0e-16 > max_error, "large interp error");
+    RSS(ref_interp_free(ref_interp), "interp free");
+
+    RSS(ref_interp_create(&ref_interp, to, from), "make interp");
+    RSS(ref_interp_locate(ref_interp), "map");
+    REIS(8, ref_interp->n_geom, "geom missing");
+    REIS(0, ref_interp->n_geom_fail, "geom fail");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(26, ref_interp->n_walk, "walk count");
+      REIS(30, ref_interp->n_tree, "tree count");
+    }
+    RSS(ref_interp_min_bary(ref_interp, &min_bary), "min bary");
+    RAS(-0.121 < min_bary, "large extrapolation");
+    RSS(ref_interp_max_error(ref_interp, &max_error), "err");
+    RAS(7.0e-16 > max_error, "large interp error");
+    RSS(ref_interp_free(ref_interp), "interp free");
+
+    RSS(ref_grid_free(to), "free");
+    RSS(ref_grid_free(from), "free");
+  }
+
+  { /* hex bricks */
+    REF_GRID from, to;
+    char file[] = "ref_interp_test.meshb";
+    REF_INTERP ref_interp;
+    REF_DBL max_error, min_bary;
+
+    if (ref_mpi_once(ref_mpi)) {
+      RSS(ref_fixture_hex_brick_grid(&from, ref_mpi), "brick");
+      RSS(ref_export_by_extension(from, file), "export");
+      RSS(ref_grid_free(from), "free");
+    }
+    RSS(ref_part_by_extension(&from, ref_mpi, file), "import");
+    RSS(ref_part_by_extension(&to, ref_mpi, file), "import");
+    if (ref_mpi_once(ref_mpi)) REIS(0, remove(file), "test clean up");
+
+    RSS(ref_interp_shift_cube_interior(ref_grid_node(to)), "shift");
     RSS(ref_interp_create(&ref_interp, from, to), "make interp");
     RSS(ref_interp_locate(ref_interp), "map");
     REIS(8, ref_interp->n_geom, "geom missing");
