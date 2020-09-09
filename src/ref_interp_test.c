@@ -1020,7 +1020,7 @@ int main(int argc, char *argv[]) {
 
   { /* tet bricks */
     REF_GRID from, to;
-    char file[] = "ref_interp_test.meshb";
+    char file[] = "ref_interp_test_tet.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
 
@@ -1069,7 +1069,7 @@ int main(int argc, char *argv[]) {
 
   { /* hex bricks */
     REF_GRID from, to;
-    char file[] = "ref_interp_test.meshb";
+    char file[] = "ref_interp_test_hex.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
 
@@ -1117,7 +1117,7 @@ int main(int argc, char *argv[]) {
 
   { /* bricks subset */
     REF_GRID from, to;
-    char file[] = "ref_interp_test.meshb";
+    char file[] = "ref_interp_test_tet_subset.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
 
@@ -1162,7 +1162,7 @@ int main(int argc, char *argv[]) {
 
   { /* bricks nearest */
     REF_GRID from, to;
-    char file[] = "ref_interp_test.meshb";
+    char file[] = "ref_interp_test_tet_nearest.meshb";
     REF_INTERP ref_interp;
 
     if (ref_mpi_once(ref_mpi)) {
@@ -1198,8 +1198,8 @@ int main(int argc, char *argv[]) {
 
   { /* odd split one brick */
     REF_GRID from, to;
-    char even[] = "ref_interp_test_even.meshb";
-    char odd[] = "ref_interp_test_odd.meshb";
+    char even[] = "ref_interp_test_even_one.meshb";
+    char odd[] = "ref_interp_test_odd_one.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
 
@@ -1258,8 +1258,8 @@ int main(int argc, char *argv[]) {
 
   { /* odd/even split bricks */
     REF_GRID from, to;
-    char even[] = "ref_interp_test_even.meshb";
-    char odd[] = "ref_interp_test_odd.meshb";
+    char even[] = "ref_interp_test_even_both.meshb";
+    char odd[] = "ref_interp_test_odd_both.meshb";
     REF_INTERP ref_interp;
     REF_DBL max_error, min_bary;
 
@@ -1319,8 +1319,8 @@ int main(int argc, char *argv[]) {
 
   { /* interp scalar for odd/even split bricks, with curved boundary */
     REF_GRID from, to;
-    char even[] = "ref_interp_test_even.meshb";
-    char odd[] = "ref_interp_test_odd.meshb";
+    char even[] = "ref_interp_test_even_curved.meshb";
+    char odd[] = "ref_interp_test_odd_curved.meshb";
     REF_INTERP ref_interp;
     REF_DBL *from_scalar, *to_scalar;
     REF_INT node, i;
@@ -1382,7 +1382,7 @@ int main(int argc, char *argv[]) {
   }
 
   { /* integrate scalar */
-    char grid[] = "ref_interp_test.meshb";
+    char grid[] = "ref_interp_test_scalar.meshb";
     REF_GRID ref_grid;
     REF_DBL *truth_scalar, *candidate_scalar;
     REF_INT p;
