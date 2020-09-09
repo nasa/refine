@@ -76,7 +76,7 @@ ${source_dir}/configure \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
     CFLAGS='-g -O2 -pedantic-errors -Wall -Wextra -Werror -Wunused -Wuninitialized' \
-    CC=gcc  > $LOG 2>&1
+    CC=icc  > $LOG 2>&1
 trap - EXIT
 
 LOG=${root_dir}/log.egads-make
