@@ -99,7 +99,6 @@ C2S
  update best practice multiscale in docs
   gradation, reconstruction, parallel, field for speed regime
  README and FUN3D doc update and sync
- command line interface
  rename and cleanup ref bootstrap IO
  tutorials
 
@@ -264,10 +263,12 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ C2S v1 command line interface
+
 + ref interp extended to mixed element meshes
 + ref examine reports mesh/solb header data (size)
 + supports 64bit metis/parmetis
-+ quadrature based ratio
++ quadrature based ratio (reverted)
   + function
   + derivative for node0
 
