@@ -2,7 +2,6 @@
 - ref interp extended to mixed element meshes
 - ref examine reports mesh/solb header data (size)
 - oversized solb read results in warning, not error
-- edge length in metric computed with one point quadrature on log metric space
 - git describe versioning uses + to separate sha metadata for module load
 - 64bit integer METIS and ParMETIS supported
 - ref adapt --implied-complexity [complexity] imply metric from input mesh

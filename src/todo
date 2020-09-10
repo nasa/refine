@@ -264,6 +264,8 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ ref interp extended to mixed element meshes
++ ref examine reports mesh/solb header data (size)
 + supports 64bit metis/parmetis
 + quadrature based ratio
   + function
