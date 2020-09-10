@@ -1380,6 +1380,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   int i4, i4_swapped, version, keyword_code;
   long i8, i8_swapped;
   int i;
+  REF_BOOL file_position_report = REF_FALSE;
 
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
@@ -1418,7 +1419,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
 
   REIS(0, fseeko(file, 0, SEEK_END), "fseeko END failed");
   end_position = ftello(file);
-  printf("%ld end_position\n", (long)end_position);
+  if (file_position_report) printf("%ld end_position\n", (long)end_position);
   rewind(file);
 
   REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
@@ -1431,7 +1432,8 @@ REF_STATUS ref_import_examine_header(const char *filename) {
   next_position = ftello(file);
   while (next_position <= end_position && 0 < next_position) {
     REIS(0, fseeko(file, next_position, SEEK_SET), "fseeko NEXT failed");
-    printf("%ld current position\n", (long)next_position);
+    if (file_position_report)
+      printf("%ld current position\n", (long)next_position);
     REIS(1, fread((unsigned char *)&keyword_code, 4, 1, file), "keyword code");
     printf("%d keyword", keyword_code);
     switch (keyword_code) {
@@ -1484,7 +1486,7 @@ REF_STATUS ref_import_examine_header(const char *filename) {
         printf("\n");
     }
     RSS(meshb_pos(file, version, &next_position), "meshb pos");
-    printf("%ld next position", (long)next_position);
+    if (file_position_report) printf("%ld next position", (long)next_position);
     if (next_position > 0) {
       printf(" %ld size\n", (long)(next_position - ftello(file)));
     } else {
@@ -1493,17 +1495,17 @@ REF_STATUS ref_import_examine_header(const char *filename) {
     if (version >= 4 && keyword_code != 3) {
       if (ftello(file) < end_position) {
         REIS(1, fread((unsigned char *)&i8, 8, 1, file), "code");
-        printf("%ld first i8\n", i8);
+        printf("  %ld first i8\n", i8);
       }
     } else {
       if (ftello(file) < end_position) {
         REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
-        printf("%d first i4\n", i4);
+        printf("  %d first i4\n", i4);
       }
     }
     if (ftello(file) < end_position) {
       REIS(1, fread((unsigned char *)&i4, 4, 1, file), "code");
-      printf("%d second i4\n", i4);
+      printf("  %d second i4\n", i4);
     }
   }
 

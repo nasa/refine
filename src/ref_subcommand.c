@@ -53,6 +53,7 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
+  printf("  examine      Report mesh or solution file meta data.\n");
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
@@ -82,6 +83,10 @@ static void bootstrap_help(const char *name) {
   printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("  --auto-tparams {or combination of options} adjust .tParams\n");
   printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
+  printf("\n");
+}
+static void examine_help(const char *name) {
+  printf("usage: \n %s examine input_mesh_or_solb.extension\n", name);
   printf("\n");
 }
 static void grow_help(const char *name) {
@@ -655,6 +660,17 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS examine(REF_MPI ref_mpi, int argc, char *argv[]) {
+  if (argc < 3) goto shutdown;
+
+  RSS(ref_import_examine_header(argv[2]), "examine header");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) examine_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1682,6 +1698,13 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "e", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(examine(ref_mpi, argc, argv), "examine");
+    } else {
+      if (ref_mpi_once(ref_mpi)) examine_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "g", 1) == 0) {
