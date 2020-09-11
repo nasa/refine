@@ -452,6 +452,7 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
   return REF_SUCCESS;
 }
 
+/* use? Fast sweeping methods for eikonal equations on triangular meshes */
 REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                     REF_DBL *distance) {
   REF_DBL node_min, node_max;
