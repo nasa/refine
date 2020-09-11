@@ -451,3 +451,90 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 
   return REF_SUCCESS;
 }
+
+/* use? Fast sweeping methods for eikonal equations on triangular meshes */
+REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                    REF_DBL *distance) {
+  REF_DBL node_min, node_max;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL gradient[3], slope, dist, len;
+  REF_INT cell_node, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT *set;
+  REF_BOOL update;
+  REF_INT passes;
+  ref_malloc_init(set, ref_node_max(ref_node), REF_INT, 0);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    node_min = MIN(MIN(field[nodes[0]], field[nodes[1]]), field[nodes[2]]);
+    node_max = MAX(MAX(field[nodes[0]], field[nodes[1]]), field[nodes[2]]);
+    if (node_min <= 0.0 && 0.0 <= node_max) {
+      RSS(ref_node_tri_grad_nodes(ref_node, nodes, field, gradient), "grad");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        slope = sqrt(gradient[0] * gradient[0] + gradient[1] * gradient[1] +
+                     gradient[2] * gradient[2]);
+        if (ref_math_divisible(field[nodes[cell_node]], slope)) {
+          distance[nodes[cell_node]] = field[nodes[cell_node]] / slope;
+        } else {
+          distance[nodes[cell_node]] = 0.0;
+        }
+        set[nodes[cell_node]] = 1;
+      }
+    }
+  }
+
+  update = REF_TRUE;
+  passes = 0;
+  while (update) {
+    update = REF_FALSE;
+    passes++;
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      if (2 == set[nodes[0]] + set[nodes[1]] + set[nodes[2]]) {
+        each_ref_cell_cell_node(ref_cell, cell_node) {
+          if (0 == set[nodes[cell_node]]) {
+            dist = 0;
+            node = cell_node + 1;
+            if (2 < node) node -= 3;
+            len = sqrt(pow(ref_node_xyz(ref_node, 0, nodes[node]) -
+                               ref_node_xyz(ref_node, 0, nodes[cell_node]),
+                           2) +
+                       pow(ref_node_xyz(ref_node, 1, nodes[node]) -
+                               ref_node_xyz(ref_node, 1, nodes[cell_node]),
+                           2) +
+                       pow(ref_node_xyz(ref_node, 2, nodes[node]) -
+                               ref_node_xyz(ref_node, 2, nodes[cell_node]),
+                           2));
+            printf("dist %f len %f\n", distance[nodes[node]], len);
+            dist = ABS(distance[nodes[node]]) + len;
+            node = cell_node + 2;
+            if (2 < node) node -= 3;
+            len = sqrt(pow(ref_node_xyz(ref_node, 0, nodes[node]) -
+                               ref_node_xyz(ref_node, 0, nodes[cell_node]),
+                           2) +
+                       pow(ref_node_xyz(ref_node, 1, nodes[node]) -
+                               ref_node_xyz(ref_node, 1, nodes[cell_node]),
+                           2) +
+                       pow(ref_node_xyz(ref_node, 2, nodes[node]) -
+                               ref_node_xyz(ref_node, 2, nodes[cell_node]),
+                           2));
+            printf("dist %f len %f\n", distance[nodes[node]], len);
+
+            dist = MIN(dist, ABS(distance[nodes[node]]) + len);
+            printf("dist %f\n", dist);
+            if (distance[nodes[node]] >= 0.0) {
+              distance[nodes[cell_node]] = dist;
+            } else {
+              distance[nodes[cell_node]] = -dist;
+            }
+            set[nodes[cell_node]] = 1;
+            update = REF_TRUE;
+          }
+        }
+      }
+    }
+  }
+  printf("pass %d\n", passes);
+
+  ref_free(set);
+  return REF_SUCCESS;
+}
