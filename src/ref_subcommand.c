@@ -91,6 +91,7 @@ static void examine_help(const char *name) {
 }
 static void grow_help(const char *name) {
   printf("usage: \n %s grow surface.meshb volume.meshb\n", name);
+  printf("  --mesher {tetgen|aflr} volume mesher\n");
   printf("\n");
 }
 static void interpolate_help(const char *name) {
@@ -678,6 +679,9 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
   REF_GRID ref_grid = NULL;
+  const char *mesher = "tetgen";
+  REF_INT pos;
+  REF_INT self_intersections;
 
   if (ref_mpi_para(ref_mpi)) {
     RSS(REF_IMPLEMENT, "ref volume is not parallel");
@@ -689,7 +693,40 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   printf("import %s\n", in_file);
   RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
 
-  RSS(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume ");
+  RXS(ref_args_find(argc, argv, "--mesher", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    mesher = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("--mesher %s requested\n", mesher);
+  }
+
+  if (strncmp(mesher, "t", 1) == 0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("fill volume with TetGen\n");
+      RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
+        printf("probing adapted tessellation self-intersections\n");
+        RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+            "bumps");
+        printf("%d segment-triangle intersections detected.\n",
+               self_intersections);
+      });
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
+  } else if (strncmp(mesher, "a", 1) == 0) {
+    if (ref_mpi_once(ref_mpi)) {
+      printf("fill volume with AFLR3\n");
+      RSB(ref_geom_aflr_volume(ref_grid), "aflr surface to volume", {
+        printf("probing adapted tessellation self-intersections\n");
+        RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+            "bumps");
+        printf("%d segment-triangle intersections detected.\n",
+               self_intersections);
+      });
+    }
+    ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
+  } else {
+    printf("mesher '%s' not implemented\n", mesher);
+    goto shutdown;
+  }
 
   printf("export %s\n", out_file);
   RSS(ref_export_by_extension(ref_grid, out_file), "vol export");
