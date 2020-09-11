@@ -526,6 +526,7 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
               distance[nodes[cell_node]] = -dist;
             }
             set[nodes[cell_node]] = 1;
+            update = REF_TRUE;
           }
         }
       }
