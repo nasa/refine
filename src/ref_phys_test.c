@@ -1251,8 +1251,8 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "tri");
     ref_node = ref_grid_node(ref_grid);
-    ref_malloc(field, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
       field[node] = ref_node_xyz(ref_node, 0, node) - offset;
     }
@@ -1274,8 +1274,31 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "tri");
     ref_node = ref_grid_node(ref_grid);
-    ref_malloc(field, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
+    each_ref_node_valid_node(ref_node, node) {
+      field[node] = ref_node_xyz(ref_node, 0, node) - offset;
+    }
+    RSS(ref_phys_signed_distance(ref_grid, field, distance), "dist");
+    each_ref_node_valid_node(ref_node, node) {
+      RWDS(ref_node_xyz(ref_node, 0, node) - offset, distance[node], -1,
+           "dist");
+    }
+    ref_free(distance);
+    ref_free(field);
+  }
+
+  { /* two tri signed dist */
+    REF_GRID ref_grid;
+    REF_NODE ref_node;
+    REF_INT node;
+    REF_DBL *field, *distance;
+    REF_DBL offset = 0.5;
+
+    RSS(ref_fixture_tri2_grid(&ref_grid, ref_mpi), "tri");
+    ref_node = ref_grid_node(ref_grid);
+    ref_malloc(field, ref_node_max(ref_node), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_node), REF_DBL);
     each_ref_node_valid_node(ref_node, node) {
       field[node] = ref_node_xyz(ref_node, 0, node) - offset;
     }
