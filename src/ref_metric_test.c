@@ -47,6 +47,7 @@
 #include "ref_mpi.h"
 #include "ref_node.h"
 #include "ref_part.h"
+#include "ref_phys.h"
 #include "ref_smooth.h"
 #include "ref_sort.h"
 #include "ref_split.h"
@@ -1534,6 +1535,23 @@ int main(int argc, char *argv[]) {
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_metric_imply_from(metric, ref_grid), "imply");
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
+
+    if (ref_grid_twod(ref_grid)) {
+      REF_DBL *threshold, *signed_distance;
+      ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
+      ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
+      each_ref_node_valid_node(ref_node, node) {
+        REF_DBL turb1 = field[5 + ldim * node];
+        threshold[node] = turb1 - 4.0;
+      }
+      RSS(ref_phys_signed_distance(ref_grid, threshold, signed_distance),
+          "dist");
+      RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
+                                         "ref_metric_signed_dist.tec"),
+          "tec");
+      ref_free(signed_distance);
+      ref_free(threshold);
+    }
 
     if (ref_grid_twod(ref_grid)) {
       each_ref_node_valid_node(ref_node, node) {
