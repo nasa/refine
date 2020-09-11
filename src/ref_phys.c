@@ -451,3 +451,29 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus) {
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
+                                    REF_DBL *distance) {
+  REF_DBL node_min, node_max;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_DBL gradient[3], slope;
+  REF_INT cell_node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    node_min = MIN(MIN(field[nodes[0]], field[nodes[1]]), field[nodes[2]]);
+    node_max = MAX(MAX(field[nodes[0]], field[nodes[1]]), field[nodes[2]]);
+    if (node_min <= 0.0 && 0.0 <= node_max) {
+      RSS(ref_node_tri_grad_nodes(ref_node, nodes, field, gradient), "grad");
+      each_ref_cell_cell_node(ref_cell, cell_node) {
+        slope = sqrt(gradient[0] * gradient[0] + gradient[1] * gradient[1] +
+                     gradient[2] * gradient[2]);
+        if (ref_math_divisible(field[nodes[cell_node]], slope)) {
+          distance[nodes[cell_node]] = field[nodes[cell_node]] / slope;
+        } else {
+          distance[nodes[cell_node]] = 0.0;
+        }
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
