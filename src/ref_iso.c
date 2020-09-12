@@ -21,9 +21,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "ref_edge.h"
+#include "ref_malloc.h"
+
 REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
-                          REF_DBL *field){
+                          REF_DBL *field) {
+  REF_EDGE ref_edge;
+  REF_INT *mark;
+
   RSS(ref_grid_create(iso_grid_ptr, ref_grid_mpi(ref_grid)), "create");
-SUPRESS_UNUSED_COMPILER_WARNING(field);
+  RSS(ref_edge_create(&ref_edge, ref_grid), "create edge");
+  ref_malloc_init(mark, ref_edge_n(ref_edge), REF_INT, 0);
+
+  ref_free(mark);
+  ref_edge_free(ref_edge);
+  SUPRESS_UNUSED_COMPILER_WARNING(field);
   return REF_SUCCESS;
 }
