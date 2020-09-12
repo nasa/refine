@@ -170,3 +170,39 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
+                            REF_DBL *distance) {
+  REF_GRID iso_grid;
+  REF_SEARCH ref_search;
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_DBL center[3], radius;
+  REF_DBL scale = 1.0 + 1.0e-8;
+  REF_LIST ref_list;
+  REF_INT node;
+
+  RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+  RSS(ref_grid_free(iso_grid), "iso free");
+
+  ref_cell = ref_grid_edg(iso_grid);
+  RSS(ref_search_create(&ref_search, ref_cell_n(ref_cell)), "create search");
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_node_bounding_sphere(ref_grid_node(iso_grid), nodes, 2, center,
+                                 &radius),
+        "b");
+    RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
+  }
+  RSS(ref_list_create(&ref_list), "create list");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RSS(ref_search_nearest_candidates(
+            ref_search, ref_list,
+            ref_node_xyz_ptr(ref_grid_node(ref_grid), node)),
+        "candidates");
+    RSS(ref_list_erase(ref_list), "reset list");
+  }
+  RSS(ref_list_free(ref_list), "free");
+
+  SUPRESS_UNUSED_COMPILER_WARNING(distance);
+  return REF_SUCCESS;
+}
