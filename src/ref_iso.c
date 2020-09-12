@@ -120,6 +120,12 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
         ref_node_xyz(ref_grid_node(iso_grid), 0, new_node[edge]) =
             t1 * ref_node_xyz(ref_grid_node(ref_grid), 0, node1) +
             t0 * ref_node_xyz(ref_grid_node(ref_grid), 0, node0);
+        ref_node_xyz(ref_grid_node(iso_grid), 1, new_node[edge]) =
+            t1 * ref_node_xyz(ref_grid_node(ref_grid), 1, node1) +
+            t0 * ref_node_xyz(ref_grid_node(ref_grid), 1, node0);
+        ref_node_xyz(ref_grid_node(iso_grid), 2, new_node[edge]) =
+            t1 * ref_node_xyz(ref_grid_node(ref_grid), 2, node1) +
+            t0 * ref_node_xyz(ref_grid_node(ref_grid), 2, node0);
       }
     }
   }
