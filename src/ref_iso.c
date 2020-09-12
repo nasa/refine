@@ -176,11 +176,11 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
   REF_GRID iso_grid;
   REF_SEARCH ref_search;
   REF_CELL ref_cell;
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_DBL center[3], radius;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cand[REF_CELL_MAX_SIZE_PER];
+  REF_DBL center[3], radius, dist;
   REF_DBL scale = 1.0 + 1.0e-8;
   REF_LIST ref_list;
-  REF_INT node;
+  REF_INT node, item, candidate;
 
   RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
   RSS(ref_grid_free(iso_grid), "iso free");
@@ -195,14 +195,25 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
   }
   RSS(ref_list_create(&ref_list), "create list");
   each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    distance[node] = REF_DBL_MAX;
     RSS(ref_search_nearest_candidates(
             ref_search, ref_list,
             ref_node_xyz_ptr(ref_grid_node(ref_grid), node)),
         "candidates");
+    each_ref_list_item(ref_list, item) {
+      candidate = ref_list_value(ref_list, item);
+      RSS(ref_cell_nodes(ref_cell, candidate, cand), "cell");
+      RSS(ref_search_distance2(
+              ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[0]),
+              ref_node_xyz_ptr(ref_grid_node(iso_grid), cand[1]),
+              ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &dist),
+          "dist2");
+      distance[node] = MIN(distance[node], dist);
+    }
+
     RSS(ref_list_erase(ref_list), "reset list");
   }
   RSS(ref_list_free(ref_list), "free");
 
-  SUPRESS_UNUSED_COMPILER_WARNING(distance);
   return REF_SUCCESS;
 }
