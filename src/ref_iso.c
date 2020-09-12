@@ -183,7 +183,6 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
   REF_INT node, item, candidate;
 
   RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
-  RSS(ref_grid_free(iso_grid), "iso free");
 
   ref_cell = ref_grid_edg(iso_grid);
   RSS(ref_search_create(&ref_search, ref_cell_n(ref_cell)), "create search");
@@ -214,6 +213,8 @@ REF_STATUS ref_iso_distance(REF_GRID ref_grid, REF_DBL *field,
     RSS(ref_list_erase(ref_list), "reset list");
   }
   RSS(ref_list_free(ref_list), "free");
+
+  RSS(ref_grid_free(iso_grid), "iso free");
 
   return REF_SUCCESS;
 }
