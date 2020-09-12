@@ -59,6 +59,8 @@ REF_STATUS ref_search_nearest_candidates(REF_SEARCH ref_search,
 REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
                                 REF_LONG position, REF_DBL *value);
 
+REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
+                                REF_DBL *distance);
 END_C_DECLORATION
 
 #endif /* REF_SEARCH_H */

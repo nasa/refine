@@ -324,6 +324,77 @@ int main(int argc, char *argv[]) {
     ref_free(elements);
   }
 
+  { /* dist to unit segment */
+    REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
+    REF_DBL xyz1[3] = {1.0, 0.0, 0.0};
+    REF_DBL distance;
+    /* on */
+    {
+      REF_DBL xyz[3] = {0.0, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(0.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.5, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(0.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {1.0, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(0.0, distance, -1.0, "distance");
+    }
+    /* offset */
+    {
+      REF_DBL xyz[3] = {0.0, 1.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(1.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.5, 1.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(1.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {1.0, 1.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(1.0, distance, -1.0, "distance");
+    }
+    /* first closest */
+    {
+      REF_DBL xyz[3] = {-1.0, 1.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(sqrt(2.0), distance, -1.0, "distance");
+    }
+    /* second closest */
+    {
+      REF_DBL xyz[3] = {3.0, 1.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(sqrt(5.0), distance, -1.0, "distance");
+    }
+  }
+
+  { /* dist to zero segment */
+    REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
+    REF_DBL xyz1[3] = {0.0, 0.0, 0.0};
+    REF_DBL distance;
+    {
+      REF_DBL xyz[3] = {0.0, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(0.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.5, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(0.5, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {1.0, 0.0, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(1.0, distance, -1.0, "distance");
+    }
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;
