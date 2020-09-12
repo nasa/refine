@@ -374,6 +374,23 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  { /* dist to non-unit segment */
+    REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
+    REF_DBL xyz1[3] = {3.7, 0.0, 0.0};
+    REF_DBL distance;
+    /* offset */
+    {
+      REF_DBL xyz[3] = {3.0, 1.2, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(1.2, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.5, 3.1, 0.0};
+      RSS(ref_search_distance2(xyz0, xyz1, xyz, &distance), "dist");
+      RWDS(3.1, distance, -1.0, "distance");
+    }
+  }
+
   { /* dist to zero segment */
     REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
     REF_DBL xyz1[3] = {0.0, 0.0, 0.0};
