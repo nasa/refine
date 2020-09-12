@@ -1263,6 +1263,7 @@ int main(int argc, char *argv[]) {
     }
     ref_free(distance);
     ref_free(field);
+    ref_grid_free(ref_grid);
   }
 
   { /* shifted tri signed dist */
@@ -1286,6 +1287,7 @@ int main(int argc, char *argv[]) {
     }
     ref_free(distance);
     ref_free(field);
+    ref_grid_free(ref_grid);
   }
 
   { /* two tri signed dist */
@@ -1309,6 +1311,7 @@ int main(int argc, char *argv[]) {
     }
     ref_free(distance);
     ref_free(field);
+    ref_grid_free(ref_grid);
   }
 
   RSS(ref_mpi_free(ref_mpi), "mpi free");
