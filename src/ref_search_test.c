@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "max radius");
     RWDS(trim, 3.8, -1, "expected");
 
     item = 32;
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "max radius");
     RWDS(trim, 3.8, -1, "expected");
 
     item = 50;
@@ -211,13 +211,19 @@ int main(int argc, char *argv[]) {
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "max radius");
     RWDS(trim, 3.8, -1, "expected");
+
+    xyz[0] = 6.0;
+    xyz[1] = 0.0;
+    xyz[2] = 0.0;
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "max radius");
+    RWDS(trim, 1.1, -1, "expected");
 
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "touches");
+    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "cand");
     REIS(2, ref_list_n(ref_list), "should gather");
     REIS(28, ref_list_value(ref_list, 0), "should item");
     REIS(32, ref_list_value(ref_list, 1), "should item");
@@ -232,7 +238,7 @@ int main(int argc, char *argv[]) {
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "touches");
+    RSS(ref_search_trim_radius(ref_search, xyz, &trim), "max radius");
     RWDS(trim, 0.6, -1, "expected");
 
     RSS(ref_list_free(ref_list), "list free");
@@ -250,7 +256,7 @@ int main(int argc, char *argv[]) {
     xyz[0] = 0.0;
     xyz[1] = 0.0;
     xyz[2] = 0.0;
-    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "touches");
+    RSS(ref_search_nearest_candidates(ref_search, ref_list, xyz), "cand");
     REIS(0, ref_list_n(ref_list), "should gather");
 
     RSS(ref_list_free(ref_list), "list free");
