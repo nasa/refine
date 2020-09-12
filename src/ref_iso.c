@@ -23,6 +23,7 @@
 
 #include "ref_edge.h"
 #include "ref_malloc.h"
+#include "ref_math.h"
 #include "ref_node.h"
 
 static REF_STATUS ref_iso_ghost(REF_GRID iso_grid, REF_EDGE ref_edge,
@@ -87,6 +88,7 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   REF_INT edge, part;
   REF_INT node0, node1;
   REF_GLOB global;
+  REF_DBL t1, t0, d;
 
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
@@ -108,7 +110,16 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
             "next global");
         RSS(ref_node_add(ref_grid_node(iso_grid), global, &(new_node[edge])),
             "add node");
-        /* set xyz */
+        d = field[node1] - field[node0];
+        t1 = 0.5;
+        if (ref_math_divisible(field[node0], d)) {
+          t1 = -field[node0] / d;
+        }
+        t0 = 1.0 - t1;
+        /*printf("%f %f d %f t %f\n",field[node0],field[node1],d,t);*/
+        ref_node_xyz(ref_grid_node(iso_grid), 0, new_node[edge]) =
+            t1 * ref_node_xyz(ref_grid_node(ref_grid), 0, node1) +
+            t0 * ref_node_xyz(ref_grid_node(ref_grid), 0, node0);
       }
     }
   }
