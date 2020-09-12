@@ -66,6 +66,10 @@ int main(int argc, char *argv[]) {
       field[node] = ref_node_xyz(ref_node, 0, node) - offset;
     }
     RSS(ref_iso_insert(&iso_grid, ref_grid, field), "iso");
+    if (!ref_mpi_para(ref_mpi)) {
+      REIS(2, ref_node_n(ref_grid_node(iso_grid)), "two nodes");
+      REIS(1, ref_cell_n(ref_grid_edg(iso_grid)), "one edg");
+    }
     ref_grid_free(iso_grid);
     ref_free(field);
     ref_grid_free(ref_grid);

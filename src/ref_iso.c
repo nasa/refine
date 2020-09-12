@@ -85,10 +85,15 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   REF_GRID iso_grid;
   REF_EDGE ref_edge;
   REF_INT *new_node;
-  REF_INT edge, part;
-  REF_INT node0, node1;
+  REF_INT edge, part, new_cell;
+  REF_INT node0, node1, node2;
+  REF_INT edge0, edge1, edge2;
   REF_GLOB global;
   REF_DBL t1, t0, d;
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT new_nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT id = 1;
 
   RSS(ref_node_synchronize_globals(ref_grid_node(ref_grid)), "sync glob");
 
@@ -132,6 +137,33 @@ REF_STATUS ref_iso_insert(REF_GRID *iso_grid_ptr, REF_GRID ref_grid,
   RSS(ref_node_shift_new_globals(ref_grid_node(iso_grid)), "shift iso glob");
 
   RSS(ref_iso_ghost(iso_grid, ref_edge, new_node), "new ghost");
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_edge_with(ref_edge, nodes[1], nodes[2], &edge0), "e0");
+    RSS(ref_edge_with(ref_edge, nodes[2], nodes[0], &edge1), "e1");
+    RSS(ref_edge_with(ref_edge, nodes[0], nodes[1], &edge2), "e2");
+    node0 = new_node[edge0];
+    node1 = new_node[edge1];
+    node2 = new_node[edge2];
+    if (REF_EMPTY == node0 && REF_EMPTY != node1 && REF_EMPTY != node2) {
+      new_nodes[0] = node1;
+      new_nodes[1] = node2;
+      new_nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+    }
+    if (REF_EMPTY != node0 && REF_EMPTY == node1 && REF_EMPTY != node2) {
+      new_nodes[0] = node2;
+      new_nodes[1] = node0;
+      new_nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+    }
+    if (REF_EMPTY != node0 && REF_EMPTY != node1 && REF_EMPTY == node2) {
+      new_nodes[0] = node0;
+      new_nodes[1] = node1;
+      new_nodes[2] = id;
+      RSS(ref_cell_add(ref_grid_edg(iso_grid), new_nodes, &new_cell), "add");
+    }
+  }
 
   ref_free(new_node);
   ref_edge_free(ref_edge);
