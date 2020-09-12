@@ -82,6 +82,7 @@ set(REF_CORE_SRC
         ref_html.c
         ref_import.c
         ref_inflate.c
+        ref_interp.c
         ref_iso.c
         ref_layer.c
         ref_list.c
