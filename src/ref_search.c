@@ -23,6 +23,7 @@
 #include <stdlib.h>
 
 #include "ref_malloc.h"
+#include "ref_math.h"
 
 #define MAX_NODE_LIST (100)
 
@@ -282,5 +283,31 @@ REF_STATUS ref_search_selection(REF_MPI ref_mpi, REF_INT n, REF_DBL *elements,
     }
   }
   *value = mid_val;
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
+                                REF_DBL *distance) {
+  REF_DBL dl[3], dxyz[3], len2, proj2, t;
+  dl[0] = xyz1[0] - xyz0[0];
+  dl[1] = xyz1[1] - xyz0[1];
+  dl[2] = xyz1[2] - xyz0[2];
+  dxyz[0] = xyz[0] - xyz0[0];
+  dxyz[1] = xyz[1] - xyz0[1];
+  dxyz[2] = xyz[2] - xyz0[2];
+  len2 = ref_math_dot(dl, dl);
+  proj2 = ref_math_dot(dxyz, dl);
+  if (ref_math_divisible(proj2, len2)) {
+    t = proj2 / len2;
+    t = MAX(t, 0.0);
+    t = MIN(t, 1.0);
+    dxyz[0] = xyz[0] - (xyz0[0] + t * dl[0]);
+    dxyz[1] = xyz[1] - (xyz0[1] + t * dl[1]);
+    dxyz[2] = xyz[2] - (xyz0[2] + t * dl[2]);
+    *distance = sqrt(ref_math_dot(dxyz, dxyz));
+  } else { /* length zero, either endpoint */
+    *distance = sqrt(ref_math_dot(dxyz, dxyz));
+  }
+
   return REF_SUCCESS;
 }
