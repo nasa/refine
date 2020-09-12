@@ -1551,7 +1551,6 @@ int main(int argc, char *argv[]) {
       RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
                                          "ref_metric_signed_dist.tec"),
           "tec");
-      ref_free(signed_distance);
 
       {
         REF_GRID iso_grid;
@@ -1559,6 +1558,11 @@ int main(int argc, char *argv[]) {
         RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
         RSS(ref_grid_free(iso_grid), "iso free");
       }
+      RSS(ref_iso_distance(ref_grid, threshold, signed_distance), "iso");
+      RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
+                                         "ref_metric_iso_dist.tec"),
+          "tec");
+      ref_free(signed_distance);
       ref_free(threshold);
     }
 
