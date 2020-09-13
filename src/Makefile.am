@@ -10,7 +10,7 @@ include_HEADERS = ref_adapt.h ref_adj.h ref_agents.h ref_args.h ref_axi.h \
 	ref_face.h ref_fixture.h ref_fortran.h \
 	ref_gather.h ref_geom.h ref_grid.h \
 	ref_histogram.h ref_html.h \
-	ref_import.h ref_inflate.h ref_interp.h \
+	ref_import.h ref_inflate.h ref_interp.h ref_iso.h \
 	ref_list.h ref_layer.h \
 	ref_malloc.h \
 	ref_math.h ref_matrix.h ref_meshlink.h \
@@ -54,6 +54,7 @@ librefine_core_a_SOURCES = \
 	ref_import.c \
 	ref_inflate.c \
 	ref_interp.c \
+	ref_iso.c \
 	ref_layer.c \
 	ref_list.c \
 	ref_math.c \
@@ -322,6 +323,11 @@ TESTS += ref_interp_test
 noinst_PROGRAMS += ref_interp_test
 ref_interp_test_SOURCES = ref_interp_test.c
 ref_interp_test_LDADD = $(default_ldadd)
+
+TESTS += ref_iso_test
+noinst_PROGRAMS += ref_iso_test
+ref_iso_test_SOURCES = ref_iso_test.c
+ref_iso_test_LDADD = $(default_ldadd)
 
 TESTS += ref_layer_test
 noinst_PROGRAMS += ref_layer_test

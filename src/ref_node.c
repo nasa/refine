@@ -2608,6 +2608,26 @@ REF_STATUS ref_node_extract_aux(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_INT n, REF_DBL *center,
+                                    REF_DBL *radius) {
+  REF_INT i, j;
+  for (i = 0; i < 3; i++) {
+    center[i] = 0;
+    for (j = 0; j < n; j++) {
+      center[i] += ref_node_xyz(ref_node, i, nodes[j]);
+    }
+    center[i] /= (REF_DBL)n;
+  }
+  *radius = 0.0;
+  for (i = 0; i < n; i++)
+    *radius = MAX(
+        *radius, sqrt(pow(ref_node_xyz(ref_node, 0, nodes[i]) - center[0], 2) +
+                      pow(ref_node_xyz(ref_node, 1, nodes[i]) - center[1], 2) +
+                      pow(ref_node_xyz(ref_node, 2, nodes[i]) - center[2], 2)));
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                           REF_DBL *bary) {
   REF_DBL *xyz0, *xyz1, *xyz2;

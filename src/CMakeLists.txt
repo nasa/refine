@@ -30,6 +30,7 @@ set(REF_TWO_HEADERS
         ref_import.h
         ref_inflate.h
         ref_interp.h
+        ref_iso.h
         ref_layer.h
         ref_list.h
         ref_malloc.h
@@ -82,6 +83,7 @@ set(REF_CORE_SRC
         ref_import.c
         ref_inflate.c
         ref_interp.c
+        ref_iso.c
         ref_layer.c
         ref_list.c
         ref_math.c
@@ -240,6 +242,7 @@ set(REF_TESTS
         ref_import_test.c
         ref_inflate_test.c
         ref_interp_test.c
+        ref_iso_test.c
         ref_layer_test.c
         ref_list_test.c
         ref_math_test.c

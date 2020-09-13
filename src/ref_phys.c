@@ -504,7 +504,6 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                        pow(ref_node_xyz(ref_node, 2, nodes[node]) -
                                ref_node_xyz(ref_node, 2, nodes[cell_node]),
                            2));
-            printf("dist %f len %f\n", distance[nodes[node]], len);
             dist = ABS(distance[nodes[node]]) + len;
             node = cell_node + 2;
             if (2 < node) node -= 3;
@@ -517,10 +516,8 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                        pow(ref_node_xyz(ref_node, 2, nodes[node]) -
                                ref_node_xyz(ref_node, 2, nodes[cell_node]),
                            2));
-            printf("dist %f len %f\n", distance[nodes[node]], len);
 
             dist = MIN(dist, ABS(distance[nodes[node]]) + len);
-            printf("dist %f\n", dist);
             if (distance[nodes[node]] >= 0.0) {
               distance[nodes[cell_node]] = dist;
             } else {
@@ -533,7 +530,6 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
       }
     }
   }
-  printf("pass %d\n", passes);
 
   ref_free(set);
   return REF_SUCCESS;

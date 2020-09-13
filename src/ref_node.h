@@ -225,6 +225,10 @@ REF_STATUS ref_node_store_aux(REF_NODE ref_node, REF_INT ldim, REF_DBL *aux);
 REF_STATUS ref_node_extract_aux(REF_NODE ref_node, REF_INT *ldim,
                                 REF_DBL **aux);
 
+REF_STATUS ref_node_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
+                                    REF_INT n, REF_DBL *center,
+                                    REF_DBL *radius);
+
 REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                           REF_DBL *bary);
 REF_STATUS ref_node_bary3d(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,

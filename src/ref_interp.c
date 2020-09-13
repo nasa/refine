@@ -114,41 +114,6 @@ static REF_STATUS ref_interp_exhaustive_tri_around_node(REF_INTERP ref_interp,
   return REF_SUCCESS;
 }
 
-static REF_STATUS ref_interp_bounding_sphere4(REF_NODE ref_node, REF_INT *nodes,
-                                              REF_DBL *center,
-                                              REF_DBL *radius) {
-  REF_INT i;
-  for (i = 0; i < 3; i++)
-    center[i] = 0.25 * (ref_node_xyz(ref_node, i, nodes[0]) +
-                        ref_node_xyz(ref_node, i, nodes[1]) +
-                        ref_node_xyz(ref_node, i, nodes[2]) +
-                        ref_node_xyz(ref_node, i, nodes[3]));
-  *radius = 0.0;
-  for (i = 0; i < 4; i++)
-    *radius = MAX(
-        *radius, sqrt(pow(ref_node_xyz(ref_node, 0, nodes[i]) - center[0], 2) +
-                      pow(ref_node_xyz(ref_node, 1, nodes[i]) - center[1], 2) +
-                      pow(ref_node_xyz(ref_node, 2, nodes[i]) - center[2], 2)));
-  return REF_SUCCESS;
-}
-
-static REF_STATUS ref_interp_bounding_sphere3(REF_NODE ref_node, REF_INT *nodes,
-                                              REF_DBL *center,
-                                              REF_DBL *radius) {
-  REF_INT i;
-  for (i = 0; i < 3; i++)
-    center[i] = (1.0 / 3.0) * (ref_node_xyz(ref_node, i, nodes[0]) +
-                               ref_node_xyz(ref_node, i, nodes[1]) +
-                               ref_node_xyz(ref_node, i, nodes[2]));
-  *radius = 0.0;
-  for (i = 0; i < 3; i++)
-    *radius = MAX(
-        *radius, sqrt(pow(ref_node_xyz(ref_node, 0, nodes[i]) - center[0], 2) +
-                      pow(ref_node_xyz(ref_node, 1, nodes[i]) - center[1], 2) +
-                      pow(ref_node_xyz(ref_node, 2, nodes[i]) - center[2], 2)));
-  return REF_SUCCESS;
-}
-
 static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   REF_GRID from_grid = ref_interp_from_grid(ref_interp);
   REF_NODE from_node = ref_grid_node(from_grid);
@@ -161,7 +126,7 @@ static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   if (ref_grid_twod(from_grid)) {
     RSS(ref_search_create(&ref_search, ref_cell_n(from_tri)), "create search");
     each_ref_cell_valid_cell_with_nodes(from_tri, cell, nodes) {
-      RSS(ref_interp_bounding_sphere3(from_node, nodes, center, &radius), "b");
+      RSS(ref_node_bounding_sphere(from_node, nodes, 3, center, &radius), "b");
       RSS(ref_search_insert(ref_search, cell, center,
                             ref_interp_search_donor_scale(ref_interp) * radius),
           "ins");
@@ -169,7 +134,7 @@ static REF_STATUS ref_interp_create_search(REF_INTERP ref_interp) {
   } else {
     RSS(ref_search_create(&ref_search, ref_cell_n(from_tet)), "create search");
     each_ref_cell_valid_cell_with_nodes(from_tet, cell, nodes) {
-      RSS(ref_interp_bounding_sphere4(from_node, nodes, center, &radius), "b");
+      RSS(ref_node_bounding_sphere(from_node, nodes, 4, center, &radius), "b");
       RSS(ref_search_insert(ref_search, cell, center,
                             ref_interp_search_donor_scale(ref_interp) * radius),
           "ins");
@@ -1878,7 +1843,7 @@ REF_STATUS ref_interp_locate_nearest(REF_INTERP ref_interp) {
   if (increase_fuzz) {
     RSS(ref_search_create(&ref_search, ref_cell_n(from_tri)), "create search");
     each_ref_cell_valid_cell_with_nodes(from_tri, cell, nodes) {
-      RSS(ref_interp_bounding_sphere3(from_node, nodes, center, &radius), "b");
+      RSS(ref_node_bounding_sphere(from_node, nodes, 3, center, &radius), "b");
       RSS(ref_search_insert(ref_search, cell, center,
                             ref_interp_search_donor_scale(ref_interp) * radius),
           "ins");

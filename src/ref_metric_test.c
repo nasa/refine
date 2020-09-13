@@ -39,6 +39,7 @@
 #include "ref_grid.h"
 #include "ref_histogram.h"
 #include "ref_import.h"
+#include "ref_iso.h"
 #include "ref_list.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -1539,15 +1540,31 @@ int main(int argc, char *argv[]) {
     if (ref_grid_twod(ref_grid)) {
       REF_DBL *threshold, *signed_distance;
       ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
-      ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
       each_ref_node_valid_node(ref_node, node) {
         REF_DBL turb1 = field[5 + ldim * node];
         threshold[node] = turb1 - 4.0;
       }
+
+      ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
       RSS(ref_phys_signed_distance(ref_grid, threshold, signed_distance),
           "dist");
       RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
                                          "ref_metric_signed_dist.tec"),
+          "tec");
+
+      {
+        REF_GRID iso_grid;
+        RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
+        RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
+        RSS(ref_grid_free(iso_grid), "iso free");
+      }
+      RSS(ref_iso_distance(ref_grid, threshold, signed_distance), "iso");
+      each_ref_node_valid_node(ref_node, node) {
+        if (0.0 > threshold[node])
+          signed_distance[node] = -signed_distance[node];
+      }
+      RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
+                                         "ref_metric_iso_dist.tec"),
           "tec");
       ref_free(signed_distance);
       ref_free(threshold);
