@@ -33,6 +33,7 @@ cd ${build_directory_root} && \
 EOF
 
 scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/log.\* .
+scp -o LogLevel=error fun3d@${build_machine}:${build_directory_root}/${BUILD_TAG}/_coverage/CodeCoverageReport.tar.gz .
 
 trap "cat cleanup.log" EXIT
 ssh -o LogLevel=error fun3d@${build_machine} > cleanup.log 2>&1 <<EOF

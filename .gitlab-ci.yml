@@ -22,6 +22,7 @@ pro-accept-k:
   artifacts:
     paths:
       - "log.*"
+      - "CodeCoverageReport.tar.gz"
     expire_in: 1 week
 
 c2s-accept-k:
