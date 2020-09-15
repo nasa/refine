@@ -17,7 +17,7 @@ mpiexec -np 1 ${two}/ref_acceptance 1 ref_adapt_test.lb8.ugrid
 function adapt_cycle {
     proj=$1
     sweeps=$2
-    cores=$4
+    cores=$3
 
     cp ref_adapt_test.lb8.ugrid ${proj}.lb8.ugrid
 

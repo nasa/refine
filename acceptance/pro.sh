@@ -165,6 +165,8 @@ cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2-mpt.sh ${build32} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+wait
+
 LOG=${root_dir}/log.accept-3d-linear-mpt-64
 trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/3d/linear
@@ -176,6 +178,8 @@ trap "cat $LOG" EXIT
 cd ${source_dir}/acceptance/cube-cylinder/polar-2
 ( ./accept-cube-cylinder-polar-2-mpt.sh ${build64} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
+
+wait
 
 find ${source_dir} -name FAILED
 
