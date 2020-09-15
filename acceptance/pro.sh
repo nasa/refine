@@ -38,7 +38,7 @@ ${source_dir}/configure \
     --with-zoltan=${zoltan_path} \
     --with-EGADS=${egads_path} \
     --with-OpenCASCADE=${opencascade_path} \
-    CFLAGS='-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check -prof-gen=srcpos -prof-dir=${cov_dir}' \
+    CFLAGS="-DHAVE_MPI -g -O2 -traceback -Wall -ftrapuv -fp-stack-check -fstack-protector-all -fstack-security-check -prof-gen=srcpos -prof-dir=${cov_dir}" \
     CC=mpicc \
     > $LOG 2>&1
 trap - EXIT
