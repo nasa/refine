@@ -1945,7 +1945,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
   sprintf(
       command,
-      "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.lb8.ugrid "
+      "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
       "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
       "< /dev/null > %s-aflr.txt",
       project, project, project);
@@ -1956,7 +1956,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
 
   nnode_surface = ref_node_n(ref_node);
 
-  snprintf(filename, 1024, "%s-aflr-volume.lb8.ugrid", project);
+  snprintf(filename, 1024, "%s-aflr-volume.ugrid", project);
   RSS(ref_import_ugrid_tets(ref_grid, filename), "tets only");
 
   printf("%d interior nodes\n", ref_node_n(ref_node) - nnode_surface);
