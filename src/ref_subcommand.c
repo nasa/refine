@@ -607,19 +607,20 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with TetGen\n");
-        RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
-          printf("probing adapted tessellation self-intersections\n");
-          RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-              "bumps");
-          printf("%d segment-triangle intersections detected.\n",
-                 self_intersections);
-        });
+        RSB(ref_geom_tetgen_volume(ref_grid, project),
+            "tetgen surface to volume", {
+              printf("probing adapted tessellation self-intersections\n");
+              RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                  "bumps");
+              printf("%d segment-triangle intersections detected.\n",
+                     self_intersections);
+            });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
     } else if (strncmp(mesher, "a", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with AFLR3\n");
-        RSB(ref_geom_aflr_volume(ref_grid), "aflr surface to volume", {
+        RSB(ref_geom_aflr_volume(ref_grid, project), "aflr surface to volume", {
           printf("probing adapted tessellation self-intersections\n");
           RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
               "bumps");
@@ -678,6 +679,8 @@ shutdown:
 static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
+  char project[1000];
+  size_t end_of_string;
   REF_GRID ref_grid = NULL;
   const char *mesher = "tetgen";
   REF_INT pos;
@@ -689,6 +692,12 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (argc < 4) goto shutdown;
   in_file = argv[2];
   out_file = argv[3];
+  end_of_string = MIN(1023, strlen(argv[2]));
+  if (7 > end_of_string ||
+      strncmp(&(argv[2][end_of_string - 6]), ".meshb", 6) != 0)
+    goto shutdown;
+  strncpy(project, argv[2], end_of_string - 6);
+  project[end_of_string - 6] = '\0';
 
   printf("import %s\n", in_file);
   RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
@@ -702,19 +711,20 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (strncmp(mesher, "t", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with TetGen\n");
-      RSB(ref_geom_tetgen_volume(ref_grid), "tetgen surface to volume", {
-        printf("probing adapted tessellation self-intersections\n");
-        RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-            "bumps");
-        printf("%d segment-triangle intersections detected.\n",
-               self_intersections);
-      });
+      RSB(ref_geom_tetgen_volume(ref_grid, project), "tetgen surface to volume",
+          {
+            printf("probing adapted tessellation self-intersections\n");
+            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                "bumps");
+            printf("%d segment-triangle intersections detected.\n",
+                   self_intersections);
+          });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "tetgen volume");
   } else if (strncmp(mesher, "a", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with AFLR3\n");
-      RSB(ref_geom_aflr_volume(ref_grid), "aflr surface to volume", {
+      RSB(ref_geom_aflr_volume(ref_grid, project), "aflr surface to volume", {
         printf("probing adapted tessellation self-intersections\n");
         RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
             "bumps");

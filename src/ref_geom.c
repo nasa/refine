@@ -1726,15 +1726,10 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
+REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  const char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
-  const char *poly_name = "ref_geom_test_tetgen.poly";
-  const char *node_name = "ref_geom_test_tetgen.1.node";
-  const char *ele_name = "ref_geom_test_tetgen.1.ele";
-  const char *face_name = "ref_geom_test_tetgen.1.face";
-  const char *edge_name = "ref_geom_test_tetgen.1.edge";
+  char filename[896];
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -1748,10 +1743,15 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
+  snprintf(filename, 896, "%s-tetgen.poly", project);
+  RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
-  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s", poly_name,
-          stdout_name);
+  printf("  The 'S' argument can be added to tetgen\n");
+  printf("    to limit the number of inserted nodes and run time.\n");
+
+  snprintf(command, 1024,
+           "tetgen -pMYq20/10O7/7zVT1e-12 %s < /dev/null > %s-tetgen.txt",
+           filename, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -1762,8 +1762,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
     ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec");
   });
 
-  file = fopen(node_name, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", node_name);
+  snprintf(filename, 896, "%s-tetgen.1.node", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
   REIS(1, fscanf(file, "%d", &nnode), "node header nnode");
@@ -1776,6 +1777,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
 
   /* verify surface nodes */
   nnode_surface = ref_node_n(ref_node);
+
+  printf("%d interior nodes\n", nnode - nnode_surface);
+
   for (node = 0; node < nnode_surface; node++) {
     REIS(1, fscanf(file, "%d", &item), "node item");
     RES(node, item, "node index");
@@ -1812,10 +1816,11 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
 
   fclose(file);
 
-  /* check faces when paranoid, but tetgen -z should not mess with them */
+  /* check .1.face when paranoid, but tetgen -z should not mess with them */
 
-  file = fopen(ele_name, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", ele_name);
+  snprintf(filename, 896, "%s-tetgen.1.ele", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
   REIS(1, fscanf(file, "%d", &ntet), "ele header ntet");
@@ -1838,12 +1843,16 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
-  REIS(0, remove(edge_name), "rm .edge tetgen output file");
-  REIS(0, remove(face_name), "rm .face tetgen output file");
-  REIS(0, remove(node_name), "rm .node tetgen output file");
-  REIS(0, remove(ele_name), "rm .ele tetgen output file");
-  REIS(0, remove(poly_name), "rm .poly tetgen input file");
-  REIS(0, remove(stdout_name), "rm stdout tetgen output file");
+  snprintf(filename, 896, "%s-tetgen.1.edge", project);
+  REIS(0, remove(filename), "rm .1.edge tetgen output file");
+  snprintf(filename, 896, "%s-tetgen.1.face", project);
+  REIS(0, remove(filename), "rm .1.face tetgen output file");
+  snprintf(filename, 896, "%s-tetgen.1.node", project);
+  REIS(0, remove(filename), "rm .1.node tetgen output file");
+  snprintf(filename, 896, "%s-tetgen.1.ele", project);
+  REIS(0, remove(filename), "rm .1.ele tetgen output file");
+  snprintf(filename, 896, "%s-tetgen.poly", project);
+  REIS(0, remove(filename), "rm .poly tetgen input file");
 
   return REF_SUCCESS;
 }
@@ -1925,31 +1934,34 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
+REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  const char *surface_ugrid_name = "ref_geom_test_surface.lb8.ugrid";
-  const char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
+  char filename[1024];
   char command[1024];
   int system_status;
+  REF_INT nnode_surface;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  printf("tec360 ref_geom_test_aflr_geom.tec\n");
-  RSS(ref_geom_tec(ref_grid, "ref_geom_test_aflr_geom.tec"), "dbg geom");
-  printf("tec360 ref_geom_test_aflr_surf.tec\n");
-  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"), "dbg surf");
-  RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
+  snprintf(filename, 1024, "%s-aflr-surface.lb8.ugrid", project);
+  RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
   sprintf(command,
-          "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
-          "< /dev/null > %s.out",
-          surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
+          "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
+          "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
+          "< /dev/null > %s-aflr.txt",
+          project, project, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
   REIS(0, system_status, "aflr failed");
 
-  RSS(ref_import_ugrid_tets(ref_grid, volume_ugrid_name), "tets only");
+  nnode_surface = ref_node_n(ref_node);
+
+  snprintf(filename, 1024, "%s-aflr-volume.ugrid", project);
+  RSS(ref_import_ugrid_tets(ref_grid, filename), "tets only");
+
+  printf("%d interior nodes\n", ref_node_n(ref_node) - nnode_surface);
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
