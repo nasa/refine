@@ -1774,6 +1774,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
 
   /* verify surface nodes */
   nnode_surface = ref_node_n(ref_node);
+
+  printf("%d interior nodes\n", nnode - nnode_surface);
+
   for (node = 0; node < nnode_surface; node++) {
     REIS(1, fscanf(file, "%d", &item), "node item");
     RES(node, item, "node index");
@@ -1933,6 +1936,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   char filename[1024];
   char command[1024];
   int system_status;
+  REF_INT nnode_surface;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
@@ -1949,8 +1953,12 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   system_status = system(command);
   REIS(0, system_status, "aflr failed");
 
+  nnode_surface = ref_node_n(ref_node);
+
   snprintf(filename, 1024, "%s_volume.lb8.ugrid", project);
   RSS(ref_import_ugrid_tets(ref_grid, filename), "tets only");
+
+  printf("%d interior nodes\n", ref_node_n(ref_node) - nnode_surface);
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
