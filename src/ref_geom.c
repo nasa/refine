@@ -1729,11 +1729,7 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
 REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  char poly_name[896];
-  const char *node_name = "ref_geom_test_tetgen.1.node";
-  const char *ele_name = "ref_geom_test_tetgen.1.ele";
-  const char *face_name = "ref_geom_test_tetgen.1.face";
-  const char *edge_name = "ref_geom_test_tetgen.1.edge";
+  char filename[896];
   char command[1024];
   FILE *file;
   REF_INT nnode, ndim, attr, mark;
@@ -1747,12 +1743,12 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  snprintf(poly_name, 896, "%s_tetgen.poly", project);
-  RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
+  snprintf(filename, 896, "%s_tetgen.poly", project);
+  RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
   snprintf(command, 1024,
            "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s_tetgen_stdout.txt",
-           poly_name, project);
+           filename, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -1763,8 +1759,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
     ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec");
   });
 
-  file = fopen(node_name, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", node_name);
+  snprintf(filename, 896, "%s_tetgen.1.node", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
   REIS(1, fscanf(file, "%d", &nnode), "node header nnode");
@@ -1813,10 +1810,11 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
 
   fclose(file);
 
-  /* check faces when paranoid, but tetgen -z should not mess with them */
+  /* check .1.face when paranoid, but tetgen -z should not mess with them */
 
-  file = fopen(ele_name, "r");
-  if (NULL == (void *)file) printf("unable to open %s\n", ele_name);
+  snprintf(filename, 896, "%s_tetgen.1.ele", project);
+  file = fopen(filename, "r");
+  if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
   REIS(1, fscanf(file, "%d", &ntet), "ele header ntet");
@@ -1839,11 +1837,16 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
-  REIS(0, remove(edge_name), "rm .edge tetgen output file");
-  REIS(0, remove(face_name), "rm .face tetgen output file");
-  REIS(0, remove(node_name), "rm .node tetgen output file");
-  REIS(0, remove(ele_name), "rm .ele tetgen output file");
-  REIS(0, remove(poly_name), "rm .poly tetgen input file");
+  snprintf(filename, 896, "%s_tetgen.1.edge", project);
+  REIS(0, remove(filename), "rm .1.edge tetgen output file");
+  snprintf(filename, 896, "%s_tetgen.1.face", project);
+  REIS(0, remove(filename), "rm .1.face tetgen output file");
+  snprintf(filename, 896, "%s_tetgen.1.node", project);
+  REIS(0, remove(filename), "rm .1.node tetgen output file");
+  snprintf(filename, 896, "%s_tetgen.1.ele", project);
+  REIS(0, remove(filename), "rm .1.ele tetgen output file");
+  snprintf(filename, 896, "%s_tetgen.poly", project);
+  REIS(0, remove(filename), "rm .poly tetgen input file");
 
   return REF_SUCCESS;
 }
