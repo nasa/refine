@@ -1746,6 +1746,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   snprintf(filename, 896, "%s-tetgen.poly", project);
   RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
+  printf("  The 'S' argument can be added to tetgen\n");
+  printf("    to limit the number of inserted nodes and run time.\n");
+
   snprintf(command, 1024,
            "tetgen -pMYq20/10O7/7zVT1e-12 %s < /dev/null > %s-tetgen.txt",
            filename, project);
