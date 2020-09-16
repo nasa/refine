@@ -1956,7 +1956,7 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
 
   nnode_surface = ref_node_n(ref_node);
 
-  snprintf(filename, 1024, "%s-volume.lb8.ugrid", project);
+  snprintf(filename, 1024, "%s-aflr-volume.lb8.ugrid", project);
   RSS(ref_import_ugrid_tets(ref_grid, filename), "tets only");
 
   printf("%d interior nodes\n", ref_node_n(ref_node) - nnode_surface);
