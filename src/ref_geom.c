@@ -1726,11 +1726,10 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
+REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
-  const char *stdout_name = "ref_geom_test_tetgen_stdout.txt";
-  const char *poly_name = "ref_geom_test_tetgen.poly";
+  char poly_name[896];
   const char *node_name = "ref_geom_test_tetgen.1.node";
   const char *ele_name = "ref_geom_test_tetgen.1.ele";
   const char *face_name = "ref_geom_test_tetgen.1.face";
@@ -1748,10 +1747,12 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
+  snprintf(poly_name, 896, "%s_tetgen.poly", project);
   RSS(ref_export_by_extension(ref_grid, poly_name), "poly");
 
-  sprintf(command, "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s", poly_name,
-          stdout_name);
+  snprintf(command, 1024,
+           "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s_tetgen_stdout.txt",
+           poly_name, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -1843,7 +1844,6 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid) {
   REIS(0, remove(node_name), "rm .node tetgen output file");
   REIS(0, remove(ele_name), "rm .ele tetgen output file");
   REIS(0, remove(poly_name), "rm .poly tetgen input file");
-  REIS(0, remove(stdout_name), "rm stdout tetgen output file");
 
   return REF_SUCCESS;
 }
@@ -1925,31 +1925,29 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid) {
+REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  const char *surface_ugrid_name = "ref_geom_test_surface.lb8.ugrid";
-  const char *volume_ugrid_name = "ref_geom_test_volume.ugrid";
+  char filename[1024];
   char command[1024];
   int system_status;
 
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  printf("tec360 ref_geom_test_aflr_geom.tec\n");
-  RSS(ref_geom_tec(ref_grid, "ref_geom_test_aflr_geom.tec"), "dbg geom");
-  printf("tec360 ref_geom_test_aflr_surf.tec\n");
-  RSS(ref_export_tec_surf(ref_grid, "ref_geom_test_aflr_surf.tec"), "dbg surf");
-  RSS(ref_export_by_extension(ref_grid, surface_ugrid_name), "ugrid");
+  snprintf(filename, 1024, "%s_surface.lb8.ugrid", project);
+  RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
   sprintf(command,
-          "aflr3 -igrid %s -ogrid %s -mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
-          "< /dev/null > %s.out",
-          surface_ugrid_name, volume_ugrid_name, volume_ugrid_name);
+          "aflr3 -igrid %s_surface.lb8.ugrid -ogrid %s_volume.lb8.ugrid "
+          "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
+          "< /dev/null > %s_aflr_out.txt",
+          project, project, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
   REIS(0, system_status, "aflr failed");
 
-  RSS(ref_import_ugrid_tets(ref_grid, volume_ugrid_name), "tets only");
+  snprintf(filename, 1024, "%s_volume.lb8.ugrid", project);
+  RSS(ref_import_ugrid_tets(ref_grid, filename), "tets only");
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
