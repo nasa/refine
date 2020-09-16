@@ -1747,8 +1747,8 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
   snprintf(command, 1024,
-           "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s-tetgen.txt", filename,
-           project);
+           "tetgen -pMYq2.0/10O7/7zVT1e-12 %s < /dev/null > %s-tetgen.txt",
+           filename, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -1943,12 +1943,11 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
 
   snprintf(filename, 1024, "%s-aflr-surface.lb8.ugrid", project);
   RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
-  sprintf(
-      command,
-      "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
-      "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
-      "< /dev/null > %s-aflr.txt",
-      project, project, project);
+  sprintf(command,
+          "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
+          "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
+          "< /dev/null > %s-aflr.txt",
+          project, project, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
