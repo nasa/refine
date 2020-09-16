@@ -1941,13 +1941,14 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  snprintf(filename, 1024, "%s_surface.lb8.ugrid", project);
+  snprintf(filename, 1024, "%s-aflr-surface.lb8.ugrid", project);
   RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
-  sprintf(command,
-          "aflr3 -igrid %s_surface.lb8.ugrid -ogrid %s_volume.lb8.ugrid "
-          "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
-          "< /dev/null > %s_aflr_out.txt",
-          project, project, project);
+  sprintf(
+      command,
+      "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.lb8.ugrid "
+      "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
+      "< /dev/null > %s-aflr.txt",
+      project, project, project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
