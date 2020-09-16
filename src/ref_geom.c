@@ -1743,12 +1743,12 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   printf("%d surface nodes %d triangles\n", ref_node_n(ref_node),
          ref_cell_n(ref_grid_tri(ref_grid)));
 
-  snprintf(filename, 896, "%s_tetgen.poly", project);
+  snprintf(filename, 896, "%s-tetgen.poly", project);
   RSS(ref_export_by_extension(ref_grid, filename), "poly");
 
   snprintf(command, 1024,
-           "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s_tetgen_stdout.txt",
-           filename, project);
+           "tetgen -pMYq2.0/10O7/7zV %s < /dev/null > %s-tetgen.txt", filename,
+           project);
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
@@ -1759,7 +1759,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
     ref_export_tec_surf(ref_grid, "ref_geom_test_tetgen_surf.tec");
   });
 
-  snprintf(filename, 896, "%s_tetgen.1.node", project);
+  snprintf(filename, 896, "%s-tetgen.1.node", project);
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1812,7 +1812,7 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
 
   /* check .1.face when paranoid, but tetgen -z should not mess with them */
 
-  snprintf(filename, 896, "%s_tetgen.1.ele", project);
+  snprintf(filename, 896, "%s-tetgen.1.ele", project);
   file = fopen(filename, "r");
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
@@ -1837,15 +1837,15 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
 
   ref_grid_surf(ref_grid) = REF_FALSE;
 
-  snprintf(filename, 896, "%s_tetgen.1.edge", project);
+  snprintf(filename, 896, "%s-tetgen.1.edge", project);
   REIS(0, remove(filename), "rm .1.edge tetgen output file");
-  snprintf(filename, 896, "%s_tetgen.1.face", project);
+  snprintf(filename, 896, "%s-tetgen.1.face", project);
   REIS(0, remove(filename), "rm .1.face tetgen output file");
-  snprintf(filename, 896, "%s_tetgen.1.node", project);
+  snprintf(filename, 896, "%s-tetgen.1.node", project);
   REIS(0, remove(filename), "rm .1.node tetgen output file");
-  snprintf(filename, 896, "%s_tetgen.1.ele", project);
+  snprintf(filename, 896, "%s-tetgen.1.ele", project);
   REIS(0, remove(filename), "rm .1.ele tetgen output file");
-  snprintf(filename, 896, "%s_tetgen.poly", project);
+  snprintf(filename, 896, "%s-tetgen.poly", project);
   REIS(0, remove(filename), "rm .poly tetgen input file");
 
   return REF_SUCCESS;
