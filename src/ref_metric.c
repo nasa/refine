@@ -2385,7 +2385,7 @@ REF_STATUS ref_metric_cons_assembly(REF_DBL *metric, REF_DBL *g,
   for (var = 0; var < 5; var++) {
     each_ref_node_valid_node(ref_node, node) {
       for (i = 0; i < 5; i++) {
-        state[i] = prim_dual[var + ldim * node];
+        state[i] = prim_dual[i + ldim * node];
       }
       RSS(ref_phys_make_conserved(state, conserved), "prim2cons");
       cons[node] = conserved[var];
