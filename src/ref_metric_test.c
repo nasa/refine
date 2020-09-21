@@ -1502,14 +1502,16 @@ int main(int argc, char *argv[]) {
     REF_NODE ref_node;
     REF_DBL *dist, *field, *metric, m[6], m0[6];
     REF_INT ldim, i, node, gradation;
-    REF_DBL x0, x1, h;
+    REF_DBL x0, x1, h0;
+    REF_DBL *signed_distance = NULL;
+    REF_DBL *total = NULL;
 
     REIS(1, wake_pos,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb x0 x1 h");
+         "metric.solb x0 x1 h0");
     REIS(9, argc,
          "required args: --wake grid.ext distance.solb volume.solb "
-         "metric.solb x0 x1 h");
+         "metric.solb x0 x1 h0");
     if (ref_mpi_once(ref_mpi)) printf("part grid %s\n", argv[2]);
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, argv[2]),
         "unable to part grid in position 2");
@@ -1529,8 +1531,8 @@ int main(int argc, char *argv[]) {
     REIS(6, ldim, "expect [rho,u,v,w,p,turb1]");
     x0 = atof(argv[6]);
     x1 = atof(argv[7]);
-    h = atof(argv[8]);
-    if (ref_mpi_once(ref_mpi)) printf("x0 %f x1 %f h %f\n", x0, x1, h);
+    h0 = atof(argv[8]);
+    if (ref_mpi_once(ref_mpi)) printf("x0 %f x1 %f h0 %f\n", x0, x1, h0);
 
     if (ref_mpi_once(ref_mpi)) printf("imply current metric\n");
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
@@ -1538,26 +1540,19 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "imply");
 
     if (ref_grid_twod(ref_grid)) {
-      REF_DBL *threshold, *signed_distance;
+      REF_GRID iso_grid;
+      REF_DBL *threshold;
       ref_malloc(threshold, ref_node_max(ref_node), REF_DBL);
       each_ref_node_valid_node(ref_node, node) {
         REF_DBL turb1 = field[5 + ldim * node];
-        threshold[node] = turb1 - 4.0;
+        threshold[node] = turb1 - 10.0;
       }
 
       ref_malloc(signed_distance, ref_node_max(ref_node), REF_DBL);
-      RSS(ref_phys_signed_distance(ref_grid, threshold, signed_distance),
-          "dist");
-      RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
-                                         "ref_metric_signed_dist.tec"),
-          "tec");
 
-      {
-        REF_GRID iso_grid;
-        RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
-        RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
-        RSS(ref_grid_free(iso_grid), "iso free");
-      }
+      RSS(ref_iso_insert(&iso_grid, ref_grid, threshold), "iso");
+      RSS(ref_export_by_extension(iso_grid, "ref_metric_iso.tec"), "tec");
+      RSS(ref_grid_free(iso_grid), "iso free");
       RSS(ref_iso_distance(ref_grid, threshold, signed_distance), "iso");
       each_ref_node_valid_node(ref_node, node) {
         if (0.0 > threshold[node])
@@ -1566,16 +1561,26 @@ int main(int argc, char *argv[]) {
       RSS(ref_gather_scalar_by_extension(ref_grid, 1, signed_distance, NULL,
                                          "ref_metric_iso_dist.tec"),
           "tec");
-      ref_free(signed_distance);
       ref_free(threshold);
     }
 
     if (ref_grid_twod(ref_grid)) {
+      ref_malloc(total, ref_node_max(ref_node), REF_DBL);
+
       each_ref_node_valid_node(ref_node, node) {
+        REF_DBL h;
         REF_DBL slen = dist[node];
-        REF_DBL turb1 = field[5 + ldim * node];
-        if (x0 <= ref_node_xyz(ref_node, 0, node) &&
-            ref_node_xyz(ref_node, 0, node) <= x1 && (4 <= turb1 || h > slen)) {
+        REF_DBL s;
+        REF_DBL ds = 0.01;
+        s = 0;
+        if (x0 > ref_node_xyz(ref_node, 0, node))
+          s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x0));
+        if (x1 < ref_node_xyz(ref_node, 0, node))
+          s = MAX(s, ABS(ref_node_xyz(ref_node, 0, node) - x1));
+        s = MAX(s, MIN(slen - ds, -signed_distance[node] - ds));
+        total[node] = s;
+        if (s < 4.0 * ds) {
+          h = h0 * pow(2, s / ds);
           m[0] = 1.0 / (h * h);
           m[1] = 0.0;
           m[2] = 0.0;
@@ -1586,8 +1591,13 @@ int main(int argc, char *argv[]) {
           RSS(ref_matrix_intersect(m0, m, &(metric[6 * node])), "intersect");
         }
       }
+      RSS(ref_gather_scalar_by_extension(ref_grid, 1, total, NULL,
+                                         "ref_metric_total.tec"),
+          "tec");
+      ref_free(total);
     } else {
       each_ref_node_valid_node(ref_node, node) {
+        REF_DBL h = h0;
         REF_DBL slen = dist[node];
         REF_DBL turb1 = field[5 + ldim * node];
         if (x0 <= ref_node_xyz(ref_node, 0, node) &&
@@ -1611,6 +1621,7 @@ int main(int argc, char *argv[]) {
           "grad");
       ref_mpi_stopwatch_stop(ref_mpi, "gradation");
     }
+    ref_free(signed_distance);
 
     RSS(ref_metric_to_node(metric, ref_node), "set node");
     ref_free(metric);
