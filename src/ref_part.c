@@ -1848,6 +1848,7 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
   char letter;
   unsigned long field_length, uint_nnode;
   int association;
+  REF_BOOL verbose = REF_FALSE;
 
   nnode = -1;
   next_position = -1;
@@ -1859,7 +1860,9 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
 
     end_of_string = strlen(filename);
     REIS(0, strcmp(&filename[end_of_string - 5], ".snap"),
-         "solb extension expected");
+         "snap extension expected");
+
+    if (verbose) printf("read snap %s\n", filename);
 
     REIS(1, fread(&version_number, sizeof(version_number), 1, file),
          "version number");
@@ -1868,6 +1871,8 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
     REIS(1, fread(&number_of_fields, sizeof(number_of_fields), 1, file),
          "number");
     REIS(1, number_of_fields, "only one field supported");
+    if (verbose)
+      printf("version %lu fields %lu\n", version_number, number_of_fields);
 
     REIS(1, fread(&number_of_chars, sizeof(number_of_chars), 1, file),
          "number");
@@ -1882,6 +1887,10 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
     REIS(1, fread(&association, sizeof(association), 1, file), "number");
 
     REIS(-1, association, "field node association only");
+
+    if (verbose)
+      printf("file nnode %lu ref nnode " REF_GLOB_FMT "\n", uint_nnode,
+             ref_node_n_global(ref_node));
 
     *ldim = 1;
 
@@ -1905,8 +1914,11 @@ static REF_STATUS ref_part_scalar_snap(REF_NODE ref_node, REF_INT *ldim,
 
   nnode_read = 0;
   while (nnode_read < nnode) {
-    section_size =
-        (REF_INT)MIN((REF_GLOB)chunk, ref_node_n_global(ref_node) - nnode_read);
+    if (verbose)
+      printf("nnode " REF_GLOB_FMT " read " REF_GLOB_FMT "\n", nnode,
+             nnode_read);
+
+    section_size = (REF_INT)MIN((REF_GLOB)chunk, nnode - nnode_read);
     if (ref_mpi_once(ref_node_mpi(ref_node))) {
       REIS((*ldim) * section_size,
            fread(data, sizeof(REF_DBL), (size_t)((*ldim) * section_size), file),
