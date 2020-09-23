@@ -250,7 +250,7 @@ int main(int argc, char *argv[]) {
                              direction, flux),
             "laminar");
         for (i = 0; i < 5; i++) {
-          dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
+          dual_flux[i + 5 + 5 * dir + 20 * node] -= flux[i];
         }
       }
     }
