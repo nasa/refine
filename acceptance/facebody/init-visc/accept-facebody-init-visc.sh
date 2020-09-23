@@ -11,7 +11,6 @@ else
 fi
 
 tecplot=-t
-metric="-twod polar-2"
 egads="-g square-circle.egads"
 
 function adapt_cycle {
@@ -19,27 +18,19 @@ function adapt_cycle {
     outproj=$2
     sweeps=$3
 
-    ${src}/ref_acceptance ${metric} ${inproj}.meshb \
-	  ${inproj}.solb
-
-    ${src}/ref_driver \
-	  -i ${inproj}.meshb \
-	  -m ${inproj}.solb \
+    ${src}/ref adapt \
+	  ${inproj}.meshb \
 	  ${egads} \
           -x ${outproj}.meshb \
-	  -s ${sweeps} ${tecplot}
-
-    mv ref_gather_histo.tec ${outproj}_histo.tec
-    mv ref_gather_movie.tec ${outproj}_movie.tec
-    ${src}/ref_acceptance ${metric} ${outproj}.meshb \
-	  ${outproj}.solb
-    ${src}/ref_metric_test ${outproj}.meshb ${outproj}.solb \
-	  > ${outproj}.status
+	  -s ${sweeps} \
+	  ${tecplot} \
+	   | tee ${outproj}.status
 }
 
-cp square-circle.meshb cycle00.meshb
+serveCSM -batch square-circle.csm
+ref bootstrap square-circle.egads
 
-adapt_cycle cycle00 cycle01 10
+adapt_cycle square-circle-vol cycle01 10
 adapt_cycle cycle01 cycle02 10
 adapt_cycle cycle02 cycle03 10
 adapt_cycle cycle03 cycle04 10
