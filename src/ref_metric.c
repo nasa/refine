@@ -1974,7 +1974,7 @@ REF_STATUS ref_metric_belme_gfe(REF_DBL *metric, REF_GRID ref_grid,
         direction[2] = 0.0;
         direction[dir] = 1.0;
         for (i = 0; i < 5; i++) {
-          state[i] = prim_dual[var + 0 * nequ + ldim * node];
+          state[i] = prim_dual[i + 0 * nequ + ldim * node];
         }
         RSS(ref_phys_euler(state, direction, node_flux), "euler");
         flux[node] = node_flux[var];
@@ -2236,7 +2236,7 @@ REF_STATUS ref_metric_cons_euler_g(REF_DBL *g, REF_GRID ref_grid, REF_INT ldim,
         direction[2] = 0.0;
         direction[dir] = 1.0;
         for (i = 0; i < 5; i++) {
-          state[i] = prim_dual[var + 0 * nequ + ldim * node];
+          state[i] = prim_dual[i + 0 * nequ + ldim * node];
         }
         RSS(ref_phys_euler_jac(state, direction, dflux_dcons), "euler");
         for (i = 0; i < 5; i++) {
