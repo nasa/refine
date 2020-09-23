@@ -300,7 +300,7 @@ static REF_STATUS ref_migrate_single_part(REF_GRID ref_grid,
 static REF_STATUS ref_migrate_native_rcb_direction(
     REF_MPI ref_mpi, REF_INT n, REF_DBL *xyz, REF_INT npart, REF_INT *owners,
     REF_INT *locals, REF_MPI global_mpi, REF_INT *part, REF_INT seed,
-    REF_INT dir) {
+    REF_INT dir, REF_BOOL twod) {
   REF_INT i, j, n0, n1, npart0, npart1;
   REF_INT bal_n0, bal_n1;
   REF_DBL *xyz0, *xyz1, *x;
@@ -406,15 +406,16 @@ static REF_STATUS ref_migrate_native_rcb_direction(
 
   dir += 1;
   if (dir > 2) dir -= 3;
+  if (twod && dir > 1) dir -= 2; /* twod skips Z */
   if (ref_mpi_rank(ref_mpi) < npart0) {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n0, bal_xyz0, npart0,
                                          bal_owners0, bal_locals0, global_mpi,
-                                         part, seed, dir),
+                                         part, seed, dir, twod),
         "recurse 0");
   } else {
     RSS(ref_migrate_native_rcb_direction(split_mpi, bal_n1, bal_xyz1, npart1,
                                          bal_owners1, bal_locals1, global_mpi,
-                                         part, seed, dir),
+                                         part, seed, dir, twod),
         "recurse 1");
   }
 
@@ -473,9 +474,9 @@ static REF_STATUS ref_migrate_native_rcb_part(REF_GRID ref_grid,
     }
   }
 
-  RSS(ref_migrate_native_rcb_direction(ref_mpi, n, xyz, npart, owners, locals,
-                                       ref_mpi, node_part,
-                                       ref_grid_partitioner_seed(ref_grid), -1),
+  RSS(ref_migrate_native_rcb_direction(
+          ref_mpi, n, xyz, npart, owners, locals, ref_mpi, node_part,
+          ref_grid_partitioner_seed(ref_grid), -1, ref_grid_twod(ref_grid)),
       "split");
   ref_grid_partitioner_seed(ref_grid)++;
   if (ref_grid_partitioner_seed(ref_grid) < 0)
