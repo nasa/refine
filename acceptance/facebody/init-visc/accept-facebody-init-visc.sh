@@ -21,10 +21,13 @@ function adapt_cycle {
     ${src}/ref adapt \
 	  ${inproj}.meshb \
 	  ${egads} \
+	  --spalding 0.001 500 square-circle.mapbc \
           -x ${outproj}.meshb \
 	  -s ${sweeps} \
 	  ${tecplot} \
-	   | tee ${outproj}.status
+	| tee ${outproj}.status
+
+    ${src}/ref translate ${outproj}.meshb ${outproj}.tec
 }
 
 serveCSM -batch square-circle.csm

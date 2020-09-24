@@ -69,6 +69,9 @@ static void adapt_help(const char *name) {
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
+  printf("  --spalding [y+=1] [complexity] [fun3d-format-bcs.mapbc]\n");
+  printf("      construct a multiscale metric to control interpolation\n");
+  printf("      error in u+ of Spalding's Law\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -306,6 +309,38 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_part_metric(ref_grid_node(ref_grid), in_metric), "part metric");
     curvature_metric = REF_FALSE;
     ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+  }
+
+  RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 3) {
+    REF_DBL yplus1;
+    REF_DBL complexity;
+    const char *mapbc;
+    REF_DBL *metric;
+    REF_DBL *yplus, *uplus;
+    yplus1 = atof(argv[pos + 1]);
+    complexity = atof(argv[pos + 2]);
+    mapbc = argv[pos + 3];
+    if (ref_mpi_once(ref_mpi))
+      printf(" --spalding %e %f %s law of the wall metric\n", yplus1,
+             complexity, mapbc);
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(yplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+    ref_mpi_stopwatch_stop(ref_mpi, "multiscale");
+    RSS(ref_metric_imply_from(metric, ref_grid), "imply metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "imply metric placeholder, REMOVE");
+    RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+        "scale metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "set complexity");
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
+    ref_free(uplus);
+    ref_free(yplus);
+    ref_free(metric);
+    curvature_metric = REF_FALSE;
+    ref_mpi_stopwatch_stop(ref_mpi, "scale implied metric");
   }
 
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
