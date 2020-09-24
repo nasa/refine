@@ -38,6 +38,7 @@
 #include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_part.h"
+#include "ref_phys.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -319,6 +320,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     const char *mapbc;
     REF_DBL *metric;
     REF_DBL *yplus, *uplus;
+    REF_DICT ref_dict;
     yplus1 = atof(argv[pos + 1]);
     complexity = atof(argv[pos + 2]);
     mapbc = argv[pos + 3];
@@ -328,6 +330,10 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(yplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_dict_create(&ref_dict), "make dict");
+    RSS(ref_phys_read_mapbc(ref_dict, mapbc), "unable to read mapbc");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, yplus), "wall dist");
+    RSS(ref_dict_free(ref_dict), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
     ref_mpi_stopwatch_stop(ref_mpi, "multiscale");
     RSS(ref_metric_imply_from(metric, ref_grid), "imply metric");
