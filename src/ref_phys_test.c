@@ -1314,6 +1314,27 @@ int main(int argc, char *argv[]) {
     ref_grid_free(ref_grid);
   }
 
+  { /* tri wall dist */
+    REF_GRID ref_grid;
+    REF_DICT ref_dict;
+    REF_DBL *distance;
+
+    RSS(ref_fixture_tri_grid(&ref_grid, ref_mpi), "tri");
+    RSS(ref_dict_create(&ref_dict), "dict");
+    ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                    -1.0);
+    RSS(ref_dict_store(ref_dict, 10, 4000), "store");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+    if (REF_FALSE && !ref_mpi_para(ref_mpi)) {
+      RWDS(0.0, distance[0], -1, "n0");
+      RWDS(0.0, distance[1], -1, "n1");
+      RWDS(1.0, distance[2], -1, "n2");
+    }
+    ref_free(distance);
+    ref_dict_free(ref_dict);
+    ref_grid_free(ref_grid);
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
 

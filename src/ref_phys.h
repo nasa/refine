@@ -55,6 +55,9 @@ REF_STATUS ref_phys_spalding_uplus(REF_DBL yplus, REF_DBL *uplus);
 REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
                                     REF_DBL *distance);
 
+REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
+                                  REF_DBL *distance);
+
 END_C_DECLORATION
 
 #endif /* REF_PHYS_H */

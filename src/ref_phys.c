@@ -534,3 +534,56 @@ REF_STATUS ref_phys_signed_distance(REF_GRID ref_grid, REF_DBL *field,
   ref_free(set);
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
+                                  REF_DBL *distance) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT local_ncell, ncell, *counts;
+  REF_DBL *local_xyz, *xyz;
+  REF_INT node_per;
+  REF_CELL ref_cell;
+  REF_INT i, node, cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT bc;
+  RAS(ref_grid_twod(ref_grid), "only implmented 2D");
+  ref_cell = ref_grid_edg(ref_grid);
+  node_per = ref_cell_node_per(ref_cell);
+  local_ncell = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        "bc");
+    if (4000 == bc) {
+      local_ncell++;
+    }
+  }
+  ref_malloc(local_xyz, 3 * node_per * local_ncell, REF_DBL);
+  local_ncell = 0;
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        "bc");
+    if (4000 == bc) {
+      for (node = 0; node < node_per; node++) {
+        for (i = 0; i < 3; i++) {
+          local_xyz[i + 3 * node + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[node]);
+        }
+      }
+      local_ncell++;
+    }
+  }
+  ncell = local_ncell;
+  RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "allsum ncell");
+  ref_malloc(xyz, 3 * node_per * ncell, REF_DBL);
+  ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
+  RSS(ref_mpi_allgather(ref_mpi, &local_ncell, counts, REF_DBL_TYPE),
+      "gather xyz");
+  RSS(ref_mpi_allgatherv(ref_mpi, local_xyz, counts, xyz, REF_DBL_TYPE),
+      "gather xyz");
+
+  distance[0] = 0;
+
+  ref_free(counts);
+  ref_free(xyz);
+  ref_free(local_xyz);
+  return REF_SUCCESS;
+}
