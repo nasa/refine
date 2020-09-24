@@ -345,8 +345,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
           "uplus");
     }
     RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 2),
-        "local lp=2 norm scaling");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
+        "local lp=4 norm scaling");
     RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
         "set complexity");
 
