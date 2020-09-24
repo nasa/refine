@@ -412,6 +412,28 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  { /* dist to zero tri */
+    REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
+    REF_DBL xyz1[3] = {0.0, 0.0, 0.0};
+    REF_DBL xyz2[3] = {0.0, 0.0, 0.0};
+    REF_DBL distance;
+    {
+      REF_DBL xyz[3] = {0.0, 0.0, 0.0};
+      RSS(ref_search_distance3(xyz0, xyz1, xyz2, xyz, &distance), "dist");
+      RWDS(0.0, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.0, 0.5, 0.0};
+      RSS(ref_search_distance3(xyz0, xyz1, xyz2, xyz, &distance), "dist");
+      RWDS(0.5, distance, -1.0, "distance");
+    }
+    {
+      REF_DBL xyz[3] = {0.0, 0.0, 1.0};
+      RSS(ref_search_distance3(xyz0, xyz1, xyz2, xyz, &distance), "dist");
+      RWDS(1.0, distance, -1.0, "distance");
+    }
+  }
+
   RSS(ref_mpi_free(ref_mpi), "mpi free");
   RSS(ref_mpi_stop(), "stop");
   return 0;

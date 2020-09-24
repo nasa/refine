@@ -311,3 +311,22 @@ REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
 
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
+                                REF_DBL *xyz, REF_DBL *distance) {
+  REF_DBL dxyz[3];
+  dxyz[0] = xyz[0] - xyz0[0];
+  dxyz[1] = xyz[1] - xyz0[1];
+  dxyz[2] = xyz[2] - xyz0[2];
+  *distance = sqrt(ref_math_dot(dxyz, dxyz));
+  dxyz[0] = xyz[0] - xyz1[0];
+  dxyz[1] = xyz[1] - xyz1[1];
+  dxyz[2] = xyz[2] - xyz1[2];
+  *distance = sqrt(ref_math_dot(dxyz, dxyz));
+  dxyz[0] = xyz[0] - xyz2[0];
+  dxyz[1] = xyz[1] - xyz2[1];
+  dxyz[2] = xyz[2] - xyz2[2];
+  *distance = sqrt(ref_math_dot(dxyz, dxyz));
+
+  return REF_SUCCESS;
+}
