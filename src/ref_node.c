@@ -2628,6 +2628,24 @@ REF_STATUS ref_node_bounding_sphere(REF_NODE ref_node, REF_INT *nodes,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_node_bounding_sphere_xyz(REF_DBL *xyz, REF_INT n,
+                                        REF_DBL *center, REF_DBL *radius) {
+  REF_INT i, j;
+  for (i = 0; i < 3; i++) {
+    center[i] = 0;
+    for (j = 0; j < n; j++) {
+      center[i] += xyz[i + 3 * j];
+    }
+    center[i] /= (REF_DBL)n;
+  }
+  *radius = 0.0;
+  for (i = 0; i < n; i++)
+    *radius = MAX(*radius, sqrt(pow(xyz[0 + 3 * i] - center[0], 2) +
+                                pow(xyz[1 + 3 * i] - center[1], 2) +
+                                pow(xyz[2 + 3 * i] - center[2], 2)));
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_node_bary3(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                           REF_DBL *bary) {
   REF_DBL *xyz0, *xyz1, *xyz2;
