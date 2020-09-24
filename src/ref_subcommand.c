@@ -38,6 +38,7 @@
 #include "ref_metric.h"
 #include "ref_mpi.h"
 #include "ref_part.h"
+#include "ref_phys.h"
 #include "ref_split.h"
 #include "ref_validation.h"
 
@@ -69,6 +70,9 @@ static void adapt_help(const char *name) {
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
+  printf("  --spalding [y+=1] [complexity] [fun3d-format-bcs.mapbc]\n");
+  printf("      construct a multiscale metric to control interpolation\n");
+  printf("      error in u+ of Spalding's Law\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -306,6 +310,52 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_part_metric(ref_grid_node(ref_grid), in_metric), "part metric");
     curvature_metric = REF_FALSE;
     ref_mpi_stopwatch_stop(ref_mpi, "part metric");
+  }
+
+  RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
+      "metric arg search");
+  if (REF_EMPTY != pos && pos < argc - 3) {
+    REF_DBL yplus1;
+    REF_DBL complexity;
+    const char *mapbc;
+    REF_DBL *metric;
+    REF_DBL *distance, *uplus, yplus;
+    REF_DICT ref_dict;
+    REF_INT node;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+    yplus1 = atof(argv[pos + 1]);
+    complexity = atof(argv[pos + 2]);
+    mapbc = argv[pos + 3];
+    if (ref_mpi_once(ref_mpi))
+      printf(" --spalding %e %f %s law of the wall metric\n", yplus1,
+             complexity, mapbc);
+    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_dict_create(&ref_dict), "make dict");
+    RSS(ref_phys_read_mapbc(ref_dict, mapbc), "unable to read mapbc");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "wall dist");
+    RSS(ref_dict_free(ref_dict), "free");
+    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RAS(ref_math_divisible(distance[node], yplus1),
+          "wall distance not divisible by y+=1");
+      yplus = distance[node] / yplus1;
+      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+    }
+    RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
+        "local lp=4 norm scaling");
+    RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+        "set complexity");
+
+    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
+    ref_free(uplus);
+    ref_free(distance);
+    ref_free(metric);
+    curvature_metric = REF_FALSE;
+    ref_mpi_stopwatch_stop(ref_mpi, "law of wall metric");
   }
 
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
