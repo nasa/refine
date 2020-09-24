@@ -1325,7 +1325,7 @@ int main(int argc, char *argv[]) {
                     -1.0);
     RSS(ref_dict_store(ref_dict, 10, 4000), "store");
     RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
-    if (REF_FALSE && !ref_mpi_para(ref_mpi)) {
+    if (!ref_mpi_para(ref_mpi)) {
       RWDS(0.0, distance[0], -1, "n0");
       RWDS(0.0, distance[1], -1, "n1");
       RWDS(1.0, distance[2], -1, "n2");

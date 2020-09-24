@@ -539,12 +539,18 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
                                   REF_DBL *distance) {
   REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_INT local_ncell, ncell, *counts;
+  REF_INT local_ncell, ncell, local_total, *counts;
   REF_DBL *local_xyz, *xyz;
   REF_INT node_per;
   REF_CELL ref_cell;
   REF_INT i, node, cell, nodes[REF_CELL_MAX_SIZE_PER];
   REF_INT bc;
+  REF_SEARCH ref_search;
+  REF_LIST ref_list;
+  REF_INT item, candidate;
+  REF_DBL center[3], radius, dist;
+  REF_DBL scale = 1.0 + 1.0e-8;
+
   RAS(ref_grid_twod(ref_grid), "only implmented 2D");
   ref_cell = ref_grid_edg(ref_grid);
   node_per = ref_cell_node_per(ref_cell);
@@ -575,14 +581,42 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "allsum ncell");
   ref_malloc(xyz, 3 * node_per * ncell, REF_DBL);
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
-  RSS(ref_mpi_allgather(ref_mpi, &local_ncell, counts, REF_DBL_TYPE),
+  local_total = 3 * node_per * local_ncell;
+  RSS(ref_mpi_allgather(ref_mpi, &local_total, counts, REF_DBL_TYPE),
       "gather xyz");
   RSS(ref_mpi_allgatherv(ref_mpi, local_xyz, counts, xyz, REF_DBL_TYPE),
       "gather xyz");
-
-  distance[0] = 0;
-
   ref_free(counts);
+
+  RSS(ref_search_create(&ref_search, ncell), "make search");
+  for (cell = 0; cell < ncell; cell++) {
+    RSS(ref_node_bounding_sphere_xyz(&(xyz[3 * node_per * cell]), node_per,
+                                     center, &radius),
+        "bound");
+    RSS(ref_search_insert(ref_search, cell, center, scale * radius), "ins");
+  }
+
+  RSS(ref_list_create(&ref_list), "create list");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    distance[node] = REF_DBL_MAX;
+    RSS(ref_search_nearest_candidates(
+            ref_search, ref_list,
+            ref_node_xyz_ptr(ref_grid_node(ref_grid), node)),
+        "candidates");
+    each_ref_list_item(ref_list, item) {
+      candidate = ref_list_value(ref_list, item);
+      RSS(ref_search_distance2(&(xyz[0 + 3 * node_per * candidate]),
+                               &(xyz[3 + 3 * node_per * candidate]),
+                               ref_node_xyz_ptr(ref_node, node), &dist),
+          "dist2");
+      distance[node] = MIN(distance[node], dist);
+    }
+
+    RSS(ref_list_erase(ref_list), "reset list");
+  }
+  RSS(ref_list_free(ref_list), "free");
+  RSS(ref_search_free(ref_search), "free");
+
   ref_free(xyz);
   ref_free(local_xyz);
   return REF_SUCCESS;
