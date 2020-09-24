@@ -319,8 +319,11 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_DBL complexity;
     const char *mapbc;
     REF_DBL *metric;
-    REF_DBL *yplus, *uplus;
+    REF_DBL *distance, *uplus;
     REF_DICT ref_dict;
+    REF_INT node;
+    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
     yplus1 = atof(argv[pos + 1]);
     complexity = atof(argv[pos + 2]);
     mapbc = argv[pos + 3];
@@ -328,25 +331,31 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf(" --spalding %e %f %s law of the wall metric\n", yplus1,
              complexity, mapbc);
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(yplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_dict_create(&ref_dict), "make dict");
     RSS(ref_phys_read_mapbc(ref_dict, mapbc), "unable to read mapbc");
-    RSS(ref_phys_wall_distance(ref_grid, ref_dict, yplus), "wall dist");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "wall dist");
     RSS(ref_dict_free(ref_dict), "free");
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-    ref_mpi_stopwatch_stop(ref_mpi, "multiscale");
-    RSS(ref_metric_imply_from(metric, ref_grid), "imply metric");
-    ref_mpi_stopwatch_stop(ref_mpi, "imply metric placeholder, REMOVE");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      RAS(ref_math_divisible(distance[node], yplus1),
+          "wall distance not divisible by y+=1")
+      RSS(ref_phys_spalding_uplus(distance[node] / yplus1, &(uplus[node])),
+          "uplus");
+    }
+    RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 2),
+        "local lp=2 norm scaling");
     RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
-        "scale metric");
-    ref_mpi_stopwatch_stop(ref_mpi, "set complexity");
+        "set complexity");
+
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
     ref_free(uplus);
-    ref_free(yplus);
+    ref_free(distance);
     ref_free(metric);
     curvature_metric = REF_FALSE;
-    ref_mpi_stopwatch_stop(ref_mpi, "scale implied metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "law of wall metric");
   }
 
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
