@@ -319,7 +319,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_DBL complexity;
     const char *mapbc;
     REF_DBL *metric;
-    REF_DBL *distance, *uplus;
+    REF_DBL *distance, *uplus, yplus;
     REF_DICT ref_dict;
     REF_INT node;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
@@ -340,9 +340,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RAS(ref_math_divisible(distance[node], yplus1),
-          "wall distance not divisible by y+=1")
-      RSS(ref_phys_spalding_uplus(distance[node] / yplus1, &(uplus[node])),
-          "uplus");
+          "wall distance not divisible by y+=1");
+      yplus = distance[node] / yplus1;
+      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
     }
     RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
     RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
