@@ -2690,6 +2690,7 @@ REF_STATUS ref_node_bary3d(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
                            REF_DBL *bary) {
   REF_DBL *xyz0, *xyz1, *xyz2;
   REF_DBL total, normal[3], total_normal[3];
+  REF_DBL xyzp[3];
 
   if (!ref_node_valid(ref_node, nodes[0]) ||
       !ref_node_valid(ref_node, nodes[1]) ||
@@ -2702,11 +2703,23 @@ REF_STATUS ref_node_bary3d(REF_NODE ref_node, REF_INT *nodes, REF_DBL *xyz,
 
   RSS(ref_node_xyz_normal(xyz0, xyz1, xyz2, total_normal), "n0");
 
-  RSS(ref_node_xyz_normal(xyz, xyz1, xyz2, normal), "n0");
+  /* projects query point to triangle plane */
+  xyzp[0] = xyz[0] - xyz0[0];
+  xyzp[1] = xyz[1] - xyz0[1];
+  xyzp[2] = xyz[2] - xyz0[2];
+  total = ref_math_dot(xyzp, total_normal);
+  xyzp[0] -= total_normal[0] * total;
+  xyzp[1] -= total_normal[1] * total;
+  xyzp[2] -= total_normal[2] * total;
+  xyzp[0] += xyz0[0];
+  xyzp[1] += xyz0[1];
+  xyzp[2] += xyz0[2];
+
+  RSS(ref_node_xyz_normal(xyzp, xyz1, xyz2, normal), "n0");
   bary[0] = ref_math_dot(normal, total_normal);
-  RSS(ref_node_xyz_normal(xyz0, xyz, xyz2, normal), "n1");
+  RSS(ref_node_xyz_normal(xyz0, xyzp, xyz2, normal), "n1");
   bary[1] = ref_math_dot(normal, total_normal);
-  RSS(ref_node_xyz_normal(xyz0, xyz1, xyz, normal), "n2");
+  RSS(ref_node_xyz_normal(xyz0, xyz1, xyzp, normal), "n2");
   bary[2] = ref_math_dot(normal, total_normal);
 
   total = bary[0] + bary[1] + bary[2];

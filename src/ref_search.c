@@ -311,3 +311,78 @@ REF_STATUS ref_search_distance2(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz,
 
   return REF_SUCCESS;
 }
+
+static REF_STATUS ref_search_xyz_normal(REF_DBL *xyz0, REF_DBL *xyz1,
+                                        REF_DBL *xyz2, REF_DBL *normal) {
+  REF_DBL edge10[3], edge20[3];
+
+  edge10[0] = xyz1[0] - xyz0[0];
+  edge10[1] = xyz1[1] - xyz0[1];
+  edge10[2] = xyz1[2] - xyz0[2];
+
+  edge20[0] = xyz2[0] - xyz0[0];
+  edge20[1] = xyz2[1] - xyz0[1];
+  edge20[2] = xyz2[2] - xyz0[2];
+
+  ref_math_cross_product(edge10, edge20, normal);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
+                                REF_DBL *xyz, REF_DBL *distance) {
+  REF_DBL dist;
+  REF_DBL bary[3], total, total_normal[3], normal[3];
+  REF_DBL dxyz[3];
+  REF_DBL xyzp[3];
+
+  RSS(ref_search_xyz_normal(xyz0, xyz1, xyz2, total_normal), "n0");
+
+  /* projects query point to triangle plane */
+  xyzp[0] = xyz[0] - xyz0[0];
+  xyzp[1] = xyz[1] - xyz0[1];
+  xyzp[2] = xyz[2] - xyz0[2];
+  total = ref_math_dot(xyzp, total_normal);
+  xyzp[0] -= total_normal[0] * total;
+  xyzp[1] -= total_normal[1] * total;
+  xyzp[2] -= total_normal[2] * total;
+  xyzp[0] += xyz0[0];
+  xyzp[1] += xyz0[1];
+  xyzp[2] += xyz0[2];
+
+  RSS(ref_search_xyz_normal(xyzp, xyz1, xyz2, normal), "n0");
+  bary[0] = ref_math_dot(normal, total_normal);
+  RSS(ref_search_xyz_normal(xyz0, xyzp, xyz2, normal), "n1");
+  bary[1] = ref_math_dot(normal, total_normal);
+  RSS(ref_search_xyz_normal(xyz0, xyz1, xyzp, normal), "n2");
+  bary[2] = ref_math_dot(normal, total_normal);
+
+  total = bary[0] + bary[1] + bary[2];
+
+  if (ref_math_divisible(bary[0], total) &&
+      ref_math_divisible(bary[1], total) &&
+      ref_math_divisible(bary[2], total)) {
+    bary[0] /= total;
+    bary[1] /= total;
+    bary[2] /= total;
+    if (bary[0] >= 0.0 && bary[1] >= 0.0 && bary[2] >= 0.0) {
+      dxyz[0] =
+          bary[0] * xyz0[0] + bary[1] * xyz1[0] + bary[2] * xyz2[0] - xyz[0];
+      dxyz[1] =
+          bary[0] * xyz0[1] + bary[1] * xyz1[1] + bary[2] * xyz2[1] - xyz[1];
+      dxyz[2] =
+          bary[0] * xyz0[2] + bary[1] * xyz1[2] + bary[2] * xyz2[2] - xyz[2];
+      *distance = sqrt(ref_math_dot(dxyz, dxyz));
+      return REF_SUCCESS;
+    }
+  }
+
+  RSS(ref_search_distance2(xyz0, xyz1, xyz, &dist), "e01");
+  *distance = dist;
+  RSS(ref_search_distance2(xyz1, xyz2, xyz, &dist), "e12");
+  *distance = MIN(*distance, dist);
+  RSS(ref_search_distance2(xyz2, xyz0, xyz, &dist), "e20");
+  *distance = MIN(*distance, dist);
+
+  return REF_SUCCESS;
+}

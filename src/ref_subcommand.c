@@ -89,6 +89,11 @@ static void bootstrap_help(const char *name) {
   printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
   printf("\n");
 }
+static void distance_help(const char *name) {
+  printf("usage: \n %s distance input_mesh.extension distance.solb\n", name);
+  printf("  --fun3d fun3d_format.mapbc\n");
+  printf("\n");
+}
 static void examine_help(const char *name) {
   printf("usage: \n %s examine input_mesh_or_solb.extension\n", name);
   printf("\n");
@@ -152,16 +157,19 @@ static void loop_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
-  printf("   --partitioner selects domain decomposition method.\n");
+  printf("   --partitioner <id> selects domain decomposition method.\n");
   printf("       2: ParMETIS graph partitioning.\n");
   printf("       3: Zoltan graph partitioning.\n");
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
-  printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
+  printf("   --mesh-extension <output mesh extension> (replaces lb8.ugrid).\n");
   printf("   --fixed-point <middle-string> \\\n");
   printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
   printf("       where <input_project_name><middle-string>N.solb are\n");
   printf("       scalar fields and N is the timestep index.\n");
+  printf("   --interpolant <type> multiscale scalar field.\n");
+  printf("       mach (default), incomp (incompressible vel magnitude),\n");
+  printf("       htot, pressure, density, temperature.\n");
 
   printf("\n");
 }
@@ -712,6 +720,62 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
+  REF_GRID ref_grid;
+  REF_DICT ref_dict;
+  REF_DBL *distance;
+  char *in_mesh = NULL;
+  char *out_file = NULL;
+  REF_INT pos;
+  if (argc < 4) goto shutdown;
+  in_mesh = argv[2];
+  out_file = argv[3];
+
+  RSS(ref_dict_create(&ref_dict), "create");
+
+  RXS(ref_args_find(argc, argv, "--fun3d", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  RAB(ref_dict_n(ref_dict) > 0, "no solid walls specified", {
+    if (ref_mpi_once(ref_mpi)) distance_help(argv[0]);
+  });
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  ref_malloc_init(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  -1.0);
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "store");
+  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+
+  if (ref_mpi_once(ref_mpi)) printf("gather %s\n", out_file);
+  RSS(ref_gather_scalar_by_extension(ref_grid, 1, distance, NULL, out_file),
+      "gather");
+  ref_mpi_stopwatch_stop(ref_mpi, "gather");
+
+  ref_free(distance);
+  ref_dict_free(ref_dict);
+  ref_grid_free(ref_grid);
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) distance_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1795,6 +1859,13 @@ int main(int argc, char *argv[]) {
       RSS(bootstrap(ref_mpi, argc, argv), "bootstrap");
     } else {
       if (ref_mpi_once(ref_mpi)) bootstrap_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "d", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(distance(ref_mpi, argc, argv), "distance");
+    } else {
+      if (ref_mpi_once(ref_mpi)) distance_help(argv[0]);
       goto shutdown;
     }
   } else if (strncmp(argv[1], "e", 1) == 0) {

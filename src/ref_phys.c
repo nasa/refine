@@ -551,8 +551,11 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_DBL center[3], radius, dist;
   REF_DBL scale = 1.0 + 1.0e-8;
 
-  RAS(ref_grid_twod(ref_grid), "only implmented 2D");
-  ref_cell = ref_grid_edg(ref_grid);
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_edg(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
   node_per = ref_cell_node_per(ref_cell);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -561,6 +564,17 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
     if (4000 == bc) {
       local_ncell++;
     }
+  }
+  if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          "bc");
+      if (4000 == bc) {
+        local_ncell += 2;
+      }
+    }
+    ref_cell = ref_grid_tri(ref_grid);
   }
   ref_malloc(local_xyz, 3 * node_per * local_ncell, REF_DBL);
   local_ncell = 0;
@@ -577,12 +591,41 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
       local_ncell++;
     }
   }
+  if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
+    ref_cell = ref_grid_qua(ref_grid);
+    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          "bc");
+      if (4000 == bc) {
+        for (i = 0; i < 3; i++) {
+          local_xyz[i + 3 * 0 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[0]);
+          local_xyz[i + 3 * 1 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[1]);
+          local_xyz[i + 3 * 2 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[2]);
+        }
+        local_ncell += 1;
+        for (i = 0; i < 3; i++) {
+          local_xyz[i + 3 * 0 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[0]);
+          local_xyz[i + 3 * 1 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[2]);
+          local_xyz[i + 3 * 2 + 3 * node_per * local_ncell] =
+              ref_node_xyz(ref_node, i, nodes[3]);
+        }
+        local_ncell += 1;
+      }
+    }
+    ref_cell = ref_grid_tri(ref_grid);
+  }
+
   ncell = local_ncell;
   RSS(ref_mpi_allsum(ref_mpi, &ncell, 1, REF_INT_TYPE), "allsum ncell");
   ref_malloc(xyz, 3 * node_per * ncell, REF_DBL);
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   local_total = 3 * node_per * local_ncell;
-  RSS(ref_mpi_allgather(ref_mpi, &local_total, counts, REF_DBL_TYPE),
+  RSS(ref_mpi_allgather(ref_mpi, &local_total, counts, REF_INT_TYPE),
       "gather xyz");
   RSS(ref_mpi_allgatherv(ref_mpi, local_xyz, counts, xyz, REF_DBL_TYPE),
       "gather xyz");
@@ -605,10 +648,19 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
         "candidates");
     each_ref_list_item(ref_list, item) {
       candidate = ref_list_value(ref_list, item);
-      RSS(ref_search_distance2(&(xyz[0 + 3 * node_per * candidate]),
-                               &(xyz[3 + 3 * node_per * candidate]),
-                               ref_node_xyz_ptr(ref_node, node), &dist),
-          "dist2");
+      RAS(2 == node_per || 3 == node_per, "2,3 node_per implemented");
+      if (2 == node_per) {
+        RSS(ref_search_distance2(&(xyz[0 + 3 * node_per * candidate]),
+                                 &(xyz[3 + 3 * node_per * candidate]),
+                                 ref_node_xyz_ptr(ref_node, node), &dist),
+            "dist2");
+      } else {
+        RSS(ref_search_distance3(&(xyz[0 + 3 * node_per * candidate]),
+                                 &(xyz[3 + 3 * node_per * candidate]),
+                                 &(xyz[6 + 3 * node_per * candidate]),
+                                 ref_node_xyz_ptr(ref_node, node), &dist),
+            "dist3");
+      }
       distance[node] = MIN(distance[node], dist);
     }
 
