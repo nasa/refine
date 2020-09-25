@@ -263,6 +263,7 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ ref adapt --spalding
 + ref distance
 + signed distance to 2d isosurface
 + 2d isosurface
