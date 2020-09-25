@@ -625,7 +625,7 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc(xyz, 3 * node_per * ncell, REF_DBL);
   ref_malloc(counts, ref_mpi_n(ref_mpi), REF_INT);
   local_total = 3 * node_per * local_ncell;
-  RSS(ref_mpi_allgather(ref_mpi, &local_total, counts, REF_DBL_TYPE),
+  RSS(ref_mpi_allgather(ref_mpi, &local_total, counts, REF_INT_TYPE),
       "gather xyz");
   RSS(ref_mpi_allgatherv(ref_mpi, local_xyz, counts, xyz, REF_DBL_TYPE),
       "gather xyz");
