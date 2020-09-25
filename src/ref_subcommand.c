@@ -157,16 +157,19 @@ static void loop_help(const char *name) {
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
   printf("   --buffer coarsens the metric approaching the x max boundary.\n");
-  printf("   --partitioner selects domain decomposition method.\n");
+  printf("   --partitioner <id> selects domain decomposition method.\n");
   printf("       2: ParMETIS graph partitioning.\n");
   printf("       3: Zoltan graph partitioning.\n");
   printf("       4: Zoltan recursive bisection.\n");
   printf("       5: native recursive bisection.\n");
-  printf("   --mesh-extension output mesh extension (replaces lb8.ugrid).\n");
+  printf("   --mesh-extension <output mesh extension> (replaces lb8.ugrid).\n");
   printf("   --fixed-point <middle-string> \\\n");
   printf("       <first_timestep> <timestep_increment> <last_timestep>\n");
   printf("       where <input_project_name><middle-string>N.solb are\n");
   printf("       scalar fields and N is the timestep index.\n");
+  printf("   --interpolant <type> multiscale scalar field.\n");
+  printf("       mach (default), incomp (incompressible vel magnitude),\n");
+  printf("       htot, pressure, density, temperature.\n");
 
   printf("\n");
 }
