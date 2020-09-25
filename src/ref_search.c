@@ -337,6 +337,8 @@ REF_STATUS ref_search_distance3(REF_DBL *xyz0, REF_DBL *xyz1, REF_DBL *xyz2,
   REF_DBL xyzp[3];
 
   RSS(ref_search_xyz_normal(xyz0, xyz1, xyz2, total_normal), "n0");
+
+  /* projects query point to triangle plane */
   xyzp[0] = xyz[0] - xyz0[0];
   xyzp[1] = xyz[1] - xyz0[1];
   xyzp[2] = xyz[2] - xyz0[2];
