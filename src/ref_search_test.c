@@ -434,7 +434,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  { /* dist to zero tri */
+  { /* dist to right tri */
     REF_DBL xyz0[3] = {0.0, 0.0, 0.0};
     REF_DBL xyz1[3] = {1.0, 0.0, 0.0};
     REF_DBL xyz2[3] = {0.0, 1.0, 0.0};
