@@ -1,4 +1,5 @@
 
+- ref distance computes wall distance to support flow solver turbulence model
 - ref interp extended to mixed element meshes
 - ref examine reports mesh/solb header data (size)
 - oversized solb read results in warning, not error
