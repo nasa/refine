@@ -551,8 +551,11 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   REF_DBL center[3], radius, dist;
   REF_DBL scale = 1.0 + 1.0e-8;
 
-  RAS(ref_grid_twod(ref_grid), "only implmented 2D");
-  ref_cell = ref_grid_edg(ref_grid);
+  if (ref_grid_twod(ref_grid)) {
+    ref_cell = ref_grid_edg(ref_grid);
+  } else {
+    ref_cell = ref_grid_tri(ref_grid);
+  }
   node_per = ref_cell_node_per(ref_cell);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
@@ -605,10 +608,19 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
         "candidates");
     each_ref_list_item(ref_list, item) {
       candidate = ref_list_value(ref_list, item);
-      RSS(ref_search_distance2(&(xyz[0 + 3 * node_per * candidate]),
-                               &(xyz[3 + 3 * node_per * candidate]),
-                               ref_node_xyz_ptr(ref_node, node), &dist),
-          "dist2");
+      RAS(2 == node_per || 3 == node_per, "2,3 node_per implemented");
+      if (2 == node_per) {
+        RSS(ref_search_distance2(&(xyz[0 + 3 * node_per * candidate]),
+                                 &(xyz[3 + 3 * node_per * candidate]),
+                                 ref_node_xyz_ptr(ref_node, node), &dist),
+            "dist2");
+      } else {
+        RSS(ref_search_distance3(&(xyz[0 + 3 * node_per * candidate]),
+                                 &(xyz[3 + 3 * node_per * candidate]),
+                                 &(xyz[6 + 3 * node_per * candidate]),
+                                 ref_node_xyz_ptr(ref_node, node), &dist),
+            "dist3");
+      }
       distance[node] = MIN(distance[node], dist);
     }
 
