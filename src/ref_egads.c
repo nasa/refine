@@ -705,6 +705,92 @@ static REF_STATUS ref_egads_adjust_tparams_missing_face(
 #endif
 
 #ifdef HAVE_EGADS
+static REF_STATUS ref_egads_adjust_tparams_dup_edge(REF_GEOM ref_geom, ego tess,
+                                                    REF_CLOUD edge_tp_augment,
+                                                    REF_DBL seg_per_diag) {
+  ego edgeobj;
+  int edge, plen;
+  const double *points, *t;
+  ego ref;
+  int oclass, mtype;
+  double trange[2];
+  int ncadnode;
+  ego *cadnodes;
+  int *senses;
+
+  REF_CELL ref_cell;
+  REF_INT node, new_cell, nodes[REF_CELL_MAX_SIZE_PER];
+  REF_INT cell, ncell, cell_list[2];
+  double params[3], diag, box[6];
+
+  RSS(ref_cell_create(&ref_cell, REF_CELL_EDG), "temp edg create");
+
+  for (edge = 0; edge < (ref_geom->nedge); edge++) {
+    edgeobj = ((ego *)(ref_geom->edges))[edge];
+    REIS(EGADS_SUCCESS,
+         EG_getTopology(edgeobj, &ref, &oclass, &mtype, trange, &ncadnode,
+                        &cadnodes, &senses),
+         "EG topo edge0");
+    if (mtype == DEGENERATE) continue; /* skip DEGENERATE */
+    REIS(EGADS_SUCCESS, EG_getTessEdge(tess, edge + 1, &plen, &points, &t),
+         "tess edge nodes");
+    for (node = 0; node < (plen - 1); node++) {
+      /* assume edge index is 1-bias */
+      REIS(EGADS_SUCCESS,
+           EG_localToGlobal(tess, -(edge + 1), node + 1, &(nodes[0])), "l2g0");
+      REIS(EGADS_SUCCESS,
+           EG_localToGlobal(tess, -(edge + 1), node + 2, &(nodes[1])), "l2g1");
+      nodes[0] -= 1;
+      nodes[1] -= 1;
+      nodes[2] = edge + 1;
+      RSS(ref_cell_add(ref_cell, nodes, &new_cell), "new edge");
+    }
+  }
+
+  each_ref_cell_valid_cell(ref_cell, cell) {
+    RSS(ref_cell_list_with2(ref_cell, ref_cell_c2n(ref_cell, 0, cell),
+                            ref_cell_c2n(ref_cell, 1, cell), 2, &ncell,
+                            cell_list),
+        "edge list for edge");
+    if (2 == ncell) {
+      REF_INT id;
+      printf("edge ids %d and %d share a segment\n",
+             ref_cell_c2n(ref_cell, 2, cell_list[0]),
+             ref_cell_c2n(ref_cell, 2, cell_list[1]));
+      id = ref_cell_c2n(ref_cell, 2, cell_list[0]);
+      edge = id - 1;
+      edgeobj = ((ego *)(ref_geom->edges))[edge];
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(edgeobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
+      params[0] = seg_per_diag * diag;
+      params[1] = 0.1 * params[0];
+      params[2] = 15.0;
+      RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+          "update tparams");
+      id = ref_cell_c2n(ref_cell, 2, cell_list[1]);
+      edge = id - 1;
+      edgeobj = ((ego *)(ref_geom->edges))[edge];
+      REIS(EGADS_SUCCESS, EG_getBoundingBox(edgeobj, box), "EG bounding box");
+      diag = sqrt((box[0] - box[3]) * (box[0] - box[3]) +
+                  (box[1] - box[4]) * (box[1] - box[4]) +
+                  (box[2] - box[5]) * (box[2] - box[5]));
+      params[0] = seg_per_diag * diag;
+      params[1] = 0.1 * params[0];
+      params[2] = 15.0;
+      RSS(ref_egads_merge_tparams(edge_tp_augment, edge + 1, params),
+          "update tparams");
+    }
+  }
+
+  RSS(ref_cell_free(ref_cell), "free temp edg");
+
+  return REF_SUCCESS;
+}
+#endif
+
+#ifdef HAVE_EGADS
 static REF_STATUS ref_egads_adjust_tparams_chord(REF_GEOM ref_geom, ego tess,
                                                  REF_CLOUD face_tp_augment,
                                                  REF_CLOUD edge_tp_augment,
@@ -1017,11 +1103,14 @@ static REF_STATUS ref_egads_tess_create(REF_GEOM ref_geom, ego *tess,
     RSS(ref_egads_adjust_tparams_missing_face(ref_geom, *tess, face_tp_augment,
                                               edge_tp_augment, seg_per_diag,
                                               face_locked),
-        "adjust params");
+        "adjust missing face params");
+    RSS(ref_egads_adjust_tparams_dup_edge(ref_geom, *tess, edge_tp_augment,
+                                          seg_per_diag),
+        "adjust dup edge params");
     RSS(ref_egads_update_tparams_attributes(ref_geom, face_tp_original,
                                             edge_tp_original, face_tp_augment,
                                             edge_tp_augment, &rebuild),
-        "adjust params");
+        "update tparams params");
 
     RSS(ref_list_inspect(face_locked), "show");
 
