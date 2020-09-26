@@ -54,12 +54,15 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
+/*printf("  distance     Calculate wall distance (for turbulence model)\n");*/
   printf("  examine      Report mesh or solution file meta data.\n");
+/*printf("  grow         Fills surface mesh with volume to debug boostrap\n");*/
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
+/*printf("  vertex       reports location of a vertex by index\n");*/
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -114,13 +117,6 @@ static void interpolate_help(const char *name) {
   printf("   --face <face id> <persist>.solb\n");
   printf("       where persist.solb is copied to receptor.solb\n");
   printf("       and face id is replaced with donor.solb.\n");
-  printf("\n");
-}
-
-static void vertex_help(const char *name) {
-  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n",
-         name);
-  printf("  vertex_index is zero-based\n");
   printf("\n");
 }
 
@@ -201,6 +197,13 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
+  printf("\n");
+}
+
+static void vertex_help(const char *name) {
+  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n",
+         name);
+  printf("  vertex_index is zero-based\n");
   printf("\n");
 }
 
@@ -1009,36 +1012,6 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *in_file;
-  REF_INT pos, global, local;
-  REF_GRID ref_grid = NULL;
-
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref vertex is not parallel");
-  }
-  if (argc < 4) goto shutdown;
-  in_file = argv[2];
-
-  printf("import %s\n", in_file);
-  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
-
-  for (pos = 3; pos < argc; pos++) {
-    global = atoi(argv[pos]);
-    printf("global index %d\n", global);
-    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
-        "global node_index not found");
-    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
-  }
-
-  RSS(ref_grid_free(ref_grid), "create");
-
-  return REF_SUCCESS;
-shutdown:
-  if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
-  return REF_FAILURE;
-}
-
 static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
                                        REF_DBL *initial_field,
                                        const char *interpolant,
@@ -1812,6 +1785,36 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
   return REF_SUCCESS;
 shutdown:
   if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
+  return REF_FAILURE;
+}
+
+static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_file;
+  REF_INT pos, global, local;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref vertex is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  for (pos = 3; pos < argc; pos++) {
+    global = atoi(argv[pos]);
+    printf("global index %d\n", global);
+    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
+        "global node_index not found");
+    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
+  }
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
   return REF_FAILURE;
 }
 
