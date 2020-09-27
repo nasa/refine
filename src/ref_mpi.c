@@ -221,6 +221,13 @@ REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_elapsed(REF_DBL *seconds) {
+  clock_t ticks;
+  ticks = clock();
+  *seconds = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC);
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi) {
 #ifdef HAVE_MPI
   if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));

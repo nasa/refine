@@ -72,6 +72,7 @@ REF_STATUS ref_mpi_stop(void);
 
 REF_STATUS ref_mpi_int_size_type(REF_SIZE size, REF_TYPE *type);
 
+REF_STATUS ref_mpi_elapsed(REF_DBL *seconds);
 REF_STATUS ref_mpi_stopwatch_start(REF_MPI ref_mpi);
 REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message);
 
