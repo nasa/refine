@@ -1984,6 +1984,19 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
+  REF_DBL kr, r[3], ks, s[3];
+  REF_DBL curvature_is_ok = 100.0;
+  REF_DBL xyz[3], dxyz_dtuv[15];
+  if (REF_GEOM_FACE != ref_geom_id(ref_geom, geom)) return REF_SUCCESS;
+
+  RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
+  if (kr < curvature_is_ok && ks < curvature_is_ok) return REF_SUCCESS;
+  RSS(ref_egads_eval(ref_geom, geom, xyz, dxyz_dtuv), "eval edge");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom,
                                 REF_DBL *slop) {
   REF_DBL tol, gap;
