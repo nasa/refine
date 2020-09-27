@@ -1,3 +1,10 @@
+
+robust add geom and xyz between in egads (fast, no inverse eval)
+
+protect geom constraint metric from surface folds and high curvature
+ filter based on samples of neighborhood
+ discrete curvature estimate (triangle-center based?)
+
 ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 
 sync surf/tri/face zone titles
@@ -66,8 +73,6 @@ surrogate surface
   when EGADS not available
   support virtual topology
 
-robust add geom and xyz between in egads
-
 ref_geom
  refactor ref_geom to remove methods and tests, how is it used, what is needed?
  volume fill: merge import grid, remove specialized readers
@@ -81,10 +86,7 @@ ref_geom
  high order geometry visualization with cubic patches
  try gmsh, mmgtools.org, netgen-mesher, CGALmesh
 
-protect geom constraint metric from surface folds and high curvature
- filter based on samples of neighborhood
- discrete curvature estimate (triangle-center based?)
- thin shells
+boost curvature constraints for thin shells and gaps
   - near-tree for reducing geometry metric across thickness
   - single pass near-tree for grid size gradation of gaps
     + pearl in curved plate test case for blister
