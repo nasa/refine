@@ -2033,10 +2033,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
-                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
-                                    &ks, s),
-        "curve");
+    if (REF_SUCCESS != ref_egads_face_curvature_at(
+                           ref_geom, ref_geom_id(ref_geom, geom),
+                           ref_geom_degen(ref_geom, geom), uv, &kr, r, &ks, s))
+      return REF_SUCCESS;
     if (ABS(kr) < kmin * ABS(kr0) || kmax * ABS(kr0) < ABS(kr)) {
       if (verbose) printf("kr0 %f kr+ %f\n", kr0, kr);
       *usable = REF_FALSE;
@@ -2049,10 +2049,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
-                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
-                                    &ks, s),
-        "curve");
+    if (REF_SUCCESS != ref_egads_face_curvature_at(
+                           ref_geom, ref_geom_id(ref_geom, geom),
+                           ref_geom_degen(ref_geom, geom), uv, &kr, r, &ks, s))
+      return REF_SUCCESS;
     if (ABS(kr) < kmin * ABS(kr0) || kmax * ABS(kr0) < ABS(kr)) {
       if (verbose) printf("kr0 %f kr- %f\n", kr0, kr);
       *usable = REF_FALSE;
@@ -2068,10 +2068,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
-                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
-                                    &ks, s),
-        "curve");
+    if (REF_SUCCESS != ref_egads_face_curvature_at(
+                           ref_geom, ref_geom_id(ref_geom, geom),
+                           ref_geom_degen(ref_geom, geom), uv, &kr, r, &ks, s))
+      return REF_SUCCESS;
     if (ABS(ks) < kmin * ABS(ks0) || kmax * ABS(ks0) < ABS(ks)) {
       if (verbose) printf("ks0 %f ks+ %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
       *usable = REF_FALSE;
@@ -2086,10 +2086,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
-                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
-                                    &ks, s),
-        "curve");
+    if (REF_SUCCESS != ref_egads_face_curvature_at(
+                           ref_geom, ref_geom_id(ref_geom, geom),
+                           ref_geom_degen(ref_geom, geom), uv, &kr, r, &ks, s))
+      return REF_SUCCESS;
     if (ABS(ks) < kmin * ABS(ks0) || kmax * ABS(ks0) < ABS(ks)) {
       if (verbose) printf("ks0 %f ks- %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
       *usable = REF_FALSE;
