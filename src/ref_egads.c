@@ -1958,16 +1958,26 @@ REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
     }
     egads_status = EG_curvature(object, params, curvature);
   }
-  REIS(EGADS_SUCCESS, egads_status, "curve");
-  *kr = curvature[0];
-  r[0] = curvature[1];
-  r[1] = curvature[2];
-  r[2] = curvature[3];
-  *ks = curvature[4];
-  s[0] = curvature[5];
-  s[1] = curvature[6];
-  s[2] = curvature[7];
-  return REF_SUCCESS;
+  if (EGADS_SUCCESS == egads_status) {
+    *kr = curvature[0];
+    r[0] = curvature[1];
+    r[1] = curvature[2];
+    r[2] = curvature[3];
+    *ks = curvature[4];
+    s[0] = curvature[5];
+    s[1] = curvature[6];
+    s[2] = curvature[7];
+    return REF_SUCCESS;
+  } else {
+    r[0] = 1.0;
+    r[1] = 0.0;
+    r[2] = 0.0;
+    *ks = 0.0;
+    s[0] = 0.0;
+    s[1] = 1.0;
+    s[2] = 0.0;
+    return REF_FAILURE;
+  }
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
