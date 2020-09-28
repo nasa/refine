@@ -248,7 +248,7 @@ REF_STATUS ref_geom_crease(REF_GRID ref_grid, REF_INT node,
 REF_STATUS ref_geom_verify_param(REF_GRID ref_grid);
 REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid);
 
-REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom);
+REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable);
 
 REF_STATUS ref_geom_reliability(REF_GEOM ref_geom, REF_INT geom, REF_DBL *slop);
 

@@ -1984,7 +1984,7 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
+REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
   REF_DBL kr0, r0[3], ks0, s0[3];
   REF_DBL curvature_is_ok = 100.0;
   REF_DBL uv0[2], xyz0[3], dxyz_dtuv[15];
@@ -1993,6 +1993,7 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
   REF_DBL duv[2], drs[2];
   REF_DBL uv[2];
   REF_DBL kr, r[3], ks, s[3];
+  *usable = REF_FALSE;
   if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
 
   if (REF_GEOM_FACE != ref_geom_type(ref_geom, geom)) return REF_SUCCESS;
@@ -2000,7 +2001,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
   uv0[1] = ref_geom_param(ref_geom, 1, geom);
 
   RSS(ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0), "curve");
-  if (kr0 < curvature_is_ok && ks0 < curvature_is_ok) return REF_SUCCESS;
+  if (kr0 < curvature_is_ok && ks0 < curvature_is_ok) {
+    *usable = REF_TRUE;
+    return REF_SUCCESS;
+  }
 
   RSS(ref_egads_eval(ref_geom, geom, xyz0, dxyz_dtuv), "eval edge");
   /* [x_u,y_u,z_u] [x_v,y_v,z_v] */
@@ -2065,6 +2069,8 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
         "curve");
     printf("ks0 %f ks- %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
   }
+
+  *usable = REF_TRUE;
   return REF_SUCCESS;
 }
 
