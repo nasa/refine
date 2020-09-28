@@ -23,6 +23,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "ref_cell.h"
 #include "ref_dict.h"
@@ -1754,7 +1755,9 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
            filename, project);
   printf("%s\n", command);
   fflush(stdout);
+  REIS(0, sleep(2), "sleep failed");
   system_status = system(command);
+  REIS(0, sleep(2), "sleep failed");
   REIB(0, system_status, "tetgen failed", {
     printf("tec360 ref_geom_test_tetgen_geom.tec\n");
     ref_geom_tec(ref_grid, "ref_geom_test_tetgen_geom.tec");
