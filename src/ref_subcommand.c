@@ -54,15 +54,16 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
-/*printf("  distance     Calculate wall distance (for turbulence model)\n");*/
+  /*printf("  distance     Calculate wall distance (for turbulence model)\n");*/
   printf("  examine      Report mesh or solution file meta data.\n");
-/*printf("  grow         Fills surface mesh with volume to debug boostrap\n");*/
+  /*printf("  grow         Fills surface mesh with volume to debug
+   * boostrap\n");*/
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
-/*printf("  vertex       reports location of a vertex by index\n");*/
+  /*printf("  vertex       reports location of a vertex by index\n");*/
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
