@@ -1985,15 +1985,86 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
 }
 
 REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom) {
-  REF_DBL kr, r[3], ks, s[3];
+  REF_DBL kr0, r0[3], ks0, s0[3];
   REF_DBL curvature_is_ok = 100.0;
-  REF_DBL xyz[3], dxyz_dtuv[15];
-  if (REF_GEOM_FACE != ref_geom_id(ref_geom, geom)) return REF_SUCCESS;
+  REF_DBL uv0[2], xyz0[3], dxyz_dtuv[15];
+  REF_DBL h, delta_radian = 0.5; /* 2 segment per radian of curvature */
+  REF_DBL drsduv[4], duvdrs[4];
+  REF_DBL duv[2], drs[2];
+  REF_DBL uv[2];
+  REF_DBL kr, r[3], ks, s[3];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
 
-  RSS(ref_egads_face_curvature(ref_geom, geom, &kr, r, &ks, s), "curve");
-  if (kr < curvature_is_ok && ks < curvature_is_ok) return REF_SUCCESS;
-  RSS(ref_egads_eval(ref_geom, geom, xyz, dxyz_dtuv), "eval edge");
+  if (REF_GEOM_FACE != ref_geom_type(ref_geom, geom)) return REF_SUCCESS;
+  uv0[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
+  uv0[1] = ref_geom_param(ref_geom, 1, geom);
 
+  RSS(ref_egads_face_curvature(ref_geom, geom, &kr0, r0, &ks0, s0), "curve");
+  if (kr0 < curvature_is_ok && ks0 < curvature_is_ok) return REF_SUCCESS;
+
+  RSS(ref_egads_eval(ref_geom, geom, xyz0, dxyz_dtuv), "eval edge");
+  /* [x_u,y_u,z_u] [x_v,y_v,z_v] */
+  /*  drsduv = [r s] * dxyz_dtuv */
+  drsduv[0] =
+      dxyz_dtuv[0] * r0[0] + dxyz_dtuv[1] * r0[1] + dxyz_dtuv[2] * r0[2];
+  drsduv[1] =
+      dxyz_dtuv[0] * s0[0] + dxyz_dtuv[1] * s0[1] + dxyz_dtuv[2] * s0[2];
+  drsduv[2] =
+      dxyz_dtuv[3] * r0[0] + dxyz_dtuv[4] * r0[1] + dxyz_dtuv[5] * r0[2];
+  drsduv[3] =
+      dxyz_dtuv[3] * s0[0] + dxyz_dtuv[4] * s0[1] + dxyz_dtuv[5] * s0[2];
+  RSS(ref_matrix_inv_gen(2, drsduv, duvdrs), "UV inverse");
+
+  if (kr0 > curvature_is_ok) {
+    /* find points +/- h from xyz0 along r */
+    h = delta_radian / kr0;
+    drs[0] = h;
+    drs[1] = 0.0;
+    duv[0] = drsduv[0] * drs[0] + drsduv[2] * drs[1];
+    duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
+    uv[0] = uv0[0] + duv[0];
+    uv[1] = uv0[1] + duv[1];
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
+                                    &kr, r, &ks, s),
+        "curve");
+    printf("kr0 %f kr+ %f\n", kr0, kr);
+    h = delta_radian / kr0;
+    drs[0] = -h;
+    drs[1] = 0.0;
+    duv[0] = drsduv[0] * drs[0] + drsduv[2] * drs[1];
+    duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
+    uv[0] = uv0[0] + duv[0];
+    uv[1] = uv0[1] + duv[1];
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
+                                    &kr, r, &ks, s),
+        "curve");
+    printf("kr0 %f kr- %f\n", kr0, kr);
+  }
+  if (ks0 > curvature_is_ok) {
+    /* find points +/- h from xyz0 along s */
+    h = delta_radian / ks0;
+    drs[0] = 0.0;
+    drs[1] = h;
+    duv[0] = drsduv[0] * drs[0] + drsduv[2] * drs[1];
+    duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
+    uv[0] = uv0[0] + duv[0];
+    uv[1] = uv0[1] + duv[1];
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
+                                    &kr, r, &ks, s),
+        "curve");
+    printf("ks0 %f ks+ %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
+    h = delta_radian / ks0;
+    drs[0] = 0.0;
+    drs[1] = -h;
+    duv[0] = drsduv[0] * drs[0] + drsduv[2] * drs[1];
+    duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
+    uv[0] = uv0[0] + duv[0];
+    uv[1] = uv0[1] + duv[1];
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
+                                    &kr, r, &ks, s),
+        "curve");
+    printf("ks0 %f ks- %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
+  }
   return REF_SUCCESS;
 }
 
