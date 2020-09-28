@@ -1858,6 +1858,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   ego object;
   int edgeid;
   double t;
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
   RNS(ref_geom->edges, "edges not loaded");
   edgeid = ref_geom_id(ref_geom, geom);
@@ -1865,7 +1866,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   object = edges[edgeid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
-  t = ref_geom_param(ref_geom, 0, geom);
+  t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
   REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
   *k = curvature[0];
@@ -1889,23 +1890,49 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
                                     REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
                                     REF_DBL *s) {
 #ifdef HAVE_EGADS
+  REF_DBL uv[2];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
+  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
+
+  uv[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
+  uv[1] = ref_geom_param(ref_geom, 1, geom);
+  RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                  ref_geom_degen(ref_geom, geom), uv, kr, r, ks,
+                                  s),
+      "face curve at");
+  return REF_SUCCESS;
+#else
+  printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  *kr = 0.0;
+  r[0] = 1.0;
+  r[1] = 0.0;
+  r[2] = 0.0;
+  *ks = 0.0;
+  s[0] = 0.0;
+  s[1] = 1.0;
+  s[2] = 0.0;
+  return REF_IMPLEMENT;
+#endif
+}
+
+REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
+                                       REF_INT degen, REF_DBL *uv, REF_DBL *kr,
+                                       REF_DBL *r, REF_DBL *ks, REF_DBL *s) {
+#ifdef HAVE_EGADS
   double curvature[8];
   ego *faces;
   ego object;
   int egads_status;
-  int faceid;
-  double uv[2];
-  REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
   RNS(ref_geom->faces, "faces not loaded");
-  faceid = ref_geom_id(ref_geom, geom);
   faces = (ego *)(ref_geom->faces);
+  RAS(0 < faceid && faceid <= ref_geom->nface, "face out of range");
   object = faces[faceid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
-  uv[0] = ref_geom_param(ref_geom, 0, geom);
-  uv[1] = ref_geom_param(ref_geom, 1, geom);
   egads_status = EG_curvature(object, uv, curvature);
-  if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
+  if (0 != degen || EGADS_DEGEN == egads_status) {
     REF_DBL du, dv;
     ego ref, *pchldrn;
     int oclass, mtype, nchild, *psens;
@@ -1931,20 +1958,32 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
     }
     egads_status = EG_curvature(object, params, curvature);
   }
-  REIS(EGADS_SUCCESS, egads_status, "curve");
-  *kr = curvature[0];
-  r[0] = curvature[1];
-  r[1] = curvature[2];
-  r[2] = curvature[3];
-  *ks = curvature[4];
-  s[0] = curvature[5];
-  s[1] = curvature[6];
-  s[2] = curvature[7];
-  return REF_SUCCESS;
+  if (EGADS_SUCCESS == egads_status) {
+    *kr = curvature[0];
+    r[0] = curvature[1];
+    r[1] = curvature[2];
+    r[2] = curvature[3];
+    *ks = curvature[4];
+    s[0] = curvature[5];
+    s[1] = curvature[6];
+    s[2] = curvature[7];
+    return REF_SUCCESS;
+  } else {
+    r[0] = 1.0;
+    r[1] = 0.0;
+    r[2] = 0.0;
+    *ks = 0.0;
+    s[0] = 0.0;
+    s[1] = 1.0;
+    s[2] = 0.0;
+    return REF_FAILURE;
+  }
 #else
   printf("curvature 0, 0: No EGADS linked for %s\n", __func__);
   SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
-  SUPRESS_UNUSED_COMPILER_WARNING(geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(faceid);
+  SUPRESS_UNUSED_COMPILER_WARNING(degen);
+  SUPRESS_UNUSED_COMPILER_WARNING(uv);
   *kr = 0.0;
   r[0] = 1.0;
   r[1] = 0.0;

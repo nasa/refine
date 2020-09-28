@@ -1112,6 +1112,9 @@ REF_STATUS ref_metric_from_curvature(REF_DBL *metric, REF_GRID ref_grid) {
       if (1.0 / rlimit < ks) hs = delta_radian / ks;
 
       if (ref_geom_model_loaded(ref_geom)) {
+        REF_BOOL usable;
+        RSS(ref_geom_usable(ref_geom, geom, &usable), "useable curvature");
+        if (!usable) continue;
         RSS(ref_geom_reliability(ref_geom, geom, &slop), "edge tol");
       } else if (ref_geom_meshlinked(ref_geom)) {
         RSS(ref_meshlink_gap(ref_grid, node, &slop), "edge tol");
