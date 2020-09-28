@@ -55,8 +55,8 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
                                     REF_DBL *kr, REF_DBL *r, REF_DBL *ks,
                                     REF_DBL *s);
 REF_STATUS ref_egads_face_curvature_at(REF_GEOM ref_geom, REF_INT faceid,
-                                       REF_DBL *uv, REF_DBL *kr, REF_DBL *r,
-                                       REF_DBL *ks, REF_DBL *s);
+                                       REF_INT degen, REF_DBL *uv, REF_DBL *kr,
+                                       REF_DBL *r, REF_DBL *ks, REF_DBL *s);
 REF_STATUS ref_egads_edge_trange(REF_GEOM ref_geom, REF_INT id,
                                  REF_DBL *trange);
 REF_STATUS ref_egads_edge_face_uv(REF_GEOM ref_geom, REF_INT edgeid,

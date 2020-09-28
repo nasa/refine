@@ -2017,7 +2017,10 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
       dxyz_dtuv[3] * r0[0] + dxyz_dtuv[4] * r0[1] + dxyz_dtuv[5] * r0[2];
   drsduv[3] =
       dxyz_dtuv[3] * s0[0] + dxyz_dtuv[4] * s0[1] + dxyz_dtuv[5] * s0[2];
-  RSS(ref_matrix_inv_gen(2, drsduv, duvdrs), "UV inverse");
+  if (REF_SUCCESS != ref_matrix_inv_gen(2, drsduv, duvdrs)) {
+    *usable = REF_FALSE;
+    return REF_SUCCESS;
+  }
 
   if (kr0 > curvature_is_ok) {
     /* find points +/- h from xyz0 along r */
@@ -2028,8 +2031,9 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
-                                    &kr, r, &ks, s),
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
+                                    &ks, s),
         "curve");
     printf("kr0 %f kr+ %f\n", kr0, kr);
     h = delta_radian / kr0;
@@ -2039,8 +2043,9 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
-                                    &kr, r, &ks, s),
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
+                                    &ks, s),
         "curve");
     printf("kr0 %f kr- %f\n", kr0, kr);
   }
@@ -2053,8 +2058,9 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
-                                    &kr, r, &ks, s),
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
+                                    &ks, s),
         "curve");
     printf("ks0 %f ks+ %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
     h = delta_radian / ks0;
@@ -2064,8 +2070,9 @@ REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
     duv[1] = drsduv[1] * drs[0] + drsduv[3] * drs[1];
     uv[0] = uv0[0] + duv[0];
     uv[1] = uv0[1] + duv[1];
-    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom), uv,
-                                    &kr, r, &ks, s),
+    RSS(ref_egads_face_curvature_at(ref_geom, ref_geom_id(ref_geom, geom),
+                                    ref_geom_degen(ref_geom, geom), uv, &kr, r,
+                                    &ks, s),
         "curve");
     printf("ks0 %f ks- %f duv %f %f\n", ks0, ks, duv[0], duv[1]);
   }
