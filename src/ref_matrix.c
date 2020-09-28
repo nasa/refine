@@ -1076,24 +1076,23 @@ REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
     pivot = a[j + n * j];
     for (k = 0; k < n; k++) {
       if (!ref_math_divisible(a[j + k * n], pivot)) {
-        RSS(ref_matrix_show_aqr(3, 3, NULL, a, inv), "show");
-        printf("a pivot %d %e %e\n", j, a[j + k * n], pivot);
         ref_free(a);
-        RSS(REF_DIV_ZERO, "pivot");
+        return REF_DIV_ZERO;
       }
       a[j + k * n] /= pivot;
       if (!ref_math_divisible(inv[j + k * n], pivot)) {
-        RSS(ref_matrix_show_aqr(3, 3, NULL, a, inv), "show");
-        printf("inv pivot %d %e %e\n", j, inv[j + k * n], pivot);
         ref_free(a);
-        RSS(REF_DIV_ZERO, "pivot");
+        return REF_DIV_ZERO;
       }
       inv[j + k * n] /= pivot;
     }
 
     /* eliminate lower triangle */
     for (i = j + 1; i < n; i++) {
-      if (!ref_math_divisible(a[i + j * n], a[j + j * n])) return REF_DIV_ZERO;
+      if (!ref_math_divisible(a[i + j * n], a[j + j * n])) {
+        ref_free(a);
+        return REF_DIV_ZERO;
+      }
       scale = a[i + j * n] / a[j + j * n];
       for (k = 0; k < n; k++) a[i + k * n] -= scale * a[j + k * n];
       for (k = 0; k < n; k++) inv[i + k * n] -= scale * inv[j + k * n];
@@ -1101,7 +1100,10 @@ REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
 
     /* eliminate upper triangle */
     for (i = 0; i < j; i++) {
-      if (!ref_math_divisible(a[i + j * n], a[j + j * n])) return REF_DIV_ZERO;
+      if (!ref_math_divisible(a[i + j * n], a[j + j * n])) {
+        ref_free(a);
+        return REF_DIV_ZERO;
+      }
       scale = a[i + j * n] / a[j + j * n];
       for (k = 0; k < n; k++) a[i + k * n] -= scale * a[j + k * n];
       for (k = 0; k < n; k++) inv[i + k * n] -= scale * inv[j + k * n];
@@ -1109,7 +1111,6 @@ REF_STATUS ref_matrix_inv_gen(REF_INT n, REF_DBL *orig, REF_DBL *inv) {
   }
 
   ref_free(a);
-
   return REF_SUCCESS;
 }
 
