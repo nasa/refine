@@ -1986,7 +1986,7 @@ REF_STATUS ref_geom_infer_nedge_nface(REF_GRID ref_grid) {
 
 REF_STATUS ref_geom_usable(REF_GEOM ref_geom, REF_INT geom, REF_BOOL *usable) {
   REF_DBL kr0, r0[3], ks0, s0[3];
-  REF_DBL curvature_is_ok = 100.0;
+  REF_DBL curvature_is_ok = 1.0;
   REF_DBL uv0[2], xyz0[3], dxyz_dtuv[15];
   REF_DBL h, delta_radian = 0.1; /* 10 segment per radian of curvature */
   REF_DBL drsduv[4], duvdrs[4];
