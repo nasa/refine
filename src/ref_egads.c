@@ -2497,3 +2497,39 @@ REF_STATUS ref_egads_feature_size(REF_GRID ref_grid, REF_INT node, REF_DBL *h0,
 #endif
   return REF_SUCCESS;
 }
+
+REF_STATUS ref_egads_geom_cost(REF_GEOM ref_geom, REF_INT type, REF_INT id) {
+#ifdef HAVE_EGADS
+  ego object;
+  ego geom, *bodies, ref;
+  int oclass, mtype, nbody, *senses;
+  int *pinfo = NULL;
+  double *prv = NULL;
+  switch (type) {
+    case REF_GEOM_EDGE:
+      object = ((ego *)(ref_geom->edges))[id - 1];
+      break;
+    case REF_GEOM_FACE:
+      object = ((ego *)(ref_geom->faces))[id - 1];
+      break;
+    default:
+      return REF_SUCCESS;
+  }
+  REIS(EGADS_SUCCESS,
+       EG_getTopology(object, &geom, &oclass, &mtype, NULL, &nbody, &bodies,
+                      &senses),
+       "EG getTopology");
+  REIS(EGADS_SUCCESS, EG_getGeometry(geom, &oclass, &mtype, &ref, &pinfo, &prv),
+       "EG getGeometry");
+  if (mtype == BEZIER || mtype == BSPLINE)
+    printf("%d %d pinfo %d %d %d %d %d %d %d\n", type, id, pinfo[0], pinfo[1],
+           pinfo[2], pinfo[3], pinfo[4], pinfo[5], pinfo[6]);
+  EG_free(pinfo);
+  EG_free(prv);
+#else
+  SUPRESS_UNUSED_COMPILER_WARNING(ref_geom);
+  SUPRESS_UNUSED_COMPILER_WARNING(type);
+  SUPRESS_UNUSED_COMPILER_WARNING(id);
+#endif
+  return REF_SUCCESS;
+}
