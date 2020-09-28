@@ -1858,6 +1858,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   ego object;
   int edgeid;
   double t;
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   REIS(REF_GEOM_EDGE, ref_geom_type(ref_geom, geom), "expected edge geom");
   RNS(ref_geom->edges, "edges not loaded");
   edgeid = ref_geom_id(ref_geom, geom);
@@ -1865,7 +1866,7 @@ REF_STATUS ref_egads_edge_curvature(REF_GEOM ref_geom, REF_INT geom, REF_DBL *k,
   object = edges[edgeid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
-  t = ref_geom_param(ref_geom, 0, geom);
+  t = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
 
   REIS(EGADS_SUCCESS, EG_curvature(object, &t, curvature), "curve");
   *k = curvature[0];
@@ -1895,6 +1896,7 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   int egads_status;
   int faceid;
   double uv[2];
+  if (geom < 0 || ref_geom_max(ref_geom) <= geom) return REF_INVALID;
   REIS(REF_GEOM_FACE, ref_geom_type(ref_geom, geom), "expected face geom");
   RNS(ref_geom->faces, "faces not loaded");
   faceid = ref_geom_id(ref_geom, geom);
@@ -1902,7 +1904,7 @@ REF_STATUS ref_egads_face_curvature(REF_GEOM ref_geom, REF_INT geom,
   object = faces[faceid - 1];
   RNS(object, "EGADS object is NULL. Has the geometry been loaded?");
 
-  uv[0] = ref_geom_param(ref_geom, 0, geom);
+  uv[0] = ref_geom_param(ref_geom, 0, geom); /* ignores periodic */
   uv[1] = ref_geom_param(ref_geom, 1, geom);
   egads_status = EG_curvature(object, uv, curvature);
   if (0 != ref_geom_degen(ref_geom, geom) || EGADS_DEGEN == egads_status) {
