@@ -1,9 +1,12 @@
 
+Mon, Sep 29, 2020 : Released Refine 1.9.3
+
+- node insertion uses a native implementation of inverse evaluation
 - ref adapt --spalding creates an initial viscous mesh via Spalding's Law
 - ref distance computes wall distance to support flow solver turbulence model
 - ref interp extended to mixed element meshes
 - ref examine reports mesh/solb header data (size)
-- oversized solb read results in warning, not error
+- oversized solb read results inx warning, not error
 - git describe versioning uses + to separate sha metadata for module load
 - 64bit integer METIS and ParMETIS supported
 - ref adapt --implied-complexity [complexity] imply metric from input mesh

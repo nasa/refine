@@ -1,10 +1,4 @@
 
-robust add geom and xyz between in egads (fast, no inverse eval)
-
-protect geom constraint metric from surface folds and high curvature
- + filter based on samples of neighborhood
- discrete curvature estimate (triangle-center based?)
-
 ref_cavity_surf_geom_face_pass ref_cavity_surf_geom_edge_pass triggers
 
 sync surf/tri/face zone titles
@@ -105,6 +99,11 @@ C2S
  tutorials
 
 reject insertion based on near tree
+
+protect geom constraint metric from surface folds and high curvature
+ discrete curvature estimate (triangle-center based?)
+
+robust add geom and xyz between in egads (fast, no inverse eval)
 
 cavity operator in 2D/3D
   replace classic surf swap with cavity
@@ -264,6 +263,11 @@ ooooooooooooooooo
 
 
 +++++++++++++++++
+
++ 1.9.3
+
++ native split inverse eval with uv interp fallback
++ filter curvature constraint based on samples of neighborhood
 
 + ref adapt --spalding
 + ref distance
