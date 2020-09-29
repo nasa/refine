@@ -862,16 +862,18 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
                                                      REF_INT node1,
                                                      REF_DBL node1_weight,
                                                      REF_INT new_node) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT type, id;
   REF_DBL uv[2], uv0[2], uv1[2];
-  REF_DBL node0_weight;
   REF_INT sense, ncell, cells[2];
   REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
   REF_INT nodes3[REF_CELL_MAX_SIZE_PER];
-
-  node0_weight = 1.0 - node1_weight;
+  REF_DBL r0, r1;
+  REF_DBL weight, actual, error, relax;
+  REF_BOOL verbose = REF_FALSE;
+  REF_INT i;
 
   type = REF_GEOM_FACE;
   RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
@@ -885,11 +887,30 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
       "cell uv0");
   RSS(ref_geom_cell_tuv(ref_geom, node1, nodes2, type, uv1, &sense),
       "cell uv1");
-  uv[0] = node0_weight * uv0[0] + node1_weight * uv1[0];
-  uv[1] = node0_weight * uv0[1] + node1_weight * uv1[1];
 
-  /* update param */
-  RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+  weight = node1_weight;
+  relax = 1.0;
+  for (i = 0; i < 10; i++) {
+    uv[0] = (1.0 - weight) * uv0[0] + weight * uv1[0];
+    uv[1] = (1.0 - weight) * uv0[1] + weight * uv1[1];
+    RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+    RSS(ref_egads_eval_at(ref_geom, type, id, uv,
+                          ref_node_xyz_ptr(ref_node, new_node), NULL),
+        "eval");
+    RSS(ref_node_ratio(ref_node, node0, new_node, &r0), "get r0");
+    RSS(ref_node_ratio(ref_node, node1, new_node, &r1), "get r1");
+    if (!ref_math_divisible(r0, (r0 + r1))) break;
+    actual = r0 / (r0 + r1);
+    error = actual - node1_weight;
+
+    if (verbose)
+      printf("target %f actual %f adjust %f errro %f\n", node1_weight, actual,
+             weight, error);
+    error = MAX(-0.05, MIN(0.05, error));
+    weight = weight - relax * error;
+    weight = MAX(0.01, MIN(0.99, weight));
+    if (ABS(error) < 0.005) break;
+  }
 
   return REF_SUCCESS;
 }
