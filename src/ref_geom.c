@@ -857,91 +857,76 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_xyz_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
-                                REF_DBL *xyz) {
-  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
+                                                     REF_INT node0,
+                                                     REF_INT node1,
+                                                     REF_DBL node1_weight,
+                                                     REF_INT new_node) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell;
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT type, id;
-  REF_DBL param[2], param0[2], param1[2];
-  REF_DBL uv_min[2], uv_max[2];
+  REF_DBL uv[2], uv0[2], uv1[2];
+  REF_INT sense, ncell, cells[2];
+  REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes3[REF_CELL_MAX_SIZE_PER];
+  REF_DBL r0, r1;
+  REF_DBL weight, actual, error, relax, last_error;
+  REF_BOOL verbose = REF_FALSE;
   REF_INT i;
-  REF_BOOL support0, support1;
-  REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
-  REF_STATUS status;
-  REF_INT ncell, cells[2];
 
-  for (i = 0; i < 3; i++)
-    xyz[i] = 0.5 * (ref_node_xyz(ref_node, i, node0) +
-                    ref_node_xyz(ref_node, i, node1));
-
-  RSS(ref_geom_supported(ref_geom, node0, &support0), "node0 supported");
-  RSS(ref_geom_supported(ref_geom, node1, &support1), "node1 supported");
-  if (!support0 || !support1) {
-    return REF_SUCCESS;
-  }
-
-  /* evaluate edge geom on edge cell if present */
-  nodes[0] = node0;
-  nodes[1] = node1;
-  ref_cell = ref_grid_edg(ref_grid);
-  status = ref_cell_with(ref_cell, nodes, &cell);
-  if (REF_NOT_FOUND != status) {
-    RSS(status, "search for edg");
-    RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
-    id = nodes[ref_cell_node_per(ref_cell)];
-    type = REF_GEOM_EDGE;
-    RSS(ref_geom_cell_tuv(ref_geom, node0, nodes, type, param0, &sense),
-        "cell uv");
-    RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
-        "cell uv");
-    param[0] = 0.5 * (param0[0] + param1[0]);
-    if (ref_geom_model_loaded(ref_geom)) {
-      RSB(ref_egads_inverse_eval(ref_geom, type, id, xyz, param),
-          "inv eval edge", ref_geom_tec(ref_grid, "ref_geom_split_edge.tec"));
-      /* enforce bounding box and use midpoint as full-back */
-      if (param[0] < MIN(param0[0], param1[0]) ||
-          MAX(param0[0], param1[0]) < param[0]) {
-        param[0] = 0.5 * (param0[0] + param1[0]);
-      }
-      /* constrain xyz to geom, inverse_eval does not set */
-      RSS(ref_egads_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
-    }
-    return REF_SUCCESS;
-  }
-
-  /* insert face between */
-  ref_cell = ref_grid_tri(ref_grid);
-  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
-  if (0 == ncell) { /* volume edge */
-    return REF_SUCCESS;
-  }
-  cell = cells[0]; /* may only have one in parallel */
-  RSS(ref_cell_nodes(ref_cell, cell, nodes), "get id");
-  id = nodes[ref_cell_node_per(ref_cell)];
   type = REF_GEOM_FACE;
-  RSS(ref_geom_cell_tuv(ref_geom, node0, nodes, type, param0, &sense),
-      "cell uv");
-  RSS(ref_geom_cell_tuv(ref_geom, node1, nodes, type, param1, &sense),
-      "cell uv");
-  param[0] = 0.5 * (param0[0] + param1[0]);
-  param[1] = 0.5 * (param0[1] + param1[1]);
-  if (ref_geom_model_loaded(ref_geom)) {
-    RSB(ref_egads_inverse_eval(ref_geom, type, id, xyz, param), "inv eval face",
-        ref_geom_tec(ref_grid, "ref_geom_xyz_between_face.tec"));
-    if (2 == ncell) { /* revisit in para */
-      /* enforce bounding box of node0 and try midpoint */
-      RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
-          "bb");
-      if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
-          param[1] < uv_min[1] || uv_max[1] < param[1]) {
-        param[0] = 0.5 * (param0[0] + param1[0]);
-        param[1] = 0.5 * (param0[1] + param1[1]);
-      }
-    }
-    /* constrain xyz to geom, inverse_eval does not set */
-    RSS(ref_egads_eval_at(ref_geom, type, id, param, xyz, NULL), "eval at");
-    return REF_SUCCESS;
+  RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
+
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
+  REIS(2, ncell, "expected two tri for box2 nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[0], nodes2), "cell nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[1], nodes3), "cell nodes");
+
+  RSS(ref_geom_cell_tuv(ref_geom, node0, nodes2, type, uv0, &sense),
+      "cell uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, node1, nodes2, type, uv1, &sense),
+      "cell uv1");
+
+  {
+    REF_DBL temp_uv[2], temp_xyz[3];
+    temp_uv[0] = (1.0 - node1_weight) * uv0[0] + node1_weight * uv1[0];
+    temp_uv[1] = (1.0 - node1_weight) * uv0[1] + node1_weight * uv1[1];
+    temp_xyz[0] = ref_node_xyz(ref_node, 0, new_node);
+    temp_xyz[1] = ref_node_xyz(ref_node, 1, new_node);
+    temp_xyz[2] = ref_node_xyz(ref_node, 2, new_node);
+    if (REF_SUCCESS ==
+        ref_egads_invert(ref_geom, type, id, temp_xyz, temp_uv)) {
+      RSS(ref_geom_add(ref_geom, new_node, type, id, temp_uv), "new geom");
+    };
+  }
+
+  weight = node1_weight;
+  relax = 1.0;
+  error = 0.0;
+  for (i = 0; i < 10; i++) {
+    uv[0] = (1.0 - weight) * uv0[0] + weight * uv1[0];
+    uv[1] = (1.0 - weight) * uv0[1] + weight * uv1[1];
+    RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
+    RSS(ref_egads_eval_at(ref_geom, type, id, uv,
+                          ref_node_xyz_ptr(ref_node, new_node), NULL),
+        "eval");
+    RSS(ref_node_ratio(ref_node, node0, new_node, &r0), "get r0");
+    RSS(ref_node_ratio(ref_node, node1, new_node, &r1), "get r1");
+    if (!ref_math_divisible(r0, (r0 + r1))) break;
+    actual = r0 / (r0 + r1);
+    last_error = error;
+    error = actual - node1_weight;
+    if (i > 0 &&
+        ((error < 0 && last_error > 0) || (error > 0 && last_error < 0)))
+      relax *= 0.5;
+    if (verbose)
+      printf("target %f actual %f adjust %f errro %f\n", node1_weight, actual,
+             weight, error);
+    error = MAX(-0.05, MIN(0.05, error));
+    weight = weight - relax * error;
+    weight = MAX(0.01, MIN(0.99, weight));
+    if (ABS(error) < 0.005) break;
   }
 
   return REF_SUCCESS;
@@ -954,7 +939,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_CELL ref_cell;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
-  REF_DBL uv_min[2], uv_max[2];
   REF_BOOL has_edge_support, supported;
   REF_INT edge_geom;
   REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -1071,19 +1055,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
         "cell uv");
     param[0] = node0_weight * param0[0] + node1_weight * param1[0];
     param[1] = node0_weight * param0[1] + node1_weight * param1[1];
-    if (ref_geom_model_loaded(ref_geom) && !has_edge_support) {
-      RSB(ref_egads_inverse_eval(ref_geom, type, id,
-                                 ref_node_xyz_ptr(ref_node, new_node), param),
-          "inv eval face", ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-      /* enforce bounding box of node0 and try midpoint */
-      RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
-          "bb");
-      if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
-          param[1] < uv_min[1] || uv_max[1] < param[1]) {
-        param[0] = node0_weight * param0[0] + node1_weight * param1[0];
-        param[1] = node0_weight * param0[1] + node1_weight * param1[1];
-      }
-    }
 
     RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
     RSS(ref_geom_find(ref_geom, new_node, type, id, &face_geom),
@@ -1111,6 +1082,12 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       ref_geom_param(ref_geom, 0, face_geom) = param[0];
       ref_geom_param(ref_geom, 1, face_geom) = param[1];
     }
+  }
+
+  if (ref_geom_model_loaded(ref_geom) && !has_edge_support) {
+    RSS(ref_geom_add_between_face_interior(ref_grid, node0, node1, node1_weight,
+                                           new_node),
+        "position new node in uv");
   }
 
   return REF_SUCCESS;
