@@ -865,7 +865,6 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
   REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT type, id;
-  REF_DBL param[2], interp_param[2];
   REF_DBL uv[2], uv0[2], uv1[2];
   REF_DBL node0_weight;
   REF_INT sense, ncell, cells[2];
@@ -876,8 +875,6 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
 
   type = REF_GEOM_FACE;
   RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
-  RSS(ref_geom_tuv(ref_geom, new_node, type, id, interp_param),
-      "orig (interp) uv");
 
   RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
   REIS(2, ncell, "expected two tri for box2 nodes");
@@ -892,7 +889,7 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   uv[1] = node0_weight * uv0[1] + node1_weight * uv1[1];
 
   /* update param */
-  RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+  RSS(ref_geom_add(ref_geom, new_node, type, id, uv), "new geom");
 
   return REF_SUCCESS;
 }
