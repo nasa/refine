@@ -871,7 +871,7 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
   REF_INT nodes3[REF_CELL_MAX_SIZE_PER];
   REF_DBL r0, r1;
-  REF_DBL weight, actual, error, relax;
+  REF_DBL weight, actual, error, relax, last_error;
   REF_BOOL verbose = REF_FALSE;
   REF_INT i;
 
@@ -890,6 +890,7 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
 
   weight = node1_weight;
   relax = 1.0;
+  error = 0.0;
   for (i = 0; i < 10; i++) {
     uv[0] = (1.0 - weight) * uv0[0] + weight * uv1[0];
     uv[1] = (1.0 - weight) * uv0[1] + weight * uv1[1];
@@ -901,8 +902,11 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
     RSS(ref_node_ratio(ref_node, node1, new_node, &r1), "get r1");
     if (!ref_math_divisible(r0, (r0 + r1))) break;
     actual = r0 / (r0 + r1);
+    last_error = error;
     error = actual - node1_weight;
-
+    if (i > 0 &&
+        ((error < 0 && last_error > 0) || (error > 0 && last_error < 0)))
+      relax *= 0.5;
     if (verbose)
       printf("target %f actual %f adjust %f errro %f\n", node1_weight, actual,
              weight, error);
