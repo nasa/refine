@@ -33,7 +33,7 @@ function adapt_cycle {
     ${src}/ref_metric_test ${outproj}.meshb ${outproj}.solb > ${outproj}.status
 }
 
-serveCSM -batch cylcyl.csm
+# serveCSM -batch cylcyl.csm
 
 ${src}/ref boostrap cylcyl.egads \
       --blend cylcyl-blend.meshb
