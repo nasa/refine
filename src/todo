@@ -264,6 +264,8 @@ ooooooooooooooooo
 
 +++++++++++++++++
 
++ 1.9.3
+
 + native split inverse eval with uv interp fallback
 + filter curvature constraint based on samples of neighborhood
 

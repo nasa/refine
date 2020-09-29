@@ -1,4 +1,6 @@
 
+Mon, Sep 29, 2020 : Released Refine 1.9.3
+
 - node insertion uses a native implementation of inverse evaluation
 - ref adapt --spalding creates an initial viscous mesh via Spalding's Law
 - ref distance computes wall distance to support flow solver turbulence model
