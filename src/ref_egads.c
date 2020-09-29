@@ -25,6 +25,7 @@
 #include "ref_cloud.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
+#include "ref_matrix.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -2303,6 +2304,46 @@ REF_STATUS ref_egads_inverse_eval(REF_GEOM ref_geom, REF_INT type, REF_INT id,
          __func__, type, id, xyz[0], param[0], ref_geom_n(ref_geom));
   return REF_IMPLEMENT;
 #endif
+}
+
+REF_STATUS ref_egads_invert(REF_GEOM ref_geom, REF_INT type, REF_INT id,
+                            REF_DBL *xyz0, REF_DBL *uv) {
+  REF_DBL xyz[3], error[3];
+  REF_DBL dxyz_dtuv[15];
+  REF_DBL drsduv[4], duvdrs[4];
+  REF_DBL r[3], s[3], n[3];
+  REF_DBL drs[2], duv[2];
+  REF_INT i;
+  REF_DBL tol = 1.0e-14;
+  REF_BOOL verbose = REF_FALSE;
+
+  for (i = 0; i < 20; i++) {
+    RSS(ref_egads_eval_at(ref_geom, type, id, uv, xyz, dxyz_dtuv), "eval");
+    error[0] = xyz[0] - xyz0[0];
+    error[1] = xyz[1] - xyz0[1];
+    error[2] = xyz[2] - xyz0[2];
+    RSS(ref_geom_face_rsn(ref_geom, id, uv, r, s, n), "rsn");
+    /* [x_u,y_u,z_u] [x_v,y_v,z_v] */
+    /*  drsduv = [r s] * dxyz_dtuv */
+    drsduv[0] = dxyz_dtuv[0] * r[0] + dxyz_dtuv[1] * r[1] + dxyz_dtuv[2] * r[2];
+    drsduv[1] = dxyz_dtuv[0] * s[0] + dxyz_dtuv[1] * s[1] + dxyz_dtuv[2] * s[2];
+    drsduv[2] = dxyz_dtuv[3] * r[0] + dxyz_dtuv[4] * r[1] + dxyz_dtuv[5] * r[2];
+    drsduv[3] = dxyz_dtuv[3] * s[0] + dxyz_dtuv[4] * s[1] + dxyz_dtuv[5] * s[2];
+    RSS(ref_matrix_inv_gen(2, drsduv, duvdrs), "inv");
+    drs[0] = ref_math_dot(r, error);
+    drs[1] = ref_math_dot(s, error);
+    if (verbose)
+      printf(" r %e s %e err %e\n", drs[0], drs[1],
+             sqrt(ref_math_dot(error, error)));
+    duv[0] = duvdrs[0] * drs[0] + duvdrs[2] * drs[1];
+    duv[1] = duvdrs[1] * drs[0] + duvdrs[3] * drs[1];
+    uv[0] = uv[0] - duv[0];
+    uv[1] = uv[1] - duv[1];
+    if (sqrt(drs[0] * drs[0] + drs[1] * drs[1]) < tol) {
+      return REF_SUCCESS;
+    }
+  }
+  return REF_FAILURE;
 }
 
 REF_STATUS ref_egads_gap(REF_GEOM ref_geom, REF_INT node, REF_DBL *gap) {
