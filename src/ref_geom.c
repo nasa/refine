@@ -857,6 +857,46 @@ static REF_STATUS ref_geom_eval_edge_face_uv(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
+                                                     REF_INT node0,
+                                                     REF_INT node1,
+                                                     REF_DBL node1_weight,
+                                                     REF_INT new_node) {
+  REF_GEOM ref_geom = ref_grid_geom(ref_grid);
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_INT type, id;
+  REF_DBL param[2], interp_param[2];
+  REF_DBL xyz[3];
+  REF_DBL uv_min[2], uv_max[2];
+
+  SUPRESS_UNUSED_COMPILER_WARNING(node1_weight);
+
+  xyz[0] = ref_node_xyz(ref_node, 0, new_node);
+  xyz[1] = ref_node_xyz(ref_node, 1, new_node);
+  xyz[2] = ref_node_xyz(ref_node, 2, new_node);
+
+  type = REF_GEOM_FACE;
+  RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
+  RSS(ref_geom_tuv(ref_geom, new_node, type, id, interp_param),
+      "orig (interp) uv");
+
+  RSB(ref_egads_inverse_eval(ref_geom, type, id, xyz, param), "inv eval face",
+      ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
+  /* enforce bounding box of node0 and try midpoint */
+  RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
+      "bb");
+  if (param[0] < uv_min[0] || uv_max[0] < param[0] || param[1] < uv_min[1] ||
+      uv_max[1] < param[1]) {
+    param[0] = interp_param[0];
+    param[1] = interp_param[1];
+  }
+
+  /* update param */
+  RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
                                 REF_DBL node1_weight, REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
@@ -864,7 +904,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
   REF_CELL ref_cell;
   REF_INT type, id;
   REF_DBL param[2], param0[2], param1[2];
-  REF_DBL uv_min[2], uv_max[2];
   REF_BOOL has_edge_support, supported;
   REF_INT edge_geom;
   REF_INT sense, cell, nodes[REF_CELL_MAX_SIZE_PER];
@@ -981,19 +1020,6 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
         "cell uv");
     param[0] = node0_weight * param0[0] + node1_weight * param1[0];
     param[1] = node0_weight * param0[1] + node1_weight * param1[1];
-    if (ref_geom_model_loaded(ref_geom) && !has_edge_support) {
-      RSB(ref_egads_inverse_eval(ref_geom, type, id,
-                                 ref_node_xyz_ptr(ref_node, new_node), param),
-          "inv eval face", ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-      /* enforce bounding box of node0 and try midpoint */
-      RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
-          "bb");
-      if (param[0] < uv_min[0] || uv_max[0] < param[0] ||
-          param[1] < uv_min[1] || uv_max[1] < param[1]) {
-        param[0] = node0_weight * param0[0] + node1_weight * param1[0];
-        param[1] = node0_weight * param0[1] + node1_weight * param1[1];
-      }
-    }
 
     RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
     RSS(ref_geom_find(ref_geom, new_node, type, id, &face_geom),
@@ -1021,6 +1047,12 @@ REF_STATUS ref_geom_add_between(REF_GRID ref_grid, REF_INT node0, REF_INT node1,
       ref_geom_param(ref_geom, 0, face_geom) = param[0];
       ref_geom_param(ref_geom, 1, face_geom) = param[1];
     }
+  }
+
+  if (ref_geom_model_loaded(ref_geom) && !has_edge_support) {
+    RSS(ref_geom_add_between_face_interior(ref_grid, node0, node1, node1_weight,
+                                           new_node),
+        "position new node in uv");
   }
 
   return REF_SUCCESS;
