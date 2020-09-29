@@ -863,37 +863,33 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
                                                      REF_DBL node1_weight,
                                                      REF_INT new_node) {
   REF_GEOM ref_geom = ref_grid_geom(ref_grid);
-  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell = ref_grid_tri(ref_grid);
   REF_INT type, id;
   REF_DBL param[2], interp_param[2];
-  REF_DBL uv_min[2], uv_max[2];
-  REF_DBL interp_xyz[3];
+  REF_DBL uv[2], uv0[2], uv1[2];
   REF_DBL node0_weight;
+  REF_INT sense, ncell, cells[2];
+  REF_INT nodes2[REF_CELL_MAX_SIZE_PER];
+  REF_INT nodes3[REF_CELL_MAX_SIZE_PER];
 
   node0_weight = 1.0 - node1_weight;
-
-  interp_xyz[0] = node0_weight * ref_node_xyz(ref_node, 0, node0) +
-                  node1_weight * ref_node_xyz(ref_node, 0, node1);
-  interp_xyz[1] = node0_weight * ref_node_xyz(ref_node, 1, node0) +
-                  node1_weight * ref_node_xyz(ref_node, 1, node1);
-  interp_xyz[2] = node0_weight * ref_node_xyz(ref_node, 2, node0) +
-                  node1_weight * ref_node_xyz(ref_node, 2, node1);
 
   type = REF_GEOM_FACE;
   RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
   RSS(ref_geom_tuv(ref_geom, new_node, type, id, interp_param),
       "orig (interp) uv");
 
-  RSB(ref_egads_inverse_eval(ref_geom, type, id, interp_xyz, param),
-      "inv eval face", ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
-  /* enforce bounding box of node0 and try midpoint */
-  RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
-      "bb");
-  if (param[0] < uv_min[0] || uv_max[0] < param[0] || param[1] < uv_min[1] ||
-      uv_max[1] < param[1]) {
-    param[0] = interp_param[0];
-    param[1] = interp_param[1];
-  }
+  RSS(ref_cell_list_with2(ref_cell, node0, node1, 2, &ncell, cells), "list");
+  REIS(2, ncell, "expected two tri for box2 nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[0], nodes2), "cell nodes");
+  RSS(ref_cell_nodes(ref_cell, cells[1], nodes3), "cell nodes");
+
+  RSS(ref_geom_cell_tuv(ref_geom, node0, nodes2, type, uv0, &sense),
+      "cell uv0");
+  RSS(ref_geom_cell_tuv(ref_geom, node1, nodes2, type, uv1, &sense),
+      "cell uv1");
+  uv[0] = node0_weight * uv0[0] + node1_weight * uv1[0];
+  uv[1] = node0_weight * uv0[1] + node1_weight * uv1[1];
 
   /* update param */
   RSS(ref_geom_add(ref_geom, new_node, type, id, param), "new geom");
