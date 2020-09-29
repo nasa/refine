@@ -133,6 +133,10 @@ AC_ARG_WITH(metis,
 	[  --with-metis[=ARG]        use METIS partitioner [ARG=ParMETIS path]],
 	[with_metis=$withval],        [with_metis="$with_parmetis"])
 
+AC_ARG_WITH(metislibdir,
+	[  --with-metislibdir[=ARG]  METIS lib dir suffix [ARG=lib]],
+	[with_metislibdir=$withval],        [with_metislibdir="lib"])
+
 if test "$with_parmetis" != 'no'
 then
   AC_CHECK_FILE([$with_parmetis/include/parmetis.h],
@@ -159,17 +163,17 @@ then
                 [metis_h_path=$with_metis/include],
                 [metis_h_path='no'])
 
-  AC_CHECK_FILE([$with_metis/lib/libmetis.a],
-                [metis_a_path=$with_metis/lib],
+  AC_CHECK_FILE([$with_metis/$with_metislibdir/libmetis.a],
+                [metis_a_path=$with_metis/$with_metislibdir],
 		[metis_a_path='no'])
-  AC_CHECK_FILE([$with_metis/lib/libmetis.so],
-                [metis_so_path=$with_metis/lib],
+  AC_CHECK_FILE([$with_metis/$with_metislibdir/libmetis.so],
+                [metis_so_path=$with_metis/$with_metislibdir],
 		[metis_so_path='no'])
-  AC_CHECK_FILE([$with_metis/lib/libmetis.dylib],
-                [metis_dylib_path=$with_metis/lib],
+  AC_CHECK_FILE([$with_metis/$with_metislibdir/libmetis.dylib],
+                [metis_dylib_path=$with_metis/$with_metislibdir],
 		[metis_dylib_path='no'])
-  AC_CHECK_FILE([$with_metis/lib/libmetis.dll],
-                [metis_libdll_path=$with_metis/lib],
+  AC_CHECK_FILE([$with_metis/$with_metislibdir/libmetis.dll],
+                [metis_libdll_path=$with_metis/$with_metislibdir],
 		[metis_libdll_path='no'])
   AC_CHECK_FILE([$with_metis/bin/metis.dll],
                 [metis_dll_path=$with_metis/bin],
