@@ -866,22 +866,26 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_INT type, id;
   REF_DBL param[2], interp_param[2];
-  REF_DBL xyz[3];
   REF_DBL uv_min[2], uv_max[2];
+  REF_DBL interp_xyz[3];
+  REF_DBL node0_weight;
 
-  SUPRESS_UNUSED_COMPILER_WARNING(node1_weight);
+  node0_weight = 1.0 - node1_weight;
 
-  xyz[0] = ref_node_xyz(ref_node, 0, new_node);
-  xyz[1] = ref_node_xyz(ref_node, 1, new_node);
-  xyz[2] = ref_node_xyz(ref_node, 2, new_node);
+  interp_xyz[0] = node0_weight * ref_node_xyz(ref_node, 0, node0) +
+                  node1_weight * ref_node_xyz(ref_node, 0, node1);
+  interp_xyz[1] = node0_weight * ref_node_xyz(ref_node, 1, node0) +
+                  node1_weight * ref_node_xyz(ref_node, 1, node1);
+  interp_xyz[2] = node0_weight * ref_node_xyz(ref_node, 2, node0) +
+                  node1_weight * ref_node_xyz(ref_node, 2, node1);
 
   type = REF_GEOM_FACE;
   RSS(ref_geom_unique_id(ref_geom, new_node, type, &id), "unique face id");
   RSS(ref_geom_tuv(ref_geom, new_node, type, id, interp_param),
       "orig (interp) uv");
 
-  RSB(ref_egads_inverse_eval(ref_geom, type, id, xyz, param), "inv eval face",
-      ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
+  RSB(ref_egads_inverse_eval(ref_geom, type, id, interp_xyz, param),
+      "inv eval face", ref_geom_tec(ref_grid, "ref_geom_split_face.tec"));
   /* enforce bounding box of node0 and try midpoint */
   RSS(ref_geom_tri_uv_bounding_box2(ref_grid, node0, node1, uv_min, uv_max),
       "bb");
