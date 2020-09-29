@@ -888,6 +888,19 @@ static REF_STATUS ref_geom_add_between_face_interior(REF_GRID ref_grid,
   RSS(ref_geom_cell_tuv(ref_geom, node1, nodes2, type, uv1, &sense),
       "cell uv1");
 
+  {
+    REF_DBL temp_uv[2], temp_xyz[3];
+    temp_uv[0] = (1.0 - node1_weight) * uv0[0] + node1_weight * uv1[0];
+    temp_uv[1] = (1.0 - node1_weight) * uv0[1] + node1_weight * uv1[1];
+    temp_xyz[0] = ref_node_xyz(ref_node, 0, new_node);
+    temp_xyz[1] = ref_node_xyz(ref_node, 1, new_node);
+    temp_xyz[2] = ref_node_xyz(ref_node, 2, new_node);
+    if (REF_SUCCESS ==
+        ref_egads_invert(ref_geom, type, id, temp_xyz, temp_uv)) {
+      RSS(ref_geom_add(ref_geom, new_node, type, id, temp_uv), "new geom");
+    };
+  }
+
   weight = node1_weight;
   relax = 1.0;
   error = 0.0;
