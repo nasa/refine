@@ -151,10 +151,13 @@ int main(int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field1-field0");
     for (i = 0; i < ldim1; i++) {
       REF_DBL max_diff = 0.0;
+      REF_DBL master_diff = 0.0;
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
         max_diff = MAX(max_diff, ABS(field1[i + ldim1 * node]));
       }
-      printf("var %d max diff %e\n", i, max_diff);
+      RSS(ref_mpi_max(ref_mpi, &max_diff, &master_diff, REF_DBL_TYPE),
+          "mpi max");
+      if (ref_mpi_once(ref_mpi)) printf("%d max diff %e\n", i, max_diff);
     }
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff max");
 
