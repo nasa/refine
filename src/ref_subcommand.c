@@ -61,9 +61,9 @@ static void usage(const char *name) {
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
+  /*printf("  node       reports location of a node by index\n");*/
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
-  /*printf("  vertex       reports location of a vertex by index\n");*/
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -186,6 +186,11 @@ static void multiscale_help(const char *name) {
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("\n");
 }
+static void node_help(const char *name) {
+  printf("usage: \n %s node input.meshb node_index node_index ...\n", name);
+  printf("  node_index is zero-based\n");
+  printf("\n");
+}
 static void surface_help(const char *name) {
   printf("usage: \n %s surface input_mesh.extension [surface_mesh.tec] \n",
          name);
@@ -198,13 +203,6 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
-  printf("\n");
-}
-
-static void vertex_help(const char *name) {
-  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n",
-         name);
-  printf("  vertex_index is zero-based\n");
   printf("\n");
 }
 
@@ -1662,6 +1660,36 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS node(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_file;
+  REF_INT pos, global, local;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref node is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  for (pos = 3; pos < argc; pos++) {
+    global = atoi(argv[pos]);
+    printf("global index %d\n", global);
+    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
+        "global node_index not found");
+    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
+  }
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
@@ -1790,36 +1818,6 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *in_file;
-  REF_INT pos, global, local;
-  REF_GRID ref_grid = NULL;
-
-  if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref vertex is not parallel");
-  }
-  if (argc < 4) goto shutdown;
-  in_file = argv[2];
-
-  printf("import %s\n", in_file);
-  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
-
-  for (pos = 3; pos < argc; pos++) {
-    global = atoi(argv[pos]);
-    printf("global index %d\n", global);
-    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
-        "global node_index not found");
-    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
-  }
-
-  RSS(ref_grid_free(ref_grid), "create");
-
-  return REF_SUCCESS;
-shutdown:
-  if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
-  return REF_FAILURE;
-}
-
 static void echo_argv(int argc, char *argv[]) {
   int pos;
   printf("\n");
@@ -1908,6 +1906,13 @@ int main(int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi)) multiscale_help(argv[0]);
       goto shutdown;
     }
+  } else if (strncmp(argv[1], "n", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(node(ref_mpi, argc, argv), "translate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+      goto shutdown;
+    }
   } else if (strncmp(argv[1], "s", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(surface(ref_mpi, argc, argv), "surface");
@@ -1920,13 +1925,6 @@ int main(int argc, char *argv[]) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
-      goto shutdown;
-    }
-  } else if (strncmp(argv[1], "v", 1) == 0) {
-    if (REF_EMPTY == help_pos) {
-      RSS(vertex(ref_mpi, argc, argv), "translate");
-    } else {
-      if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
       goto shutdown;
     }
   } else {
