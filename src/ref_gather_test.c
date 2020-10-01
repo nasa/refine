@@ -152,7 +152,7 @@ int main(int argc, char *argv[]) {
     for (i = 0; i < ldim1; i++) {
       REF_DBL max_diff = 0.0;
       each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        max_diff = MAX(max_diff, field1[i + ldim1 * node]);
+        max_diff = MAX(max_diff, ABS(field1[i + ldim1 * node]));
       }
       printf("var %d max diff %e\n", i, max_diff);
     }
