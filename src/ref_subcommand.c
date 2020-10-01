@@ -61,9 +61,10 @@ static void usage(const char *name) {
   printf("  interpolate  Interpolate a field from one mesh to another\n");
   printf("  loop         Multiscale metric, adapt, and interpolation.\n");
   printf("  multiscale   Compute a multiscale metric.\n");
+  /*printf("  node       reports location of a node by index\n");*/
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
-  /*printf("  vertex       reports location of a vertex by index\n");*/
+  printf("  visualize    Convert solution formats.\n");
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -186,6 +187,11 @@ static void multiscale_help(const char *name) {
   printf("   --hessian expects hessian.* in place of scalar.{solb,snap}.\n");
   printf("\n");
 }
+static void node_help(const char *name) {
+  printf("usage: \n %s node input.meshb node_index node_index ...\n", name);
+  printf("  node_index is zero-based\n");
+  printf("\n");
+}
 static void surface_help(const char *name) {
   printf("usage: \n %s surface input_mesh.extension [surface_mesh.tec] \n",
          name);
@@ -200,11 +206,15 @@ static void translate_help(const char *name) {
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
   printf("\n");
 }
-
-static void vertex_help(const char *name) {
-  printf("usage: \n %s vertex input.meshb vertex_index vertex_index ...\n",
-         name);
-  printf("  vertex_index is zero-based\n");
+static void visualize_help(const char *name) {
+  printf(
+      "usage: \n %s visualize input_mesh.extension input_solution.extension "
+      "output_solution.extension\n",
+      name);
+  printf("\n");
+  printf(
+      "   --subtract <baseline_solution.extension> "
+      "computes (input-baseline).\n");
   printf("\n");
 }
 
@@ -1662,6 +1672,36 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS node(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_file;
+  REF_INT pos, global, local;
+  REF_GRID ref_grid = NULL;
+
+  if (ref_mpi_para(ref_mpi)) {
+    RSS(REF_IMPLEMENT, "ref node is not parallel");
+  }
+  if (argc < 4) goto shutdown;
+  in_file = argv[2];
+
+  printf("import %s\n", in_file);
+  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
+
+  for (pos = 3; pos < argc; pos++) {
+    global = atoi(argv[pos]);
+    printf("global index %d\n", global);
+    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
+        "global node_index not found");
+    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
+  }
+
+  RSS(ref_grid_free(ref_grid), "create");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static REF_STATUS surface(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *out_file;
   char *in_file;
@@ -1790,33 +1830,82 @@ shutdown:
   return REF_FAILURE;
 }
 
-static REF_STATUS vertex(REF_MPI ref_mpi, int argc, char *argv[]) {
-  char *in_file;
-  REF_INT pos, global, local;
+static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_mesh;
+  char *in_sol;
+  char *out_sol;
   REF_GRID ref_grid = NULL;
+  REF_INT ldim;
+  REF_DBL *field;
+  REF_INT pos;
+
+  if (argc < 5) goto shutdown;
+  in_mesh = argv[2];
+  in_sol = argv[3];
+  out_sol = argv[4];
+
+  ref_mpi_stopwatch_start(ref_mpi);
 
   if (ref_mpi_para(ref_mpi)) {
-    RSS(REF_IMPLEMENT, "ref vertex is not parallel");
-  }
-  if (argc < 4) goto shutdown;
-  in_file = argv[2];
-
-  printf("import %s\n", in_file);
-  RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_file), "load surface");
-
-  for (pos = 3; pos < argc; pos++) {
-    global = atoi(argv[pos]);
-    printf("global index %d\n", global);
-    RSS(ref_node_local(ref_grid_node(ref_grid), global, &local),
-        "global node_index not found");
-    RSS(ref_node_location(ref_grid_node(ref_grid), local), "location");
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
   }
 
-  RSS(ref_grid_free(ref_grid), "create");
+  if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, in_sol),
+      "scalar");
+  if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
+  ref_mpi_stopwatch_stop(ref_mpi, "read solution");
+
+  RXS(ref_args_find(argc, argv, "--subtract", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    char *in_diff;
+    REF_INT diff_ldim;
+    REF_DBL *diff_field;
+    REF_INT node, i;
+    in_diff = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("read diff solution %s\n", in_diff);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &diff_ldim, &diff_field,
+                        in_diff),
+        "diff");
+    ref_mpi_stopwatch_stop(ref_mpi, "read diff solution");
+    REIS(ldim, diff_ldim, "difference field must have same leading dimension");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim; i++) {
+        field[i + ldim * node] -= diff_field[i + ldim * node];
+      }
+    }
+    ref_free(diff_field);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field");
+    for (i = 0; i < ldim; i++) {
+      REF_DBL max_diff = 0.0;
+      REF_DBL master_diff = 0.0;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        max_diff = MAX(max_diff, ABS(field[i + ldim * node]));
+      }
+      RSS(ref_mpi_max(ref_mpi, &max_diff, &master_diff, REF_DBL_TYPE),
+          "mpi max");
+      if (ref_mpi_once(ref_mpi)) printf("%d max diff %e\n", i, max_diff);
+    }
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
+  RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
+      "gather");
+  ref_mpi_stopwatch_stop(ref_mpi, "write solution");
+
+  ref_free(field);
+  RSS(ref_grid_free(ref_grid), "free grid");
 
   return REF_SUCCESS;
 shutdown:
-  if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
+  if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
   return REF_FAILURE;
 }
 
@@ -1908,6 +1997,13 @@ int main(int argc, char *argv[]) {
       if (ref_mpi_once(ref_mpi)) multiscale_help(argv[0]);
       goto shutdown;
     }
+  } else if (strncmp(argv[1], "n", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(node(ref_mpi, argc, argv), "translate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) node_help(argv[0]);
+      goto shutdown;
+    }
   } else if (strncmp(argv[1], "s", 1) == 0) {
     if (REF_EMPTY == help_pos) {
       RSS(surface(ref_mpi, argc, argv), "surface");
@@ -1924,9 +2020,9 @@ int main(int argc, char *argv[]) {
     }
   } else if (strncmp(argv[1], "v", 1) == 0) {
     if (REF_EMPTY == help_pos) {
-      RSS(vertex(ref_mpi, argc, argv), "translate");
+      RSS(visualize(ref_mpi, argc, argv), "translate");
     } else {
-      if (ref_mpi_once(ref_mpi)) vertex_help(argv[0]);
+      if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
       goto shutdown;
     }
   } else {
