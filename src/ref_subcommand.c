@@ -64,6 +64,7 @@ static void usage(const char *name) {
   /*printf("  node       reports location of a node by index\n");*/
   printf("  surface      Extract mesh surface.\n");
   printf("  translate    Convert mesh formats.\n");
+  printf("  visualize    Convert solution formats.\n");
   printf("\n");
   printf("'ref <command> -h' provides details on a specific subcommand.\n");
 }
@@ -203,6 +204,13 @@ static void translate_help(const char *name) {
   printf("  options:\n");
   printf("   --extrude a dim=2 meshb to single layer of prisms.\n");
   printf("   --zero-y-face [face id] explicitly set y=0 on face id.\n");
+  printf("\n");
+}
+static void visualize_help(const char *name) {
+  printf(
+      "usage: \n %s visualize input_mesh.extension input_solution.extension "
+      "output_solution.extension\n",
+      name);
   printf("\n");
 }
 
@@ -1818,6 +1826,51 @@ shutdown:
   return REF_FAILURE;
 }
 
+static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
+  char *in_mesh;
+  char *in_sol;
+  char *out_sol;
+  REF_GRID ref_grid = NULL;
+  REF_INT ldim;
+  REF_DBL *field;
+
+  if (argc < 5) goto shutdown;
+  in_mesh = argv[2];
+  in_sol = argv[3];
+  out_sol = argv[4];
+
+  ref_mpi_stopwatch_start(ref_mpi);
+
+  if (ref_mpi_para(ref_mpi)) {
+    if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);
+    RSS(ref_part_by_extension(&ref_grid, ref_mpi, in_mesh), "part");
+    ref_mpi_stopwatch_stop(ref_mpi, "part");
+  } else {
+    if (ref_mpi_once(ref_mpi)) printf("import %s\n", in_mesh);
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, in_mesh), "import");
+    ref_mpi_stopwatch_stop(ref_mpi, "import");
+  }
+
+  if (ref_mpi_once(ref_mpi)) printf("read solution %s\n", in_sol);
+  RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field, in_sol),
+      "scalar");
+  if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
+  ref_mpi_stopwatch_stop(ref_mpi, "read solution");
+
+  if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
+  RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
+      "gather");
+  ref_mpi_stopwatch_stop(ref_mpi, "write solution");
+
+  ref_free(field);
+  RSS(ref_grid_free(ref_grid), "free grid");
+
+  return REF_SUCCESS;
+shutdown:
+  if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
+  return REF_FAILURE;
+}
+
 static void echo_argv(int argc, char *argv[]) {
   int pos;
   printf("\n");
@@ -1925,6 +1978,13 @@ int main(int argc, char *argv[]) {
       RSS(translate(ref_mpi, argc, argv), "translate");
     } else {
       if (ref_mpi_once(ref_mpi)) translate_help(argv[0]);
+      goto shutdown;
+    }
+  } else if (strncmp(argv[1], "v", 1) == 0) {
+    if (REF_EMPTY == help_pos) {
+      RSS(visualize(ref_mpi, argc, argv), "translate");
+    } else {
+      if (ref_mpi_once(ref_mpi)) visualize_help(argv[0]);
       goto shutdown;
     }
   } else {
