@@ -149,6 +149,14 @@ int main(int argc, char *argv[]) {
       }
     }
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field1-field0");
+    for (i = 0; i < ldim1; i++) {
+      REF_DBL max_diff = 0.0;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        max_diff = MAX(max_diff, ABS(field1[i + ldim1 * node]));
+      }
+      printf("var %d max diff %e\n", i, max_diff);
+    }
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff max");
 
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim1, field1, NULL, argv[5]),
         "field");
