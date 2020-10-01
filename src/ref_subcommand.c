@@ -1248,7 +1248,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
 
-  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
+                  0.0);
 
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
