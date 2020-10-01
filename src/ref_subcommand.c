@@ -212,6 +212,10 @@ static void visualize_help(const char *name) {
       "output_solution.extension\n",
       name);
   printf("\n");
+  printf(
+      "   --subtract <baseline_solution.extension> "
+      "computes (input-baseline).\n");
+  printf("\n");
 }
 
 static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
@@ -1833,6 +1837,7 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_INT ldim;
   REF_DBL *field;
+  REF_INT pos;
 
   if (argc < 5) goto shutdown;
   in_mesh = argv[2];
@@ -1856,6 +1861,39 @@ static REF_STATUS visualize(REF_MPI ref_mpi, int argc, char *argv[]) {
       "scalar");
   if (ref_mpi_once(ref_mpi)) printf("  with leading dimension %d\n", ldim);
   ref_mpi_stopwatch_stop(ref_mpi, "read solution");
+
+  RXS(ref_args_find(argc, argv, "--subtract", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    char *in_diff;
+    REF_INT diff_ldim;
+    REF_DBL *diff_field;
+    REF_INT node, i;
+    in_diff = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("read diff solution %s\n", in_diff);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &diff_ldim, &diff_field,
+                        in_diff),
+        "diff");
+    ref_mpi_stopwatch_stop(ref_mpi, "read diff solution");
+    REIS(ldim, diff_ldim, "difference field must have same leading dimension");
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (i = 0; i < ldim; i++) {
+        field[i + ldim * node] -= diff_field[i + ldim * node];
+      }
+    }
+    ref_free(diff_field);
+    ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "diff field");
+    for (i = 0; i < ldim; i++) {
+      REF_DBL max_diff = 0.0;
+      REF_DBL master_diff = 0.0;
+      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+        max_diff = MAX(max_diff, ABS(field[i + ldim * node]));
+      }
+      RSS(ref_mpi_max(ref_mpi, &max_diff, &master_diff, REF_DBL_TYPE),
+          "mpi max");
+      if (ref_mpi_once(ref_mpi)) printf("%d max diff %e\n", i, max_diff);
+    }
+  }
 
   if (ref_mpi_once(ref_mpi)) printf("write solution %s\n", out_sol);
   RSS(ref_gather_scalar_by_extension(ref_grid, ldim, field, NULL, out_sol),
