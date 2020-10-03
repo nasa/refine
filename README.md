@@ -3,7 +3,7 @@
 `refine` is a 3D mesh adaptation framework implemented in
 the C language.
 
-# Quick Start Compile from Git Repo
+# Quick Start Compile from Git Repo and Basic Usage
 
 `refine` can function without depencies, but the typical use cases of
 parallel execution and geometry evaluation require an MPI implementation
