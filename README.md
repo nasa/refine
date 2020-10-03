@@ -7,12 +7,12 @@ the C language.
 
 `refine` can function without depencies, but the typical use cases of
 parallel execution and geometry evaluation require an MPI implementation
-and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt).
+and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt) (ESP).
 A native implementaion of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
 
-CMake 3.0 (or later):
+## CMake 3.0 (or later):
 ```
  mkdir -p build
  cd build
@@ -22,7 +22,7 @@ CMake 3.0 (or later):
  make install
 ```
 
-Automake 1.7 (or later) and Autoconf 2.53 (or later):
+## Automake 1.7 (or later) and Autoconf 2.53 (or later):
 ```
  ./bootstrap
  mkdir -p build
@@ -36,6 +36,15 @@ Automake 1.7 (or later) and Autoconf 2.53 (or later):
  make install
 ```
 See the INSTALL file for further autoconf build instructions.
+
+## Usage
+
+The installed `bin`-directory will include the `ref` executable.
+Invoking `ref` with no arguments will list available subcommands.
+Help on a particular subcommand is available via a `-h`, i.e.,
+`ref adapt -h`. If MPI is provided, `refmpi` will allow for parallel
+execution. If ESP is provided, `ref` and `refmpifull` includes
+EGADS built with OpenCASCADE and `refmpi` includes EGADSlite.
 
 # Multiscale Metric for Control of Interpolation Error in Lp-norm
 In conjunction with the
