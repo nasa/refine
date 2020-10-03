@@ -47,6 +47,12 @@ Help on a particular subcommand is available via a `-h`, i.e.,
 execution. If ESP is provided, `ref` and `refmpifull` includes
 EGADS built with OpenCASCADE and `refmpi` includes EGADSlite.
 
+# Examples
+
+The following examples assume that `ref` is in your shell path.
+`mpiexec ... refmpi` or `mpiexec ... rempifull` can be substituted for
+`ref` in each of these examples if MPI and/or ESP is configured.
+
 # Multiscale Metric for Control of Interpolation Error in Lp-norm
 In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
