@@ -1066,6 +1066,8 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
   }
   ref_free(hess);
 
+  RSS(ref_recon_roundoff_limit(metric, ref_grid), "floor eigs above zero");
+
   if (steps) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_blend_grid(ref_blend))),
         "to");

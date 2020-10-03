@@ -752,7 +752,8 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
       max_node = REF_RECON_MAX_DEGREE;
   REF_DBL diag_system[12];
 
-  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_tri(ref_grid);
+  if (ref_grid_twod(ref_grid) || ref_grid_surf(ref_grid))
+    ref_cell = ref_grid_tri(ref_grid);
 
   each_ref_node_valid_node(ref_node, node) {
     RSS(ref_cell_node_list_around(ref_cell, node, max_node, &nnode, node_list),
