@@ -1,34 +1,40 @@
 # Description
 
-Refine is a 3D mesh adaptation framework implemented in
+`refine` is a 3D mesh adaptation framework implemented in
 the C language.
 
-# Quick Start
+# Quick Start Compile from Git Repo
 
-If you checked out the repository with git, 
-[requires automake >= 1.7 and autoconf >= 2.53]
+`refine` can function without depencies, but the typical use cases of
+parallel execution and geometry evaluation require an MPI implementation
+and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt).
+A native implementaion of a recursive coordinate bisection parallel partition
+algorithm is included, but better results are expected with
+[ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
+
+CMake 3.0 (or later):
+```
+ mkdir -p build
+ cd build
+ cmake .. -DCMAKE_INSTALL_PREFIX=`pwd` \
+   -DCMAKE_PREFIX_PATH="/mpi/path;/parmetis/path;/egads/path;/opencascade/path"
+ make
+ make install
+```
+
+Automake 1.7 (or later) and Autoconf 2.53 (or later):
 ```
  ./bootstrap
  mkdir -p build
  cd build
- ../configure --prefix=`pwd`
+ ../configure --prefix=`pwd` \
+   --with-mpi=/mpi/path \
+   --with-parmetis=/parmetis/path \
+   --with-EGADS=/egads/path --with-OpenCASCADE=/opencascade/path
  make
  make install
 ```
-See the INSTALL file for further build instructions. Here are some examples:
-with MPI and Zoltan,
-```
-../configure --with-zoltan=/zoltan/path CC=mpicc FC=mpif90 CFLAGS='-DHAVE_MPI'
-```
-with EGADS and OpenCASCADE,
-```
-../configure --with-EGADS=/egads/path --with-OpenCASCADE=/opencascade/path
-```
-with EGADSlite,
-```
-../configure --with-EGADS=/egads/path --enable-lite
-```
-These can be combined, e.g., MPI+Zoltan+EGADSlite.
+See the INSTALL file for further autoconf build instructions.
 
 # Multiscale Metric for Control of Interpolation Error in Lp-norm
 In conjunction with the
