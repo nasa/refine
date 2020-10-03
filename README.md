@@ -11,6 +11,10 @@ and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt) (ESP).
 A native implementaion of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
+Initial mesh generation assumes
+[TetGen](http://wias-berlin.de/software/tetgen/) or
+[AFLR](http://www.simcenter.msstate.edu/research/cavs_cfd/aflr.php) is in
+the shell path.
 Configuration and compliation is supported with Autoconf and CMake.
 
 ## Automake 1.7 (or later) and Autoconf 2.53 (or later):
@@ -51,101 +55,45 @@ EGADS built with OpenCASCADE and `refmpi` includes EGADSlite.
 
 The following examples assume that `ref` is in your shell path.
 `mpiexec ... refmpi` or `mpiexec ... rempifull` can be substituted for
-`ref` in each of these examples if MPI and/or ESP is configured.
+`ref` in each of these examples if MPI and/or ESP is configured. The
+[.meshb and .solb file extensions](https://github.com/LoicMarechal/libMeshb)
+are used generically. Other formats are supported, e.g.,
+AFLR `*.ugrid`.
 
-# Multiscale Metric for Control of Interpolation Error in Lp-norm
+## Bootstrapping Mesh Adaptation on an EGADS Model
+
+An `.egads` file can be dumped from OpenCSM in the ESP package.
+`ref bootstrap project.egads`
+or
+`mpiexec ... refmpifull bootstrap project.egads`
+which assume that `tetgen` is in your shell path or
+`aflr3` is in your shell path with `--mesher aflr` option.
+A `project-vol.meshb` is output that includes the surface mesh,
+volume mesh, mesh-to-geometry associtivity, and EGADSlite data.
+
+## Mesh Adaptation
+
+The mesh is adapted with
+`ref adapt input.meshb -x output.meshb [-m metric.solb] [-g geometry.egads]`
+or
+`mpiexec ... refmpi adapt input.meshb -x output.meshb [-m metric.solb]`
+where a surface curvature metric is used if the `-m` argument is not present.
+
+## Multiscale Metric for Control of Interpolation Error in Lp-norm
+
 In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
 an implementation of the multiscale metric is provided.
-```
-./build/src/ref_metric_test --lp project.meshb project-mach.solb 2 1.5 3.0e4 project-metric.solb [--kexact] [--hmax max_edge_length]
-```
-Where,
- - `project.meshb` is the grid in libMeshb format
- - `project-mach.solb` is a scalar field (Mach number) in libMeshb format
- - `2` is the norm order
- - `1.5` is the gradation limit
- - `3.e4` is the complexity (C), where the new mesh will have approximately 2C vertices and 12C tetrahedra
- - `project-metric.solb` is the output metric in libMeshb format
- - use (sequential only) k-exact Hessian reconstruction with `--kexact`,
-   otherwise default to L2-projection Hessian reconstruction
- - `max_edge_length` is an optional limit on maximum edge length with an attempt to hold complexity
+`ref multiscale input.meshb scalar.solb complexity output-metric.solb`
+or
+`mpiexec ... refmpi multiscale input.meshb scalar.solb complexity output-metric.solb`
 
-See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
-for details on the libMeshb format.
-
-# Metric Conformity Evaluation
-In conjunction with the
-[Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
-an implementation of descriptive statistics for
-edge lengths and mean ratio is provided.
-```
-./build/src/ref_histogram_test project.meshb project-metric.solb
-```
-Where,
- - `project.meshb` is the grid in libMeshb format
- - `project-metric.solb` is the metric in libMeshb format
-
-See [LoicMarechal/libMeshb](https://github.com/LoicMarechal/libMeshb)
-for details on the libMeshb format.
-Histograms are written as `ref_histogram_quality.tec` and
-`ref_histogram_ratio.tec`, where each of the two the columns are
-mean ratio/edge length and normalized count.  
-
-# Scalar Field for Interpolation Error Verification
-To create an initial unit cube domain
-```
-./build/src/ref_acceptance 1 initial.meshb
-```
-To compute the scalar on a domain,
-```
-./build/src/ref_acceptance -u tanh3 project.meshb project-scalar.solb
-```
-Where,
- - `tanh3` can be `sinfun3`, `sinatan3`, or `tanh3`
- - `project.meshb` is the grid in libMeshb format
- - `project-scalar.solb` is a scalar field in libMeshb format
-
-# Interpolation Error Evaluation
-The norm of interpolation error of a scalar function on a "candidate" grid can
-be computed based on a scalar function on "truth" grid.
-The candidate solution is interpolated to the truth grid,
-assuming the solution is linear in each element, and
-a norm of the difference of the interpolated candidate solution and the
-truth solution is integrated on the truth grid.
-```
-./build/src/ref_interp_test --error truth.meshb truth-scalar.solb candidate.meshb candidate-scalar.solb 2
-```
-Where,
- - `truth.meshb` is the truth grid in libMeshb format
- - `truth-scalar.solb` is truth scalar field in libMeshb format
- - `candidate.meshb` is the candidate grid in libMeshb format
- - `candidate-scalar.solb` is candidate scalar field in libMeshb format
- - `2` is the power of the norm
-
-The output is two numbers: the characteristic edge length
-(number of vertices raised to the -1/3 power) and the interpolation error norm.
-
-# Field Interpolation
+## Field Interpolation
 The fields in a .solb file paired with a donor mesh can be interpolated to
 a receptor mesh. This utility can be executed in serial or parallel.
-```
-./build/src/ref_interp_test --field donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
-```
-Where,
- - `donor-mesh.meshb` is the donor mesh in binary AFLR (.lb8.ugrid,.b8.ugrid) or libMeshb (.meshb) format
- - `donor-field.solb` is the donor field(s) in libMeshb format
- - `receptor-mesh.ext` is the receptor mesh in binary AFLR (.lb8.ugrid,.b8.ugrid) or libMeshb (.meshb) format
- - `receptor-field.solb` is the receptor field(s) in libMeshb format
 
-The output is `receptor-field.solb`.
+`ref interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb`
+or 
+`mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb`
+where the output is `receptor-field.solb`.
 
-# Grid Adaptation
-```
-./build/src/ref_driver -i project.meshb -m project-metric.solb [-g project.egads] -x output.meshb
-```
-Where,
- - `-i project.meshb` is the grid in libMeshb format
- - `-m project-metric.solb` is the metric in libMeshb format
- - `-g project.egads` is optional geometry (when compiled with EGADS)
- - `-x output.meshb` is the output grid name
