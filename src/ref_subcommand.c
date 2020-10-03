@@ -54,7 +54,7 @@ static void usage(const char *name) {
   printf("ref subcommands:\n");
   printf("  adapt        Adapt a mesh\n");
   printf("  bootstrap    Create initial mesh from EGADS file\n");
-  /*printf("  distance     Calculate wall distance (for turbulence model)\n");*/
+  printf("  distance     Calculate wall distance (for turbulence model)\n");
   printf("  examine      Report mesh or solution file meta data.\n");
   /*printf("  grow         Fills surface mesh with volume to debug
    * boostrap\n");*/
