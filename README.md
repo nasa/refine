@@ -1,6 +1,6 @@
 # Description
 
-Refine is a 3D mixed-element grid adaptation framework implemented in
+Refine is a 3D mesh adaptation framework implemented in
 the C language.
 
 # Quick Start
