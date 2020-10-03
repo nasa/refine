@@ -11,16 +11,7 @@ and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt) (ESP).
 A native implementaion of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
-
-## CMake 3.0 (or later):
-```
- mkdir -p build
- cd build
- cmake .. -DCMAKE_INSTALL_PREFIX=`pwd` \
-   -DCMAKE_PREFIX_PATH="/mpi/path;/parmetis/path;/egads/path;/opencascade/path"
- make
- make install
-```
+Configuration and compliation is supported with Autoconf and CMake.
 
 ## Automake 1.7 (or later) and Autoconf 2.53 (or later):
 ```
@@ -36,6 +27,16 @@ algorithm is included, but better results are expected with
  make install
 ```
 See the INSTALL file for further autoconf build instructions.
+
+## CMake 3.0 (or later):
+```
+ mkdir -p build
+ cd build
+ cmake .. -DCMAKE_INSTALL_PREFIX=`pwd` \
+   -DCMAKE_PREFIX_PATH="/mpi/path;/parmetis/path;/egads/path;/opencascade/path"
+ make
+ make install
+```
 
 ## Usage
 
