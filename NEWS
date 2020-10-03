@@ -1,4 +1,5 @@
 
+- ref distance computes wall distance
 - ref visualize translates solution formats
 
 Mon, Sep 29, 2020 : Released Refine 1.9.3
