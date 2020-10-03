@@ -74,9 +74,13 @@ volume mesh, mesh-to-geometry associtivity, and EGADSlite data.
 ## Mesh Adaptation
 
 The mesh is adapted with
-`ref adapt input.meshb -x output.meshb [-m metric.solb] [-g geometry.egads]`
+```
+ref adapt input.meshb -x output.meshb [-m metric.solb] [-g geometry.egads]
+```
 or
-`mpiexec ... refmpi adapt input.meshb -x output.meshb [-m metric.solb]`
+```
+mpiexec ... refmpi adapt input.meshb -x output.meshb [-m metric.solb]
+```
 where a surface curvature metric is used if the `-m` argument is not present.
 
 ## Multiscale Metric for Control of Interpolation Error in Lp-norm
@@ -84,16 +88,24 @@ where a surface curvature metric is used if the `-m` argument is not present.
 In conjunction with the
 [Unstructured Grid Adaptation Working Group](https://ugawg.github.io/),
 an implementation of the multiscale metric is provided.
-`ref multiscale input.meshb scalar.solb complexity output-metric.solb`
+```
+ref multiscale input.meshb scalar.solb complexity output-metric.solb
+```
 or
-`mpiexec ... refmpi multiscale input.meshb scalar.solb complexity output-metric.solb`
+```
+mpiexec ... refmpi multiscale input.meshb scalar.solb complexity output-metric.solb
+```
 
 ## Field Interpolation
 The fields in a .solb file paired with a donor mesh can be interpolated to
 a receptor mesh. This utility can be executed in serial or parallel.
 
-`ref interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb`
+```
+ref interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+```
 or 
-`mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb`
+```
+mpiexec ... refmpi interp donor-mesh.ext donor-field.solb receptor-mesh.ext receptor-field.solb
+```
 where the output is `receptor-field.solb`.
 
