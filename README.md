@@ -8,7 +8,7 @@ the C language.
 `refine` can function without depencies, but the typical use cases of
 parallel execution and geometry evaluation require an MPI implementation
 and [Engineering Sketch Pad](https://acdl.mit.edu/ESP/ESPreadme.txt).
-A native implementaion of a recursive coordinate bisection parallel partition
+A native implementaion of a recursive coordinate bisection partition
 algorithm is included, but better results are expected with
 [ParMETIS](http://glaros.dtc.umn.edu/gkhome/metis/parmetis/overview).
 
@@ -30,7 +30,8 @@ Automake 1.7 (or later) and Autoconf 2.53 (or later):
  ../configure --prefix=`pwd` \
    --with-mpi=/mpi/path \
    --with-parmetis=/parmetis/path \
-   --with-EGADS=/egads/path --with-OpenCASCADE=/opencascade/path
+   --with-EGADS=/egads/path \
+   --with-OpenCASCADE=/opencascade/path
  make
  make install
 ```
