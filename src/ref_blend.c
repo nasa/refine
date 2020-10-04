@@ -1052,7 +1052,7 @@ REF_STATUS ref_blend_multiscale(REF_GRID ref_grid, REF_DBL target_complexity) {
           ref_matrix_vec2(diag_system2, 1, 1) * s[i];
     }
     ref_matrix_eig(diag_system, 2) =
-        MIN(ref_matrix_eig2(diag_system2, 0), ref_matrix_eig2(diag_system2, 1));
+        MAX(ref_matrix_eig2(diag_system2, 0), ref_matrix_eig2(diag_system2, 1));
     for (i = 0; i < 3; i++) ref_matrix_vec(diag_system, i, 2) = n[i];
 
     RSS(ref_matrix_form_m(diag_system, &(metric[6 * node])), "form m");
