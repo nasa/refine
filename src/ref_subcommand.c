@@ -1788,18 +1788,19 @@ static REF_STATUS translate(REF_MPI ref_mpi, int argc, char *argv[]) {
     REF_DBL deviation, total_deviation;
     REF_CELL ref_cell;
     REF_NODE ref_node = ref_grid_node(ref_grid);
-    REF_INT faceid, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
+    REF_INT faceid, group, cell, node, nodes[REF_CELL_MAX_SIZE_PER];
     if (pos + 1 >= argc) goto shutdown;
     faceid = atoi(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi)) printf("zero y of face %d\n", faceid);
     deviation = 0.0;
-    ref_cell = ref_grid_tri(ref_grid);
-    each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
-        each_ref_cell_cell_node(ref_cell, node) {
-          deviation =
-              MAX(deviation, ABS(ref_node_xyz(ref_node, 1, nodes[node])));
-          ref_node_xyz(ref_node, 1, nodes[node]) = 0.0;
+    each_ref_grid_2d_ref_cell(ref_grid, group, ref_cell) {
+      each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+        if (faceid == nodes[ref_cell_node_per(ref_cell)]) {
+          each_ref_cell_cell_node(ref_cell, node) {
+            deviation =
+                MAX(deviation, ABS(ref_node_xyz(ref_node, 1, nodes[node])));
+            ref_node_xyz(ref_node, 1, nodes[node]) = 0.0;
+          }
         }
       }
     }
