@@ -37,6 +37,6 @@ ref bootstrap square-circle.egads
 adapt_cycle square-circle-vol cycle01 10
 adapt_cycle cycle01 cycle02 10
 
-cat cycle04.status
-../../check.rb cycle02.status 0.30 2.5
+cat cycle02.status
+../../check.rb cycle02.status 0.2 5.0
 
