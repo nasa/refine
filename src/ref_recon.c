@@ -773,7 +773,9 @@ REF_STATUS ref_recon_roundoff_limit(REF_DBL *recon, REF_GRID ref_grid) {
       radius = MIN(radius, dist);
     }
     /* 2nd order central finite difference */
-    eig_floor = 4 * round_off_jitter / radius / radius;
+    RAS(ref_math_divisible((4 * round_off_jitter), (radius * radius)),
+        "element with zero edge length ro missing element");
+    eig_floor = (4 * round_off_jitter) / (radius * radius);
 
     RSS(ref_matrix_diag_m(&(recon[6 * node]), diag_system), "eigen decomp");
     ref_matrix_eig(diag_system, 0) =
