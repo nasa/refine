@@ -247,7 +247,7 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
 
 REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
   REF_INT id, type;
-  type = 400;
+  type = 4000;
   id = atoi(tags);
   RSS(ref_dict_store(ref_dict, id, type), "store");
   return REF_SUCCESS;
