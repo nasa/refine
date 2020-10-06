@@ -367,6 +367,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
     }
     RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
     RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
         "local lp=4 norm scaling");
     RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
