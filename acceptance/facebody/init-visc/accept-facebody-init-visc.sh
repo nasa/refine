@@ -21,7 +21,8 @@ function adapt_cycle {
     ${src}/ref adapt \
 	  ${inproj}.meshb \
 	  ${egads} \
-	  --spalding 0.001 500 square-circle.mapbc \
+	  --spalding 0.001 500 \
+	  --fun3d-mapbc square-circle.mapbc \
           -x ${outproj}.meshb \
 	  -s ${sweeps} \
 	  ${tecplot} \

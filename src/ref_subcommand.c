@@ -75,9 +75,11 @@ static void adapt_help(const char *name) {
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
-  printf("  --spalding [y+=1] [complexity] [fun3d-format-bcs.mapbc]\n");
+  printf("  --spalding [y+=1] [complexity]\n");
   printf("      construct a multiscale metric to control interpolation\n");
-  printf("      error in u+ of Spalding's Law\n");
+  printf("      error in u+ of Spalding's Law. Requires boundary conditions\n");
+  printf("      via the --fun3d-mapbc option.\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -230,6 +232,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
   REF_LONG ntet;
+  REF_DICT ref_dict_bcs = NULL;
 
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
@@ -334,31 +337,41 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "part metric");
   }
 
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 3) {
     REF_DBL yplus1;
     REF_DBL complexity;
-    const char *mapbc;
     REF_DBL *metric;
     REF_DBL *distance, *uplus, yplus;
-    REF_DICT ref_dict;
     REF_INT node;
     REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
 
+    if (NULL == ref_dict_bcs) {
+      if (ref_mpi_once(ref_mpi))
+        printf("\nset bcs via --fun3d-mapbc to use --spalding\n\n");
+      goto shutdown;
+    }
+
     yplus1 = atof(argv[pos + 1]);
     complexity = atof(argv[pos + 2]);
-    mapbc = argv[pos + 3];
     if (ref_mpi_once(ref_mpi))
-      printf(" --spalding %e %f %s law of the wall metric\n", yplus1,
-             complexity, mapbc);
+      printf(" --spalding %e %f law of the wall metric\n", yplus1, complexity);
     ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_dict_create(&ref_dict), "make dict");
-    RSS(ref_phys_read_mapbc(ref_dict, mapbc), "unable to read mapbc");
-    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "wall dist");
-    RSS(ref_dict_free(ref_dict), "free");
+    RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
     ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       RAS(ref_math_divisible(distance[node], yplus1),
@@ -496,7 +509,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  if (NULL != ref_grid) RSS(ref_grid_free(ref_grid), "free");
+  RSS(ref_dict_free(ref_dict_bcs), "free");
+  RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;
 shutdown:
