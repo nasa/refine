@@ -78,8 +78,9 @@ static void adapt_help(const char *name) {
   printf("  --spalding [y+=1] [complexity]\n");
   printf("      construct a multiscale metric to control interpolation\n");
   printf("      error in u+ of Spalding's Law. Requires boundary conditions\n");
-  printf("      via the --fun3d-mapbc option.\n");
+  printf("      via the --fun3d-mapbc or --viscous-tags options.\n");
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -99,6 +100,7 @@ static void bootstrap_help(const char *name) {
 static void distance_help(const char *name) {
   printf("usage: \n %s distance input_mesh.extension distance.solb\n", name);
   printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("\n");
 }
 static void examine_help(const char *name) {
@@ -337,15 +339,29 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "part metric");
   }
 
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+
   RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
     mapbc = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
-    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
     RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
         "unable to read fun3d formatted mapbc");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+        "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
   }
 
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
@@ -360,7 +376,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
 
     if (NULL == ref_dict_bcs) {
       if (ref_mpi_once(ref_mpi))
-        printf("\nset bcs via --fun3d-mapbc to use --spalding\n\n");
+        printf(
+            "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
+            "to use --spalding\n\n");
       goto shutdown;
     }
 
@@ -786,9 +804,25 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
         "unable to read fun3d formatted mapbc");
   }
 
-  RAB(ref_dict_n(ref_dict) > 0, "no solid walls specified", {
-    if (ref_mpi_once(ref_mpi)) distance_help(argv[0]);
-  });
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict, tags), "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict));
+  }
+
+  if (0 == ref_dict_n(ref_dict)) {
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "\nno solid walls specified\n"
+          "set viscous boundaries via --fun3d-mapbc or --viscous-tags\n\n");
+    goto shutdown;
+  }
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);

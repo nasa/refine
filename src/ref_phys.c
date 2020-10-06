@@ -578,8 +578,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   node_per = ref_cell_node_per(ref_cell);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "bc");
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
     if (4000 == bc) {
       local_ncell++;
     }
@@ -587,8 +588,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
     ref_cell = ref_grid_qua(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-          "bc");
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
       if (4000 == bc) {
         local_ncell += 2;
       }
@@ -598,8 +600,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc(local_xyz, 3 * node_per * local_ncell, REF_DBL);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "bc");
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
     if (4000 == bc) {
       for (node = 0; node < node_per; node++) {
         for (i = 0; i < 3; i++) {
@@ -613,8 +616,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
     ref_cell = ref_grid_qua(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-          "bc");
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
       if (4000 == bc) {
         for (i = 0; i < 3; i++) {
           local_xyz[i + 3 * 0 + 3 * node_per * local_ncell] =
