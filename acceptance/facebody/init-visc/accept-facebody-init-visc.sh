@@ -32,7 +32,7 @@ function adapt_cycle {
 }
 
 serveCSM -batch square-circle.csm
-ref bootstrap square-circle.egads
+${src}/ref bootstrap square-circle.egads
 
 adapt_cycle square-circle-vol cycle01 10
 adapt_cycle cycle01 cycle02 10
