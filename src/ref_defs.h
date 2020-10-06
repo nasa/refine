@@ -139,12 +139,12 @@ typedef int REF_STATUS;
 #define REF_WHERE(msg) \
   printf("%s: %d: %s: %s\n", __FILE__, __LINE__, __func__, (msg));
 
-#define RNS(ptr, msg)            \
-  {                              \
-    if (NULL == (void *)(ptr)) { \
-      REF_WHERE(msg);            \
-      return REF_NULL;           \
-    }                            \
+#define RNS(ptr, msg)    \
+  {                      \
+    if (NULL == (ptr)) { \
+      REF_WHERE(msg);    \
+      return REF_NULL;   \
+    }                    \
   }
 
 #define RNB(ptr, msg, block)     \

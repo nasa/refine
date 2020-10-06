@@ -19,6 +19,7 @@
 #include "ref_phys.h"
 
 #include <math.h>
+#include <string.h>
 
 #include "ref_malloc.h"
 #include "ref_math.h"
@@ -242,6 +243,24 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
     RSS(ref_dict_store(ref_dict, id, type), "store");
   }
   fclose(file);
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
+  REF_INT id, type;
+  char *token, *copy;
+  RNS(tags, "tags string is NULL");
+  copy = strdup(tags);
+  RNS(copy, "tags copy is NULL");
+  type = 4000;
+  token = strtok(copy, ",");
+  while (token != NULL) {
+    id = atoi(token);
+    RSS(ref_dict_store(ref_dict, id, type), "store");
+    token = strtok(NULL, ",");
+  }
+  free(copy);
+
   return REF_SUCCESS;
 }
 
@@ -559,8 +578,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   node_per = ref_cell_node_per(ref_cell);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "bc");
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
     if (4000 == bc) {
       local_ncell++;
     }
@@ -568,8 +588,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
     ref_cell = ref_grid_qua(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-          "bc");
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
       if (4000 == bc) {
         local_ncell += 2;
       }
@@ -579,8 +600,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   ref_malloc(local_xyz, 3 * node_per * local_ncell, REF_DBL);
   local_ncell = 0;
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "bc");
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
     if (4000 == bc) {
       for (node = 0; node < node_per; node++) {
         for (i = 0; i < 3; i++) {
@@ -594,8 +616,9 @@ REF_STATUS ref_phys_wall_distance(REF_GRID ref_grid, REF_DICT ref_dict,
   if (!ref_grid_twod(ref_grid)) { /* adds quads as two tri */
     ref_cell = ref_grid_qua(ref_grid);
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-      RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-          "bc");
+      bc = REF_EMPTY;
+      RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+          REF_NOT_FOUND, "bc");
       if (4000 == bc) {
         for (i = 0; i < 3; i++) {
           local_xyz[i + 3 * 0 + 3 * node_per * local_ncell] =

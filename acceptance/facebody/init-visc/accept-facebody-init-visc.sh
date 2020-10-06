@@ -21,7 +21,8 @@ function adapt_cycle {
     ${src}/ref adapt \
 	  ${inproj}.meshb \
 	  ${egads} \
-	  --spalding 0.001 500 square-circle.mapbc \
+	  --spalding 0.001 500 \
+	  --fun3d-mapbc square-circle.mapbc \
           -x ${outproj}.meshb \
 	  -s ${sweeps} \
 	  ${tecplot} \
@@ -31,13 +32,11 @@ function adapt_cycle {
 }
 
 serveCSM -batch square-circle.csm
-ref bootstrap square-circle.egads
+${src}/ref bootstrap square-circle.egads
 
 adapt_cycle square-circle-vol cycle01 10
 adapt_cycle cycle01 cycle02 10
-adapt_cycle cycle02 cycle03 10
-adapt_cycle cycle03 cycle04 10
 
-cat cycle04.status
-../../check.rb cycle04.status 0.30 2.5
+cat cycle02.status
+../../check.rb cycle02.status 0.2 5.0
 

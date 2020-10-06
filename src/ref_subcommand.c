@@ -75,9 +75,12 @@ static void adapt_help(const char *name) {
   printf("  -m  metric.solb (geometry feature metric when missing)\n");
   printf("  --implied-complexity [complexity] imply metric from input mesh\n");
   printf("      and scale to complexity\n");
-  printf("  --spalding [y+=1] [complexity] [fun3d-format-bcs.mapbc]\n");
+  printf("  --spalding [y+=1] [complexity]\n");
   printf("      construct a multiscale metric to control interpolation\n");
-  printf("      error in u+ of Spalding's Law\n");
+  printf("      error in u+ of Spalding's Law. Requires boundary conditions\n");
+  printf("      via the --fun3d-mapbc or --viscous-tags options.\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("  --partitioner selects domain decomposition method.\n");
   printf("      2: ParMETIS graph partitioning.\n");
   printf("      3: Zoltan graph partitioning.\n");
@@ -96,7 +99,8 @@ static void bootstrap_help(const char *name) {
 }
 static void distance_help(const char *name) {
   printf("usage: \n %s distance input_mesh.extension distance.solb\n", name);
-  printf("  --fun3d fun3d_format.mapbc\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
   printf("\n");
 }
 static void examine_help(const char *name) {
@@ -218,6 +222,46 @@ static void visualize_help(const char *name) {
   printf("\n");
 }
 
+static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
+                                  REF_DBL spalding_yplus, REF_DBL complexity) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL *metric;
+  REF_DBL *distance, *uplus, yplus;
+  REF_INT node;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RAS(ref_math_divisible(distance[node], spalding_yplus),
+        "wall distance not divisible by y+=1");
+    yplus = distance[node] / spalding_yplus;
+    RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+  }
+  RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
+      "local lp=4 norm scaling");
+  RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+      "set complexity");
+
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
+  ref_free(uplus);
+  ref_free(distance);
+  ref_free(metric);
+  ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_mesh = NULL;
   char *in_metric = NULL;
@@ -230,6 +274,9 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT pass, passes = 30;
   REF_INT opt, pos;
   REF_LONG ntet;
+  REF_DICT ref_dict_bcs = NULL;
+  REF_DBL spalding_yplus = -1.0;
+  REF_DBL complexity = -1.0;
 
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
@@ -334,56 +381,53 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "part metric");
   }
 
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+        "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
+  }
+
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 3) {
-    REF_DBL yplus1;
-    REF_DBL complexity;
-    const char *mapbc;
-    REF_DBL *metric;
-    REF_DBL *distance, *uplus, yplus;
-    REF_DICT ref_dict;
-    REF_INT node;
-    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-
-    yplus1 = atof(argv[pos + 1]);
-    complexity = atof(argv[pos + 2]);
-    mapbc = argv[pos + 3];
-    if (ref_mpi_once(ref_mpi))
-      printf(" --spalding %e %f %s law of the wall metric\n", yplus1,
-             complexity, mapbc);
-    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_dict_create(&ref_dict), "make dict");
-    RSS(ref_phys_read_mapbc(ref_dict, mapbc), "unable to read mapbc");
-    RSS(ref_phys_wall_distance(ref_grid, ref_dict, distance), "wall dist");
-    RSS(ref_dict_free(ref_dict), "free");
-    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RAS(ref_math_divisible(distance[node], yplus1),
-          "wall distance not divisible by y+=1");
-      yplus = distance[node] / yplus1;
-      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+    if (NULL == ref_dict_bcs) {
+      if (ref_mpi_once(ref_mpi))
+        printf(
+            "\nset viscous boundaries via --fun3d-mapbc or --viscous-tags "
+            "to use --spalding\n\n");
+      goto shutdown;
     }
-    RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
-        "local lp=4 norm scaling");
-    RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
-        "set complexity");
 
-    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
-    ref_free(uplus);
-    ref_free(distance);
-    ref_free(metric);
-    curvature_metric = REF_FALSE;
-    ref_mpi_stopwatch_stop(ref_mpi, "law of wall metric");
+    spalding_yplus = atof(argv[pos + 1]);
+    complexity = atof(argv[pos + 2]);
+    if (ref_mpi_once(ref_mpi))
+      printf(" --spalding %e %f law of the wall metric\n", spalding_yplus,
+             complexity);
+    curvature_metric = REF_TRUE;
   }
 
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    REF_DBL complexity;
     REF_DBL *metric;
     complexity = atof(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi))
@@ -397,20 +441,23 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
     ref_free(metric);
     curvature_metric = REF_FALSE;
-    ref_mpi_stopwatch_stop(ref_mpi, "scale implied metric");
   }
 
   if (curvature_metric) {
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-    ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-    RXS(ref_args_find(argc, argv, "--blend-metric", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos && pos < argc - 1) {
-      REF_DBL complexity;
-      complexity = atof(argv[pos + 1]);
-      if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-      RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-      ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+    if (spalding_yplus > 0.0) {
+      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+          "spalding");
+    } else {
+      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+      RXS(ref_args_find(argc, argv, "--blend-metric", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos && pos < argc - 1) {
+        complexity = atof(argv[pos + 1]);
+        if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
+        RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
+        ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+      }
     }
   } else {
     if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
@@ -441,14 +488,18 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
     ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-      if (REF_EMPTY != pos && pos < argc - 1) {
-        REF_DBL complexity;
-        complexity = atof(argv[pos + 1]);
-        if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-        RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-        ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+      if (spalding_yplus > 0.0) {
+        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+            "spalding");
+      } else {
+        RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+        ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+        if (REF_EMPTY != pos && pos < argc - 1) {
+          complexity = atof(argv[pos + 1]);
+          if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
+          RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
+          ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+        }
       }
     } else {
       RSS(ref_metric_synchronize(ref_grid), "sync with background");
@@ -494,7 +545,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
-  if (NULL != ref_grid) RSS(ref_grid_free(ref_grid), "free");
+  RSS(ref_dict_free(ref_dict_bcs), "free");
+  RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;
 shutdown:
@@ -750,6 +802,17 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_dict_create(&ref_dict), "create");
 
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  /* delete this block when f3d uses --fun3d-mapbc */
   RXS(ref_args_find(argc, argv, "--fun3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
@@ -759,9 +822,25 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
         "unable to read fun3d formatted mapbc");
   }
 
-  RAB(ref_dict_n(ref_dict) > 0, "no solid walls specified", {
-    if (ref_mpi_once(ref_mpi)) distance_help(argv[0]);
-  });
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict, tags), "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict));
+  }
+
+  if (0 == ref_dict_n(ref_dict)) {
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "\nno solid walls specified\n"
+          "set viscous boundaries via --fun3d-mapbc or --viscous-tags\n\n");
+    goto shutdown;
+  }
 
   if (ref_mpi_para(ref_mpi)) {
     if (ref_mpi_once(ref_mpi)) printf("part %s\n", in_mesh);

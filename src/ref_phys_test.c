@@ -990,7 +990,7 @@ int main(int argc, char *argv[]) {
          "eddy viscosity from SA turb");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
+  if (ref_mpi_once(ref_mpi)) {
     char file[] = "ref_phys_test.mapbc";
     FILE *f;
     REF_DICT ref_dict;
@@ -1023,7 +1023,7 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
+  if (ref_mpi_once(ref_mpi)) {
     char file[] = "ref_phys_test.mapbc";
     FILE *f;
     REF_DICT ref_dict;
@@ -1049,6 +1049,41 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_dict_free(ref_dict), "free");
     REIS(0, remove(file), "test clean up");
+  }
+
+  { /* parse string of 1 bc tag into ref_dict */
+    char tags[] = "7";
+    REF_INT id, type;
+    REF_DICT ref_dict;
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_parse_tags(ref_dict, tags), "read mapbc");
+
+    REIS(1, ref_dict_n(ref_dict), "number of tags");
+    id = 7;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
+  { /* parse string of 2 bc tag into ref_dict */
+    char tags[] = "7,15";
+    REF_INT id, type;
+    REF_DICT ref_dict;
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_parse_tags(ref_dict, tags), "read mapbc");
+
+    REIS(2, ref_dict_n(ref_dict), "number of tags");
+    id = 7;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+    id = 15;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
   }
 
   { /* brick zeroth */
