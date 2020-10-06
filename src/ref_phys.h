@@ -41,6 +41,7 @@ REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
                              REF_DBL *dir, REF_DBL *flux);
 
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
+REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags);
 
 REF_STATUS ref_phys_cc_fv_res(REF_GRID ref_grid, REF_INT nequ, REF_DBL *flux,
                               REF_DBL *res);

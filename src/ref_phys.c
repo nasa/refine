@@ -245,6 +245,14 @@ REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags) {
+  REF_INT id, type;
+  type = 400;
+  id = atoi(tags);
+  RSS(ref_dict_store(ref_dict, id, type), "store");
+  return REF_SUCCESS;
+}
+
 /* continuous galerkin spike
    for (equ = 0; equ < nequ; equ++) {
     each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {

@@ -1051,6 +1051,22 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
+  {
+    char tags[] = "7";
+    REF_INT id, type;
+    REF_DICT ref_dict;
+    RSS(ref_dict_create(&ref_dict), "create");
+
+    RSS(ref_phys_parse_tags(ref_dict, tags), "read mapbc");
+
+    REIS(1, ref_dict_n(ref_dict), "nubmer of tags");
+    id = 7;
+    RSS(ref_dict_value(ref_dict, id, &type), "retrieve");
+    REIS(4000, type, "type");
+
+    RSS(ref_dict_free(ref_dict), "free");
+  }
+
   { /* brick zeroth */
     REF_GRID ref_grid;
     FILE *f;
