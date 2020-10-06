@@ -98,7 +98,7 @@ static void bootstrap_help(const char *name) {
 }
 static void distance_help(const char *name) {
   printf("usage: \n %s distance input_mesh.extension distance.solb\n", name);
-  printf("  --fun3d fun3d_format.mapbc\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
   printf("\n");
 }
 static void examine_help(const char *name) {
@@ -766,6 +766,17 @@ static REF_STATUS distance(REF_MPI ref_mpi, int argc, char *argv[]) {
 
   RSS(ref_dict_create(&ref_dict), "create");
 
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  /* delete this block when f3d uses --fun3d-mapbc */
   RXS(ref_args_find(argc, argv, "--fun3d", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     const char *mapbc;
