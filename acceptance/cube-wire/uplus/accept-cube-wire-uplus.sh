@@ -16,7 +16,7 @@ function adapt_cycle {
     inproj=$1
     outproj=$2
     complexity=$3
-    sweeps=5
+    sweeps=$4
 
     ${src}/ref \
 	  adapt ${inproj}.meshb \
@@ -35,7 +35,6 @@ rm -f cube-wire-vol.meshb
 ${src}/ref bootstrap cube-wire.egads
 mv cube-wire-vol.meshb cube-wire00.meshb
 
-adapt_cycle cube-wire00 cube-wire01 1000
-adapt_cycle cube-wire01 cube-wire02 1000
+adapt_cycle cube-wire00 cube-wire01 1000 10
 
 exit

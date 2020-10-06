@@ -222,6 +222,46 @@ static void visualize_help(const char *name) {
   printf("\n");
 }
 
+static REF_STATUS spalding_metric(REF_GRID ref_grid, REF_DICT ref_dict_bcs,
+                                  REF_DBL spalding_yplus, REF_DBL complexity) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL *metric;
+  REF_DBL *distance, *uplus, yplus;
+  REF_INT node;
+  REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
+
+  ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
+  ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    RAS(ref_math_divisible(distance[node], spalding_yplus),
+        "wall distance not divisible by y+=1");
+    yplus = distance[node] / spalding_yplus;
+    RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
+  }
+  RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
+      "local lp=4 norm scaling");
+  RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
+      "set complexity");
+
+  RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
+  ref_free(uplus);
+  ref_free(distance);
+  ref_free(metric);
+  ref_mpi_stopwatch_stop(ref_mpi, "spalding metric");
+  if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
+      ref_geom_meshlinked(ref_grid_geom(ref_grid))) {
+    RSS(ref_metric_constrain_curvature(ref_grid), "crv const");
+    ref_mpi_stopwatch_stop(ref_mpi, "crv const");
+  }
+  return REF_SUCCESS;
+}
+
 static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_mesh = NULL;
   char *in_metric = NULL;
@@ -235,6 +275,8 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_INT opt, pos;
   REF_LONG ntet;
   REF_DICT ref_dict_bcs = NULL;
+  REF_DBL spalding_yplus = -1.0;
+  REF_DBL complexity = -1.0;
 
   if (argc < 3) goto shutdown;
   in_mesh = argv[2];
@@ -367,13 +409,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--spalding", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 3) {
-    REF_DBL yplus1;
-    REF_DBL complexity;
-    REF_DBL *metric;
-    REF_DBL *distance, *uplus, yplus;
-    REF_INT node;
-    REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
-
     if (NULL == ref_dict_bcs) {
       if (ref_mpi_once(ref_mpi))
         printf(
@@ -382,41 +417,17 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       goto shutdown;
     }
 
-    yplus1 = atof(argv[pos + 1]);
+    spalding_yplus = atof(argv[pos + 1]);
     complexity = atof(argv[pos + 2]);
     if (ref_mpi_once(ref_mpi))
-      printf(" --spalding %e %f law of the wall metric\n", yplus1, complexity);
-    ref_malloc(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(distance, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    ref_malloc(uplus, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_phys_wall_distance(ref_grid, ref_dict_bcs, distance), "wall dist");
-    ref_mpi_stopwatch_stop(ref_mpi, "wall distance");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      RAS(ref_math_divisible(distance[node], yplus1),
-          "wall distance not divisible by y+=1");
-      yplus = distance[node] / yplus1;
-      RSS(ref_phys_spalding_uplus(yplus, &(uplus[node])), "uplus");
-    }
-    RSS(ref_recon_hessian(ref_grid, uplus, metric, reconstruction), "hess");
-    RSS(ref_recon_roundoff_limit(metric, ref_grid),
-        "floor metric eigenvalues based on grid size and solution jitter");
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, 4),
-        "local lp=4 norm scaling");
-    RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
-        "set complexity");
-
-    RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
-    ref_free(uplus);
-    ref_free(distance);
-    ref_free(metric);
-    curvature_metric = REF_FALSE;
-    ref_mpi_stopwatch_stop(ref_mpi, "law of wall metric");
+      printf(" --spalding %e %f law of the wall metric\n", spalding_yplus,
+             complexity);
+    curvature_metric = REF_TRUE;
   }
 
   RXS(ref_args_find(argc, argv, "--implied-complexity", &pos), REF_NOT_FOUND,
       "metric arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
-    REF_DBL complexity;
     REF_DBL *metric;
     complexity = atof(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi))
@@ -430,20 +441,23 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
     ref_free(metric);
     curvature_metric = REF_FALSE;
-    ref_mpi_stopwatch_stop(ref_mpi, "scale implied metric");
   }
 
   if (curvature_metric) {
-    RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-    ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-    RXS(ref_args_find(argc, argv, "--blend-metric", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos && pos < argc - 1) {
-      REF_DBL complexity;
-      complexity = atof(argv[pos + 1]);
-      if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-      RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-      ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+    if (spalding_yplus > 0.0) {
+      RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+          "spalding");
+    } else {
+      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+      RXS(ref_args_find(argc, argv, "--blend-metric", &pos), REF_NOT_FOUND,
+          "arg search");
+      if (REF_EMPTY != pos && pos < argc - 1) {
+        complexity = atof(argv[pos + 1]);
+        if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
+        RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
+        ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+      }
     }
   } else {
     if (ref_geom_model_loaded(ref_grid_geom(ref_grid)) ||
@@ -474,14 +488,18 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
     ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
-      RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-      ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
-      if (REF_EMPTY != pos && pos < argc - 1) {
-        REF_DBL complexity;
-        complexity = atof(argv[pos + 1]);
-        if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
-        RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
-        ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+      if (spalding_yplus > 0.0) {
+        RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
+            "spalding");
+      } else {
+        RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
+        ref_mpi_stopwatch_stop(ref_mpi, "curvature metric");
+        if (REF_EMPTY != pos && pos < argc - 1) {
+          complexity = atof(argv[pos + 1]);
+          if (ref_mpi_once(ref_mpi)) printf("--blend-metric %f\n", complexity);
+          RSS(ref_blend_multiscale(ref_grid, complexity), "metric");
+          ref_mpi_stopwatch_stop(ref_mpi, "blend metric");
+        }
       }
     } else {
       RSS(ref_metric_synchronize(ref_grid), "sync with background");
