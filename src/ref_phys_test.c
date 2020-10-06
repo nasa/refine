@@ -990,7 +990,7 @@ int main(int argc, char *argv[]) {
          "eddy viscosity from SA turb");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
+  if (ref_mpi_once(ref_mpi)) {
     char file[] = "ref_phys_test.mapbc";
     FILE *f;
     REF_DICT ref_dict;
@@ -1023,7 +1023,7 @@ int main(int argc, char *argv[]) {
     REIS(0, remove(file), "test clean up");
   }
 
-  if (!ref_mpi_para(ref_mpi)) {
+  if (ref_mpi_once(ref_mpi)) {
     char file[] = "ref_phys_test.mapbc";
     FILE *f;
     REF_DICT ref_dict;
