@@ -30,7 +30,8 @@ tar xzf ESPbeta.tgz
 ( cd EngSketchPad/src && . ../ESPenv.sh && make CC=gcc CXX=g++ FCOMP=gfortran)
 
 mkdir ${MODULE_DEST}/EngSketchPad
-cp -r EngSketchPad/include EngSketchPad/lib EngSketchPad/bin ${MODULE_DEST}/EngSketchPad
+cp -r EngSketchPad/include EngSketchPad/lib EngSketchPad/bin EngSketchPad/udc \
+   ${MODULE_DEST}/EngSketchPad
 
 mkdir -p ${MODFILE_BASE}
 cat > ${MODFILE_DEST} << EOF
