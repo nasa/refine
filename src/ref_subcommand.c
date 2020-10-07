@@ -93,6 +93,7 @@ static void bootstrap_help(const char *name) {
   printf("  -t  tecplot movie of surface curvature adaptation\n");
   printf("        in files ref_gather_movie.tec and ref_gather_histo.tec\n");
   printf("  --mesher {tetgen|aflr} volume mesher\n");
+  printf("  --mesher-options \"<options>\" quoted mesher options.\n");
   printf("  --auto-tparams {or combination of options} adjust .tParams\n");
   printf("        1:missing faces, 2:chord violation, 4:face width (-1:all)\n");
   printf("\n");
@@ -110,6 +111,7 @@ static void examine_help(const char *name) {
 static void grow_help(const char *name) {
   printf("usage: \n %s grow surface.meshb volume.meshb\n", name);
   printf("  --mesher {tetgen|aflr} volume mesher\n");
+  printf("  --mesher-options \"<options>\" quoted mesher options.\n");
   printf("\n");
 }
 static void interpolate_help(const char *name) {
@@ -561,11 +563,12 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_GRID ref_grid = NULL;
   REF_INT t_pos = REF_EMPTY;
   REF_INT s_pos = REF_EMPTY;
-  REF_INT mesher_pos = REF_EMPTY;
+  REF_INT pos;
   REF_INT blend_pos = REF_EMPTY;
   REF_INT auto_tparams_pos = REF_EMPTY;
   REF_INT auto_tparams = REF_EGADS_MISSING_TPARAM;
   const char *mesher = "tetgen";
+  const char *mesher_options = NULL;
   REF_INT passes = 15;
   REF_INT self_intersections;
   REF_INT global_pos = REF_EMPTY;
@@ -657,11 +660,18 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_gather_tec_movie_record_button(ref_grid_gather(ref_grid), REF_TRUE),
         "movie on");
 
-  RXS(ref_args_find(argc, argv, "--mesher", &mesher_pos), REF_NOT_FOUND,
-      "arg search");
-  if (REF_EMPTY != mesher_pos && mesher_pos < argc - 1) {
-    mesher = argv[mesher_pos + 1];
+  RXS(ref_args_find(argc, argv, "--mesher", &pos), REF_NOT_FOUND, "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    mesher = argv[pos + 1];
     if (ref_mpi_once(ref_mpi)) printf("--mesher %s requested\n", mesher);
+  }
+
+  RXS(ref_args_find(argc, argv, "--mesher-options", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    mesher_options = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi))
+      printf("--mesher-options %s requested\n", mesher_options);
   }
 
   RXS(ref_args_find(argc, argv, "-s", &s_pos), REF_NOT_FOUND, "arg search");
@@ -731,7 +741,7 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (strncmp(mesher, "t", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with TetGen\n");
-        RSB(ref_geom_tetgen_volume(ref_grid, project),
+        RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
             "tetgen surface to volume", {
               printf("probing adapted tessellation self-intersections\n");
               RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
@@ -744,13 +754,14 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
     } else if (strncmp(mesher, "a", 1) == 0) {
       if (ref_mpi_once(ref_mpi)) {
         printf("fill volume with AFLR3\n");
-        RSB(ref_geom_aflr_volume(ref_grid, project), "aflr surface to volume", {
-          printf("probing adapted tessellation self-intersections\n");
-          RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-              "bumps");
-          printf("%d segment-triangle intersections detected.\n",
-                 self_intersections);
-        });
+        RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
+            "aflr surface to volume", {
+              printf("probing adapted tessellation self-intersections\n");
+              RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                  "bumps");
+              printf("%d segment-triangle intersections detected.\n",
+                     self_intersections);
+            });
       }
       ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
     } else {
@@ -890,6 +901,7 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   size_t end_of_string;
   REF_GRID ref_grid = NULL;
   const char *mesher = "tetgen";
+  const char *mesher_options = NULL;
   REF_INT pos;
   REF_INT self_intersections;
 
@@ -915,11 +927,19 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
     if (ref_mpi_once(ref_mpi)) printf("--mesher %s requested\n", mesher);
   }
 
+  RXS(ref_args_find(argc, argv, "--mesher-options", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    mesher_options = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi))
+      printf("--mesher-options %s requested\n", mesher_options);
+  }
+
   if (strncmp(mesher, "t", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with TetGen\n");
-      RSB(ref_geom_tetgen_volume(ref_grid, project), "tetgen surface to volume",
-          {
+      RSB(ref_geom_tetgen_volume(ref_grid, project, mesher_options),
+          "tetgen surface to volume", {
             printf("probing adapted tessellation self-intersections\n");
             RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
                 "bumps");
@@ -931,13 +951,14 @@ static REF_STATUS grow(REF_MPI ref_mpi, int argc, char *argv[]) {
   } else if (strncmp(mesher, "a", 1) == 0) {
     if (ref_mpi_once(ref_mpi)) {
       printf("fill volume with AFLR3\n");
-      RSB(ref_geom_aflr_volume(ref_grid, project), "aflr surface to volume", {
-        printf("probing adapted tessellation self-intersections\n");
-        RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
-            "bumps");
-        printf("%d segment-triangle intersections detected.\n",
-               self_intersections);
-      });
+      RSB(ref_geom_aflr_volume(ref_grid, project, mesher_options),
+          "aflr surface to volume", {
+            printf("probing adapted tessellation self-intersections\n");
+            RSS(ref_dist_collisions(ref_grid, REF_TRUE, &self_intersections),
+                "bumps");
+            printf("%d segment-triangle intersections detected.\n",
+                   self_intersections);
+          });
     }
     ref_mpi_stopwatch_stop(ref_mpi, "aflr volume");
   } else {

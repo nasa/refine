@@ -255,8 +255,10 @@ REF_STATUS ref_geom_feedback(REF_GRID ref_grid);
 REF_STATUS ref_geom_has_jump(REF_GEOM ref_grid, REF_INT node,
                              REF_BOOL *has_jump);
 
-REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project);
-REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project);
+REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
+                                const char *options);
+REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
+                                  const char *options);
 
 REF_STATUS ref_geom_edge_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file);
 REF_STATUS ref_geom_face_tec_zone(REF_GRID ref_grid, REF_INT id, FILE *file);

@@ -1704,7 +1704,8 @@ REF_STATUS ref_geom_verify_topo(REF_GRID ref_grid) {
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
+REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project,
+                                  const char *options) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   REF_CELL ref_cell;
   char filename[896];
@@ -1727,9 +1728,14 @@ REF_STATUS ref_geom_tetgen_volume(REF_GRID ref_grid, const char *project) {
   printf("  The 'S' argument can be added to tetgen\n");
   printf("    to limit the number of inserted nodes and run time.\n");
 
-  snprintf(command, 1024,
-           "tetgen -pMYq20/10O7/7zVT1e-12 %s < /dev/null > %s-tetgen.txt",
-           filename, project);
+  if (NULL == options) {
+    snprintf(command, 1024,
+             "tetgen -pMYq20/10O7/7zVT1e-12 %s < /dev/null > %s-tetgen.txt",
+             filename, project);
+  } else {
+    snprintf(command, 1024, "tetgen %s %s < /dev/null > %s-tetgen.txt", options,
+             filename, project);
+  }
   printf("%s\n", command);
   fflush(stdout);
   REIS(0, sleep(2), "sleep failed");
@@ -1914,7 +1920,8 @@ static REF_STATUS ref_import_ugrid_tets(REF_GRID ref_grid,
   return REF_SUCCESS;
 }
 
-REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
+REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project,
+                                const char *options) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
   char filename[1024];
   char command[1024];
@@ -1926,11 +1933,21 @@ REF_STATUS ref_geom_aflr_volume(REF_GRID ref_grid, const char *project) {
 
   snprintf(filename, 1024, "%s-aflr-surface.lb8.ugrid", project);
   RSS(ref_export_by_extension(ref_grid, filename), "ugrid");
-  sprintf(command,
-          "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
-          "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
-          "< /dev/null > %s-aflr.txt",
-          project, project, project);
+  if (NULL == options) {
+    sprintf(
+        command,
+        "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
+        "-mrecrbf=0 -angqbf=179.9 -angqbfmin=0.1 "
+        "< /dev/null > %s-aflr.txt",
+        project, project, project);
+  } else {
+    sprintf(
+        command,
+        "aflr3 -igrid %s-aflr-surface.lb8.ugrid -ogrid %s-aflr-volume.ugrid "
+        "%s "
+        "< /dev/null > %s-aflr.txt",
+        project, project, options, project);
+  }
   printf("%s\n", command);
   fflush(stdout);
   system_status = system(command);
