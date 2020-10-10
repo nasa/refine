@@ -795,6 +795,8 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   REF_DBL ab[42];
   REF_INT i;
 
+  for (i = 0; i < 6; i++) m[i] = 0.0;
+
   fill_ab(0, xyz1, xyz0);
   fill_ab(1, xyz2, xyz0);
   fill_ab(2, xyz3, xyz0);
@@ -804,7 +806,7 @@ REF_STATUS ref_matrix_imply_m(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
 
   for (i = 0; i < 6; i++) ab[i + 6 * 6] = 1.0;
 
-  RSS(ref_matrix_solve_ab(6, 7, ab), "matrix singular");
+  RAISE(ref_matrix_solve_ab(6, 7, ab));
 
   for (i = 0; i < 6; i++) m[i] = ab[i + 6 * 6];
 
@@ -821,13 +823,15 @@ REF_STATUS ref_matrix_imply_m3(REF_DBL *m, REF_DBL *xyz0, REF_DBL *xyz1,
   REF_DBL ab[12];
   REF_INT i;
 
+  for (i = 0; i < 6; i++) m[i] = 0.0;
+
   fill_ab3(0, xyz0, xyz1);
   fill_ab3(1, xyz1, xyz2);
   fill_ab3(2, xyz2, xyz0);
 
   for (i = 0; i < 3; i++) ab[i + 3 * 3] = 1.0;
 
-  RSS(ref_matrix_solve_ab(3, 4, ab), "matrix singular");
+  RAISE(ref_matrix_solve_ab(3, 4, ab));
 
   m[0] = ab[0 + 3 * 3];
   m[1] = ab[1 + 3 * 3];

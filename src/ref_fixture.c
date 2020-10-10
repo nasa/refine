@@ -575,7 +575,7 @@ REF_STATUS ref_fixture_pri_tet_cap_grid(REF_GRID *ref_grid_ptr,
   REF_INT global[REF_CELL_MAX_SIZE_PER];
   REF_INT local[REF_CELL_MAX_SIZE_PER];
   REF_INT cell;
-  REF_INT nnodesg = 6;
+  REF_INT nnodesg = 7;
 
   RSS(ref_grid_create(ref_grid_ptr, ref_mpi), "create");
   ref_grid = *ref_grid_ptr;
