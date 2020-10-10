@@ -2606,6 +2606,18 @@ REF_STATUS ref_metric_parse(REF_DBL *metric, REF_GRID ref_grid, int narg,
           geom[i] = atof(args[pos]);
           pos++;
         }
+
+        if (ceil) {
+          if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+            printf("--uniform box ceil h0=%f decay=%f [%f %f %f %f %f %f]\n",
+                   h0, decay_distance, geom[0], geom[1], geom[2], geom[3],
+                   geom[4], geom[5]);
+        } else {
+          if (ref_mpi_once(ref_grid_mpi(ref_grid)))
+            printf("--uniform box floor h0=%f decay=%f [%f %f %f %f %f %f]\n",
+                   h0, decay_distance, geom[0], geom[1], geom[2], geom[3],
+                   geom[4], geom[5]);
+        }
         each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
           RSS(ref_metric_cart_box_dist(
                   geom, ref_node_xyz_ptr(ref_grid_node(ref_grid), node), &r),

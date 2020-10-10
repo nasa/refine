@@ -440,6 +440,7 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "imply metric");
     RSS(ref_metric_set_complexity(metric, ref_grid, complexity),
         "scale metric");
+    RSS(ref_metric_parse(metric, ref_grid, argc, argv), "parse metric");
     RSS(ref_metric_to_node(metric, ref_grid_node(ref_grid)), "node metric");
     ref_free(metric);
     curvature_metric = REF_FALSE;
