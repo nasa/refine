@@ -1364,15 +1364,17 @@ REF_STATUS ref_metric_imply_from(REF_DBL *metric, REF_GRID ref_grid) {
   }
 
   each_ref_node_valid_node(ref_node, node) {
-    RAS(0.0 < total_node_volume[node], "zero metric contributions");
-    for (im = 0; im < 6; im++) {
-      if (!ref_math_divisible(metric[im + 6 * node], total_node_volume[node]))
-        RSS(REF_DIV_ZERO, "zero volume");
-      log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+    if (ref_node_owned(ref_node, node)) {
+      RAS(0.0 < total_node_volume[node], "zero metric contributions");
+      for (im = 0; im < 6; im++) {
+        if (!ref_math_divisible(metric[im + 6 * node], total_node_volume[node]))
+          RSS(REF_DIV_ZERO, "zero volume");
+        log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+      }
+      RSS(ref_matrix_exp_m(log_m, m), "exp");
+      for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
+      total_node_volume[node] = 0.0;
     }
-    RSS(ref_matrix_exp_m(log_m, m), "exp");
-    for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
-    total_node_volume[node] = 0.0;
   }
 
   ref_free(total_node_volume);
@@ -1463,15 +1465,18 @@ VI1 VI8 VI3 VI4  VI1 VI8 VI2 VI3  VI2 VI8 VI7 VI3
             ref_adj_first(ref_cell_adj(ref_grid_pri(ref_grid)), node)) ||
         ref_adj_valid(
             ref_adj_first(ref_cell_adj(ref_grid_hex(ref_grid)), node))) {
-      RAS(0.0 < total_node_volume[node], "zero metric contributions");
-      for (im = 0; im < 6; im++) {
-        if (!ref_math_divisible(metric[im + 6 * node], total_node_volume[node]))
-          RSS(REF_DIV_ZERO, "zero volume");
-        log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+      if (ref_node_owned(ref_node, node)) {
+        RAS(0.0 < total_node_volume[node], "zero metric contributions");
+        for (im = 0; im < 6; im++) {
+          if (!ref_math_divisible(metric[im + 6 * node],
+                                  total_node_volume[node]))
+            RSS(REF_DIV_ZERO, "zero volume");
+          log_m[im] = metric[im + 6 * node] / total_node_volume[node];
+        }
+        RSS(ref_matrix_exp_m(log_m, m), "exp");
+        for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
+        total_node_volume[node] = 0.0;
       }
-      RSS(ref_matrix_exp_m(log_m, m), "exp");
-      for (im = 0; im < 6; im++) metric[im + 6 * node] = m[im];
-      total_node_volume[node] = 0.0;
     }
   }
 
