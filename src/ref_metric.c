@@ -1251,7 +1251,7 @@ static REF_STATUS add_sub_tet(REF_INT n0, REF_INT n1, REF_INT n2, REF_INT n3,
         metric[im + 6 * nodes[node]] += tet_volume * log_m[im];
     }
   } else {
-    REF_WHERE("imply contrib skipped");
+    /* silently skip singular contribution */
   }
 
   return REF_SUCCESS;
@@ -1281,7 +1281,7 @@ static REF_STATUS add_sub_tri(REF_INT n0, REF_INT n1, REF_INT n2,
         metric[im + 6 * nodes[node]] += tri_area * log_m[im];
     }
   } else {
-    REF_WHERE("imply contrib skipped");
+    /* silently skip singular contribution */
   }
 
   return REF_SUCCESS;
