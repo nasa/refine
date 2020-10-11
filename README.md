@@ -63,9 +63,13 @@ AFLR `*.ugrid`.
 ## Bootstrapping Mesh Adaptation on an EGADS Model
 
 An `.egads` file can be dumped from OpenCSM in the ESP package.
-`ref bootstrap project.egads`
+```
+ref bootstrap project.egads
+```
 or
-`mpiexec ... refmpifull bootstrap project.egads`
+```
+mpiexec ... refmpifull bootstrap project.egads
+```
 which assume that `tetgen` is in your shell path or
 `aflr3` is in your shell path with `--mesher aflr` option.
 A `project-vol.meshb` is output that includes the surface mesh,
