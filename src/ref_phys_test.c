@@ -1107,6 +1107,8 @@ int main(int argc, char *argv[]) {
     FILE *f;
     REF_INT i, node, ldim;
     REF_DBL *field;
+    REF_DICT ref_dict;
+    REF_BOOL *replace;
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
@@ -1137,15 +1139,19 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, "ref_phys_test.meshb"),
         "import");
-    REIS(
-        0,
-        system("./ref_phys_test --mask ref_phys_test.meshb ref_phys_test.mapbc "
-               "ref_phys_test.solb ref_phys_test_replace.solb > /dev/null"),
-        "mask");
-
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field,
-                        "ref_phys_test_replace.solb"),
+                        "ref_phys_test.solb"),
         "part field");
+
+    RSS(ref_dict_create(&ref_dict), "create");
+    RSS(ref_phys_read_mapbc(ref_dict, "ref_phys_test.mapbc"),
+        "unable to mapbc");
+    ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+    RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict, replace, ldim), "mask");
+    RSS(ref_dict_free(ref_dict), "free");
+    RSS(ref_recon_extrapolate_zeroth(ref_grid, field, replace, ldim),
+        "extrapolate zeroth order");
+    ref_free(replace);
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 6; i < 10; i++) {
@@ -1156,7 +1162,6 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
       REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
       REIS(0, remove("ref_phys_test.solb"), "solb clean up");
-      REIS(0, remove("ref_phys_test_replace.solb"), "solb clean up");
     }
 
     ref_free(field);
