@@ -11,7 +11,7 @@ else
 fi
 
 tecplot=-t
-field="-q trig"
+field="-pd trig"
 egads="-g square.egads"
 
 function adapt_cycle {
@@ -20,10 +20,7 @@ function adapt_cycle {
     complexity=$3
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
-	  ${inproj}-primal.solb
-
-    ${src}/ref_interp_test --entropyadj ${inproj}.meshb \
-	  ${inproj}-primal.solb ${inproj}-primdual.solb
+	  ${inproj}-primdual.solb
 
     ${src}/ref_phys_test --euler-flux ${inproj}.meshb \
 	  ${inproj}-primdual.solb ${inproj}-adjflux.solb
@@ -35,10 +32,7 @@ function adapt_cycle {
 	  -x ${outproj}.meshb -f ${outproj}.tec > ${inproj}-adapt.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
-	  ${outproj}-primal.solb
-
-    ${src}/ref_interp_test --entropyadj ${outproj}.meshb \
-	  ${outproj}-primal.solb ${outproj}-primdual.solb
+	  ${outproj}-primdual.solb
 
     ${src}/ref_gather_test ${outproj}.meshb ${outproj}-primdual.solb \
 	  ${outproj}-primdual.tec

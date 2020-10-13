@@ -253,6 +253,53 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
+                                    const char *function_name, REF_INT *ldim,
+                                    REF_DBL **scalar) {
+  REF_INT node, i;
+  REF_DBL x, y;
+  *ldim = 10;
+  ref_malloc(*scalar, (*ldim) * ref_node_max(ref_node), REF_DBL);
+
+  each_ref_node_valid_node(ref_node, node) {
+    x = ref_node_xyz(ref_node, 0, node);
+    y = ref_node_xyz(ref_node, 1, node);
+    if (strcmp(function_name, "trig") == 0) {
+      REF_DBL a, c1, x0, y0, r1, c2, r2;
+      REF_DBL rho, pressure, u, v, w;
+      REF_DBL primitive[5], dual[5];
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      c1 = 100.0;
+      x0 = 0.0;
+      y0 = 0.4;
+      r1 = sqrt(pow(x - x0, 2) + pow(y - y0, 2));
+
+      c2 = 100.0;
+      r2 = x - y + 0.3;
+      a = 0.1;
+      rho = 1.00 * (a * tanh(c1 * (r1 - 0.5)) + 1.0);
+      pressure = 1.00 * (a * tanh(c2 * (r2 - 0.3)) + 1.0 / 1.4);
+      u = 0.5 * sin(x * 2 * ref_math_pi);
+      v = 0.1 * cos(y * 2 * ref_math_pi);
+      w = 0.0;
+      primitive[0] = rho;
+      primitive[1] = u;
+      primitive[2] = v;
+      primitive[3] = w;
+      primitive[4] = pressure;
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else {
+      printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
+             function_name);
+      return REF_NOT_FOUND;
+    }
+  }
+  return REF_SUCCESS;
+}
+
 int main(int argc, char *argv[]) {
   REF_MPI ref_mpi;
   REF_GRID ref_grid = NULL;
@@ -395,7 +442,6 @@ int main(int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "-u", &u_pos), REF_NOT_FOUND, "arg");
-
   if (REF_EMPTY != u_pos) {
     REF_DBL *scalar;
     REF_INT name_pos = 2;
@@ -418,7 +464,6 @@ int main(int argc, char *argv[]) {
   }
 
   RXS(ref_args_find(argc, argv, "-q", &pos), REF_NOT_FOUND, "arg");
-
   if (REF_EMPTY != pos) {
     REF_DBL *scalar;
     REF_INT ldim;
@@ -430,6 +475,30 @@ int main(int argc, char *argv[]) {
     ref_node = ref_grid_node(ref_grid);
     RSS(ref_acceptance_q(ref_grid_node(ref_grid), argv[name_pos], &ldim,
                          &scalar),
+        "fill u");
+    RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
+        "in");
+
+    ref_free(scalar);
+    RSS(ref_grid_free(ref_grid), "grid free");
+    RSS(ref_mpi_free(ref_mpi), "mpi free");
+    RSS(ref_mpi_stop(), "stop");
+    return 0;
+  }
+
+  RXS(ref_args_find(argc, argv, "-pd", &pos), REF_NOT_FOUND, "arg");
+
+  if (REF_EMPTY != pos) {
+    REF_DBL *scalar;
+    REF_INT ldim;
+    REF_INT name_pos = 2;
+    REIS(1, pos, "required args: -pq id mesh.ext scalar.solb\n");
+    REIS(5, argc, "required args: -pq id mesh.ext scalar.solb\n");
+
+    RSS(ref_import_by_extension(&ref_grid, ref_mpi, argv[3]), "in");
+    ref_node = ref_grid_node(ref_grid);
+    RSS(ref_acceptance_pd(ref_grid_node(ref_grid), argv[name_pos], &ldim,
+                          &scalar),
         "fill u");
     RSS(ref_gather_scalar_by_extension(ref_grid, ldim, scalar, NULL, argv[4]),
         "in");
