@@ -11,30 +11,30 @@ else
 fi
 
 tecplot=-t
-field="-u trig"
-egads="-g square.egads"
+field="-q trig"
+egads="--egads square.egads"
 
 function adapt_cycle {
     inproj=$1
     outproj=$2
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
-	  ${inproj}.solb
+	  ${inproj}_volume.solb
+    ${src}/ref_gather_test ${inproj}.meshb \
+	  ${inproj}_volume.solb ${inproj}_volume.tec
 
-    ${src}/ref multiscale ${inproj}.meshb ${inproj}.solb \
-	  1000 ${inproj}-metric.solb
-
-    ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
-	  -x ${outproj}.meshb -f ${outproj}.tec
+    ${src}/ref loop ${inproj} ${outproj} 1000 \
+	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
-	  ${outproj}.solb
-
-    ${src}/ref_gather_test ${outproj}.meshb ${outproj}.solb ${outproj}-u.tec
+	  ${outproj}_volume.solb
+    ${src}/ref_gather_test ${outproj}.meshb \
+	  ${outproj}_volume.solb ${outproj}_volume.tec
 }
 
-./square.sh
-cp square.meshb cycle00.meshb
+serveCSM -batch square.csm
+${src}/ref bootstrap square.egads
+mv square-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01
 adapt_cycle cycle01 cycle02
