@@ -174,6 +174,7 @@ static void loop_help(const char *name) {
   printf("   --interpolant <type> multiscale scalar field.\n");
   printf("       mach (default), incomp (incompressible vel magnitude),\n");
   printf("       htot, pressure, density, temperature.\n");
+  printf("   --export-metric writes <input_project_name>-metric.solb.\n");
 
   printf("\n");
 }
@@ -1490,6 +1491,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_histogram_quality(ref_grid), "gram");
   RSS(ref_histogram_ratio(ref_grid), "gram");
   ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+
+  RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s-metric.solb", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
+    RSS(ref_gather_metric(ref_grid, filename), "export metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "export metric");
+  }
 
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
