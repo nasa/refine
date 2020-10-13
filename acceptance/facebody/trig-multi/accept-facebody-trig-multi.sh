@@ -17,13 +17,14 @@ egads="--egads square.egads"
 function adapt_cycle {
     inproj=$1
     outproj=$2
+    complexity=$3
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
 	  ${inproj}_volume.solb
     ${src}/ref_gather_test ${inproj}.meshb \
 	  ${inproj}_volume.solb ${inproj}_volume.tec
 
-    ${src}/ref loop ${inproj} ${outproj} 1000 \
+    ${src}/ref loop ${inproj} ${outproj} ${complexity} \
 	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
@@ -36,12 +37,12 @@ serveCSM -batch square.csm
 ${src}/ref bootstrap square.egads
 mv square-vol.meshb cycle00.meshb
 
-adapt_cycle cycle00 cycle01
-adapt_cycle cycle01 cycle02
-adapt_cycle cycle02 cycle03
-adapt_cycle cycle03 cycle04
-adapt_cycle cycle04 cycle05
-adapt_cycle cycle05 cycle06
+adapt_cycle cycle00 cycle01 1000
+adapt_cycle cycle01 cycle02 1000
+adapt_cycle cycle02 cycle03 2000
+adapt_cycle cycle03 cycle04 2000
+adapt_cycle cycle04 cycle05 4000
+adapt_cycle cycle05 cycle06 4000
 
 ../../check.rb cycle05-loop.txt 0.5 2.0
 
