@@ -1235,7 +1235,8 @@ static REF_STATUS fixed_point_metric(
       metric[im + 6 * node] *= inv_total;
     }
   }
-
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
       "local lp norm scaling");
   ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
