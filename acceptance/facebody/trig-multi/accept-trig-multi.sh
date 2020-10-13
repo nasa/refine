@@ -43,4 +43,5 @@ adapt_cycle cycle03 cycle04
 adapt_cycle cycle04 cycle05
 adapt_cycle cycle05 cycle06
 
+../../check.rb cycle05-loop.txt 0.5 2.0
 
