@@ -33,8 +33,8 @@ function adapt_cycle {
 	  ${outproj}_volume.solb ${outproj}_volume.tec
 }
 
-serveCSM -batch square.csm
-${src}/ref bootstrap square.egads
+serveCSM -batch square.csm > square-servecsm.txt
+${src}/ref bootstrap square.egads > square-bootstrap.txt
 mv square-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 1000

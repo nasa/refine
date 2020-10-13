@@ -61,6 +61,26 @@ REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
+  REF_DBL rho, u, v, w, p, s, vel2;
+  REF_DBL gamma = 1.4;
+  rho = primitive[0];
+  u = primitive[1];
+  v = primitive[2];
+  w = primitive[3];
+  p = primitive[4];
+  /* entropy adjoint, Equ. (11), AIAA 2009-3790 */
+  s = log(p / pow(rho, gamma));
+  vel2 = u * u + v * v + w * w;
+  dual[0] = (gamma - s) / (gamma - 1.0) - 0.5 * rho * vel2 / p;
+  dual[1] = rho * u / p;
+  dual[2] = rho * v / p;
+  dual[3] = rho * w / p;
+  dual[4] = -rho / p;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;
