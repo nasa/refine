@@ -1191,6 +1191,61 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS fixed_point_metric(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
+    REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
+    const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
+    REF_DBL gradation, REF_DBL complexity) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL *hess, *scalar;
+  REF_INT timestep, total_timesteps;
+  char solb_filename[1024];
+  REF_DBL inv_total;
+  REF_INT im, node;
+  REF_INT fixed_point_ldim;
+
+  ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  total_timesteps = 0;
+  for (timestep = first_timestep; timestep <= last_timestep;
+       timestep += timestep_increment) {
+    snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+             timestep);
+    if (ref_mpi_once(ref_mpi))
+      printf("read and hess recon for %s\n", solb_filename);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
+                        solb_filename),
+        "unable to load scalar");
+    REIS(1, fixed_point_ldim, "expected one scalar");
+    RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    ref_free(scalar);
+    total_timesteps++;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] += hess[im + 6 * node];
+      }
+    }
+  }
+  free(hess);
+  ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+  RAS(0 < total_timesteps, "expected one or more timesteps");
+  inv_total = 1.0 / (REF_DBL)total_timesteps;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] *= inv_total;
+    }
+  }
+
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+      "local lp norm scaling");
+  ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1365,14 +1420,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos && pos + 4 < argc) {
-    REF_DBL *hess;
     REF_INT first_timestep, last_timestep, timestep_increment;
-    REF_INT timestep, total_timesteps;
     const char *solb_middle;
-    char solb_filename[1024];
-    REF_DBL inv_total;
-    REF_INT im, node;
-    REF_INT fixed_point_ldim;
     solb_middle = argv[pos + 1];
     first_timestep = atoi(argv[pos + 2]);
     timestep_increment = atoi(argv[pos + 3]);
@@ -1383,46 +1432,10 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
              timestep_increment, last_timestep);
     }
-    ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    total_timesteps = 0;
-    for (timestep = first_timestep; timestep <= last_timestep;
-         timestep += timestep_increment) {
-      snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
-               timestep);
-      if (ref_mpi_once(ref_mpi))
-        printf("read and hess recon for %s\n", solb_filename);
-      RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
-                          solb_filename),
-          "unable to load scalar");
-      REIS(1, fixed_point_ldim, "expected one scalar");
-      RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
-      ref_free(scalar);
-      total_timesteps++;
-      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        for (im = 0; im < 6; im++) {
-          metric[im + 6 * node] += hess[im + 6 * node];
-        }
-      }
-    }
-    free(hess);
-    ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
-
-    RAS(0 < total_timesteps, "expected one or more timesteps");
-    inv_total = 1.0 / (REF_DBL)total_timesteps;
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (im = 0; im < 6; im++) {
-        metric[im + 6 * node] *= inv_total;
-      }
-    }
-
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local lp norm scaling");
-    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
-    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                           complexity),
-        "gradation at complexity");
-    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
-
+    RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
+                           timestep_increment, in_project, solb_middle,
+                           reconstruction, p, gradation, complexity),
+        "fixed point");
   } else {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
