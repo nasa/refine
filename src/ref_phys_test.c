@@ -657,14 +657,14 @@ int main(int argc, char *argv[]) {
     REF_DBL dual[5];
     primitive[0] = 1.0;
     primitive[1] = 0.5;
-    primitive[2] = 0.0;
-    primitive[3] = 0.0;
+    primitive[2] = 0.1;
+    primitive[3] = 0.2;
     primitive[4] = 0.8 / 1.4;
     RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
-    RWDS(4.680289469838558, dual[0], -1, "cont");
+    RWDS(4.636539469838557, dual[0], -1, "cont");
     RWDS(0.875, dual[1], -1, "x-mom");
-    RWDS(0.0, dual[2], -1, "y-mom");
-    RWDS(0.0, dual[3], -1, "z-mom");
+    RWDS(0.175, dual[2], -1, "y-mom");
+    RWDS(0.35, dual[3], -1, "z-mom");
     RWDS(-1.75, dual[4], -1, "energy");
   }
 
