@@ -291,6 +291,36 @@ static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
       RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
       for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else if (strcmp(function_name, "vortex") == 0) {
+      REF_DBL gamma = 1.4;
+      REF_DBL rho, pressure, u, v, w, mach;
+      REF_DBL ri = 1.0, mi = 2.25;
+      REF_DBL rhoi = 1.0, pi = 1.0 / gamma, ai = 1.0;
+      REF_DBL base, a, r, t;
+      REF_DBL primitive[5], dual[5];
+      /* real 2D mesh */
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      base = 1 - pow(ri / r, 2);
+      base = 1 + 0.5 * (gamma + 1.0) * mi * mi * base;
+      rho = rhoi * pow(base, 1.0 / (gamma - 1.0));
+      pressure = pi * pow(base, gamma / (gamma - 1.0));
+      a = sqrt(gamma * pressure / rho);
+      mach = ai * mi * ri / (a * r);
+      /* fun3d 2D convention */
+      u = sin(t) * mach * a;
+      v = 0.0;
+      w = cos(t) * mach * a;
+      primitive[0] = rho;
+      primitive[1] = u;
+      primitive[2] = v;
+      primitive[3] = w;
+      primitive[4] = pressure;
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
