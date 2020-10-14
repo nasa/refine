@@ -306,8 +306,9 @@ REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
   }
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "dict bc");
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
     each_ref_cell_cell_node(ref_cell, cell_node) {
       node = nodes[cell_node];
       if (4000 == bc) {
