@@ -290,7 +290,7 @@ REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
 REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
                                     REF_BOOL *replace, REF_INT ldim) {
   REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
+  REF_CELL ref_cell;
   REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
   REF_INT first, last, i, node, bc;
   REF_INT nequ;
@@ -304,6 +304,9 @@ REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
       replace[i + ldim * node] = REF_FALSE;
     }
   }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_edg(ref_grid);
 
   each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
     bc = REF_EMPTY;
