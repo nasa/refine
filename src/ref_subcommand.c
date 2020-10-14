@@ -1485,17 +1485,19 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
-    REF_DBL *dual_flux;
     multiscale_metric = REF_FALSE;
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
-    ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    RSS(ref_phys_euler_dual_flux(ref_grid, ldim, initial_field, dual_flux),
-        "euler dual_flux");
-    RSS(ref_metric_opt_goal(metric, ref_grid, 5, dual_flux, reconstruction, p,
-                            gradation, complexity),
-        "opt goal");
-    ref_free(dual_flux);
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, initial_field,
+                             reconstruction),
+        "add nonlinear terms");
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
     RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
                                      &initial_field),
         "rm adjoint");
