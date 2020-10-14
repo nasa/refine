@@ -12,7 +12,7 @@ fi
 
 tecplot=-t
 field="-pd trig"
-egads="-g square.egads"
+egads="--egads square.egads"
 
 function adapt_cycle {
     inproj=$1
@@ -20,22 +20,18 @@ function adapt_cycle {
     complexity=$3
 
     ${src}/ref_acceptance ${field} ${inproj}.meshb \
-	  ${inproj}-primdual.solb
+	  ${inproj}_volume.solb
+    ${src}/ref_gather_test ${inproj}.meshb \
+	  ${inproj}_volume.solb ${inproj}_volume.tec
 
-    ${src}/ref_phys_test --euler-flux ${inproj}.meshb \
-	  ${inproj}-primdual.solb ${inproj}-adjflux.solb
-
-    ${src}/ref_metric_test --opt-goal ${inproj}.meshb \
-	  ${inproj}-adjflux.solb 1 -1 ${complexity} ${inproj}-metric.solb
-
-    ${src}/ref adapt ${inproj}.meshb ${egads} -m ${inproj}-metric.solb \
-	  -x ${outproj}.meshb -f ${outproj}.tec > ${inproj}-adapt.txt
+    ${src}/ref loop ${inproj} ${outproj} ${complexity} \
+	  --opt-goal \
+	  ${egads} -s 5 > ${inproj}-adapt.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
-	  ${outproj}-primdual.solb
-
-    ${src}/ref_gather_test ${outproj}.meshb ${outproj}-primdual.solb \
-	  ${outproj}-primdual.tec
+	  ${outproj}_volume.solb
+    ${src}/ref_gather_test ${outproj}.meshb \
+	  ${outproj}_volume.solb ${outproj}_volume.tec
 }
 
 serveCSM -batch square.csm > square-servecsm.txt
@@ -44,9 +40,9 @@ mv square-vol.meshb cycle00.meshb
 
 adapt_cycle cycle00 cycle01 1000
 adapt_cycle cycle01 cycle02 1000
-adapt_cycle cycle02 cycle03 1000
-adapt_cycle cycle03 cycle04 1000
-adapt_cycle cycle04 cycle05 1000
-adapt_cycle cycle05 cycle06 1000
+adapt_cycle cycle02 cycle03 2000
+adapt_cycle cycle03 cycle04 2000
+adapt_cycle cycle04 cycle05 4000
+adapt_cycle cycle05 cycle06 4000
 
 

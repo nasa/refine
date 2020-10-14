@@ -279,6 +279,12 @@ cd ${source_dir}/acceptance/facebody/trig-fixed-point
 ( ./accept-facebody-trig-fixed-point.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
+LOG=${root_dir}/log.accept-facebody-trig-opt-goal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/trig-opt-goal
+( ./accept-facebody-trig-opt-goal.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
 sleep 10 # allow some tests to complete before making more
 
 LOG=${root_dir}/log.accept-3d-linear
