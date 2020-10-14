@@ -26,7 +26,7 @@ function adapt_cycle {
 
     ${src}/ref loop ${inproj} ${outproj} ${complexity} \
 	  --opt-goal \
-	  ${egads} -s 5 > ${inproj}-adapt.txt
+	  ${egads} -s 5 > ${inproj}-loop.txt
 
     ${src}/ref_acceptance ${field} ${outproj}.meshb \
 	  ${outproj}_volume.solb
