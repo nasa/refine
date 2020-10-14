@@ -1376,15 +1376,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     mesh_extension = argv[pos + 1];
   }
 
-  if (ref_mpi_once(ref_mpi)) {
-    printf("complexity %f\n", complexity);
-    printf("Lp=%d\n", p);
-    printf("gradation %f\n", gradation);
-    printf("reconstruction %d\n", (int)reconstruction);
-    printf("buffer %d (zero is inactive)\n", buffer);
-    printf("interpolant %s\n", interpolant);
-  }
-
   RXS(ref_args_find(argc, argv, "-s", &pos), REF_NOT_FOUND, "arg search");
   if (REF_EMPTY != pos && pos < argc - 1) {
     passes = atoi(argv[pos + 1]);
@@ -1494,6 +1485,13 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     ref_mpi_stopwatch_stop(ref_mpi, "reconstruct scalar");
   }
 
+  if (ref_mpi_once(ref_mpi)) {
+    printf("complexity %f\n", complexity);
+    printf("Lp=%d\n", p);
+    printf("gradation %f\n", gradation);
+    printf("reconstruction %d\n", (int)reconstruction);
+  }
+
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
 
@@ -1502,6 +1500,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       "arg search");
   if (REF_EMPTY != pos) {
     multiscale_metric = REF_FALSE;
+    if (ref_mpi_once(ref_mpi)) printf("--opt-goal metric construction\n");
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, initial_field,
@@ -1523,6 +1522,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     REF_DBL *g;
     multiscale_metric = REF_FALSE;
+    if (ref_mpi_once(ref_mpi)) printf("--cons-euler metric construction\n");
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
@@ -1553,6 +1553,11 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     mach = atof(argv[pos + 1]);
     re = atof(argv[pos + 2]);
     temperature = atof(argv[pos + 3]);
+    if (ref_mpi_once(ref_mpi))
+      printf(
+          "--cons-visc %.3f Mach %.2e Re %.2f temperature metric "
+          "construction\n",
+          mach, re, temperature);
     RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
         "maks");
     ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
@@ -1600,6 +1605,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   if (multiscale_metric) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    if (ref_mpi_once(ref_mpi))
+      printf("computing interpolant %s for multiscale metric\n", interpolant);
     RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
                              scalar),
         "field metric");
