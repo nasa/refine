@@ -1283,6 +1283,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
+  REF_BOOL multiscale_metric;
   REF_INT pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
@@ -1438,46 +1439,49 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
 
+  multiscale_metric = REF_TRUE;
   RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos && pos + 1 < argc) {
+  if (REF_EMPTY != pos) {
+    multiscale_metric = REF_FALSE;
     RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
                                      &initial_field),
         "rm adjoint");
-  } else {
-    RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
-        "arg search");
-    if (REF_EMPTY != pos && pos + 4 < argc) {
-      REF_INT first_timestep, last_timestep, timestep_increment;
-      const char *solb_middle;
-      solb_middle = argv[pos + 1];
-      first_timestep = atoi(argv[pos + 2]);
-      timestep_increment = atoi(argv[pos + 3]);
-      last_timestep = atoi(argv[pos + 4]);
-      if (ref_mpi_once(ref_mpi)) {
-        printf("--fixed-point\n");
-        printf("    %s%s solb project\n", in_project, solb_middle);
-        printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
-               timestep_increment, last_timestep);
-      }
-      RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
-                             timestep_increment, in_project, solb_middle,
-                             reconstruction, p, gradation, complexity),
-          "fixed point");
-    } else {
-      ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-      RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
-                               scalar),
-          "field metric");
-
-      if (ref_mpi_once(ref_mpi))
-        printf("reconstruct Hessian, compute metric\n");
-      RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
-                        gradation, complexity),
-          "lp norm");
-      ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
-      ref_free(scalar);
+  }
+  RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
+      "arg search");
+  printf("pos %d argc %d\n", pos, argc);
+  if (REF_EMPTY != pos && pos + 4 < argc) {
+    REF_INT first_timestep, last_timestep, timestep_increment;
+    const char *solb_middle;
+    multiscale_metric = REF_FALSE;
+    solb_middle = argv[pos + 1];
+    first_timestep = atoi(argv[pos + 2]);
+    timestep_increment = atoi(argv[pos + 3]);
+    last_timestep = atoi(argv[pos + 4]);
+    if (ref_mpi_once(ref_mpi)) {
+      printf("--fixed-point\n");
+      printf("    %s%s solb project\n", in_project, solb_middle);
+      printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
+             timestep_increment, last_timestep);
     }
+    RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
+                           timestep_increment, in_project, solb_middle,
+                           reconstruction, p, gradation, complexity),
+        "fixed point");
+  }
+  if (multiscale_metric) {
+    ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
+                             scalar),
+        "field metric");
+
+    if (ref_mpi_once(ref_mpi)) printf("reconstruct Hessian, compute metric\n");
+    RSS(ref_metric_lp(metric, ref_grid, scalar, NULL, reconstruction, p,
+                      gradation, complexity),
+        "lp norm");
+    ref_mpi_stopwatch_stop(ref_mpi, "compute metric");
+    ref_free(scalar);
   }
 
   if (buffer) {
