@@ -263,8 +263,8 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       mach = ai * mi * ri / (a * r);
       /* fun3d 2D convention */
       u = sin(t) * mach * a;
-      v = 0.0;
-      w = -cos(t) * mach * a;
+      v = -cos(t) * mach * a;
+      w = 0.0;
       (*scalar)[0 + 5 * node] = rho;
       (*scalar)[1 + 5 * node] = u;
       (*scalar)[2 + 5 * node] = v;
@@ -337,8 +337,8 @@ static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
       mach = ai * mi * ri / (a * r);
       /* fun3d 2D convention */
       u = sin(t) * mach * a;
-      v = 0.0;
-      w = -cos(t) * mach * a;
+      v = -cos(t) * mach * a;
+      w = 0.0;
       primitive[0] = rho;
       primitive[1] = u;
       primitive[2] = v;
