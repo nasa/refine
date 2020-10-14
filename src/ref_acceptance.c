@@ -211,6 +211,50 @@ static REF_STATUS ref_acceptance_primal_coax(REF_DBL x, REF_DBL y,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ringleb_v(REF_DBL x, REF_DBL y, REF_DBL *v) {
+  REF_INT i;
+  REF_DBL vp, vc, b, rho, l, denom;
+  vp = 0.5;
+  vc = 0.0;
+  for (i = 0; i < 1000; i++) {
+    RAS(1.0 - 0.2 * vp * vp > 0.0, "about to nan");
+    b = sqrt(1.0 - 0.2 * vp * vp);
+    rho = pow(b, 5);
+    l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
+        0.5 * log((1.0 + b) / (1.0 - b));
+    denom = 2.0 * rho * sqrt(pow(x - 0.5 * l, 2) + y * y);
+    vc = sqrt(1.0 / denom);
+    RAS(isfinite(vc), "nan");
+    if (ABS(vp - vc) < 1.0e-15) {
+      *v = vc;
+      return REF_SUCCESS;
+    }
+    vp = MIN(2.0, vc);
+  }
+  printf("x %f y %f vp %f vc %f err %e\n", x, y, vp, vc, ABS(vp - vc));
+
+  return REF_FAILURE;
+}
+static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
+                                                REF_DBL *primitive) {
+  REF_DBL v, b, rho, p, l, psi, t;
+  RSS(ringleb_v(x, y, &v), "fixed point v");
+  b = sqrt(1.0 - 0.2 * v * v);
+  rho = pow(b, 5);
+  p = pow(b, 7);
+  l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
+      0.5 * log((1.0 + b) / (1.0 - b));
+  psi = sqrt(0.5 / v / v - rho * (x - 0.5 * l));
+  t = asin(psi * v);
+  primitive[0] = rho;
+  primitive[1] = -v * cos(t);
+  primitive[2] = -v * sin(t);
+  primitive[3] = 0;
+  primitive[4] = p;
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                    REF_INT *ldim, REF_DBL **scalar) {
   REF_INT node;
@@ -300,6 +344,14 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                      primitive),
           "coax");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+    } else if (strcmp(function_name, "ringleb") == 0) {
+      REF_INT i;
+      REF_DBL primitive[5];
+      RSS(ref_acceptance_primal_ringleb(ref_node_xyz(ref_node, 0, node),
+                                        ref_node_xyz(ref_node, 1, node),
+                                        primitive),
+          "coax");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
@@ -382,6 +434,15 @@ static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
       RSS(ref_acceptance_primal_coax(ref_node_xyz(ref_node, 0, node),
                                      ref_node_xyz(ref_node, 1, node),
                                      primitive),
+          "coax");
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else if (strcmp(function_name, "ringleb") == 0) {
+      REF_DBL primitive[5], dual[5];
+      RSS(ref_acceptance_primal_ringleb(ref_node_xyz(ref_node, 0, node),
+                                        ref_node_xyz(ref_node, 1, node),
+                                        primitive),
           "coax");
       RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
