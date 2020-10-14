@@ -1528,6 +1528,39 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
                                      &initial_field),
         "rm adjoint");
   }
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {
+    REF_DBL *g;
+    REF_DBL mach, re, temperature;
+    multiscale_metric = REF_FALSE;
+    mach = atof(argv[pos + 1]);
+    re = atof(argv[pos + 2]);
+    temperature = atof(argv[pos + 3]);
+    RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
+        "maks");
+    ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    RSS(ref_metric_cons_euler_g(g, ref_grid, ldim, initial_field,
+                                reconstruction),
+        "cons euler g weights");
+    RSS(ref_metric_cons_viscous_g(g, ref_grid, ldim, initial_field, mach, re,
+                                  temperature, reconstruction),
+        "cons viscous g weights");
+    RSS(ref_metric_cons_assembly(metric, g, ref_grid, ldim, initial_field,
+                                 reconstruction),
+        "cons metric assembly");
+    ref_free(g);
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
+                                     &initial_field),
+        "rm adjoint");
+  }
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
   printf("pos %d argc %d\n", pos, argc);
