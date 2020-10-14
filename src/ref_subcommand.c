@@ -1267,6 +1267,19 @@ static REF_STATUS remove_initial_field_adjoint(REF_NODE ref_node, REF_INT *ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS mask_strong_bc_adjoint(REF_GRID ref_grid,
+                                         REF_DICT ref_dict_bcs, REF_INT ldim,
+                                         REF_DBL *prim_dual) {
+  REF_BOOL *replace;
+  ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+  RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict_bcs, replace, ldim), "mask");
+  RSS(ref_recon_extrapolate_zeroth(ref_grid, prim_dual, replace, ldim),
+      "extrapolate zeroth order");
+  ref_free(replace);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1284,6 +1297,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
   REF_BOOL multiscale_metric;
+  REF_DICT ref_dict_bcs = NULL;
   REF_INT pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
@@ -1356,6 +1370,31 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     passes = atoi(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
+  }
+
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+        "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
   }
 
   sprintf(filename, "%s.meshb", in_project);
@@ -1445,6 +1484,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos) {
     REF_DBL *dual_flux;
     multiscale_metric = REF_FALSE;
+    RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
+        "maks");
     ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(ref_phys_euler_dual_flux(ref_grid, ldim, initial_field, dual_flux),
         "euler dual_flux");
@@ -1700,6 +1741,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
+  RSS(ref_dict_free(ref_dict_bcs), "free");
   RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;

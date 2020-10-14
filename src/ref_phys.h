@@ -45,6 +45,8 @@ REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
 REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
                                     REF_DBL *primitive_dual,
                                     REF_DBL *dual_flux);
+REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
+                                    REF_BOOL *replace, REF_INT ldim);
 
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
 REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags);

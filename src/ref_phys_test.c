@@ -34,41 +34,6 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
-static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
-                                           REF_BOOL *replace, REF_INT ldim) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
-  REF_INT first, last, i, node, bc;
-  REF_INT nequ;
-
-  nequ = 0;
-  if (0 == ldim % 5) nequ = 5;
-  if (0 == ldim % 6) nequ = 6;
-
-  each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < ldim; i++) {
-      replace[i + ldim * node] = REF_FALSE;
-    }
-  }
-
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "dict bc");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      node = nodes[cell_node];
-      if (4000 == bc) {
-        first = nequ + 1; /* first momentum */
-        last = nequ + 4;  /* energy */
-        for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
-        if (6 == nequ) replace[nequ + 5 + ldim * node] = REF_TRUE; /* turb */
-      }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
