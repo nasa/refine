@@ -273,6 +273,24 @@ REF_STATUS ref_mpi_stopwatch_stop(REF_MPI ref_mpi, const char *message) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_mpi_stopwatch_delta(REF_MPI ref_mpi, REF_DBL *delta) {
+#ifdef HAVE_MPI
+  REF_DBL after_barrier;
+  if (ref_mpi_para(ref_mpi)) MPI_Barrier(ref_mpi_comm(ref_mpi));
+  after_barrier = (REF_DBL)MPI_Wtime();
+  after_barrier = after_barrier - ref_mpi->start_time;
+  RSS(ref_mpi_min(ref_mpi, &after_barrier, delta, REF_DBL_TYPE), "max");
+  RSS(ref_mpi_stopwatch_start(ref_mpi), "restart");
+#else
+  clock_t ticks;
+  ticks = clock();
+  *delta = ((REF_DBL)ticks) / ((REF_DBL)CLOCKS_PER_SEC) - ref_mpi->start_time;
+  RSS(ref_mpi_stopwatch_start(ref_mpi), "restart");
+#endif
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_mpi_bcast(REF_MPI ref_mpi, void *data, REF_INT n,
                          REF_TYPE type) {
 #ifdef HAVE_MPI
