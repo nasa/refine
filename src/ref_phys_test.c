@@ -273,8 +273,6 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *primitive_dual, *dual_flux;
     REF_INT ldim;
-    REF_INT node, i, dir;
-    REF_DBL direction[3], state[5], flux[5];
 
     REIS(1, euler_flux_pos,
          "required args: --euler-flux grid.meshb primitive_dual.solb "
@@ -296,38 +294,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
-    REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
+    RAS(10 == ldim || 12 == ldim,
+        "expected 10 (rho,u,v,w,p,5*adj) or 12 primitive_dual");
 
-    if (ref_mpi_once(ref_mpi)) printf("copy dual\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 5; i++) {
-        dual_flux[i + 20 * node] = primitive_dual[5 + i + 10 * node];
-      }
-    }
-
-    if (ref_mpi_once(ref_mpi)) printf("zero flux\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 15; i++) {
-        dual_flux[5 + i + 20 * node] = 0.0;
-      }
-    }
-
-    if (ref_mpi_once(ref_mpi)) printf("Euler flux\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 5; i++) {
-        state[i] = primitive_dual[i + 10 * node];
-      }
-      for (dir = 0; dir < 3; dir++) {
-        direction[0] = 0;
-        direction[1] = 0;
-        direction[2] = 0;
-        direction[dir] = 1;
-        RSS(ref_phys_euler(state, direction, flux), "euler");
-        for (i = 0; i < 5; i++) {
-          dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
-        }
-      }
-    }
+    if (ref_mpi_once(ref_mpi)) printf("form dual_flux\n");
+    RSS(ref_phys_euler_dual_flux(ref_grid, ldim, primitive_dual, dual_flux),
+        "euler dual_flux");
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[4]);
     RSS(ref_gather_scalar_by_extension(ref_grid, 20, dual_flux, NULL, argv[4]),

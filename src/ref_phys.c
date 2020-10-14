@@ -248,6 +248,45 @@ REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
+                                    REF_DBL *primitive_dual,
+                                    REF_DBL *dual_flux) {
+  REF_INT i, node, dir, nvar;
+  REF_DBL direction[3], state[5], flux[5];
+
+  RAS(0 == ldim % 2, "expect even ldim");
+  RAS(ldim >= 10, "expect ldim >= 10");
+  nvar = ldim / 2;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 5; i++) {
+      dual_flux[i + 20 * node] = primitive_dual[nvar + i + ldim * node];
+    }
+  }
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 15; i++) {
+      dual_flux[5 + i + 20 * node] = 0.0;
+    }
+  }
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 5; i++) {
+      state[i] = primitive_dual[i + ldim * node];
+    }
+    for (dir = 0; dir < 3; dir++) {
+      direction[0] = 0;
+      direction[1] = 0;
+      direction[2] = 0;
+      direction[dir] = 1;
+      RSS(ref_phys_euler(state, direction, flux), "euler");
+      for (i = 0; i < 5; i++) {
+        dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename) {
   FILE *file;
   REF_INT i, n, id, type;
