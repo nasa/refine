@@ -1,0 +1,33 @@
+
+despmtr   ri       1.00000
+despmtr   ro       1.38400
+
+skbeg     ro   0   0   0
+   skvar     xy   1.384000;0.000000;0.000000;0.000000;1.384000;0.405364;0.000000;1.000000;0.000000;1.000000;0.000000;-0.292893;
+   skcon     X   1   -1  ro
+   skcon     Y   1   -1  0
+   skcon     V   2   3  0
+   skcon     H   4   1  0
+   skcon     R   1   2  ro
+   skcon     R   3   4  -ri
+   skcon     X   4   -1  ri
+   skcon     X   3   -1  0
+   skcon     Y   2   -1  ro
+   skcon     Y   3   -1  ri
+   arc       ::x[2]   ::y[2]   ::z[2]   ::d[2]   xy
+   linseg    ::x[3]   ::y[3]   ::z[3]
+   arc       ::x[4]   ::y[4]   ::z[4]   ::d[4]   xy
+   linseg    ::x[1]   ::y[1]   ::z[1]
+skend     0
+
+select edge 1
+attribute bc_name $4000_outer
+select edge 2
+attribute bc_name $4000_inflow
+select edge 3
+attribute bc_name $4000_inner
+select edge 4
+attribute bc_name $4000_outflow
+
+
+dump vortex.egads
