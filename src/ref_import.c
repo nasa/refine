@@ -25,6 +25,7 @@
 #include "ref_endian.h"
 #include "ref_malloc.h"
 
+#define VTK_LINE (3)
 #define VTK_TRIANGLE (5)
 #define VTK_QUAD (9)
 #define VTK_TETRA (10)
@@ -732,6 +733,7 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
   if (NULL == (void *)file) printf("unable to open %s\n", filename);
   RNS(file, "unable to open file");
 
+  ndime = -1;
   while (!feof(file)) {
     if (line != fgets(line, 1024, file)) return REF_SUCCESS;
     location = strchr(line, '=');
@@ -739,17 +741,28 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
     if (NULL != strstr(line, "NDIME")) {
       ndime = atoi(location + 1);
       printf("NDIME %d\n", ndime);
+      if (2 == ndime) {
+        ref_grid_twod(ref_grid) = REF_TRUE;
+      }
     }
     if (NULL != strstr(line, "NPOIN")) {
       npoin = atoi(location + 1);
       printf("NPOIN %d\n", npoin);
       for (node = 0; node < npoin; node++) {
         RAS(line == fgets(line, 1024, file), "unable to read point xyz line");
-        REIS(3, sscanf(line, "%lf %lf %lf", &x, &y, &z), "parse xyz");
-        RSS(ref_node_add(ref_node, node, &new_node), "add node");
-        ref_node_xyz(ref_node, 0, new_node) = x;
-        ref_node_xyz(ref_node, 1, new_node) = y;
-        ref_node_xyz(ref_node, 2, new_node) = z;
+        if (2 == ndime) {
+          REIS(2, sscanf(line, "%lf %lf", &x, &y), "parse xyz");
+          RSS(ref_node_add(ref_node, node, &new_node), "add node");
+          ref_node_xyz(ref_node, 0, new_node) = x;
+          ref_node_xyz(ref_node, 1, new_node) = y;
+          ref_node_xyz(ref_node, 2, new_node) = 0.0;
+        } else {
+          REIS(3, sscanf(line, "%lf %lf %lf", &x, &y, &z), "parse xyz");
+          RSS(ref_node_add(ref_node, node, &new_node), "add node");
+          ref_node_xyz(ref_node, 0, new_node) = x;
+          ref_node_xyz(ref_node, 1, new_node) = y;
+          ref_node_xyz(ref_node, 2, new_node) = z;
+        }
       }
       RSS(ref_node_initialize_n_global(ref_node, npoin), "init glob");
     }
@@ -792,6 +805,23 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
                  "parse element");
             RSS(ref_cell_add(ref_grid_hex(ref_grid), nodes, &new_cell), "tri");
             break;
+          case VTK_TRIANGLE:
+            REIS(4,
+                 sscanf(line, "%d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2])),
+                 "parse marker element");
+            nodes[3] = 0;
+            RSS(ref_cell_add(ref_grid_tri(ref_grid), nodes, &new_cell), "tri");
+            break;
+          case VTK_QUAD:
+            REIS(5,
+                 sscanf(line, "%d %d %d %d %d", &cell_type, &(nodes[0]),
+                        &(nodes[1]), &(nodes[2]), &(nodes[3])),
+                 "parse marker element");
+            nodes[4] = 0;
+            RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell), "tri");
+            break;
+
           default:
             printf("cell_type = %d\n", cell_type);
             THROW("unknown SU2/VTK ELEM type");
@@ -832,6 +862,15 @@ static REF_STATUS ref_import_su2(REF_GRID *ref_grid_ptr, REF_MPI ref_mpi,
               nodes[4] = faceid;
               RSS(ref_cell_add(ref_grid_qua(ref_grid), nodes, &new_cell),
                   "tri");
+              break;
+            case VTK_LINE:
+              REIS(3,
+                   sscanf(line, "%d %d %d", &cell_type, &(nodes[0]),
+                          &(nodes[1])),
+                   "parse marker element");
+              nodes[2] = faceid;
+              RSS(ref_cell_add(ref_grid_edg(ref_grid), nodes, &new_cell),
+                  "edg");
               break;
             default:
               printf("cell_type = %d\n", cell_type);
