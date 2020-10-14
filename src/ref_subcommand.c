@@ -1315,15 +1315,21 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   complexity = atof(argv[4]);
 
   p = 2;
-    RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
       "arg search");
-    if (REF_EMPTY != pos) {p = 1;}
+  if (REF_EMPTY != pos) {
+    p = 1;
+  }
   RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos) {p = 1;}
+  if (REF_EMPTY != pos) {
+    p = 1;
+  }
   RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
       "arg search");
-  if (REF_EMPTY != pos && pos + 3 < argc) {p = 1;}
+  if (REF_EMPTY != pos && pos + 3 < argc) {
+    p = 1;
+  }
   RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
