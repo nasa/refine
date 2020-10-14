@@ -156,7 +156,8 @@ static void loop_help(const char *name) {
       " an interpolated solution.\n");
   printf("\n");
   printf("  options:\n");
-  printf("   --norm-power <power> multiscale metric norm power (default 2)\n");
+  printf("   --norm-power <power> multiscale metric norm power.\n");
+  printf("       Default power is 2 (1 for goal-based metrics)\n");
   printf("   --gradation <gradation> (default -1)\n");
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
@@ -1314,6 +1315,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   complexity = atof(argv[4]);
 
   p = 2;
+    RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+      "arg search");
+    if (REF_EMPTY != pos) {p = 1;}
+  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {p = 1;}
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {p = 1;}
   RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
