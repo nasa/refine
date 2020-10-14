@@ -29,6 +29,8 @@ BEGIN_C_DECLORATION
 
 REF_STATUS ref_phys_make_primitive(REF_DBL *conserved, REF_DBL *primitive);
 REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved);
+REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual);
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux);
 REF_STATUS ref_phys_euler_jac(REF_DBL *state, REF_DBL *direction,
                               REF_DBL *dflux_dcons);
@@ -39,6 +41,12 @@ REF_STATUS ref_phys_mut_sa(REF_DBL turb, REF_DBL rho, REF_DBL nu,
                            REF_DBL *mut_sa);
 REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
                              REF_DBL *dir, REF_DBL *flux);
+
+REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
+                                    REF_DBL *primitive_dual,
+                                    REF_DBL *dual_flux);
+REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
+                                    REF_BOOL *replace, REF_INT ldim);
 
 REF_STATUS ref_phys_read_mapbc(REF_DICT ref_dict, const char *mapbc_filename);
 REF_STATUS ref_phys_parse_tags(REF_DICT ref_dict, const char *tags);

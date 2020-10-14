@@ -156,7 +156,8 @@ static void loop_help(const char *name) {
       " an interpolated solution.\n");
   printf("\n");
   printf("  options:\n");
-  printf("   --norm-power <power> multiscale metric norm power (default 2)\n");
+  printf("   --norm-power <power> multiscale metric norm power.\n");
+  printf("       Default power is 2 (1 for goal-based metrics)\n");
   printf("   --gradation <gradation> (default -1)\n");
   printf("       positive: metric-space gradation stretching ratio.\n");
   printf("       negative: mixed-space gradation.\n");
@@ -174,6 +175,12 @@ static void loop_help(const char *name) {
   printf("   --interpolant <type> multiscale scalar field.\n");
   printf("       mach (default), incomp (incompressible vel magnitude),\n");
   printf("       htot, pressure, density, temperature.\n");
+  printf("   --export-metric writes <input_project_name>-metric.solb.\n");
+  printf("   --opt-goal metric of Loseille et al. AIAA 2007--4186.\n");
+  printf("        Include flow and adjoint information in volume.solb.\n");
+  printf("        Use --fun3d-mapbc or --viscous-tags with strong BCs.\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
 
   printf("\n");
 }
@@ -1191,6 +1198,92 @@ static REF_STATUS initial_field_scalar(REF_GRID ref_grid, REF_INT ldim,
   return REF_SUCCESS;
 }
 
+static REF_STATUS fixed_point_metric(
+    REF_DBL *metric, REF_GRID ref_grid, REF_INT first_timestep,
+    REF_INT last_timestep, REF_INT timestep_increment, const char *in_project,
+    const char *solb_middle, REF_RECON_RECONSTRUCTION reconstruction, REF_INT p,
+    REF_DBL gradation, REF_DBL complexity) {
+  REF_MPI ref_mpi = ref_grid_mpi(ref_grid);
+  REF_DBL *hess, *scalar;
+  REF_INT timestep, total_timesteps;
+  char solb_filename[1024];
+  REF_DBL inv_total;
+  REF_INT im, node;
+  REF_INT fixed_point_ldim;
+
+  ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+  total_timesteps = 0;
+  for (timestep = first_timestep; timestep <= last_timestep;
+       timestep += timestep_increment) {
+    snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
+             timestep);
+    if (ref_mpi_once(ref_mpi))
+      printf("read and hess recon for %s\n", solb_filename);
+    RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
+                        solb_filename),
+        "unable to load scalar");
+    REIS(1, fixed_point_ldim, "expected one scalar");
+    RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
+    ref_free(scalar);
+    total_timesteps++;
+    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+      for (im = 0; im < 6; im++) {
+        metric[im + 6 * node] += hess[im + 6 * node];
+      }
+    }
+  }
+  free(hess);
+  ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
+
+  RAS(0 < total_timesteps, "expected one or more timesteps");
+  inv_total = 1.0 / (REF_DBL)total_timesteps;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (im = 0; im < 6; im++) {
+      metric[im + 6 * node] *= inv_total;
+    }
+  }
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+  RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+      "local lp norm scaling");
+  ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
+  RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                         complexity),
+      "gradation at complexity");
+  ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
+  return REF_SUCCESS;
+}
+
+static REF_STATUS remove_initial_field_adjoint(REF_NODE ref_node, REF_INT *ldim,
+                                               REF_DBL **initial_field) {
+  REF_INT i, node;
+  RAS((*ldim) % 2 == 0, "volume field should have a even leading dimension");
+  (*ldim) /= 2;
+  each_ref_node_valid_node(ref_node, node) {
+    if (0 != node) {
+      for (i = 0; i < (*ldim); i++) {
+        (*initial_field)[i + (*ldim) * node] =
+            (*initial_field)[i + (*ldim) + 2 * (*ldim) * node];
+      }
+    }
+  }
+  ref_realloc(*initial_field, (*ldim) * ref_node_max(ref_node), REF_DBL);
+  return REF_SUCCESS;
+}
+
+static REF_STATUS mask_strong_bc_adjoint(REF_GRID ref_grid,
+                                         REF_DICT ref_dict_bcs, REF_INT ldim,
+                                         REF_DBL *prim_dual) {
+  REF_BOOL *replace;
+  ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+  RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict_bcs, replace, ldim), "mask");
+  RSS(ref_recon_extrapolate_zeroth(ref_grid, prim_dual, replace, ldim),
+      "extrapolate zeroth order");
+  ref_free(replace);
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   char *in_project = NULL;
   char *out_project = NULL;
@@ -1207,6 +1300,8 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   REF_DBL gradation = -1.0, complexity;
   REF_RECON_RECONSTRUCTION reconstruction = REF_RECON_L2PROJECTION;
   REF_BOOL buffer = REF_FALSE;
+  REF_BOOL multiscale_metric;
+  REF_DICT ref_dict_bcs = NULL;
   REF_INT pos;
   const char *mach_interpolant = "mach";
   const char *interpolant = mach_interpolant;
@@ -1220,6 +1315,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   complexity = atof(argv[4]);
 
   p = 2;
+    RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+      "arg search");
+    if (REF_EMPTY != pos) {p = 1;}
+  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {p = 1;}
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {p = 1;}
   RXS(ref_args_find(argc, argv, "--norm-power", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
@@ -1279,6 +1383,31 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   if (REF_EMPTY != pos && pos < argc - 1) {
     passes = atoi(argv[pos + 1]);
     if (ref_mpi_once(ref_mpi)) printf("-s %d adaptation passes\n", passes);
+  }
+
+  RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+
+  RXS(ref_args_find(argc, argv, "--fun3d-mapbc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *mapbc;
+    mapbc = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("reading fun3d bc map %s\n", mapbc);
+    RSS(ref_phys_read_mapbc(ref_dict_bcs, mapbc),
+        "unable to read fun3d formatted mapbc");
+  }
+
+  RXS(ref_args_find(argc, argv, "--viscous-tags", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos < argc - 1) {
+    const char *tags;
+    tags = argv[pos + 1];
+    if (ref_mpi_once(ref_mpi)) printf("parsing viscous tags\n");
+    RSS(ref_dict_create(&ref_dict_bcs), "make dict");
+    RSS(ref_phys_parse_tags(ref_dict_bcs, tags),
+        "unable to parse viscous tags");
+    if (ref_mpi_once(ref_mpi))
+      printf(" %d viscous tags parsed\n", ref_dict_n(ref_dict_bcs));
   }
 
   sprintf(filename, "%s.meshb", in_project);
@@ -1362,17 +1491,93 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_malloc_init(metric, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL,
                   0.0);
 
+  multiscale_metric = REF_TRUE;
+  RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    multiscale_metric = REF_FALSE;
+    RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
+        "maks");
+    RSS(ref_metric_belme_gfe(metric, ref_grid, ldim, initial_field,
+                             reconstruction),
+        "add nonlinear terms");
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
+                                     &initial_field),
+        "rm adjoint");
+  }
+  RXS(ref_args_find(argc, argv, "--cons-euler", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    REF_DBL *g;
+    multiscale_metric = REF_FALSE;
+    RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
+        "maks");
+    ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    RSS(ref_metric_cons_euler_g(g, ref_grid, ldim, initial_field,
+                                reconstruction),
+        "cons euler g weights");
+    RSS(ref_metric_cons_assembly(metric, g, ref_grid, ldim, initial_field,
+                                 reconstruction),
+        "cons metric assembly");
+    ref_free(g);
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
+                                     &initial_field),
+        "rm adjoint");
+  }
+  RXS(ref_args_find(argc, argv, "--cons-visc", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos && pos + 3 < argc) {
+    REF_DBL *g;
+    REF_DBL mach, re, temperature;
+    multiscale_metric = REF_FALSE;
+    mach = atof(argv[pos + 1]);
+    re = atof(argv[pos + 2]);
+    temperature = atof(argv[pos + 3]);
+    RSS(mask_strong_bc_adjoint(ref_grid, ref_dict_bcs, ldim, initial_field),
+        "maks");
+    ref_malloc_init(g, 5 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL, 0.0);
+    RSS(ref_metric_cons_euler_g(g, ref_grid, ldim, initial_field,
+                                reconstruction),
+        "cons euler g weights");
+    RSS(ref_metric_cons_viscous_g(g, ref_grid, ldim, initial_field, mach, re,
+                                  temperature, reconstruction),
+        "cons viscous g weights");
+    RSS(ref_metric_cons_assembly(metric, g, ref_grid, ldim, initial_field,
+                                 reconstruction),
+        "cons metric assembly");
+    ref_free(g);
+    RSS(ref_recon_roundoff_limit(metric, ref_grid),
+        "floor metric eigenvalues based on grid size and solution jitter");
+    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
+        "local scale lp norm");
+    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
+                                           complexity),
+        "gradation at complexity");
+    RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
+                                     &initial_field),
+        "rm adjoint");
+  }
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
+  printf("pos %d argc %d\n", pos, argc);
   if (REF_EMPTY != pos && pos + 4 < argc) {
-    REF_DBL *hess;
     REF_INT first_timestep, last_timestep, timestep_increment;
-    REF_INT timestep, total_timesteps;
     const char *solb_middle;
-    char solb_filename[1024];
-    REF_DBL inv_total;
-    REF_INT im, node;
-    REF_INT fixed_point_ldim;
+    multiscale_metric = REF_FALSE;
     solb_middle = argv[pos + 1];
     first_timestep = atoi(argv[pos + 2]);
     timestep_increment = atoi(argv[pos + 3]);
@@ -1383,47 +1588,12 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
       printf("    timesteps [%d ... %d ... %d]\n", first_timestep,
              timestep_increment, last_timestep);
     }
-    ref_malloc(hess, 6 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
-    total_timesteps = 0;
-    for (timestep = first_timestep; timestep <= last_timestep;
-         timestep += timestep_increment) {
-      snprintf(solb_filename, 1024, "%s%s%d.solb", in_project, solb_middle,
-               timestep);
-      if (ref_mpi_once(ref_mpi))
-        printf("read and hess recon for %s\n", solb_filename);
-      RSS(ref_part_scalar(ref_grid_node(ref_grid), &fixed_point_ldim, &scalar,
-                          solb_filename),
-          "unable to load scalar");
-      REIS(1, fixed_point_ldim, "expected one scalar");
-      RSS(ref_recon_hessian(ref_grid, scalar, hess, reconstruction), "hess");
-      ref_free(scalar);
-      total_timesteps++;
-      each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-        for (im = 0; im < 6; im++) {
-          metric[im + 6 * node] += hess[im + 6 * node];
-        }
-      }
-    }
-    free(hess);
-    ref_mpi_stopwatch_stop(ref_mpi, "all timesteps processed");
-
-    RAS(0 < total_timesteps, "expected one or more timesteps");
-    inv_total = 1.0 / (REF_DBL)total_timesteps;
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (im = 0; im < 6; im++) {
-        metric[im + 6 * node] *= inv_total;
-      }
-    }
-
-    RSS(ref_metric_local_scale(metric, NULL, ref_grid, p),
-        "local lp norm scaling");
-    ref_mpi_stopwatch_stop(ref_mpi, "local scale metric");
-    RSS(ref_metric_gradation_at_complexity(metric, ref_grid, gradation,
-                                           complexity),
-        "gradation at complexity");
-    ref_mpi_stopwatch_stop(ref_mpi, "metric gradation and complexity");
-
-  } else {
+    RSS(fixed_point_metric(metric, ref_grid, first_timestep, last_timestep,
+                           timestep_increment, in_project, solb_middle,
+                           reconstruction, p, gradation, complexity),
+        "fixed point");
+  }
+  if (multiscale_metric) {
     ref_malloc(scalar, ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
     RSS(initial_field_scalar(ref_grid, ldim, initial_field, interpolant,
                              scalar),
@@ -1476,6 +1646,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RSS(ref_histogram_quality(ref_grid), "gram");
   RSS(ref_histogram_ratio(ref_grid), "gram");
   ref_mpi_stopwatch_stop(ref_mpi, "histogram");
+
+  RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
+      "arg search");
+  if (REF_EMPTY != pos) {
+    sprintf(filename, "%s-metric.solb", in_project);
+    if (ref_mpi_once(ref_mpi)) printf("export metric to %s\n", filename);
+    RSS(ref_gather_metric(ref_grid, filename), "export metric");
+    ref_mpi_stopwatch_stop(ref_mpi, "export metric");
+  }
 
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
@@ -1636,6 +1815,7 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     }
   }
 
+  RSS(ref_dict_free(ref_dict_bcs), "free");
   RSS(ref_grid_free(ref_grid), "free");
 
   return REF_SUCCESS;

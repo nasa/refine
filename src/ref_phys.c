@@ -61,6 +61,26 @@ REF_STATUS ref_phys_make_conserved(REF_DBL *primitive, REF_DBL *conserved) {
   return REF_SUCCESS;
 }
 
+REF_STATUS ref_phys_entropy_adjoint(REF_DBL *primitive, REF_DBL *dual) {
+  REF_DBL rho, u, v, w, p, s, vel2;
+  REF_DBL gamma = 1.4;
+  rho = primitive[0];
+  u = primitive[1];
+  v = primitive[2];
+  w = primitive[3];
+  p = primitive[4];
+  /* entropy adjoint, Equ. (11), AIAA 2009-3790 */
+  s = log(p / pow(rho, gamma));
+  vel2 = u * u + v * v + w * w;
+  dual[0] = (gamma - s) / (gamma - 1.0) - 0.5 * rho * vel2 / p;
+  dual[1] = rho * u / p;
+  dual[2] = rho * v / p;
+  dual[3] = rho * w / p;
+  dual[4] = -rho / p;
+
+  return REF_SUCCESS;
+}
+
 REF_STATUS ref_phys_euler(REF_DBL *state, REF_DBL *direction, REF_DBL *flux) {
   REF_DBL rho, u, v, w, p, e, speed;
   REF_DBL gamma = 1.4;
@@ -224,6 +244,84 @@ REF_STATUS ref_phys_convdiff(REF_DBL *state, REF_DBL *grad, REF_DBL diffusivity,
   flux[0] = ref_math_dot(dir, velocity) * state[0];
 
   flux[0] -= diffusivity * ref_math_dot(dir, grad);
+
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_euler_dual_flux(REF_GRID ref_grid, REF_INT ldim,
+                                    REF_DBL *primitive_dual,
+                                    REF_DBL *dual_flux) {
+  REF_INT i, node, dir, nvar;
+  REF_DBL direction[3], state[5], flux[5];
+
+  RAS(0 == ldim % 2, "expect even ldim");
+  RAS(ldim >= 10, "expect ldim >= 10");
+  nvar = ldim / 2;
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 5; i++) {
+      dual_flux[i + 20 * node] = primitive_dual[nvar + i + ldim * node];
+    }
+  }
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 15; i++) {
+      dual_flux[5 + i + 20 * node] = 0.0;
+    }
+  }
+
+  each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
+    for (i = 0; i < 5; i++) {
+      state[i] = primitive_dual[i + ldim * node];
+    }
+    for (dir = 0; dir < 3; dir++) {
+      direction[0] = 0;
+      direction[1] = 0;
+      direction[2] = 0;
+      direction[dir] = 1;
+      RSS(ref_phys_euler(state, direction, flux), "euler");
+      for (i = 0; i < 5; i++) {
+        dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
+      }
+    }
+  }
+  return REF_SUCCESS;
+}
+
+REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
+                                    REF_BOOL *replace, REF_INT ldim) {
+  REF_NODE ref_node = ref_grid_node(ref_grid);
+  REF_CELL ref_cell;
+  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
+  REF_INT first, last, i, node, bc;
+  REF_INT nequ;
+
+  nequ = 0;
+  if (0 == ldim % 5) nequ = 5;
+  if (0 == ldim % 6) nequ = 6;
+
+  each_ref_node_valid_node(ref_node, node) {
+    for (i = 0; i < ldim; i++) {
+      replace[i + ldim * node] = REF_FALSE;
+    }
+  }
+
+  ref_cell = ref_grid_tri(ref_grid);
+  if (ref_grid_twod(ref_grid)) ref_cell = ref_grid_edg(ref_grid);
+
+  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
+    bc = REF_EMPTY;
+    RXS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
+        REF_NOT_FOUND, "bc");
+    each_ref_cell_cell_node(ref_cell, cell_node) {
+      node = nodes[cell_node];
+      if (4000 == bc) {
+        first = nequ + 1; /* first momentum */
+        last = nequ + 4;  /* energy */
+        for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
+        if (6 == nequ) replace[nequ + 5 + ldim * node] = REF_TRUE; /* turb */
+      }
+    }
+  }
 
   return REF_SUCCESS;
 }

@@ -1944,6 +1944,9 @@ REF_STATUS ref_metric_opt_goal(REF_DBL *metric, REF_GRID ref_grid,
     }
   }
 
+  RSS(ref_recon_roundoff_limit(metric, ref_grid),
+      "floor metric eigenvalues based on grid size and solution jitter");
+
   RSS(ref_metric_local_scale(metric, NULL, ref_grid, p_norm),
       "local scale lp norm");
 

@@ -34,41 +34,6 @@
 #include "ref_part.h"
 #include "ref_recon.h"
 
-static REF_STATUS ref_phys_mask_strong_bcs(REF_GRID ref_grid, REF_DICT ref_dict,
-                                           REF_BOOL *replace, REF_INT ldim) {
-  REF_NODE ref_node = ref_grid_node(ref_grid);
-  REF_CELL ref_cell = ref_grid_tri(ref_grid);
-  REF_INT cell, nodes[REF_CELL_MAX_SIZE_PER], cell_node;
-  REF_INT first, last, i, node, bc;
-  REF_INT nequ;
-
-  nequ = 0;
-  if (0 == ldim % 5) nequ = 5;
-  if (0 == ldim % 6) nequ = 6;
-
-  each_ref_node_valid_node(ref_node, node) {
-    for (i = 0; i < ldim; i++) {
-      replace[i + ldim * node] = REF_FALSE;
-    }
-  }
-
-  each_ref_cell_valid_cell_with_nodes(ref_cell, cell, nodes) {
-    RSS(ref_dict_value(ref_dict, nodes[ref_cell_id_index(ref_cell)], &bc),
-        "dict bc");
-    each_ref_cell_cell_node(ref_cell, cell_node) {
-      node = nodes[cell_node];
-      if (4000 == bc) {
-        first = nequ + 1; /* first momentum */
-        last = nequ + 4;  /* energy */
-        for (i = first; i <= last; i++) replace[i + ldim * node] = REF_TRUE;
-        if (6 == nequ) replace[nequ + 5 + ldim * node] = REF_TRUE; /* turb */
-      }
-    }
-  }
-
-  return REF_SUCCESS;
-}
-
 int main(int argc, char *argv[]) {
   REF_INT laminar_flux_pos = REF_EMPTY;
   REF_INT euler_flux_pos = REF_EMPTY;
@@ -273,8 +238,6 @@ int main(int argc, char *argv[]) {
     REF_GRID ref_grid;
     REF_DBL *primitive_dual, *dual_flux;
     REF_INT ldim;
-    REF_INT node, i, dir;
-    REF_DBL direction[3], state[5], flux[5];
 
     REIS(1, euler_flux_pos,
          "required args: --euler-flux grid.meshb primitive_dual.solb "
@@ -296,38 +259,12 @@ int main(int argc, char *argv[]) {
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &primitive_dual,
                         argv[3]),
         "unable to load primitive_dual in position 3");
-    REIS(10, ldim, "expected 10 (rho,u,v,w,p,5*adj) primitive_dual");
+    RAS(10 == ldim || 12 == ldim,
+        "expected 10 (rho,u,v,w,p,5*adj) or 12 primitive_dual");
 
-    if (ref_mpi_once(ref_mpi)) printf("copy dual\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 5; i++) {
-        dual_flux[i + 20 * node] = primitive_dual[5 + i + 10 * node];
-      }
-    }
-
-    if (ref_mpi_once(ref_mpi)) printf("zero flux\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 15; i++) {
-        dual_flux[5 + i + 20 * node] = 0.0;
-      }
-    }
-
-    if (ref_mpi_once(ref_mpi)) printf("Euler flux\n");
-    each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
-      for (i = 0; i < 5; i++) {
-        state[i] = primitive_dual[i + 10 * node];
-      }
-      for (dir = 0; dir < 3; dir++) {
-        direction[0] = 0;
-        direction[1] = 0;
-        direction[2] = 0;
-        direction[dir] = 1;
-        RSS(ref_phys_euler(state, direction, flux), "euler");
-        for (i = 0; i < 5; i++) {
-          dual_flux[i + 5 + 5 * dir + 20 * node] += flux[i];
-        }
-      }
-    }
+    if (ref_mpi_once(ref_mpi)) printf("form dual_flux\n");
+    RSS(ref_phys_euler_dual_flux(ref_grid, ldim, primitive_dual, dual_flux),
+        "euler dual_flux");
 
     if (ref_mpi_once(ref_mpi)) printf("writing dual_flux %s\n", argv[4]);
     RSS(ref_gather_scalar_by_extension(ref_grid, 20, dual_flux, NULL, argv[4]),
@@ -634,7 +571,7 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  {
+  { /* converts primitive and conserved */
     REF_DBL state[5];
     REF_DBL primitive[5];
     REF_DBL conserved[5];
@@ -650,6 +587,22 @@ int main(int argc, char *argv[]) {
     RWDS(state[2], primitive[2], -1, "v");
     RWDS(state[3], primitive[3], -1, "w");
     RWDS(state[4], primitive[4], -1, "p");
+  }
+
+  { /* entropy adjoint */
+    REF_DBL primitive[5];
+    REF_DBL dual[5];
+    primitive[0] = 1.0;
+    primitive[1] = 0.5;
+    primitive[2] = 0.1;
+    primitive[3] = 0.2;
+    primitive[4] = 0.8 / 1.4;
+    RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+    RWDS(4.636539469838557, dual[0], -1, "cont");
+    RWDS(0.875, dual[1], -1, "x-mom");
+    RWDS(0.175, dual[2], -1, "y-mom");
+    RWDS(0.35, dual[3], -1, "z-mom");
+    RWDS(-1.75, dual[4], -1, "energy");
   }
 
   { /* x-Euler flux */
@@ -1091,6 +1044,8 @@ int main(int argc, char *argv[]) {
     FILE *f;
     REF_INT i, node, ldim;
     REF_DBL *field;
+    REF_DICT ref_dict;
+    REF_BOOL *replace;
 
     if (ref_mpi_once(ref_mpi)) {
       RSS(ref_fixture_tet_brick_grid(&ref_grid, ref_mpi), "brick");
@@ -1121,15 +1076,19 @@ int main(int argc, char *argv[]) {
 
     RSS(ref_part_by_extension(&ref_grid, ref_mpi, "ref_phys_test.meshb"),
         "import");
-    REIS(
-        0,
-        system("./ref_phys_test --mask ref_phys_test.meshb ref_phys_test.mapbc "
-               "ref_phys_test.solb ref_phys_test_replace.solb > /dev/null"),
-        "mask");
-
     RSS(ref_part_scalar(ref_grid_node(ref_grid), &ldim, &field,
-                        "ref_phys_test_replace.solb"),
+                        "ref_phys_test.solb"),
         "part field");
+
+    RSS(ref_dict_create(&ref_dict), "create");
+    RSS(ref_phys_read_mapbc(ref_dict, "ref_phys_test.mapbc"),
+        "unable to mapbc");
+    ref_malloc(replace, ldim * ref_node_max(ref_grid_node(ref_grid)), REF_BOOL);
+    RSS(ref_phys_mask_strong_bcs(ref_grid, ref_dict, replace, ldim), "mask");
+    RSS(ref_dict_free(ref_dict), "free");
+    RSS(ref_recon_extrapolate_zeroth(ref_grid, field, replace, ldim),
+        "extrapolate zeroth order");
+    ref_free(replace);
 
     each_ref_node_valid_node(ref_grid_node(ref_grid), node) {
       for (i = 6; i < 10; i++) {
@@ -1140,7 +1099,6 @@ int main(int argc, char *argv[]) {
       REIS(0, remove("ref_phys_test.meshb"), "meshb clean up");
       REIS(0, remove("ref_phys_test.mapbc"), "mapbc clean up");
       REIS(0, remove("ref_phys_test.solb"), "solb clean up");
-      REIS(0, remove("ref_phys_test_replace.solb"), "solb clean up");
     }
 
     ref_free(field);
