@@ -244,6 +244,32 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       (*scalar)[2 + 5 * node] = v;
       (*scalar)[3 + 5 * node] = w;
       (*scalar)[4 + 5 * node] = pressure;
+    } else if (strcmp(function_name, "vortex") == 0) {
+      REF_DBL gamma = 1.4;
+      REF_DBL rho, pressure, u, v, w, mach;
+      REF_DBL ri = 1.0, mi = 2.25;
+      REF_DBL rhoi = 1.0, pi = 1.0 / gamma, ai = 1.0;
+      REF_DBL base, a, r, t;
+      /* real 2D mesh */
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      base = 1 - pow(ri / r, 2);
+      base = 1 + 0.5 * (gamma + 1.0) * mi * mi * base;
+      rho = rhoi * pow(base, 1.0 / (gamma - 1.0));
+      pressure = pi * pow(base, gamma / (gamma - 1.0));
+      a = sqrt(gamma * pressure / rho);
+      mach = ai * mi * ri / (a * r);
+      /* fun3d 2D convention */
+      u = sin(t) * mach * a;
+      v = 0.0;
+      w = cos(t) * mach * a;
+      (*scalar)[0 + 5 * node] = rho;
+      (*scalar)[1 + 5 * node] = u;
+      (*scalar)[2 + 5 * node] = v;
+      (*scalar)[3 + 5 * node] = w;
+      (*scalar)[4 + 5 * node] = pressure;
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
