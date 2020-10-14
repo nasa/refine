@@ -245,7 +245,12 @@ static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
   l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
       0.5 * log((1.0 + b) / (1.0 - b));
   psi = sqrt(0.5 / v / v - rho * (x - 0.5 * l));
-  t = asin(psi * v);
+  if(psi * v < (1.0-1.e14)){
+    t = asin(psi * v);
+  }else{
+    t = 0.5* ref_math_pi;
+  }
+  RAS(isfinite(t), "theta is not finite");
   primitive[0] = rho;
   primitive[1] = -v * cos(t);
   primitive[2] = -v * sin(t);
