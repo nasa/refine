@@ -1579,7 +1579,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
   RXS(ref_args_find(argc, argv, "--fixed-point", &pos), REF_NOT_FOUND,
       "arg search");
-  printf("pos %d argc %d\n", pos, argc);
   if (REF_EMPTY != pos && pos + 4 < argc) {
     REF_INT first_timestep, last_timestep, timestep_increment;
     const char *solb_middle;
