@@ -481,9 +481,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
   }
 
   RSS(ref_validation_cell_volume(ref_grid), "vol");
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
 
   RSS(ref_migrate_to_balance(ref_grid), "balance");
   RSS(ref_grid_pack(ref_grid), "pack");
@@ -515,9 +512,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
       ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     }
     RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
-    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
@@ -792,12 +786,6 @@ static REF_STATUS bootstrap(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_mpi_stopwatch_stop(ref_mpi, "export volume");
 
   RSS(ref_validation_cell_volume(ref_grid), "vol");
-
-  RSS(ref_metric_interpolated_curvature(ref_grid), "interp curve");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "curvature");
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "histogram");
 
   RSS(ref_grid_free(ref_grid), "free grid");
 
@@ -1654,10 +1642,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   ref_free(initial_field);
   ref_mpi_stopwatch_stop(ref_mpi, "cache background metric and field");
 
-  RSS(ref_histogram_quality(ref_grid), "gram");
-  RSS(ref_histogram_ratio(ref_grid), "gram");
-  ref_mpi_stopwatch_stop(ref_mpi, "histogram");
-
   RXS(ref_args_find(argc, argv, "--export-metric", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
@@ -1681,9 +1665,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     RSS(ref_metric_synchronize(ref_grid), "sync with background");
     ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     RSS(ref_validation_cell_volume(ref_grid), "vol");
-    RSS(ref_histogram_quality(ref_grid), "gram");
-    RSS(ref_histogram_ratio(ref_grid), "gram");
-    ref_mpi_stopwatch_stop(ref_mpi, "histogram");
     RSS(ref_adapt_tattle_faces(ref_grid), "tattle");
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "tattle faces");
     RSS(ref_migrate_to_balance(ref_grid), "balance");
