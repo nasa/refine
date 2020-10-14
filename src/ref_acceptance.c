@@ -189,6 +189,77 @@ static REF_STATUS ref_acceptance_u(REF_NODE ref_node, const char *function_name,
   return REF_SUCCESS;
 }
 
+static REF_STATUS ref_acceptance_primal_coax(REF_DBL x, REF_DBL y,
+                                             REF_DBL *primitive) {
+  REF_DBL r2 = 1.384, r1 = 1.0;
+  REF_DBL r, t;
+  REF_DBL o2 = 0.4, o1 = 0.1;
+  REF_DBL a, b;
+  REF_DBL u, p;
+  a = (o2 * r2 * r2 - o1 * r1 * r1) / (r2 * r2 - r1 * r1);
+  b = (o1 - o2) * r2 * r2 * r1 * r1 / (r2 * r2 - r1 * r1);
+
+  r = sqrt(x * x + y * y);
+  t = atan2(y, x);
+  u = a * r + b / r;
+  p = a * a * r * r / 2.0 + 2.0 * a * b * log(r) - b * b / (2 * r * r);
+  primitive[0] = 1.0;
+  primitive[1] = sin(t) * u;
+  primitive[2] = -cos(t) * u;
+  primitive[3] = 0;
+  primitive[4] = p / 1.4;
+  return REF_SUCCESS;
+}
+
+static REF_STATUS ringleb_v(REF_DBL x, REF_DBL y, REF_DBL *v) {
+  REF_INT i;
+  REF_DBL vp, vc, b, rho, l, denom;
+  vp = 0.5;
+  vc = 0.0;
+  for (i = 0; i < 1000; i++) {
+    RAS(1.0 - 0.2 * vp * vp > 0.0, "about to nan");
+    b = sqrt(1.0 - 0.2 * vp * vp);
+    rho = pow(b, 5);
+    l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
+        0.5 * log((1.0 + b) / (1.0 - b));
+    denom = 2.0 * rho * sqrt(pow(x - 0.5 * l, 2) + y * y);
+    vc = sqrt(1.0 / denom);
+    RAS(isfinite(vc), "nan");
+    if (ABS(vp - vc) < 1.0e-15) {
+      *v = vc;
+      return REF_SUCCESS;
+    }
+    vp = MIN(2.0, vc);
+  }
+  printf("x %f y %f vp %f vc %f err %e\n", x, y, vp, vc, ABS(vp - vc));
+
+  return REF_FAILURE;
+}
+static REF_STATUS ref_acceptance_primal_ringleb(REF_DBL x, REF_DBL y,
+                                                REF_DBL *primitive) {
+  REF_DBL v, b, rho, p, l, psi, t;
+  RSS(ringleb_v(x, y, &v), "fixed point v");
+  b = sqrt(1.0 - 0.2 * v * v);
+  rho = pow(b, 5);
+  p = pow(b, 7);
+  l = 1.0 / b + 1.0 / 3.0 / pow(b, 3) + 1.0 / 5.0 / pow(b, 5) -
+      0.5 * log((1.0 + b) / (1.0 - b));
+  psi = sqrt(0.5 / v / v - rho * (x - 0.5 * l));
+  if(psi * v < (1.0-1.e14)){
+    t = asin(psi * v);
+  }else{
+    t = 0.5* ref_math_pi;
+  }
+  RAS(isfinite(t), "theta is not finite");
+  primitive[0] = rho;
+  primitive[1] = -v * cos(t);
+  primitive[2] = -v * sin(t);
+  primitive[3] = 0;
+  primitive[4] = p;
+
+  return REF_SUCCESS;
+}
+
 static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
                                    REF_INT *ldim, REF_DBL **scalar) {
   REF_INT node;
@@ -244,6 +315,48 @@ static REF_STATUS ref_acceptance_q(REF_NODE ref_node, const char *function_name,
       (*scalar)[2 + 5 * node] = v;
       (*scalar)[3 + 5 * node] = w;
       (*scalar)[4 + 5 * node] = pressure;
+    } else if (strcmp(function_name, "vortex") == 0) {
+      REF_DBL gamma = 1.4;
+      REF_DBL rho, pressure, u, v, w, mach;
+      REF_DBL ri = 1.0, mi = 2.25;
+      REF_DBL rhoi = 1.0, pi = 1.0 / gamma, ai = 1.0;
+      REF_DBL base, a, r, t;
+      /* real 2D mesh */
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      base = 1 - pow(ri / r, 2);
+      base = 1 + 0.5 * (gamma + 1.0) * mi * mi * base;
+      rho = rhoi * pow(base, 1.0 / (gamma - 1.0));
+      pressure = pi * pow(base, gamma / (gamma - 1.0));
+      a = sqrt(gamma * pressure / rho);
+      mach = ai * mi * ri / (a * r);
+      /* fun3d 2D convention */
+      u = sin(t) * mach * a;
+      v = -cos(t) * mach * a;
+      w = 0.0;
+      (*scalar)[0 + 5 * node] = rho;
+      (*scalar)[1 + 5 * node] = u;
+      (*scalar)[2 + 5 * node] = v;
+      (*scalar)[3 + 5 * node] = w;
+      (*scalar)[4 + 5 * node] = pressure;
+    } else if (strcmp(function_name, "coax") == 0) {
+      REF_INT i;
+      REF_DBL primitive[5];
+      RSS(ref_acceptance_primal_coax(ref_node_xyz(ref_node, 0, node),
+                                     ref_node_xyz(ref_node, 1, node),
+                                     primitive),
+          "coax");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+    } else if (strcmp(function_name, "ringleb") == 0) {
+      REF_INT i;
+      REF_DBL primitive[5];
+      RSS(ref_acceptance_primal_ringleb(ref_node_xyz(ref_node, 0, node),
+                                        ref_node_xyz(ref_node, 1, node),
+                                        primitive),
+          "coax");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
     } else {
       printf("%s: %d: %s %s\n", __FILE__, __LINE__, "unknown user function",
              function_name);
@@ -288,6 +401,54 @@ static REF_STATUS ref_acceptance_pd(REF_NODE ref_node,
       primitive[2] = v;
       primitive[3] = w;
       primitive[4] = pressure;
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else if (strcmp(function_name, "vortex") == 0) {
+      REF_DBL gamma = 1.4;
+      REF_DBL rho, pressure, u, v, w, mach;
+      REF_DBL ri = 1.0, mi = 2.25;
+      REF_DBL rhoi = 1.0, pi = 1.0 / gamma, ai = 1.0;
+      REF_DBL base, a, r, t;
+      REF_DBL primitive[5], dual[5];
+      /* real 2D mesh */
+      x = ref_node_xyz(ref_node, 0, node);
+      y = ref_node_xyz(ref_node, 1, node);
+      r = sqrt(x * x + y * y);
+      t = atan2(y, x);
+      base = 1 - pow(ri / r, 2);
+      base = 1 + 0.5 * (gamma + 1.0) * mi * mi * base;
+      rho = rhoi * pow(base, 1.0 / (gamma - 1.0));
+      pressure = pi * pow(base, gamma / (gamma - 1.0));
+      a = sqrt(gamma * pressure / rho);
+      mach = ai * mi * ri / (a * r);
+      /* fun3d 2D convention */
+      u = sin(t) * mach * a;
+      v = -cos(t) * mach * a;
+      w = 0.0;
+      primitive[0] = rho;
+      primitive[1] = u;
+      primitive[2] = v;
+      primitive[3] = w;
+      primitive[4] = pressure;
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else if (strcmp(function_name, "coax") == 0) {
+      REF_DBL primitive[5], dual[5];
+      RSS(ref_acceptance_primal_coax(ref_node_xyz(ref_node, 0, node),
+                                     ref_node_xyz(ref_node, 1, node),
+                                     primitive),
+          "coax");
+      RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
+      for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
+      for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
+    } else if (strcmp(function_name, "ringleb") == 0) {
+      REF_DBL primitive[5], dual[5];
+      RSS(ref_acceptance_primal_ringleb(ref_node_xyz(ref_node, 0, node),
+                                        ref_node_xyz(ref_node, 1, node),
+                                        primitive),
+          "coax");
       RSS(ref_phys_entropy_adjoint(primitive, dual), "entropy adj");
       for (i = 0; i < 5; i++) (*scalar)[i + (*ldim) * node] = primitive[i];
       for (i = 0; i < 5; i++) (*scalar)[i + 5 + (*ldim) * node] = dual[i];
