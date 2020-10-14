@@ -175,8 +175,11 @@ static void loop_help(const char *name) {
   printf("       mach (default), incomp (incompressible vel magnitude),\n");
   printf("       htot, pressure, density, temperature.\n");
   printf("   --export-metric writes <input_project_name>-metric.solb.\n");
-  printf("   --opt-goal metric of AIAA 2007--4186.\n");
+  printf("   --opt-goal metric of Loseille et al. AIAA 2007--4186.\n");
   printf("        Include flow and adjoint information in volume.solb.\n");
+  printf("        Use --fun3d-mapbc or --viscous-tags with strong BCs.\n");
+  printf("  --fun3d-mapbc fun3d_format.mapbc\n");
+  printf("  --viscous-tags <comma-separated list of viscous boundary tags>\n");
 
   printf("\n");
 }
