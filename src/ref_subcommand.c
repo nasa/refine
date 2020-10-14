@@ -1443,7 +1443,15 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
   RXS(ref_args_find(argc, argv, "--opt-goal", &pos), REF_NOT_FOUND,
       "arg search");
   if (REF_EMPTY != pos) {
+    REF_DBL *dual_flux;
     multiscale_metric = REF_FALSE;
+    ref_malloc(dual_flux, 20 * ref_node_max(ref_grid_node(ref_grid)), REF_DBL);
+    RSS(ref_phys_euler_dual_flux(ref_grid, ldim, initial_field, dual_flux),
+        "euler dual_flux");
+    RSS(ref_metric_opt_goal(metric, ref_grid, 5, dual_flux, reconstruction, p,
+                            gradation, complexity),
+        "opt goal");
+    ref_free(dual_flux);
     RSS(remove_initial_field_adjoint(ref_grid_node(ref_grid), &ldim,
                                      &initial_field),
         "rm adjoint");
