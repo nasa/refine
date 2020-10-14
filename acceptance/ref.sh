@@ -297,10 +297,16 @@ cd ${source_dir}/acceptance/facebody/trig-cons-visc
 ( ./accept-facebody-trig-cons-visc.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
-LOG=${root_dir}/log.accept-facebody-vortex-cons-visc
+LOG=${root_dir}/log.accept-facebody-vortex-multi
 trap "cat $LOG" EXIT
-cd ${source_dir}/acceptance/facebody/vortex-cons-visc
-( ./accept-facebody-vortex-cons-visc.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+cd ${source_dir}/acceptance/facebody/vortex-multi
+( ./accept-facebody-vortex-multi.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
+trap - EXIT
+
+LOG=${root_dir}/log.accept-facebody-vortex-opt-goal
+trap "cat $LOG" EXIT
+cd ${source_dir}/acceptance/facebody/vortex-opt-goal
+( ./accept-facebody-vortex-opt-goal.sh ${egads_dir} > $LOG 2>&1 || touch FAILED ) &
 trap - EXIT
 
 sleep 10 # allow some tests to complete before making more
