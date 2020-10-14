@@ -1737,7 +1737,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
 
   if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol nogeom edge");
 
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 0)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov edge");
 
   /* smooth faces if we have geom, but skip edges */
@@ -1786,7 +1786,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
 
   if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol face nogeom");
 
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 0)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov face");
 
   /* smooth interior */
@@ -1811,7 +1811,7 @@ REF_STATUS ref_smooth_pass(REF_GRID ref_grid) {
 
   if (vol_val) RSS(ref_validation_cell_volume(ref_grid), "vol int");
 
-  if (ref_grid_adapt(ref_grid, instrument))
+  if (ref_grid_adapt(ref_grid, timing_level) > 0)
     ref_mpi_stopwatch_stop(ref_grid_mpi(ref_grid), "mov int");
 
   /* smooth low quality tets */

@@ -496,7 +496,6 @@ static REF_STATUS adapt(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
-    ref_mpi_stopwatch_stop(ref_mpi, "pass");
     if (curvature_metric) {
       if (spalding_yplus > 0.0) {
         RSS(spalding_metric(ref_grid, ref_dict_bcs, spalding_yplus, complexity),
@@ -1679,7 +1678,6 @@ static REF_STATUS loop(REF_MPI ref_mpi, int argc, char *argv[]) {
     all_done1 = all_done0;
     RSS(ref_adapt_pass(ref_grid, &all_done0), "pass");
     all_done = all_done0 && all_done1 && (pass > MIN(5, passes));
-    ref_mpi_stopwatch_stop(ref_mpi, "pass");
     RSS(ref_metric_synchronize(ref_grid), "sync with background");
     ref_mpi_stopwatch_stop(ref_mpi, "metric sync");
     RSS(ref_validation_cell_volume(ref_grid), "vol");
