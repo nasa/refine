@@ -30,7 +30,6 @@
 #include "ref_gather.h"
 #include "ref_geom.h"
 #include "ref_grid.h"
-#include "ref_histogram.h"
 #include "ref_import.h"
 #include "ref_malloc.h"
 #include "ref_math.h"
