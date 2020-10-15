@@ -2995,6 +2995,7 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
   REF_GLOB *find_nodes;
   REF_INT *lookedup_donation, *lookedup_cell;
   REF_DBL max_error;
+  REF_BOOL report_migration_volume = REF_FALSE;
 
   if (ref_grid_twod(from_grid)) {
     from_cell = ref_interp_from_tri(ref_interp);
@@ -3067,8 +3068,10 @@ REF_STATUS ref_interp_from_part(REF_INTERP ref_interp, REF_INT *to_part) {
     }
   }
   RSS(ref_node_ghost_int(from_node, from_part, 1), "ghost from_part");
+  if(report_migration_volume)
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
   RSS(ref_interp_fill_empty_from_part(ref_interp, from_part), "fill part");
+  if(report_migration_volume)
   RSS(ref_interp_from_part_status(ref_interp, from_part), "from part status");
 
   for (donation = 0; donation < n_donor; donation++) {
